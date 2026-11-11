@@ -27,6 +27,8 @@ struct SIGNAL47_API FS47GlowPoints
 	void SetPosition(int32 I, const FVector& P);
 	/** setPhase(i, phase): where in its blink a point is (radians); its rate stays */
 	void SetPhase(int32 I, double Phase);
+	/** D45-20261110: a point's whole blink (rate 0: steady), for the array cabinets' pilots that say a state */
+	void SetBlink(int32 I, const FVector2D& RatePhase);
 	/** the aCol attribute's setXYZ (FarLights, Town's lamps going out) */
 	void SetColor(int32 I, const FLinearColor& C);
 	/** the aSize attribute's setX */

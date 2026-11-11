@@ -18,6 +18,7 @@
 #include "S47Story.h"
 #include "S47Night.h"
 #include "S47Album.h"
+#include "S47Darkroom.h"
 #include "S47FieldCamera.h"
 #include "S47World.h"
 #include "S47Web.h"
@@ -357,12 +358,16 @@ namespace
      // Album only stamps a valid Pose when its real FS47Snap.bRendered succeeds.
      // Expose returns FS47AlbumShot, which has no bRendered member of its own.
      if(!Check(!P.bUnavailable&&P.Url.StartsWith(TEXT("data:image/"))&&P.Pose.IsSet()&&P.Pose->Valid()&&P.Pose->Eye.Equals(Eye,.0001)&&P.Pose->Forward.Equals(Forward,.0001)&&P.Pose->Scene==M->Web->Area(),TEXT("render succeeded and photograph retains actual synced viewport pose; no fallback image")))return false;
-     Photo=P.Id;S47J::Set(Base,TEXT("photo"),Photo);S47J::Set(Base,TEXT("photoHash"),Hash(P.Url));S47J::Set(Base,TEXT("film"),M->Night->Album->Left());if(!Place(TEXT("wetBench")))return false;Go(28);break;
+     Photo=P.Id;S47J::Set(Base,TEXT("photo"),Photo);S47J::Set(Base,TEXT("photoHash"),Hash(P.Url));S47J::Set(Base,TEXT("film"),M->Night->Album->Left());
+     // D45-20261110 (D45-17): the darkroom's switch by the door, flipped through the ordinary use ray before the bench.
+     if(!Check(F.Darkroom&&!F.Darkroom->SafelightOn()&&!F.Darkroom->Block().IsEmpty(),TEXT("a new game's lab has white light and the bench waits for the safelight"))||!Place(FS47Darkroom::SwitchId,FVector(.9,0,0)))return false;Go(281);break;
     }
+    case 281:if(!Use(FS47Darkroom::SwitchId))return false;Go(282);break;
+    case 282:if(!Check(F.Darkroom->SafelightOn(),TEXT("actual safelight switch input turns the safelight on"))||!Place(TEXT("wetBench")))return false;Go(28);break;
     case 28:if(M->Web->IsDoorOpen(TEXT("labDoor")))return Finish(false,TEXT("lab door open: close through ordinary door input; harness will not force it"));if(!Use(TEXT("wetBench")))return false;Go(29);break;
     case 29:if(!Click(TEXT("LOAD SEALED FILM INTO TANK")))return false;Go(30);break;
     case 30:if(!Check(Shot()&&Shot()->LabStage==1&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+20,TEXT("actual first lab action retained; no photo payment")))return false;SaveMenu();break;
-    case 40:if(!Use(TEXT("wetBench")))return false;Go(41);break;
+    case 40:if(!Check(F.Darkroom&&F.Darkroom->SafelightOn(),TEXT("the safelight survives normal Continue"))||!Use(TEXT("wetBench")))return false;Go(41);break; // D45-20261110
     case 41:if(!Click(TEXT("TRANSFER CONTACT PRINT TO FIXER")))return false;Go(42);break;
     case 42:if(!Check(Shot()&&Shot()->LabStage==2,TEXT("actual fixer action completed"))||!Click(TEXT("COLLECT AND EXAMINE PRINT")))return false;Go(43);break;
     case 43:if(!Check(Shot()&&Shot()->IsDeveloped()&&F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+20,TEXT("same developed ordinary photo grants no payment")))return false;M->UI->Close(true);M->World->DriveToDiner(nullptr);M->World->Autopilot=12.;TravelAt=Age;Go(44);break;
@@ -427,8 +432,12 @@ namespace
      if(F.Director->Busy()||S47J::Num(D,TEXT("activeTime"))<S47J::Num(D,TEXT("restUntil")))
      {M->UI->Close(true);Go(399);break;}
      if(!Check(!S47J::Bool(Orb,TEXT("photographed")),TEXT("unphotographed natural invitation; any prior cooldown elapsed through active time")))return false;
-     const double Dusk=FMath::FloorToDouble(F.Clock()/86400.)*86400.+19*3600.;
-     const bool NextDay=S47J::Num(Orb,TEXT("dueClock"))>Dusk||F.Clock()>=Dusk-60;
+     // D45-20261110: OPS's own dusk (18:20 on the first day, 19:00 after); the light is today's while it is due by 19:00, and one still
+     // to come after the first day's 18:20 is waited for where it comes (405), not slept through.
+     const double Dusk=FS47FreeformSession::DuskWaitAt(F.Clock(),F.Day()),OrbDue=S47J::Num(Orb,TEXT("dueClock"));
+     const double Evening=FMath::FloorToDouble(F.Clock()/86400.)*86400.+19*3600.;
+     if(OrbDue<=Evening&&OrbDue>=F.Clock()-60&&F.Clock()>=Dusk-60&&F.Clock()<Evening){M->UI->Close(true);Go(405);break;}
+     const bool NextDay=OrbDue>Evening||F.Clock()>=Dusk-60;
      if(!Check(++Waits<=3,TEXT("bounded ordinary wait sequence"))||!Click(NextDay?TEXT("REST UNTIL MORNING"):TEXT("Wait until dusk / review time and equipment first")))return false;
      Go(NextDay?402:404);break;
     }
@@ -454,8 +463,12 @@ namespace
      const auto* C=F.Director->PhotoClaims().FindByPredicate([&](const auto& X){return X.PhotoId==P.Id&&X.Id.StartsWith(TEXT("dusk_orb."));});
      if(!Check(C&&!C->bPaid&&C->Reward==20,TEXT("production image qualification creates unpaid dusk incident")))return false;
      S47J::Set(Base,TEXT("eventPhoto"),P.Id);S47J::Set(Base,TEXT("eventHash"),Hash(P.Url));S47J::Set(Base,TEXT("eventClock"),P.Clock);S47J::Set(Base,TEXT("eventClaim"),C->Id);
-     if(!Retained()||!Place(TEXT("wetBench")))return false;Go(410);break;
+     // D45-20261110 (D45-17): the switch is where it was left; flip it through ordinary input only if white light is on.
+     if(!Retained())return false;if(F.Darkroom&&!F.Darkroom->SafelightOn()){if(!Place(FS47Darkroom::SwitchId,FVector(.9,0,0)))return false;Go(4091);break;}
+     if(!Place(TEXT("wetBench")))return false;Go(410);break;
     }
+    case 4091:if(!Use(FS47Darkroom::SwitchId))return false;Go(4092);break;
+    case 4092:if(!Check(F.Darkroom->SafelightOn(),TEXT("actual safelight switch input before the event print"))||!Place(TEXT("wetBench")))return false;Go(410);break;
     case 410:if(!Check(!M->Web->IsDoorOpen(TEXT("labDoor")),TEXT("lab door must already be closed; no forced door state"))||!Use(TEXT("wetBench")))return false;Go(411);break;
     case 411:if(!Click(TEXT("LOAD SEALED FILM INTO TANK")))return false;Go(412);break;
     case 412:if(!Check(EventShot()&&EventShot()->LabStage==1,TEXT("event sealed film processed"))||!Click(TEXT("TRANSFER CONTACT PRINT TO FIXER")))return false;Go(413);break;
@@ -465,15 +478,15 @@ namespace
      FScreenshotRequest::RequestScreenshot(Root/TEXT("phase-4-developed-event.png"),true,false);Go(415);break;
     case 415:if(Age-At<1)return true;if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(420);break;
     case 420:if(!Use(TEXT("opsTerminal")))return false;Go(421);break;
-    case 421:if(!Click(TEXT("SUPPLIES")))return false;Go(422);break;
-    case 422:if(!Click(TEXT("Register photograph / $20 documentation credit")))return false;Go(423);break;
+    case 421:if(!Click(TEXT("PHOTOGRAPHS")))return false;Go(422);break;
+    case 422:if(!Click(TEXT("Register photograph / $20 field allowance")))return false;Go(423);break;
     case 423:
-     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&!VisibleText(TEXT("Register photograph / $20 documentation credit")),TEXT("native registration grants exactly $20 and removes repeat-payment action")))return false;
+     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&!VisibleText(TEXT("Register photograph / $20 field allowance")),TEXT("native registration grants exactly $20 and removes repeat-payment action")))return false;
      if(!Place(TEXT("opsTerminal"),FVector(1,0,0)))return false;Go(430);break;
     case 430:if(!Use(TEXT("opsTerminal")))return false;Go(431);break;
-    case 431:if(!Click(TEXT("SUPPLIES")))return false;Go(432);break;
+    case 431:if(!Click(TEXT("PHOTOGRAPHS")))return false;Go(432);break;
     case 432:
-     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&VisibleText(TEXT("ORIGINAL REGISTERED / Documentation credit already received."))&&!VisibleText(TEXT("Register photograph / $20 documentation credit")),TEXT("reopened native OPS retains paid original and offers no second payment, including after process restart")))return false;
+     if(!EventRetained(true)||!Check(F.Budget()+F.StandbyPaid()==S47J::Num(Base,TEXT("cash"))+5&&VisibleText(TEXT("ORIGINAL REGISTERED / Field allowance already received."))&&!VisibleText(TEXT("Register photograph / $20 field allowance")),TEXT("reopened native OPS retains paid original and offers no second payment, including after process restart")))return false;
      SaveMenu();break;
     case 600:
     {

@@ -170,6 +170,7 @@ void FS47Flashlight::ApplyBeam()
 bool FS47Flashlight::Toggle()
 {
 	if (!bHave) return false;
+	if (SwapT > 0) { CancelSwap(); return true; }
 	bOn = !bOn;
 	return true;
 }
@@ -204,6 +205,21 @@ double FS47Flashlight::BatteryGain(double Full)
 	return FMath::Lerp(0.18, 1.0, FMath::SmoothStep(0.0, LowLevel, Full));
 }
 
+double FS47Flashlight::WarmShare(double Full)
+{
+	if (!FMath::IsFinite(Full) || Full >= LowLevel) return 0;
+	return FMath::Clamp(1.0 - Full / LowLevel, 0.0, 1.0);
+}
+
+double FS47Flashlight::SputterGain(double Seconds)
+{
+	// dips at 0.00-0.06, 0.24-0.29 and 0.46-0.49 (a tired stutter), then steady
+	static constexpr double Dips[3][2] = { { 0.00, 0.06 }, { 0.24, 0.29 }, { 0.46, 0.49 } };
+	if (!FMath::IsFinite(Seconds) || Seconds < 0 || Seconds >= SputterSeconds) return 1;
+	for (const auto& Dip : Dips) if (Seconds >= Dip[0] && Seconds < Dip[1]) return 0.12;
+	return 1;
+}
+
 int32 FS47Flashlight::TakeNotice()
 {
 	if (!bDrains) return 0;
@@ -218,9 +234,13 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff, 
 	// Not while the game is held: the pause menu or a panel open stops the clock, and the battery with it.
 	if (bDrains && bHave && bOn && !bOff && !bHeld && FMath::IsFinite(Dt) && Dt > 0)
 	{
+		const double Was = Battery;
 		Battery = FMath::Max(0.0, Battery - Dt / RunSeconds);
+		if (Was >= LowLevel && Battery < LowLevel && Battery > 0) SputterT = SputterSeconds; // N1110: one short sputter as it goes weak
 		if (Battery <= 0) bOn = false;
 	}
+	// N1110: the cell is being changed: the clock runs only while the game is not held
+	if (SwapT > 0 && !bHeld && FMath::IsFinite(Dt) && Dt > 0 && (SwapT -= Dt) <= 0) { SwapT = 0; bSwapDone = true; }
 	const double Want = bHave && bOn && !bOff ? 1 : 0;
 	Level += (Want - Level) * FMath::Min(1.0, Dt * 14);
 	// a weak contact now and then when something is near: a dip, sometimes out for a moment
@@ -241,20 +261,35 @@ void FS47Flashlight::Update(double Dt, double T, const FS47Cam& Cam, bool bOff, 
 	const double CellRate = bDrains && Want > 0 && !bHeld ? CellDropRate(Battery) : 0.0;
 	if (CellDark > 0) CellDark -= FMath::Max(0.0, Dt);
 	else if (CellRate > 0 && FMath::IsFinite(Dt) && Dt > 0 && FMath::FRand() < CellRate * Dt) { CellDark = 0.06 + FMath::FRand() * 0.22; ++Cuts; }
-	if (CellDark > 0) K = FMath::Min(K, 0.1);
+	if (CellDark > 0) K = FMath::Min(K, bCalm ? 0.6 : 0.1); // NIGHT-20261110: calm = a dip, not a cut-out
 	// something near takes the beam down steadily (GEAR-FLICKER), with no battery spent on it
 	if (SagK > 0) K *= 1 - SagK;
+	// N1110: the sputter at the low mark, with the game running only; reduced flicker makes it one soft dip
+	double SputterElapsed = -1;
+	if (SputterT > 0)
+	{
+		if (!bHeld && FMath::IsFinite(Dt) && Dt > 0) SputterT -= Dt;
+		SputterElapsed = SputterT > 0 ? SputterSeconds - SputterT : -1;
+	}
+	if (SputterElapsed >= 0) K *= bCalm ? FMath::Lerp(1.0, 0.6, SputterGain(SputterElapsed) < 1 ? 1.0 : 0.0) : SputterGain(SputterElapsed);
 	// a weak battery: the beam thins, and near the end the contact stutters
 	if (bDrains && Battery < LowLevel)
 	{
 		K *= BatteryGain(Battery);
-		if (Battery < LowLevel * 0.4) K *= 0.75 + 0.25 * FMath::Sin(T * 23) * FMath::Sin(T * 7.1);
+		if (Battery < LowLevel * 0.4) K *= bCalm ? 0.9 : 0.75 + 0.25 * FMath::Sin(T * 23) * FMath::Sin(T * 7.1);
 	}
 	ThreeIntensity = Level < 0.01 ? 0 : 40 * FLASH_GAIN * Level * K;
 	USpotLightComponent* L = Spot.Get();
 	if (!L) return;
 	// (three keeps the light at intensity 0 so no shader is rebuilt; Unreal's is simply not drawn while off)
 	if (L->IsVisible() != (ThreeIntensity > 0)) L->SetVisibility(ThreeIntensity > 0);
+	// N1110: a weak cell turns the beam warmer and amber (a steady colour change; interference flicker leaves the colour alone)
+	const double Warm = bDrains ? WarmShare(Battery) : 0.0;
+	if (Warm != WarmNow)
+	{
+		WarmNow = Warm;
+		L->SetLightColor(FMath::Lerp(S47Three::Hex(0xffe6c0), S47Three::Hex(0xff9a4a), float(Warm)));
+	}
 	// held a little right of and below the eyes, pointing 10 m out where they look
 	FVector P = Cam.Pos + Cam.Right * 0.22; P.Y -= 0.18;
 	FVector Target = Cam.Pos + Cam.Forward * 10;
@@ -316,7 +351,7 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 		for (int32 I = 0; I < 3000; ++I) B.Update(1.0, I, Cam, false);
 		Check(B.BatteryLevel() == 1 && B.bOn && !B.Dead(), TEXT("Story: the lamp has no battery and never runs down"));
 		B.bDrains = true;
-		for (int32 I = 0; I < 1350; ++I) B.Update(1.0, I, Cam, false);
+		for (int32 I = 0; I < int32(FS47Flashlight::RunSeconds / 2); ++I) B.Update(1.0, I, Cam, false);
 		Check(FMath::IsNearlyEqual(B.BatteryLevel(), 0.5, 0.001) && B.Intensity() > 60, TEXT("Freeform: half the lit time takes half the battery, the beam still full"));
 		B.Update(1.0, 0, Cam, true);
 		const double Held = B.BatteryLevel();
@@ -334,6 +369,14 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 		Check(B.TakeNotice() == 2 && B.TakeNotice() == 0, TEXT("the empty lamp says so once"));
 		B.bOn = false; B.Refill();
 		Check(B.BatteryLevel() == 1 && !B.Dead() && B.TakeNotice() == 0, TEXT("a dry cell fills it"));
+		B.SetBattery(0.1); B.BeginSwap(); B.Update(1.0, 0, Cam, false);
+		Check(B.Swapping() && !B.bOn && B.Intensity() == 0 && !B.TakeSwapDone() && FMath::IsNearlyEqual(B.BatteryLevel(), 0.1, 0.0001), TEXT("a cell change takes time, the lamp is dark, nothing is spent yet (N1110)"));
+		B.Update(1.0, 0, Cam, false, true);
+		Check(B.Swapping(), TEXT("the swap clock waits while the game is held (N1110)"));
+		B.Update(2.0, 0, Cam, false);
+		Check(!B.Swapping() && B.TakeSwapDone() && !B.TakeSwapDone(), TEXT("the swap finishes once (N1110)"));
+		B.BeginSwap(); B.Toggle();
+		Check(!B.Swapping() && !B.TakeSwapDone() && !B.bOn, TEXT("F cancels a swap and nothing is lost (N1110)"));
 		B.SetBattery(0); B.Charge(1.0 / 3.0); B.Charge(1.0 / 3.0);
 		Check(FMath::IsNearlyEqual(B.BatteryLevel(), 2.0 / 3.0, 0.0001) && !B.Dead(), TEXT("SARO's charger fills it by degrees"));
 		B.Charge(5); Check(B.BatteryLevel() == 1, TEXT("charging stops at full"));
@@ -351,6 +394,36 @@ bool FS47Flashlight::SelfTest(TArray<FString>& Lines)
 			G.bHave = true; G.bDrains = true; G.Toggle();
 			for (int32 I = 0; I < 6000; ++I) G.Update(1.0 / 60, I / 60.0, Cam, false);
 			Check(WeakCuts > 0 && G.CutOuts() == 0, TEXT("with nothing near, a weak cell still makes the lamp cut out; a good one does not"));
+			// NIGHT-20261110: with reduced flicker the same weak cell only dims; the lamp never falls below a fraction of its steady beam
+			FS47Flashlight C(nullptr);
+			C.bHave = true; C.bDrains = true; C.bCalm = true; C.Toggle(); C.SetBattery(0.12);
+			double CalmLeast = 1e9, NormalLeast = 1e9;
+			FS47Flashlight N2(nullptr);
+			N2.bHave = true; N2.bDrains = true; N2.Toggle(); N2.SetBattery(0.12);
+			for (int32 I = 0; I < 6000; ++I)
+			{
+				C.Update(1.0 / 60, I / 60.0, Cam, false); N2.Update(1.0 / 60, I / 60.0, Cam, false);
+				if (I > 60) { CalmLeast = FMath::Min(CalmLeast, C.Intensity()); NormalLeast = FMath::Min(NormalLeast, N2.Intensity()); }
+			}
+			Check(C.CutOuts() > 0 && CalmLeast > NormalLeast && CalmLeast > 0.25 * C.Intensity(), TEXT("reduced flicker: a weak cell dips smoothly and never cuts out"));
+		}
+		Check(FS47Flashlight::WarmShare(1) == 0 && FS47Flashlight::WarmShare(0.2) == 0 && FS47Flashlight::WarmShare(0.1) > 0 && FS47Flashlight::WarmShare(0.05) > FS47Flashlight::WarmShare(0.1) && FS47Flashlight::WarmShare(0) == 1,
+			TEXT("a weak cell goes warmer by degrees, a good one keeps its colour (N1110)"));
+		{
+			// the sputter is three short dips, then steady, and not the same rhythm as the flutter near something
+			int32 Dips = 0; bool bWas = false; double Last = 1;
+			for (int32 I = 0; I < 900; ++I) { const double G = FS47Flashlight::SputterGain(I / 1000.0); const bool bDip = G < 0.5; if (bDip && !bWas) ++Dips; bWas = bDip; Last = G; }
+			Check(Dips == 3 && Last == 1 && FS47Flashlight::SputterGain(0.95) == 1 && FS47Flashlight::SputterGain(-1) == 1, TEXT("the sputter is three quick dips then steady (N1110)"));
+			FS47Flashlight S(nullptr);
+			S.bHave = true; S.bDrains = true; S.Toggle(); S.SetBattery(0.2001);
+			S.Update(0.2, 0, Cam, false);
+			Check(S.BatteryLevel() < FS47Flashlight::LowLevel && S.Sputtering(), TEXT("it sputters once as it falls under the low mark (N1110)"));
+			S.Update(2.0, 1, Cam, false);
+			Check(!S.Sputtering(), TEXT("and the sputter ends (N1110)"));
+			FS47Flashlight Q(nullptr);
+			Q.bHave = true; Q.bDrains = true; Q.Toggle(); Q.SetBattery(0.1);
+			Q.Update(5.0, 0, Cam, false);
+			Check(!Q.Sputtering(), TEXT("a lamp already weak does not sputter again (N1110)"));
 		}
 		Check(FS47Flashlight::BatteryGain(1) == 1 && FS47Flashlight::BatteryGain(0.2) == 1 && FS47Flashlight::BatteryGain(0) == 0
 			&& FS47Flashlight::BatteryGain(0.1) < 1 && FS47Flashlight::BatteryGain(0.1) > FS47Flashlight::BatteryGain(0.05), TEXT("the beam thins steadily below the low mark"));

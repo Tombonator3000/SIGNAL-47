@@ -124,7 +124,7 @@ namespace S47Panels
 		TFunction<void(const TArray<FTalkLine>&)> OnLines;
 		/** The studio-door conversation, with its own optional voice (Earl's voice is not in this version). */
 		bool bEarl = false;
-		/** The character voice of the speaker ('bacall' ...; core/npcDialogue.ts CharacterVoice), or ''. */
+		/** The character voice of the speaker ('stanton', 'stack'; core/npcDialogue.ts CharacterVoice), or ''. */
 		FString Character;
 		TFunction<void()> OnClose;
 	};

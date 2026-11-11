@@ -20,6 +20,7 @@
 #include "S47Freeform.h"
 #include "S47Happenings.h"
 #include "S47FreeformDirector.h"
+#include "S47ScriptPlayer.h"
 #include "S47FieldRadio.h"
 #include "S47Night.h"
 #include "S47Flashlight.h"
@@ -30,6 +31,7 @@
 #include "Components/SpotLightComponent.h"
 #include "Components/PointLightComponent.h"
 #include "S47Flow.h"
+#include "S47Keys.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
@@ -57,6 +59,11 @@ namespace
   return (F->IndoorDread&&F->IndoorDread->DoorActive())||(F->FarmSite&&F->FarmSite->VisitWantsGround())||(F->Director&&F->Director->ActiveEvent()==TEXT("service_presence"))||(F->Happenings&&F->Happenings->HoldsTaking());
  }
  // A Director event that brings the light (the empty car) holds the ground for it: that is its own, not another meeting's.
+ // CRIT6-20261109: a director script does not go on over a taking: its figure, its turn of the view and its hold on the array go.
+ void StopScript(US47Main* M)
+ {
+  if(M&&M->Freeform&&M->Freeform->Scripts)M->Freeform->Scripts->StopRun(TEXT("taken"));
+ }
  bool RulesAllow(US47Main* M)
  {
   if(!M||!M->Rhythm||SameMeeting(M))return true;
@@ -84,6 +91,7 @@ bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving))return false;
  if(!RulesAllow(M))return false;
  if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
+ StopScript(M);
  Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();bDoorDone=false;
  bOutdoors=!Indoors();
  UE_LOG(LogTemp,Display,TEXT("S47: taken begins, %s, %s"),bOutdoors?TEXT("in the open"):TEXT("under a roof"),*Title);
@@ -100,6 +108,7 @@ bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving)||Indoors())return false;
  if(!RulesAllow(M))return false;
  if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
+ StopScript(M);
  Taker=Who;Place=Title;Age=0;InLight=0;SafeClock=M->Freeform->Clock();bDoorDone=false;
  bOutdoors=true;bSpill=false;bOverPlace=true;
  From=Over+FVector(0,26,0);Aim=Over+FVector(0,.6,0);
@@ -119,7 +128,7 @@ bool FS47Taken::TakeNow(ES47Taker Who,const FString& Title)
  if(Now==EStage::Lift||Now==EStage::Away)return false;
  Taker=Who;Place=Title;
  // Reached by a body: the end of a meeting the rules already let begin (a site or field visit), so it is not asked again.
- if(Now==EStage::None){SafeClock=M->Freeform->Clock();if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));}
+ if(Now==EStage::None){SafeClock=M->Freeform->Clock();if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));StopScript(M);}
  bOutdoors=!Indoors();
  if(!Terms(Who).bLift){Now=EStage::Away;Age=0;HideLight();White(TOptional<double>());if(M->UI)M->UI->Fade(true);M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.9f});return true;}
  // In a shut room, where no light can reach: it comes straight down on them all the same, once they are held.
@@ -383,7 +392,9 @@ void FS47Taken::Apply()
  {
   TArray<FString> Names;for(const FString& Item:M->Freeform->Gear->Leave(T.Leaves,WasArea,Before,Place,WakeClock))Names.Add(FS47LeftGear::NameOf(Item));
   if(!Names.IsEmpty())Gone=FString::Printf(TEXT(" My %s %s not on me. It must still be where I stood."),*FString::Join(Names,TEXT(" and ")),Names.Num()>1?TEXT("are"):TEXT("is"));
-  else M->Freeform->LostTimeTrace(1); // Nothing to go back for: where they came to is all there is to look at, and they are looking at it.
+  // Nothing to go back for: the place is kept, and going back to it in daylight is the case's trace (FS47LeftGear::MarkPlace).
+  // Critic round 5: waking up there was the trace, so any filing on THE LOST HOURS counted as carried through.
+  else if(!M->Freeform->HasFinding(TEXT("lost_ground")))M->Freeform->Gear->MarkPlace(WasArea,Before,Place,WakeClock);
  }
  Note=FString::Printf(TEXT("%s. Last time I am sure of: %s. When I next looked: %s, a gap of about %d minutes I cannot account for. I came to %s. %s %s are as I left them.%s%s"),*Place,*ClockText(SafeClock),*ClockText(WakeClock),FMath::RoundToInt((WakeClock-SafeClock)/60.),*Where,Taker==ES47Taker::Crab?TEXT("There is dirt down the front of my jacket and my palms are scraped."):Taker==ES47Taker::Tall?TEXT("My boots are on and tied, tighter than I tie them."):TEXT("There is dried blood under my nose, and it is not sore."),bFrame?TEXT("My papers"):TEXT("My film and papers"),*Gone,*Costs);
  Note[0]=FChar::ToUpper(Note[0]);
@@ -399,7 +410,7 @@ void FS47Taken::Finish()
  if(M&&M->UI)
  {
   M->UI->Fade(false);
-  if(Seconds>0&&M->Freeform)M->UI->Toast(FString::Printf(TEXT("%s by your watch. Noted in your field records (TAB)."),*ClockText(M->Freeform->Clock())),7);
+  if(Seconds>0&&M->Freeform)M->UI->Toast(FString::Printf(TEXT("%s by your watch. Noted in your field records (%s)."),*ClockText(M->Freeform->Clock()),*S47Keys::Said(TEXT("notebook"))),7);
  }
  Seconds=0;
  if(M)M->RequestAutosave();

@@ -1,0 +1,194 @@
+[
+  {
+    "name": "M_StreetLamp_Housing",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.45,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.18,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "uv_tile_m": 0.5,
+    "textures": {
+      "base_color": "textures/M_StreetLamp_Housing_base.png",
+      "roughness": "textures/M_StreetLamp_Housing_rough.png",
+      "normal": "textures/M_StreetLamp_Housing_normal.png"
+    }
+  },
+  {
+    "name": "M_StreetLamp_Lens",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.0,
+    "roughness": 0.26,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.4,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "uv_tile_m": 0.4,
+    "textures": {
+      "base_color": "textures/M_StreetLamp_Lens_base.png",
+      "roughness": "textures/M_StreetLamp_Lens_rough.png",
+      "normal": "textures/M_StreetLamp_Lens_normal.png"
+    }
+  },
+  {
+    "name": "M_StreetLamp_Galvanized",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.62,
+    "roughness": 0.5,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.14,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "uv_tile_m": 1.0,
+    "textures": {
+      "base_color": "textures/M_StreetLamp_Galvanized_base.png",
+      "roughness": "textures/M_StreetLamp_Galvanized_rough.png",
+      "normal": "textures/M_StreetLamp_Galvanized_normal.png"
+    }
+  },
+  {
+    "name": "M_StreetLamp_Hardware",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.7,
+    "roughness": 0.55,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.16,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "uv_tile_m": 0.2,
+    "textures": {
+      "base_color": "textures/M_StreetLamp_Hardware_base.png",
+      "roughness": "textures/M_StreetLamp_Hardware_rough.png",
+      "normal": "textures/M_StreetLamp_Hardware_normal.png"
+    }
+  },
+  {
+    "name": "M_StreetLamp_Photocell",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.0,
+    "roughness": 0.42,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.1,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "uv_tile_m": 0.3,
+    "textures": {
+      "base_color": "textures/M_StreetLamp_Photocell_base.png",
+      "roughness": "textures/M_StreetLamp_Photocell_rough.png",
+      "normal": "textures/M_StreetLamp_Photocell_normal.png"
+    }
+  },
+  {
+    "name": "M_StreetLamp_Gasket",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.02,
+    "roughness": 0.86,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.1,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "uv_tile_m": 0.3,
+    "textures": {
+      "base_color": "textures/M_StreetLamp_Gasket_base.png",
+      "roughness": "textures/M_StreetLamp_Gasket_rough.png",
+      "normal": "textures/M_StreetLamp_Gasket_normal.png"
+    }
+  }
+]

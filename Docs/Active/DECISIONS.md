@@ -28,6 +28,22 @@ Freeforms motivasjon, Tom 7. november: «Forrige nattvakt: Reyes fra Story mode.
 
 Dale, Tom 7. november: Dale er en sint tysker, og temperamentet er inspirert av Klaus Kinski. Han er en oppdiktet kontaktperson via telefon og walkie-talkie og møtes aldri fysisk. Temperamentet er inspirasjon: ikke navn, ekte sitater eller etterligning av den virkelige personen.
 
+Dales stemme, Tom 9. november: Dale får en egen, oppdiktet stemme i stedet for Kinski-klonen. Tom ba ca. 14:00 om «stemme som du mener er best». Valget er designprofilen `dale_de_design`: en middelaldrende mann med lav stemme, der den tyske aksenten kommer fra modellen via en tysk prøvetekst. Ingen virkelig person ligger bak, og den er ikke en klone av en ekte stemme. Kinski-profilen brukes ikke til nye replikker. De gamle Kinski-takes i Story byttes før spillet deles. Maler med sted eller retning som settes inn under spillet, vises som tekst uten stemme inntil videre. Se `unreal/Narrative/DaleVoice/`.
+
+Saker og OPS, Tom 9. november ca. 16:40 (svar på gjennomgangen i [SAKER_OPS](../Research/Gameplay/SAKER_OPS_2026-11-09.md)):
+1. To lukkeregler beholdes, men saksarket sier tydelig hvilken som gjelder: prøvesak (svar med en gang) eller vurdering (svar neste morgen).
+2. Første sak åpnes når jobben er registrert på OPS, ikke ved RETAIN på spoledekket.
+3. Telex blir fysisk papir: svar og nattlogg rives av ved telexmaskinen.
+
+Samme melding: byfolket skal ikke skli over bakken. Animasjoner fra andre figurer kan overføres (retargeting). Caliche trenger kanskje et par hus til, så folk har steder å bo. Kinski-opplesningen av papirer skal slettes.
+
+Spilløkka, Tom 9. november ca. 18:20 (svar på [HELHETLIG_LOKKE](../Research/Gameplay/HELHETLIG_LOKKE_2026-11-09.md)):
+1. Tråder spilleren knytter selv på pinboardet teller ikke som bevis. Tidsstempel og samme minutt bærer bevisene.
+2. Høyst én utpeking per natt, og kort 3 er valget mellom jobb og tur ut.
+3. Sak 0 og 1 får ingen prøve ute ennå. Det vurderes på nytt etter neste kritikerrunde.
+
+Samme melding: mer nattradio. CB-radioen skal være i bilen. Testvinduer fra Unreal skal åpnes på venstre skjerm og ikke ta fokus fra det Tom gjør.
+
 ## Skrekk og bortføring over hele verden, 6. november 2026
 
 Tom vil at skrekk og bortføring i Freeform også kan skje andre steder enn gården, for eksempel kirken, kinoen, fôrbutikken og bensinstasjonen. Inngangen er at spilleren ser rare lys eller får beskjed på walkie-talkie. Lys, spor, reaksjon og bortføring bygges derfor som ett gjenbrukbart system med gården som første sted. [Referanser til gårdshuset](../Design/Concepts/Farmhouse/README.md).
@@ -176,3 +192,7 @@ HUD og kart, Tom 8. november ca. 23:10 etter mockupene: kartet skal være det de
 HUD D valgt, Tom 8. november ca. 23:40: LCD-klokke fra C (mindre og svakere), håndskrevet oppdragslapp på kassettomslag som toner ut etter seks sekunder, batteri med fem streker, walkie-linje bare ved sending. Fargevalg for batteri og walkie vurderes i en egen kritikkrunde før bygging.
 
 HUD-farge, Tom 8. november ca. 23:55: V4. Klokke og batteri i samme turkis (VFD/LCD), walkie- og CB-linja i ravgult, CB og walkie skilles på teksten; lavt batteri skifter til rødt. Spilleren kan velge HUD-farge selv i innstillingene (Station teal som standard, Amber, Phosphor green, Paper white, Red night).
+
+Pengeløkka, Tom 9. november ca. 10:50: mindre betalt per jobb (ca. $12–14) med tillegg for godt utført arbeid; tid som valuta nr. 2; utgifter som vokser med uka; oppgraderinger som åpner utforsking, og bilen oppgraderes (raskere, mer lasterom osv.) i stedet for nye biler; penger fra etterforskning med tak; mål saldo $0–150 ved ukegjennomgang med to jobber per kveld. Første uke skal ha en stor natt (natt 2 eller 3) etter ca. 02:00. Wards første brev nevner kravet om en sak ført gjennom. Unarius-klippet vises også på andre tv-er (f.eks. Dales kontor) i både Freeform og Story; rettighetene er ikke avklart, og klippet ligger bare lokalt. Spilleren starter foran postkassen første gang. Bakgrunn: [pengeløkka](../Research/Gameplay/OKONOMI_LOKKE_2026-11-09.md).
+
+Tidsnivåer for det uforklarlige, Tom 9. november ca. 11:45 (erstatter «ingen alien før ca. 02:00»): 18–24 vanlig jobb med hint som kan bortforklares (fjerne lys, lyder, radio, data som ikke stemmer, øyeglimt langt unna); 24–02 glimt (silhuett i kanten av lykta eller langt ute, noe som krysser veien langt foran bilen; aldri nært, aldri kontakt, ingen bortføring); etter 02 fulle møter. Forfattede store netter og regissørskript kan starte tidligere når det er satt med vilje, og grensene kan krype litt tidligere i uke 4.

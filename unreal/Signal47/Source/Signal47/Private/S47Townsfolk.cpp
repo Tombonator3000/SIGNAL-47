@@ -2,17 +2,22 @@
 #include "S47EventPlaces.h"
 #include "S47Evening.h"
 #include "S47Freeform.h"
+#include "S47GameStyle.h"
 #include "S47Kit.h"
 #include "S47Main.h"
 #include "S47NightRhythm.h"
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47RadioTips.h"
+#include "S47Script.h"
+#include "S47TownDay.h"
 #include "S47TownUse.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
 #include "S47UI.h"
+#include "Misc/CommandLine.h"
 #include "Misc/Crc.h"
+#include "Misc/Parse.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Townsfolk, Log, All);
 
@@ -21,8 +26,9 @@ namespace S47TownsfolkLocal
 	// Whoever is gone in the running game (one game at a time).
 	TSet<FString> GAway;
 	const TCHAR* const Weekdays[] = { TEXT("Monday"), TEXT("Tuesday"), TEXT("Wednesday"), TEXT("Thursday"), TEXT("Friday"), TEXT("Saturday"), TEXT("Sunday") };
-	// Freeform's day 1 is Monday, April 28, 1986.
-	FString WeekdayOf(int32 Day) { return Weekdays[((FMath::Max(1, Day) - 1) % 7)]; }
+	// Freeform's day 1 is Monday, April 28, 1986; a game begun on the old calendar (Sunday, April 13) keeps it. M7 (C): the day of the
+	// week comes from the same date the HUD shows (S47Game::GameDate; EDayOfWeek counts from Monday, as the table does).
+	FString WeekdayOf(int32 Day, bool bOldCalendar) { return Weekdays[FMath::Clamp(int32(S47Game::GameDate(true, FMath::Max(1, Day), 0, bOldCalendar).GetDayOfWeek()), 0, 6)]; }
 	int32 Index(const FString& Who) { return Who == TEXT("attendant") ? 0 : Who == TEXT("waitress") ? 1 : Who == TEXT("deputy") ? 2 : Who == TEXT("souvenir_man") ? 3 : -1; }
 	FString Fill(const TCHAR* Text, const FString& A, const FString& B = FString(), const FString& C = FString())
 	{
@@ -38,7 +44,7 @@ namespace S47TownsfolkLocal
 	FFour GoneLines = {
 		TEXT("{a} hasn't been in since {b}. Truck's still at the house. Nobody's saying anything, which is how you know."),
 		TEXT("Have you heard? {A}. Nobody's seen hide nor hair since {b}. I keep looking at the door."),
-		TEXT("{a} has been missing since {b}, last seen by {c}. If you were out that night I want to hear it. Times, not stories."),
+		TEXT("{a} has been missing since {b}, last seen near {c}. If you were out that night I want to hear it. Times, not stories."),
 		TEXT("{A}. Gone since {b}, out by {c}. You think I don't know what that means? I've been telling people for thirty years.") };
 	FFour SelfBackLines = {
 		TEXT("Don't ask me where I was. I don't know, and I don't want to."),
@@ -53,17 +59,17 @@ namespace S47TownsfolkLocal
 	// What is going round about a night's event, by what kind of thing it was (FS47Townsfolk::Talk). Second-hand: a third of the time
 	// it is put at the wrong place (Lines).
 	FFour RumorLines = {
-		TEXT("Fella fueling up this morning said there were lights out by {a} last night. Paid cash and didn't wait for change."),
+		TEXT("Fella fueling up this morning said there were lights out by {a} the other night. Paid cash and didn't wait for change."),
 		TEXT("The breakfast crowd's all about {a}. Lights, they say. Low, and no sound at all."),
 		TEXT("I've had calls about {a}. Nothing on the ground when I got there. I wrote the times down."),
-		TEXT("{A}. Last night. I'll have a postcard of it by Friday.") };
+		TEXT("{A}. The other night. I'll have a postcard of it by Friday.") };
 	FFour DoorRumorLines = {
-		TEXT("Somebody was trying doors out by {a} last night, they say. Nobody anybody knows. Didn't take a thing."),
-		TEXT("They're saying somebody was at the windows out by {a} last night. Just looking in. I'd have died."),
+		TEXT("Somebody was trying doors out by {a} the other night, they say. Nobody anybody knows. Didn't take a thing."),
+		TEXT("They're saying somebody was at the windows out by {a} the other night. Just looking in. I'd have died."),
 		TEXT("Call came in about {a}. Somebody at a door in the night, nobody there when I got out there. I wrote the time down."),
 		TEXT("{A}. Somebody at the door in the night, and no tracks in the morning. That's how it starts.") };
 	FFour FigureRumorLines = {
-		TEXT("Trucker said he saw somebody walking out past {a} last night. No coat, no car. He didn't stop."),
+		TEXT("Trucker said he saw somebody walking out past {a} the other night. No coat, no car. He didn't stop."),
 		TEXT("A man was walking out by {a} in the middle of the night, they say. Just walking. Who does that?"),
 		TEXT("Had a report of somebody on foot out by {a} after midnight. Nobody when I drove by. If it was you, don't."),
 		TEXT("Somebody walking out by {a} at night, and not one of ours. I'd stay in, if I were you.") };
@@ -154,6 +160,14 @@ FString FS47Townsfolk::WorksAt(const FString& Who)
 {
 	return Who == TEXT("attendant") ? TEXT("gas") : Who == TEXT("waitress") ? TEXT("diner") : Who == TEXT("deputy") ? TEXT("sheriff") : Who == TEXT("souvenir_man") ? TEXT("souvenir") : FString();
 }
+FString FS47Townsfolk::NightPlaceOf(const FString& Who)
+{
+	// Critics, round 8: a night's event at the substation took the deputy, who by then was asleep in his house (S47TownDay); one at
+	// his house took nobody. At night they are where the day has them after dark.
+	static const bool bNoDay = FParse::Param(FCommandLine::Get(), TEXT("S47TownDayOff"));
+	if (bNoDay) return WorksAt(Who);
+	return Who == TEXT("deputy") ? TEXT("h02") : Who == TEXT("souvenir_man") ? TEXT("h03") : WorksAt(Who);
+}
 bool FS47Townsfolk::TakenBy(int32 Seed, int32 Night, const FString& Who)
 {
 	// About one night in three that something comes to their place, by the game's seed: never the same answer twice for a night.
@@ -165,7 +179,7 @@ int32 FS47Townsfolk::DaysAway(int32 Seed, const FString& Who, int32 Day)
 }
 FString FS47Townsfolk::TakenAfter(int32 Seed, int32 Night, TFunctionRef<int32(const FString&)> LastNightOf)
 {
-	for (const FString& Who : People()) if (LastNightOf(WorksAt(Who)) == Night && TakenBy(Seed, Night, Who)) return Who;
+	for (const FString& Who : People()) if (LastNightOf(NightPlaceOf(Who)) == Night && TakenBy(Seed, Night, Who)) return Who;
 	return FString();
 }
 FString FS47Townsfolk::Talk(const FString& Kind)
@@ -212,6 +226,7 @@ void FS47Townsfolk::Stop()
 	S47TownsfolkLocal::GAway.Reset();
 	// At process exit the object array may already be gone (as in S47Happenings::Stop): the town's figures are not touched then.
 	if (IsEngineExitRequested() || GExitPurge || IsGarbageCollecting()) return;
+	S47TownDay::Stop();
 	ShowPosts(true);
 }
 
@@ -293,6 +308,8 @@ void FS47Townsfolk::DevReturnAll()
 void FS47Townsfolk::Step(double Dt)
 {
 	if (!M || !M->Freeform) return;
+	// NPC-DAY: their days, every frame (where they are, walking, the sheriff's window, door and car, the houses' lamps).
+	S47TownDay::Step(M, Dt);
 	StepIn -= Dt;
 	if (StepIn > 0) return;
 	StepIn = 5;
@@ -320,7 +337,7 @@ void FS47Townsfolk::Step(double Dt)
 		const FString Who = TakenAfter(F.Seed(), N, [&F](const FString& Id) { return F.EventPlaces->LastNight(Id); });
 		if (Who.IsEmpty()) continue;
 		UE_LOG(LogS47Townsfolk, Display, TEXT("S47: townsfolk: night %d settled in the morning: %s taken"), N, *Who);
-		Vanish(Who, WorksAt(Who));
+		Vanish(Who, NightPlaceOf(Who));
 		break;
 	}
 }
@@ -339,12 +356,12 @@ TArray<FS47Townsfolk::FLine> FS47Townsfolk::Lines(const FString& Who) const
 	const auto Add = [&Out](const FString& Key, const FString& Text, int32 Rank) { FLine L; L.Key = Key; L.Text = Text; L.Rank = Rank; Out.Add(L); };
 	// Someone gone: nothing else.
 	for (const FGone& G : Gone)
-		if (G.Who != Who) Add(FString::Printf(TEXT("gone:%s:%d"), *G.Who, G.Day), Cap(Fill(GoneLines[I], Called(G.Who), WeekdayOf(G.Day), G.Place.IsEmpty() ? FString(TEXT("the edge of town")) : TitleOf(G.Place))), 100);
+		if (G.Who != Who) Add(FString::Printf(TEXT("gone:%s:%d"), *G.Who, G.Day), Cap(Fill(GoneLines[I], Called(G.Who), WeekdayOf(G.Day, F.OldCalendar()), G.Place.IsEmpty() ? FString(TEXT("the edge of town")) : TitleOf(G.Place))), 100);
 	for (const FGone& G : Returned)
 	{
 		if (Today > G.Back + 6) continue;
 		if (G.Who == Who) Add(FString::Printf(TEXT("selfback:%d"), G.Day), SelfBackLines[I], 90);
-		else Add(FString::Printf(TEXT("back:%s:%d"), *G.Who, G.Day), Cap(Fill(BackLines[I], Called(G.Who), WeekdayOf(G.Back)).Replace(TEXT("{he}"), *He(G.Who), ESearchCase::CaseSensitive)), 80);
+		else Add(FString::Printf(TEXT("back:%s:%d"), *G.Who, G.Day), Cap(Fill(BackLines[I], Called(G.Who), WeekdayOf(G.Back, F.OldCalendar())).Replace(TEXT("{he}"), *He(G.Who), ESearchCase::CaseSensitive)), 80);
 	}
 	// What is going round about places on the catalogue, the last two nights: only what somebody could have seen (lights from far off;
 	// at a door, a window or out walking only where people are), told as the kind of thing it was, and second-hand: a third of the time
@@ -401,6 +418,72 @@ TArray<FS47Townsfolk::FLine> FS47Townsfolk::Lines(const FString& Who) const
 	return Out;
 }
 
+// ---------- the notebook's WHO & WHAT (PT-NOTEBOOK-20261109) ----------
+
+FString FS47Townsfolk::RoleOf(const FString& Who)
+{
+	return Who == TEXT("attendant") ? TEXT("Night man at the gas station") : Who == TEXT("waitress") ? TEXT("Waitress at the Mesa Diner") : Who == TEXT("deputy") ? TEXT("Deputy at the substation") : Who == TEXT("souvenir_man") ? TEXT("Runs the souvenir shop") : FString();
+}
+
+FString FS47Townsfolk::CardLine(const FString& Who, const TArray<FString>& Keys, int32 Today, int32 GoneDay, TFunctionRef<FString(const FString&)> TitleOf)
+{
+	using namespace S47TownsfolkLocal;
+	const int32 I = Index(Who);
+	if (I < 0) return FString();
+	// Gone: only that the place is empty, and for how long. Never where they went or why.
+	if (GoneDay > 0)
+	{
+		const int32 N = FMath::Max(1, Today - GoneDay + 1);
+		static const TCHAR* const Empty[4] = { TEXT("Night window shut"), TEXT("Not at the counter"), TEXT("Window dark"), TEXT("Nobody on the stoop") };
+		return FString::Printf(TEXT("%s %d %s. Nobody asks."), Empty[I], N, N == 1 ? (I == 1 ? TEXT("day") : TEXT("night")) : (I == 1 ? TEXT("days") : TEXT("nights")));
+	}
+	// What they have told, the weightiest first (as Lines ranks it): one plain line in the player's pencil.
+	FString Best; int32 Rank = -1;
+	const auto Part = [](const FString& Key, int32 N) { TArray<FString> P; Key.ParseIntoArray(P, TEXT(":"), false); return P.IsValidIndex(N) ? P[N] : FString(); };
+	for (const FString& K : Keys)
+	{
+		FString Say; int32 R = 0;
+		if (K.StartsWith(TEXT("gone:"))) { Say = FString::Printf(TEXT("Talks about %s being gone."), *Called(Part(K, 1))); R = 100; }
+		else if (K.StartsWith(TEXT("selfback:"))) { Say = FString::Printf(TEXT("Back at work. Won't say where %s was."), *He(Who)); R = 90; }
+		else if (K.StartsWith(TEXT("back:"))) { Say = Cap(FString::Printf(TEXT("%s is back, %s says. Nothing more."), *Called(Part(K, 1)), *He(Who))); R = 80; }
+		else if (K.StartsWith(TEXT("rumor:"))) { Say = FString::Printf(TEXT("Passed on talk about %s."), *TitleOf(Part(K, 1))); R = 60 + FMath::Min(FCString::Atoi(*Part(K, 2)), 30); }
+		else if (K.StartsWith(TEXT("help:"))) { Say = TEXT("Knows I called in the blue pickup."); R = 58; }
+		else if (K.StartsWith(TEXT("taken:"))) { Say = TEXT("Says I look like I lost a night."); R = 57; }
+		else if (K.StartsWith(TEXT("tip:"))) { Say = FString::Printf(TEXT("Heard my call to the radio about %s."), *TitleOf(Part(K, 1))); R = 55; }
+		else if (K.StartsWith(TEXT("found:"))) { Say = FString::Printf(TEXT("Knew I had been out to %s."), *TitleOf(Part(K, 1))); R = 50; }
+		else if (K.StartsWith(TEXT("shop:"))) { Say = TEXT("Noticed what I picked up in town."); R = 45; }
+		else if (K.StartsWith(TEXT("hear:"))) { Say = FString::Printf(TEXT("Told me about %s. On my map with a question mark."), *TitleOf(Part(K, 1))); R = 30; }
+		else if (K.StartsWith(TEXT("chat:")))
+		{
+			static const TCHAR* const Small[4] = { TEXT("Talks gas prices and the wind."), TEXT("Talks pie, and how much I work."), TEXT("Talks speed limits. Times, not stories."), TEXT("Talks hats and tourists.") };
+			Say = Small[I]; R = 1;
+		}
+		if (!Say.IsEmpty() && R > Rank) { Rank = R; Best = Say; }
+	}
+	return Best;
+}
+
+TArray<FS47Townsfolk::FCard> FS47Townsfolk::Cards() const
+{
+	TArray<FCard> Out;
+	if (!M || !M->Freeform) return Out;
+	const FS47FreeformSession& F = *M->Freeform;
+	const auto TitleOf = [&F](const FString& Id) { const FString T = F.EventPlaces ? F.EventPlaces->TitleOf(Id) : FString(); return T.IsEmpty() ? FString(TEXT("a place out there")) : T; };
+	for (const FString& Who : People())
+	{
+		TArray<FString> Keys;
+		const FString Mine = Who + TEXT(":");
+		for (const FString& T : Told) if (T.StartsWith(Mine)) Keys.Add(T.Mid(Mine.Len()));
+		Keys.Sort();
+		const FGone* G = Gone.FindByPredicate([&Who](const FGone& X) { return X.Who == Who; });
+		if (Keys.IsEmpty() && !G) continue; // not met, and not missed
+		FCard Cd; Cd.Who = Who; Cd.Name = Speaker(Who); Cd.Role = RoleOf(Who); Cd.bGone = G != nullptr;
+		Cd.Line = CardLine(Who, Keys, F.Day(), G ? FMath::Max(1, G->Day) : 0, TitleOf);
+		Out.Add(Cd);
+	}
+	return Out;
+}
+
 TArray<FString> FS47Townsfolk::Candidates(const FString& Who) const
 {
 	TArray<FString> Out;
@@ -449,7 +532,7 @@ bool FS47Townsfolk::ShowAway(const FString& Who)
 	if (I < 0 || !Away(Who) || !M || !M->UI || !M->Freeform) return false;
 	const FGone* G = Gone.FindByPredicate([&Who](const FGone& X) { return X.Who == Who; });
 	TArray<TSharedRef<SWidget>> Rows;
-	Rows.Add(S47Kit::Paper(Fill(GonePost[I], FString(), WeekdayOf(G ? G->Day : 1).ToUpper())));
+	Rows.Add(S47Kit::Paper(Fill(GonePost[I], FString(), WeekdayOf(G ? G->Day : 1, M->Freeform->OldCalendar()).ToUpper())));
 	// Whoever else is about says the rest.
 	for (const FString& Other : People())
 	{
@@ -503,6 +586,23 @@ bool FS47Townsfolk::SelfTest(TArray<FString>& Lines)
 	bool bAll = true;
 	const auto Check = [&](bool bOk, const FString& What) { bAll &= bOk; Lines.Add(FString(bOk ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("townsfolk: ") + What); };
 	Check(People().Num() == 4 && WorksAt(TEXT("deputy")) == TEXT("sheriff") && WorksAt(TEXT("waitress")) == TEXT("diner") && Speaker(TEXT("souvenir_man")) == TEXT("THE SHOP MAN"), TEXT("four regulars, each at a place on the catalogue"));
+	// PT-NOTEBOOK-20261109: WHO & WHAT's boxes: one plain line each, the weightiest thing told; someone gone is only gone.
+	{
+		const auto Title = [](const FString& Id) { return Id == TEXT("church") ? FString(TEXT("the church")) : FString(TEXT("the old mine")); };
+		const TArray<FString> Told3 = { TEXT("chat:1"), TEXT("rumor:church:3"), TEXT("hear:mine") };
+		Check(CardLine(TEXT("attendant"), Told3, 4, 0, Title) == TEXT("Passed on talk about the church.") && CardLine(TEXT("waitress"), { TEXT("chat:0") }, 2, 0, Title) == TEXT("Talks pie, and how much I work."),
+			TEXT("WHO & WHAT: the weightiest thing told is the box's one line"));
+		Check(CardLine(TEXT("deputy"), Told3, 6, 4, Title) == TEXT("Window dark 3 nights. Nobody asks.") && CardLine(TEXT("waitress"), {}, 5, 5, Title) == TEXT("Not at the counter 1 day. Nobody asks."),
+			TEXT("WHO & WHAT: someone gone is only gone, and for how long"));
+		bool bClean = true;
+		const TArray<FString> Every = { TEXT("gone:deputy:3"), TEXT("selfback:2"), TEXT("back:waitress:2"), TEXT("rumor:church:3"), TEXT("help:missing_reported_x"), TEXT("taken:1"), TEXT("tip:church"), TEXT("found:mine"), TEXT("shop:lure"), TEXT("hear:mine"), TEXT("chat:0") };
+		for (const FString& Who : People())
+		{
+			for (const FString& K : Every) { const FString L = CardLine(Who, { K }, 5, 0, Title); bClean &= !L.IsEmpty() && S47Script::LintText(L).IsEmpty(); }
+			bClean &= S47Script::LintText(CardLine(Who, {}, 5, 2, Title) + TEXT(" ") + Speaker(Who) + TEXT(" ") + RoleOf(Who)).IsEmpty();
+		}
+		Check(bClean, TEXT("WHO & WHAT: every line a box can say keeps to Freeform's spoiler limits (S47Script::LintText)"));
+	}
 	// The odds: about a third of nights, the same answer each time; two to four days away.
 	int32 Taken = 0; bool bSame = true, bDays = true;
 	for (int32 N = 1; N <= 300; ++N) { const bool T = TakenBy(47, N, TEXT("deputy")); Taken += T ? 1 : 0; bSame &= T == TakenBy(47, N, TEXT("deputy")); const int32 D = DaysAway(47, TEXT("deputy"), N); bDays &= D >= 2 && D <= 4; }
@@ -542,18 +642,22 @@ bool FS47Townsfolk::SelfTest(TArray<FString>& Lines)
 		}
 		Check(bClean, bClean ? FString(TEXT("every line short, in American English, with no brand names, and nobody says what it was")) : TEXT("not said here: ") + Bad);
 	}
-	Check(WeekdayOf(1) == TEXT("Monday") && WeekdayOf(7) == TEXT("Sunday") && WeekdayOf(9) == TEXT("Tuesday"), TEXT("day 1 is Monday, April 28, 1986"));
-	// Settled in arrears (critics, round 3): a night's event at the substation at two, the player rests to eight; that morning the night is
-	// over and settled, the deputy taken where the roll says so. Before four it is not over yet. Two nights slept through: both.
+	Check(WeekdayOf(1, false) == TEXT("Monday") && WeekdayOf(7, false) == TEXT("Sunday") && WeekdayOf(9, false) == TEXT("Tuesday"), TEXT("day 1 is Monday, April 28, 1986"));
+	Check(WeekdayOf(1, true) == TEXT("Sunday") && WeekdayOf(2, true) == TEXT("Monday") && WeekdayOf(5, true) == TEXT("Thursday"), TEXT("M7: on the old calendar day 1 is Sunday, April 13, 1986, as the HUD has it"));
+	// Settled in arrears (critics, round 3): a night's event at the deputy's house at two, the player rests to eight; that morning the
+	// night is over and settled, the deputy taken where the roll says so. Before four it is not over yet. Two nights slept through: both.
+	// Critics, round 8: at night he is at home (S47TownDay), so an event at the empty substation takes nobody.
 	{
 		int32 N = 2;
 		while (N < 400 && !TakenBy(47, N, TEXT("deputy"))) ++N;
 		const double At2 = double(N) * 86400. + 2 * 3600., At8 = double(N) * 86400. + 8 * 3600.;
-		const auto Sheriff = [N](const FString& Id) { return Id == TEXT("sheriff") ? N : 0; };
+		const bool bDay = !FParse::Param(FCommandLine::Get(), TEXT("S47TownDayOff"));
+		const auto Home = [N, bDay](const FString& Id) { return Id == (bDay ? TEXT("h02") : TEXT("sheriff")) ? N : 0; };
+		const auto Office = [N](const FString& Id) { return Id == TEXT("sheriff") ? N : 0; };
 		const bool bNotYet = FS47FreeformSession::NightsOver(At2) == N - 1 && FS47FreeformSession::NightOf(At2) == N;
 		const bool bSlept = FS47FreeformSession::NightOf(At8) == N + 1 && FS47FreeformSession::NightsOver(At8) == N && FS47FreeformSession::NightsOver(At8 + 86400.) == N + 1;
-		Check(N < 400 && bNotYet && bSlept && TakenAfter(47, N, Sheriff) == TEXT("deputy") && TakenAfter(47, N + 1, Sheriff).IsEmpty(),
-			FString::Printf(TEXT("night %d's event at the substation, slept through to 08:00: settled that morning, and the deputy is taken"), N));
+		Check(N < 400 && bNotYet && bSlept && TakenAfter(47, N, Home) == TEXT("deputy") && TakenAfter(47, N + 1, Home).IsEmpty() && (!bDay || TakenAfter(47, N, Office).IsEmpty()),
+			FString::Printf(TEXT("night %d's event at the deputy's house, slept through to 08:00: settled that morning, and the deputy is taken; one at the empty substation takes nobody"), N));
 	}
 	Check(Talk(TEXT("farm_lights")) == TEXT("lights") && Talk(TEXT("site_visit")) == TEXT("lights") && Talk(TEXT("door_visit")) == TEXT("doors") && Talk(TEXT("figure_near")) == TEXT("figure") && Talk(TEXT("cattle_ring")) == TEXT("stock") && Talk(TEXT("motel_night")).IsEmpty(),
 		TEXT("talk follows what kind of thing it was; a night at the motel is not the town's"));

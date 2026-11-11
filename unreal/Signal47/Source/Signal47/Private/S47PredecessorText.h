@@ -33,8 +33,27 @@ namespace S47PredecessorText
  // Ward's Monday sheet. Her remark follows what the assessment will go by (FS47Predecessor::Points), not the count of cards, and it
  // names the hours in the log nobody can account for.
  // Land: kinds of record kept from the land at night (FS47FreeformSession::NightRecordKinds), which count too.
- FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken,int32 Land=0);
- FString Stays(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,bool bKnowsMuch);
+ // M7: bWouldStay: the assessment today would keep the station (FS47Predecessor::Decide), the only time she praises the week.
+ // Levers: her word on each other thing she reads (Levers below). Reprieved: the times taken at "Not yet" (FS47Predecessor's
+ // TakenAtReprieve). From three stretches of lost time she says what she has already done about it only once "Not yet" answered
+ // that count; noticed and not yet acted on, only that she meant it.
+ // CHAIN-2-20261109: FieldCases, of those carried through, the ones with something brought in from out on the land
+ // (FS47Predecessor::FTally::Field), a line of its own every week; under 0 (older callers, tests): as many as Concluded.
+ FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean,int32 Arrears,int32 DaysLeft,const FString& Assess,int32 Points,int32 PointsNeeded,int32 Taken,int32 Land=0,bool bWouldStay=false,const FString& Levers=FString(),int32 Reprieved=0,int32 FieldCases=-1);
+ // From this much carried on the sheet she names its limit (FS47FreeformSession::ArrearsCap) in her own words.
+ constexpr int32 CarriedWarn=40;
+ // One sentence of hers per thing the assessment reads besides the numbers on the sheet, no figures but money: the night sheets,
+ // the tapes, the weekly reports, the photographs, a filing with nothing behind it, and the limit of the carried line.
+ FString Levers(bool bLogsCount,bool bTapesCount,int32 TrustPoints,bool bPhotosCount,int32 Guessed,int32 Arrears,int32 Cap);
+ // The Monday sheet after KEPT OPEN: shorter, and nothing to win.
+ FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString& FiscalEnd,int32 Taken,const FString& Levers);
+ // What the Stays letter says of what was found (M7): wagon 23, the deputy's file, the routed pay, Ortiz's thermos sent on. Only the
+ // outside; empty if none.
+ FString Followed(bool bWagon,bool bDeputy,bool bPayReturned,bool bThermos=false);
+ FString Stays(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,bool bKnowsMuch,const FString& FoundOut=FString());
+ // Day 22: the county's inspector writes ahead of the assessment, about the one thing he will look at first.
+ // Weakest: 0 cases, 1 the array, 2 the work, 3 the carried line, 4 readable records, 5 nothing he can find.
+ FString Inspector(const FString& Dated,const FString& Assess,int32 Weakest);
  FString KnowsEnough(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,const FString& CloseOn);
  FString WhatYouKnow();
  FString ClosedOriginals(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,int32 Originals,int32 Photos,const FString& CloseOn);

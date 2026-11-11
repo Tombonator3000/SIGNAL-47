@@ -7,6 +7,7 @@
 #include "S47Ledger.h"
 #include "S47Mail.h"
 #include "S47Main.h"
+#include "S47Places.h"
 #include "S47Predecessor.h"
 #include "S47Startup.h"
 #include "S47UI.h"
@@ -49,6 +50,7 @@ void FS47FreeformTest::StepMail(double Dt)
  static int32 Cash=0,Waited=0,Base=0,Week=0,Thursday=0,Rounds=0;
  static FString PlaceA,PlaceB,PlaceC,Second;
  static FString CowA,CowC;
+ static FString PencilLead,PencilHead; // D45-24: a letter inside that points at a place
  if(Stage==0)
  {
   if(Age<3)return;
@@ -166,7 +168,7 @@ void FS47FreeformTest::StepMail(double Dt)
   {
    const int32 No=Base+Week;const FString Text=Post.IssueText(No);
    FString Word;
-   if(!Check(!Text.IsEmpty()&&S47Ledger::Clean(Text,Word)&&!Text.Contains(TEXT("{"))&&!Text.Contains(TEXT("somewhere out of town"))&&!Text.Contains(TEXT("dust"))&&!Text.Contains(TEXT("moon")),FString::Printf(TEXT("the Ledger no. %d is printed, clean, nothing left unfilled, no weather the sky does not show"),No)))return;
+   if(!Check(!Text.IsEmpty()&&S47Ledger::Clean(Text,Word)&&!Text.Contains(TEXT("{"))&&!Text.Contains(TEXT("somewhere out of town"))&&!Text.Contains(TEXT("dust")),FString::Printf(TEXT("the Ledger no. %d is printed, clean, nothing left unfilled, no weather the sky does not show"),No)))return;
    if(Week==1)
    {
     const FString Tue=L::Night(Ses,Thursday-2),Wed=L::Night(Ses,Thursday-1);
@@ -199,14 +201,39 @@ void FS47FreeformTest::StepMail(double Dt)
  }
  if(Stage==45)
  {
-  // The first paper the player reads puts wagon 23 on the map.
+  // D45-24-20261110: reading the first paper marks nothing by itself; the reader clicks the search story (MarkLead, as the click
+  // and its button do) and wagon 23 goes on the map, once.
   if(!Check(Post.Ever(TEXT("ledger:1")),TEXT("the first Ledger came")))return;
   Post.TestFetch();M->UI->Close(true);
+  const TArray<S47Ledger::FLeadRef> Refs=Post.IssueLeads(1);
+  const S47Ledger::FLeadRef* Search=Refs.FindByPredicate([](const S47Ledger::FLeadRef& Ref){return Ref.Lead==TEXT("wagon")&&Ref.Sheet==0;});
+  const S47Ledger::FLeadRef* Letter=Refs.FindByPredicate([](const S47Ledger::FLeadRef& Ref){return Ref.Sheet==1&&FS47Places::Def(Ref.Lead)!=nullptr;});
+  PencilLead=Letter?Letter->Lead:FString();PencilHead=Letter?Letter->Head:FString();
+  const bool bWagonBefore=Ses.Predecessor&&Ses.Predecessor->Heard(TEXT("wagon"));
+  const bool bPlaceBefore=!PencilLead.IsEmpty()&&Ses.Places&&Ses.Places->Heard(PencilLead);
   Post.OpenLedger(1);
-  if(!Check(Ses.Predecessor&&Ses.Predecessor->Heard(TEXT("wagon")),TEXT("read, the paper's search story puts wagon 23 on the map")))return;
+  if(!Check(Search!=nullptr,TEXT("D45-24: the first paper's search story points at the wagon and can be clicked on the front")))return;
+  const bool bWagonRead=Ses.Predecessor&&Ses.Predecessor->Heard(TEXT("wagon"));
+  const bool bPlaceRead=!PencilLead.IsEmpty()&&Ses.Places&&Ses.Places->Heard(PencilLead);
+  if(!Check(bWagonRead==bWagonBefore&&bPlaceRead==bPlaceBefore,TEXT("D45-24: reading the paper alone pencils nothing onto the map")))return;
+  const bool bFirst=Post.MarkLead(1,Search->Lead,Search->Head);
+  const bool bAgain=Post.MarkLead(1,Search->Lead,Search->Head);
+  if(!Check(Ses.Predecessor&&Ses.Predecessor->Heard(TEXT("wagon"))&&bFirst!=bWagonBefore&&!bAgain&&Post.LeadMarked(TEXT("wagon")),TEXT("D45-24: clicked, the search story puts wagon 23 on the map, once")))return;
   Go(46,.6);return;
  }
- if(Stage==46){Shot(TEXT("mail-ledger"));M->UI->Close(true);Post.OpenLedger(Base+2);Go(47,.6);return;}
+ if(Stage==46){Shot(TEXT("mail-ledger"));M->UI->Close(true);Post.OpenLedger(1,1);Go(48,.6);return;}
+ if(Stage==48)
+ {
+  // The inside page: a letter or a classified that points at a place, pencilled in from it.
+  if(!PencilLead.IsEmpty())
+  {
+   const bool bWas=Ses.Places&&Ses.Places->Heard(PencilLead);
+   const bool bNow=Post.MarkLead(1,PencilLead,PencilHead);
+   if(!Check(Ses.Places&&Ses.Places->Heard(PencilLead)&&bNow!=bWas&&Post.LeadMarked(PencilLead),FString::Printf(TEXT("D45-24: \"%s\" inside puts %s on the map"),*PencilHead,*PencilLead)))return;
+  }
+  Go(49,.4);return;
+ }
+ if(Stage==49){Shot(TEXT("mail-ledger-p2"));M->UI->Close(true);Post.OpenLedger(Base+2);Go(47,.6);return;}
  if(Stage==47){Shot(TEXT("mail-ledger-findings"));M->UI->Close(true);Go(50,.3);return;}
  if(Stage==50)
  {

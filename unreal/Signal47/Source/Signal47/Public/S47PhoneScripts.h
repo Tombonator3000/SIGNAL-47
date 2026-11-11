@@ -17,15 +17,15 @@ namespace S47PhoneScripts
 	SIGNAL47_API const TArray<FS47PhoneCue>& Nora();      // PHONE_CALLS.nora
 	SIGNAL47_API const TArray<FS47PhoneCue>& FieldNora(); // PHONE_CALLS.fieldNora
 
-	// PHONE_TEXTS: only this small bank is decoded with AudioSys's ordinary sounds. The larger
-	// document/conversation library remains lazy in ReadAloud. All 24 are literal source strings
-	// so the offline generator can extract them without running game code.
+	// PHONE_TEXTS: the 24 telephone lines the web version had recorded in the Kinski clone's bank.
+	// KINSKI-READ-OUT (Tom 9 November 2026): that bank is retired and none of them is Dale's, so they
+	// are captions until they are recorded in the speakers' own voices; the list stays as the set to
+	// record (literal source strings, so a generator can extract them without running game code).
 	SIGNAL47_API const TArray<FString>& PhoneTexts();
 
 	// story/Chapter2.ts WARD_ARRAY: Ward calls back once, a few seconds after her first call
-	// (FORSLAG.md, 20 October, item 12): the array. These two lines have no recording (the 24
-	// above are what there is), so they are captions on the line, as every unrecorded call is
-	// (audio.phoneCall gives null).
+	// (FORSLAG.md, 20 October, item 12): the array. These two lines have no recording, so they are
+	// captions on the line, as every unrecorded call is (audio.phoneCall gives null).
 	SIGNAL47_API const TArray<FS47PhoneCue>& WardArray();
 
 	// checks against the TypeScript's own strings and counts

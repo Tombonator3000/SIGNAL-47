@@ -9,12 +9,18 @@
 #include "S47Three.h"
 #include "S47Timeline.h"
 #include "S47Town.h"
+#include "S47TownDay.h"
 #include "S47TownLayer.h"
+#include "S47TripoCreature.h"
+#include "S47CreatureClips.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/World.h"
 #include "Misc/CommandLine.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47TripoNpcs, Log, All);
@@ -47,6 +53,23 @@ namespace
   { P->SetRenderInMainPass(false); P->SetRenderInDepthPass(false); P->SetVisibleInRayTracing(false); P->SetCastShadow(false); }
  }
 
+ // NPC-ANIM: the hips' height over the feet (cm, the skin's component space) at the start of a rigged figure's clip.
+ double HipsCm(FS47TripoCreature& Rig, ES47Clip Clip)
+ {
+  if (!Rig.Clips || !Rig.Clips->Has(Clip)) return 0;
+  TArray<FTransform> Local; Rig.Clips->Sample(Clip, 0, Local);
+  const int32 Pelvis = Rig.Names.IndexOfByKey(FName(TEXT("pelvis")));
+  if (Pelvis < 0 || Local.Num() != Rig.Parents.Num()) return 0;
+  FTransform At = FTransform::Identity;
+  for (int32 B = Pelvis; B >= 0; B = Rig.Parents[B]) At = At * Local[B];
+  return At.GetLocation().Z;
+ }
+ // The static seated bakes' hips over their feet (seat_z_m, unreal-static-2026-10-30/manifest.json): their places are set by these.
+ double BakedSeatM(const FString& Role)
+ {
+  return Role == TEXT("patron") ? .5928 : Role == TEXT("nora") ? .5451 : Role == TEXT("earl") ? .5741 : Role == TEXT("radio_woman") ? .5437 : 0.;
+ }
+
  FTransform Pose(const FVector& Feet, const FQuat& Rotation)
  {
   double E[16]; S47Three::Compose(Feet, Rotation, FVector::OneVector, E);
@@ -61,6 +84,11 @@ struct FS47TripoNpcs::FState
   FString Role;
   TWeakObjectPtr<UStaticMeshComponent> Mesh;
   bool bBound = false;
+  // NPC-ANIM: the same figure on its own rig with clips, drawn instead of the bake where this build has it (Licensed/TripoNPC/Rigged).
+  TSharedPtr<FS47TripoCreature> Rig;
+  TWeakObjectPtr<USceneComponent> RigRoot;
+  bool bSeated = false; // the figure is a seated one (roles.json): it sits wherever it is put
+  double SeatLowerCm = 0; // a seated one: how far the rig goes down to have its hips where the bake had them
  };
  TArray<FSlot> Slots;
  TWeakObjectPtr<UStaticMeshComponent> Radio;
@@ -71,7 +99,11 @@ struct FS47TripoNpcs::FState
 
 FS47TripoNpcs::FS47TripoNpcs(US47Main* InM) : State(MakeUnique<FState>()), M(InM)
 { bOff = FParse::Param(FCommandLine::Get(), TEXT("S47TripoNpcsOff")); }
-FS47TripoNpcs::~FS47TripoNpcs() = default;
+FS47TripoNpcs::~FS47TripoNpcs()
+{
+ // The day's walk goes back to the bake's steps for anyone this one put on a rig.
+ if (State) for (const auto& Slot : State->Slots) if (Slot.Rig) S47TownDay::SetRigged(Slot.Role, false, false);
+}
 
 UStaticMeshComponent* FS47TripoNpcs::Component(const FString& Role) const
 {
@@ -106,6 +138,45 @@ void FS47TripoNpcs::Build()
    C->ComponentTags.Add(*FString::Printf(TEXT("S47Tripo:%s"), Role)); Slot.Mesh = C;
   }
   else UE_LOG(LogS47TripoNpcs, Warning, TEXT("S47: Tripo %s unavailable; original visual retained"), Role);
+  // NPC-ANIM (Tom, 9 November: "Kan animasjoner fra andre figurer overføres til for eksempel byfolket, så de ikke sklir over
+  // bakken?"). Every one of these figures came out of Tripo rigged; Tools/triponpcs/prepare_rigged_townsfolk.py keeps that rig and
+  // gives it Tripo's clips from a human-proportioned body. Where this build has the result, the figure stands, walks and sits on
+  // it (FS47ClipMotion: its steps go by the distance it really goes, its feet stay where they land); where it has not, or with
+  // -S47RiggedNpcsOff, the static bake above as before. Placement, presence and story stay the bake's (Update).
+  if (Slot.Mesh.IsValid() && !FParse::Param(FCommandLine::Get(), TEXT("S47RiggedNpcsOff")))
+  {
+   const FString Skin = FString::Printf(TEXT("/Game/Licensed/TripoNPC/Rigged/SK_Tripo_%s.SK_Tripo_%s"), Role, Role);
+   if (USkeletalMesh* SkinAsset = LoadObject<USkeletalMesh>(nullptr, *Skin, nullptr, LOAD_NoWarn | LOAD_Quiet))
+   {
+    auto* RigRoot = NewObject<USceneComponent>(W, *FString::Printf(TEXT("TripoNPCRigRoot_%s"), Role));
+    W->AddInstanceComponent(RigRoot); RigRoot->SetMobility(EComponentMobility::Movable);
+    RigRoot->SetupAttachment(W->GetRootComponent()); RigRoot->RegisterComponent();
+    TSharedPtr<FS47TripoCreature> Rig = MakeShared<FS47TripoCreature>();
+    if (Rig->Build(W, RigRoot, FString::Printf(TEXT("TripoNPCRig_%s"), Role), *Skin))
+     Rig->Clips = FS47ClipBank::For(SkinAsset, *Rig, *FString::Printf(TEXT("/Game/Licensed/TripoNPC/Rigged/A_Tripo_%s_"), Role));
+    if (Rig->Ready() && Rig->Clips)
+    {
+     // Both the bake and the rig face +Y with their feet at the pivot under the pelvis: the rig takes the bake's transform as it is.
+     Rig->Mesh->SetRelativeRotation(FRotator::ZeroRotator);
+     Slot.Rig = Rig; Slot.RigRoot = RigRoot;
+     for (const TCHAR* Seated : { TEXT("patron"), TEXT("nora"), TEXT("earl"), TEXT("radio_woman") }) Slot.bSeated |= FCString::Strcmp(Role, Seated) == 0;
+     const double SitHips = HipsCm(*Rig, ES47Clip::Sit), StandHips = HipsCm(*Rig, ES47Clip::Idle);
+     S47TownDay::SetRigged(Role, true, Rig->Clips->Has(ES47Clip::Sit), SitHips / 100., StandHips / 100.);
+     // A seated figure's place was set for its bake's hips (the seat), which sit lower than the clip's: the hips go where they
+     // were, the feet a few centimetres into the floor in front of the seat, at most 6.
+     if (Slot.bSeated && SitHips > 0 && BakedSeatM(Role) > 0) Slot.SeatLowerCm = FMath::Clamp(SitHips - 100. * BakedSeatM(Role), 0., 6.);
+     UE_LOG(LogS47TripoNpcs, Display, TEXT("S47: Tripo %s on its own rig: walk %.2f m/s a cycle of %.0f cm, sit clip %s, hips %.0f cm standing and %.0f seated, %s"), Role,
+      Rig->Clips->GaitSpeedMps(ES47Clip::Walk), Rig->Clips->GaitCycleCm(ES47Clip::Walk), Rig->Clips->Has(ES47Clip::Sit) ? TEXT("yes") : TEXT("no"),
+      StandHips, SitHips, Slot.bSeated ? *FString::Printf(TEXT("always seated, %.1f cm down onto the bake's seat"), Slot.SeatLowerCm) : TEXT("seated where its day has it"));
+    }
+    else
+    {
+     if (UPoseableMeshComponent* Body = Rig->Mesh.Get()) Body->DestroyComponent();
+     RigRoot->DestroyComponent();
+     UE_LOG(LogS47TripoNpcs, Display, TEXT("S47: Tripo %s rigged skin found without its clips; the static bake is worn"), Role);
+    }
+   }
+  }
   State->Slots.Add(MoveTemp(Slot));
  }
  // The old bench figure and its radio were merged by material. Keep a real
@@ -129,6 +200,15 @@ void FS47TripoNpcs::Update()
  {
   if (auto* C = Slot.Mesh.Get()) { C->SetWorldTransform(Pose(At, Q)); C->SetVisibility(bShow); Slot.bBound = true; }
  };
+ // NPC-DAY (S47TownDay, Freeform): where the day has them, walking, at work, at home (not drawn); else where they stood here.
+ auto Daily = [&Place](FState::FSlot& Slot, const FVector& At, const FQuat& Q, bool bArea) -> bool
+ {
+  const FVector Ahead = Q.RotateVector(FVector(0, 0, 1));
+  FVector Feet; double Yaw = 0; bool bShow = false;
+  if (!S47TownDay::Pose(Slot.Role, At, FMath::Atan2(Ahead.X, Ahead.Z), Feet, Yaw, bShow)) return false;
+  Place(Slot, Feet, S47Three::Euler(0, Yaw, 0), bArea && bShow);
+  return true;
+ };
  auto OnObject = [&](FState::FSlot& Slot, const TCHAR* Path, const FVector& Offset, bool bFlip)
  {
   const FS47Obj O = W->Obj(Path); if (!O) return;
@@ -143,7 +223,16 @@ void FS47TripoNpcs::Update()
   if (R == TEXT("patron")) OnObject(Slot, TEXT("world.diner.objs.driver"), FVector(0,.28,0), true);
   else if (R == TEXT("nora")) OnObject(Slot, TEXT("world.room6.objs.nora"), FVector::ZeroVector, true);
   else if (R == TEXT("radio_woman")) OnObject(Slot, TEXT("world.town.woman"), FVector(0,.12,.02), true);
-  else if (R == TEXT("souvenir_man")) OnObject(Slot, TEXT("world.town.smoker"), FVector::ZeroVector, true);
+  else if (R == TEXT("souvenir_man"))
+  {
+   const FS47Obj O = W->Obj(TEXT("world.town.smoker"));
+   if (O)
+   {
+    const FVector At = O.LocalToWorld(FVector::ZeroVector); const FQuat Q = O.WorldQuaternion() * S47Three::Euler(0, PI, 0);
+    Mask(NodeComponent(O));
+    if (!Daily(Slot, At, Q, TownGroup.Shown())) Place(Slot, At, Q, O.Shown());
+   }
+  }
   else if (R == TEXT("dale"))
   {
    USceneComponent* Room = Named(TEXT("OperationsRoomRoot"));
@@ -154,8 +243,11 @@ void FS47TripoNpcs::Update()
    const FS47Obj Old = W->Obj(TEXT("world.diner.objs.waitress"));
    // A spare mannequin by the kitchen has no dialogue proxy. The working
    // MetaHuman remains the waitress at the counter.
-   if (Old && DinerInterior) Place(Slot, Old.WorldPosition() + FVector(.03,0,-2.40),
-    S47Three::Euler(0,PI/2,0), DinerInterior.Shown());
+   if (Old && DinerInterior)
+   {
+    const FVector At = Old.WorldPosition() + FVector(.03,0,-2.40); const FQuat Q = S47Three::Euler(0,PI/2,0);
+    if (!Daily(Slot, At, Q, DinerInterior.Shown())) Place(Slot, At, Q, DinerInterior.Shown());
+   }
   }
   else if (R == TEXT("attendant"))
   {
@@ -166,8 +258,8 @@ void FS47TripoNpcs::Update()
     // The night-window box starts at the counter, .65m above the floor.
     // Use the adjacent 2.20m doorway's bottom as the shared interior floor.
     const FVector At=Window.WorldPosition();
-    Place(Slot,FVector(At.X-.50,Door.WorldPosition().Y-1.10+.02,At.Z),
-     S47Three::Euler(0,PI/2,0),TownGroup.Shown());
+    const FVector Feet(At.X-.50,Door.WorldPosition().Y-1.10+.02,At.Z); const FQuat Q=S47Three::Euler(0,PI/2,0);
+    if (!Daily(Slot,Feet,Q,TownGroup.Shown())) Place(Slot,Feet,Q,TownGroup.Shown());
    }
   }
   else if (R == TEXT("earl"))
@@ -196,8 +288,12 @@ void FS47TripoNpcs::Update()
    else
    {
     const FS47Obj Door = W->Obj(TEXT("world.town.proxies.sheriffDoor"));
-    if (Door) Place(Slot, Door.WorldPosition() + FVector(.62,-1.05,0), S47Three::Euler(0,PI/2,0),
-     TownGroup.Shown() && Town && Town->bDeputyIn);
+    if (Door)
+    {
+     const FVector At = Door.WorldPosition() + FVector(.62,-1.05,0); const FQuat Q = S47Three::Euler(0,PI/2,0);
+     // (the diner is the town's area too: seen at lunch from the street or inside)
+     if (!Daily(Slot, At, Q, TownGroup.Shown() || DinerInterior.Shown())) Place(Slot, At, Q, TownGroup.Shown() && Town && Town->bDeputyIn);
+    }
    }
   }
   else if (R == TEXT("mara_ortiz"))
@@ -274,6 +370,25 @@ void FS47TripoNpcs::Update()
    C->SetVisibility(false);
   }
   if (!bPlay) C->SetVisibility(false);
+ }
+ // NPC-ANIM: a rigged figure is drawn where its bake would be, in its place: standing, walking (FS47ClipMotion reads the walk off
+ // how far the root really goes, so the feet do not glide) or seated where the day has it seated (S47TownDay::SitNow; Pose gives
+ // it the plain path, S47TownDay::SetRigged). The bake keeps its visibility flag, which the roster, the radio and the quick check
+ // read, but is not drawn.
+ const double Clock = W->GetWorld() ? W->GetWorld()->GetTimeSeconds() : 0.;
+ for (auto& Slot : State->Slots)
+ {
+  UStaticMeshComponent* C = Slot.Mesh.Get(); USceneComponent* RigRoot = Slot.RigRoot.Get();
+  if (!C || !RigRoot || !Slot.Rig || !Slot.Rig->Ready() || !Slot.Rig->Clips) continue;
+  C->SetHiddenInGame(true);
+  FTransform T = C->GetComponentTransform(); T.SetScale3D(FVector::OneVector);
+  if (Slot.bSeated) T.AddToTranslation(FVector(0, 0, -Slot.SeatLowerCm));
+  RigRoot->SetWorldTransform(T);
+  FS47ClipPose Clip; Clip.bVisible = C->IsVisible() && Slot.bBound; Clip.Clock = Clock; Clip.Move = ES47Clip::Walk;
+  double Sit = 0;
+  const bool bSit = Slot.bSeated || (S47TownDay::SitNow(Slot.Role, Sit) && Sit > .5);
+  if (bSit && Slot.Rig->Clips->Has(ES47Clip::Sit)) Clip.Stand = ES47Clip::Sit;
+  Slot.Rig->PlayClips(Clip);
  }
  if (UStaticMeshComponent* Radio = State->Radio.Get())
  {

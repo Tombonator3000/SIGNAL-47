@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "landing_seen_log",
+  "name": "Lights seen coming down",
+  "notes": "N1110-5. Played by S47Happenings when lights that were seen have come down and gone out on the ground: the bearing goes on the map (the code), the finding is kept. Words: {az} {spread} {landing_night} {clock} {day} {night} {map_key}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "evidence", "key": "landing_seen_d{landing_night}", "text": "At {clock} lights came down out on the land, about {az} degrees from SARO, give or take {spread}, and went out on the ground." },
+    { "at": 0, "do": "toast", "text": "Bearing on your map ({map_key}).", "secs": 5 },
+    { "at": 0, "do": "shake", "strength": 0.12 },
+    { "at": 0.2, "do": "light", "kind": "gear", "strength": 0.6, "secs": 4 },
+    { "at": 2.5, "do": "thought", "text": "Straight down, slow, and then out like a pulled plug.", "secs": 4.5 }
+  ]
+}

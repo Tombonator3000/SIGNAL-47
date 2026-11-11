@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "HAL/PlatformTime.h"
 #include "Materials/MaterialInterface.h"
+#include "S47Bodycam.h"
 #include "S47Docs.h"
 #include "S47FieldCamera.h"
 #include "S47FilmFace.h"
@@ -147,7 +148,13 @@ FS47AlbumShot FS47Album::Expose()
 	O.Seed = Seed;
 	O.W = bSmall ? 320 : 640;
 	O.Super = !bSmall && D.Negative && D.Negative() ? 2 : 1;
-	if (bFace) O.Post = [Seed, Side](TArray<FColor>& Raw, int32 W, int32 H) { S47FilmFace::FilmFace(Raw, W, H, Seed, Side); };
+	// D48-20261110 (D46-27): the data back's date in the corner of every frame, on the film before the grain (and on the face's frame too)
+	const FString Imprint = D.Date ? US47FieldCamera::DataBackText(D.Date(Clock)) : FString();
+	if (bFace || !Imprint.IsEmpty()) O.Post = [Seed, Side, bFace, Imprint](TArray<FColor>& Raw, int32 W, int32 H)
+	{
+		if (bFace) S47FilmFace::FilmFace(Raw, W, H, Seed, Side);
+		if (!Imprint.IsEmpty()) US47FieldCamera::DataBack(Raw, W, H, Imprint);
+	};
  FS47PhotoPose Pose;
  if(F&&D.Web){Pose.Scene=D.Web->Area();Pose.Eye=S47Three::ToThree(F->PhotoLoc);Pose.Forward=S47Three::ToThree(F->PhotoRot.Vector()).GetSafeNormal();Pose.Fov=US47FieldCamera::PHOTO_FOV;}
 	FS47Snap Snap;
@@ -213,6 +220,11 @@ bool FS47Album::ExposeFrom(const FVector& Eye, const FVector& Look, const FStrin
 	const bool bSmall = D.Small && D.Small();
 	O.W = bSmall ? 320 : 640;
 	O.Super = !bSmall && D.Negative && D.Negative() ? 2 : 1;
+	// N1110 (D46-13): its frames come off a surveillance tape (wide lens, green monochrome, smear, noise) with the unit label and the
+	// date and time burned in, in place of the film data back; only these frames, never the player's own photographs.
+	const FDateTime Day = D.Date ? D.Date(Clock) : FDateTime(1986, 4, 28);
+	const FString Stamp = FS47Bodycam::StampText(FS47Bodycam::Stamp(Day.GetMonth(), Day.GetDay(), Day.GetYear(), Clock));
+	O.Post = [Stamp, Seed = O.Seed](TArray<FColor>& Raw, int32 W, int32 H) { US47FieldCamera::TripCamLook(Raw, W, H, Seed, Stamp, TEXT("TRIP CAM 3")); };
 	const FS47Snap Snap = F->Snap(O);
 	F->PhotoLoc = OldLoc;
 	F->PhotoRot = OldRot;
@@ -401,6 +413,15 @@ bool FS47Album::AdvanceLabPhoto(const FString& Id, int32 ExpectedStage)
 	FS47AlbumShot* S = Data.Shots.FindByPredicate([&](const FS47AlbumShot& P) { return P.Id == Id; });
 	if (!S || S->bUnavailable || S->Url.IsEmpty() || ExpectedStage < 0 || ExpectedStage >= 3 || S->LabStage != ExpectedStage) return false;
 	++S->LabStage;
+	return true;
+}
+
+// D45-20261110 (D45-17): a fogged print goes back one step; nothing else about the original changes, so it is still paid once.
+bool FS47Album::FogLabPhoto(const FString& Id)
+{
+	FS47AlbumShot* S = Data.Shots.FindByPredicate([&](const FS47AlbumShot& P) { return P.Id == Id; });
+	if (!S || S->bUnavailable || S->Url.IsEmpty() || S->LabStage != 1) return false;
+	S->LabStage = 0;
 	return true;
 }
 
@@ -630,6 +651,16 @@ bool FS47Album::SelfTest(TArray<FString>& Lines)
 	Check(Lab.PendingLabPhoto() && Lab.AdvanceLabPhoto(OriginalId, 0) && !Lab.AdvanceLabPhoto(OriginalId, 0) && !Lab.AdvanceLabPhoto(TEXT("missing"), 1), TEXT("physical tank action advances once; stale and unknown photo actions are rejected"));
 	FS47Album LabRestored(Deps); LabRestored.Restore(S47J::Read(S47J::Write(Lab.SaveData())));
 	Check(LabRestored.Shots()[0].LabStage == 1 && !LabRestored.Shots()[0].IsDeveloped(), TEXT("tank-processed photograph stays unpaid and unfinished after Continue"));
+	{
+		// D45-20261110 (D45-17): light on a print in the developer sends it back to exposed film, the original untouched; only from stage 1.
+		FS47Album Fog(Deps); Fog.Restore(S47J::Read(S47J::Write(LabRestored.SaveData())));
+		const int32 FogTargets = Fog.Shots()[0].Targets.Num(); const FString FogNeg = Fog.Shots()[0].Neg;
+		const bool bFogged = Fog.FogLabPhoto(OriginalId) && Fog.Shots()[0].LabStage == 0 && !Fog.FogLabPhoto(OriginalId);
+		Check(bFogged && Fog.Shots()[0].Id == OriginalId && Fog.Shots()[0].Url == OriginalUrl && Fog.Shots()[0].Clock == OriginalClock && Fog.Shots()[0].Targets.Num() == FogTargets && Fog.Shots()[0].Neg == FogNeg,
+			TEXT("a fogged print returns to exposed film with its id, image, time, targets and negative kept"));
+		Check(!Fog.FogLabPhoto(TEXT("missing")) && Fog.AdvanceLabPhoto(OriginalId, 0) && Fog.AdvanceLabPhoto(OriginalId, 1) && !Fog.FogLabPhoto(OriginalId) && Fog.AdvanceLabPhoto(OriginalId, 2) && !Fog.FogLabPhoto(OriginalId) && Fog.Shots()[0].IsDeveloped()
+			&& !Fog.FogLabPhoto(Fog.Shots()[1].Id), TEXT("a new print from the negative is made as before; fixed, collected and instant prints cannot fog"));
+	}
 	Check(LabRestored.AdvanceLabPhoto(OriginalId, 1) && LabRestored.Shots()[0].LabStage == 2 && !LabRestored.Shots()[0].IsDeveloped(), TEXT("fixer action still requires collection of the original"));
 	Check(LabRestored.AdvanceLabPhoto(OriginalId, 2) && LabRestored.Shots()[0].IsDeveloped() && !LabRestored.AdvanceLabPhoto(OriginalId, 2) && !LabRestored.PendingLabPhoto(), TEXT("collected original qualifies once; development cannot be repeated"));
 	FS47Album Finished(Deps); Finished.Restore(S47J::Read(S47J::Write(LabRestored.SaveData())));
@@ -648,6 +679,38 @@ bool FS47Album::SelfTest(TArray<FString>& Lines)
  Wrong=Pose;Wrong.Forward=FVector(1,0,0);Check(!Pose.Matches(Wrong),TEXT("control facing another direction is rejected"));
  Wrong=Pose;Wrong.Scene=TEXT("road");Check(!Pose.Matches(Wrong),TEXT("matching coordinates in another scene are not a same-place control"));
  Wrong=Pose;Wrong.Forward=FVector::ZeroVector;Check(!Wrong.Valid(),TEXT("malformed capture direction is not accepted"));
+	// D48-20261110 (D46-27): the data back. A camera without a world exposes a dark frame; with Deps.Date the date is burned into its
+	// lower right (orange through the JPEG), without it nothing is.
+	{
+		FS47AlbumDeps Stamped = Deps;
+		Stamped.Fcam = NewObject<US47FieldCamera>();
+		Stamped.Date = [](double AtClock) { return FDateTime(1986, 4, 28) + FTimespan::FromDays(FMath::FloorToDouble(AtClock / 86400.0)); };
+		const auto Orange = [](const FString& Url, int32& Corner, int32& Elsewhere)
+		{
+			Corner = Elsewhere = 0;
+			TArray<FColor> Px; int32 W = 0, H = 0;
+			if (!S47Image::DecodePixels(Url, Px, W, H)) return false;
+			for (int32 Y = 0; Y < H; ++Y) for (int32 X = 0; X < W; ++X)
+			{
+				const FColor& C = Px[Y * W + X];
+				// (the film look's vignette and lift leave the corner's hot orange near 100/50/20, the dark frame near 10/9/12 plus grain)
+				if (C.R > 70 && C.R > C.G + 20 && C.G >= C.B) (X >= W * .6 && Y >= H * .8 ? Corner : Elsewhere)++;
+			}
+			return W > 0 && H > 0;
+		};
+		Clock = 86400 + 3 * 3600 + 40 * 60; // D2 03:40: the 29th
+		FS47Album WithBack(Stamped);
+		const FS47AlbumShot Shot = WithBack.Expose();
+		int32 Corner = 0, Elsewhere = 0;
+		const bool bRead = Orange(Shot.Url, Corner, Elsewhere);
+		Lines.Add(FString::Printf(TEXT("album: data back on an unlit frame: %d orange pixels in the corner, %d elsewhere"), Corner, Elsewhere));
+		Check(bRead && Corner > 30 && Elsewhere < Corner / 10, TEXT("the data back's date is burned into the lower right of the print and nowhere else"));
+		Check(US47FieldCamera::DataBackText(Stamped.Date(Clock)) == TEXT("4 29 '86"), TEXT("at 03:40 on the second night the back reads the 29th"));
+		FS47AlbumDeps Plain = Deps; Plain.Fcam = Stamped.Fcam;
+		FS47Album WithoutBack(Plain);
+		const FS47AlbumShot Bare = WithoutBack.Expose();
+		Check(Orange(Bare.Url, Corner, Elsewhere) && Corner == 0, TEXT("a camera without a data back burns nothing"));
+	}
 
 	return bOk;
 }

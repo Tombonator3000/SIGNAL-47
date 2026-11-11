@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "id": "car_light_end",
+  "name": "The white light is gone from the road",
+  "notes": "N1110-5. Played by S47Happenings when the light over the truck is over. The finding is the one the code kept before; {outcome} says what the player did, with its first space. Words: {outcome} {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "evidence", "key": "car_light_d{day}", "text": "At {clock} a white light stood over the truck on the road and the engine died under it.{outcome}" },
+    { "at": 0.6, "do": "thought", "text": "The light is gone. It is just the road and the dark again.", "secs": 4.5 }
+  ]
+}

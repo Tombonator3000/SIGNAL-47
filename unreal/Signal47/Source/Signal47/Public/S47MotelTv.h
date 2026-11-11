@@ -23,6 +23,9 @@ struct FS47MotelTvIn
 	double Clock = 0;
 	TOptional<bool> May;
 	double Unrest = 0;
+	/** TV-CHANNEL-20261110, Freeform: what is on the air near the set (0 to 1): its picture rolls and tears and its sound wavers
+	 *  as they do under the story's unrest. */
+	double Jam = 0;
 };
 struct FS47MotelTvDeps
 {
@@ -45,6 +48,17 @@ public:
 	FString FrameUrl;
 	bool Busy() const { return Mode != TEXT("card"); }
 	bool bWaiting = false;
+	/** MOTEL-REAL-20261108: the test card, its snow and thin tone instead of the late film. TV-SCHEDULE-20261109: set each frame by
+	 *  the station's hours (FS47TvProgramme::OnAir) in both modes; without the local frame pack the card shows at every hour. */
+	bool bCardOnly = false;
+	/** TV-CHANNEL-20261110: in Freeform the set is on the one channel (S47Main sets these each frame): the programme through the
+	 *  broadcast day, the station's sign-off (the flag and the anthem), the card, then snow. The story leaves bChannel false. */
+	bool bChannel = false;
+	FS47TvProgramme::EAir Air = FS47TvProgramme::EAir::Programme;
+	bool Snowing() const { return bChannel && Air == FS47TvProgramme::EAir::Snow && Mode == TEXT("card"); }
+	/** The 320 x 240 test card: Round 15's blank card when staged (WebData/art), otherwise the colour bars (the other sets use it). */
+	static TArray<FColor> CardPicture();
+	bool ShowsFilm() const { return !bCardOnly && Programme.Available(); }
 	int32 Slips = 0;
 	bool Heard() const { return Busy() && Dist < 30; }
 	void Update(double Dt, const FS47MotelTvIn& S);
@@ -63,6 +77,7 @@ private:
 	// the late broadcast (local footage, when staged): its clock goes on whatever the set shows
 	FS47TvProgramme Programme;
 	int32 PaintedFrame = -1;
+	bool bWasFilm = false;
 	double PaintDt = 1.0 / 15;
 	FVector TvAt = FVector::ZeroVector;
 	double FrameClock = 0;

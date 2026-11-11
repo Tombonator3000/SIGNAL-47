@@ -579,8 +579,8 @@
           "speaker": "DALE",
           "text": "Reyes? Dale. The logbook should be in front of you.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 2.41,
+          "start_seconds": 0.09,
+          "end_seconds": 2.85,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -589,7 +589,7 @@
           "text": "I headed out early. The service folder is on the desk, under the work order.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 3.51,
+          "end_seconds": 3.88,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -598,7 +598,7 @@
           "text": "The first survey is routine. Check calibration before you let it run.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 3.3,
+          "end_seconds": 3.57,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -607,7 +607,7 @@
           "text": "Did you get something to eat?",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 1.17,
+          "end_seconds": 1.66,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -622,7 +622,7 @@
           "text": "Good. Better than trying to live on the coffee here.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.28,
+          "end_seconds": 2.38,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -630,8 +630,8 @@
           "speaker": "DALE",
           "text": "I tried that once. Wouldn't recommend it.",
           "voiced": true,
-          "start_seconds": 0.09,
-          "end_seconds": 1.89,
+          "start_seconds": 0.08,
+          "end_seconds": 2.16,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -646,7 +646,7 @@
           "text": "There are crackers in the bottom drawer. Still in the wrapper.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.86,
+          "end_seconds": 3.1,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -654,8 +654,8 @@
           "speaker": "DALE",
           "text": "No promises about the coffee. It was here when I came in.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 2.6,
+          "start_seconds": 0.09,
+          "end_seconds": 2.9,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -670,7 +670,7 @@
           "text": "Start with the log. I've marked what's done and what's left for you.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.89,
+          "end_seconds": 3.42,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -678,8 +678,8 @@
           "speaker": "DALE",
           "text": "Bank Three has two amber indicators. Amber is normal. Write it down if that changes.",
           "voiced": true,
-          "start_seconds": 0.12,
-          "end_seconds": 3.86,
+          "start_seconds": 0.08,
+          "end_seconds": 4.46,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -688,7 +688,7 @@
           "text": "Your folder lists the local service records and the radio schedule. Get the dated copies. We need something to check our clocks against.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 6.21,
+          "end_seconds": 7.22,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -696,8 +696,8 @@
           "speaker": "DALE",
           "text": "Operations office is locked. The papers for tonight are already on your desk.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 3.65,
+          "start_seconds": 0.09,
+          "end_seconds": 4.07,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -705,8 +705,8 @@
           "speaker": "DALE",
           "text": "Ward is on call for the morning run. She wants observations she can sign, not our best guess.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 4.12,
+          "start_seconds": 0.09,
+          "end_seconds": 4.85,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -714,8 +714,8 @@
           "speaker": "DALE",
           "text": "You can reach me on the service line. If something doesn't fit the log, call before you throw anything away.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 4.97,
+          "start_seconds": 0.09,
+          "end_seconds": 5.49,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -724,7 +724,7 @@
           "text": "All right. Have a good shift.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 1.4,
+          "end_seconds": 1.77,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -747,8 +747,8 @@
           "speaker": "DALE",
           "text": "Then start with the feeder marked on that sheet. A receiver warning and a supply fault are two different things.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 5.27,
+          "start_seconds": 0.1,
+          "end_seconds": 5.91,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -756,8 +756,8 @@
           "speaker": "DALE",
           "text": "The junction station is down the short gravel turnoff. Leave the truck outside the service gate.",
           "voiced": true,
-          "start_seconds": 0.09,
-          "end_seconds": 4.34,
+          "start_seconds": 0.08,
+          "end_seconds": 4.94,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -765,8 +765,8 @@
           "speaker": "DALE",
           "text": "Use the service check on the cabinet. Note what the affected light does, not just what the indicator says.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 4.88,
+          "start_seconds": 0.09,
+          "end_seconds": 5.47,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -775,7 +775,7 @@
           "text": "There should be one clear result. If the result is not clear, leave it unresolved and call me.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 4.29,
+          "end_seconds": 4.83,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -790,7 +790,7 @@
           "text": "I hear you. Check the cabinet label against the service sheet.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.87,
+          "end_seconds": 3.28,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -798,8 +798,8 @@
           "speaker": "DALE",
           "text": "If they match, run the check and watch the light at the far end.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 2.85,
+          "start_seconds": 0.21,
+          "end_seconds": 3.15,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -807,8 +807,8 @@
           "speaker": "DALE",
           "text": "Write down the result and the time. Keep that for the next check.",
           "voiced": true,
-          "start_seconds": 0.09,
-          "end_seconds": 2.98,
+          "start_seconds": 0.08,
+          "end_seconds": 3.15,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -822,8 +822,8 @@
           "speaker": "DALE",
           "text": "Dale. What did it actually print?",
           "voiced": true,
-          "start_seconds": 0.09,
-          "end_seconds": 1.7,
+          "start_seconds": 0.08,
+          "end_seconds": 1.74,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -832,7 +832,7 @@
           "text": "Minus thirty-nine. On the paper?",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 1.78,
+          "end_seconds": 1.89,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -840,8 +840,8 @@
           "speaker": "DALE",
           "text": "Keep the original. Put the clock reading beside it before you do anything else.",
           "voiced": true,
-          "start_seconds": 0.09,
-          "end_seconds": 3.53,
+          "start_seconds": 0.08,
+          "end_seconds": 4.13,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -849,8 +849,8 @@
           "speaker": "DALE",
           "text": "Do not correct the number just because it looks wrong.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 2.51,
+          "start_seconds": 0.09,
+          "end_seconds": 2.82,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -864,8 +864,8 @@
           "speaker": "DALE",
           "text": "I've seen numbers that shouldn't have come out of that solver.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 2.91,
+          "start_seconds": 0.09,
+          "end_seconds": 3.01,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -874,7 +874,7 @@
           "text": "I haven't worked out why. I kept the records.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 1.97,
+          "end_seconds": 2.3,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -882,8 +882,8 @@
           "speaker": "DALE",
           "text": "Keep yours too. We can argue about the explanation later.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 2.47,
+          "start_seconds": 0.09,
+          "end_seconds": 2.85,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -898,7 +898,7 @@
           "text": "Check your inspection card. Put the test time beside the new printout.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 3.23,
+          "end_seconds": 3.7,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -907,7 +907,7 @@
           "text": "If you've cleared the supply fault, compare that time with this one.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.88,
+          "end_seconds": 3.3,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -921,8 +921,8 @@
           "speaker": "DALE",
           "text": "All right. Put the paper somewhere safe.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 1.94,
+          "start_seconds": 0.09,
+          "end_seconds": 2.0,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -930,8 +930,8 @@
           "speaker": "DALE",
           "text": "Call me if the next observation disagrees with the first one.",
           "voiced": true,
-          "start_seconds": 0.09,
-          "end_seconds": 2.76,
+          "start_seconds": 0.08,
+          "end_seconds": 3.18,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -945,8 +945,8 @@
           "speaker": "DALE",
           "text": "You found a spare.",
           "voiced": true,
-          "start_seconds": 0.29,
-          "end_seconds": 1.4,
+          "start_seconds": 0.24,
+          "end_seconds": 1.16,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -955,7 +955,7 @@
           "text": "I should have told you there was more than a service folder.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.69,
+          "end_seconds": 2.78,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -963,8 +963,8 @@
           "speaker": "DALE",
           "text": "What are you looking at?",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 0.86,
+          "start_seconds": 0.11,
+          "end_seconds": 1.44,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -979,7 +979,7 @@
           "text": "Ward wants a result somebody else can repeat. She's right to.",
           "voiced": true,
           "start_seconds": 0.09,
-          "end_seconds": 2.89,
+          "end_seconds": 3.0,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -988,7 +988,7 @@
           "text": "I had clippings, bad frames and people who remembered different nights.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 3.02,
+          "end_seconds": 3.61,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -997,7 +997,7 @@
           "text": "I kept the lot until I could put two observations on the same page.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 3.13,
+          "end_seconds": 3.41,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -1012,7 +1012,7 @@
           "text": "Watch the pole, not the patch.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 1.64,
+          "end_seconds": 1.77,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1021,7 +1021,7 @@
           "text": "The patch could be a recording fault. The pole gives you a fixed reference.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 3.4,
+          "end_seconds": 3.62,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1030,7 +1030,7 @@
           "text": "Use the field sheet. I marked the camera position.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.29,
+          "end_seconds": 2.47,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -1045,7 +1045,7 @@
           "text": "I haven't worked through those survey files.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.0,
+          "end_seconds": 2.18,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1054,7 +1054,7 @@
           "text": "The folder in my office is my own. I haven't changed an old report.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.98,
+          "end_seconds": 3.49,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1063,7 +1063,7 @@
           "text": "Keep the originals together. Check whose name is on the signed copy.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 3.06,
+          "end_seconds": 3.69,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -1077,8 +1077,8 @@
           "speaker": "DALE",
           "text": "Start with one thing you can check. Take a photograph from the same place.",
           "voiced": true,
-          "start_seconds": 0.09,
-          "end_seconds": 3.52,
+          "start_seconds": 0.08,
+          "end_seconds": 3.73,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1086,8 +1086,8 @@
           "speaker": "DALE",
           "text": "And don't take my word for something just because I wrote it down.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 2.94,
+          "start_seconds": 0.41,
+          "end_seconds": 3.31,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -1102,7 +1102,7 @@
           "text": "Say that again. The service result and the light disagree?",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.65,
+          "end_seconds": 3.02,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1110,8 +1110,8 @@
           "speaker": "DALE",
           "text": "You checked the ordinary supply, the backup and the indicator?",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 2.65,
+          "start_seconds": 0.09,
+          "end_seconds": 3.15,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1120,7 +1120,7 @@
           "text": "Good. Write down every check you made. Keep that separate from what you think caused it.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 4.1,
+          "end_seconds": 4.4,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1129,7 +1129,7 @@
           "text": "Bring the record back to SARO. Ward will need to read it.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 2.59,
+          "end_seconds": 3.0,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -1143,8 +1143,8 @@
           "speaker": "DALE",
           "text": "Reyes? I'm here.",
           "voiced": true,
-          "start_seconds": 0.09,
-          "end_seconds": 1.38,
+          "start_seconds": 0.08,
+          "end_seconds": 1.41,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1152,8 +1152,8 @@
           "speaker": "DALE",
           "text": "If you've got witness statements, keep their exact words with the record.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 3.51,
+          "start_seconds": 0.11,
+          "end_seconds": 3.8,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1162,7 +1162,7 @@
           "text": "Give Ward what you've actually checked. Leave the rest marked uncertain.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 3.38,
+          "end_seconds": 3.83,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -1171,7 +1171,7 @@
           "text": "Call me when you get back in.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 1.06,
+          "end_seconds": 1.62,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -1185,8 +1185,8 @@
           "speaker": "DALE",
           "text": "Reyes? Dale. The logbook should be in front of you.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 2.41,
+          "start_seconds": 0.09,
+          "end_seconds": 2.85,
           "timing_status": "from_audio_clip_relative"
         }
       ]

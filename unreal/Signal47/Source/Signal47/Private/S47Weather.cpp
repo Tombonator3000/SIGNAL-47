@@ -24,9 +24,26 @@ namespace S47WeatherLocal
  double Smooth01(double X){X=FMath::Clamp(X,0.,1.);return X*X*(3.-2.*X);}
  // Up from A to B, held, down from C to D (clock hours).
  double Trap(double H,double A,double B,double C,double D){return Smooth01((H-A)/FMath::Max(.01,B-A))*(1.-Smooth01((H-C)/FMath::Max(.01,D-C)));}
- // A windy spell runs about two days (spring fronts), on a little over a quarter of the pairs of days; never the first two days, so
- // that the station is learnt in plain weather.
+ // A windy spell runs about two days (spring fronts), on a little over a quarter of the pairs of days. The first two days are the
+ // opening's (D46-20261110: Opening), not drawn.
  bool Spell(int32 Seed,int32 Num){return Num>2&&Draw(Seed,Num/2,11)<.28;}
+ // D46-20261110 (D46-4): Tom had only ever seen clear weather, since the first two days were kept calm and a sand day or a shower
+ // came on one day in five or so after. Now the first two days are written: one has a windy afternoon with blowing sand (gone by
+ // dusk, still by night), the other high cloud thickening toward evening and a storm on the horizon after dark, throwing dry
+ // lightning all night with thunder far off; which comes first is the seed's (0: the lightning first, 1: the sand first). No shower
+ // and no wind held into the night in them, so the night's rhythm (FS47Rhythm, NightStorm over a half) is still its own.
+ int32 Opening(int32 Seed){return Draw(Seed,0,31)<.5?0:1;}
+ // The night's dry lightning on a drawn day: about one night in four quiet, one in five a storm on the horizon, the rest far off now
+ // and then. A sand day's wind clears the air of it; a shower's evening keeps its storm. Where a storm stands: south round to the
+ // west-northwest, where the high ground is and the spring's storms build.
+ float LightningOf(int32 Seed,int32 Num,bool bSand,bool bShowerDay)
+ {
+  const double U=Draw(Seed,Num,32);
+  if(bShowerDay)return float(1.6+.6*U);
+  if(bSand)return U<.5?0.f:float(.6+.4*U);
+  return U<.26?float(.2*U):U<.8?float(.6+.6*(U-.26)/.54):float(1.6+.7*(U-.8)/.2);
+ }
+ float LightningAzOf(int32 Seed,int32 Num){return float(170.+120.*Draw(Seed,Num,33));}
  // A stray shower: about one day in nine of the calm ones, from the third day.
  bool ShowerOn(int32 Seed,int32 Num){return Num>=3&&!Spell(Seed,Num)&&Draw(Seed,Num,19)<.11;}
  // What the day's wind is at a clock hour: still at dawn, up by late morning, its most in the afternoon, down at dusk; on a windy day
@@ -64,7 +81,32 @@ S47Weather::FDay S47Weather::Day(int32 Seed,int32 ShiftDay)
  D.HighF=FMath::Clamp(FMath::RoundToInt(Trend+Spell+Own),68,92);
  D.LowF=L::DawnF-1+FMath::FloorToInt(L::Draw(Seed,Num,5)*3.);
  D.WindFrom=float(FMath::RadiansToDegrees(FS47Omen::WindFrom(Seed,Num)));
- if(L::Spell(Seed,Num))
+ const bool bOpening=Num<=2;
+ if(bOpening)
+ {
+  // D46-20261110: the opening's two days (L::Opening). The sand day: a strong south-west wind from about one, the far land brown,
+  // gone by about six (before the dusk's visitor), still by night. The storm day: a light, gusty wind, the afternoon clouding over
+  // high, and the storm on the horizon after dark.
+  const bool bSandDay=(Num==1)==(L::Opening(Seed)==1);
+  if(bSandDay)
+  {
+   D.WindMph=23+FMath::FloorToInt(L::Draw(Seed,Num,12)*4.);
+   D.GustMph=D.WindMph+10+FMath::FloorToInt(L::Draw(Seed,Num,13)*6.);
+   D.bDust=true;D.DustK=float(.5+.25*L::Draw(Seed,Num,15));
+   D.DustFrom=float(13.+L::Draw(Seed,Num,16));D.DustTo=float(18.+.3*L::Draw(Seed,Num,17));
+   D.NightStorm=0.f;
+   D.Lightning=float(.6+.3*L::Draw(Seed,Num,32));
+  }
+  else
+  {
+   D.WindMph=9+FMath::FloorToInt(L::Draw(Seed,Num,7)*3.);
+   D.GustMph=D.WindMph+12+FMath::FloorToInt(L::Draw(Seed,Num,8)*5.);
+   D.bHighCloud=true;
+   D.Lightning=float(2.+.3*L::Draw(Seed,Num,32));
+  }
+  D.LightningAz=L::LightningAzOf(Seed,Num);
+ }
+ else if(L::Spell(Seed,Num))
  {
   // A strong south-west wind in the afternoon; on most such days it lifts the sand.
   D.WindMph=20+FMath::FloorToInt(L::Draw(Seed,Num,12)*12.);
@@ -88,9 +130,15 @@ S47Weather::FDay S47Weather::Day(int32 Seed,int32 ShiftDay)
   D.bShower=true;D.ShowerAt=float(15.+4.5*L::Draw(Seed,Num,20));D.bThunder=L::Draw(Seed,Num,21)<.55;
   D.HighF-=4; // a cooler afternoon under the cloud
  }
+ if(!bOpening)
+ {
+  // D46-20261110: the night's lightning, and now and then a still afternoon that clouds over high toward evening
+  D.Lightning=L::LightningOf(Seed,Num,D.bDust,D.bShower);D.LightningAz=L::LightningAzOf(Seed,Num);
+  D.bHighCloud=!D.bDust&&!D.bShower&&(D.Storm()||L::Draw(Seed,Num,34)<.18);
+ }
  // Haze in the morning: always after a shower, now and then on a still morning.
  if(!D.Windy()&&((Num>1&&L::ShowerOn(Seed,Num-1))||L::Draw(Seed,Num,22)<.15)){D.bHaze=true;D.HazeK=float(.5+.5*L::Draw(Seed,Num,23));}
- D.bLightning=true;
+ D.bLightning=D.Lightning>=FDay::LitNight;
  // The sky's own cover with what the day adds to it (a shower's cloud, the sand in place of cloud, the haze).
  const auto Cover=[&D](double Clock){return float(FMath::Clamp(FS47Sky::CloudCoverAt(Clock)+CloudBiasAt(D,Clock),0.,.9));};
  D.CloudAm=Cover(L::Morning);D.CloudPm=Cover(L::Afternoon);D.CloudNight=Cover(L::Night);
@@ -103,10 +151,23 @@ double S47Weather::CloudBiasAt(const FDay& D,double ClockOfDay)
  const double H=FMath::Fmod(FMath::Fmod(ClockOfDay,86400.)+86400.,86400.)/3600.;
  double B=0;
  // a shower's cloud builds through the afternoon and goes after it; on a sand day the brown takes the place of the cloud
- if(D.bShower)B+=.24*L::Trap(H,D.ShowerAt-3.,D.ShowerAt-.5,D.ShowerAt+1.5,D.ShowerAt+3.5);
+ if(D.bShower){double Rain,Wet,Cloud;bool bThunder;ShowerCourse(H-D.ShowerAt,false,Rain,Wet,Cloud,bThunder);B+=Cloud;}
  if(D.bDust)B-=.12*L::Trap(H,D.DustFrom-1.,D.DustFrom+.5,D.DustTo-1.,D.DustTo+1.);
  if(D.bHaze)B+=.06*L::Trap(H,4.,5.,8.5,10.5);
+ // D46-20261110: high cloud thickening from early afternoon to an overcast evening, thinning after sundown
+ if(D.bHighCloud)B+=.22*L::Trap(H,12.5,16.,19.8,22.);
  return B;
+}
+void S47Weather::ShowerCourse(double Hours,bool bThunder,double& OutRain,double& OutWet,double& OutCloud,bool& bOutThunder)
+{
+ namespace L=S47WeatherLocal;
+ const double H=FMath::IsFinite(Hours)?Hours:NoShower;
+ // (M5 critic 3: long enough to be seen and heard, about three quarters of an hour at its fullest)
+ OutRain=L::Trap(H,-.25,.05,.8,1.1);
+ OutWet=L::Trap(H,0.,.35,1.5,4.);
+ // its cloud builds through the afternoon and goes after it
+ OutCloud=.24*L::Trap(H,-3.,-.5,1.5,3.5);
+ bOutThunder=bThunder&&L::Trap(H,-1.,-.5,1.,1.6)>0;
 }
 S47Weather::FNow S47Weather::Now(int32 Seed,int32 CalendarDay,double ClockOfDay)
 {
@@ -132,13 +193,15 @@ S47Weather::FNow S47Weather::Now(int32 Seed,int32 CalendarDay,double ClockOfDay)
  N.Storm=H>=19||H<L::SmallHours?N.Wind:0.;
  if(D.bShower)
  {
-  // (M5 critic 3: long enough to be seen and heard, about three quarters of an hour at its fullest)
-  N.Rain=L::Trap(H,D.ShowerAt-.25,D.ShowerAt+.05,D.ShowerAt+.8,D.ShowerAt+1.1);
-  N.Wet=L::Trap(H,D.ShowerAt,D.ShowerAt+.35,D.ShowerAt+1.5,D.ShowerAt+4.);
-  N.bThunder=D.bThunder&&L::Trap(H,D.ShowerAt-1.,D.ShowerAt-.5,D.ShowerAt+1.,D.ShowerAt+1.6)>0;
+  double Cloud=0;
+  N.ShowerH=H-D.ShowerAt;
+  ShowerCourse(N.ShowerH,D.bThunder,N.Rain,N.Wet,Cloud,N.bThunder);
  }
  if(D.bHaze)N.Haze=D.HazeK*L::Trap(H,4.,5.,8.,9.75);
  N.CloudBias=CloudBiasAt(D,ClockOfDay);
+ // D46-20261110: the night's lightning: before dawn still the night before's
+ const FDay& Lit=bAfter?Before:D;
+ N.Lightning=Lit.Lightning;N.LightningAz=Lit.LightningAz;
  const double From=FMath::DegreesToRadians(double(D.WindFrom));
  N.DirX=-FMath::Sin(From);N.DirZ=FMath::Cos(From);
  return N;
@@ -161,6 +224,8 @@ S47Weather::FDay S47Weather::Forecast(int32 Seed,int32 IssuedOn,int32 ForDay)
  {
   D.WindMph=L::Clean(FMath::Clamp(D.WindMph+FMath::RoundToInt((L::Draw(Salt,ForDay,22)-.5)*2.*(1.+Ahead)),4,36));
   D.GustMph=L::Clean(FMath::Max(D.GustMph,D.WindMph+6));
+  // D46-20261110: a storm on the horizon is a day-of call; days out it is only "far off"
+  if(D.Storm())D.Lightning=1.f;
  }
  // Two days out a stray shower is easily missed; three days out the sand too (the wind is still forecast). Never one that is not.
  if(Ahead>=2&&D.bShower&&L::Draw(Salt,ForDay,23)<.4){D.bShower=false;D.bThunder=false;}
@@ -191,20 +256,28 @@ FString S47Weather::Words(const FDay& D,bool bShort)
   Said_+=D.GustMph>0?TEXT(", gusty at times."):TEXT(".");
  }
  if(D.bShower)Said_+=D.bThunder?TEXT(" A stray shower late in the day, most of it drying up before it reaches the ground. Thunder possible."):TEXT(" A stray shower late in the day, most of it drying up before it reaches the ground.");
- if(D.bLightning)Said_+=TEXT(" Dry lightning far off after dark.");
+ if(D.bHighCloud)Said_+=TEXT(" High clouds by evening.");
+ // D46-20261110: a storm night says where it stands; a quiet night says nothing of lightning
+ if(D.Storm())Said_+=FString::Printf(TEXT(" Dry lightning on the %s horizon after dark."),*LightningWay(D));
+ else if(D.bLightning)Said_+=TEXT(" Dry lightning far off after dark.");
  Said_+=FString::Printf(TEXT(" High %d, low %d."),D.HighF,D.LowF);
  return Said_;
 }
 FString S47Weather::LastWeek(int32 Seed,int32 FromDay,int32 ToDay)
 {
  namespace L=S47WeatherLocal;
- int32 High=-100,Low=200,Showers=0,Sand=0;
- for(int32 D=FMath::Max(1,FromDay);D<ToDay;++D){const FDay W=Day(Seed,D);High=FMath::Max(High,W.HighF);Low=FMath::Min(Low,W.LowF);Showers+=W.bShower?1:0;Sand+=W.bDust?1:0;}
+ int32 High=-100,Low=200,Showers=0,Sand=0,Nights=0,Lit=0;
+ for(int32 D=FMath::Max(1,FromDay);D<ToDay;++D){const FDay W=Day(Seed,D);High=FMath::Max(High,W.HighF);Low=FMath::Min(Low,W.LowF);Showers+=W.bShower?1:0;Sand+=W.bDust?1:0;++Nights;Lit+=W.bLightning?1:0;}
  if(High<-50)return TEXT("Caliche has no week of weather to report yet.");
- const FString Rain=Showers>0?FString(TEXT("a stray shower that hardly settled the road")):FString(TEXT("no rain"));
- const FString Blown=Sand>1?FString::Printf(TEXT(", blowing sand on %d afternoons"),L::Clean(Sand)):Sand==1?FString(TEXT(", blowing sand one afternoon")):FString();
- return FString::Printf(TEXT("Caliche last week: high %d, low %d, %s%s. Dry lightning far off most nights."),High,Low,*Rain,*Blown);
+ // How many, in words, as the paper sets them under ten; not "the dust" (the paper never says dust: S47Ledger's test).
+ static const TCHAR* const Count[]={TEXT("no"),TEXT("one"),TEXT("two"),TEXT("three"),TEXT("four"),TEXT("five"),TEXT("six"),TEXT("seven"),TEXT("eight"),TEXT("nine")};
+ const FString Rain=Showers>2?FString(TEXT("a few stray showers late in the day")):Showers==2?FString(TEXT("two stray showers late in the day")):Showers==1?FString(TEXT("a stray shower one afternoon")):FString(TEXT("no rain"));
+ const FString Blown=Sand>1?FString::Printf(TEXT(", blowing sand on %s afternoons"),Sand<10?Count[Sand]:*FString::FromInt(L::Clean(Sand))):Sand==1?FString(TEXT(", blowing sand one afternoon")):FString();
+ // D46-20261110: the lightning as the nights had it
+ const TCHAR* const Flashes=Lit*2>Nights?TEXT("Dry lightning far off most nights."):Lit>0?TEXT("Dry lightning far off some nights."):TEXT("Quiet nights.");
+ return FString::Printf(TEXT("Caliche last week: high %d, low %d, %s%s. %s"),High,Low,*Rain,*Blown,Flashes);
 }
+FString S47Weather::LightningWay(const FDay& D){return FS47Omen::Way(FMath::DegreesToRadians(double(D.LightningAz)));}
 FString S47Weather::ClockWords(double SecondsAfterMidnight)
 {
  const int32 Minutes=FMath::FloorToInt(FMath::Fmod(FMath::Fmod(SecondsAfterMidnight,86400.)+86400.,86400.)/60.);
@@ -315,12 +388,13 @@ bool S47Weather::SelfTest(TArray<FString>& Lines)
  for(const int32 TrySeed:{1,470047,-90210,123456789,777,31337})for(int32 Num=1;Num<=30;++Num)
  {
   const FDay A=Day(TrySeed,Num),B=Day(TrySeed,Num);++Days;
-  bSame&=A.HighF==B.HighF&&A.LowF==B.LowF&&A.WindMph==B.WindMph&&A.GustMph==B.GustMph&&A.bDust==B.bDust&&A.DustK==B.DustK&&A.bShower==B.bShower&&A.ShowerAt==B.ShowerAt&&A.bHaze==B.bHaze&&A.NightStorm==B.NightStorm;
+  bSame&=A.HighF==B.HighF&&A.LowF==B.LowF&&A.WindMph==B.WindMph&&A.GustMph==B.GustMph&&A.bDust==B.bDust&&A.DustK==B.DustK&&A.bShower==B.bShower&&A.ShowerAt==B.ShowerAt&&A.bHaze==B.bHaze&&A.NightStorm==B.NightStorm&&A.Lightning==B.Lightning&&A.LightningAz==B.LightningAz&&A.bHighCloud==B.bHighCloud;
   bRange&=A.HighF>=64&&A.HighF<=92&&A.LowF>=39&&A.LowF<=44&&A.WindMph<=32&&A.GustMph>A.WindMph&&(!A.bDust||(A.DustK>=.45f&&A.DustK<=1.f&&A.DustFrom<A.DustTo));
   const auto Cover=[&A](double Clock){return float(FMath::Clamp(FS47Sky::CloudCoverAt(Clock)+CloudBiasAt(A,Clock),0.,.9));};
-  bSky&=A.CloudAm==Cover(L::Morning)&&A.CloudPm==Cover(L::Afternoon)&&A.CloudNight==Cover(L::Night)&&A.bLightning;
+  bSky&=A.CloudAm==Cover(L::Morning)&&A.CloudPm==Cover(L::Afternoon)&&A.CloudNight==Cover(L::Night)&&A.bLightning==(A.Lightning>=FDay::LitNight);
   Dusty+=A.bDust?1:0;Showers+=A.bShower?1:0;Hazy+=A.bHaze?1:0;
-  if(Num<=2)bCalmStart&=!A.bDust&&!A.bShower&&!A.Windy();
+  // D46-20261110: the opening's two days have no shower and no wind held into the night
+  if(Num<=2)bCalmStart&=!A.bShower&&A.NightStorm<=L::HeldNight;
   // the paper on the day says what the day is; further out it may miss a shower, never invent one
   const FDay Today=Forecast(TrySeed,Num,Num);
   bOnTheDay&=Today.bDust==A.bDust&&Today.bShower==A.bShower&&Today.bHaze==A.bHaze&&Today.WindMph==A.WindMph;
@@ -333,6 +407,8 @@ bool S47Weather::SelfTest(TArray<FString>& Lines)
    const FString Long=Words(Print),Short=Words(Print,true);
    bPrinted&=Long.Contains(TEXT("blowing sand"))==Print.bDust&&Short.Contains(TEXT("blowing sand"))==Print.bDust;
    bPrinted&=Long.Contains(TEXT("stray shower"))==Print.bShower&&Long.Contains(TEXT("Haze early"))==Print.bHaze;
+   // D46-20261110: a storm night says where it stands on the horizon, a quiet night nothing of lightning
+   bPrinted&=Long.Contains(TEXT("horizon after dark"))==Print.Storm()&&Long.Contains(TEXT("lightning"))==Print.bLightning&&Long.Contains(TEXT("High clouds by evening"))==Print.bHighCloud;
    for(const FString& Text:{Long,Short})
    {
     bClean&=!Text.Contains(TEXT("47"))&&!Text.IsEmpty();
@@ -350,6 +426,9 @@ bool S47Weather::SelfTest(TArray<FString>& Lines)
   else bNow&=Four.Rain==0&&Four.Wet==0;
   bNow&=(Dawn.Haze>.4)==A.bHaze&&Late.Haze==0;
   bNow&=Four.CloudBias==CloudBiasAt(A,16*3600.);
+  // D46-20261110: the sky's lightning tonight is the day's, and in the small hours still the night before's
+  {const FNow Ten=Now(TrySeed,Num,22*3600.),Two=Now(TrySeed,Num+1,2*3600.);bNow&=Ten.Lightning==A.Lightning&&Two.Lightning==A.Lightning&&Two.LightningAz==A.LightningAz;}
+  if(A.bHighCloud)bNow&=Four.CloudBias>.15;
   // midnight is no seam: the small hours have what is left of the night before
   const FNow Before=Now(TrySeed,Num,86399.),After=Now(TrySeed,Num+1,1.);
   bSmooth&=FMath::Abs(Before.Mph-After.Mph)<1.;
@@ -359,7 +438,27 @@ bool S47Weather::SelfTest(TArray<FString>& Lines)
  }
  Check(bSame,TEXT("a seed and a day always give the same weather"));
  Check(bSky,TEXT("the paper's clouds are the ones FS47Sky draws with the day's weather on them, morning, afternoon and night, and dry lightning every night"));
- Check(bCalmStart,TEXT("the first two days of a game are calm: the station is learnt in plain weather"));
+ Check(bCalmStart,TEXT("the first two days have no shower and no wind held into the night"));
+ {
+  // D46-20261110 (D46-4): every game's first days have a windy afternoon with blowing sand and a storm night on the horizon, both orders
+  // come up, the sand is gone before the dusk, and after them some nights are quiet, most have lightning far off, some a storm
+  bool bOpening=true;int32 First[2]={0,0},Quiet=0,Far=0,Storms=0,Nights=0,High=0;
+  for(int32 TrySeed=1;TrySeed<=400;++TrySeed)
+  {
+   bool bSand=false,bStorm=false;
+   for(int32 Num=1;Num<=3;++Num){const FDay A=Day(TrySeed,Num);bSand|=A.bDust&&A.Windy();bStorm|=A.Storm()&&A.bHighCloud;}
+   const FDay One=Day(TrySeed,1);
+   const FDay& Sand=One.bDust?One:Day(TrySeed,2);
+   bOpening&=bSand&&bStorm&&Sand.bDust&&Now(TrySeed,One.bDust?1:2,18.75*3600.).Dust<.05&&Now(TrySeed,One.bDust?1:2,15.5*3600.).Dust>.3;
+   ++First[L::Opening(TrySeed)];
+   if(TrySeed<=60)for(int32 Num=3;Num<=30;++Num){const FDay A=Day(TrySeed,Num);++Nights;Quiet+=A.bLightning?0:1;Storms+=A.Storm()?1:0;Far+=A.bLightning&&!A.Storm()?1:0;High+=A.bHighCloud?1:0;}
+  }
+  Check(bOpening&&First[0]>100&&First[1]>100,FString::Printf(TEXT("the first two days: a windy afternoon with blowing sand, gone by a quarter to seven, and a storm night on the horizon, in both orders (%d and %d of 400)"),First[0],First[1]));
+  Check(Quiet*100>=Nights*12&&Quiet*100<=Nights*40&&Storms*100>=Nights*10&&Storms*100<=Nights*35&&Far>Quiet&&Far>Storms&&High>Storms,
+   FString::Printf(TEXT("after them: %d quiet nights, %d with lightning far off, %d a storm on the horizon, %d afternoons clouding over, of %d"),Quiet,Far,Storms,High,Nights));
+  bool bAz=true;for(int32 Num=1;Num<=30;++Num){const FDay A=Day(777,Num);bAz&=A.LightningAz>=170.f&&A.LightningAz<=290.f;}
+  Check(bAz&&!LightningWay(Day(777,3)).IsEmpty()&&LastWeek(777,1,3).Contains(TEXT("lightning")),TEXT("a storm stands south round to west-northwest; last week counts the lightning"));
+ }
  Check(Dusty*100>=Days*8&&Dusty*100<=Days*34,FString::Printf(TEXT("blowing sand some afternoons, %d of %d days (spring here)"),Dusty,Days));
  Check(Showers*100>=Days*3&&Showers*100<=Days*16,FString::Printf(TEXT("a stray shower is rare, %d of %d days"),Showers,Days));
  Check(Hazy*100>=Days*8&&Hazy*100<=Days*40,FString::Printf(TEXT("haze some mornings, %d of %d"),Hazy,Days));

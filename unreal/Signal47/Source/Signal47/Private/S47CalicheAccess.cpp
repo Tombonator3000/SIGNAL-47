@@ -1,4 +1,5 @@
 #include "S47CalicheAccess.h"
+#include "S47CalicheNewHomes.h"
 #include <limits>
 #include "S47Main.h"
 #include "S47Web.h"
@@ -8,6 +9,7 @@
 #include "S47Three.h"
 #include "S47Audio.h"
 #include "S47Freeform.h"
+#include "S47DoorLoop.h"
 #include "S47IndoorDread.h"
 #include "S47Props.h"
 #include "S47UI.h"
@@ -26,10 +28,17 @@ namespace S47CalicheAccess
 namespace
 {
  TWeakObjectPtr<US47Main> Main;
- struct FRoom {FString Id,Use;FVector Root,Hinge;double X0,X1,Y0,Y1,Floor,Front,DoorY,Width,Height,StepGround=0;int32 Steps=1;bool bOpen=true;TWeakObjectPtr<UStaticMeshComponent> Leaf;};
+ struct FRoom {FString Id,Use;FVector Root,Hinge;double X0,X1,Y0,Y1,Floor,Front,DoorY,Width,Height,StepGround=0;int32 Steps=1;bool bOpen=true;TWeakObjectPtr<UStaticMeshComponent> Leaf;TWeakObjectPtr<UPointLightComponent> Lamp;};
  TArray<FRoom> Rooms;
  TArray<TWeakObjectPtr<UPrimitiveComponent>> Retired;
  TArray<TWeakObjectPtr<UPointLightComponent>> Lamps;
+ // NPC-DAY: the whole town's level (SetLampLevel: a blackout, a flicker) times each room's own (SetRoomLamp: whether anyone is home).
+ double LampK=1;TMap<FString,double> RoomK;
+ // CALICHE-HOMES: a home's lamp that is not a room's (the trailer, S47CalicheNewHomes), under the same switches.
+ struct FExtraLamp {FString Id;TWeakObjectPtr<UPointLightComponent> L;double Lumens=650;};
+ TArray<FExtraLamp> ExtraLamps;
+ bool HasExtraLamp(const FString& Id){return ExtraLamps.ContainsByPredicate([&](const FExtraLamp& E){return E.Id==Id;});}
+ void ApplyLamps();
  struct FExteriorGlow {TWeakObjectPtr<UMaterialInstanceDynamic> Mid;FLinearColor Base;};
  TArray<FExteriorGlow> ExteriorGlows;float LastExteriorMask=-1.f;
  void BindExterior(UStaticMeshComponent* C,const FString& Name)
@@ -80,9 +89,31 @@ bool MoveNearestDoor(const FVector& At,double Range)
  }
  return Best&&UseDoor(Best->Id);
 }
+namespace{void ApplyLamps()
+{
+ for(const FRoom& R:Rooms)if(auto* P=R.Lamp.Get())P->SetIntensity(float(650.*FMath::Clamp(LampK,0.,1.5)*FMath::Clamp(RoomK.FindRef(R.Id,1.),0.,1.)));
+ for(const FExtraLamp& E:ExtraLamps)if(auto* P=E.L.Get())P->SetIntensity(float(E.Lumens*FMath::Clamp(LampK,0.,1.5)*FMath::Clamp(RoomK.FindRef(E.Id,1.),0.,1.)));
+}}
 void SetLampLevel(double K)
 {
- for(const auto& L:Lamps)if(auto* P=L.Get())P->SetIntensity(float(650.*FMath::Clamp(K,0.,1.5)));
+ LampK=K;ApplyLamps();
+}
+void SetRoomLamp(const FString& Id,double K)
+{
+ const FRoom* R=Find(Id);if(!R&&!HasExtraLamp(Id))return;
+ const FString Key=R?R->Id:Id;
+ if(FMath::Clamp(K,0.,1.)==1.)RoomK.Remove(Key);else RoomK.Add(Key,FMath::Clamp(K,0.,1.));
+ ApplyLamps();
+}
+void AddLamp(const FString& Id,UPointLightComponent* Light,double Lumens)
+{
+ if(!Light||Id.IsEmpty())return;
+ ExtraLamps.RemoveAll([&](const FExtraLamp& E){return E.Id==Id;});ExtraLamps.Add({Id,Light,Lumens});ApplyLamps();
+}
+double LampLevel(const FString& Id)
+{
+ const FRoom* R=Find(Id);if(!R&&!HasExtraLamp(Id))return 0;
+ return FMath::Clamp(LampK,0.,1.5)*FMath::Clamp(RoomK.FindRef(R?R->Id:Id,1.),0.,1.);
 }
 bool RoomMiddle(const FString& Id,FVector& Out)
 {
@@ -160,15 +191,19 @@ bool UseDoor(const FString& Id)
 }
 void Init(US47Main* M)
 {
- Main=M;Rooms.Reset();Retired.Reset();Lamps.Reset();ExteriorGlows.Reset();LastExteriorMask=-1.f;if(!M||!M->Web||!M->Inter)return;
+ Main=M;Rooms.Reset();Retired.Reset();Lamps.Reset();ExtraLamps.Reset();LampK=1;RoomK.Reset();ExteriorGlows.Reset();LastExteriorMask=-1.f;if(!M||!M->Web||!M->Inter)return;
  AS47Web* W=M->Web;FString Text;TSharedPtr<FJsonObject> J;
  if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("CalicheAccess/assembly.json")))||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),J)||!J)return;
  if(J->GetStringField(TEXT("status"))!=TEXT("NATIVE_READY"))return;
  const int32 Parent=W->Handle(TEXT("world.town.group"));const auto* PN=W->Node(Parent);if(!PN||!PN->Comp.IsValid())return;const TWeakObjectPtr<USceneComponent> ParentComp=PN->Comp;
  const auto Parts=J->GetObjectField(TEXT("parts"));TMap<FString,UStaticMesh*> Meshes;
+ // CALICHE-HOMES: an optional part (the new homes', from other houses' models) that will not load leaves its own building out, not the town.
+ TSet<FString> Unbuilt;
  for(const auto& Pair:Parts->Values)
  {
   const auto R=Pair.Value->AsObject();auto* Mesh=LoadObject<UStaticMesh>(nullptr,*R->GetStringField(TEXT("asset")));
+  bool bOptional=false;R->TryGetBoolField(TEXT("optional"),bOptional);
+  if((!Mesh||Mesh->GetNumLODs()!=3)&&bOptional){Unbuilt.Add(R->GetStringField(TEXT("family")));continue;}
   if(!Mesh||Mesh->GetNumLODs()!=3)return;Meshes.Add(FString(Pair.Key.ToView()),Mesh);
  }
  for(const auto& V:J->GetArrayField(TEXT("buildings")))
@@ -176,6 +211,16 @@ void Init(US47Main* M)
   const auto B=V->AsObject();FRoom R;R.Id=B->GetStringField(TEXT("id"));B->TryGetStringField(TEXT("interact"),R.Use);if(R.Use==TEXT("laundro"))R.Use=TEXT("laundromat");R.Root=Vec(B->GetArrayField(TEXT("root")));R.Hinge=Vec(B->GetArrayField(TEXT("hinge")));
   const auto& F=B->GetArrayField(TEXT("footprint"));R.X0=F[0]->AsNumber();R.X1=F[1]->AsNumber();R.Y0=F[2]->AsNumber();R.Y1=F[3]->AsNumber();R.Floor=B->GetNumberField(TEXT("floor"));R.Front=B->GetNumberField(TEXT("front"));
   const auto& D=B->GetArrayField(TEXT("door"));R.DoorY=D[1]->AsNumber();R.Width=D[2]->AsNumber();R.Height=D[3]->AsNumber();
+  if(Unbuilt.Contains(R.Id)){UE_LOG(LogTemp,Warning,TEXT("S47: Caliche access: %s left out, a part of it did not load"),*R.Id);continue;}
+  // CALICHE-HOMES: a house set down on another's model sits on the land where it stands (its highest corner, so no floor is under
+  // the ground; the shell's foundation reaches a metre down), and every part of it with it.
+  double Lift=0;bool bSeat=false;B->TryGetBoolField(TEXT("ground_seat"),bSeat);
+  if(bSeat)
+  {
+   const FVector O=W->Obj(TEXT("world.town.group")).WorldPosition();double Seat=-1e9;
+   for(const double LX:{R.X0,(R.X0+R.X1)*.5,R.X1})for(const double LY:{R.Y0,(R.Y0+R.Y1)*.5,R.Y1})Seat=FMath::Max(Seat,O.Y+S47RoadTerrain::SurfaceY(R.Root.X+LX-O.X,R.Root.Z-LY-O.Z));
+   Lift=Seat-R.Root.Y;R.Root.Y=Seat;
+  }
   FString OldPrefix;B->TryGetStringField(TEXT("old_prefix"),OldPrefix);
   if(!OldPrefix.IsEmpty())for(int32 I=0;W->Node(I);++I)if(const auto* N=W->Node(I);N->Name.StartsWith(TEXT("town-production:")+OldPrefix))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){Retired.Add(C);Retire(C);}
   const TArray<TSharedPtr<FJsonValue>>* RetireProps=nullptr;
@@ -188,7 +233,14 @@ void Init(US47Main* M)
    const auto P=Pair.Value->AsObject();if(P->GetStringField(TEXT("family"))!=R.Id)continue;
    const FString Name(Pair.Key.ToView());const bool Door=P->GetStringField(TEXT("role"))==TEXT("door");
    auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(ParentComp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Meshes[Name]);
-   const bool Glass=Name.EndsWith(TEXT("Glass"));C->SetCollisionEnabled(Glass?ECollisionEnabled::NoCollision:ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,Glass?ECR_Ignore:ECR_Block);C->SetCastShadow(!Glass);if(Door)C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();C->SetWorldLocation(S47Three::ToUE(Vec(P->GetArrayField(TEXT("root")))));
+   // CALICHE-HOMES: another colour of the same house, by its slot's name (the shells' own MI_Homes_ instances).
+   const TSharedPtr<FJsonObject>* Over=nullptr;
+   if(P->TryGetObjectField(TEXT("material_overrides"),Over)&&Over&&Over->IsValid())for(const auto& O:(*Over)->Values)
+   {
+    const int32 Slot=C->GetMaterialIndex(FName(*FString(O.Key.ToView())));FString Path;
+    if(Slot!=INDEX_NONE&&O.Value->TryGetString(Path))if(auto* Mat=LoadObject<UMaterialInterface>(nullptr,*Path))C->SetMaterial(Slot,Mat);
+   }
+   const bool Glass=Name.EndsWith(TEXT("Glass"));C->SetCollisionEnabled(Glass?ECollisionEnabled::NoCollision:ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,Glass?ECR_Ignore:ECR_Block);C->SetCastShadow(!Glass);if(Door)C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();C->SetWorldLocation(S47Three::ToUE(Vec(P->GetArrayField(TEXT("root")))+FVector(0,Lift,0)));
    const int32 Node=W->AdoptNode(C,Parent,TEXT("caliche-access:")+Name);
    BindExterior(C,Name);
    if(Door)
@@ -203,6 +255,8 @@ void Init(US47Main* M)
     {
      // Something on the other side of this one just now: E is about that, not the door as such.
      if(Main.IsValid()&&Main->Freeform&&Main->Freeform->IndoorDread&&Main->Freeform->IndoorDread->DoorPressed(TEXT("access:")+Id))return;
+     // N1110 (N1110-7): a room's door while something is after the player, or the door loop's chase running: it leads back inside.
+     if(Main.IsValid()&&Main->Freeform&&Main->Freeform->DoorLoop&&Main->Freeform->DoorLoop->Use(TEXT("access:")+Id))return;
      UseDoor(Id);
     };
     M->Inter->Add(It);
@@ -242,7 +296,7 @@ void Init(US47Main* M)
     auto* Step=NewObject<UStaticMeshComponent>(W);Step->SetupAttachment(ParentComp.Get());Step->SetMobility(EComponentMobility::Movable);Step->SetStaticMesh(Cube);Step->SetMaterial(0,Mid);Step->SetCollisionEnabled(ECollisionEnabled::QueryOnly);Step->SetCollisionResponseToAllChannels(ECR_Ignore);Step->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);Step->RegisterComponent();Step->SetWorldLocation(S47Three::ToUE(FX+R.Front*At,(Top+Bottom)/2,DZ));Step->SetWorldScale3D(FVector(.32,R.Width+.7,Top-Bottom));W->AdoptNode(Step,Parent,TEXT("caliche-access:entry-step:")+R.Id);
    }
   }
-  auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(ParentComp.Get());L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(650);L->SetLightColor(FLinearColor(1,.84,.63));L->SetAttenuationRadius(800);L->SetCastShadows(true);L->RegisterComponent();L->SetWorldLocation(S47Three::ToUE(R.Root+FVector((R.X0+R.X1)/2,2.6,-(R.Y0+R.Y1)/2)));Lamps.Add(L);
+  auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(ParentComp.Get());L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(650);L->SetLightColor(FLinearColor(1,.84,.63));L->SetAttenuationRadius(800);L->SetCastShadows(true);L->RegisterComponent();L->SetWorldLocation(S47Three::ToUE(R.Root+FVector((R.X0+R.X1)/2,2.6,-(R.Y0+R.Y1)/2)));Lamps.Add(L);R.Lamp=L;
   Rooms.Add(R);Sync(Rooms.Last());
  }
  for(int32 I=0;W->Node(I);++I)if(const auto* N=W->Node(I);N->Name==TEXT("prop:radioStationDoor"))
@@ -252,12 +306,14 @@ void Init(US47Main* M)
  }
  for(const TCHAR* Door:{TEXT("gasDoor"),TEXT("radioLobbyDoor")})if(!AS47Props::IsDoorOpen(Door))AS47Props::UseDoor(Door);
  UE_LOG(LogTemp,Display,TEXT("S47: Caliche playtest access ready, %d physical rooms and movable entry doors; %d exact exterior daylight bindings"),Rooms.Num(),ExteriorGlows.Num());
+ S47CalicheNewHomes::Build(M);
  Update();
 }
 void Update()
 {
  for(const auto& C:Retired)Retire(C.Get());
  if(!Main.IsValid()||!Main->Web)return;
+ S47CalicheNewHomes::Update(Main.Get());
  const float Mask=Main->Web->ExteriorDaylightMask(Main->Web->FloodSet(TEXT("town")),1);
  if(Mask==LastExteriorMask)return;LastExteriorMask=Mask;
  for(const auto& G:ExteriorGlows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*Mask);

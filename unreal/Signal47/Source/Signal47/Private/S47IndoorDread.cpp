@@ -20,6 +20,7 @@
 #include "S47Taken.h"
 #include "S47Three.h"
 #include "S47UI.h"
+#include "S47Thoughts.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -131,7 +132,7 @@ void FS47IndoorDread::SurvivedFlood(const FVector& At,const FString& Area,int32 
  UE_LOG(LogTemp,Display,TEXT("S47: flood room remembered in %s at %s, %d times"),*Area,*At.ToCompactString(),FloodCount);
  if(bSameRoom&&FloodCount>=2)
  {
-  FString Note=FString::Printf(TEXT("%s, the same room as before. The light came back to it and I got out of it again. It says where and when, not why here."),*Title);
+  FString Note=FString::Printf(TEXT("%s, the same room as before. The light came back and I got out again. I don't know why it's always this room."),*Title);
   Note[0]=FChar::ToUpper(Note[0]);
   M->Freeform->RecordEvidence(FString::Printf(TEXT("flood-room-%d-%d"),M->Freeform->Day(),FloodCount),Note);
  }
@@ -322,6 +323,7 @@ void FS47IndoorDread::StartPeek(const FS47Cam& Cam,const FCandidate& C)
  Stage=EStage::Up;PeekArea=M->Web->Area();BasePos=C.Feet;Cover=C.Cover;bWindow=C.bIsWindow;bSeen=bDuckSound=false;
  Facing=FMath::Atan2(Cam.Pos.X-BasePos.X,Cam.Pos.Z-BasePos.Z);T=Noticed=LeftAt=0;Withdraw=-1;ExposureNow=0;++PeekCount;
  Draw();
+ S47Thoughts::Think(M,TEXT("peek")); // D46-5-20261110
  UE_LOG(LogTemp,Display,TEXT("S47: peek starts in %s, %s, %.1f m from the eyes, in view %d, at clock %.0f"),*PeekArea,bWindow?TEXT("window"):TEXT("corner"),FVector::Dist(Cam.Pos,BasePos),C.bInView,M->Freeform->Clock());
  // Which place on the list it was: the SARO building, the motel, a room in town, the old house.
  if(auto* Places=M->Freeform->EventPlaces.Get())
@@ -420,13 +422,23 @@ void FS47IndoorDread::StepPeekDraw(double Dt)
  const int32 Day=M->Freeform->Day();
  if(!bDevWanted)
  {
-  if(PeekRollDay==Day&&!bPeekTonight)return;
+  // M7: the curve's chance (presence that week; none in the first nights), where the night's own rules run.
+  const bool bCurve=M->Rhythm&&M->Freeform->RulesLive();
+  if(PeekRollDay==Day&&!bPeekTonight)
+  {
+   // The night's one danger slot, open, with no door here for it and nothing at the window yet tonight: it looks in at the window.
+   // The yard's presence goes first where it can (a few minutes' grace); then this is what reaches someone inside SARO.
+   if(!bCurve||M->Rhythm->BeganOn(TEXT("peek"))==FS47FreeformSession::NightOf(M->Freeform->Clock())||(DoorVisit&&DoorVisit->DoorHere())||!M->Rhythm->DangerSlotOpen(.15))return;
+   bPeekTonight=true;PeekWait=InsideFor+FMath::FRandRange(5.f,25.f);
+   UE_LOG(LogTemp,Display,TEXT("S47: peek: the night's danger slot comes to the window, day %d, in %.0f s"),Day,PeekWait-InsideFor);
+  }
   // A night's own draw, once they have been indoors a little while.
   if(PeekRollDay!=Day)
   {
    if(InsideFor<20)return;
-   PeekRollDay=Day;bPeekTonight=FMath::FRand()<PeekChance;PeekWait=InsideFor+FMath::FRandRange(5.f,50.f);
-   UE_LOG(LogTemp,Display,TEXT("S47: peek draw for day %d: %d, in %.0f s"),Day,bPeekTonight,PeekWait-InsideFor);
+   const float Chance=bCurve?M->Rhythm->PerNight(TEXT("peek"),float(PeekChance),Day):float(PeekChance);
+   PeekRollDay=Day;bPeekTonight=FMath::FRand()<Chance;PeekWait=InsideFor+FMath::FRandRange(5.f,50.f);
+   UE_LOG(LogTemp,Display,TEXT("S47: peek draw for day %d: %d (chance %.2f), in %.0f s"),Day,bPeekTonight,Chance,PeekWait-InsideFor);
    M->RequestAutosave();
    if(!bPeekTonight)return;
   }
@@ -448,6 +460,9 @@ void FS47IndoorDread::StepPeekDraw(double Dt)
  {
   const FCandidate Chosen=Best;Best=FCandidate();SearchRings=0;EmptyRun=0;
   StartPeek(In.Cam,Chosen);
+  // In the common log of starts, as everything else (FS47Rhythm::Began): its Ended was there, its start was not. M7: and it may be
+  // what takes the night's danger slot, once a night.
+  if(!bDevWanted&&Stage!=EStage::None&&M->Rhythm)M->Rhythm->Began(TEXT("peek"));
   // The night's one, whether a body could be had for it or not.
   bPeekTonight=false;bDevWanted=false;
   return;
@@ -475,8 +490,10 @@ void FS47IndoorDread::StepFloodRoom(double Dt)
  if(M->Rhythm&&!M->Rhythm->Allow(TEXT("lit_room")))return;
  // A night's own draw, and at most one. The rest is long whatever it says.
  FloodRollDay=Day;
- const bool bAgain=FMath::FRand()<FloodChance;
- UE_LOG(LogTemp,Display,TEXT("S47: flood room draw for day %d: %d"),Day,bAgain);
+ // M7: the curve's chance, as the door's (a danger: none while the week's danger is 0).
+ const float Chance=M->Rhythm&&M->Freeform->RulesLive()?M->Rhythm->PerNight(TEXT("lit_room"),float(FloodChance),Day):float(FloodChance);
+ const bool bAgain=FMath::FRand()<Chance;
+ UE_LOG(LogTemp,Display,TEXT("S47: flood room draw for day %d: %d (chance %.2f)"),Day,bAgain,Chance);
  M->RequestAutosave();
  if(bAgain&&M->Freeform->Taken->Begin(ES47Taker(FloodWho),FloodTitle))
  {

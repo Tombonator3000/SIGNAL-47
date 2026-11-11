@@ -1,18 +1,21 @@
 #!/bin/bash
 # Builds the game's sounds for Unreal from the web version's files and imports them:
-#   Content/Audio/Raw     the recordings core/Audio.ts decodes (the free sounds, Kinski's 24 telephone lines,
-#                         the character lines on the telephone) as WAVE files with index.json, and voices.json
+#   Content/Audio/Raw     the recordings core/Audio.ts decodes (the free sounds, the character lines on the
+#                         telephone) as WAVE files with index.json, and voices.json
 #                         (every voice bank's catalog), for the game's own Web Audio (Scripts/audio-raw.py)
 #                         plus bounded-stream PCM in Raw/media/{music,radio}, and the lazy voice banks
-#                         in Raw/voice (Kinski's and Serling's for ReadAloud, and the four RadioVoice
+#                         in Raw/voice (Serling's for the narrator, and the four RadioVoice
 #                         banks; outside index.sources, never all preloaded)
 #   Content/Licensed/Raw  the same for the bought sounds, if the private clone is there
 #   /Game/Audio/Sfx       the free sounds in web/src/assets/audio (CC0 and CC BY, see web/THIRD_PARTY_NOTICES.md)
 #   /Game/Audio/Music     the music in web/public/music (CC BY, credited in the game)
 #   /Game/Audio/Radio     the radio programmes in web/public/radio
-#   /Game/Audio/Voice/<Bank>  the voice banks (kinski, serling, serling-intro, artbell, artbell-town, radiocast,
+#   /Game/Audio/Voice/<Bank>  the voice banks (serling, serling-intro, artbell, artbell-town, radiocast,
 #                         ensemble) as v_<file>, looked up through Content/Audio/Raw/voices.json
-#                         (S47_AUDIO_VOICES=0 leaves them out: some 3200 files)
+#                         (S47_AUDIO_VOICES=0 leaves them out). KINSKI-READ-OUT, Tom 9 November
+#                         2026: the kinski bank (a clone of a real person's voice) is not imported any more.
+#                         VOICE-OUT-3, the same day: nor are the ensemble's bacall, price and lynch clips
+#                         (clones too; RETIRED_BANKS in audio-raw.py); the ensemble keeps stanton and stack
 #   /Game/Audio/Synth     tones the prologue still plays by file name (beep_1200 ...), made here as WAV
 #   /Game/Licensed/Sfx    the bought sounds from the private clone web/src/assets/licensed/sfx, if it is there
 # Content/Audio and Content/Licensed are ignored by Git; run this after a fresh clone. The raw step needs
@@ -20,7 +23,8 @@
 # S47_PROJECT=<dir of Signal47.uproject> imports into another checkout (its web/ is the source).
 # S47_AUDIO_RAW_ONLY=1 refreshes only the runtime recordings, without an Unreal asset import.
 # S47_AUDIO_EVENING_ONLY=1 imports only the supplied EveningShift bank and preserves all other audio.
-# S47_EVENING_WAV_DIR overrides Content/Audio/EveningShift (109 approved originals).
+# S47_EVENING_WAV_DIR overrides Content/Audio/EveningShift (the 53 approved originals of the other roles;
+# Dale's 56 come from Content/Audio/DaleVoice).
 set -euo pipefail
 UE_ROOT=${UE_ROOT:-$HOME/.local/opt/UnrealEngine-5.8.4}
 SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
@@ -77,9 +81,22 @@ if [ "${S47_AUDIO_EVENING_ONLY:-0}" != 1 ]; then
   conv Radio "$ROOT/web/public/radio"
   conv Licensed "$ROOT/web/src/assets/licensed/sfx"
   if [ "${S47_AUDIO_VOICES:-1}" != 0 ]; then
-    for bank in kinski:Kinski serling:Serling serling-intro:SerlingIntro artbell:ArtBell artbell-town:ArtBellTown radiocast:Radiocast ensemble:Ensemble; do
+    for bank in serling:Serling serling-intro:SerlingIntro artbell:ArtBell artbell-town:ArtBellTown radiocast:Radiocast ensemble:Ensemble; do
       conv "Voice/${bank#*:}" "$ROOT/web/src/assets/audio/${bank%%:*}" '' v_
     done
+    # VOICE-OUT-3: the retired voices' clips leave the stage before the import (the catalog says whose each is)
+    python3 - "$ROOT/web/src/assets/audio/ensemble/catalog.json" "$STAGE/wav/Voice/Ensemble" <<'PY'
+import json, os, sys
+RETIRED = ('kinski', 'bacall', 'price', 'lynch')  # as audio-raw.py RETIRED_BANKS
+catalog, stage = sys.argv[1], sys.argv[2]
+gone = 0
+for clip in json.load(open(catalog, encoding='utf-8')).get('clips', []) if os.path.isfile(catalog) else []:
+    path = os.path.join(stage, 'v_' + os.path.splitext(clip['file'])[0] + '.wav')
+    if (clip.get('voice') or '').lower() in RETIRED and os.path.isfile(path):
+        os.remove(path)
+        gone += 1
+print('Voice/Ensemble: %d retired clips left out (VOICE-OUT-3), %d staged' % (gone, len(os.listdir(stage)) if os.path.isdir(stage) else 0))
+PY
   fi
   python3 "$SCRIPTS/make-synth.py" "$STAGE/wav/Synth"
   echo "Synth: $(ls "$STAGE/wav/Synth" | wc -l) files"
@@ -89,7 +106,11 @@ if [ -d "$evening_dir" ] && [ "${S47_AUDIO_VOICES:-1}" != 0 ]; then
   for f in "$evening_dir"/*.wav; do
     cp -- "$f" "$STAGE/wav/Voice/Evening/v_$(basename "$f")"
   done
-  echo 'Voice/Evening: 109 original PCM files staged without conversion'
+  # DALE-STORY-SWAP: Dale's evening cues are his own takes (Content/Audio/DaleVoice), as the manifest says
+  while IFS= read -r f; do
+    cp -- "$D/Content/Audio/$f" "$STAGE/wav/Voice/Evening/v_$(basename "$f")"
+  done < <(python3 -c 'import json,sys; m=json.load(open(sys.argv[1])); [print(r["audio_file"]) for r in m["recordings"] if r["recording_required"] and (r["audio_file"] or "").startswith("DaleVoice/")]' "$ROOT/unreal/Narrative/EveningShift/generated/recording_manifest.json")
+  echo "Voice/Evening: $(ls "$STAGE/wav/Voice/Evening" | wc -l) original PCM files staged without conversion"
 fi
 PYTHONPATH="$SCRIPTS${PYTHONPATH:+:$PYTHONPATH}" python3 -c 'from unreal_guard import require_idle; require_idle()'
 S47_AUDIO_STAGE="$STAGE/wav" "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$D/Signal47.uproject" -run=pythonscript -script="$SCRIPTS/import-audio.py" -unattended -nullrhi -nosplash 2>&1 | grep -E "S47:|Error:|Traceback" | grep -v "LogPython: Display: Python" | grep -v "Toolset\|toolset\|ToolsetDefinition" | tail -40

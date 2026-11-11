@@ -1,0 +1,14 @@
+[
+ {
+  "name": "M_Lived_LotGravel",
+  "decal": true,
+  "texture": "town/textures/T_Lived_LotGravel_BC.png",
+  "roughness": 0.92
+ },
+ {
+  "name": "M_Lived_LotAsphalt",
+  "decal": true,
+  "texture": "town/textures/T_Lived_LotAsphalt_BC.png",
+  "roughness": 0.8
+ }
+]

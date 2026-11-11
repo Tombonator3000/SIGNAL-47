@@ -1,12 +1,28 @@
 #include "S47Ledger.h"
 #include "S47GameStyle.h"
+#include "S47Image.h"
 #include "S47Places.h"
 #include "S47Weather.h"
 #include "SS47Widgets.h"
+#include "Engine/Texture2D.h"
+#include "HAL/FileManager.h"
 #include "Math/RandomStream.h"
+#include "Misc/App.h"
+#include "Misc/Base64.h"
+#include "Misc/Paths.h"
+#include "Rendering/DrawElements.h"
+#include "Styling/SlateStyle.h"
+#include "Styling/SlateTypes.h"
+#include "TextureResource.h"
+#include "UObject/StrongObjectPtr.h"
+#include "Widgets/Images/SImage.h"
+#include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/SLeafWidget.h"
+#include "Widgets/SOverlay.h"
+#include "Widgets/Text/SRichTextBlock.h"
 #include "Widgets/Text/STextBlock.h"
 
 namespace S47LedgerLocal
@@ -109,10 +125,12 @@ namespace S47LedgerLocal
   return Oldest;
  }
  const X::FFrontDef* QuietOf(const FString& Key){return X::Quiet().FindByPredicate([&](const X::FFrontDef& D){return Key==D.Head;});}
- // The paper's look: yellowed newsprint, ink, thin and heavy rules.
- FLinearColor Paper(){return S47Game::C(0xe6dec8);}
- FLinearColor Ink(){return S47Game::C(0x221f1a);}
- FLinearColor Faded(){return S47Game::C(0x4d473d);}
+ // The paper's look: newsprint, ink, thin and heavy rules. D45-24-20261110: the paper a little greyer and the ink deeper, as
+ // newsprint and press ink are (MAP_L_ledger.md); the player's pencil a graphite grey.
+ FLinearColor Paper(){return S47Game::C(0xe9e3d2);}
+ FLinearColor Ink(){return S47Game::C(0x1d1b18);}
+ FLinearColor Faded(){return S47Game::C(0x5a5347);}
+ FLinearColor Graphite(float A){return S47Game::C(0x4a4a50,A);}
  // Slate units: the text area inside the panel (S47Kit::Shell at 1120 CSS pixels leaves about 1300).
  constexpr float TextW=1280.f,Cssp=1.25f;
  TSharedRef<SWidget> Words(const FString& St,const FSlateFontInfo& Font,float Wrap,const FLinearColor& Tone,ETextJustify::Type Justify=ETextJustify::Left)
@@ -121,17 +139,642 @@ namespace S47LedgerLocal
  }
  TSharedRef<SWidget> Rule(float Thick){return SNew(SBox).HeightOverride(Thick)[SNew(SBorder).BorderImage(S47Game::Box(Ink())).Padding(0)];}
  TSharedRef<SWidget> Upright(float Thick){return SNew(SBox).WidthOverride(Thick)[SNew(SBorder).BorderImage(S47Game::Box(Faded())).Padding(0)];}
- FSlateFontInfo Head(float Px){return S47Style::Display(Px*Cssp);}
- FSlateFontInfo Body(float Px){return S47Style::Body(Px*Cssp);}
- FSlateFontInfo Small(float Px){return S47Style::Mono(Px*Cssp);}
- // A column of short items under a heading.
- TSharedRef<SWidget> Column(const FString& Title,const TArray<FString>& Entries,float Wrap)
+
+ // ---------- D45-24-20261110: a 1986 small-town weekly ----------
+ // Tom: «skal se ut som en ekte avis». Six columns of 200 with gutters of 16 (6 x 200 + 5 x 16 = TextW) and a hairline in each
+ // gutter between stories; heads across the columns in a condensed face (Oswald Medium, the look of the condensed gothic heads of
+ // eighties weeklies), the body in a serif (Liberation Serif, SIL OFL 1.1, in Content/Fonts beside the others, read raw like them
+ // by S47Style::Font; the typewriter face where the files are missing), the nameplate between its ears, thick-thin rules,
+ // datelines, bylines, a folio and an index, a halftone on the front, newsprint with grain and the fold. Slate has no full
+ // justification (ETextJustify), so the columns are set ragged right, as many small weeklies set theirs.
+ constexpr float ColW=200.f,Gut=16.f;
+ constexpr float SpanW(int32 N){return ColW*N+Gut*(N-1);}
+ const TCHAR* const Nameplate=TEXT("The Caliche Ledger");
+ const TCHAR* const Motto=TEXT("Serving Caliche and the valley since 1925. Published Thursdays.");
+ const TCHAR* const Town=TEXT("CALICHE, NEW MEXICO");
+ const TCHAR* const Price=TEXT("TWENTY-FIVE CENTS");
+ const TCHAR* const Dateline=TEXT("CALICHE — ");
+ const TCHAR* const ByStaff=TEXT("BY THE LEDGER STAFF");
+ const TCHAR* const ByReport=TEXT("LEDGER STAFF REPORT");
+ const TCHAR* const EarToday=TEXT("TODAY");
+ const TCHAR* const EarInside=TEXT("PAGE 2");
+ const TCHAR* const EarInsideText=TEXT("The sheriff's log, letters and classifieds, the weather and the picture show.");
+ const TCHAR* const InsideHead=TEXT("INSIDE");
+ const TCHAR* const InsideItems[]={TEXT("Sheriff's log"),TEXT("Letters and classifieds"),TEXT("The week's weather"),TEXT("Almanac"),TEXT("At the Plaza"),TEXT("This week's coupon")};
+ const TCHAR* const SectionHeads[]={TEXT("AROUND THE COUNTY"),TEXT("SHERIFF'S LOG"),TEXT("LETTERS AND CLASSIFIEDS"),TEXT("THE WEEK'S WEATHER"),TEXT("ALMANAC"),TEXT("AT THE PLAZA")};
+ const TCHAR* const CutLine=TEXT("CLIP ON THE DOTTED LINE");
+ const TCHAR* const WagonTitle=TEXT("the district's wagon on the flat west of the old grade");
+ const TCHAR* const PhotoLine=TEXT(", Wednesday. Ledger photo.");
+ const TCHAR* const WildCaption=TEXT("The valley south of Caliche, Wednesday. Ledger photo.");
+ // The player's pencil in the margin: on a story that points somewhere, and once it is on the map.
+ const TCHAR* const NoteAsk=TEXT("Pencil it in on the map?");
+ const TCHAR* const NoteDone=TEXT("on the map");
+
+ bool HasFont(const TCHAR* File){return IFileManager::Get().FileExists(*FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()/TEXT("Fonts")/File));}
+ enum class EFace:uint8{Regular,Bold,Italic};
+ FSlateFontInfo Serif(float Px,EFace Face=EFace::Regular,int32 Spacing=0)
  {
-  TSharedRef<SVerticalBox> Box=SNew(SVerticalBox);
-  Box->AddSlot().AutoHeight().Padding(0,0,0,4)[Words(Title,Head(15.f),Wrap,Ink())];
-  Box->AddSlot().AutoHeight().Padding(0,0,0,6)[Rule(1.f)];
-  for(const FString& St:Entries)Box->AddSlot().AutoHeight().Padding(0,0,0,8)[Words(St,Body(11.5f),Wrap,Ink())];
-  return Box;
+  static const TCHAR* const Files[]={TEXT("LiberationSerif-Regular.ttf"),TEXT("LiberationSerif-Bold.ttf"),TEXT("LiberationSerif-Italic.ttf")};
+  static const bool bHave[]={HasFont(Files[0]),HasFont(Files[1]),HasFont(Files[2])};
+  const int32 Which=int32(Face);
+  FSlateFontInfo Font=bHave[Which]?S47Style::Font(Files[Which],Px*Cssp):S47Style::Body(Px*Cssp);
+  Font.LetterSpacing=Spacing;
+  return Font;
+ }
+ FSlateFontInfo Cond(float Px,int32 Spacing=0){FSlateFontInfo Font=S47Style::Font(TEXT("Oswald-Medium.ttf"),Px*Cssp);Font.LetterSpacing=Spacing;return Font;}
+ // Rich text for the run-ins (the dateline, the day in the sheriff's log): the paper's words escaped, <b> bold, <i> italic.
+ FString Esc(const FString& St)
+ {
+  FString Out=St;
+  Out.ReplaceInline(TEXT("&"),TEXT("&amp;"),ESearchCase::CaseSensitive);
+  Out.ReplaceInline(TEXT("<"),TEXT("&lt;"),ESearchCase::CaseSensitive);
+  Out.ReplaceInline(TEXT(">"),TEXT("&gt;"),ESearchCase::CaseSensitive);
+  return Out;
+ }
+ FString Bold(const FString& St){return TEXT("<b>")+Esc(St)+TEXT("</>");}
+ struct FRunStyle{FTextBlockStyle Base;TSharedPtr<FSlateStyleSet> Set;};
+ const FRunStyle& Runs(float Px,const FLinearColor& Tone)
+ {
+  static TMap<FString,TSharedPtr<FRunStyle>> Cache;
+  const FString Key=FString::Printf(TEXT("%.2f/%s"),Px,*Tone.ToString());
+  TSharedPtr<FRunStyle>& Got=Cache.FindOrAdd(Key);
+  if(!Got.IsValid())
+  {
+   Got=MakeShared<FRunStyle>();
+   Got->Base=FTextBlockStyle().SetFont(Serif(Px)).SetColorAndOpacity(FSlateColor(Tone));
+   Got->Set=MakeShared<FSlateStyleSet>(FName(*(TEXT("S47Ledger/")+Key)));
+   FTextBlockStyle Heavy=Got->Base;Heavy.SetFont(Serif(Px,EFace::Bold));Got->Set->Set(TEXT("b"),Heavy);
+   FTextBlockStyle Slant=Got->Base;Slant.SetFont(Serif(Px,EFace::Italic));Got->Set->Set(TEXT("i"),Slant);
+  }
+  return *Got;
+ }
+ TSharedRef<SWidget> Para(const FString& Markup,float Px,float Wrap,const FLinearColor& Tone,ETextJustify::Type Justify=ETextJustify::Left)
+ {
+  const FRunStyle& Style=Runs(Px,Tone);
+  return SNew(SRichTextBlock).Text(FText::FromString(Markup)).TextStyle(&Style.Base).DecoratorStyleSet(Style.Set.Get()).WrapTextAt(Wrap).Justification(Justify).LineHeightPercentage(1.1f);
+ }
+ TSharedRef<SWidget> ThickThin()
+ {
+  return SNew(SVerticalBox)+SVerticalBox::Slot().AutoHeight()[Rule(4.f)]+SVerticalBox::Slot().AutoHeight().Padding(0,2,0,0)[Rule(1.f)];
+ }
+ // A section's head between a heavy rule and a thin one.
+ TSharedRef<SWidget> Section(const FString& Title,float Wrap)
+ {
+  return SNew(SVerticalBox)
+   +SVerticalBox::Slot().AutoHeight()[Rule(2.f)]
+   +SVerticalBox::Slot().AutoHeight().Padding(0,3,0,2)[Words(Title,Cond(15.f,40),Wrap,Ink())]
+   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,6)[Rule(1.f)];
+ }
+ // One piece on the grid, Span columns wide; between two stories a hairline in the gutter.
+ void Cell(const TSharedRef<SHorizontalBox>& Row,int32 Span,const TSharedRef<SWidget>& Content,bool bRule)
+ {
+  if(Row->NumSlots()>0)
+  {
+   if(bRule)Row->AddSlot().AutoWidth().Padding((Gut-1.f)*.5f,0.f)[Upright(1.f)];
+   else Row->AddSlot().AutoWidth()[SNew(SBox).WidthOverride(Gut)];
+  }
+  Row->AddSlot().AutoWidth()[SNew(SBox).WidthOverride(SpanW(Span))[Content]];
+ }
+ // A transient picture from pixels (the S47Game::Soft pattern), kept for the session by its owner.
+ UTexture2D* MakeTex(int32 W,int32 H,const TArray<FColor>& Pixels,bool bSRGB)
+ {
+  if(!FApp::CanEverRender()||Pixels.Num()!=W*H)return nullptr;
+  UTexture2D* T=UTexture2D::CreateTransient(W,H,PF_B8G8R8A8);if(!T)return nullptr;
+  T->SRGB=bSRGB;T->Filter=TF_Bilinear;
+  void* Data=T->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+  FMemory::Memcpy(Data,Pixels.GetData(),Pixels.Num()*sizeof(FColor));
+  T->GetPlatformData()->Mips[0].BulkData.Unlock();
+  T->UpdateResource();
+  return T;
+ }
+ // Newsprint's grain: a tile of fine dark specks with a fleck of ink here and there, repeated over the sheet.
+ const FSlateBrush* Grain()
+ {
+  static TStrongObjectPtr<UTexture2D> Tex;
+  static TSharedPtr<FSlateBrush> Brush;
+  if(Brush.IsValid())return Brush.Get();
+  constexpr int32 N=128;
+  TArray<FColor> Pixels;Pixels.SetNum(N*N);
+  FRandomStream Stream(1986);
+  for(FColor& Px:Pixels){const float V=Stream.FRand();const bool bFleck=Stream.FRand()<.01f;Px=FColor(0,0,0,uint8(FMath::Clamp(V*V*110.f+(bFleck?170.f:0.f),0.f,255.f)));}
+  UTexture2D* T=MakeTex(N,N,Pixels,false);if(!T)return nullptr;
+  Tex.Reset(T);
+  Brush=MakeShared<FSlateBrush>();
+  Brush->SetResourceObject(T);Brush->ImageSize=FVector2D(N,N);Brush->DrawAs=ESlateBrushDrawType::Image;Brush->Tiling=ESlateBrushTileType::Both;
+  return Brush.Get();
+ }
+ // Over the sheet, letting every click through: the grain, and the fold across the middle where it lay folded in the box.
+ class SNewsprint:public SLeafWidget
+ {
+ public:
+  SLATE_BEGIN_ARGS(SNewsprint){}
+  SLATE_END_ARGS()
+  void Construct(const FArguments&){}
+  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(1.,1.);}
+  virtual int32 OnPaint(const FPaintArgs&,const FGeometry& Geo,const FSlateRect&,FSlateWindowElementList& Out,int32 Layer,const FWidgetStyle&,bool)const override
+  {
+   const FVector2f Size=FVector2f(Geo.GetLocalSize());
+   if(const FSlateBrush* Specks=Grain())FSlateDrawElement::MakeBox(Out,Layer,Geo.ToPaintGeometry(),Specks,ESlateDrawEffect::None,FLinearColor(1.f,1.f,1.f,.55f));
+   const FSlateBrush* Flat=S47Game::Box(FLinearColor::White);
+   const float Fold=FMath::RoundToFloat(Size.Y*.5f);
+   for(int32 K=1;K<=8;++K)
+   {
+    const float Shade=.012f*float(9-K)/8.f;
+    FSlateDrawElement::MakeBox(Out,Layer+1,Geo.ToPaintGeometry(FVector2f(Size.X,3.f),FSlateLayoutTransform(FVector2f(0.f,Fold-3.f*K))),Flat,ESlateDrawEffect::None,FLinearColor(0.f,0.f,0.f,Shade));
+    FSlateDrawElement::MakeBox(Out,Layer+1,Geo.ToPaintGeometry(FVector2f(Size.X,3.f),FSlateLayoutTransform(FVector2f(0.f,Fold+1.f+3.f*(K-1)))),Flat,ESlateDrawEffect::None,FLinearColor(0.f,0.f,0.f,Shade*.7f));
+   }
+   FSlateDrawElement::MakeBox(Out,Layer+2,Geo.ToPaintGeometry(FVector2f(Size.X,1.f),FSlateLayoutTransform(FVector2f(0.f,Fold-1.f))),Flat,ESlateDrawEffect::None,FLinearColor(1.f,1.f,1.f,.35f));
+   FSlateDrawElement::MakeBox(Out,Layer+2,Geo.ToPaintGeometry(FVector2f(Size.X,1.f),FSlateLayoutTransform(FVector2f(0.f,Fold))),Flat,ESlateDrawEffect::None,FLinearColor(0.f,0.f,0.f,.13f));
+   return Layer+3;
+  }
+ };
+
+ // The front page's photo, a halftone drawn here (no picture file, and nothing from the far side: no lights, no figures): the
+ // flat, far mesas with flat tops, scrub, and the thing the story is about, set in a 45-degree screen of ink dots on the paper,
+ // with the muddy contrast of a weekly's press. Kind: FS47Places::FDef::Kind, "wagon", or empty for a picture of the valley.
+ constexpr int32 PhotoW=416,PhotoH=220;
+ float Hash1(int32 I,uint32 Seed){uint32 H=uint32(I)*374761393u+Seed*668265263u;H=(H^(H>>13))*1274126177u;return float(H^(H>>16))/4294967295.f;}
+ float Noise1(float At,uint32 Seed){const int32 I=FMath::FloorToInt(At);const float T=At-float(I);return FMath::Lerp(Hash1(I,Seed),Hash1(I+1,Seed),T*T*(3.f-2.f*T));}
+ bool InBox(float Qx,float Qy,float X0,float Y0,float X1,float Y1){return Qx>=X0&&Qx<=X1&&Qy>=Y0&&Qy<=Y1;}
+ bool InOval(float Qx,float Qy,float Cx,float Cy,float Rx,float Ry){return FMath::Square((Qx-Cx)/Rx)+FMath::Square((Qy-Cy)/Ry)<=1.f;}
+ bool OnSeg(float Qx,float Qy,float Ax,float Ay,float Bx,float By,float Thick)
+ {
+  const FVector2f P(Qx,Qy),A(Ax,Ay),AB=FVector2f(Bx,By)-A;
+  const float T=FMath::Clamp(FVector2f::DotProduct(P-A,AB)/FMath::Max(AB.SizeSquared(),1e-4f),0.f,1.f);
+  return FVector2f::Distance(P,A+AB*T)<=Thick*.5f;
+ }
+ // The subject's tone where it covers (Qx,Qy), or -1 where it does not. Bx,By: where it stands on the flat.
+ float Subject(const FString& Kind,float Qx,float Qy,float Bx,float By)
+ {
+  if(Kind==TEXT("windmill"))
+  {
+   const float Cy=By-128.f;
+   if(FMath::Square(Qx-Bx)+FMath::Square(Qy-Cy)<=26.f*26.f){const float D=FMath::Sqrt(FMath::Square(Qx-Bx)+FMath::Square(Qy-Cy));if(D>=22.5f)return .12f;const float A=FMath::Atan2(Qy-Cy,Qx-Bx);if(D<5.f||FMath::Abs(FMath::Sin(A*9.f))<.16f)return .16f;}
+   if(OnSeg(Qx,Qy,Bx,Cy,Bx+40.f,Cy+2.f,2.f)||InBox(Qx,Qy,Bx+34.f,Cy-9.f,Bx+50.f,Cy+11.f))return .14f;
+   if(OnSeg(Qx,Qy,Bx-15.f,By,Bx-3.f,Cy+4.f,2.6f)||OnSeg(Qx,Qy,Bx+15.f,By,Bx+3.f,Cy+4.f,2.6f))return .12f;
+   for(int32 K=1;K<=3;++K){const float Y=By-K*30.f,Half=15.f-12.f*(By-Y)/(By-Cy);if(OnSeg(Qx,Qy,Bx-Half,Y,Bx+Half,Y,1.6f))return .16f;}
+   if(OnSeg(Qx,Qy,Bx-14.f,By-2.f,Bx+11.f,By-30.f,1.2f)||OnSeg(Qx,Qy,Bx+14.f,By-2.f,Bx-11.f,By-30.f,1.2f))return .2f;
+   return -1.f;
+  }
+  if(Kind==TEXT("tank"))
+  {
+   if(InOval(Qx,Qy,Bx,By-24.f,52.f,5.f))return .6f;
+   if(InBox(Qx,Qy,Bx-52.f,By-24.f,Bx+52.f,By))return FMath::Abs(FMath::Sin(Qx*.5f))<.25f?.22f:.32f;
+   return -1.f;
+  }
+  if(Kind==TEXT("mine"))
+  {
+   if(InBox(Qx,Qy,Bx-13.f,By-32.f,Bx-9.f,By)||InBox(Qx,Qy,Bx+9.f,By-32.f,Bx+13.f,By)||InBox(Qx,Qy,Bx-15.f,By-36.f,Bx+15.f,By-31.f))return .58f;
+   if(InBox(Qx,Qy,Bx-9.f,By-31.f,Bx+9.f,By))return .05f;
+   if(InBox(Qx,Qy,Bx+26.f,By-8.f,Bx+50.f,By))return FMath::Abs(FMath::Sin(Qy*1.4f))<.3f?.3f:.55f;
+   if(Qy<=By&&InOval(Qx,Qy,Bx,By+16.f,120.f,66.f))return .38f+.06f*Noise1(Qx*.2f+Qy*.3f,9u);
+   return -1.f;
+  }
+  if(Kind==TEXT("balloon"))
+  {
+   if(InBox(Qx,Qy,Bx-44.f,By-15.f,Bx-28.f,By))return InBox(Qx,Qy,Bx-42.f,By-13.f,Bx-30.f,By-2.f)?.78f:.2f;
+   if(InOval(Qx,Qy,Bx,By-6.f,28.f,8.f))return .62f+.1f*FMath::Sin(Qx*.6f);
+   if(InOval(Qx,Qy,Bx+38.f,By-4.f,22.f,6.f))return .42f;
+   if(OnSeg(Qx,Qy,Bx+16.f,By-6.f,Bx+28.f,By-4.f,1.f))return .2f;
+   return -1.f;
+  }
+  if(Kind==TEXT("cow"))
+  {
+   if(InOval(Qx,Qy,Bx,By-11.f,34.f,11.f)||InOval(Qx,Qy,Bx-38.f,By-6.f,10.f,6.f))return .14f;
+   if(OnSeg(Qx,Qy,Bx+8.f,By-18.f,Bx+24.f,By-34.f,3.f)||OnSeg(Qx,Qy,Bx+20.f,By-16.f,Bx+38.f,By-28.f,3.f))return .16f;
+   return -1.f;
+  }
+  if(Kind==TEXT("stake"))
+  {
+   if(InBox(Qx,Qy,Bx+1.f,By-36.f,Bx+11.f,By-29.f))return .38f;
+   if(OnSeg(Qx,Qy,Bx,By,Bx,By-36.f,2.6f)||OnSeg(Qx,Qy,Bx+14.f,By,Bx+14.f,By-20.f,2.2f))return .18f;
+   return -1.f;
+  }
+  if(Kind==TEXT("shack"))
+  {
+   if(InBox(Qx,Qy,Bx-8.f,By-28.f,Bx+8.f,By)||InBox(Qx,Qy,Bx+18.f,By-30.f,Bx+30.f,By-20.f))return .06f;
+   if(Qy>=By-60.f&&Qy<By-40.f&&FMath::Abs(Qx-Bx)<=50.f*(Qy-(By-62.f))/22.f)return .18f;
+   if(InBox(Qx,Qy,Bx-44.f,By-40.f,Bx+44.f,By))return FMath::Abs(FMath::Sin(Qx*.7f))<.2f?.24f:.34f;
+   return -1.f;
+  }
+  if(Kind==TEXT("trough"))
+  {
+   if(InBox(Qx,Qy,Bx+56.f,By-12.f,Bx+70.f,By))return .84f;
+   if(InBox(Qx,Qy,Bx-42.f,By-14.f,Bx+42.f,By-10.f))return .1f;
+   if(InBox(Qx,Qy,Bx-46.f,By-14.f,Bx+46.f,By))return .26f;
+   return -1.f;
+  }
+  if(Kind==TEXT("cairn"))
+  {
+   if(OnSeg(Qx,Qy,Bx,By-36.f,Bx,By-66.f,2.6f))return .16f;
+   const float Ys[]={6.f,17.f,27.f,35.f},Rxs[]={22.f,17.f,12.f,8.f},Rys[]={7.f,6.f,5.f,4.f};
+   for(int32 K=0;K<4;++K)if(InOval(Qx,Qy,Bx+(K==1?-2.f:K==2?1.f:0.f),By-Ys[K],Rxs[K],Rys[K]))return .3f+.08f*Noise1(Qx*.5f+K*7.f,3u);
+   return -1.f;
+  }
+  if(Kind==TEXT("saucer rock"))
+  {
+   if(InOval(Qx,Qy,Bx,By-74.f,40.f,9.f))return .34f;
+   if(Qy<=By&&Qy>=By-72.f&&FMath::Abs(Qx-Bx)<=9.f+6.f*(Qy-(By-72.f))/72.f)return .42f+.08f*Noise1(Qy*.3f,5u);
+   return -1.f;
+  }
+  if(Kind==TEXT("motel"))
+  {
+   if(OnSeg(Qx,Qy,Bx+110.f,By,Bx+110.f,By-70.f,3.f)||InBox(Qx,Qy,Bx+92.f,By-96.f,Bx+128.f,By-70.f))return .24f;
+   if(OnSeg(Qx,Qy,Bx-122.f,By-31.f,Bx+92.f,By-31.f,3.f))return .2f;
+   if(InBox(Qx,Qy,Bx-120.f,By-30.f,Bx+90.f,By)){const float Bay=FMath::Fmod(Qx-(Bx-120.f),30.f);return Bay>8.f&&Bay<18.f&&Qy>By-22.f?.18f:.66f;}
+   return -1.f;
+  }
+  if(Kind==TEXT("wagon"))
+  {
+   if(FMath::Square(Qx-(Bx-30.f))+FMath::Square(Qy-(By-5.f))<=49.f||FMath::Square(Qx-(Bx+30.f))+FMath::Square(Qy-(By-5.f))<=49.f)return .05f;
+   if(InBox(Qx,Qy,Bx-36.f,By-28.f,Bx-8.f,By-20.f)||InBox(Qx,Qy,Bx-4.f,By-28.f,Bx+26.f,By-20.f))return .16f;
+   if(OnSeg(Qx,Qy,Bx-48.f,By-12.f,Bx+48.f,By-12.f,1.4f))return .32f;
+   if(InBox(Qx,Qy,Bx-48.f,By-18.f,Bx+48.f,By-5.f)||InBox(Qx,Qy,Bx-40.f,By-31.f,Bx+34.f,By-18.f))return .84f;
+   if(InOval(Qx,Qy,Bx,By,56.f,4.f))return .2f;
+   return -1.f;
+  }
+  return -1.f;
+ }
+ float Scene(const FString& Kind,uint32 Seed,float Qx,float Qy)
+ {
+  const float W=PhotoW,H=PhotoH,Hz=H*.56f;
+  // The far mesas: flat on top, steep at the sides.
+  const float Lump=Noise1(Qx/W*5.f,Seed)*.6f+Noise1(Qx/W*13.f,Seed+7u)*.4f;
+  const float Top=Hz-H*(.03f+.13f*FMath::Clamp((Lump-.42f)*4.f,0.f,1.f));
+  float Lum;
+  if(Qy<Top)Lum=.80f+.12f*(Qy/Top);
+  else if(Qy<Hz)Lum=.50f+.08f*Noise1(Qx*.2f,Seed+3u);
+  else{const float D=(Qy-Hz)/(H-Hz);Lum=.70f-.30f*D+.06f*(Noise1(Qx*.15f+Qy*.3f,Seed+5u)-.5f);}
+  // Scrub on the flat, larger nearer.
+  if(Qy>=Hz)for(int32 K=0;K<46;++K)
+  {
+   const float Ty=Hz+FMath::Pow(Hash1(K,Seed+13u),1.6f)*(H-Hz),R=1.5f+6.f*(Ty-Hz)/(H-Hz);
+   if(InOval(Qx,Qy,Hash1(K,Seed+11u)*W,Ty,R*1.7f,R)){Lum=FMath::Min(Lum,.28f);break;}
+  }
+  // A picture of the valley has a fence going away across it.
+  if(Kind.IsEmpty())
+  {
+   for(int32 K=0;K<9;++K)
+   {
+    const float T=float(K)/8.f,Px=W*(.12f+.7f*T),Py=H*.97f-(H*.97f-Hz-5.f)*T,Tall=34.f*(1.f-.85f*T);
+    if(OnSeg(Qx,Qy,Px,Py,Px,Py-Tall,3.f*(1.f-.7f*T)))return .14f;
+   }
+   const float T=FMath::Clamp((Qx-W*.12f)/(W*.7f),0.f,1.f),Py=H*.97f-(H*.97f-Hz-5.f)*T,Tall=34.f*(1.f-.85f*T);
+   if(Qx>=W*.12f&&Qx<=W*.82f&&(FMath::Abs(Qy-(Py-Tall*.45f))<.7f||FMath::Abs(Qy-(Py-Tall*.85f))<.7f))return .3f;
+   return FMath::Clamp(Lum,0.f,1.f);
+  }
+  const float Sub=Subject(Kind,Qx,Qy,W*.6f,Hz+(H-Hz)*.62f);
+  return FMath::Clamp(Sub>=0.f?Sub:Lum,0.f,1.f);
+ }
+ // The screen of ink dots at 45 degrees over a luminance (0 black, 1 white) at the photo's x and y; shared by the drawn picture and
+ // the world's photo (D46-1-20261110).
+ UTexture2D* Screened(TFunctionRef<float(float,float)> Luminance)
+ {
+  constexpr float Cell=4.2f,Rt=.70710678f;
+  const FColor Dot=Ink().ToFColor(true);
+  TArray<FColor> Pixels;Pixels.SetNumZeroed(PhotoW*PhotoH);
+  for(int32 Iy=0;Iy<PhotoH;++Iy)for(int32 Ix=0;Ix<PhotoW;++Ix)
+  {
+   const float Fx=Ix+.5f,Fy=Iy+.5f,U=(Fx+Fy)*Rt,V=(Fy-Fx)*Rt;
+   const float Cu=(FMath::FloorToFloat(U/Cell)+.5f)*Cell,Cv=(FMath::FloorToFloat(V/Cell)+.5f)*Cell;
+   const float Sx=FMath::Clamp((Cu-Cv)*Rt,0.f,PhotoW-1.f),Sy=FMath::Clamp((Cu+Cv)*Rt,0.f,PhotoH-1.f);
+   const float Lum=Luminance(Sx,Sy);
+   const float Rad=Cell*.72f*FMath::Sqrt(1.f-Lum),D=FMath::Sqrt(FMath::Square(U-Cu)+FMath::Square(V-Cv));
+   Pixels[Iy*PhotoW+Ix]=FColor(Dot.R,Dot.G,Dot.B,uint8(FMath::RoundToInt(FMath::Clamp(Rad-D+.5f,0.f,1.f)*235.f)));
+  }
+  return MakeTex(PhotoW,PhotoH,Pixels,true);
+ }
+ UTexture2D* Halftone(const FString& Kind,uint32 Seed)
+ {
+  static TMap<FString,TStrongObjectPtr<UTexture2D>> Made;
+  const uint32 Var=Seed%3u;
+  const FString Key=FString::Printf(TEXT("%s/%u"),*Kind,Var);
+  if(const TStrongObjectPtr<UTexture2D>* Got=Made.Find(Key))return Got->Get();
+  if(!FApp::CanEverRender())return nullptr;
+  UTexture2D* T=Screened([&Kind,Var](float Sx,float Sy){return FMath::Clamp((Scene(Kind,Var,Sx,Sy)-.5f)*1.25f+.55f,0.f,1.f);});
+  if(T)Made.Add(Key,TStrongObjectPtr<UTexture2D>(T));
+  return T;
+ }
+ // D46-1-20261110: the photo the game made of the place (Issue.Photo, a small grey JPEG) in the same screen of dots, so it looks
+ // printed on the same press; null when it cannot be read (the caller then draws the picture).
+ UTexture2D* PhotoHalftone(const FString& Url)
+ {
+  static TMap<uint32,TStrongObjectPtr<UTexture2D>> Made;
+  const uint32 Key=GetTypeHash(Url);
+  if(const TStrongObjectPtr<UTexture2D>* Got=Made.Find(Key))return Got->Get();
+  if(!FApp::CanEverRender()||!S47Ledger::PhotoValid(Url))return nullptr;
+  TArray<FColor> Grey;int32 W=0,H=0;
+  if(!S47Image::DecodePixels(Url,Grey,W,H)||W<8||H<8||Grey.Num()!=W*H)return nullptr;
+  const auto At=[&Grey,W,H](float Fx,float Fy)
+  {
+   const float X=FMath::Clamp(Fx*W/float(PhotoW)-.5f,0.f,W-1.001f),Y=FMath::Clamp(Fy*H/float(PhotoH)-.5f,0.f,H-1.001f);
+   const int32 X0=int32(X),Y0=int32(Y);const float Tx=X-X0,Ty=Y-Y0;
+   const auto G=[&Grey,W](int32 Ix,int32 Iy){return Grey[Iy*W+Ix].G/255.f;};
+   return FMath::Lerp(FMath::Lerp(G(X0,Y0),G(X0+1,Y0),Tx),FMath::Lerp(G(X0,Y0+1),G(X0+1,Y0+1),Tx),Ty);
+  };
+  UTexture2D* T=Screened([&At](float Sx,float Sy){return FMath::Clamp((At(Sx,Sy)-.5f)*1.1f+.52f,0.f,1.f);});
+  if(T)Made.Add(Key,TStrongObjectPtr<UTexture2D>(T));
+  return T;
+ }
+ FString Caption(const FString& Lead)
+ {
+  if(Lead==TEXT("wagon"))return Titled(WagonTitle)+PhotoLine;
+  if(const FS47Places::FDef* D=FS47Places::Def(Lead))return Titled(D->Title)+PhotoLine;
+  return WildCaption;
+ }
+ TSharedRef<SWidget> Photo(const FString& Lead,uint32 Seed,const FString& World)
+ {
+  FString Kind;
+  if(Lead==TEXT("wagon"))Kind=Lead;else if(const FS47Places::FDef* D=FS47Places::Def(Lead))Kind=D->Kind;
+  UTexture2D* T=World.IsEmpty()?nullptr:PhotoHalftone(World); // D46-1-20261110: the world's own photo; absent or unreadable, the drawn one
+  if(!T)T=Halftone(Kind,Seed);
+  const TSharedRef<SWidget> Pic=T?TSharedRef<SWidget>(SNew(SImage).Image(S47Game::Picture(T))):TSharedRef<SWidget>(SNew(SBorder).BorderImage(S47Game::Box(S47Game::C(0xa8a294))));
+  return SNew(SVerticalBox)
+   +SVerticalBox::Slot().AutoHeight()
+   [
+    SNew(SBox).WidthOverride(SpanW(2)).HeightOverride(float(PhotoH))[SNew(SBorder).BorderImage(S47Game::Box(FLinearColor::Transparent,Ink(),.8f)).Padding(1.f)[Pic]]
+   ]
+   +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[Words(Caption(Lead),Serif(9.5f,EFace::Italic),SpanW(2),Ink())];
+ }
+
+ // The pencil ring round a story that points somewhere: faint while the pointer is on it (or the pad's focus), firm with a tick
+ // once its place is on the map. Drawn by hand, so a little wavy and not quite closed; past the story's edges, into the gutters.
+ class SRing:public SLeafWidget
+ {
+ public:
+  SLATE_BEGIN_ARGS(SRing):_Seed(0){}
+   SLATE_ATTRIBUTE(bool,Hot)
+   SLATE_ATTRIBUTE(bool,On)
+   SLATE_ARGUMENT(uint32,Seed)
+  SLATE_END_ARGS()
+  void Construct(const FArguments& InArgs){Hot=InArgs._Hot;On=InArgs._On;Seed=InArgs._Seed;}
+  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(1.,1.);}
+  virtual int32 OnPaint(const FPaintArgs&,const FGeometry& Geo,const FSlateRect&,FSlateWindowElementList& Out,int32 Layer,const FWidgetStyle&,bool)const override
+  {
+   const bool bOn=On.Get(),bHot=Hot.Get();
+   if(!bOn&&!bHot)return Layer;
+   const FVector2f Size=FVector2f(Geo.GetLocalSize());
+   const float X0=-7.f,Y0=-6.f,X1=Size.X+7.f,Y1=Size.Y+6.f,Rad=FMath::Min(18.f,FMath::Min(X1-X0,Y1-Y0)*.3f);
+   FRandomStream Stream(static_cast<int32>(Seed));
+   TArray<FVector2f> Path;
+   const auto Edge=[&Path,&Stream](FVector2f From,FVector2f To)
+   {
+    const int32 Steps=FMath::Max(1,int32(FVector2f::Distance(From,To)/44.f));
+    for(int32 K=0;K<Steps;++K)Path.Add(From+(To-From)*(float(K)/Steps)+FVector2f(Stream.FRandRange(-1.3f,1.3f),Stream.FRandRange(-1.3f,1.3f)));
+   };
+   const auto Arc=[&Path,Rad](FVector2f Centre,float From){for(int32 K=0;K<6;++K){const float Ang=From+UE_HALF_PI*K/5.f;Path.Add(Centre+FVector2f(FMath::Cos(Ang),FMath::Sin(Ang))*Rad);}};
+   Edge(FVector2f(X0+Rad,Y0),FVector2f(X1-Rad,Y0));Arc(FVector2f(X1-Rad,Y0+Rad),-UE_HALF_PI);
+   Edge(FVector2f(X1,Y0+Rad),FVector2f(X1,Y1-Rad));Arc(FVector2f(X1-Rad,Y1-Rad),0.f);
+   Edge(FVector2f(X1-Rad,Y1),FVector2f(X0+Rad,Y1));Arc(FVector2f(X0+Rad,Y1-Rad),UE_HALF_PI);
+   Edge(FVector2f(X0,Y1-Rad),FVector2f(X0,Y0+Rad));Arc(FVector2f(X0+Rad,Y0+Rad),UE_PI);
+   // The pencil runs on past where it started.
+   for(int32 K=0;K<2&&K<Path.Num();++K)Path.Add(Path[K]+FVector2f(4.f+3.f*K,-2.f-K));
+   FSlateDrawElement::MakeLines(Out,Layer,Geo.ToPaintGeometry(),Path,ESlateDrawEffect::None,Graphite(bOn?.85f:.45f),true,bOn?2.f:1.6f);
+   if(bOn)FSlateDrawElement::MakeLines(Out,Layer,Geo.ToPaintGeometry(),TArray<FVector2f>{FVector2f(X1-30.f,Y0+12.f),FVector2f(X1-23.f,Y0+20.f),FVector2f(X1-9.f,Y0+2.f)},ESlateDrawEffect::None,Graphite(.85f),true,2.2f);
+   return Layer+1;
+  }
+ private:
+  TAttribute<bool> Hot,On;
+  uint32 Seed=0;
+ };
+ const FButtonStyle* Bare()
+ {
+  static const FButtonStyle Style=[]
+  {
+   FButtonStyle Out;FSlateBrush None;None.DrawAs=ESlateBrushDrawType::NoDrawType;
+   Out.SetNormal(None).SetHovered(None).SetPressed(None).SetDisabled(None);
+   Out.SetNormalPadding(FMargin(0)).SetPressedPadding(FMargin(0));
+   return Out;
+  }();
+  return &Style;
+ }
+ // D45-24 step 1: an article with a lead the map can show is a button: hover rings it in pencil and asks in the margin, a click
+ // (or A on the pad) asks the reader to pencil it in (Hooks.Mark). Whether it is on the map is the map's own (Hooks.Marked).
+ TSharedRef<SWidget> Pencilled(const TSharedRef<SWidget>& Content,const FString& Lead,const FString& Head,const FLeadHooks& Hooks)
+ {
+  if(!Hooks.Mark||LeadTitle(Lead).IsEmpty())return Content;
+  const TSharedRef<TWeakPtr<SWidget>> Holder=MakeShared<TWeakPtr<SWidget>>();
+  const TFunction<bool(const FString&)> IsMarked=Hooks.Marked;
+  const TFunction<void(const FString&,const FString&)> DoMark=Hooks.Mark;
+  const TAttribute<bool> Hot=TAttribute<bool>::CreateLambda([Holder]{const TSharedPtr<SWidget> Btn=Holder->Pin();return Btn.IsValid()&&(Btn->IsHovered()||Btn->HasAnyUserFocus().IsSet());});
+  const TAttribute<bool> On=TAttribute<bool>::CreateLambda([IsMarked,Lead]{return IsMarked&&IsMarked(Lead);});
+  const TSharedRef<SWidget> Note=SNew(STextBlock)
+   .Text_Lambda([On]{return FText::FromString(On.Get()?FString(NoteDone):FString(NoteAsk));})
+   .Font(S47Style::Hand(22.f*Cssp)).ColorAndOpacity(Graphite(.92f))
+   .Visibility_Lambda([On,Hot]{return On.Get()||Hot.Get()?EVisibility::HitTestInvisible:EVisibility::Hidden;});
+  TSharedPtr<SButton> Button;
+  SAssignNew(Button,SButton).ButtonStyle(Bare()).ContentPadding(FMargin(0)).Cursor(EMouseCursor::Hand).IsFocusable(true)
+   .OnClicked_Lambda([DoMark,Lead,Head]{if(DoMark)DoMark(Lead,Head);return FReply::Handled();})
+   [
+    SNew(SOverlay)
+    +SOverlay::Slot()[Content]
+    +SOverlay::Slot()[SNew(SRing).Hot(Hot).On(On).Seed(GetTypeHash(Lead)).Visibility(EVisibility::HitTestInvisible)]
+    +SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(0.f,0.f,6.f,-20.f)[S47Game::Turned(Note,-3.f)]
+   ];
+  *Holder=Button;
+  return Button.ToSharedRef();
+ }
+ // An ear beside the nameplate: a word in caps and a line under it, in a thin box.
+ TSharedRef<SWidget> Ear(const FString& Title,const FString& Line)
+ {
+  const float Wrap=SpanW(1)-16.f;
+  return SNew(SBox).VAlign(VAlign_Center)
+  [
+   SNew(SBorder).BorderImage(S47Game::Box(FLinearColor::Transparent,Ink(),1.f)).Padding(FMargin(7,5))
+   [
+    SNew(SVerticalBox)
+    +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[Words(Title,Cond(12.f,80),Wrap,Ink(),ETextJustify::Center)]
+    +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0,2,0,0)[Words(Line,Serif(9.5f,EFace::Italic),Wrap,Ink(),ETextJustify::Center)]
+   ]
+  ];
+ }
+ // A letter or a classified: its head in bold caps, the words, and who signed it (after " / ") set right in italics.
+ TSharedRef<SWidget> NoteBlock(const FNote& Nt,float Wrap)
+ {
+  FString Said=Nt.Body,Signed;
+  const int32 Cut=Nt.Body.Find(TEXT(" / "),ESearchCase::CaseSensitive,ESearchDir::FromEnd);
+  if(Cut!=INDEX_NONE){Said=Nt.Body.Left(Cut);Signed=Nt.Body.Mid(Cut+3);}
+  const TSharedRef<SVerticalBox> Stack=SNew(SVerticalBox);
+  Stack->AddSlot().AutoHeight().Padding(0,0,0,2)[Words(Nt.Head,Serif(10.5f,EFace::Bold,40),Wrap,Ink())];
+  Stack->AddSlot().AutoHeight()[Para(Esc(Said),12.f,Wrap,Ink())];
+  if(!Signed.IsEmpty())Stack->AddSlot().AutoHeight().HAlign(HAlign_Right).Padding(0,2,0,0)[Words(TEXT("— ")+Signed,Serif(10.5f,EFace::Italic),Wrap,Faded(),ETextJustify::Right)];
+  return Stack;
+ }
+ // "Tuesday night. Cattle..." with its day run in bold.
+ FString RunIn(const FString& Entry)
+ {
+  const int32 Stop=Entry.Find(TEXT(". "),ESearchCase::CaseSensitive);
+  return Stop==INDEX_NONE||Stop>24?Esc(Entry):Bold(Entry.Left(Stop+1))+TEXT(" ")+Esc(Entry.Mid(Stop+2));
+ }
+ TSharedRef<SWidget> AdBlock(const FAd& Ad,float Wide)
+ {
+  const bool bCoupon=!Ad.Coupon.IsEmpty();
+  const float Wrap=Wide-(bCoupon?36.f:24.f);
+  const TSharedRef<SVerticalBox> In=SNew(SVerticalBox);
+  In->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0,0,0,4)[Words(Ad.Name,Cond(17.f,20),Wrap,Ink(),ETextJustify::Center)];
+  In->AddSlot().AutoHeight().HAlign(HAlign_Center)[Para(Esc(Ad.Body),12.f,Wrap,Ink(),ETextJustify::Center)];
+  if(!bCoupon)return SNew(SBorder).BorderImage(S47Game::Box(Paper(),Ink(),1.f)).Padding(10)[In];
+  In->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0,8,0,0)[Words(CutLine,Serif(8.5f,EFace::Bold,90),Wrap,Faded(),ETextJustify::Center)];
+  return SNew(SOverlay)
+   +SOverlay::Slot()[SNew(SBorder).BorderImage(S47Game::Box(Paper())).Padding(16)[In]]
+   +SOverlay::Slot()[SNew(SS47GameDash).Color(Ink()).Inset(2.f).Visibility(EVisibility::HitTestInvisible)];
+ }
+
+ // The front: the nameplate between its ears, the folio line, the lead story with its photo over four columns, the county's
+ // briefs in a column of their own, the second story set wide over two, and the index of what is inside.
+ void FrontSheet(const TSharedRef<SVerticalBox>& Page,const FIssue& Issue,const FLeadHooks& Hooks)
+ {
+  FString Today=Issue.Week.IsEmpty()?FString():Issue.Week[0];Today.RemoveFromStart(TEXT("TODAY. "));
+  const TSharedRef<SVerticalBox> Plate=SNew(SVerticalBox);
+  Plate->AddSlot().AutoHeight().HAlign(HAlign_Center)[Words(Nameplate,Serif(66.f,EFace::Bold,-10),SpanW(4),Ink(),ETextJustify::Center)];
+  Plate->AddSlot().AutoHeight().HAlign(HAlign_Center)[Words(Motto,Serif(11.f,EFace::Italic),SpanW(4),Faded(),ETextJustify::Center)];
+  const TSharedRef<SHorizontalBox> Top=SNew(SHorizontalBox);
+  Cell(Top,1,Ear(EarToday,Today),false);Cell(Top,4,Plate,false);Cell(Top,1,Ear(EarInside,EarInsideText),false);
+  Page->AddSlot().AutoHeight()[Top];
+  Page->AddSlot().AutoHeight().Padding(0,8,0,0)[ThickThin()];
+  const FSlateFontInfo FolioFont=Serif(9.5f,EFace::Bold,70);
+  Page->AddSlot().AutoHeight().Padding(0,4)
+  [
+   SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().FillWidth(1.f)[Words(FString::Printf(TEXT("VOL. %d, NO. %d"),Volume,Issue.Date.GetDayOfYear()/7+1),FolioFont,TextW/4,Ink())]
+   +SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Center)[Words(Town,FolioFont,TextW/4,Ink(),ETextJustify::Center)]
+   +SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Center)[Words(DateLine(Issue.Date),FolioFont,TextW/4,Ink(),ETextJustify::Center)]
+   +SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Right)[Words(Price,FolioFont,TextW/4,Ink(),ETextJustify::Right)]
+  ];
+  Page->AddSlot().AutoHeight().Padding(0,0,0,10)[Rule(1.f)];
+  const TSharedRef<SHorizontalBox> Stories=SNew(SHorizontalBox);
+  // The lead story: its head over three columns, the photo under it over two, the words in the third.
+  {
+   const FStory Lead=Issue.Front.IsValidIndex(0)?Issue.Front[0]:FStory();
+   const TSharedRef<SHorizontalBox> Under=SNew(SHorizontalBox);
+   Cell(Under,2,Photo(Lead.Lead,uint32(FMath::Max(1,Issue.No)),Issue.Photo),false);
+   const TSharedRef<SVerticalBox> Words1=SNew(SVerticalBox);
+   Words1->AddSlot().AutoHeight().Padding(0,0,0,4)[Words(ByStaff,Serif(8.5f,EFace::Bold,80),ColW,Faded())];
+   Words1->AddSlot().AutoHeight()[Para(Bold(Dateline)+Esc(Lead.Body),13.f,ColW,Ink())];
+   Cell(Under,1,Words1,false);
+   const TSharedRef<SVerticalBox> Block=SNew(SVerticalBox);
+   Block->AddSlot().AutoHeight().Padding(0,0,0,8)[Words(Lead.Head,Cond(36.f),SpanW(3),Ink())];
+   Block->AddSlot().AutoHeight()[Under];
+   Cell(Stories,3,Pencilled(Block,Lead.Lead,Lead.Head,Hooks),true);
+  }
+  // Around the county: the briefs down one column.
+  {
+   const TSharedRef<SVerticalBox> Briefs=SNew(SVerticalBox);
+   Briefs->AddSlot().AutoHeight()[Section(SectionHeads[0],ColW)];
+   for(const FString& St:Issue.Locals)Briefs->AddSlot().AutoHeight().Padding(0,0,0,9)[Para(Esc(St),12.f,ColW,Ink())];
+   Cell(Stories,1,Briefs,true);
+  }
+  // The second story set wide, and under it the index.
+  {
+   const TSharedRef<SVerticalBox> Side=SNew(SVerticalBox);
+   if(Issue.Front.IsValidIndex(1))
+   {
+    const FStory& St=Issue.Front[1];
+    const TSharedRef<SVerticalBox> Block=SNew(SVerticalBox);
+    Block->AddSlot().AutoHeight().Padding(0,0,0,4)[Words(St.Head,Cond(24.f),SpanW(2),Ink())];
+    Block->AddSlot().AutoHeight().Padding(0,0,0,4)[Words(ByReport,Serif(8.5f,EFace::Bold,80),SpanW(2),Faded())];
+    Block->AddSlot().AutoHeight()[Para(Bold(Dateline)+Esc(St.Body),12.5f,SpanW(2),Ink())];
+    Side->AddSlot().AutoHeight().Padding(0,0,0,14)[Pencilled(Block,St.Lead,St.Head,Hooks)];
+   }
+   const bool bCoupon=Issue.Ads.ContainsByPredicate([](const FAd& Ad){return !Ad.Coupon.IsEmpty();});
+   const TSharedRef<SVerticalBox> Index=SNew(SVerticalBox);
+   Index->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0,0,0,4)[Words(InsideHead,Cond(14.f,120),SpanW(2)-20.f,Ink(),ETextJustify::Center)];
+   const int32 Items=int32(UE_ARRAY_COUNT(InsideItems));
+   for(int32 K=0;K<Items;++K)
+   {
+    if(K==Items-1&&!bCoupon)break;
+    Index->AddSlot().AutoHeight().Padding(0,1)
+    [
+     SNew(SHorizontalBox)
+     +SHorizontalBox::Slot().FillWidth(1.f)[Words(InsideItems[K],Serif(11.f),SpanW(2)-60.f,Ink())]
+     +SHorizontalBox::Slot().AutoWidth()[Words(TEXT("2"),Serif(11.f,EFace::Bold),30.f,Ink(),ETextJustify::Right)]
+    ];
+   }
+   Side->AddSlot().AutoHeight()[SNew(SBorder).BorderImage(S47Game::Box(FLinearColor::Transparent,Ink(),1.f)).Padding(FMargin(10,6))[Index]];
+   Cell(Stories,2,Side,true);
+  }
+  Page->AddSlot().AutoHeight()[Stories];
+  Page->AddSlot().AutoHeight().Padding(0,12,0,0)[ThickThin()];
+ }
+ // Inside: the folio, the sheriff's log, the letters and classifieds in two columns, the week's weather, the almanac and the
+ // picture show; the ads along the foot, the coupon's in a dashed box.
+ void InsideSheet(const TSharedRef<SVerticalBox>& Page,const FIssue& Issue,const FLeadHooks& Hooks)
+ {
+  const FSlateFontInfo FolioFont=Serif(9.5f,EFace::Bold,70);
+  Page->AddSlot().AutoHeight().Padding(0,0,0,3)
+  [
+   SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().FillWidth(1.f)[Words(TEXT("2"),Serif(11.f,EFace::Bold),TextW/3,Ink())]
+   +SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Center)[Words(Masthead,FolioFont,TextW/3,Ink(),ETextJustify::Center)]
+   +SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Right)[Words(DateLine(Issue.Date),FolioFont,TextW/3,Ink(),ETextJustify::Right)]
+  ];
+  Page->AddSlot().AutoHeight().Padding(0,0,0,10)[Rule(1.f)];
+  const TSharedRef<SHorizontalBox> Row=SNew(SHorizontalBox);
+  {
+   const TSharedRef<SVerticalBox> Log=SNew(SVerticalBox);
+   Log->AddSlot().AutoHeight()[Section(SectionHeads[1],ColW)];
+   for(const FString& St:Issue.Sheriff)Log->AddSlot().AutoHeight().Padding(0,0,0,9)[Para(RunIn(St),12.f,ColW,Ink())];
+   Cell(Row,1,Log,true);
+  }
+  {
+   const TSharedRef<SHorizontalBox> Two=SNew(SHorizontalBox);
+   const int32 Left=(Issue.Letters.Num()+1)/2;
+   for(int32 Half=0;Half<2;++Half)
+   {
+    const TSharedRef<SVerticalBox> Stack=SNew(SVerticalBox);
+    for(int32 K=Half==0?0:Left;K<(Half==0?Left:Issue.Letters.Num());++K)
+    {
+     const FNote& Nt=Issue.Letters[K];
+     Stack->AddSlot().AutoHeight().Padding(0,0,0,12)[Pencilled(NoteBlock(Nt,ColW),Nt.Lead,Nt.Head,Hooks)];
+    }
+    Cell(Two,1,Stack,false);
+   }
+   const TSharedRef<SVerticalBox> Notes=SNew(SVerticalBox);
+   Notes->AddSlot().AutoHeight()[Section(SectionHeads[2],SpanW(2))];
+   Notes->AddSlot().AutoHeight()[Two];
+   Cell(Row,2,Notes,true);
+  }
+  {
+   const float Wide=SpanW(2);
+   const TSharedRef<SVerticalBox> Sky=SNew(SVerticalBox);
+   Sky->AddSlot().AutoHeight()[Section(SectionHeads[3],Wide)];
+   for(const FString& St:Issue.Week)
+   {
+    FString Day=St,Said;
+    if(St.StartsWith(TEXT("TODAY. "))){Day=TEXT("TODAY");Said=St.Mid(7);}
+    else if(!St.Split(TEXT("  "),&Day,&Said)){Day=FString();Said=St;}
+    Sky->AddSlot().AutoHeight().Padding(0,2)
+    [
+     SNew(SHorizontalBox)
+     +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(64.f)[Words(Day,Serif(9.5f,EFace::Bold,60),62.f,Ink())]]
+     +SHorizontalBox::Slot().FillWidth(1.f)[Para(Esc(Said),12.f,Wide-66.f,Ink())]
+    ];
+    Sky->AddSlot().AutoHeight()[SNew(SBox).HeightOverride(1.f)[SNew(SBorder).BorderImage(S47Game::Box(Faded())).Padding(0)]];
+   }
+   Sky->AddSlot().AutoHeight().Padding(0,6,0,12)[Para(TEXT("<i>")+Esc(Issue.LastWeek)+TEXT("</>"),11.f,Wide,Faded())];
+   Sky->AddSlot().AutoHeight()[Section(SectionHeads[4],Wide)];
+   Sky->AddSlot().AutoHeight()[Para(Esc(Issue.Almanac),12.f,Wide,Ink())];
+   Cell(Row,2,Sky,true);
+  }
+  {
+   const TSharedRef<SVerticalBox> Show=SNew(SVerticalBox);
+   Show->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0,0,0,6)[Words(SectionHeads[5],Cond(18.f,60),ColW-24.f,Ink(),ETextJustify::Center)];
+   Show->AddSlot().AutoHeight().HAlign(HAlign_Center)[Para(Esc(Issue.Showing),12.f,ColW-24.f,Ink(),ETextJustify::Center)];
+   Cell(Row,1,SNew(SBox).VAlign(VAlign_Top)[SNew(SBorder).BorderImage(S47Game::Box(Paper(),Ink(),2.f)).Padding(10)[Show]],true);
+  }
+  Page->AddSlot().AutoHeight()[Row];
+  Page->AddSlot().AutoHeight().Padding(0,12,0,10)[ThickThin()];
+  if(!Issue.Ads.IsEmpty())
+  {
+   const TSharedRef<SHorizontalBox> Foot=SNew(SHorizontalBox);
+   const int32 Num=FMath::Min(Issue.Ads.Num(),6),Each=6/Num;
+   for(int32 K=0;K<Num;++K)
+   {
+    const int32 Span=K==Num-1?6-Each*(Num-1):Each;
+    Cell(Foot,Span,SNew(SBox).VAlign(VAlign_Top)[AdBlock(Issue.Ads[K],SpanW(Span))],false);
+   }
+   Page->AddSlot().AutoHeight()[Foot];
+  }
  }
 }
 
@@ -302,77 +945,40 @@ void S47Ledger::Fill(FIssue& Issue,int32 Seed,bool bHelped)
  Issue.Almanac=S47Weather::Almanac(Issue.Date);
 }
 
-TSharedRef<SWidget> S47Ledger::Page(const FIssue& Issue)
+FString S47Ledger::LeadTitle(const FString& Lead)
 {
+ // D45-24-20261110: what the map can show (FS47Places::Hear and FS47Predecessor::HearOf take nothing else).
+ if(Lead.IsEmpty())return FString();
+ if(Lead==TEXT("wagon"))return S47LedgerLocal::WagonTitle;
+ const FS47Places::FDef* D=FS47Places::Def(Lead);
+ return D?FString(D->Title):FString();
+}
+TArray<S47Ledger::FLeadRef> S47Ledger::LeadsOf(const FIssue& Issue)
+{
+ TArray<FLeadRef> Out;
+ const auto Add=[&Out](const FString& Lead,const FString& Head,int32 Sheet)
+ {
+  if(LeadTitle(Lead).IsEmpty()||Out.ContainsByPredicate([&](const FLeadRef& Q){return Q.Lead==Lead&&Q.Sheet==Sheet;}))return;
+  FLeadRef Ref;Ref.Lead=Lead;Ref.Head=Head;Ref.Sheet=Sheet;Out.Add(Ref);
+ };
+ for(const FStory& St:Issue.Front)Add(St.Lead,St.Head,0);
+ for(const FNote& Nt:Issue.Letters)Add(Nt.Lead,Nt.Head,1);
+ return Out;
+}
+
+TSharedRef<SWidget> S47Ledger::Page(const FIssue& Issue,int32 Sheet,const FLeadHooks& Hooks)
+{
+ // D45-24-20261110: two sheets with the look of a real weekly (S47LedgerLocal::FrontSheet, InsideSheet), on newsprint with its
+ // grain and the fold drawn over everything and letting every click through to the stories under it.
  namespace L=S47LedgerLocal;
- const float FrontW=L::TextW*.64f-24.f,SideW=L::TextW*.36f-24.f,ColW=(L::TextW-2*28.f)/3.f,AdW=(L::TextW-2*16.f)/3.f-20.f;
- TSharedRef<SVerticalBox> Sheet=SNew(SVerticalBox);
- // The masthead.
- Sheet->AddSlot().AutoHeight().HAlign(HAlign_Center)[L::Words(L::Masthead,L::Head(42.f),L::TextW,L::Ink(),ETextJustify::Center)];
- Sheet->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0,0,0,6)[L::Words(TEXT("Serving Caliche and the valley since 1925. Published Thursdays."),L::Body(10.5f),L::TextW,L::Faded(),ETextJustify::Center)];
- Sheet->AddSlot().AutoHeight()[L::Rule(3.f)];
- Sheet->AddSlot().AutoHeight().Padding(0,4)
+ const TSharedRef<SVerticalBox> Content=SNew(SVerticalBox);
+ if(Sheet<=0)L::FrontSheet(Content,Issue,Hooks);else L::InsideSheet(Content,Issue,Hooks);
+ return SNew(SBorder).BorderImage(S47Game::Box(L::Paper(),S47Game::C(0x8a826f),1.f)).Padding(0)
  [
-  SNew(SHorizontalBox)
-  +SHorizontalBox::Slot().FillWidth(1.f)[L::Words(FString::Printf(TEXT("VOL. %d, NO. %d"),L::Volume,Issue.Date.GetDayOfYear()/7+1),L::Small(12.f),L::TextW/3,L::Ink())]
-  +SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Center)[L::Words(DateLine(Issue.Date),L::Small(12.f),L::TextW/3,L::Ink(),ETextJustify::Center)]
-  +SHorizontalBox::Slot().FillWidth(1.f).HAlign(HAlign_Right)[L::Words(TEXT("TWENTY-FIVE CENTS"),L::Small(12.f),L::TextW/3,L::Ink(),ETextJustify::Right)]
+  SNew(SOverlay)
+  +SOverlay::Slot().Padding(FMargin(18,16))[SNew(SBox).WidthOverride(L::TextW)[Content]]
+  +SOverlay::Slot()[SNew(L::SNewsprint).Visibility(EVisibility::HitTestInvisible)]
  ];
- Sheet->AddSlot().AutoHeight().Padding(0,0,0,10)[L::Rule(1.f)];
- // The front page and, beside it, the weather, the almanac and the picture show.
- TSharedRef<SVerticalBox> FrontCol=SNew(SVerticalBox);
- for(int32 I=0;I<Issue.Front.Num();++I)
- {
-  const FStory& St=Issue.Front[I];
-  if(I>0)FrontCol->AddSlot().AutoHeight().Padding(0,4,0,8)[L::Rule(1.f)];
-  FrontCol->AddSlot().AutoHeight().Padding(0,0,0,6)[L::Words(St.Head,L::Head(I==0?27.f:20.f),FrontW,L::Ink())];
-  FrontCol->AddSlot().AutoHeight().Padding(0,0,0,6)[L::Words(St.Body,L::Body(I==0?13.f:12.f),FrontW,L::Ink())];
- }
- TSharedRef<SVerticalBox> Side=SNew(SVerticalBox);
- Side->AddSlot().AutoHeight().Padding(0,0,0,4)[L::Words(TEXT("THE WEEK'S WEATHER"),L::Head(16.f),SideW,L::Ink())];
- Side->AddSlot().AutoHeight().Padding(0,0,0,6)[L::Rule(1.f)];
- for(const FString& St:Issue.Week)Side->AddSlot().AutoHeight().Padding(0,0,0,4)[L::Words(St,L::Small(11.5f),SideW,L::Ink())];
- Side->AddSlot().AutoHeight().Padding(0,4,0,10)[L::Words(Issue.LastWeek,L::Body(10.5f),SideW,L::Faded())];
- Side->AddSlot().AutoHeight().Padding(0,0,0,4)[L::Words(TEXT("ALMANAC"),L::Head(15.f),SideW,L::Ink())];
- Side->AddSlot().AutoHeight().Padding(0,0,0,10)[L::Words(Issue.Almanac,L::Body(10.5f),SideW,L::Ink())];
- Side->AddSlot().AutoHeight().Padding(0,0,0,4)[L::Words(TEXT("AT THE PLAZA"),L::Head(15.f),SideW,L::Ink())];
- Side->AddSlot().AutoHeight()[L::Words(Issue.Showing,L::Body(10.5f),SideW,L::Ink())];
- Sheet->AddSlot().AutoHeight()
- [
-  SNew(SHorizontalBox)
-  +SHorizontalBox::Slot().FillWidth(.64f).Padding(0,0,22,0)[FrontCol]
-  +SHorizontalBox::Slot().AutoWidth()[L::Upright(1.f)]
-  +SHorizontalBox::Slot().FillWidth(.36f).Padding(22,0,0,0)[Side]
- ];
- Sheet->AddSlot().AutoHeight().Padding(0,10)[L::Rule(2.f)];
- // Three columns: the county, the sheriff's log, the letters and classifieds.
- TArray<FString> Notes;for(const FNote& Nt:Issue.Letters)Notes.Add(Nt.Head+TEXT(". ")+Nt.Body);
- Sheet->AddSlot().AutoHeight()
- [
-  SNew(SHorizontalBox)
-  +SHorizontalBox::Slot().FillWidth(1.f).Padding(0,0,14,0)[L::Column(TEXT("AROUND THE COUNTY"),Issue.Locals,ColW)]
-  +SHorizontalBox::Slot().AutoWidth()[L::Upright(1.f)]
-  +SHorizontalBox::Slot().FillWidth(1.f).Padding(14,0)[L::Column(TEXT("SHERIFF'S LOG"),Issue.Sheriff,ColW)]
-  +SHorizontalBox::Slot().AutoWidth()[L::Upright(1.f)]
-  +SHorizontalBox::Slot().FillWidth(1.f).Padding(14,0,0,0)[L::Column(TEXT("LETTERS AND CLASSIFIEDS"),Notes,ColW)]
- ];
- Sheet->AddSlot().AutoHeight().Padding(0,10)[L::Rule(2.f)];
- // The ads, each in its own box; a coupon's box is drawn heavier.
- TSharedRef<SHorizontalBox> Ads=SNew(SHorizontalBox);
- for(int32 I=0;I<Issue.Ads.Num();++I)
- {
-  const FAd& A=Issue.Ads[I];const bool bCoupon=!A.Coupon.IsEmpty();
-  TSharedRef<SVerticalBox> In=SNew(SVerticalBox);
-  In->AddSlot().AutoHeight().Padding(0,0,0,4)[L::Words(A.Name,L::Head(15.f),AdW,L::Ink())];
-  In->AddSlot().AutoHeight()[L::Words(A.Body,L::Body(11.f),AdW,L::Ink())];
-  if(bCoupon)In->AddSlot().AutoHeight().Padding(0,6,0,0)[L::Words(TEXT("- - - COUPON - - - CUT ON THE LINE - - -"),L::Small(10.f),AdW,L::Faded())];
-  Ads->AddSlot().FillWidth(1.f).Padding(I==0?0.f:8.f,0,I+1<Issue.Ads.Num()?8.f:0.f,0)
-  [
-   SNew(SBorder).BorderImage(S47Game::Box(L::Paper(),L::Ink(),bCoupon?2.f:1.f)).Padding(10)[In]
-  ];
- }
- Sheet->AddSlot().AutoHeight()[Ads];
- return SNew(SBorder).BorderImage(S47Game::Box(L::Paper(),S47Game::C(0x8a826f),1.f)).Padding(FMargin(18,16))[Sheet];
 }
 
 FString S47Ledger::PlainText(const FIssue& Issue)
@@ -436,7 +1042,58 @@ TArray<FString> S47Ledger::AllText()
  for(const X::FLogDef& D:X::Logs())Out.Add(D.Line);
  for(const FCoupon& Cp:Coupons())Out.Add(Cp.Line);
  Out.Add(S47LedgerLocal::Masthead);Out.Add(S47Weather::Almanac());for(int32 Dd=0;Dd<30;++Dd)Out.Add(S47Weather::Almanac(FDateTime(1986,4,28)+FTimespan::FromDays(Dd)));
+ {
+  // D45-24-20261110: what the new page prints by itself, the captions and the pencil's words in the margin.
+  namespace L=S47LedgerLocal;
+  for(const TCHAR* St:{L::Nameplate,L::Motto,L::Town,L::Price,L::Dateline,L::ByStaff,L::ByReport,L::EarToday,L::EarInside,L::EarInsideText,L::InsideHead,L::CutLine,L::WagonTitle,L::WildCaption,L::NoteAsk,L::NoteDone})Out.Add(St);
+  for(const TCHAR* St:L::InsideItems)Out.Add(St);
+  for(const TCHAR* St:L::SectionHeads)Out.Add(St);
+  Out.Add(L::Caption(TEXT("wagon")));Out.Add(L::Caption(FString()));
+  for(const TCHAR* Id:{TEXT("windmill"),TEXT("tank"),TEXT("mine"),TEXT("cow"),TEXT("shack"),TEXT("cairn")})Out.Add(L::Caption(Id));
+ }
  return Out;
+}
+
+// D46-1-20261110: the front page's photo, made from the world (US47Mail takes the picture). Any frame to a small grey newsprint JPEG:
+// cropped to the photo's shape, scaled to PhotoStoreW x PhotoStoreH, the levels stretched and the tones flattened as a weekly's press
+// would, then ~60 quality. Empty when it cannot be made.
+FString S47Ledger::PhotoFromPixels(const TArray<FColor>& Px,int32 W,int32 H)
+{
+ if(W<PhotoStoreW/2||H<PhotoStoreH/2||Px.Num()!=W*H)return FString();
+ const double Want=double(PhotoStoreW)/PhotoStoreH;
+ int32 Cw=W,Ch=H;
+ if(double(W)/H>Want)Cw=FMath::Max(1,FMath::RoundToInt(H*Want));else Ch=FMath::Max(1,FMath::RoundToInt(W/Want));
+ const int32 X0=(W-Cw)/2,Y0=(H-Ch)/2;
+ TArray<float> Lum;Lum.SetNumUninitialized(PhotoStoreW*PhotoStoreH);
+ int32 Hist[256]={};
+ for(int32 Y=0;Y<PhotoStoreH;++Y)for(int32 X=0;X<PhotoStoreW;++X)
+ {
+  const int32 Xa=X0+X*Cw/PhotoStoreW,Xb=FMath::Max(Xa+1,X0+(X+1)*Cw/PhotoStoreW),Ya=Y0+Y*Ch/PhotoStoreH,Yb=FMath::Max(Ya+1,Y0+(Y+1)*Ch/PhotoStoreH);
+  float Sum=0;int32 N=0;
+  for(int32 Sy=Ya;Sy<Yb&&Sy<H;++Sy)for(int32 Sx=Xa;Sx<Xb&&Sx<W;++Sx){const FColor& C=Px[Sy*W+Sx];Sum+=C.R*.30f+C.G*.59f+C.B*.11f;++N;}
+  const float L=N>0?Sum/N:0.f;
+  Lum[Y*PhotoStoreW+X]=L;++Hist[FMath::Clamp(int32(L),0,255)];
+ }
+ // The 2nd and 98th percentile become the paper's white and black, so a bright long exposure and a dim one print alike.
+ const int32 Total=PhotoStoreW*PhotoStoreH;int32 Lo=0,Hi=255,Acc=0;
+ for(int32 I=0;I<256;++I){Acc+=Hist[I];if(Acc>=Total/50){Lo=I;break;}}
+ Acc=0;for(int32 I=255;I>=0;--I){Acc+=Hist[I];if(Acc>=Total/50){Hi=I;break;}}
+ if(Hi-Lo<24){const int32 Mid=(Hi+Lo)/2;Lo=FMath::Max(0,Mid-12);Hi=Lo+24;}
+ TArray<FColor> Out;Out.SetNumUninitialized(PhotoStoreW*PhotoStoreH);
+ for(int32 I=0;I<Out.Num();++I)
+ {
+  const float T=FMath::Clamp((Lum[I]-Lo)/float(Hi-Lo),0.f,1.f);
+  const float Tone=FMath::Clamp(.06f+.86f*(T*T*(3.f-2.f*T)*.55f+T*.45f),0.f,1.f);
+  const uint8 G=uint8(FMath::RoundToInt(Tone*255.f));
+  Out[I]=FColor(G,G,G,255);
+ }
+ const FString Url=S47Image::ToDataUrl(Out,PhotoStoreW,PhotoStoreH,true,PhotoQuality);
+ return PhotoValid(Url)?Url:FString();
+}
+// A data URL the paper will print and keep: a JPEG, no longer than PhotoMaxChars (an old or a hand-edited save cannot swell the file).
+bool S47Ledger::PhotoValid(const FString& Url)
+{
+ return Url.StartsWith(TEXT("data:image/jpeg;base64,"))&&Url.Len()>40&&Url.Len()<=PhotoMaxChars;
 }
 
 bool S47Ledger::SelfTest(TArray<FString>& Lines)
@@ -563,6 +1220,72 @@ bool S47Ledger::SelfTest(TArray<FString>& Lines)
    for(const FStory& St:I.Front){bFresh&=!Heads.Contains(St.Key);Heads.Add(St.Key);}
   }
   Check(bFresh,TEXT("cattle three weeks running get three different front pages, and the county news beside them differs too"));
+ }
+ {
+  // D45-24-20261110: what the reader can pencil onto the map. Every lead a paper prints is one the map can show; each article
+  // that has one is offered once, on the sheet it is printed on (the front's stories on the front, letters inside), and nothing
+  // without a lead is offered. The first paper's search story is on the front and points at the wagon; a quiet week's talk points
+  // at the place nobody has mentioned; the lights over the windmill point at the windmill.
+  TMap<FString,int32> Used;bool bResolve=true,bOffered=true,bOnly=true;
+  FIssue FirstIss,SecondIss,QuietIss;
+  for(int32 No=1;No<=6;++No)
+  {
+   const FIssue Iss=Make(470047,No,No==2?Week:TArray<FFact>(),Used);
+   if(No==1)FirstIss=Iss;else if(No==2)SecondIss=Iss;else if(No==3)QuietIss=Iss;
+   const TArray<FLeadRef> Refs=LeadsOf(Iss);
+   for(const FStory& St:Iss.Front)if(!St.Lead.IsEmpty()){bResolve&=!LeadTitle(St.Lead).IsEmpty();bOffered&=Refs.ContainsByPredicate([&](const FLeadRef& Ref){return Ref.Sheet==0&&Ref.Lead==St.Lead;});}
+   for(const FNote& Nt:Iss.Letters)if(!Nt.Lead.IsEmpty()){bResolve&=!LeadTitle(Nt.Lead).IsEmpty();bOffered&=Refs.ContainsByPredicate([&](const FLeadRef& Ref){return Ref.Sheet==1&&Ref.Lead==Nt.Lead;});}
+   for(const FLeadRef& Ref:Refs)
+   {
+    bOnly&=!Ref.Lead.IsEmpty()&&(Ref.Sheet==0?Iss.Front.ContainsByPredicate([&](const FStory& St){return St.Lead==Ref.Lead&&St.Head==Ref.Head;}):Iss.Letters.ContainsByPredicate([&](const FNote& Nt){return Nt.Lead==Ref.Lead&&Nt.Head==Ref.Head;}));
+    bOnly&=Refs.FilterByPredicate([&](const FLeadRef& Q){return Q.Lead==Ref.Lead&&Q.Sheet==Ref.Sheet;}).Num()==1;
+   }
+  }
+  Check(bResolve,TEXT("D45-24: every lead a paper prints is a place the map can show, or the wagon"));
+  Check(bOffered&&bOnly,TEXT("D45-24: each article with a lead is offered once, on its own sheet, and nothing else is"));
+  Check(LeadsOf(FirstIss).ContainsByPredicate([](const FLeadRef& Ref){return Ref.Lead==TEXT("wagon")&&Ref.Sheet==0&&Ref.Head.Contains(TEXT("SEARCH"));})
+   &&LeadsOf(SecondIss).ContainsByPredicate([](const FLeadRef& Ref){return Ref.Lead==TEXT("windmill")&&Ref.Sheet==0;})
+   &&LeadsOf(QuietIss).ContainsByPredicate([](const FLeadRef& Ref){return Ref.Lead==TEXT("shack")&&Ref.Sheet==0;}),
+   TEXT("D45-24: the search story points at the wagon, the lights at the windmill and a quiet week's talk at the line shack, each on the front"));
+  Check(LeadTitle(TEXT("wagon")).Contains(TEXT("wagon"))&&LeadTitle(TEXT("cairn"))==TEXT("the cairn on the rise")&&LeadTitle(TEXT("church")).IsEmpty()&&LeadTitle(FString()).IsEmpty(),
+   TEXT("D45-24: a lead is named as the map names it, and what the map cannot show is not offered"));
+  // D46-1-20261110: the world's photo is a small grey JPEG: made from any frame, read back the same size and still grey, bright sky
+  // over dark ground, small enough to keep in a save (the bound), and only such a URL is accepted from one.
+  {
+   constexpr int32 PhW=960,PhH=600;
+   TArray<FColor> PhFrame;PhFrame.SetNumUninitialized(PhW*PhH);
+   uint32 PhSeed=47u;
+   for(int32 Y=0;Y<PhH;++Y)for(int32 X=0;X<PhW;++X)
+   {
+    PhSeed=PhSeed*1664525u+1013904223u;
+    const int32 Grain=int32(PhSeed>>28)-8;
+    const bool bBox=X>380&&X<560&&Y>300&&Y<430;
+    const int32 Base=Y<300?200-Y/6:(bBox?120:70+(Y-300)/10);
+    PhFrame[Y*PhW+X]=FColor(uint8(FMath::Clamp(Base+Grain+8,0,255)),uint8(FMath::Clamp(Base+Grain,0,255)),uint8(FMath::Clamp(Base+Grain-14,0,255)),255);
+   }
+   const FString PhUrl=PhotoFromPixels(PhFrame,PhW,PhH);
+   TArray<FColor> PhBack;int32 PhBw=0,PhBh=0;
+   const bool bDecoded=!PhUrl.IsEmpty()&&S47Image::DecodePixels(PhUrl,PhBack,PhBw,PhBh)&&PhBw==PhotoStoreW&&PhBh==PhotoStoreH&&PhBack.Num()==PhBw*PhBh;
+   bool bGrey=bDecoded;double Top=0,Low=0;
+   if(bDecoded)
+   {
+    for(int32 I=0;I<PhBack.Num();++I)bGrey&=FMath::Abs(int32(PhBack[I].R)-int32(PhBack[I].B))<=4;
+    for(int32 X=0;X<PhBw;++X)for(int32 Y=0;Y<20;++Y){Top+=PhBack[Y*PhBw+X].G;Low+=PhBack[(PhBh-1-Y)*PhBw+X].G;}
+   }
+   Check(bDecoded&&bGrey&&Top>Low+20.*PhBw*10.,TEXT("D46-1: the world's photo reads back as a grey picture the size of the page's photo, sky light over dark ground"));
+   int32 PhBytes=0;{TArray<uint8> Raw;if(FBase64::Decode(PhUrl.Mid(PhUrl.Find(TEXT(","))+1),Raw))PhBytes=Raw.Num();}
+   Check(PhUrl.Len()>500&&PhUrl.Len()<=PhotoMaxChars*2/3&&PhBytes>300&&PhBytes<=PhotoMaxChars*3/4,FString::Printf(TEXT("D46-1: the photo is a few KB in the save (%d chars, %d bytes; at most %d chars are accepted)"),PhUrl.Len(),PhBytes,PhotoMaxChars));
+   Check(PhotoValid(PhUrl)&&!PhotoValid(FString())&&!PhotoValid(TEXT("data:image/png;base64,AAAA"))&&!PhotoValid(TEXT("data:image/jpeg;base64,")+FString::ChrN(PhotoMaxChars,TEXT('A')))
+    &&PhotoFromPixels(PhFrame,PhW,PhH-1).IsEmpty()&&PhotoFromPixels(TArray<FColor>(),0,0).IsEmpty(),
+    TEXT("D46-1: only a small JPEG is printed from a save, and a frame of the wrong size makes no photo (the drawn picture stays)"));
+   FIssue PhIssue;PhIssue.No=1;PhIssue.Date=FDateTime(1986,5,1);PhIssue.Photo=PhUrl;
+   const FIssue PhCopy=PhIssue;
+   Check(PhCopy.Photo==PhUrl&&FIssue().Photo.IsEmpty()&&PlainText(PhCopy).Len()>0&&!PlainText(PhCopy).Contains(TEXT("base64")),TEXT("D46-1: an issue without a photo has none (the drawn picture), and the notebook's text never carries the picture"));
+  }
+  // The photo's caption is the paper's, never "taken" or a "photograph of" (Clean, over AllText, holds the fixed ones).
+  bool bCaptions=true;FString Bad;
+  for(const FS47Places::FDef& D:FS47Places::Defs()){const FString Cap=L::Caption(D.Id);bCaptions&=Cap.EndsWith(TEXT("Ledger photo."))&&!Cap.ToLower().Contains(TEXT("taken"))&&!Cap.ToLower().Contains(TEXT("photograph of"));if(!bCaptions&&Bad.IsEmpty())Bad=Cap;}
+  Check(bCaptions,bCaptions?FString(TEXT("D45-24: every photo caption reads \"<place>, Wednesday. Ledger photo.\"")):TEXT("D45-24: a caption the paper must not print: ")+Bad);
  }
  return OK;
 }

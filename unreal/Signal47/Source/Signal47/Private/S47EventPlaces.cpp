@@ -51,9 +51,16 @@ namespace S47EventPlacesLocal
    {TEXT("souvenir"),TEXT("the souvenir shop"),TEXT("caliche"),14,2061,20.5,2061.2,TEXT("Souvenir"),TEXT(""),Town|Indoors|Door|Window,8,26},
    {TEXT("radio"),TEXT("the 1420 AM studio"),TEXT("caliche"),10,2036,17,2036,TEXT(""),TEXT(""),Town|Indoors|Window|Phone|People,8,26},
    {TEXT("h01"),TEXT("the empty house across from the laundromat"),TEXT("caliche"),18,2130,24,2129.6,TEXT("H01"),TEXT(""),Town|Indoors|Door|Window,8,24},
-   {TEXT("h02"),TEXT("the empty house across from the Plaza"),TEXT("caliche"),18,2154,24.5,2153.6,TEXT("H02"),TEXT(""),Town|Indoors|Door|Window,8,24},
-   {TEXT("h03"),TEXT("the last house on the east side of town"),TEXT("caliche"),19,2188,25,2188.4,TEXT("H03"),TEXT(""),Town|Indoors|Door|Window,8,24},
-   {TEXT("h04"),TEXT("the empty house at the south end of town"),TEXT("caliche"),-13,2238,-19,2237.6,TEXT("H04"),TEXT(""),Town|Indoors|Door|Window,8,24},
+   // Lived in since the town has its day (S47TownDay: the deputy's, the souvenir man's and the diner cook's): not "empty", and
+   // people there, so no "light in an empty house" is lit in them (critics, round 8).
+   {TEXT("h02"),TEXT("the deputy's house across from the Plaza"),TEXT("caliche"),18,2154,24.5,2153.6,TEXT("H02"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
+   {TEXT("h03"),TEXT("the souvenir man's house on the east side"),TEXT("caliche"),19,2188,25,2188.4,TEXT("H03"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
+   {TEXT("h04"),TEXT("the cook's house at the south end of town"),TEXT("caliche"),-13,2238,-19,2237.6,TEXT("H04"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
+   // CALICHE-HOMES (S47CalicheNewHomes): the homes of the ones who had none, lived in (S47TownDay). The trailer has no room to go into.
+   {TEXT("h05"),TEXT("the waitress's house across from the substation"),TEXT("caliche"),18.5,2115.9,24.5,2115.9,TEXT("H05"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
+   {TEXT("h06"),TEXT("the night DJ's house at the south end of the east side"),TEXT("caliche"),18,2207.4,24,2207.4,TEXT("H06"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
+   {TEXT("h07"),TEXT("the radio woman's house south of the feed store"),TEXT("caliche"),-13,2227.4,-19,2227.4,TEXT("H07"),TEXT(""),Town|Indoors|Door|Window|People,8,24},
+   {TEXT("h08"),TEXT("the trailer past the cook's house"),TEXT("caliche"),-21,2254.5,-26.4,2254.5,TEXT(""),TEXT(""),Town|People|Open,8,22},
    {TEXT("diner"),TEXT("the Mesa Diner"),TEXT("diner"),-6,2004,-14,2000,TEXT(""),TEXT(""),Indoors|Window|Phone|People|Road|Lot,14,26},
    // The other station, at the end of its track: measured from its gate below.
    {TEXT("station01"),TEXT("STATION 01"),TEXT("station"),0,0,0,0,TEXT(""),TEXT(""),Far|Open|Lot|Road,20,22},
@@ -67,6 +74,8 @@ namespace S47EventPlacesLocal
    {TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("land"),-320,430,-320,430,TEXT(""),TEXT("ff:place:cairn"),Open,8,22},
    {TEXT("stake"),TEXT("the survey stake off the track"),TEXT("land"),-130,650,-130,650,TEXT(""),TEXT("ff:place:stake"),Open|Far,8,22},
    {TEXT("trough"),TEXT("the salt lick and trough"),TEXT("land"),240,1740,240,1740,TEXT(""),TEXT("ff:place:trough"),Open|Far|Farm,10,22},
+   // PT-SAUCER-ROCK-20261109: the souvenir man's Saucer Rock, west of Caliche: a light can stand over it like any place out there.
+   {TEXT("saucer_rock"),TEXT("the flat-top rock west of town"),TEXT("land"),-760,2240,-760,2240,TEXT(""),TEXT("ff:place:saucer_rock"),Open|Far,14,26},
    // Open land with nothing built on it: where something comes down, where somebody is stuck. Seated off the hills below.
    {TEXT("land:wash_west"),TEXT("the dry wash under the west mesa"),TEXT("land"),-900,1150,-900,1150,TEXT(""),TEXT(""),Open|Far|Wash,30,22},
    {TEXT("land:wash_mine"),TEXT("the arroyo below the old mine"),TEXT("land"),-650,1650,-650,1650,TEXT(""),TEXT(""),Open|Far|Wash,30,22},
@@ -411,7 +420,7 @@ void FS47EventPlaces::LogPick(const FString& Kind,const FS47EventPlace* P,const 
 TArray<FString> FS47EventPlaces::Ids()
 {
  TArray<FString> Out;for(const auto& S:S47EventPlacesLocal::Seeds())Out.Add(S.Id);
- for(const auto& S:S47TownSites::Sites())Out.Add(S.Id);
+ for(const auto& S:S47TownSites::EventPlaces())Out.Add(S.Id); // (N1110: a landmark, the Breather, is not a place for events)
  return Out;
 }
 

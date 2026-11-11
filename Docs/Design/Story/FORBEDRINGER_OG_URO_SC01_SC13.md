@@ -205,3 +205,45 @@ Kvitter at hver relevant dør er sikret, og vis om spilleren fremdeles er utsatt
 - Bevar godkjente miljøer, kanon, lagringer, originalbilder og eksisterende assets. Forslagene er tenkt for dagens systemer, uten kjøp eller motorbytte.
 
 Grunnlag: gjeldende godkjente tidslinje, produksjonsmanuset og kodegjennomgangen av SC01–SC13. Prosjektbiblioteket ble søkt først og deretter bredere; treffene gjaldt Blender-uttrykk, ikke dokumenterte løsninger for denne runtime-logikken. Ingen ekstern skill, plugin eller kode er tatt inn. Forslagene her er prosjektspesifikke vurderinger, ikke målte forbedringer.
+
+## Triage 10. november 2026 (STORY-06)
+
+**Status:** Referanse, ikke en beslutning. Laget av en agent ved å lese kilde og dokumenter; spillet ble ikke kjørt. «Flettet» betyr at kildefilen eller bibelteksten finnes, ikke at forslaget er vurdert av Tom. Stier er forkortet: `Private/` er `unreal/Signal47/Source/Signal47/Private/`. Overstyringer viser til [DECISIONS](../../Active/DECISIONS.md) 7. november og [forenklet Story](../Proposals/STORY_ENKLERE_2026-11-07.md).
+
+| Del | Klasse | Begrunnelse og bevis |
+|---|---|---|
+| Anbefalt retning | OVERSTYRT | «Ingen alien før 02» er erstattet av tidsnivåene 9. nov (`GAME_BIBLE.md` l.123, `Private/S47NightTiers.cpp`); Story er enklere 3-5 kvelder (DECISIONS 7. nov, `STORY_ENKLERE_2026-11-07.md`). |
+| Nye presiseringer | ÅPENT | Glimpse-peks finnes (`Private/S47Glimpses.cpp`, `S47RoadGlimpse.cpp`). VHS-meny og taklys-skade: bibelen kaller VHS-lag «eget forslag» (l.504). Omtalte Dale/Ward-sammenslåing: ikke funnet i kilde. Gjenstår: VHS-uttrykk, etterspill-stillhet. |
+| Etterforskningstavlen | FLETTET | `Private/S47CaseBoard.cpp`, `S47BoardRules.cpp` (Group), `S47BoardClusterTest.cpp`, `SS47Board.cpp`. |
+| Stjernehullet og meteorregnet | FLETTET | `Private/S47StarHole.cpp`, `S47MeteorPassageTest.cpp`; `GAME_BIBLE.md` l.454. |
+| Alienbevegelse | FLETTET | `Private/S47CrabMotion.cpp`, `S47RoswellMotion.cpp`, `S47PaleMotion.cpp` (Listen/Walk, `S47HorrorThreat.cpp` l.794). Animasjonskvalitet er egen sak (PLAY-31-22). |
+| Bærbar feltradio | FLETTET | `Private/S47FieldRadio.cpp`, `S47Walkie.cpp`; Dale på walkie `GAME_BIBLE.md` l.186, 545. |
+| Åpningen, egen bil og ankomst | OVERSTYRT | Scenerekkefølgen er erstattet av Del 1 «Vanlig kveld» i `STORY_ENKLERE`; Freeform har egen start (`SS47FreeformStart.cpp`). |
+| SC01, kveldsrunden | OVERSTYRT | Slått inn i Del 1 (jobber, lyskuler, hint); «en uro per rutine» dekkes av tidsnivåene (`GAME_BIBLE.md` l.123). |
+| Fra 00:13 til trafoen | OVERSTYRT | «Kuttes: mange kjøreturer via SARO» (`STORY_ENKLERE`, Kuttes eller slås sammen). |
+| SC02, tilbake til bilen | ÅPENT | Stille kropp + én hodevending: ikke funnet i kilde. Hørbar undersøkelse av siste kjente sted finnes (se Fem 4). |
+| SC03, hjelpen som kom | OVERSTYRT | Kjernen er skrevet om: Reyes ringer, Ortiz blir tatt fordi han ringte (DECISIONS 7. nov, `STORY_ENKLERE` Del 2). |
+| SC04, sikre originalene | ÅPENT | `Private/S47SC04.cpp`, `S47DoorVisit.cpp` finnes, men lytting bak lukket dør og Dale-fragment fra feil dør: ikke funnet i kilde. Dørfeil ligger i PLAY-31-17/18/19. |
+| SC05, samtalen som ligger foran | ÅPENT | 47 sekunder-samtalen beholdes (`STORY_ENKLERE`, Beholdes). Gjenstår: ett konkret romobjekt i etterspillet, notatbok som skiller sagt fra observert. |
+| SC06, det andre motivet | ÅPENT | `Private/S47Enlarger.cpp` finnes; «én eller to runder holder» (`STORY_ENKLERE`). Gjenstår: tydelig melding ved tåket print, stillhet ved B-12. |
+| SC07, det Dale ikke leverte inn | ÅPENT | Prioritet B. Lysflate som har flyttet seg etter lukket panel: ikke funnet i kilde. |
+| SC08, de peker på deg | ÅPENT | `Private/S47SC08.cpp` finnes; servoer bak spilleren etter forflytning knyttet til lydprøven: ikke funnet i kilde. |
+| SC09, den avbrutte oppstillingen | ÅPENT | Prioritet B. Avsøkende lysflate forbi hytta uten jakt: ikke funnet i kilde. |
+| SC10, Rom6 | FLETTET | `Private/S47Room6.cpp`; Nora i rom 6 beholdes uendret (`STORY_ENKLERE`). Replikkrekkefølgen er ikke kontrollert. |
+| SC11, SARO blir avsøkt | OVERSTYRT | «SC11 som gjentakelse av SC04» slås sammen; siste jakt trappes opp med lys utenfra (`STORY_ENKLERE`). |
+| SC12, det dere rekker å sende | ÅPENT | Én grensetid, tre kilder, fysisk patruljeark: ikke funnet i kilde. Varslingen er med i Del 4 «Linjen». |
+| SC13, siste vei mot Roswell | ÅPENT | Finalen står fast (`STORY_ENKLERE`, `Private/S47FinaleSky.cpp`). Gjenstår: fravær av motorlyd før skalaen vises. |
+| Fem 1: samme neste mål | FLETTET | TONIGHT-notat: `Private/S47TonightNote.cpp`; `GAME_BIBLE.md` l.197 (TONIGHT'S PLAN). |
+| Fem 2: normale lyder som svikter | ÅPENT | `S47Ambience.cpp` finnes, men «samme lyd forsvinner senere» som mekanikk: ikke funnet i kilde. |
+| Fem 3: Dale-fragment og etterspill | ÅPENT | `S47DaleVoice.cpp` finnes; gjenkjennelig fragment: ikke funnet i kilde. |
+| Fem 4: hørbar undersøkelse, lyttestopp | FLETTET | `Private/S47RoswellBrain.cpp` (Listen, LastKnownPlayer), `S47Handling.cpp` l.1015. Lyttestopp bak dør: ikke funnet. |
+| Fem 5: Rom6 og diner som pustepauser | ÅPENT | Rom6 beholdes; diner-regi og rolig sluttbilde er ikke avklart i Story (jf. Del 4-5). |
+| Felles rammer | ÅPENT | Engangsflagg, aktiv spilletid og tekststøtte bør fortsatt gjelde; «fire jakter» er uavklart (DECISIONS 7. nov: figur per jakt ikke avgjort). |
+
+## Åpent som kan tas videre i Freeform
+- Normale romlyder som senere uteblir (stans i ventilasjon, motor) som ett avvik per natt, knyttet til tidsnivåene.
+- Fienden stopper og lytter bak lukket dør; spilleren velger når døren åpnes.
+- Dale-fragment med identisk pause fra feil dør/walkie, gjenkjent av spilleren.
+- Lysflate utenfor vindu som har flyttet seg etter at et panel ble lukket (ingen figur).
+- Tåket print: melding om bevart negativ og hva som må gjøres om.
+- Servoer/antenner som reagerer etter en egen lydprøve ved arrayet.

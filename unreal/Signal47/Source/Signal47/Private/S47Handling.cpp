@@ -37,6 +37,8 @@ namespace
 	constexpr double HandGravity = 980.0;   // cm/s^2
 	constexpr double HandMaxLoose = 10;      // stones off the ground kept at once; the oldest is the next one picked up
 	const TCHAR* const HandPutId = TEXT("phys:put");
+	const TCHAR* const HandPocketArea = TEXT("pocket"); // a stone in the pocket is in no area: hidden, and answers nothing
+	constexpr double HandKnockEvery = .9;   // metres run between two knocks of the stones in the pocket
 	bool HandLive(const UObject* O) { return IsValid(O) && !O->HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed); }
 	// Unreal: X forward, Y right, Z up. The view's right hand.
 	FVector HandRight(const FVector& Fwd) { return FVector::CrossProduct(FVector::UpVector, Fwd).GetSafeNormal(); }
@@ -81,6 +83,38 @@ const TCHAR* FS47Handling::SurfaceName(ESurface S)
 	switch (S) { case ESurface::Hard: return TEXT("concrete"); case ESurface::Wood: return TEXT("wood"); case ESurface::Metal: return TEXT("metal"); case ESurface::Soft: return TEXT("carpet"); default: return TEXT("dirt"); }
 }
 
+// ---------- the pocket's rules (STONE-POCKET-20261109) ----------
+
+FS47Handling::EEmpty FS47Handling::EmptyHanded(bool bThingInView, int32 InPocket)
+{
+	// a loose thing in view is what the hand is reached out for; else the pocket first, the ground after it
+	if (bThingInView) return EEmpty::PickUpInView;
+	return InPocket > 0 ? EEmpty::FromPocket : EEmpty::OffTheGround;
+}
+
+FS47Handling::ETap FS47Handling::Tapped(EKind InHand, int32 InPocket)
+{
+	return InHand == EKind::Stone && InPocket >= 0 && InPocket < PocketSize ? ETap::IntoPocket : ETap::SetDown;
+}
+
+FString FS47Handling::PocketLine(int32 InPocket)
+{
+	switch (FMath::Clamp(InPocket, 0, PocketSize))
+	{
+	case 1: return TEXT("A stone in your pocket.");
+	case 2: return TEXT("Two stones in your pocket.");
+	case 3: return TEXT("Three stones in your pocket. It is full.");
+	default: return FString();
+	}
+}
+
+bool FS47Handling::Rattles(int32 InPocket, double Mps, double WalkMps, bool bInAir)
+{
+	if (InPocket <= 0) return false;
+	if (bInAir) return true;
+	return FMath::IsFinite(Mps) && FMath::IsFinite(WalkMps) && WalkMps > 0 && Mps > WalkMps * 1.25;
+}
+
 // ---------- the world ----------
 
 bool FS47Handling::Live() const
@@ -94,7 +128,10 @@ FString FS47Handling::PutLabel() const
 {
 	if (!Items.IsValidIndex(Held)) return FString();
 	const FString Key = S47Keys::Label(TEXT("throw"));
-	return Key.IsEmpty() ? FString::Printf(TEXT("Set the %s down"), *HeldName()) : FString::Printf(TEXT("Set the %s down / hold %s to throw"), *HeldName(), *Key);
+	if (Key.IsEmpty()) return FString::Printf(TEXT("Set the %s down"), *HeldName());
+	// STONE-POCKET-20261109: a stone, with room in the pocket, goes into it with a tap
+	if (Tapped(Items[Held].Kind, PocketItems.Num()) == ETap::IntoPocket) return FString::Printf(TEXT("Set the %s down / tap %s to pocket it, hold to throw"), *HeldName(), *Key);
+	return FString::Printf(TEXT("Set the %s down / hold %s to throw"), *HeldName(), *Key);
 }
 
 FCollisionQueryParams FS47Handling::Query(const FItem* Self) const
@@ -317,6 +354,8 @@ void FS47Handling::AddUse(int32 Index)
 	I.Label = [this, Guard, Index]() -> FString
 	{
 		if (!Guard.IsValid() || !M || !M->IsFreeform() || !Items.IsValidIndex(Index) || Holding() || Items[Index].State != EState::Rest) return FString();
+		// (a stone in the pocket, or one gone back to the ground, is not there to be picked up)
+		if (!M->Web || Items[Index].Area != M->Web->Area()) return FString();
 		if (M->World && M->World->bDriving) return FString();
 		if (M->Freeform && M->Freeform->Field && M->Freeform->Field->ParcelStage() == 2) return FString();
 		return FString::Printf(TEXT("Pick up the %s"), Def(Items[Index].Kind).Name);
@@ -327,7 +366,7 @@ void FS47Handling::AddUse(int32 Index)
 		if (!Guard.IsValid() || !Items.IsValidIndex(Index)) return FString();
 		switch (Items[Index].Kind)
 		{
-		case EKind::Can: return TEXT("A coffee can with the label half off, a few cigarette ends in the bottom. Tin: it would carry, thrown.");
+		case EKind::Can: return TEXT("A coffee can with the label half off, a few cigarette ends in the bottom. Thrown, it would make a racket.");
 		case EKind::Box: return TEXT("A carton of spare chart paper, taped shut. Light enough to carry in both arms.");
 		case EKind::Crate: return TEXT("A slatted crate of spare insulators, heavy. Both arms, and slowly.");
 		default: return TEXT("A stone off the ground, about the size of a fist.");
@@ -406,6 +445,8 @@ void FS47Handling::Build()
 void FS47Handling::Begin()
 {
 	Release(true);
+	// the pocket is empty when a save is opened (its stones go back below with the rest)
+	PocketItems.Reset(); PocketDay = -1; bPocketPos = false; KnockDist = 0;
 	// a new world (a save opened after the level came back): the old things went with it, and are made again
 	if (Items.ContainsByPredicate([](const FItem& It) { return !It.Comp.IsValid(); })) { Items.Reset(); bBuilt = false; bPutAdded = false; StoneCount = 0; }
 	Held = -1; bDown = bPressTaken = false; DownFor = 0;
@@ -424,6 +465,7 @@ void FS47Handling::Stop()
 {
 	Release(true);
 	Held = -1; bDown = false;
+	PocketItems.Reset(); bPocketPos = false;
 	if (!Live()) return;
 	for (FItem& It : Items) if (UStaticMeshComponent* C = It.Comp.Get()) { C->SetVisibility(false, true); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
 }
@@ -452,11 +494,12 @@ bool FS47Handling::PickUp(int32 Index)
 	if (M->Audio)
 	{
 		FS47Sound S; S.At = S47Three::ToThree(It.Loc);
-		if (It.Kind == EKind::Stone) { S.Gain = .14f; S.Rate = 1.35f; M->Audio->Sfx(TEXT("stepGravel2"), S); }
+		if (It.Kind == EKind::Stone && bFromPocket) { S.At.Reset(); S.Gain = .06f; S.Rate = 2.3f; M->Audio->Sfx(TEXT("stepConcrete1"), S); } // out of the jacket, close
+		else if (It.Kind == EKind::Stone) { S.Gain = .14f; S.Rate = 1.35f; M->Audio->Sfx(TEXT("stepGravel2"), S); }
 		else if (It.Kind == EKind::Can) { S.Gain = .08f; S.Rate = 2.4f; M->Audio->Sfx(TEXT("doorMetal"), S); }
 		else { S.Gain = It.Kind == EKind::Crate ? .22f : .12f; S.Rate = It.Kind == EKind::Crate ? .7f : 1.1f; M->Audio->Sfx(TEXT("thudSoft"), S); }
 	}
-	UE_LOG(LogS47Handling, Display, TEXT("S47: handling: picked up %s (%s)"), D.Name, *It.Id);
+	UE_LOG(LogS47Handling, Display, TEXT("S47: handling: %s %s (%s)"), bFromPocket ? TEXT("out of the pocket:") : TEXT("picked up"), D.Name, *It.Id);
 	return true;
 }
 
@@ -476,12 +519,13 @@ bool FS47Handling::PickStone()
 	if (M->World && M->World->Indoors(P)) return false;
 	if (SurfaceOf(&H, H.ImpactPoint, H.ImpactNormal) != ESurface::Dirt) return false;
 	// the oldest stone taken off the ground is the one picked up again, once there are enough of them about
+	// (never one in the pocket)
 	int32 Index = -1, Loose = 0;
-	for (int32 I = 0; I < Items.Num(); ++I) if (Items[I].bLoose) ++Loose;
+	for (int32 I = 0; I < Items.Num(); ++I) if (Items[I].bLoose && !PocketItems.Contains(I)) ++Loose;
 	if (Loose >= HandMaxLoose)
 	{
 		int32 Seen = 0;
-		for (int32 I = 0; I < Items.Num(); ++I) if (Items[I].bLoose && Items[I].State == EState::Rest && Seen++ == StoneCount % Loose) { Index = I; break; }
+		for (int32 I = 0; I < Items.Num(); ++I) if (Items[I].bLoose && !PocketItems.Contains(I) && Items[I].State == EState::Rest && Seen++ == StoneCount % Loose) { Index = I; break; }
 	}
 	++StoneCount;
 	if (Index >= 0)
@@ -492,6 +536,99 @@ bool FS47Handling::PickStone()
 	}
 	else Index = Spawn(EKind::Stone, P, FMath::FRandRange(0.f, 6.28f), M->Web->Area(), true);
 	return Index >= 0 && PickUp(Index);
+}
+
+bool FS47Handling::PocketHeld()
+{
+	if (!Live() || !Items.IsValidIndex(Held)) return false;
+	FItem& It = Items[Held];
+	if (Tapped(It.Kind, PocketItems.Num()) != ETap::IntoPocket) return false;
+	PocketItems.Add(Held);
+	Held = -1;
+	Release(true);
+	It.State = EState::Rest; It.Vel = It.Spin = FVector::ZeroVector; It.Air = It.Far = 0; It.Area = HandPocketArea;
+	Collide(It, true); Show(It);
+	if (M->Audio)
+	{
+		// in among the others: a knock if there is one in there already, a rustle of the jacket if not
+		FS47Sound S; S.Gain = PocketItems.Num() > 1 ? .07f : .05f; S.Rate = PocketItems.Num() > 1 ? 2.2f : 1.6f;
+		M->Audio->Sfx(PocketItems.Num() > 1 ? FString::Printf(TEXT("stepConcrete%d"), Knocks++ % 5) : FString(TEXT("thudSoft")), S);
+	}
+	UE_LOG(LogS47Handling, Display, TEXT("S47: handling: a stone into the pocket (%s)"), *PocketLine(PocketItems.Num()));
+	return true;
+}
+
+bool FS47Handling::TakeOut()
+{
+	if (!Live() || Holding() || PocketItems.IsEmpty() || (M->World && M->World->bDriving)) return false;
+	if (M->Freeform && M->Freeform->Field && M->Freeform->Field->ParcelStage() == 2) return false;
+	const int32 Index = PocketItems.Pop(EAllowShrinking::No);
+	if (!Items.IsValidIndex(Index) || !Items[Index].Comp.IsValid()) return false;
+	FItem& It = Items[Index];
+	// out of the jacket at the side, and up into the hand (StepHeld brings it there, round anything in the way)
+	const FVector Eye = M->Player->EyeUE(), Fwd = M->Player->ForwardUE();
+	It.Area = M->Web->Area(); It.State = EState::Rest; It.Vel = It.Spin = FVector::ZeroVector; It.Air = It.Far = 0;
+	It.Loc = Eye + HandFlat(Fwd) * 8 + HandRight(Fwd) * 16 - FVector(0, 0, 45);
+	Apply(It); Show(It);
+	bFromPocket = true;
+	const bool bOk = PickUp(Index);
+	bFromPocket = false;
+	if (!bOk) { It.Area = HandPocketArea; Show(It); PocketItems.Add(Index); return false; }
+	return true;
+}
+
+void FS47Handling::EmptyPocket()
+{
+	for (const int32 I : PocketItems)
+	{
+		if (!Items.IsValidIndex(I)) continue;
+		FItem& It = Items[I];
+		// a stone off the ground goes back to being the ground; one of SARO's goes back by the door
+		if (It.bLoose) It.Area = TEXT("none");
+		else { It.Loc = It.HomeLoc; It.Q = It.HomeQ; It.Area = TEXT("saro"); }
+		It.State = EState::Rest; It.Vel = It.Spin = FVector::ZeroVector;
+		Collide(It, true); Apply(It); Show(It);
+	}
+	PocketItems.Reset();
+}
+
+void FS47Handling::StepPocket(double Dt)
+{
+	// a new day: the pocket is empty, as it is when a save is opened
+	const int32 Day = M->Freeform ? M->Freeform->Day() : 0;
+	if (Day != PocketDay)
+	{
+		if (PocketDay >= 0 && !PocketItems.IsEmpty())
+		{
+			UE_LOG(LogS47Handling, Display, TEXT("S47: handling: day %d, the stones in the pocket are gone (%s)"), Day, *PocketLine(PocketItems.Num()));
+			EmptyPocket();
+		}
+		PocketDay = Day;
+	}
+	// the stones knock together when the player runs or jumps with them: quietly, close, not placed
+	const AS47Walker* P = M->Player.Get();
+	const FVector Pos = P->Pos;
+	const bool bAir = P->InAir();
+	if (!bPocketPos) { bPocketPos = true; PocketPos = Pos; bPocketAir = bAir; return; }
+	const double Moved = FVector2D(Pos.X - PocketPos.X, Pos.Z - PocketPos.Z).Size();
+	const bool bLeftOrLanded = bAir != bPocketAir;
+	PocketPos = Pos; bPocketAir = bAir;
+	const int32 N = PocketItems.Num();
+	// (more than a metre in a frame is being put somewhere, not running)
+	if (N == 0 || (M->World && M->World->bDriving) || Moved > 1.0) { KnockDist = 0; return; }
+	bool bKnock = bLeftOrLanded && Rattles(N, 0, P->Speed, true);
+	if (!bAir && Rattles(N, Moved / Dt, P->Speed, false))
+	{
+		KnockDist += Moved;
+		if (KnockDist >= HandKnockEvery) { KnockDist = 0; bKnock = true; }
+	}
+	else if (!bAir) KnockDist = FMath::Min(KnockDist, HandKnockEvery * .5);
+	if (!bKnock || !M->Audio) return;
+	FS47Sound S;
+	S.Gain = float(.028 + .012 * N) * (bLeftOrLanded ? 1.3f : 1.f);
+	S.Rate = 2.25f + .15f * float(Knocks % 3);
+	M->Audio->Sfx(FString::Printf(TEXT("stepConcrete%d"), Knocks % 5), S);
+	++Knocks;
 }
 
 bool FS47Handling::ThrowNow(double Charge)
@@ -795,20 +932,31 @@ void FS47Handling::Step(double Dt)
 		bDown = true; DownFor = 0; bPressTaken = false;
 		if (!Holding())
 		{
-			// empty-handed: what is in view, or a stone off the ground
+			// empty-handed: what is in view, else a stone out of the pocket, else one off the ground
 			bPressTaken = true;
 			const FString Focus = M->Player->FocusedId();
-			if (Focus.StartsWith(TEXT("phys:")) && Focus != HandPutId) PickUp(IndexOf(Focus));
-			else PickStone();
+			switch (EmptyHanded(Focus.StartsWith(TEXT("phys:")) && Focus != HandPutId, PocketItems.Num()))
+			{
+			case EEmpty::PickUpInView: PickUp(IndexOf(Focus)); break;
+			case EEmpty::FromPocket: if (!TakeOut()) PickStone(); break;
+			default: PickStone(); break;
+			}
 		}
 	}
 	else if (bKey) DownFor += Dt;
 	else if (bDown)
 	{
 		bDown = false;
-		if (!bPressTaken && Holding()) { if (DownFor < .18) Put(); else ThrowNow(ChargeOf(DownFor)); }
+		if (!bPressTaken && Holding())
+		{
+			// a tap: a stone into the pocket while there is room (and, looking at bare ground, the next one up off it), else set down
+			if (DownFor >= .18) ThrowNow(ChargeOf(DownFor));
+			else if (Tapped(Items[Held].Kind, PocketItems.Num()) == ETap::IntoPocket && PocketHeld()) PickStone();
+			else Put();
+		}
 		bPressTaken = false; DownFor = 0;
 	}
+	StepPocket(Dt);
 	for (int32 I = 0; I < Items.Num(); ++I)
 	{
 		FItem& It = Items[I];
@@ -870,6 +1018,37 @@ bool FS47Handling::SelfTest(TArray<FString>& Lines)
 		In.Noise = FS47RoswellBrain::FNoise{ StoneAt, Loudness(EKind::Stone, ESurface::Dirt, 1) };
 		Deaf.Tick(.1, In, World);
 		Check(!Deaf.bHasPlayerMemory, TEXT("a stone dropped at the feet, eight metres from it, is not heard"));
+	}
+	// STONE-POCKET-20261109: the pocket
+	{
+		Check(PocketSize == 3, TEXT("pocket: three stones fit"));
+		Check(EmptyHanded(true, 2) == EEmpty::PickUpInView && EmptyHanded(false, 2) == EEmpty::FromPocket && EmptyHanded(false, 0) == EEmpty::OffTheGround,
+			TEXT("pocket: empty-handed, the key takes a loose thing in view first, else a stone out of the pocket, else one off the ground"));
+		Check(Tapped(EKind::Stone, 0) == ETap::IntoPocket && Tapped(EKind::Stone, 2) == ETap::IntoPocket && Tapped(EKind::Stone, 3) == ETap::SetDown
+			&& Tapped(EKind::Can, 0) == ETap::SetDown && Tapped(EKind::Crate, 0) == ETap::SetDown,
+			TEXT("pocket: a tap puts a stone in while there is room; full, or anything but a stone, it is set down as before"));
+		// one round as the player has it: a stone up, tapped in three times (each time the next one up off the ground), the fourth tap
+		// sets it down; three presses bring the three out to be thrown, and the fourth finds the pocket empty and goes to the ground
+		int32 In = 0, Thrown = 0, Downs = 0;
+		bool bHand = true;
+		for (int32 Tap = 0; Tap < 4; ++Tap)
+		{
+			if (Tapped(EKind::Stone, In) == ETap::IntoPocket) { ++In; bHand = true; }
+			else { ++Downs; bHand = false; }
+		}
+		for (int32 Press = 0; Press < 4; ++Press)
+		{
+			if (!bHand && EmptyHanded(false, In) == EEmpty::FromPocket) { --In; bHand = true; }
+			if (bHand) { ++Thrown; bHand = false; }
+		}
+		Check(Downs == 1 && In == 0 && Thrown == 3 && EmptyHanded(false, In) == EEmpty::OffTheGround, TEXT("pocket: filled to three by tapping, the fourth tap sets the stone down; three throws empty it, then the ground again"));
+		bool bNoDigits = PocketLine(0).IsEmpty();
+		for (int32 K = 1; K <= PocketSize; ++K) for (const TCHAR Ch : PocketLine(K)) bNoDigits &= !FChar::IsDigit(Ch);
+		Check(bNoDigits && PocketLine(2) == TEXT("Two stones in your pocket.") && PocketLine(1) == TEXT("A stone in your pocket.") && PocketLine(9) == PocketLine(3),
+			TEXT("pocket: the kit says it in words (Two stones in your pocket.), no number; none, no line"));
+		Check(!Rattles(0, 3.5, 1.9, true) && !Rattles(2, 1.9, 1.9, false) && !Rattles(2, 0, 1.9, false) && Rattles(2, 3.0, 1.9, false) && Rattles(1, 0, 1.9, true)
+			&& !Rattles(3, std::numeric_limits<double>::quiet_NaN(), 1.9, false),
+			TEXT("pocket: the stones knock running or jumping, not walking or standing, and not with an empty pocket"));
 	}
 	return bOk;
 }

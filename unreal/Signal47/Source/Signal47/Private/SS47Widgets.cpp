@@ -1,6 +1,8 @@
 #include "SS47Widgets.h"
 #include "SS47ScreenView.h"
+#include "SS47Notebook.h"
 #include "S47Freeform.h"
+#include "S47Hide.h"
 #include "S47Evening.h"
 #include "S47Keys.h"
 #include "S47Gamepad.h"
@@ -255,33 +257,47 @@ namespace
 		TAttribute<float> AlphaAttr;
 		static float Height(int32 Count) { return CardH + Pitch * FMath::Max(0, Count - 2); }
 		FString HeadWords() const { return S47HudGauges::Handwritten(HeadAttr.Get(FString()).TrimStartAndEnd(), true); }
-		// the place on the first line, the task wrapped to the card under it (at most four lines, the last cut short)
+		// the place on the first line, the task wrapped to the card under it (at most four lines, the last cut short). CASES-OPS-
+		// 20261109: a second part after a line break (an open case, FS47FreeformSession::HudCaseLine) starts a line of its own, at
+		// most two more lines; the task gives up its last lines to it.
 		TArray<FString> Lines() const
 		{
 			using namespace S47Game;
 			TArray<FString> Out;
 			const FString HeadLine = HeadWords();
 			if (!HeadLine.IsEmpty()) Out.Add(HeadLine);
-			TArray<FString> Words;
-			S47HudGauges::Handwritten(BodyAttr.Get(FString()).TrimStartAndEnd(), false).ParseIntoArrayWS(Words);
-			if (!Words.Num()) return Out;
-			if (!FSlateApplication::IsInitialized()) { Out.Add(FString::Join(Words, TEXT(" "))); return Out; }
-			const TSharedRef<FSlateFontMeasure> Meter = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+			TArray<FString> Parts;
+			BodyAttr.Get(FString()).ParseIntoArray(Parts, TEXT("\n"), true);
+			if (Parts.Num() > 2) Parts.SetNum(2);
+			const bool bMeasure = FSlateApplication::IsInitialized();
+			const TSharedPtr<FSlateFontMeasure> Meter = bMeasure ? TSharedPtr<FSlateFontMeasure>(FSlateApplication::Get().GetRenderer()->GetFontMeasureService()) : nullptr;
 			const FSlateFontInfo Font = Hand(28.f);
 			const float Room = P(CardW - 52.f - 12.f);
-			FString Line;
-			for (const FString& Each : Words)
+			auto Wrap = [&](const FString& Text)
 			{
-				const FString Try = Line.IsEmpty() ? Each : Line + TEXT(" ") + Each;
-				if (!Line.IsEmpty() && float(Meter->Measure(Try, Font).X) > Room) { Out.Add(Line); Line = Each; }
-				else Line = Try;
-			}
-			if (!Line.IsEmpty()) Out.Add(Line);
-			if (Out.Num() > MostLines)
-			{
-				Out.SetNum(MostLines);
-				Out.Last() += TEXT("...");
-			}
+				TArray<FString> Words, Got;
+				S47HudGauges::Handwritten(Text.TrimStartAndEnd(), false).ParseIntoArrayWS(Words);
+				if (!Words.Num()) return Got;
+				if (!Meter.IsValid()) { Got.Add(FString::Join(Words, TEXT(" "))); return Got; }
+				FString Line;
+				for (const FString& Each : Words)
+				{
+					const FString Try = Line.IsEmpty() ? Each : Line + TEXT(" ") + Each;
+					if (!Line.IsEmpty() && float(Meter->Measure(Try, Font).X) > Room) { Got.Add(Line); Line = Each; }
+					else Line = Try;
+				}
+				if (!Line.IsEmpty()) Got.Add(Line);
+				return Got;
+			};
+			auto Cut = [](TArray<FString>& L, int32 Most) { if (L.Num() > Most) { L.SetNum(FMath::Max(Most, 0)); if (L.Num()) L.Last() += TEXT("..."); } };
+			TArray<FString> Task = Parts.Num() ? Wrap(Parts[0]) : TArray<FString>();
+			TArray<FString> Case = Parts.Num() > 1 ? Wrap(Parts[1]) : TArray<FString>();
+			Cut(Case, 2);
+			// the task as before; with a case under it, the card takes one line more and the task keeps at least one
+			const int32 Most = MostLines + (Case.Num() ? 1 : 0) - Out.Num();
+			Cut(Task, FMath::Max(1, Most - Case.Num()));
+			Out.Append(Task);
+			Out.Append(Case);
 			return Out;
 		}
 	};
@@ -294,6 +310,9 @@ void SS47Hud::Construct(const FArguments& InArgs)
 {
 	using namespace S47Game;
 	WhiteBrush = MakeUnique<FSlateColorBrush>(FLinearColor::White);
+	NotebooksShut = SS47Notebook::Shut();
+	// MSG-ONE-20261109: while Dale's own voice is on the set, nobody else's caption starts (danger does)
+	Queue.Hold = [](const FS47MessageQueue::FItem& I) { const US47Main* Mn = Main(); return I.Pri > FS47MessageQueue::EPri::Dale && Mn && Mn->FieldRadio.IsValid() && Mn->FieldRadio->DaleSpeaking(); };
 	PromptAttr = InArgs._Prompt; AltAttr = InArgs._PromptAlt; ClockAttr = InArgs._Clock;
 	ShowPromptAttr = InArgs._ShowPrompt; ShowAimAttr = InArgs._ShowAim;
 	auto Aim = [this] { return ShowAimAttr.Get(true); };
@@ -390,6 +409,8 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		[Prompt]
 		// the captions at the foot (.sub), the newest under
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, P(96))[SAssignNew(ToastBox, SVerticalBox)]
+		// MSG-ONE-20261109: a plain line while a caption is up, small and dimmed, bottom left over the NOTED slip
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(P(40), 0, 0, P(200))[SAssignNew(CornerBox, SVerticalBox)]
 		// the NOTED slip (.note), bottom left
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(P(40), 0, 0, P(96))
 		[
@@ -420,8 +441,9 @@ void SS47Hud::Construct(const FArguments& InArgs)
 void SS47Hud::Objective(const FString& Text)
 {
 	if (Text == ObjectiveText) return;
-	// HUD-D-20261109: a new task brings its card in; none takes it away
-	NoteT = Text.TrimStartAndEnd().IsEmpty() ? -1.f : 0.f;
+	// HUD-D-20261109: a new task brings its card in; none takes it away. D45-20261110 (Tom: the card flickered with the count while a
+	// signal recorded): the same task with new figures is no new task, so the card is rewritten where it stands and is not brought in again.
+	if (!S47HudGauges::SameTask(ObjectiveText, Text)) NoteT = Text.TrimStartAndEnd().IsEmpty() ? -1.f : 0.f;
 	ObjectiveText = Text;
 	// "FRAME 01 // INSPECT THE PRINT": the head goes on the tag line, before the clock; without one
 	// the tag is the place
@@ -430,53 +452,86 @@ void SS47Hud::Objective(const FString& Text)
 	else { ObjectiveHead.Reset(); ObjectiveBody = Text.TrimStartAndEnd(); }
 }
 
-void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
+void SS47Hud::Toast(const FString& Text, float Secs, TFunction<double()> Clock, int32 Pri)
 {
 	// Captions already have their own radio/telephone delivery. Do not turn them
 	// into a second narrator or replace the last environmental description.
 	static const FRegexPattern Caption(TEXT("^(?:RADIO(?:,|:)|CB,|WARD:|DR\\. WARD:|NORA:|N\\. VEGA:|THE LINE:|YOU:|TOM[ÁA]S:)"), ERegexPatternFlags::CaseInsensitive);
 	FRegexMatcher M(Caption, Text);
-	if (!M.FindNext()) LastToast = Text;
-	// HUD-D-20261109: words coming over the walkie ("WALKIE 1, DALE: ...") put its line up for as long as they are on screen
-	{
-		FString CapHead, Said;
-		S47Game::SplitCaption(Text, CapHead, Said);
-		int32 SpokeOn = 1;
-		FString Speaking;
-		if (S47HudGauges::WalkieSpeaker(CapHead, SpokeOn, Speaking)) { Gauges.Speaker = Speaking; Gauges.SpeechLeft = FMath::Max(Gauges.SpeechLeft, Secs); }
-	}
-	// UI.toast: the same line twice in a row is noise
-	TSharedPtr<FToast> LastLive;
-	for (const TSharedRef<FToast>& T : Toasts) if (T->Out < 0.f) LastLive = T;
-	if (LastLive.IsValid() && LastLive->Text == Text) return;
-	// UI.ts toast(text, secs, clock): recorded captions share the pausable sound clock.
-	const double At = Clock ? Clock() : Now;
-	const TSharedRef<FToast> T = MakeShared<FToast>();
-	T->Text = Text;
-	T->Until = At + Secs;
-	T->Clock = MoveTemp(Clock);
-	// the speaker over the line; a plain line is stamped with the clock it came at
-	S47Game::SplitCaption(Text, T->Who, T->Line);
-	if (T->Who.IsEmpty()) if (const US47Main* Mn = Main(); Mn && Mn->Story && Mn->Mode == US47Main::EMode::Play) T->Who = Mn->Evening && Mn->Evening->Commute() ? FString(TEXT("LATE AFTERNOON")) : Mn->Story->ClockText(false);
-	Toasts.Add(T);
-	// at most two lines on screen; older ones fade out instead of vanishing mid-read
-	int32 Live = 0;
-	for (const TSharedRef<FToast>& X : Toasts) Live += X->Out < 0.f;
-	for (const TSharedRef<FToast>& X : Toasts) if (Live > 2 && X->Out < 0.f) { X->Out = 0.f; --Live; }
-	Rebuild();
+	if (!M.FindNext() && !S47Thought::Is(Text)) LastToast = Text; // (a thought is not a description: WEEKLY-CASE-20261109)
+	// MSG-ONE-20261109: into the one queue, which shows it when it is its turn (SyncToasts). A CB line holds only while the player
+	// sits at the CB (Freeform), a walkie line only while the set is on them; out of date, it is let go unseen.
+	using FQ = FS47MessageQueue;
+	const FQ::EPri P = Pri >= 0 && Pri <= int32(FQ::EPri::Hint) ? FQ::EPri(Pri) : FQ::Classify(Text, bool(Clock));
+	const FString Head = FQ::Speaker(Text).ToUpper();
+	TFunction<bool()> Valid;
+	if (Head == TEXT("CB") || Head.StartsWith(TEXT("CB,")) || Head.StartsWith(TEXT("CB ")))
+		Valid = [] { US47Main* Mn = Main(); return !Mn || !Mn->IsFreeform() || FS47FieldRadio::CbAtHand(Mn); };
+	else if (Head.StartsWith(TEXT("WALKIE")))
+		Valid = [] { const US47Main* Mn = Main(); return !Mn || !Mn->FieldRadio.IsValid() || (Mn->FieldRadio->Owned() && !Mn->FieldRadio->LeftOut()); };
+	Queue.Push(Text, Secs, P, MoveTemp(Clock), MoveTemp(Valid));
+	if (Queue.Step(Now, 0.)) SyncToasts();
 }
 
-void SS47Hud::ClearToasts() { Toasts.Empty(); LastToast.Empty(); Rebuild(); }
+void SS47Hud::SyncToasts()
+{
+	// MSG-ONE-20261109: what each lane of the queue shows now. The line it showed before fades out; the new one comes in. A plain line
+	// stands in the corner while a caption is up.
+	using FQ = FS47MessageQueue;
+	const bool bCaption = Queue.Showing(FQ::ELane::Speech) != nullptr;
+	bool bChanged = false;
+	for (const FQ::ELane Lane : { FQ::ELane::Speech, FQ::ELane::Hint })
+	{
+		const FQ::FItem* Shown = Queue.Showing(Lane);
+		const bool bHint = Lane == FQ::ELane::Hint;
+		TSharedPtr<FToast> Live;
+		for (const TSharedRef<FToast>& X : Toasts) if (X->Out < 0.f && X->bHint == bHint) Live = X;
+		if (Live.IsValid() && (!Shown || Shown->Id != Live->Id)) { Live->Out = 0.f; Live.Reset(); bChanged = true; }
+		if (Shown && !Live.IsValid())
+		{
+			const TSharedRef<FToast> T = MakeShared<FToast>();
+			T->Text = Shown->Text;
+			T->Id = Shown->Id;
+			T->bHint = bHint;
+			T->bCorner = bHint && bCaption;
+			// the speaker over the line; a plain line is stamped with the clock it came at
+			S47Game::SplitCaption(Shown->Text, T->Who, T->Line);
+			// WEEKLY-CASE-20261109: a thought has no speaker and no clock over it
+			T->bThought = S47Thought::Is(Shown->Text);
+			if (T->bThought) { T->Who.Reset(); T->Line = S47Thought::Words(Shown->Text); }
+			else if (T->Who.IsEmpty()) if (const US47Main* Mn = Main(); Mn && Mn->Story && Mn->Mode == US47Main::EMode::Play) T->Who = Mn->Evening && Mn->Evening->Commute() ? FString(TEXT("LATE AFTERNOON")) : Mn->Story->ClockText(false);
+			// HUD-D-20261109: words coming over the walkie ("WALKIE 1, DALE: ...") put its line up for as long as they are on screen
+			int32 SpokeOn = 1;
+			FString Speaking;
+			if (!bHint && S47HudGauges::WalkieSpeaker(T->Who, SpokeOn, Speaking))
+			{
+				Gauges.Speaker = Speaking;
+				Gauges.SpeechLeft = FMath::Max(Gauges.SpeechLeft, float(Shown->Until - (Shown->Clock ? Shown->Clock() : Now)));
+			}
+			Toasts.Add(T);
+			Live = T;
+			bChanged = true;
+		}
+		if (bHint && Live.IsValid() && Live->bCorner != bCaption) { Live->bCorner = bCaption; bChanged = true; }
+	}
+	if (bChanged) Rebuild();
+}
+
+void SS47Hud::ClearToasts() { Toasts.Empty(); Queue.Clear(); Queue.Step(Now, 0.); LastToast.Empty(); Rebuild(); }
 
 void SS47Hud::Rebuild()
 {
 	using namespace S47Game;
-	if (!ToastBox.IsValid()) return;
+	if (!ToastBox.IsValid() || !CornerBox.IsValid()) return;
 	ToastBox->ClearChildren();
+	CornerBox->ClearChildren();
 	const bool bLarge = Main() && Main()->UI && Main()->UI->bLargeText;
-	const float Px = bLarge ? 26.f : 22.f;
 	for (const TSharedRef<FToast>& T : Toasts)
 	{
+		// MSG-ONE-20261109: a plain line beside a caption is smaller, dimmer and to the left, under no caption
+		const bool bCorner = T->bCorner;
+		const float Px = (bLarge ? 26.f : 22.f) * (bCorner ? 0.8f : 1.f);
+		const float Dim = bCorner ? 0.72f : 1.f;
 		TSharedRef<SVerticalBox> In = SNew(SVerticalBox);
 		if (!T->Who.IsEmpty())
 		{
@@ -484,22 +539,45 @@ void SS47Hud::Rebuild()
 			// told apart by their words, CB 19 or WALKIE 1, as the radio line is)
 			FString WhoShown = T->Who.ToUpper();
 			if (WhoShown == TEXT("CB") || WhoShown.StartsWith(TEXT("CB,"))) WhoShown = FString(TEXT("CB 19")) + WhoShown.Mid(2);
-			In->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, P(2))[SNew(STextBlock).Text(FText::FromString(WhoShown)).Font(Term(22, 3)).ColorAndOpacity(Amber())];
+			In->AddSlot().AutoHeight().HAlign(bCorner ? HAlign_Left : HAlign_Center).Padding(0, 0, 0, P(2))[SNew(STextBlock).Text(FText::FromString(WhoShown)).Font(Term(bCorner ? 18 : 22, 3)).ColorAndOpacity(Amber())];
 		}
-		In->AddSlot().AutoHeight().HAlign(HAlign_Center)
+		In->AddSlot().AutoHeight().HAlign(bCorner ? HAlign_Left : HAlign_Center)
 		[
-			SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(Px)).ColorAndOpacity(C(0xf1ead8)).AutoWrapText(T->Line.Len() > 42).WrapTextAt(P(676)).Justification(ETextJustify::Center)
+			SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(Px)).ColorAndOpacity(C(0xf1ead8)).AutoWrapText(bCorner || T->Line.Len() > 42).WrapTextAt(P(bCorner ? 440 : 676)).Justification(bCorner ? ETextJustify::Left : ETextJustify::Center)
 			.LineHeightPercentage(LinePercent(Type(Px), Px * 1.4f))
 		];
 		const TWeakPtr<FToast> W = T;
-		ToastBox->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(3))
+		const auto Alpha = [W, Dim]
+		{
+			const TSharedPtr<FToast> X = W.Pin();
+			if (!X.IsValid()) return FLinearColor::Transparent;
+			return FLinearColor(1, 1, 1, Dim * (X->Out >= 0.f ? FMath::Max(0.f, 1.f - X->Out / 0.6f) : FMath::SmoothStep(0.f, 1.f, X->In)));
+		};
+		if (T->bThought)
+		{
+			// WEEKLY-CASE-20261109: the player's own thought, no box. D46-5-20261110 (Tom): in the typewriter face like a caption in a
+			// case-file show (Special Elite), pale on the dark with a hard shadow under it so that it reads on a lit yard too; low on the
+			// screen like the captions (the same lane, so one at a time with them).
+			const float TypePx = (bLarge ? 32.f : 27.f);
+			ToastBox->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(3))
+			[
+				SNew(SBorder).BorderImage(Box(C(0x05070d, 0.f))).Padding(FMargin(P(18), P(4), P(18), P(6))).ColorAndOpacity_Lambda(Alpha)
+				[
+					SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(TypePx, 1.f)).ColorAndOpacity(FLinearColor(0.93f, 0.92f, 0.88f, 0.96f))
+					.ShadowOffset(FVector2D(2.f, 2.f)).ShadowColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.85f))
+					.AutoWrapText(T->Line.Len() > 48).WrapTextAt(P(676)).Justification(ETextJustify::Center)
+				]
+			];
+			continue;
+		}
+		(bCorner ? CornerBox : ToastBox)->AddSlot().AutoHeight().HAlign(bCorner ? HAlign_Left : HAlign_Center).Padding(0, P(3))
 		[
-			SNew(SBorder).BorderImage(Box(C(0x05070d, 0.72f))).Padding(FMargin(P(22), P(10), P(22), P(12)))
-			.ColorAndOpacity_Lambda([W]
+			SNew(SBorder).BorderImage(Box(C(0x05070d, bCorner ? 0.5f : 0.72f))).Padding(bCorner ? FMargin(P(14), P(7), P(14), P(8)) : FMargin(P(22), P(10), P(22), P(12)))
+			.ColorAndOpacity_Lambda([W, Dim]
 			{
 				const TSharedPtr<FToast> X = W.Pin();
 				if (!X.IsValid()) return FLinearColor::Transparent;
-				return FLinearColor(1, 1, 1, X->Out >= 0.f ? FMath::Max(0.f, 1.f - X->Out / 0.6f) : FMath::SmoothStep(0.f, 1.f, X->In));
+				return FLinearColor(1, 1, 1, Dim * (X->Out >= 0.f ? FMath::Max(0.f, 1.f - X->Out / 0.6f) : FMath::SmoothStep(0.f, 1.f, X->In)));
 			})
 			.RenderTransform_Lambda([W] { const TSharedPtr<FToast> X = W.Pin(); return TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2D(0, X.IsValid() && X->Out < 0.f ? P(6) * (1.f - FMath::SmoothStep(0.f, 1.f, X->In)) : 0.f))); })
 			[In]
@@ -548,15 +626,13 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	using namespace S47Game;
 	SCompoundWidget::Tick(G, InCurrentTime, Dt);
 	Now += Dt;
-	// the captions: in, held to their time (on their own clock when they have one), then out
+	// MSG-ONE-20261109: the queue holds each line to its time (on its own clock when it has one) and says which comes next; a line
+	// waits only while the game is being played. Here they come in and go out.
+	if (Queue.Step(Now, Playing() && !ModalOpen() ? double(Dt) : 0.)) SyncToasts();
 	bool bGone = false;
 	for (const TSharedRef<FToast>& T : Toasts)
 	{
-		if (T->Out < 0.f)
-		{
-			T->In = FMath::Min(1.f, T->In + Dt / 0.35f);
-			if (T->Until <= (T->Clock ? T->Clock() : Now)) T->Out = 0.f;
-		}
+		if (T->Out < 0.f) T->In = FMath::Min(1.f, T->In + Dt / 0.35f);
 		else T->Out += Dt;
 		bGone |= T->Out >= 0.6f;
 	}
@@ -566,6 +642,13 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	const float Target = bFadeOn ? 1.f : 0.f;
 	FadeAlpha += (Target - FadeAlpha) * FMath::Min(1.f, Dt * (bFadeOn ? 2.5f : 1.8f));
 	if (FMath::Abs(Target - FadeAlpha) < 0.01f) FadeAlpha = Target;
+	// M7-HUD-20261109: closing the notebook or its map brings the task's card in again, for its six seconds, once nothing else covers it
+	if (NotebooksShut != SS47Notebook::Shut()) { NotebooksShut = SS47Notebook::Shut(); bNoteAgain = true; }
+	if (bNoteAgain && Playing() && !ModalOpen() && !Vf.bOn)
+	{
+		bNoteAgain = false;
+		if (!ObjectiveText.TrimStartAndEnd().IsEmpty()) NoteT = 0.f;
+	}
 	// HUD-D-20261109: the task's card runs its seven seconds only while it can be seen
 	if (NoteT >= 0.f && Playing() && !ModalOpen() && !Vf.bOn)
 	{
@@ -594,7 +677,8 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 			HintRow->ClearChildren();
 			auto Add = [this](const FString& K, const TCHAR* L) { HintRow->AddSlot().AutoWidth().Padding(P(14), 0)[KeyHint(*K, L)]; };
 			Add(S47Keys::Label(TEXT("notebook")).ToUpper(), TEXT("NOTEBOOK"));
-			if (bBoard) Add(S47Keys::Label(TEXT("board")).ToUpper(), TEXT("CASE BOARD"));
+			// D46-20261110: Freeform has no pinboard (CASE BOARD is the OPS screen there): B is Story's case board only
+			if (bBoard && !M->IsFreeform()) Add(S47Keys::Label(TEXT("board")).ToUpper(), TEXT("CASE BOARD"));
 			if (bLight) Add(S47Keys::Label(TEXT("light")).ToUpper(), TEXT("FLASHLIGHT"));
 			Add(S47Keys::Label(TEXT("pause")), TEXT("PAUSE"));
 		}
@@ -747,10 +831,12 @@ void SS47Hud::PaintGauges(const FGeometry& G, FSlateWindowElementList& Out, int3
 		const float StampPad = P(8.f), StampH = P(26.f), StampEdge = FMath::Max(1.f, P(1.2f));
 		const float StampBottom = Floor - Gauges.BatteryA * P(26.f) - Gauges.RadioA * P(24.f) - P(4.f);
 		const float StampW = StampTextW + 2.f * StampPad, StampLeft = Right - StampW, StampTop = StampBottom - StampH;
-		const FLinearColor StampInk(1.f, 0.69f, 0.32f, 0.6f * StampA);
+		// critic round 5: LOG NOT FILED in a dull red of its own, not the amber of a log that was filed
+		const FLinearColor StampHue = S47HudGauges::FiledRefused(Gauges.Filed) ? FLinearColor(0.78f, 0.36f, 0.30f) : FLinearColor(1.f, 0.69f, 0.32f);
+		const FLinearColor StampInk(StampHue.R, StampHue.G, StampHue.B, 0.6f * StampA);
 		Fill(StampLeft, StampTop, StampW, StampEdge, StampInk); Fill(StampLeft, StampBottom - StampEdge, StampW, StampEdge, StampInk);
 		Fill(StampLeft, StampTop, StampEdge, StampH, StampInk); Fill(Right - StampEdge, StampTop, StampEdge, StampH, StampInk);
-		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(FVector2f(StampTextW + P(4.f), StampH), FSlateLayoutTransform(FVector2f(StampLeft + StampPad, StampTop + P(2.f)))), Gauges.Filed, StampFont, ESlateDrawEffect::None, FLinearColor(1.f, 0.69f, 0.32f, 0.92f * StampA));
+		FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(FVector2f(StampTextW + P(4.f), StampH), FSlateLayoutTransform(FVector2f(StampLeft + StampPad, StampTop + P(2.f)))), Gauges.Filed, StampFont, ESlateDrawEffect::None, FLinearColor(StampHue.R, StampHue.G, StampHue.B, 0.92f * StampA));
 	}
 }
 
@@ -890,36 +976,42 @@ void SS47Hud::PaintEdge(const FGeometry& G, FSlateWindowElementList& Out, int32 
 		Reach = FMath::Max(Reach, float(M->Freeform->Fatigue->EdgeReach()));
 		Lids = float(M->Freeform->Fatigue->Lids());
 	}
+	// N1110 (HORROR-IDEAS-20261106-10 point 6): under a table, the edge of the top comes down over the view (the same lids)
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Hide) Lids = FMath::Max(Lids, float(M->Freeform->Hide->Frame()));
+	// VIGNETTE-STEPS-20261109 (Tom, d37): the lids and the rim were frames laid on frames (12 and 14 boxes), which showed as hard
+	// rectangles, each a step darker, round the lights and the abduction's glare. Now each is one smooth shade: a mesh whose vertices
+	// carry the darkness (S47HudGauges::RimShade, LidShade) and the card blends between them, one element each. Same colours,
+	// the same darkness at the edge and the same reach.
+	const auto Shade = [&](const S47HudGauges::FShadeMesh& Mesh, const FLinearColor& Col)
+	{
+		if (Mesh.Index.IsEmpty() || !FSlateApplication::IsInitialized()) return;
+		const FSlateRenderTransform& T = G.GetAccumulatedRenderTransform();
+		TArray<FSlateVertex> Verts;
+		Verts.Reserve(Mesh.At.Num());
+		for (int32 I = 0; I < Mesh.At.Num(); ++I)
+		{
+			FLinearColor C = Col;
+			C.A = FMath::Clamp(Mesh.Alpha[I], 0.f, 1.f);
+			Verts.Add(FSlateVertex::Make<ESlateVertexRounding::Disabled>(T, Mesh.At[I], FVector2f::ZeroVector, C.ToFColor(true)));
+		}
+		TArray<SlateIndex> Index;
+		Index.Reserve(Mesh.Index.Num());
+		for (const uint32 I : Mesh.Index) Index.Add(SlateIndex(I));
+		const FSlateResourceHandle Handle = FSlateApplication::Get().GetRenderer()->GetResourceHandle(*FCoreStyle::Get().GetBrush(TEXT("WhiteBrush")));
+		FSlateDrawElement::MakeCustomVerts(Out, Layer, Handle, Verts, Index, nullptr, 0, 0);
+	};
+	S47HudGauges::FShadeMesh Mesh;
 	if (Lids > 0.004f)
 	{
 		// each lid a soft dark band, darkest at the screen's edge; at 1 they meet in the middle
-		constexpr int32 LidBands = 12;
 		const float Edge = FMath::Lerp(0.8f, 0.985f, FMath::Clamp(Lids, 0.f, 1.f));
-		const float LidEach = 1.f - FMath::Pow(1.f - Edge, 1.f / LidBands);
-		const FLinearColor Lid(0.012f, 0.008f, 0.006f, LidEach);
 		const float Deep = S.Y * 0.5f * FMath::Min(1.f, Lids * 1.08f);
-		for (int32 I = 1; I <= LidBands; ++I)
-		{
-			const float Dy = Deep * I / LidBands;
-			FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(S.X, Dy), FSlateLayoutTransform(FVector2f(0.f, 0.f))), WhiteBrush.Get(), ESlateDrawEffect::None, Lid);
-			FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(S.X, Dy), FSlateLayoutTransform(FVector2f(0.f, S.Y - Dy))), WhiteBrush.Get(), ESlateDrawEffect::None, Lid);
-		}
+		S47HudGauges::LidMesh(S, Deep, Edge, Mesh);
+		Shade(Mesh, FLinearColor(0.012f, 0.008f, 0.006f));
 	}
 	if (Alpha < 0.004f || Reach <= 0.f) return;
-	// nested frames, each a little darker toward the edge: a soft dark rim without a texture or a post-process material
-	constexpr int32 Bands = 14;
-	const float Each = 1.f - FMath::Pow(1.f - FMath::Min(Alpha, 0.95f), 1.f / Bands);
-	const FLinearColor Dark(0.02f, 0.f, 0.f, Each);
-	auto Fill = [&](float X0, float Y0, float X1, float Y1)
-	{
-		if (X1 > X0 && Y1 > Y0) FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(X1 - X0, Y1 - Y0), FSlateLayoutTransform(FVector2f(X0, Y0))), WhiteBrush.Get(), ESlateDrawEffect::None, Dark);
-	};
-	for (int32 I = 1; I <= Bands; ++I)
-	{
-		const float Dx = S.X * Reach * I / Bands, Dy = S.Y * Reach * I / Bands;
-		Fill(0.f, 0.f, S.X, Dy); Fill(0.f, S.Y - Dy, S.X, S.Y);
-		Fill(0.f, Dy, Dx, S.Y - Dy); Fill(S.X - Dx, Dy, S.X, S.Y - Dy);
-	}
+	S47HudGauges::RimMesh(S, Reach, Alpha, Mesh);
+	Shade(Mesh, FLinearColor(0.02f, 0.f, 0.f));
 }
 
 int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const
@@ -1022,11 +1114,10 @@ void SS47Document::Construct(const FArguments& InArgs)
 	const FS47Doc& D = InArgs._Doc;
 	US47UI* UI = InArgs._UI;
 	TextScale = UI && UI->bLargeText ? 1.35f : 1.f;
-	// UI.document's readings: Kinski reads the page (Read document, without its pencil marks and rules),
-	// the description reader the transcript (Read description), each when that reader is on
+	// UI.document's readings: the description reader the transcript (Read description), when it is on.
+	// (KINSKI-READ-OUT, Tom 9 November 2026: the page itself is text only, no Read document; ReadDoc stays unset)
 	if (UI)
 	{
-		if (!D.Page.TrimStartAndEnd().IsEmpty()) ReadDoc = UI->ReadingAction(S47Reading::DocumentReadingParagraphs(D.Page), TEXT("document"));
 		ReadDesc = UI->ReadingAction(Paragraphs(D.Transcript), TEXT("description"));
 	}
 	// the actions: the readings (V the first), then PUT IT DOWN (Esc)

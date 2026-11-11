@@ -181,7 +181,8 @@ void FS47Herd::FollowColliders()
  {
   const FVector P(COWS[I][0]+Offsets[I].X,Ys[I],COWS[I][1]+Offsets[I].Z);
   const FVector New=Group?Group.LocalToWorld(P):P+ModeOffset;
-  if(FVector2D::Distance(FVector2D(New.X,New.Z),FVector2D(ColliderAt[I].X,ColliderAt[I].Z))<.6)continue;
+  // (BLOCKERS-20261109: within 30 cm, not 60: the circle is round her middle, not a step behind her)
+  if(FVector2D::Distance(FVector2D(New.X,New.Z),FVector2D(ColliderAt[I].X,ColliderAt[I].Z))<.3)continue;
   MoveObstacle(ColliderAt[I],New,S47Herd::COW_R);ColliderAt[I]=New;
   if(LookAreas.IsValidIndex(I)&&LookBases.IsValidIndex(I))
   {FVector Look=LookBases[I]+FVector(Offsets[I].X,Ys[I]-S47RoadTerrain::SurfaceY(COWS[I][0],COWS[I][1]),Offsets[I].Z);LookAreas[I].SetPosition(Look);}
@@ -269,6 +270,11 @@ void FS47Herd::Pose(int32 I, double T)
 	{
 		Pitch = FMath::Lerp(Pitch, .12, Alarm); Turn = FMath::Lerp(Turn, .55 * FMath::Sin(T * 3.1), Alarm);
 	}
+	if (I == LiftCow && LiftH > 0)
+	{
+		// Held up by the light: legs hang, head up and a little back, turning slowly about her own axis.
+		BodyP.Y += LiftH; Yaw += LiftSpin; BodyPitch = .12 * FMath::Sin(T * .6); Pitch = FMath::Lerp(Pitch, .35, .9); Turn *= .3;
+	}
 	BodyQ = S47Three::Euler(BodyPitch, Yaw, 0);
 	HeadP = BodyP + BodyQ.RotateVector(S47Herd::NECK);
 	HeadQ = BodyQ * S47Three::Euler(Pitch, Turn, 0, TEXT("YXZ"));
@@ -297,7 +303,7 @@ void FS47Herd::Set(bool bInStill, int32 InMissing, bool bRing)
  if(S47FarmWorld::Enabled(M)){bInStill=false;InMissing=Away;bRing=Away>=0;}
 	if (bInStill != bStill || InMissing != Missing) { bStill = bInStill; Missing = InMissing; Place(LastT); }
 	Ring.SetVisible(bRing);
-	for (int32 I = 0; I < LookAreas.Num(); ++I) LookAreas[I].SetVisible(I != Missing);
+	for (int32 I = 0; I < LookAreas.Num(); ++I) LookAreas[I].SetVisible(I != Missing && !(I == LiftCow && LiftH > .5));
 	UpdateObstacles();
 }
 
@@ -308,6 +314,29 @@ void FS47Herd::SetAway(int32 Cow)
  Away=Cow;
  // Set does the rest: the cow, her handle, her collider and the ring where she stood, as for Story's ninth.
  if(S47FarmWorld::Enabled(M))Set(false,-1,false);
+}
+
+void FS47Herd::SetLift(int32 Cow, double Height, double Spin)
+{
+	if (!S47FarmWorld::Enabled(M) || Cow != S47Herd::MISSING || !FMath::IsFinite(Height) || !FMath::IsFinite(Spin) || Height <= 0) { Cow = -1; Height = Spin = 0; }
+	Height = FMath::Clamp(Height, 0., 40.);
+	if (Cow == LiftCow && FMath::IsNearlyEqual(Height, LiftH, 1e-4) && FMath::IsNearlyEqual(Spin, LiftSpin, 1e-4)) return;
+	const bool bWasUp = LiftCow >= 0 && LiftH > .5;
+	LiftCow = Cow; LiftH = Height; LiftSpin = Spin;
+	bDirty = true;
+	// Her handle and her collider stay on the grass until she is clear of it: nobody walks into a cow that hangs in the air.
+	const bool bUp = LiftCow >= 0 && LiftH > .5;
+	if (bUp != bWasUp)
+	{
+		for (int32 I = 0; I < LookAreas.Num(); ++I) if (I == S47Herd::MISSING) LookAreas[I].SetVisible(!bUp && Missing != I);
+		UpdateObstacles();
+	}
+}
+
+FVector FS47Herd::LiftGround() const
+{
+	const FVector P(COWS[S47Herd::MISSING][0], Ys.IsValidIndex(S47Herd::MISSING) ? Ys[S47Herd::MISSING] : 0., COWS[S47Herd::MISSING][1]);
+	return Group ? Group.LocalToWorld(P) : P + ModeOffset;
 }
 
 FS47Obstacle FS47Herd::Obstacle(const FVector2D& Origin)
@@ -323,11 +352,11 @@ void FS47Herd::UpdateObstacles()
 	const FVector P = Group.LocalToWorld(FVector(COWS[S47Herd::MISSING][0], Ys[S47Herd::MISSING], COWS[S47Herd::MISSING][1]));
 	// The native drive owns value arrays. Find the exported circle by its unchanged centre each
 	// step, instead of holding a pointer into a TArray which the area's other builders can grow.
-	if (M->World) M->World->MoveHerdObstacle(Area,P,P,Missing==S47Herd::MISSING?0:S47Herd::COW_R);
+	if (M->World) M->World->MoveHerdObstacle(Area,P,P,(Missing==S47Herd::MISSING||(LiftCow==S47Herd::MISSING&&LiftH>.5))?0:S47Herd::COW_R);
 	for (const TCHAR* A : { TEXT("saro"), TEXT("road"), TEXT("diner") })
 		for (FS47Rect& C : M->Web->CollidersMutable(A))
 			if (FMath::Abs((C.MinX + C.MaxX) * 0.5 - P.X) < 0.001 && FMath::Abs((C.MinZ + C.MaxZ) * 0.5 - P.Z) < 0.001)
-				C.bEnabled = Missing != S47Herd::MISSING;
+				C.bEnabled = Missing != S47Herd::MISSING && !(LiftCow == S47Herd::MISSING && LiftH > .5);
 }
 
 double FS47Herd::BeamAt(const FVector& P) const
@@ -432,6 +461,7 @@ bool FS47Herd::CowAt(int32 I, FVector& Out) const
 	if (Group) Out = Group.LocalToWorld(Out);else Out+=ModeOffset;
 	// Where its collider stands: within a step of the cow, and one place for everything that asks.
 	if (ColliderAt.IsValidIndex(I)) { Out.X = ColliderAt[I].X; Out.Z = ColliderAt[I].Z; }
+	if (I == LiftCow) Out.Y += LiftH;
 	return true;
 }
 
@@ -469,6 +499,9 @@ bool FS47Herd::SelfTest(TArray<FString>& Lines)
   // Story's count is its own: away means nothing outside Freeform.
   FS47Herd Story(nullptr,FString(),TEXT("road"));Story.SetAway(S47Herd::MISSING);
   Check(Story.Missing==-1&&Story.Away==-1,TEXT("a cow can only be away in Freeform"));
+  // PHOTO-02: Story's herd is never lifted, and nonsense heights put her down on the grass.
+  Story.SetLift(S47Herd::MISSING,6,1);
+  Check(Story.LiftHeight()==0,TEXT("a cow can only be lifted in Freeform"));
  }
  // An asset-free relocation sample checks all nine photo/pose coordinates
  // against the same offset and terrain basis, without altering Story samples.

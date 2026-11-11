@@ -16,12 +16,18 @@
 #include "S47GraphicsReview.h"
 #include "S47RenderAudit.h"
 #include "S47Picture.h"
+#include "S47Bodycam.h"
 #include "S47Startup.h"
 #include "S47Props.h"
 #include "S47SaroArrival.h"
 #include "S47SaroSite.h"
 #include "S47SaroLampFeet.h"
 #include "S47RouteLampFeet.h"
+#include "S47StreetLamps.h"
+#include "S47ArrayFence.h"
+#include "S47StationPhone.h"
+#include "S47CalicheGround.h"
+#include "S47SubstationYard.h"
 #include "S47Fleet.h"
 #include "S47TownBuildings.h"
 #include "S47CalicheHomes.h"
@@ -90,6 +96,32 @@ namespace
 	void Mat16(const TArray<TSharedPtr<FJsonValue>>& A, double* Out)
 	{
 		for (int32 k = 0; k < 16; ++k) Out[k] = A.IsValidIndex(k) ? A[k]->AsNumber() : (k % 5 == 0 ? 1.0 : 0.0);
+	}
+	// BLOCKERS-20261109: the propane tank on its saddles south of the annex (web/src/world/Grounds.ts things(), x -3.6 z 17.6, the tank
+	// 2.2 m long with its end caps to 1.33 m each way). Its box ran 1.7 m each way, 0.4 m of nothing past each cap (F10 "Looks (M6)":
+	// saro#walk48, 30 % of its edge bare). In the walk and in the truck's list it now ends at the caps; the export's other boxes stay.
+	void FitPropaneTank(AS47Web* W)
+	{
+		constexpr double PX = -3.6, Was = 1.7, Now = 1.35;
+		const auto Old = [&](double X0, double X1, double Z0, double Z1) { return FMath::Abs(X0 - (PX - Was)) < .001 && FMath::Abs(X1 - (PX + Was)) < .001 && FMath::Abs(Z0 - 17) < .001 && FMath::Abs(Z1 - 18.2) < .001; };
+		TArray<FS47Rect>& Walk = W->CollidersMutable(TEXT("saro"));
+		const TSharedPtr<FJsonObject>& Drive = W->DriveData(); const TSharedPtr<FJsonObject>* Legs = nullptr, * Leg = nullptr; const TArray<TSharedPtr<FJsonValue>>* Obs = nullptr;
+		if (Drive.IsValid() && Drive->TryGetObjectField(TEXT("legs"), Legs) && (*Legs)->TryGetObjectField(TEXT("saro"), Leg)) (*Leg)->TryGetArrayField(TEXT("obstacles"), Obs);
+		int32 WalkFound = 0, DriveFound = 0;
+		for (const FS47Rect& R : Walk) WalkFound += R.bEnabled && Old(R.MinX, R.MaxX, R.MinZ, R.MaxZ);
+		if (Obs) for (const TSharedPtr<FJsonValue>& V : *Obs) { const TArray<TSharedPtr<FJsonValue>>* A = nullptr; DriveFound += V->TryGetArray(A) && A->Num() == 4 && Old((*A)[0]->AsNumber(), (*A)[1]->AsNumber(), (*A)[2]->AsNumber(), (*A)[3]->AsNumber()); }
+		if (WalkFound != 1 || DriveFound != 1) { UE_LOG(LogS47Web, Warning, TEXT("S47: propane tank's box not found as exported (walk %d, drive %d); left as it is"), WalkFound, DriveFound); return; }
+		for (FS47Rect& R : Walk) if (R.bEnabled && Old(R.MinX, R.MaxX, R.MinZ, R.MaxZ)) { R.MinX = PX - Now; R.MaxX = PX + Now; }
+		TArray<TSharedPtr<FJsonValue>> NewObs = *Obs;
+		for (TSharedPtr<FJsonValue>& V : NewObs)
+		{
+			const TArray<TSharedPtr<FJsonValue>>* A = nullptr;
+			if (!V->TryGetArray(A) || A->Num() != 4 || !Old((*A)[0]->AsNumber(), (*A)[1]->AsNumber(), (*A)[2]->AsNumber(), (*A)[3]->AsNumber())) continue;
+			TArray<TSharedPtr<FJsonValue>> Box; for (const double D : { PX - Now, PX + Now, 17., 18.2 }) Box.Add(MakeShared<FJsonValueNumber>(D));
+			V = MakeShared<FJsonValueArray>(Box);
+		}
+		(*Leg)->SetArrayField(TEXT("obstacles"), NewObs);
+		UE_LOG(LogS47Web, Display, TEXT("S47: propane tank's box at SARO ends at its caps, x %.2f..%.2f (walk and drive; BLOCKERS-20261109)"), PX - Now, PX + Now);
 	}
 }
 
@@ -721,18 +753,31 @@ void AS47Web::BeginPlay()
 	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
 	TownBuildings = FS47TownBuildings::Build(this);
 	CalicheHomes = FS47CalicheHomes::Build(this,TownBuildings.IsValid());
+	// PAYPHONE-MOVE-20261109: the gas station's one payphone (the blue model at the old call anchor) goes in now, while the
+	// CalicheHomes trims it cuts the old exported phone out of still carry their CPU data; S47StreetLamps cuts Caliche's
+	// lamps out of the same batch (g999) below, and its runtime copy has no CPU indices in a cooked build.
+	S47StationPhone::Update(this);
 	// Cinema overlays install after the current CalicheAccess geometry in TownLayer.
 	MotelV2 = FS47MotelV2::Build(this);
 	RadioWoman = FS47RadioWoman::Build(this);
 	// Original lab detail meshes preserve all live prints, doors and existing light drivers.
 	S47PhotoLabDetail::Build(this);
 	S47SubstationDetail::Build(this);
+	// FENCES-INVISIBLE-20261108: barbed wire on the substation's fence and a second transformer on its own pad.
+	S47SubstationYard::Build(this);
 	BuildFieldModels();
 	RouteNature = FS47RouteNature::Build(this);
+	FitPropaneTank(this);
 	S47SaroSeam::Build(this);
 	S47RouteLampFeet::Build(this);
+	// STREETLAMPS-20261108: cobra heads on davit arms in place of the highway's old poles, standing on those footings.
+	S47StreetLamps::Build(this);
+	// D45-20261110 (D45-14): the Military Barriers wired fence in place of the array's chain-link planes; after the lamps (the same pole batch).
+	S47ArrayFence::Build(this);
 	BuildHighwayRanch();
 	BuildHighwayLandscape();
+	// CALICHE-REAL-20261108: a concrete stem wall under each of Caliche's building walls that measures floating over the land.
+	S47CalicheGround::Build(this);
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
 	SkySphere = NewObject<UStaticMeshComponent>(this, TEXT("SkySphere"));
@@ -785,7 +830,8 @@ void AS47Web::BeginPlay()
 		float Strength = 1.f, Calm = 0.f;
 		FParse::Value(FCommandLine::Get(), TEXT("S47PictureStrength="), Strength);
 		FParse::Value(FCommandLine::Get(), TEXT("S47PictureCalm="), Calm);
-		E->SetScalarParameterValue(TEXT("PictureMode"), S47Picture::Mode(Picture));
+		// D45-20261110 (D45-19): Bodycam 1986 keeps the VHS look until M_WebTone is rebuilt with MPC_Body
+		E->SetScalarParameterValue(TEXT("PictureMode"), S47Picture::ShaderMode(S47Picture::Mode(Picture), FS47Bodycam::HasShader()));
 		E->SetScalarParameterValue(TEXT("Vhs"), S47Picture::Mode(Picture) == 0 ? 0.f : S47Picture::Strength(Strength));
 		E->SetScalarParameterValue(TEXT("PictureStrength"), S47Picture::Strength(Strength));
 		E->SetScalarParameterValue(TEXT("PictureCalm"), S47Picture::Strength(Calm));
@@ -1293,7 +1339,10 @@ void AS47Web::SetTubes(bool bOn, int32 KeepOff)
 
 bool AS47Web::TubeLit(int32 K) const
 {
-	return TubePowered.IsValidIndex(K) && TubePowered[K];
+	if (!TubePowered.IsValidIndex(K) || !TubePowered[K]) return false;
+	// N1110 (PLAY-31-34): a tube that has gone out for good stays dark through a power return, Continue and a change of area.
+	const US47Main* Main = US47Main::Get(this);
+	return !(Main && Main->Freeform && Main->Freeform->TubeBroken(K));
 }
 
 void AS47Web::SetTube(int32 K, bool bLit)

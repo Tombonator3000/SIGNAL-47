@@ -1,5 +1,5 @@
 {
- "_doc": "SARO: the control room (ControlRoom.ts) and the annex (Annex.ts). The DP-80 stands where the homemade printer stood and takes its place in the story: the printout comes out of it as room.printerPaper does. A radio table against the south wall between the corridor door and the notice board holds the station's CB base set with its microphone, a 3278 terminal and the reel-to-reel; a portable cassette recorder on the console desk's free end; the records room's work table gets a typewriter and an office phone. The bought signal processor (console_kit), the KELVORA televisions and the RANGER radio stay as they are.",
+ "_doc": "SARO: the control room (ControlRoom.ts) and the annex (Annex.ts). FIX-20261110 (Tom): hallDresser is the dresser inside the visitor entrance (north wall of the corridor, 1.23 x 0.53 x 0.744 m at scale 0.85), the first thing a new operator sees; the field recorder (cassette) lies on its top and FS47FieldRadio puts the walkie beside it. Without the licensed model FS47Tape moves the recorder back to the control room desk. The DP-80 stands where the homemade printer stood and takes its place in the story: the printout comes out of it as room.printerPaper does. A radio table against the south wall between the corridor door and the notice board holds the station's CB base set with its microphone, a 3278 terminal and the reel-to-reel; a portable cassette recorder on the console desk's free end; the records room's work table gets a typewriter and an office phone. The bought signal processor (console_kit), the KELVORA televisions and the RANGER radio stay as they are.",
  "area": "saro",
  "parent": "room.group",
  "props": [
@@ -11,7 +11,8 @@
   { "id": "cbMic", "model": "office_assets_radio_Microphone_34", "at": [-1.08, 0.737, 3.82], "yaw": 200, "ground": false },
   { "id": "terminal", "model": "terminal_3278", "at": [-0.05, 0.737, 4.15], "yaw": 90, "ground": false },
   { "id": "reelDeck", "model": "reel_tc510", "at": [0.42, 0.737, 4.12], "yaw": 180, "ground": false },
-  { "id": "cassette", "model": "cassette_tcd5", "at": [-3.12, 0.78, -3.82], "yaw": 10, "ground": false },
+  { "id": "hallDresser", "model": "/Game/Licensed/Models/dresser/StaticMeshes/dresser.dresser", "parent": "annex.group", "at": [-4.3, 0, 5.08], "yaw": 0, "scale": 0.85, "ground": false, "collide": true, "pad": 0.02 },
+  { "id": "cassette", "model": "cassette_tcd5", "parent": "annex.group", "at": [-4.64, 0.744, 5.10], "yaw": -8, "ground": false },
   { "id": "typewriter", "model": "typewriter_selectric", "parent": "annex.group", "at": [-4.12, 0.77, 8.72], "yaw": 180, "ground": false },
   { "id": "recordsPhone", "model": "office_phone", "parent": "annex.group", "at": [-2.98, 0.77, 8.86], "yaw": 160, "ground": false }
  ],

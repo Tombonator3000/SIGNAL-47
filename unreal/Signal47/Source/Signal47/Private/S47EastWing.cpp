@@ -153,6 +153,7 @@ FString FS47EastWing::DoorLabel() const
 void FS47EastWing::UseDoor()
 {
  if(!M||!M->IsFreeform())return;
+ if(!bDoorUp&&!bDoorMoving&&M->Freeform&&M->Freeform->RefuseLocked(TEXT("eastwing:garage-door-out")))return; // FIX-20261110
  const FVector At=S47Three::ToUE(FVector(38.,1.3,5.3));
  if(M->Audio)M->Audio->Play(TEXT("rack_switch"),.7f,At);
  if(bDoorMoving){bDoorMoving=bDoorHand=false;if(M->Audio){M->Audio->Stop(TEXT("eastwing-door-motor"),.15f);M->Audio->Play(TEXT("door_metal"),.45f,S47Three::ToUE(FVector(35.4,2.6,5.5)),.8f);}return;}
@@ -171,18 +172,23 @@ void FS47EastWing::Begin(const S47J::FObj& Saved)
  for(int32 I=0;I<2;++I){LeafOpen[I]=!Saved||S47J::Bool(Saved,I==0?TEXT("personnel"):TEXT("service"),true);LeafAmount[I]=LeafOpen[I]?1.:0.;}
  DoorOpen=Saved?FMath::Clamp(S47J::Num(Saved,TEXT("garage"),1.),0.,1.):1.;
  bDoorUp=Saved?S47J::Bool(Saved,TEXT("garageUp"),DoorOpen>.5):true;bDoorMoving=bDoorHand=false;
- // A part-open door in a save is where its last move would have taken it.
- if(DoorOpen>.001&&DoorOpen<.999)DoorOpen=bDoorUp?1.:0.;
+ // A part-open door in a save is where its last move would have taken it. So is one that contradicts its own direction: a save
+ // written while a locked Story frame held the curtain at 0 (garage 0, garageUp true) is a door that was up in Freeform, and the
+ // control says so ("Lower garage door"), so it is up; before, it stood shut under a control that offered to lower it.
+ DoorOpen=bDoorUp?1.:0.;
  bWasFree=M&&M->IsFreeform();
 }
 S47J::FObj FS47EastWing::Save() const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("personnel"),LeafOpen[0]);S47J::Set(O,TEXT("service"),LeafOpen[1]);
- S47J::Set(O,TEXT("garage"),DoorOpen);S47J::Set(O,TEXT("garageUp"),bDoorUp);return O;
+ // Outside Freeform StepDoor holds the curtain at 0 without touching the Freeform state; what is kept is that state.
+ S47J::Set(O,TEXT("garage"),bWasFree?DoorOpen:(bDoorUp?1.:0.));S47J::Set(O,TEXT("garageUp"),bDoorUp);return O;
 }
 void FS47EastWing::UseLeaf(int32 Index)
 {
  if(!M||!M->IsFreeform()||Index<0||Index>1)return;
+ // FIX-20261110: locked with the rest of the station until the keys are out of the mailbox (closing is never refused).
+ if(!LeafOpen[Index]&&M->Freeform&&M->Freeform->RefuseLocked(Index==0?TEXT("eastwing:personnel-door"):TEXT("eastwing:service-door")))return;
  LeafOpen[Index]=!LeafOpen[Index];
  if(M->Audio)M->Audio->Play(TEXT("door_metal"),.45f,S47Three::ToUE(Index==0?FVector(21.3,1,5.5):FVector(38.6,1,1.2)));
 }
@@ -651,6 +657,25 @@ bool FS47EastWing::SelfTest(TArray<FString>& Lines)
   Lines.Add(FString::Printf(TEXT("%s / Fluorescent tubes: steady on load, strike on switch-on, die-off on switch-off, story flicker untouched"),Ok?TEXT("PASS"):TEXT("FAIL")));
   Good&=Ok;
  }
+ // Garage door: Freeform starts with the roll-up door where the save or the new game left it, whatever locked frames (the title,
+ // a Story frame before the mode is set) came first; a save made under the lock keeps the Freeform state, not the lock's 0.
+ {
+  FS47EastWing W(nullptr);bool Ok=true;
+  auto Door=[](double Open,bool bUp){auto O=S47J::New();S47J::Set(O,TEXT("garage"),Open);S47J::Set(O,TEXT("garageUp"),bUp);return O;};
+  // Begin, a few locked frames (saved meanwhile), then the first Freeform frame. Returns the curtain then.
+  auto Start=[&W](const S47J::FObj& Saved,double& SavedUnderLock){W.Begin(Saved);for(int32 I=0;I<3;++I)W.StepDoor(1.f/60.f,false,true);SavedUnderLock=S47J::Num(W.Save(),TEXT("garage"),-1.);W.StepDoor(1.f/60.f,true,true);return W.DoorOpen;};
+  double Kept=-1;
+  Ok&=Start(nullptr,Kept)==1.&&Kept==1.&&!W.GarageShut()&&W.bDoorUp;                       // no save (developer start, the old journey): up
+  Ok&=Start(Door(1.,true),Kept)==1.&&Kept==1.&&!W.GarageShut();                             // a save with the door up
+  Ok&=Start(Door(0.,true),Kept)==1.&&!W.GarageShut();                                       // a save the lock wrote: up, as its control says
+  Ok&=Start(Door(.4,true),Kept)==1.;                                                         // part-open on its way up
+  Ok&=Start(Door(0.,false),Kept)==0.&&Kept==0.&&W.GarageShut()&&!S47J::Bool(W.Save(),TEXT("garageUp"),true); // the new game's shut garage stays shut
+  // Out of Freeform and back: the lock holds it at 0 and lets it go again where it was.
+  Start(Door(1.,true),Kept);W.StepDoor(1.f/60.f,false,true);Ok&=W.DoorOpen==0.;W.StepDoor(1.f/60.f,true,true);Ok&=W.DoorOpen==1.;
+  Lines.Add(FString::Printf(TEXT("%s / East wing garage door: up at the start of Freeform after locked frames, a save under the lock keeps it up, a new game's shut door stays shut"),Ok?TEXT("PASS"):TEXT("FAIL")));
+  Good&=Ok;
+ }
+ Good&=FS47EastWingProps::SelfTest(Lines);
  return Good;
 }
 
@@ -912,6 +937,19 @@ void FS47EastWing::DoorTest()
  auto Finish=[&](bool Good,const FString& Why){FFileHelper::SaveStringToFile((Good?TEXT("PASS: "):TEXT("FAIL: "))+Why,*(Dir/TEXT("result.txt")));UE_LOG(LogS47EastWing,Display,TEXT("Door interaction %s: %s"),Good?TEXT("PASS"):TEXT("FAIL"),*Why);DoorTestStage=-1;FPlatformMisc::RequestExitWithStatus(false,Good?0:1);};
  auto Blocked=[&](int32 I){const FString Id=I==0?TEXT("eastwing:lock-personnel"):TEXT("eastwing:lock-service");for(const auto& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id==Id)return R.bEnabled;return false;};
  auto PickBoth=[&](int32 I){auto* C=NativeDoors[I==0?0:2].Get();const FString Id=I==0?TEXT("eastwing:personnel-door"):TEXT("eastwing:service-door");FVector Target=C->Bounds.Origin;Target.Z-=C->Bounds.BoxExtent.Z*.6;const FVector N=C->GetComponentTransform().TransformVectorNoScale(S47Three::ToUE(I==0?FVector(0,0,1):FVector(1,0,0))).GetSafeNormal();for(double Side:{-1.,1.}){const FString Pick=M->Inter->Pick(Target+N*Side*25.,-N*Side);if(Pick!=Id){UE_LOG(LogS47EastWing,Warning,TEXT("Leaf %d side %.0f target %s normal %s pick %s collision %d visible %d"),I,Side,*Target.ToString(),*N.ToString(),*Pick,int32(C->GetCollisionEnabled()),C->IsVisible());return false;}}return true;};
+ // T16-10: on foot through each doorway with the production walker (its colliders, the drive leg's obstacle copy and the open
+ // land), from 0.65 m (lab door) or 0.45 m (service door) inside to clear of the doorway outside. The walker is put back.
+ auto WalkThrough=[&](int32 I)
+ {
+  AS47Walker* P=M->Player.Get();if(!P||M->Web->Area()!=TEXT("saro"))return false;
+  const FVector Was=P->Pos;const double WasFloor=P->FloorY,WasLift=P->Lift;
+  P->Pos.X=I==0?21.85:37.9;P->Pos.Z=I==0?4.6:1.75;P->Lift=0;
+  for(int32 Step=0;Step<80;++Step)P->MoveBy(I==0?0.:.03,I==0?.03:0.);
+  // Clear of the doorway on the far side (wall face plus the walker's radius, and a little): what stands further out is not the door's.
+  const bool Through=I==0?P->Pos.Z>5.85:P->Pos.X>38.95;
+  UE_LOG(LogS47EastWing,Display,TEXT("S47: east wing %s doorway on foot: reached %.2f %.2f, through %d"),I==0?TEXT("personnel"):TEXT("service"),P->Pos.X,P->Pos.Z,Through);
+  P->Pos=Was;P->FloorY=WasFloor;P->Lift=WasLift;return Through;
+ };
  if(DoorTestStage==0){Begin(nullptr);DoorTestStage=1;DoorTestAt=Now;return;}
  if(DoorTestStage==1)
  {
@@ -920,7 +958,7 @@ void FS47EastWing::DoorTest()
  }
  if(DoorTestStage==2)
  {
-  for(int32 I=0;I<2;++I)if(!Blocked(I)||!PickBoth(I)||LeafAmount[I]>.001){Finish(false,TEXT("closed leaf must block passage and remain selectable from both sides"));return;}
+  for(int32 I=0;I<2;++I)if(!Blocked(I)||!PickBoth(I)||LeafAmount[I]>.001||WalkThrough(I)){Finish(false,TEXT("closed leaf must block passage and remain selectable from both sides"));return;}
   FFileHelper::SaveStringToFile(S47J::Write(Save()),*(Dir/TEXT("doors.json")));Begin(nullptr);FString Data;FFileHelper::LoadFileToString(Data,*(Dir/TEXT("doors.json")));Begin(S47J::Read(Data));
   if(LeafOpen[0]||LeafOpen[1]){Finish(false,TEXT("closed state did not survive disk reload"));return;}
   for(int32 I=0;I<2;++I)M->Inter->UseId(I==0?TEXT("eastwing:personnel-door"):TEXT("eastwing:service-door"));DoorTestStage=3;DoorTestAt=Now;return;
@@ -928,6 +966,7 @@ void FS47EastWing::DoorTest()
  if(DoorTestStage==3)
  {
   for(int32 I=0;I<2;++I)if(Blocked(I)||!PickBoth(I)||LeafAmount[I]<.999){Finish(false,TEXT("reopened leaves must release both doorways"));return;}
+  for(int32 I=0;I<2;++I)if(!WalkThrough(I)){Finish(false,I==0?TEXT("open lab door must let the walker through on foot"):TEXT("open service door must let the walker through on foot (T16-10)"));return;}
   for(int32 I=0;I<2;++I)
   {
    const double Side=I==0?1.:-1.,Face=(I==0?Z1:Z1-T)+Side*.035,X=I==0?38.1:38.;const FString Id=I==0?TEXT("eastwing:garage-door-out"):TEXT("eastwing:garage-door-in");

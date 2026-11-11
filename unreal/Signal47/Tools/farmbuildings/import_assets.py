@@ -5,7 +5,7 @@ force_front_x_axis, importyaw 90 og vertex color REPLACE. Må kjøres med
 -ini:Engine:[ConsoleVariables]:Interchange.FeatureFlags.Import.FBX=0, ellers får LOD1 og LOD2 +90 grader
 (townintegration/README.md, M1-feilen). Kommandoen står i README.md her.
 
-Miljø: S47_FARM_REPORT (ny JSON-bane, påkrevd), S47_FARM_SOURCE (leveransen, har standard).
+Miljø: S47_FARM_REPORT (ny JSON-bane, påkrevd), S47_FARM_SOURCE (leveransen, har standard), S47_FARM_ONLY (bare disse byggene).
 """
 import json
 import os
@@ -17,7 +17,11 @@ import unreal
 ROOT = Path(os.environ.get('S47_FARM_SOURCE', str(Path.home() / 'Documents/ChatGPT/Signal 47/modeller/farmbuildings-2026-11-07')))
 REPORT = Path(os.environ['S47_FARM_REPORT'])
 DEST = '/Game/FarmBuildings'
-BUILDS = {'barn': 'SM_FarmBarn', 'house': 'SM_FarmHouse', 'shed_a': 'SM_FarmShedA', 'shed_b': 'SM_FarmShedB'}
+BUILDS = {'barn': 'SM_FarmBarn', 'house': 'SM_FarmHouse', 'shed_a': 'SM_FarmShedA', 'shed_b': 'SM_FarmShedB', 'shed_door': 'SM_FarmShedDoor'}
+# S47_FARM_ONLY=shed_b,shed_door importerer bare disse (WEEKLY-CASE-20261109: skjulet uten bakt dør og døra for seg), de andre står.
+ONLY = [b for b in os.environ.get('S47_FARM_ONLY', '').split(',') if b]
+if ONLY:
+    BUILDS = {b: n for b, n in BUILDS.items() if b in ONLY}
 # (spekulær, metallisk) fra material() i run_blender.py. Ruhet og normal kommer fra kartene.
 MATERIALS = {'Board': (.2, 0), 'Tin': (.35, .12), 'Stucco': (.35, 0), 'Wood': (.35, 0), 'Paint': (.35, 0), 'Concrete': (.35, 0),
              'Steel': (.35, .55), 'Glass': (.6, 0), 'WindowLit': (.35, 0), 'Dirt': (.35, 0)}

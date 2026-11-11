@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "id": "attention_warn_lights",
+  "name": "Lights over the station",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) a warning. The code puts a slow formation over SARO when the player is there.",
+  "enabled": true,
+  "gates": {
+    "hours": [
+      "18:00",
+      "05:30"
+    ],
+    "tier": "hint",
+    "areas": [
+      "saro"
+    ]
+  },
+  "beats": [
+    {
+      "at": 0,
+      "do": "silence",
+      "secs": 5,
+      "level": 0.04
+    },
+    {
+      "at": 0,
+      "do": "light",
+      "kind": "gear",
+      "strength": 0.3,
+      "secs": 10
+    },
+    {
+      "at": 2,
+      "do": "thought",
+      "text": "They're over the station now. Same as the ones I was watching.",
+      "if": [
+        "outdoors"
+      ]
+    },
+    {
+      "at": 2,
+      "do": "thought",
+      "text": "Something is humming over the roof.",
+      "if": [
+        "indoors"
+      ]
+    },
+    {
+      "at": 2,
+      "do": "tv",
+      "strength": 0.3,
+      "secs": 6,
+      "if": [
+        "indoors"
+      ]
+    },
+    {
+      "at": 4,
+      "do": "evidence",
+      "key": "attention_lights_d{day}",
+      "text": "At {clock} lights went over SARO, low and slow, the way the ones out on the land had moved."
+    }
+  ]
+}

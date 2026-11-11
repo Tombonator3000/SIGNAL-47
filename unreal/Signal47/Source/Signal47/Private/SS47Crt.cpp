@@ -10,6 +10,7 @@
 #include "S47Theme.h"
 #include "S47Main.h"
 #include "S47Freeform.h"
+#include "S47FreeformTerminal.h"
 
 namespace
 {
@@ -179,6 +180,64 @@ void SS47Crt::Ops(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer)
 	Txt(G, Out, Layer + 1, FString(TEXT("$ ")) + (int32(T * 2) % 2 ? TEXT("_") : TEXT("")), 14, 92 + Row * 26.f, 22);
 }
 
+void SS47Crt::FreeformStrip(const FGeometry& G,FSlateWindowElementList& Out,int32 Layer,double T)const
+{
+ // One instrument per station, to be read from across the room: which dishes answer, where the
+ // receiver sits against tonight's card, where the array points against where it should, and
+ // whether anything waits at OPS. Y 304 to 372, under the lines.
+ const auto* M=US47Main::Get(Story);const auto I=M->Freeform->TerminalIdle(int32(Kind));
+ const float X0=16,W=480,Y0=306,H=64;
+ auto Box=[&](float X,float Y,float Bw,float Bh,const FLinearColor& C){FSlateDrawElement::MakeBox(Out,Layer,G.ToPaintGeometry(FVector2f(Bw,Bh),FSlateLayoutTransform(FVector2f(X,Y))),WhiteBrush.Get(),ESlateDrawEffect::None,C);};
+ auto Line=[&](const TArray<FVector2f>& P,const FLinearColor& C,float Th=1.5f){FSlateDrawElement::MakeLines(Out,Layer,G.ToPaintGeometry(),P,ESlateDrawEffect::None,C,true,Th);};
+ Box(X0,Y0-8,W,1,CrtCss(0x8cffa4,.35f));
+ if(Kind==EKind::Status)
+ {
+  // the poll goes round the array, one dish a beat; a dish that does not answer stays amber
+  const int32 N=I.Dish.Num();if(N<=0)return;const int32 Poll=int32(T*6)%N;const float Cw=W/float(N);
+  for(int32 D=0;D<N;++D)
+  {
+   const bool Down=I.Dish[D]==1,Moving=I.Dish[D]==2;const float X=X0+D*Cw;
+   const FLinearColor C=Down?Warn:Moving&&int32(T*5)%2?Bright:D==Poll?Bright:CrtCss(0x8cffa4,.55f);
+   Box(X+2,Y0+(Down?18:0),Cw-4,Down?18:36,C);
+   if(D==Poll)Box(X+2,Y0+42,Cw-4,3,Bright);
+  }
+  Txt(G,Out,Layer,TEXT("POLL"),X0,Y0+66,16,Dim);Txt(G,Out,Layer,FString::Printf(TEXT("S%02d"),Poll+1),X0+52,Y0+66,16,Bright);
+ }
+ else if(Kind==EKind::Spectrum)
+ {
+  // the receiver's own noise, live, with the tuned line and the card's line
+  TArray<FVector2f> P;P.Reserve(97);
+  for(int32 K=0;K<=96;++K)
+  {
+   const float U=K/96.f,Near=I.Card>=0?FMath::Exp(-FMath::Square((U-I.Card)/.022f)):0.f;
+   const float Noise=FMath::Sin(K*12.9898+T*11)*3+FMath::Sin(K*.71+T*7)*4+FMath::Sin(K*3.7+T*23)*2;
+   P.Add(FVector2f(X0+W*U,Y0+H-10-Noise-Near*34));
+  }
+  Line(P,CrtCss(0x8cffa4,.25f),4);Line(P,Phosphor);
+  if(I.Card>=0)Box(X0+W*FMath::Clamp(I.Card,0.f,1.f),Y0,1,H,CrtCss(0x8cffa4,.6f));
+  Box(X0+W*FMath::Clamp(I.Tuned,0.f,1.f)-1,Y0,2,H,Warn);
+  if(I.Rec>=0){Box(X0,Y0+H+2,W*I.Rec,3,Warn);if(int32(T*2)%2)Txt(G,Out,Layer,TEXT("REC"),X0+W-44,Y0+14,16,Warn);}
+ }
+ else if(Kind==EKind::Tracking)
+ {
+  // azimuth along the strip, elevation as its height: where the array is, where the card wants it
+  for(int32 A=0;A<=360;A+=30)Box(X0+W*A/360.f,Y0+H-(A%90?6:12),1,A%90?6:12,CrtCss(0x8cffa4,.6f));
+  Box(X0,Y0+H,W,1,CrtCss(0x8cffa4,.6f));
+  auto At=[&](float Az,float El){return FVector2f(X0+W*FMath::Fmod(Az+360.f,360.f)/360.f,Y0+H-6-(H-14)*FMath::Clamp(El,0.f,90.f)/90.f);};
+  const FVector2f Aim=At(I.AimAz,I.AimEl),Now=At(I.Az,I.El);const float Arm=6+2*float(FMath::Sin(T*5));
+  Line({Aim-FVector2f(Arm,0),Aim+FVector2f(Arm,0)},Warn,2);Line({Aim-FVector2f(0,Arm),Aim+FVector2f(0,Arm)},Warn,2);
+  Line({Now+FVector2f(-6,-6),Now+FVector2f(6,-6),Now+FVector2f(6,6),Now+FVector2f(-6,6),Now+FVector2f(-6,-6)},I.bReady?Bright:Phosphor,2);
+  if(!I.bReady&&int32(T*3)%2)Line({Now,Aim},CrtCss(0x8cffa4,.4f),1);
+ }
+ else
+ {
+  // the prompt, and the star that says something waits here
+  Txt(G,Out,Layer,FString(TEXT("$ "))+(int32(T*2)%2?TEXT("_"):TEXT("")),X0,Y0+24,22,Phosphor);
+  if(I.bWaiting&&int32(T*1.6)%2)Txt(G,Out,Layer,TEXT("* WAITING AT THIS TERMINAL"),X0,Y0+54,20,Warn);
+  for(int32 K=0;K<8;++K)Box(X0+W-12-K*14,Y0+8,10,10,CrtCss(0x8cffa4,(int32(T*4)+K)%8==0?.9f:.18f));
+ }
+}
+
 int32 SS47Crt::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const
 {
 	if (!Story || !Saro)
@@ -190,7 +249,24 @@ int32 SS47Crt::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
  {
   FSlateDrawElement::MakeBox(Out,Layer,G.ToPaintGeometry(),WhiteBrush.Get(),ESlateDrawEffect::None,CrtCss(0x020a04));
   const auto Lines=M->Freeform->TerminalLines(int32(Kind));
-  for(int32 I=0;I<Lines.Num();++I)Txt(G,Out,Layer+1,Lines[I],16,38+I*40,I==0?25:20,I==0?Bright:Lines[I].StartsWith(TEXT("NEXT / "))?Warn:Phosphor);
+  // FIX-20261110 (Tom: more life on the screens, the look stays): the same lines, closer set, over
+  // one live strip per station; what is on the air around the station tears lines out of the picture
+  // and the glass's own light in the room goes with it. D45-20261110: the always-rolling band is gone;
+  // the tube shares the open terminal's rare, faint hum bar, and opens from a line when the supply comes back.
+  const double T=FPlatformTime::Seconds();const float Jam=M->Freeform->ScreenInterference();
+  const double Beat=FMath::FloorToDouble(T*12)+int32(Kind)*17.;
+  auto Hash=[](double X){const double V=FMath::Sin(X*12.9898)*43758.5453;return float(V-FMath::FloorToDouble(V));};
+  const bool bDrop=Jam>.12f&&Hash(Beat*.77)<Jam*.45f;
+  Saro->SetCrtFlicker(int32(Kind),bDrop?.15f:1.f-.35f*Jam*Hash(Beat*1.3));
+  if(bDrop){Scanlines(G,Out,Layer+8);return Layer+9;}
+  const float Tear=Jam>.2f&&Hash(Beat*2.1)<Jam*.5f?(Hash(Beat)-.5f)*26*Jam:0.f;
+  const float Step=Lines.Num()>7?30.f:34.f;
+  for(int32 I=0;I<Lines.Num()&&I<9;++I)Txt(G,Out,Layer+1,Lines[I],16+Tear,36+I*Step,I==0?25:20,I==0?Bright:Lines[I].StartsWith(TEXT("NEXT / "))?Warn:Phosphor);
+  FreeformStrip(G,Out,Layer+1,T);
+  auto Band=[&](float Y,float H,const FLinearColor& C){FSlateDrawElement::MakeBox(Out,Layer+7,G.ToPaintGeometry(FVector2f(512.f,H),FSlateLayoutTransform(FVector2f(0,Y))),WhiteBrush.Get(),ESlateDrawEffect::None,C);};
+  S47FreeformTerminal::PaintHum(Out,Layer+7,G,FVector2f(512.f,384.f),int32(Kind),Phosphor);
+  for(int32 I=0;I<int32(1+Jam*7)&&Jam>.03f;++I)if(Hash(Beat+I*7.31)<Jam*.9f)Band(384*Hash(Beat*1.7+I*3.1),2+18*Hash(Beat*.37+I)*Jam,Hash(Beat+I)<.6f?FLinearColor(0,0,0,.85f):CrtCss(0x8cffa4,.12f+.25f*Jam));
+  S47FreeformTerminal::PaintPowerOn(Out,Layer+7,G,FVector2f(512.f,384.f),Phosphor);
   Scanlines(G,Out,Layer+8);return Layer+9;
  }
 	if (Kind == EKind::Ops)

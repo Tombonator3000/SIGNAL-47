@@ -23,6 +23,8 @@
 #include "S47Seen.h"
 #include "S47Story.h"
 #include "S47Town.h"
+#include "S47TownDay.h"
+#include "S47Townsfolk.h"
 #include "S47World.h"
 #include "Widgets/SBoxPanel.h"
 
@@ -61,7 +63,7 @@ namespace
 				P.Card = { TEXT("The attendant"), TEXT("Caliche, the gas station"), TEXT("Reads behind the night window. \"Cold one tonight.\""), TEXT("portrait_attendant") };
 				P.First = { { TEXT(""), TEXT("You knock on the night window. He takes his time, and slides it open a hand's width.") }, { TEXT("THE ATTENDANT"), TEXT("Pumps are locked till six. You want something from in here, I can pass it through.") }, { TEXT("THE ATTENDANT"), TEXT("Cold one tonight. Radio says it'll") }, { TEXT(""), TEXT("He coughs into his fist.") }, { TEXT("THE ATTENDANT"), TEXT("warm up by Wednesday.") } };
 				P.Again = { { TEXT(""), TEXT("He slides the window open again.") }, { TEXT("THE ATTENDANT"), TEXT("Still out, huh.") } };
-				{ FTopic T; T.Id = TEXT("roads"); T.Label = TEXT("Ask about the roads"); T.Lines = { { TEXT("YOU"), TEXT("Which way is quickest back up to the observatory?") }, { TEXT("THE ATTENDANT"), TEXT("Highway north. There is no other way that goes anywhere.") }, { TEXT("THE ATTENDANT"), TEXT("The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer.") }, { TEXT("THE ATTENDANT"), TEXT("Your people come down for gas on Fridays. Nice folks. Don't say much.") } };
+				{ FTopic T; T.Id = TEXT("roads"); T.Label = TEXT("Ask about the roads"); T.Lines = { { TEXT("YOU"), TEXT("Which way is quickest back up to the observatory?") }, { TEXT("THE ATTENDANT"), TEXT("Highway north. There is no other way that goes anywhere.") }, { TEXT("THE ATTENDANT"), TEXT("The old road's closed at the crossing. County says they'll grade it this summer. County says that every summer.") }, { TEXT("THE ATTENDANT"), TEXT("Your people come down for gas on Fridays. Nice folks. Don't say much.") }, { TEXT("THE ATTENDANT"), TEXT("They say it holds its breath around two in the morning. The cave, I mean. Under Main Street.") } }; // N1110 (pace): the Breather, by word of mouth
 					P.Topics.Add(MoveTemp(T)); }
 				{ FTopic T; T.Id = TEXT("flyer"); T.Label = TEXT("Ask about the flyer on the door"); T.Lines = { { TEXT("YOU"), TEXT("SEEN LIGHTS? CALL THE NIGHT LINE.") }, { TEXT("THE ATTENDANT"), TEXT("Earl brings those. The radio fella, across the street.") }, { TEXT("THE ATTENDANT"), TEXT("I let him tape them up. He buys his gas here.") }, { TEXT("THE ATTENDANT"), TEXT("People call him. I couldn't tell you why they'd want to.") } };
 					P.Topics.Add(MoveTemp(T)); }
@@ -217,6 +219,27 @@ namespace
 		return All;
 	}
 	const FPerson* Person(const FString& W) { return People().FindByPredicate([&](const FPerson& P) { return P.Id == W; }); }
+	// Freeform's day (S47TownDay, critics, round 8): the card in the substation's door for why he is out, so that BACK SOON stays the
+	// card of somebody gone; and what the window shows of him while he is in. Empty: as before (Story, or no day running).
+	FString DayDoorCard()
+	{
+		if (!S47TownDay::Active()) return FString();
+		if (FS47Townsfolk::AwayNow(TEXT("deputy"))) return TEXT("Locked. A note taped over the card in the frame: CALL SOCORRO.");
+		const FString Spot = S47TownDay::SpotNow(TEXT("deputy"));
+		if (Spot.StartsWith(TEXT("diner."))) return TEXT("Locked. A card in the frame, in ballpoint: AT LUNCH. BACK BY 1.");
+		if (Spot == TEXT("patrol")) return TEXT("Locked. A card in the frame: OUT ON PATROL. EMERGENCIES CALL COUNTY DISPATCH.");
+		return TEXT("Locked. The hours on a card in the frame: 8 TO 5 WEEKDAYS, SATURDAY 9 TO 1. AFTER HOURS CALL COUNTY DISPATCH.");
+	}
+	FString DayWindow()
+	{
+		if (!S47TownDay::Active()) return FString();
+		const FString Spot = S47TownDay::SpotNow(TEXT("deputy"));
+		if (Spot == TEXT("off.board") || Spot == TEXT("off.files") || Spot == TEXT("off.coffee"))
+			return TEXT("A county map on the wall, stuck with pins: red, blue, yellow. Most are scattered. Two rows are not. The deputy is up at the back of the room with his back to you.");
+		if (Spot == TEXT("off.window")) return TEXT("A county map on the wall, stuck with pins: red, blue, yellow. Most are scattered. Two rows are not. The deputy is at the window himself, looking out past you at the street.");
+		if (Spot == TEXT("off.step") || Spot == TEXT("off.car")) return TEXT("The office is lit and empty, the map on the wall stuck with pins, two rows of them running straight. The deputy is outside, by his car.");
+		return FString();
+	}
 	bool Asked(const FS47TownSeen& S, const FString& W, const FString& Id) { return S.Contains(TEXT("ask:") + W + TEXT(":") + Id); }
 	bool AvailableTopic(const FS47TownSeen& S, const FString& W, const FTopic& T, double Day, bool bReelReady)
 	{
@@ -278,7 +301,12 @@ void FS47Caliche::BindTown()
 		I.ExamineRange = FMath::Max(8., Range + 2); M->Inter->Add(I);
 	};
 	auto Say = [this](const FString& T, double S = 3.6) -> TFunction<void()> { return [this, T, S] { M->UI->Toast(T, S); }; };
-	auto Flyer = [this] { Once(TEXT("flyer"), TEXT("Caliche, the gas station door: a flyer, SEEN LIGHTS? CALL THE NIGHT LINE, 1420 AM, midnight to four.")); };
+	auto Flyer = [this]
+	{
+		Once(TEXT("flyer"), TEXT("Caliche, the gas station door: a flyer, SEEN LIGHTS? CALL THE NIGHT LINE, 1420 AM, midnight to four."));
+		// N1110 (Caliche history, approved by Tom 10 November): the cave tour leaflet in the rack by the door.
+		Once(TEXT("leaflet"), TEXT("Caliche, the gas station door: a rack with a leaflet. SEE THE BREATHER! Caliche's own cave, right under Main Street. Guided tours Saturday and Sunday, 10 to 3. Adults $3, children $1. Constant 54 degrees all year. The cave breathes in by day and out by night, as many caves do. On the rare day it does otherwise, the tour is canceled and your money is refunded. Ask at the Trujillo house. On the back: Please stay with your guide. Please do not call out names in the lower room. The echo is unusual. Flash pictures are allowed."));
+	};
 	// Unreal only (Tom, 23.10): the station is walked into now, its door (S47Props) opens; where the
 	// model is not there the door is locked as in the web version
 	Add(TEXT("gasDoor"), [] { return AS47Props::IsDoorOpen(TEXT("gasDoor")) ? TEXT("Close the door") : TEXT("Gas station door"); }, [this, Flyer] { if (AS47Props::UseDoor(TEXT("gasDoor"))) { Flyer(); return; } M->UI->Toast(TEXT("Locked, with a night window and a bell. The attendant looks up, sees you are not a car, and goes back to his magazine. Taped inside the glass: SEEN LIGHTS? CALL THE NIGHT LINE."), 5.4); Flyer(); }, [Flyer] { Flyer(); return TEXT("SEEN LIGHTS? CALL THE NIGHT LINE. 1420 AM, MIDNIGHT TO FOUR. Typed, copied, and copied again."); });
@@ -290,8 +318,8 @@ void FS47Caliche::BindTown()
 	Add(TEXT("gasSign"), [] { return TEXT("Sign"); }, Say(TEXT("GAS. DIESEL. No brand, just the words."), 2.8), {}, 3);
 	Add(TEXT("paper"), [this] { return Town->bPaperIn ? FString(TEXT("Newspapers")) : FString(); }, [this] { if (!Town->bPaperIn) return; M->UI->Toast(TEXT("The Pecos Valley Sentinel, Monday, April 14, 1986, still in its twine. NICKLAUS, 46, WINS MASTERS. Dropped from a car that did not stop."), 5); Once(TEXT("paper"), TEXT("Caliche: the Pecos Valley Sentinel dropped at the gas station before five. Monday, April 14, 1986.")); }, [this] { return Town->bPaperIn ? FString(TEXT("NICKLAUS, 46, WINS MASTERS. Under the fold, smaller: County to grade the old Roswell road this summer.")) : FString(); });
 	auto Map = [this] { Once(TEXT("pins"), TEXT("Caliche, the sheriff's substation: a county map on the wall, stuck with pins. Most are scattered. Two rows run straight, one east along the old road, one west into the empty part of the map.")); };
-	Add(TEXT("sheriffWindow"), [] { return TEXT("Window"); }, [this, Map] { M->UI->Toast(Town->bDeputyIn ? TEXT("A county map on the wall, stuck with pins: red, blue, yellow. Most are scattered. Two rows are not. The deputy at the desk looks up at you, and back at the map.") : TEXT("The office is dark. Through the bars you can still make out the map and its pins, and two rows of them running straight."), 5.2); Map(); }, [Map] { Map(); return TEXT("One row of pins runs out east along the old road. The other runs west, off the highway, into country with nothing drawn on it."); });
-	Add(TEXT("sheriffDoor"), [this] { return Town->bDeputyIn ? TEXT("Knock") : TEXT("Door"); }, [this] { if (Town->bDeputyIn) Talk(TEXT("deputy")); else M->UI->Toast(TEXT("Locked. A card in the frame, in ballpoint: BACK SOON."), 3.6); }, [this] { return Town->bDeputyIn ? FString(TEXT("COUNTY SHERIFF, SUBSTATION. A light under the door, and a radio turned low.")) : FString(); });
+	Add(TEXT("sheriffWindow"), [] { return TEXT("Window"); }, [this, Map] { const FString Day = Town->bDeputyIn ? DayWindow() : FString(); M->UI->Toast(!Day.IsEmpty() ? Day : Town->bDeputyIn ? FString(TEXT("A county map on the wall, stuck with pins: red, blue, yellow. Most are scattered. Two rows are not. The deputy at the desk looks up at you, and back at the map.")) : FString(TEXT("The office is dark. Through the bars you can still make out the map and its pins, and two rows of them running straight.")), 5.2); Map(); }, [Map] { Map(); return TEXT("One row of pins runs out east along the old road. The other runs west, off the highway, into country with nothing drawn on it."); });
+	Add(TEXT("sheriffDoor"), [this] { return Town->bDeputyIn ? TEXT("Knock") : TEXT("Door"); }, [this] { if (Town->bDeputyIn) { Talk(TEXT("deputy")); return; } const FString Card = M->IsFreeform() ? DayDoorCard() : FString(); M->UI->Toast(Card.IsEmpty() ? FString(TEXT("Locked. A card in the frame, in ballpoint: BACK SOON.")) : Card, Card.IsEmpty() ? 3.6 : 4.6); }, [this] { if (Town->bDeputyIn) return FString(TEXT("COUNTY SHERIFF, SUBSTATION. A light under the door, and a radio turned low.")); return M->IsFreeform() ? DayDoorCard().Replace(TEXT("Locked. "), TEXT("")) : FString(); });
 	// The empty car's open door is a trace: it stays open until the player, having looked, shuts it
 	// (S47Props swing; the story node, beacon and notes are unchanged). A new event opens it again.
 	struct FPatrolDoor { bool bLooked = false, bShut = false; };
@@ -319,8 +347,8 @@ void FS47Caliche::BindTown()
 	Add(TEXT("souvenir"), [] { return TEXT("Shop window"); }, [this] { M->UI->Toast(M->TownSeen.Contains(TEXT("ev:cutout")) && !Town->bCutoutOut ? TEXT("The cardboard alien is back in the window. There is dew on it, and grit from the road along its feet.") : TEXT("A cardboard alien, life size if they come in that size. A rubber mask. Bags of crumpled foil, a dollar each: GENUINE DEBRIS."), 4.6); }, [] { return TEXT("The foil has been crumpled by hand. There is a price sticker on the alien too."); });
 	Add(TEXT("souvenirSign"), [] { return TEXT("Sign"); }, Say(TEXT("SAUCER CRASH 1947. TOURS. ASK INSIDE. Painted by hand, and painted over at least once."), 3.8), {}, 3.4);
 	Add(TEXT("souvenirDoor"), [] { return TEXT("Door"); }, Say(TEXT("CLOSED. The hours are on a card faded white."), 3));
-	Add(TEXT("letters"), [] { return TEXT("Letter board"); }, Say(TEXT("THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. A bulb over it, burning all night."), 3.8), {}, 3);
-	Add(TEXT("churchDoor"), [] { return TEXT("Church door"); }, Say(TEXT("Locked. Sunday 10 AM, it says. All welcome."), 3));
+	Add(TEXT("letters"), [] { return TEXT("Letter board"); }, Say(TEXT("SAN ISIDRO. THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. A bulb over it, burning all night."), 3.8), {}, 3);
+	Add(TEXT("churchDoor"), [] { return TEXT("Church door"); }, Say(TEXT("Locked. San Isidro, it says on the door. Sunday 10 AM. All welcome."), 3.4));
 	auto Tv1On = [this] { return Day() >= 18 * 3600 || Day() < 3 * 3600 + 40 * 60; };
 	Add(TEXT("tv1"), [] { return TEXT("Window"); }, [this, Tv1On] { M->UI->Toast(Tv1On() ? TEXT("A television on in a dark front room, and someone asleep in the chair in front of it.") : TEXT("The television is off now. The chair is empty."), 3.8); }, [Tv1On] { return Tv1On() ? FString(TEXT("The late movie, black and white, with the sound down.")) : FString(); }, 6.5);
 	Add(TEXT("tv2"), [] { return TEXT("Window"); }, Say(TEXT("A television on with nobody watching it. Snow, then the test pattern, then snow."), 3.8), {}, 6.5);
@@ -358,15 +386,15 @@ void FS47Caliche::Refresh()
 		if (EarlDialogue->Enabled() != M->Flow->bArtBell) EarlDialogue->SetEnabled(M->Flow->bArtBell);
 	}
 	const bool bFresh = Lines != ShownLines;
-	// (a new exchange: ui.descriptionReader?.stop(); ui.readAloud?.stop(), and the voices)
+	// (a new exchange: ui.descriptionReader?.stop(), and the voices)
 	if (bFresh)
 	{
 		ShownLines = Lines; StopSpeech();
 		if (const TSharedPtr<FS47ReadAloud> D = M->UI ? M->UI->DescriptionReader() : nullptr) D->Stop();
-		if (M->UI && M->UI->ReadAloud) M->UI->ReadAloud->Stop();
 	}
 	const bool bEarl = Who == TEXT("host") && EarlDialogue->Enabled() && Lines.ContainsByPredicate([](const FS47TalkLine& L) { return L.Who == TEXT("EARL"); });
-	const FString Voice = Who == TEXT("attendant") ? TEXT("stanton") : Who == TEXT("deputy") ? TEXT("stack") : Who == TEXT("souvenir_man") ? TEXT("lynch") : TEXT("");
+	// (VOICE-OUT-3, Tom 9 November 2026: the souvenir man's voice was the lynch clone, now gone; his lines are text)
+	const FString Voice = Who == TEXT("attendant") ? TEXT("stanton") : Who == TEXT("deputy") ? TEXT("stack") : TEXT("");
 	const bool bCharacter = !Voice.IsEmpty() && NpcDialogue->Enabled() && !FS47NpcDialogue::CharacterLines(Voice, Lines).IsEmpty();
 	const TArray<FS47TalkLine> Speech = Lines;
 	Body->ClearChildren();
@@ -377,8 +405,8 @@ void FS47Caliche::Refresh()
 	for (const FS47TalkLine& L : Lines) Body->AddSlot().AutoHeight().Padding(0, 3)[S47Kit::Unread(L.Who.IsEmpty() ? S47Kit::Small(L.Text) : S47Kit::Text(L.Who + TEXT("\n") + L.Text))];
 	if (!bReeling) for (const FTopic& T : P->Topics) if (Available(Who, T.Id)) Body->AddSlot().AutoHeight().Padding(0, 4)[S47Kit::Button(T.Label, [this, Id = T.Id] { Choice(Id); })];
 	Body->AddSlot().AutoHeight().Padding(0, 4)[S47Kit::Button(bReeling ? TEXT("Walk away") : P->Bye, [this] { M->UI->Close(); })];
-	// ui.readingControls(reading, texts): Kinski reads the lines no voice has (Earl's while his voice is on,
-	// the character's while the character voices are)
+	// ui.readingControls(reading, texts): the lines no voice has (Earl's while his voice is on, the
+	// character's while the character voices are); no reader for conversations since KINSKI-READ-OUT, so nothing
 	if (bFresh || !Reading.IsValid())
 	{
 		const TArray<FS47TalkLine> Voiced = !Voice.IsEmpty() && NpcDialogue->Enabled() ? FS47NpcDialogue::CharacterLines(Voice, Lines) : TArray<FS47TalkLine>();

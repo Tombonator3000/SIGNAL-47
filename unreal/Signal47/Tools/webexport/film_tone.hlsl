@@ -1,10 +1,18 @@
-// Unreal picture pass. The five modes share the existing fixed-exposure ACES scene.
+// Unreal picture pass. The six modes share the existing fixed-exposure ACES scene.
 // Display-referred texture/print treatment follows the curve; Slate remains clean.
-// PictureMode selects: 0 Clean, 1 VHS, 2 Carpenter, 3 16 mm, 4 Super 8.
+// PictureMode selects: 0 Clean, 1 VHS, 2 Carpenter, 3 16 mm, 4 Super 8, 5 Bodycam 1986.
+// D45-20261110 (D45-19): Bodycam 1986 is a chest-worn 1986 field camera taped to VHS. Signal order is
+// optics (barrel lens), then the date generator, then the tape: sc() bends the scene and burns in the
+// stamp, so every VHS tap, chroma tap and halo sees the bent, stamped picture. Lens/Cam/Stamp come
+// from MPC_Body (FS47Bodycam); captures with Vhs=0 never reach the lens (the gate below).
 struct W {
   float K, Dens, HazeK;
   float3 FogCol;
-  float3 sc(float2 uv) {
+  bool Body;
+  float Bend, Edge, Aspect, Osd;
+  float2 Pan;
+  float4 Stamp;
+  float3 scene(float2 uv) {
     // Clamp to pixel centres so off-screen bloom taps never sample a neighbouring view.
     float2 edge = View.ViewSizeAndInvSize.zw * 0.5;
     float2 b = ViewportUVToBufferUV(clamp(uv, edge, 1.0 - edge));
@@ -27,6 +35,90 @@ struct W {
     float3 lo = o * 12.92, hi = 1.055 * pow(max(o, 1e-6), 1.0 / 2.4) - 0.055;
     return lerp(hi, lo, step(o, 0.0031308));
   }
+  // D45-20261110: a 5x7 dot character generator, rows packed five bits each (rows 0-3 in x, 4-6 in y).
+  uint2 glyph(uint c) {
+    return c == 0u ? uint2(0xACE2Eu, 0x3A39u) /* 0 */ :
+           c == 1u ? uint2(0x21184u, 0x3884u) /* 1 */ :
+           c == 2u ? uint2(0x1062Eu, 0x7D04u) /* 2 */ :
+           c == 3u ? uint2(0x1105Fu, 0x3A21u) /* 3 */ :
+           c == 4u ? uint2(0x928C2u, 0x085Fu) /* 4 */ :
+           c == 5u ? uint2(0x0FA1Fu, 0x3A21u) /* 5 */ :
+           c == 6u ? uint2(0xF4106u, 0x3A31u) /* 6 */ :
+           c == 7u ? uint2(0x2083Fu, 0x2108u) /* 7 */ :
+           c == 8u ? uint2(0x7462Eu, 0x3A31u) /* 8 */ :
+           c == 9u ? uint2(0x7C62Eu, 0x3041u) /* 9 */ :
+           c == 10u ? uint2(0x20821u, 0x4208u) /* / */ :
+           c == 11u ? uint2(0x03180u, 0x018Cu) /* : */ :
+           c == 12u ? uint2(0xFC62Eu, 0x4631u) /* A */ :
+           c == 13u ? uint2(0x8422Eu, 0x3A30u) /* C */ :
+           c == 14u ? uint2(0x8C63Eu, 0x7A31u) /* D */ :
+           c == 15u ? uint2(0xF421Fu, 0x7E10u) /* E */ :
+           c == 16u ? uint2(0xF421Fu, 0x4210u) /* F */ :
+           c == 17u ? uint2(0x2108Eu, 0x3884u) /* I */ :
+           c == 18u ? uint2(0x84210u, 0x7E10u) /* L */ :
+           c == 19u ? uint2(0xAD771u, 0x4631u) /* M */ :
+           c == 20u ? uint2(0x8C62Eu, 0x3A31u) /* O */ :
+           c == 21u ? uint2(0xF463Eu, 0x4210u) /* P */ :
+           c == 22u ? uint2(0xF463Eu, 0x4654u) /* R */ :
+           c == 23u ? uint2(0x7420Fu, 0x7821u) /* S */ : uint2(0u, 0u);
+  }
+  // "MM/DD/YY  HH:MM:SS PM" from Stamp: x month*100+day, y year (two digits), z hour(1-12)*10000+min*100+sec, w PM.
+  uint dateChar(uint i) {
+    uint md = uint(Stamp.x + 0.5), yy = uint(Stamp.y + 0.5) % 100u, t = uint(Stamp.z + 0.5);
+    uint n = 0u, d = 0u;
+    if (i < 2u) { n = md; d = i == 0u ? 1000u : 100u; }
+    else if (i == 3u || i == 4u) { n = md; d = i == 3u ? 10u : 1u; }
+    else if (i == 6u || i == 7u) { n = yy; d = i == 6u ? 10u : 1u; }
+    else if (i >= 10u && i <= 17u && i != 12u && i != 15u) {
+      uint k = i - 10u - (i > 12u ? 1u : 0u) - (i > 15u ? 1u : 0u);
+      d = k == 0u ? 100000u : k == 1u ? 10000u : k == 2u ? 1000u : k == 3u ? 100u : k == 4u ? 10u : 1u;
+      n = t;
+    }
+    if (d > 0u) return (n / d) % 10u;
+    return i == 2u || i == 5u ? 10u : i == 12u || i == 15u ? 11u : i == 19u ? (Stamp.w > 0.5 ? 21u : 12u) : i == 20u ? 19u : 99u;
+  }
+  // "SARO FIELD CAM 2"
+  uint unitChar(uint i) {
+    return i == 0u ? 23u : i == 1u ? 12u : i == 2u ? 22u : i == 3u ? 20u : i == 5u ? 16u : i == 6u ? 17u : i == 7u ? 15u :
+           i == 8u ? 18u : i == 9u ? 14u : i == 11u ? 13u : i == 12u ? 12u : i == 13u ? 19u : i == 15u ? 2u : 99u;
+  }
+  // q in dots (240 down the picture), right/top: the stamp's right edge and first row
+  float ink(float2 q, float right, float top) {
+    uint row = q.y >= top + 10.0 ? 1u : 0u;
+    uint count = row == 0u ? 21u : 16u;
+    float2 g = q - float2(right - float(count) * 6.0, top + float(row) * 10.0);
+    if (g.x < 0.0 || g.y < 0.0 || g.y >= 7.0) return 0.0;
+    uint cell = uint(floor(g.x / 6.0));
+    if (cell >= count) return 0.0;
+    uint gx = uint(floor(g.x - float(cell) * 6.0)), gy = uint(floor(g.y));
+    if (gx > 4u) return 0.0;
+    uint2 b = glyph(row == 0u ? dateChar(cell) : unitChar(cell));
+    uint bits = gy < 4u ? (b.x >> (gy * 5u)) : (b.y >> ((gy - 4u) * 5u));
+    return float((bits >> (4u - gx)) & 1u);
+  }
+  // x: the white characters, y: their dark edge (one dot down and right), top right of the frame
+  float2 osd(float2 uv) {
+    float2 q = uv * float2(Aspect, 1.0) * 240.0;
+    float right = Aspect * 240.0 - 14.0, top = 11.0;
+    if (q.y < top - 1.0 || q.y > top + 19.0 || q.x < right - 128.0 || q.x > right + 2.0) return 0;
+    return float2(ink(q, right, top), ink(q - 1.0, right, top));
+  }
+  float3 sc(float2 uv) {
+    if (!Body) return scene(uv);
+    // Barrel lens: the corners stay the corners (no black edge), the centre is magnified and
+    // straight lines bow. Bend is already scaled by strength and the lens gate.
+    float2 p = (uv - 0.5) * float2(Aspect, 1.0);
+    float2 at = 0.5 + (uv - 0.5) * (1.0 + Bend * dot(p, p)) / (1.0 + Bend * Edge);
+    // Turning only: the picture leans with the pan and squeezes with the tilt (zero when still or calm).
+    at += float2(Pan.x, Pan.y) * (uv.y - 0.5);
+    float3 c = scene(at);
+    [branch] if (Osd > 0.0001) {
+      float2 o = osd(uv);
+      c = lerp(c, c * 0.2, o.y * Osd * 0.85);
+      c = lerp(c, float3(0.93, 0.95, 0.90), o.x * Osd);
+    }
+    return c;
+  }
   float hash(float2 p) {
     float3 q = frac(float3(p.xyx) * 0.1031);
     q += dot(q, q.yzx + 33.33);
@@ -48,21 +140,32 @@ struct W {
 };
 W w;
 w.K = K; w.Dens = Dens * (1.0 - saturate(Native)); w.HazeK = HazeK; w.FogCol = FogCol;
-float3 clean = w.sc(UV);
 float strength = saturate(Strength);
 // Field-camera/TV captures temporarily lower the legacy Vhs gate to keep evidence clean.
-[branch] if (Mode < 0.5 || Vhs <= 0.00001 || strength <= 0.00001) return clean;
+bool lookOn = Mode >= 0.5 && Vhs > 0.00001 && strength > 0.00001;
+bool body = lookOn && Mode > 4.5;
 float calm = saturate(Calm);
 float moving = 1.0 - calm;
 float frame = floor(Time * 24.0) * moving;
 float2 size = max(View.ViewSizeAndInvSize.xy, 1.0);
 float2 pixel = 1.0 / size;
 float aspect = size.x / size.y;
+// D45-20261110: the lens goes into clean too and is scaled by strength, so a partial strength
+// fades the geometry instead of cross-fading a straight and a bent picture (a double image).
+float lensGate = body ? saturate(Lens.z) * strength : 0.0;
+w.Body = body; w.Aspect = aspect; w.Edge = 0.25 * (aspect * aspect + 1.0);
+w.Bend = max(Lens.x, 0.0) * lensGate;
+w.Pan = body ? clamp(Cam.yz, -6.0, 6.0) * float2(0.004, 0.003) * moving * lensGate : 0;
+w.Osd = body ? saturate(Cam.w) * strength : 0.0;
+w.Stamp = Stamp;
+float3 clean = w.sc(UV);
+[branch] if (!lookOn) return clean;
 float2 r = UV - 0.5;
 float vignette = smoothstep(0.10, 0.5, dot(r, r));
 float3 col;
 
-[branch] if (Mode < 1.5) {
+// Bodycam 1986 is recorded on the same tape.
+[branch] if (Mode < 1.5 || Mode > 4.5) {
   // NTSC/VHS is a band-limited luma/chroma signal, not radial lens aberration.
   float2 tapeSize = float2(480.0 * aspect, 480.0);
   float2 tp = 1.0 / tapeSize;
@@ -159,5 +262,42 @@ float3 col;
   // Light-dependent silver/dye texture. Black is not filled with white static.
   float envelope = smoothstep(0.005, 0.075, l) * (0.65 + 0.35 * (1.0 - smoothstep(0.4, 0.98, l)));
   col += grain * (carpenter ? 0.018 : (super8 ? 0.052 : 0.032)) * envelope;
+}
+// D45-20261110: the 1986 tube camera on top of the tape (Bodycam only).
+[branch] if (body) {
+  float2 pc = r * float2(aspect, 1.0);
+  float edge = saturate(dot(pc, pc) / w.Edge); // 0 centre .. 1 corner
+  // Colour fringing: red pushed out and blue pulled in, growing to the corners.
+  float2 off = r * 2.0 * edge * max(Lens.y, 0.0) * lensGate * pixel;
+  col.r += w.sc(UV + off).r - clean.r;
+  col.b += w.sc(UV - off).b - clean.b;
+  // Gain control: five fixed metering taps (the same for every pixel). The gain is capped at
+  // 1.6 so the night stays dark: it brings noise, not daylight. Cam.x pumps it on a lamp's toggle.
+  float meter = w.lum(w.scene(float2(0.5, 0.5))) + w.lum(w.scene(float2(0.3, 0.36))) + w.lum(w.scene(float2(0.7, 0.36)))
+              + w.lum(w.scene(float2(0.3, 0.66))) + w.lum(w.scene(float2(0.7, 0.66)));
+  float gain = clamp(0.20 / max(meter * 0.2, 0.02), 1.0, 1.6);
+  gain = clamp(gain + clamp(Cam.x, -1.0, 1.0) * 0.35 * moving, 0.85, 1.6);
+  col = max(col, 0.0);
+  col = col * gain / (1.0 + (gain - 1.0) * col);
+  float bl = w.lum(col);
+  float dark = 1.0 - smoothstep(0.05, 0.55, bl);
+  // The tube loses colour in the shadows.
+  col = lerp(bl.xxx, col, lerp(0.65, 1.0, smoothstep(0.06, 0.40, bl)));
+  // Coarse gain noise and colour blotches, stronger in the dark and with more gain.
+  float2 coarse = float2(240.0 * aspect, 240.0);
+  col += w.grain(UV, coarse, frame) * (0.010 + 0.030 * (gain - 1.0)) * (0.35 + 0.65 * dark);
+  col += float3(w.grain(UV, coarse * 0.5, frame + 5.0), 0.0, w.grain(UV, coarse * 0.5, frame + 9.0)) * 0.010 * dark * (gain - 0.8);
+  // Light trails and smear only while turning fast (Cam.y: the turn rate, rad/s).
+  float pan = abs(Cam.y) * moving * lensGate;
+  [branch] if (pan > 0.6) {
+    float k = saturate((pan - 0.6) / 2.4);
+    float2 back = float2(Cam.y > 0.0 ? -1.0 : 1.0, 0.0) * pixel * (size.y / 480.0);
+    float3 trail = 0;
+    [unroll] for (int s2 = 1; s2 <= 3; ++s2) trail += w.bright(UV + back * (5.0 * k * s2)) * (1.0 - 0.25 * s2);
+    col += trail * 0.35 * k;
+    col = lerp(col, w.sc(UV + back * (4.0 * k)), 0.35 * k);
+  }
+  // Wide-lens vignette, much stronger than the tape's own.
+  col *= 1.0 - saturate(Lens.w) * lensGate * smoothstep(0.35, 1.0, edge);
 }
 return saturate(lerp(clean, col, strength));

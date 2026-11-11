@@ -7,6 +7,8 @@
 #include "Components/RectLightComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "PhysicsEngine/BodySetup.h"
+#include "RenderUtils.h"
 #include "StaticMeshResources.h"
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
@@ -38,6 +40,81 @@ namespace
  bool Same(const FS47Rect& A,const FS47Rect& B){return FMath::Abs(A.MinX-B.MinX)<.06&&FMath::Abs(A.MaxX-B.MaxX)<.06&&FMath::Abs(A.MinZ-B.MinZ)<.06&&FMath::Abs(A.MaxZ-B.MaxZ)<.06;}
  bool ValidRect(const FValues& A){return VectorValid(A,4)&&A[0]->AsNumber()<A[1]->AsNumber()&&A[2]->AsNumber()<A[3]->AsNumber();}
  FValues RectValues(const FS47Rect& R){return {MakeShared<FJsonValueNumber>(R.MinX),MakeShared<FJsonValueNumber>(R.MaxX),MakeShared<FJsonValueNumber>(R.MinZ),MakeShared<FJsonValueNumber>(R.MaxZ)};}
+ // MOTEL-FACADE-20261109: the old office front in the court's wear layer (node 769, /Game/MotelV2/Trim/g529): 52 triangles in one
+ // plane at x -40.988, y 0..2.8, z 22..27.8 (the layer's own terms, three metres; Tools/motelv2 trim_geo_004.glb, counted 9 November).
+ const FBox OfficeFront(FVector(-41.0,-.05,21.98),FVector(-40.975,2.85,27.82));
+ constexpr int32 OfficeFrontTriangles=52;
+ // A runtime copy of a cooked mesh without the triangles wholly inside Box (the mesh's own terms, three metres): the same render-data
+ // clone as S47StreetLamps' Cut(), every other triangle, vertex, UV, colour and slot kept. It reads the vertex buffer only when the
+ // asset keeps its CPU data (bAllowCPUAccess, Tools/streetlamps/prepare_motel_cpu.py); otherwise nullptr and nothing is read.
+ UStaticMesh* CutOut(UObject* Outer,UStaticMesh* Original,const FBox& Box,int32& Removed)
+ {
+  Removed=0;
+  if(!Original||!Original->bAllowCPUAccess||!Original->GetRenderData()||Original->GetRenderData()->LODResources.Num()!=1)return nullptr;
+  const auto& Src=Original->GetRenderData()->LODResources[0];const auto& VB=Src.VertexBuffers;
+  if(!VB.PositionVertexBuffer.GetVertexData()||!VB.StaticMeshVertexBuffer.GetTangentData()||!VB.StaticMeshVertexBuffer.GetTexCoordData()||Src.IndexBuffer.GetIndexDataSize()==0)return nullptr;
+  TArray<uint32> Old,Keep;Src.IndexBuffer.GetCopy(Old);Keep.Reserve(Old.Num());
+  TArray<FStaticMeshSection> Sections;
+  const uint32 Verts=VB.PositionVertexBuffer.GetNumVertices();
+  const auto In=[&VB,&Box](uint32 V){return Box.IsInsideOrOn(S47Three::ToThree(FVector(VB.PositionVertexBuffer.VertexPosition(V))));};
+  for(const FStaticMeshSection& Section:Src.Sections)
+  {
+   FStaticMeshSection Copy=Section;Copy.FirstIndex=Keep.Num();Copy.NumTriangles=0;
+   for(uint32 I=Section.FirstIndex;I<Section.FirstIndex+Section.NumTriangles*3;I+=3)
+   {
+    if(I+2>=uint32(Old.Num()))return nullptr;
+    const uint32 A=Old[I],Bv=Old[I+1],Cv=Old[I+2];
+    if(FMath::Max3(A,Bv,Cv)>=Verts)return nullptr;
+    if(In(A)&&In(Bv)&&In(Cv)){++Removed;continue;}
+    Keep.Append({A,Bv,Cv});++Copy.NumTriangles;
+   }
+   if(Copy.NumTriangles)Sections.Add(Copy);
+  }
+  auto* Out=NewObject<UStaticMesh>(Outer,NAME_None,RF_Transient);
+  Out->bAllowCPUAccess=true;Out->NeverStream=true;Out->bSupportRayTracing=Original->bSupportRayTracing;
+  Out->GetStaticMaterials()=Original->GetStaticMaterials();Out->SetLightMapCoordinateIndex(Original->GetLightMapCoordinateIndex());
+  auto Data=MakeUnique<FStaticMeshRenderData>();Data->AllocateLODResources(1);
+  Data->Bounds=Original->GetRenderData()->Bounds;Data->ScreenSize[0].Default=1;
+  Data->NumInlinedLODs=1;Data->CurrentFirstLODIdx=0;Data->bReadyForStreaming=false;
+  auto& Dst=Data->LODResources[0];Dst.Sections.Append(Sections);
+  Dst.VertexBuffers.PositionVertexBuffer.Init(VB.PositionVertexBuffer,true);
+  auto& Tangents=Dst.VertexBuffers.StaticMeshVertexBuffer;
+  Tangents.SetUseHighPrecisionTangentBasis(VB.StaticMeshVertexBuffer.GetUseHighPrecisionTangentBasis());
+  Tangents.SetUseFullPrecisionUVs(VB.StaticMeshVertexBuffer.GetUseFullPrecisionUVs());
+  Tangents.Init(VB.StaticMeshVertexBuffer.GetNumVertices(),VB.StaticMeshVertexBuffer.GetNumTexCoords(),true);
+  for(uint32 I=0;I<VB.StaticMeshVertexBuffer.GetNumVertices();++I)
+  {
+   Tangents.SetVertexTangents(I,FVector3f(VB.StaticMeshVertexBuffer.VertexTangentX(I)),VB.StaticMeshVertexBuffer.VertexTangentY(I),FVector3f(VB.StaticMeshVertexBuffer.VertexTangentZ(I)));
+   for(uint32 U=0;U<VB.StaticMeshVertexBuffer.GetNumTexCoords();++U)Tangents.SetVertexUV(I,U,VB.StaticMeshVertexBuffer.GetVertexUV(I,U));
+  }
+  const uint32 Colors=VB.ColorVertexBuffer.GetNumVertices();
+  if(Colors)
+  {
+   if(!VB.ColorVertexBuffer.GetVertexData())return nullptr;
+   Dst.VertexBuffers.ColorVertexBuffer.Init(Colors,true);
+   for(uint32 I=0;I<Colors;++I)Dst.VertexBuffers.ColorVertexBuffer.VertexColor(I)=VB.ColorVertexBuffer.VertexColor(I);
+  }
+  Dst.bHasColorVertexData=Colors>0;Dst.bBuffersInlined=true;Dst.bIsOptionalLOD=false;
+  // the index buffer keeps its CPU copy too: the new collision below is cooked from it
+  Dst.SourceMeshBounds=Data->Bounds;Dst.MaxDeviation=0;Dst.IndexBuffer.TrySetAllowCPUAccess(true);Dst.IndexBuffer.SetIndices(Keep,EIndexBufferStride::Force32Bit);
+  bool InitRT=Out->bSupportRayTracing;
+#if !WITH_EDITOR
+  InitRT=InitRT&&IsRayTracingAllowed();
+#endif
+  if(InitRT)Data->InitializeRayTracingRepresentationFromRenderingLODs();
+  Out->SetRenderData(MoveTemp(Data));Out->SetExtendedBounds(Original->GetBounds());
+  return Out;
+ }
+ // Collision of its own for the copy, cooked at runtime from what it draws (complex as simple, every section), so a trace meets what
+ // is drawn and not the removed faces. False: nothing was cooked (the caller keeps the original's body then).
+ bool CookOwnCollision(UStaticMesh* Mesh)
+ {
+  if(!Mesh)return false;
+  auto* Body=NewObject<UBodySetup>(Mesh,NAME_None,RF_Transient);
+  Body->CollisionTraceFlag=CTF_UseComplexAsSimple;Body->bMeshCollideAll=true;Body->bHasCookedCollisionData=true;Body->bNeverNeedsCookedCollisionData=false;
+  Mesh->SetBodySetup(Body);Body->InvalidatePhysicsData();Body->CreatePhysicsMeshes();
+  return !Body->bFailedToCreatePhysicsMeshes&&Body->TriMeshGeometries.Num()>0;
+ }
 }
 
 FS47MotelV2::~FS47MotelV2()
@@ -306,6 +383,43 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   if(P.Hidden){Retired.AddUnique(P.Comp);continue;}
   TArray<UMaterialInterface*> Mats;for(auto* M:P.Comp->GetMaterials())Mats.Add(M);P.Comp->SetStaticMesh(P.Mesh);
   for(int32 S=0;S<P.Slots.Num();++S)P.Comp->SetMaterial(S,Mats[P.Slots[S]]);
+ }
+ // MOTEL-FACADE-20261109: the office keeps V2's front. The export's wear layer for the court (node 769, g529, dressMotel.ts; since the
+ // patches above it draws /Game/MotelV2/Trim/g529) has the old office front, a plate at x -43.488, 1.2 cm proud of V2's own wall
+ // (-43.50, SM_Sierra_Office); under the sill V2's wall lies deeper (-43.60..-43.75), so there the plate stood in front of it and the
+ // window read as a box standing out. Its 52 triangles are cut out of a runtime copy of the layer (CutOut, as S47StreetLamps' Cut()),
+ // with collision cooked from what is left, so neither the eye nor a trace meets them; the rest of the layer stays where it is. That
+ // needs the trim's CPU data (Tools/streetlamps/prepare_motel_cpu.py, run once in the editor; the asset is in Git). Without it, or if
+ // the 52 are not all found, the whole layer goes 3 cm back instead (the plate then 1.8 cm inside V2's wall, but not under the sill),
+ // and the log says why.
+ if(const auto* Wear=W->Node(769);Wear&&Wear->Geo==529&&Wear->Parent==767)
+ {
+  UStaticMeshComponent* WearMesh=MeshAt(W,769);UStaticMesh* Drawn=WearMesh?WearMesh->GetStaticMesh():nullptr;
+  int32 Found=0;
+  UStaticMesh* Without=Drawn&&Drawn->bAllowCPUAccess?CutOut(W,Drawn,OfficeFront,Found):nullptr;
+  if(Without&&Found==OfficeFrontTriangles)
+  {
+   Without->InitResources();
+   const bool bOwnBody=CookOwnCollision(Without);
+   if(!bOwnBody)Without->SetBodySetup(Drawn->GetBodySetup());
+   WearMesh->SetStaticMesh(Without);
+   UE_LOG(LogS47MotelV2,Display,TEXT("S47: motel office front: %d old triangles cut out of the court's wear layer (node769 %s, %d left); %s; V2's office wall is the front (MOTEL-FACADE-20261109)"),
+    Found,*GetPathNameSafe(Drawn),Without->GetNumTriangles(0),bOwnBody?TEXT("its collision cooked from what is left"):TEXT("WARNING: no collision could be cooked, the old body is kept and a trace still meets the old plate"));
+  }
+  else
+  {
+   if(!Drawn||!Drawn->bAllowCPUAccess)
+   {UE_LOG(LogS47MotelV2,Warning,TEXT("S47: motel office front: %s has no CPU data (run Tools/streetlamps/prepare_motel_cpu.py in the editor); the old plate is not cut, the layer is set back 3 cm instead (MOTEL-FACADE-20261109)"),*GetPathNameSafe(Drawn));}
+   else
+   {UE_LOG(LogS47MotelV2,Warning,TEXT("S47: motel office front: %d of the %d old triangles found in %s (%s); not cut, the layer is set back 3 cm instead (MOTEL-FACADE-20261109)"),Found,OfficeFrontTriangles,*GetPathNameSafe(Drawn),Without?TEXT("a different count"):TEXT("no readable render data"));}
+   const USceneComponent* Parent=Wear->Comp.IsValid()?Wear->Comp->GetAttachParent():nullptr;
+   if(Parent&&Parent->GetComponentQuat().Equals(FQuat::Identity,1e-4)&&Wear->Q.Equals(FQuat::Identity,1e-4))
+   {
+    const double Before=W->WorldThree(769).X;W->SetPosition(769,Wear->P+FVector(-.03,0,0));
+    UE_LOG(LogS47MotelV2,Display,TEXT("S47: motel office front: the court's wear layer (node769 g529) set back from x %.3f to %.3f (MOTEL-FACADE-20261109, the reserve)"),Before,W->WorldThree(769).X);
+   }
+   else UE_LOG(LogS47MotelV2,Warning,TEXT("S47: motel office front: the court's wear layer is turned; left where it is (MOTEL-FACADE-20261109)"));
+  }
  }
  for(auto* C:Retired){Retire(C);F->Retired.Add(C);}
  for(const int32 I:RetiredRoots)W->SetVisible(I,false);

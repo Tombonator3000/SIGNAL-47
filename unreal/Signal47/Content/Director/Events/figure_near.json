@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "id": "figure_near",
+  "name": "Somebody out there in the dark, following",
+  "notes": "N1110-5. Played by S47Happenings when the figure that follows a walker begins (out on foot; a danger, one a night). The code's own warning (crickets, the lamp) stays; this adds the hum and a thought. Its stages call figure_near_steps, figure_near_close and figure_near_light, and its end figure_near_end. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "tone", "hz": 48, "secs": 8, "gain": 0.03, "delay": 2, "wave": "sine" },
+    { "at": 6, "do": "thought", "text": "No crickets. No wind. Just my own boots.", "secs": 4, "if": ["on_foot"] }
+  ]
+}

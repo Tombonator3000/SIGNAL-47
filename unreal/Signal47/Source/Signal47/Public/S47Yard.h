@@ -57,6 +57,7 @@ private:
 	UPROPERTY() TObjectPtr<UTextureRenderTarget2D> Bus;
 	FWidgetRenderer* Renderer = nullptr;
 	TSharedPtr<SS47Bus> BusWidget;
+	void CoverMotorBusName(); // D37-S03-PLATE-20261109
 	int32 FloodSetIdx = -1, WorkLamp = -1; // the site floods and the work lamp's pool in them
 	int32 WorkGlow = -1;                    // its point in the yard's glow
 	void FindWorkLamp();

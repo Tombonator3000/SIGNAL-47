@@ -19,7 +19,15 @@ namespace S47FarmBuildings
  const TArray<FWallFoot>& WallFeet();
  // obstacles_road_local from placement.json, as (MinX,MinZ)-(MaxX,MaxZ).
  const TArray<FBox2D>& Obstacles();
+ // The obstacles, and the feed shed's doorway while its door is shut.
  bool Blocked(double RoadX,double RoadZ,double Radius);
+ // WEEKLY-CASE-20261109: the feed shed's doorway, the gap in its south wall between the two runs above (sheds.py B_DOOR),
+ // road-local. FS47FarmShedDoor shuts it while the door is locked: Blocked counts it then, as a wall.
+ FBox2D ShedDoorway();
+ void SetShedDoorShut(bool bShut);
+ // CRIT9-20261109: within the feed shed's walls (its 5 x 4 m), widened by Pad: the door does not lock with someone in there.
+ bool InShed(double RoadX,double RoadZ,double Pad);
+ bool ShedDoorShut();
  // The four plots with their roof overhangs: nothing grows here.
  const TArray<FBox2D>& Plots();
  bool OnPlot(double RoadX,double RoadZ,double Margin=0);

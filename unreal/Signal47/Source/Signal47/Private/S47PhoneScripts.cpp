@@ -91,7 +91,7 @@ bool S47PhoneScripts::SelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
 	auto Check = [&](bool bCond, const TCHAR* What) { Lines.Add(FString::Printf(TEXT("%s phone scripts: %s"), bCond ? TEXT("ok") : TEXT("FAIL"), What)); bOk &= bCond; };
-	Check(PhoneTexts().Num() == 24 && NoraCbTexts().Num() == 3, TEXT("24 recorded phone texts, 3 CB texts"));
+	Check(PhoneTexts().Num() == 24 && NoraCbTexts().Num() == 3, TEXT("24 phone texts to record, 3 CB texts"));
 	Check(Ward().Num() == 2 && Nora().Num() == 4 && FieldNora().Num() == 4 && WardArray().Num() == 2, TEXT("the calls' lengths"));
 	Check(Nora()[1].bAside && Nora()[1].By.IsEmpty() && Nora()[1].Pause.IsSet() && *Nora()[1].Pause == 3.4f, TEXT("the aside in N. Vega's call"));
 	// every spoken line of the scripted calls is in the recorded bank; Ward's call-back is not
@@ -99,7 +99,7 @@ bool S47PhoneScripts::SelfTest(TArray<FString>& Lines)
 	for (const TCHAR* K : { TEXT("ward"), TEXT("nora"), TEXT("fieldNora") })
 		for (const FS47PhoneCue& C : PhoneCalls()[K]) if (!C.bAside && !PhoneTexts().Contains(C.Text)) bAll = false;
 	Check(bAll, TEXT("the scripted calls are all in PHONE_TEXTS"));
-	Check(!PhoneTexts().Contains(WardArray()[0].Text) && !PhoneTexts().Contains(WardArray()[1].Text), TEXT("Ward's call-back has no recording"));
+	Check(!PhoneTexts().Contains(WardArray()[0].Text) && !PhoneTexts().Contains(WardArray()[1].Text), TEXT("Ward's call-back is not among them"));
 	Check(PhoneTexts()[12] == FString(TEXT("Tom")) + TCHAR(0xE1) + TEXT("s. Where did you leave the spare key?"), TEXT("the accent in Tomas"));
 	return bOk;
 }

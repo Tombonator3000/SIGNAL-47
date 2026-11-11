@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "id": "town_blackout",
+  "name": "Every light in Caliche goes out",
+  "notes": "Played by S47Happenings when the blackout starts in Caliche. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "light", "kind": "town" },
+    { "at": 0, "do": "tone", "hz": 60, "secs": 40, "gain": 0.05, "delay": 1, "wave": "sine" },
+    { "at": 0, "do": "tone", "hz": 120, "secs": 40, "gain": 0.025, "delay": 1, "wave": "square" },
+    { "at": 0, "do": "evidence", "key": "blackout_d{day}", "text": "At {clock} every light in Caliche went out, one after another down the street, and the transformer hummed loud enough to hear across town. Then they came back." }
+  ]
+}

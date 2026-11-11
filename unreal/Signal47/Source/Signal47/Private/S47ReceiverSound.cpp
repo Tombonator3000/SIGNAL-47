@@ -1,6 +1,7 @@
 #include "S47ReceiverSound.h"
 #include "S47Audio.h"
 #include "S47SignalVoice.h"
+#include "S47WebAudio.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
@@ -11,17 +12,48 @@
 namespace
 {
  const TCHAR* const MixKey = TEXT("receiver_reference");
- struct FReference { const TCHAR* Recipe; const TCHAR* Name; const TCHAR* Source; };
+ // D48-20261110 (D46-16): Source null: synthesized here (no recording of it is staged), a plain loop of a few seconds.
+ struct FReference { const TCHAR* Recipe; const TCHAR* Name; const TCHAR* Source; int32 Kind; int32 Cause; const TCHAR* Blurb; };
  // These are listening references, never substituted for a SARO acquisition. Actual
  // spacecraft/instrument/date provenance remains in the bank and source credits.
  const FReference References[] = {
-  {TEXT("nasa_saturn_scan"), TEXT("PLANETARY RADIO A"), TEXT("nasa_saturn_eerie")},
-  {TEXT("nasa_jupiter_scan"), TEXT("PLANETARY RADIO B"), TEXT("nasa_cassini_jupiter")},
-  {TEXT("nasa_saturn_bizarre_scan"), TEXT("PLANETARY RADIO C"), TEXT("nasa_saturn_bizarre")},
-  {TEXT("nasa_saturn_lightning_scan"), TEXT("PLANETARY RADIO D"), TEXT("nasa_saturn_lightning")},
-  {TEXT("nasa_earth_chorus_scan"), TEXT("ELECTROMAGNETIC CHORUS"), TEXT("nasa_earth_chorus")},
-  {TEXT("nebula_ambience"), TEXT("SYNTHETIC SPACE TEXTURE"), TEXT("space_nebula")}
+  {TEXT("nasa_saturn_lightning_scan"), TEXT("LIGHTNING SFERICS"), TEXT("nasa_saturn_lightning"), 0, -1, TEXT("Sharp crackles and pops from storms a long way off. Random, with no rhythm to them.")},
+  {TEXT("nasa_earth_chorus_scan"), TEXT("WHISTLERS AND CHORUS"), TEXT("nasa_earth_chorus"), 0, -1, TEXT("Falling whistles and rising chirps from the Earth's own magnetic field, loudest near dawn.")},
+  {TEXT("nasa_jupiter_scan"), TEXT("PLANET BURSTS"), TEXT("nasa_cassini_jupiter"), 0, -1, TEXT("Slow rushing roars from a planet's magnetic field. They rise and fall, but keep no beat.")},
+  {TEXT("nasa_saturn_scan"), TEXT("AURORAL HISS"), TEXT("nasa_saturn_eerie"), 0, -1, TEXT("A thin, steady whistling from a planet's aurora. Eerie, but it never repeats a pattern.")},
+  {TEXT("nasa_saturn_bizarre_scan"), TEXT("AURORAL WARBLE"), TEXT("nasa_saturn_bizarre"), 0, -1, TEXT("Warbling tones that slide up and down, also from an aurora. Nothing in it is timed.")},
+  {TEXT("nebula_ambience"), TEXT("GALACTIC BACKGROUND"), TEXT("space_nebula"), 0, -1, TEXT("The faint, even hiss of the whole sky. Nothing in it stands out.")},
+  {TEXT("synth_pulsar"), TEXT("PULSAR"), nullptr, 0, -1, TEXT("A dead regular tick, one every fraction of a second, that never misses and never drifts off its pace.")},
+  {TEXT("synth_radar_sweep"), TEXT("AIRCRAFT RADAR SWEEP"), nullptr, 1, 1, TEXT("A rough burst every few seconds as an airport radar dish turns past. It keeps the clock, not the stars.")},
+  {TEXT("synth_power_hum"), TEXT("POWER-LINE HUM"), nullptr, 1, 0, TEXT("A steady low drone with overtones, from the mains. It swells when the station load comes up.")},
+  {TEXT("synth_sat_beacon"), TEXT("SATELLITE BEACON"), nullptr, 1, 1, TEXT("A clean tone beeping on and off at one pitch, drifting slowly as the satellite passes over.")}
  };
+ uint32 Hash(uint32 V){V^=V>>16;V*=0x7feb352du;V^=V>>15;V*=0x846ca68bu;return V^(V>>16);}
+ float Noise(uint32 V){return float(Hash(V)&0xffffff)/float(0x800000)-1.f;}
+ // One mono loop of eight seconds. Whole cycles of every tone, so the loop has no click.
+ TSharedRef<FS47AudioBuffer> MakeSynth(FS47AudioContext& Ctx,int32 Index)
+ {
+  const float Rate=float(Ctx.SampleRate);const int32 Len=int32(Rate*8);
+  TSharedRef<FS47AudioBuffer> B=Ctx.CreateBuffer(1,Len,Rate);float* D=B->GetChannelData(0);
+  double Phase=0;
+  for(int32 I=0;I<Len;++I)
+  {
+   const double T=I/double(Rate);const float W=Noise(uint32(I)*2654435761u+uint32(Index));double V=0;
+   switch(Index)
+   {
+   case 6: // pulsar: a tick every 0.8 s
+   {const double P=FMath::Fmod(T,.8);V=.03*W+(P<.012?(1-P/.012)*(.55*W+.35*FMath::Sin(2*PI*700*P)):0.);break;}
+   case 7: // radar: a rough sweep every 4 s as the dish turns past
+   {const double P=FMath::Fmod(T,4.);const double E=P<.5?FMath::Square(FMath::Sin(PI*P/.5)):0.;V=.02*W+E*(.45*W+.4*FMath::Sin(2*PI*(500*P+700*P*P)));break;}
+   case 8: // power line: sixty hertz with overtones and a slow swell
+   {const double Swell=.8+.2*FMath::Sin(2*PI*T/8);V=Swell*(.34*FMath::Sin(2*PI*60*T)+.2*FMath::Sin(2*PI*120*T)+.12*FMath::Sin(2*PI*180*T)+.07*FMath::Sin(2*PI*300*T))+.015*W;break;}
+   default: // beacon: a tone for a quarter second every second, pitch drifting a little
+   {const double P=FMath::Fmod(T,1.);const double Env=FMath::Clamp(FMath::Min(P,.25-P)/.006,0.,1.);Phase+=2*PI*(1000+25*FMath::Sin(2*PI*T/8))/Rate;V=.01*W+Env*.4*FMath::Sin(Phase);break;}
+   }
+   D[I]=float(FMath::Clamp(V,-.9,.9));
+  }
+  return B;
+ }
  bool ReferenceMetadata(const FString& Name, double& Duration, bool& Loop)
  {
   FString Text;
@@ -73,6 +105,15 @@ bool FS47ReceiverSound::Toggle()
  if (!A || !A->Ctx || A->Ctx->State() != TEXT("running")) return false;
  TArray<FString> Errors;
  const FString Recipe = References[Selected].Recipe;
+ if (!References[Selected].Source)
+ {
+  SynthSource = A->Ctx->CreateBufferSource(); SynthSource->Buffer = MakeSynth(*A->Ctx, Selected); SynthSource->bLoop = true;
+  SynthGain = A->Ctx->CreateGain(); SynthGain->Gain.SetValue(.5);
+  SynthSource->Connect(SynthGain); SynthGain->Connect(Destination.IsValid() ? Destination : TSharedPtr<FS47AudioNode>(A->Ctx->Destination));
+  SynthSource->Start();
+  Feedback.Empty(); bPlaying = true; EndAt = 0;
+  return true;
+ }
  double Duration = 0; bool Loop = false;
  if (!Allows(Recipe, ES47SoundUse::Receiver) || !ReferenceMetadata(Recipe, Duration, Loop)
   || !A->PlaySoundMix(MixKey, Recipe, ES47SoundUse::Receiver, Errors, Destination))
@@ -88,7 +129,8 @@ bool FS47ReceiverSound::Toggle()
 }
 void FS47ReceiverSound::Stop()
 {
- if (auto* A = Audio.Get()) if (bPlaying) A->StopSoundMix(MixKey, 0);
+ if (SynthSource.IsValid()) { SynthSource->Stop(); SynthSource->Disconnect(); if (SynthGain.IsValid()) SynthGain->Disconnect(); SynthSource.Reset(); SynthGain.Reset(); }
+ else if (auto* A = Audio.Get()) if (bPlaying) A->StopSoundMix(MixKey, 0);
  bPlaying = false;
  EndAt = 0;
 }
@@ -99,9 +141,34 @@ void FS47ReceiverSound::Step(bool bMayListen, double T)
  {
   if (!A->Ctx || A->Ctx->State() == TEXT("closed")) { Stop(); return; }
   if (bPlaying && EndAt > 0 && A->Ctx->CurrentTime() >= EndAt) { Stop(); return; }
-  if (bPlaying) A->SoundMixFrame(MixKey, 1, 0, 1, T);
+  if (bPlaying && !SynthSource.IsValid()) A->SoundMixFrame(MixKey, 1, 0, 1, T);
  }
  else bPlaying = false;
+}
+int32 FS47ReceiverSound::Count() { return UE_ARRAY_COUNT(References); }
+const TCHAR* FS47ReceiverSound::NameOf(int32 I) { return References[FMath::Clamp(I, 0, Count() - 1)].Name; }
+const TCHAR* FS47ReceiverSound::BlurbOf(int32 I) { return References[FMath::Clamp(I, 0, Count() - 1)].Blurb; }
+int32 FS47ReceiverSound::KindOf(int32 I) { return References[FMath::Clamp(I, 0, Count() - 1)].Kind; }
+int32 FS47ReceiverSound::FeederCause(int32 I) { return I >= 0 && I < Count() ? References[I].Cause : -1; }
+float FS47ReceiverSound::Signature(int32 Index, float T, float F)
+{
+ // The look of each source on a spectrogram: time and frequency 0..1, brightness 0..1. Faint hash under everything.
+ const float Base = .08f + .07f * (Noise(uint32(T * 97) * 7919u + uint32(F * 53) * 104729u + uint32(Index) * 31u) * .5f + .5f);
+ float V = 0;
+ switch (Index)
+ {
+ case 0: V = Noise(uint32(T * 61) * 2654435761u + 5u) > .62f ? 1.f - F * .5f : 0.f; break; // sferics: broadband spikes, no rhythm
+ case 1: V = FMath::Max(FMath::Exp(-FMath::Square((F - (.85f - .6f * FMath::Frac(T * 3.f))) * 14)) * .9f * (FMath::Frac(T * 3.f) < .8f), 0.f); break; // chorus: falling whistles
+ case 2: V = FMath::Exp(-FMath::Square((F - (.5f + .3f * FMath::Sin(T * 9.f))) * 5)) * (.5f + .5f * FMath::Sin(T * 23.f)); break; // bursts: wide slow bands
+ case 3: V = FMath::Exp(-FMath::Square((F - (.3f + .05f * FMath::Sin(T * 17.f))) * 22)) * .8f; break; // hiss: one thin steady line
+ case 4: V = FMath::Exp(-FMath::Square((F - (.5f + .35f * FMath::Sin(T * 21.f))) * 18)) * .85f; break; // warble: sliding line
+ case 5: V = 0; break; // background: nothing stands out
+ case 6: V = FMath::Frac(T * 10.f) < .08f ? .95f : 0.f; break; // pulsar: even thin vertical lines
+ case 7: V = FMath::Frac(T * 2.f) < .22f ? .9f * FMath::Exp(-FMath::Square((F - (.15f + .7f * FMath::Frac(T * 2.f) / .22f)) * 4)) + .3f : 0.f; break; // radar: a wide chirp each sweep
+ case 8: V = (FMath::Exp(-FMath::Square((F - .12f) * 60)) + .6f * FMath::Exp(-FMath::Square((F - .24f) * 60)) + .4f * FMath::Exp(-FMath::Square((F - .36f) * 60)) + .25f * FMath::Exp(-FMath::Square((F - .6f) * 60))); break; // hum: stacked steady lines
+ default: V = FMath::Frac(T * 8.f) < .25f ? .95f * FMath::Exp(-FMath::Square((F - (.55f + .02f * FMath::Sin(T * 6.f))) * 70)) : 0.f; break; // beacon: short dashes on one pitch
+ }
+ return FMath::Clamp(Base + V, 0.f, 1.f);
 }
 FString FS47ReceiverSound::Label() const
 {
@@ -139,8 +206,16 @@ bool FS47ReceiverSound::SelfTest(TArray<FString>& Lines)
   }
   Check(Each, TEXT("every staged reference plays finite nonzero samples and selecting another stops it"));
   bool Roles = true;
-  for (const auto& R : References) { double Duration=0; bool Loop=false; Roles &= ReferenceMetadata(R.Recipe,Duration,Loop); }
+  for (const auto& R : References) { double Duration=0; bool Loop=false; Roles &= !R.Source || ReferenceMetadata(R.Recipe,Duration,Loop); }
   Check(Roles,TEXT("references preserve rate one, one source, source role and original playback envelope"));
+  {
+   // D48-20261110 (D46-16): the man-made and pulsar references are synthesized; each is named, described, finite, different from the others,
+   // and only the two transmitters and the feeder stand for a cause of the first case.
+   bool Set = Count() == 10;
+   for (int32 I = 0; I < Count(); ++I) Set &= FString(NameOf(I)).Len() > 3 && FString(BlurbOf(I)).Len() > 30 && (KindOf(I) == 1) == (FeederCause(I) >= 0);
+   float Seen = 0; for (int32 I = 0; I < Count(); ++I) for (int32 X = 0; X < 12; ++X) for (int32 Y = 0; Y < 8; ++Y) { const float V = Signature(I, X / 12.f, Y / 8.f); Set &= FMath::IsFinite(V) && V >= 0 && V <= 1; Seen += V; }
+   Check(Set && Seen > 0 && FeederCause(8) == 0 && FeederCause(7) == 1 && FeederCause(9) == 1 && FeederCause(6) == -1, TEXT("references are named known sources with a plain description and a spectrogram signature, the man-made ones standing for a cause"));
+  }
   Check(Ref.Toggle(), TEXT("reference transport restarts after selection"));
   const double BeforePause=A->Ctx->CurrentTime();
   A->Ctx->Suspend(true); A->Ctx->Render(Samples.GetData(), Frames);

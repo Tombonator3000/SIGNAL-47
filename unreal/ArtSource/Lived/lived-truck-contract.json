@@ -1,0 +1,110 @@
+{
+ "lods": true,
+ "export_dir": "truck/Export",
+ "meshes": {
+  "SM_TripoJeep_WheelBody": {
+   "triangles": 60041,
+   "materials": [
+    "M_TripoFleet_classic_jeep_00_CabTrim",
+    "M_JeepInterior_CJTireRubber",
+    "M_JeepInterior_CJChassis",
+    "M_JeepInterior_CJSeatVinyl",
+    "M_JeepInterior_CJSeatSeam",
+    "M_Truck_Paint",
+    "M_Truck_Trim",
+    "M_Truck_Steel",
+    "M_Truck_Lens",
+    "M_Truck_Amber",
+    "M_Truck_Tire"
+   ],
+   "bounds_local_m": [
+    [
+     -0.9539999961853027,
+     -2.4200000762939453,
+     0.32764267921447754
+    ],
+    [
+     1.059999942779541,
+     2.219460964202881,
+     2.059480667114258
+    ]
+   ]
+  },
+  "SM_TripoJeep_WheelFL": {
+   "triangles": 4505,
+   "materials": [
+    "M_TripoFleet_classic_jeep_00_CabTrim",
+    "M_Truck_Tire"
+   ],
+   "bounds_local_m": [
+    [
+     -0.17120623588562012,
+     -0.45465677976608276,
+     -0.442717969417572
+    ],
+    [
+     0.20122838020324707,
+     0.4536454677581787,
+     0.44160184264183044
+    ]
+   ]
+  },
+  "SM_TripoJeep_WheelFR": {
+   "triangles": 5081,
+   "materials": [
+    "M_TripoFleet_classic_jeep_00_CabTrim",
+    "M_Truck_Tire"
+   ],
+   "bounds_local_m": [
+    [
+     -0.18787968158721924,
+     -0.45293253660202026,
+     -0.44602319598197937
+    ],
+    [
+     0.17933052778244019,
+     0.4557991027832031,
+     0.4432373344898224
+    ]
+   ]
+  },
+  "SM_TripoJeep_WheelRL": {
+   "triangles": 4606,
+   "materials": [
+    "M_TripoFleet_classic_jeep_00_CabTrim",
+    "M_Truck_Tire"
+   ],
+   "bounds_local_m": [
+    [
+     -0.1759129762649536,
+     -0.4550747871398926,
+     -0.43856585025787354
+    ],
+    [
+     0.19476938247680664,
+     0.45214563608169556,
+     0.4466703236103058
+    ]
+   ]
+  },
+  "SM_TripoJeep_WheelRR": {
+   "triangles": 5211,
+   "materials": [
+    "M_TripoFleet_classic_jeep_00_CabTrim",
+    "M_Truck_Tire"
+   ],
+   "bounds_local_m": [
+    [
+     -0.20059043169021606,
+     -0.45576906204223633,
+     -0.4414457380771637
+    ],
+    [
+     0.1783631443977356,
+     0.4520847201347351,
+     0.4423683285713196
+    ]
+   ]
+  }
+ }
+}

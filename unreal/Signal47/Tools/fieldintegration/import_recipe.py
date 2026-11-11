@@ -197,3 +197,48 @@ def import_mesh(path, dest):
     mesh = E.load_asset(dest + '/' + path.stem)
     check(path.stem + ' imported', isinstance(mesh, unreal.StaticMesh))
     return mesh
+
+
+def lod_box(mesh, lod):
+    """The LOD's vertex bounds in the mesh's own centimetres: (min, max), from its render sections."""
+    lo, hi = [1e9] * 3, [-1e9] * 3
+    for section in range(mesh.get_num_sections(lod)):
+        for v in unreal.ProceduralMeshLibrary.get_section_from_static_mesh(mesh, lod, section)[0]:
+            for k, x in enumerate((v.x, v.y, v.z)):
+                lo[k] = min(lo[k], x); hi[k] = max(hi[k], x)
+    return lo, hi
+
+
+def import_lod_same_frame(mesh, lod, path, dest):
+    """An authored LOD in the base mesh's own frame.
+
+    S.import_lod does not carry import_mesh's import_rotation (measured 9 November 2026: the street lamps' arm,
+    head and wood arm had LOD0 along +X and LOD1/2 along +Y, so from afar the head hung beside the arm). Here the
+    LOD file goes through the same recipe as a temporary mesh, is copied into the base mesh's LOD slot, and the
+    temporary asset is deleted."""
+    temp = dest + '/_LodTemp'
+    source = import_mesh(path, temp)
+    # set_lod_from_static_mesh reuses a slot only for the same material object. The temporary mesh comes in without materials
+    # (WorldGridMaterial on every slot), so each LOD's sections got new slots of their own on WorldGridMaterial (9 November: the
+    # street lamps were grey from a few metres on and their lenses never glowed). Its slots take the base mesh's materials by
+    # slot name first, so the LOD's sections land on the base mesh's own slots.
+    base = {str(slot.get_editor_property('material_slot_name')): slot.get_editor_property('material_interface')
+            for slot in mesh.get_editor_property('static_materials')}
+    for index, slot in enumerate(source.get_editor_property('static_materials')):
+        material = base.get(str(slot.get_editor_property('material_slot_name')))
+        if material:
+            source.set_material(index, material)
+    got = S.set_lod_from_static_mesh(mesh, lod, source, 0, True)
+    E.delete_asset(temp + '/' + path.stem)
+    E.delete_directory(temp)
+    check(path.stem + ' copied into LOD' + str(lod), got == lod, got)
+    return got
+
+
+def check_lod_frames(mesh, name, tolerance=3.0):
+    """Every LOD's extent within tolerance cm of LOD0's on each axis (a turned LOD swaps X and Y)."""
+    base = lod_box(mesh, 0)
+    for lod in range(1, mesh.get_num_lods()):
+        box = lod_box(mesh, lod)
+        worst = max(abs(a - b) for pair in zip(base, box) for a, b in zip(*pair))
+        check(name + ' LOD' + str(lod) + ' in LOD0 frame', worst <= tolerance, {'lod0': base, 'lod': box, 'worst_cm': worst})

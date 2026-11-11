@@ -79,6 +79,10 @@ void FS47TruckTrouble::Release()
 
 void FS47TruckTrouble::CatchOn(double N) { if (A && A->Kind == ES47Trouble::Stall) A->Need = FMath::Max(1.0, N); }
 
+void FS47TruckTrouble::HoldKey(bool bOn) { if (A && A->Kind == ES47Trouble::Stall) A->bHold = bOn; }
+
+bool FS47TruckTrouble::Cranking() const { return A && A->Kind == ES47Trouble::Stall && A->Stage == EStage::Cranking; }
+
 bool FS47TruckTrouble::TurnKey()
 {
 	if (!WantsKey() || !A) return false;

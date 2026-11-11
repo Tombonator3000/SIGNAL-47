@@ -20,6 +20,7 @@
 #include "S47Walker.h"
 #include "S47World.h"
 #include "S47WorldLife.h"
+#include <limits>
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Stress, Log, All);
 
@@ -27,8 +28,10 @@ namespace S47StressLocal
 {
 	// how fast it rises (the time constant, seconds) and how long it takes to fall from full to nothing
 	constexpr double RiseSeconds = 3.5, FallSafeSeconds = 90, FallSeconds = 360;
-	// after being taken: how long the aftermath lasts, and how strong it is at first
-	constexpr double AfterTakenSeconds = 420, AfterTakenLevel = 0.75;
+	// after being taken: how long the aftermath lasts, and how strong it is at first. AFTER-TAKEN-20261109 (Tom, d37: "some sounds
+	// hang on in a loop when you wake up"): it was 0.75, over the breathing's mark, so the hard breath went on every few seconds for
+	// minutes after waking (tired, up to eight). Now they come to dazed, under the breathing: a faint edge that fades, and quiet.
+	constexpr double AfterTakenSeconds = 420, AfterTakenLevel = 0.3;
 	// nothing shows below this; the edge and the narrower view come in above it
 	constexpr double EdgeFrom = 0.15, FovFrom = 0.35, BreathFrom = 0.4;
 	// the dark and the hush together stay under the breathing: 1 - (1 - DarkMost) * (1 - HushWorry) < BreathFrom
@@ -47,8 +50,11 @@ double FS47Stress::Target(const FS47StressIn& In)
 	// the silence (SOUNDSCAPE-20261108): felt a little, even with nothing to see; a gust does it too
 	if (In.bHush) Worry(S47StressLocal::HushWorry);
 	if (In.bTaken) Worry(1.0);
-	else if (In.SinceTaken < S47StressLocal::AfterTakenSeconds) Worry(S47StressLocal::AfterTakenLevel * (1.0 - FMath::Max(0.0, In.SinceTaken) / S47StressLocal::AfterTakenSeconds));
-	return 1.0 - Calm;
+	// AFTER-TAKEN-20261109: the aftermath is a floor, not one more worry on top: with the dark and the hush (kept under the breathing
+	// on their own) it would have breathed again for no new reason
+	const double After = !In.bTaken && In.SinceTaken < S47StressLocal::AfterTakenSeconds
+		? S47StressLocal::AfterTakenLevel * (1.0 - FMath::Max(0.0, In.SinceTaken) / S47StressLocal::AfterTakenSeconds) : 0.0;
+	return FMath::Max(1.0 - Calm, After);
 }
 
 double FS47Stress::Advance(double Cur, double To, double Dt, bool bSafe, double Tired)
@@ -85,6 +91,11 @@ double FS47Stress::BreathStrength(double Strain)
 	return Strain < S47StressLocal::BreathFrom ? 0.0 : 0.12 + 0.5 * FMath::SmoothStep(S47StressLocal::BreathFrom, 1.0, Strain);
 }
 
+double FS47Stress::OnWaking(double Strain)
+{
+	return FMath::Clamp(FMath::IsFinite(Strain) ? FMath::Min(Strain, S47StressLocal::AfterTakenLevel) : 0.0, 0.0, 1.0);
+}
+
 double FS47Stress::BreathReach(double Strain)
 {
 	// near panic only: up to three and a half metres, in the open (FS47RoswellBrain takes less through a wall)
@@ -113,9 +124,11 @@ FS47StressIn FS47Stress::Read()
 	const bool bAbducted = (M->Night && M->Night->Hooks.AbductionBusy && M->Night->Hooks.AbductionBusy())
 		|| (M->IsFreeform() && M->Freeform && M->Freeform->Taken && M->Freeform->Taken->Busy());
 	R.bTaken = bAbducted;
-	// the aftermath is counted here, from the moment it ends
+	// the aftermath is counted here, from the moment it ends; and the strain comes down to it at once, not over minutes
 	if (bAbducted) { bWasTaken = true; SinceTaken = 0; }
-	else if (bWasTaken) { bWasTaken = false; SinceTaken = 0; }
+	else if (bWasTaken) { bWasTaken = false; SinceTaken = 0; S = OnWaking(S); BreathIn = 1.5; }
+	// gone (sound and picture): nothing is breathing where the player can hear it
+	R.bAway = M->IsFreeform() && M->Freeform && M->Freeform->Taken && M->Freeform->Taken->Stage() == FS47Taken::EStage::Away;
 	R.SinceTaken = SinceTaken;
 	const bool bOutdoors = M->Space == TEXT("yard") && !(M->World && M->World->bDriving);
 	const double Daylight = M->Life && M->Life->Sky.IsValid() ? M->Life->Sky->Daylight() : 1.0;
@@ -161,7 +174,7 @@ void FS47Stress::Step(double Dt)
 
 void FS47Stress::Breathe(double Dt)
 {
-	const double Gap = BreathGap(S);
+	const double Gap = Inputs.bAway ? 0.0 : BreathGap(S);
 	if (Gap <= 0) { BreathIn = 1.5; return; } // (the first breath comes a moment after it passes the mark)
 	BreathIn -= Dt;
 	if (BreathIn > 0) return;
@@ -215,7 +228,23 @@ bool FS47Stress::SelfTest(TArray<FString>& Lines)
 	In = FS47StressIn(); In.SinceTaken = 0; const double Fresh = Target(In);
 	In.SinceTaken = 200; const double Later = Target(In);
 	In.SinceTaken = 1e6; const double Gone = Target(In);
-	Check(Fresh > Later && Later > 0 && Gone == 0 && FMath::IsNearlyEqual(Fresh, 0.75, 0.001), TEXT("after being taken it lingers, then fades out by itself"));
+	Check(Fresh > Later && Later > 0 && Gone == 0 && Fresh < S47StressLocal::BreathFrom && Fresh > S47StressLocal::EdgeFrom, TEXT("after being taken it lingers as a faint edge, then fades out by itself"));
+	// AFTER-TAKEN-20261109: from the moment they come to, no breath is heard again from the taking: from full strain, tired out,
+	// in the open and away from SARO, ten minutes of the aftermath at a quarter second a step
+	{
+		bool bQuiet = true, bEdge = false;
+		double Now = OnWaking(1.0);
+		for (int32 I = 0; I < 2400; ++I)
+		{
+			FS47StressIn After; After.SinceTaken = I * 0.25; After.Tired = 1.0; After.bDark = true; After.Darkness = 1.0; After.bHush = I < 160;
+			Now = Advance(Now, Target(After), 0.25, false, After.Tired);
+			bQuiet &= BreathGap(Now) == 0 && BreathStrength(Now) == 0 && BreathReach(Now) == 0;
+			bEdge |= I < 40 && VignetteAlpha(Now) > 0;
+		}
+		Check(bQuiet && bEdge && OnWaking(0.1) == 0.1 && OnWaking(std::numeric_limits<double>::quiet_NaN()) == 0, TEXT("after waking from being taken no breathing goes on, only a faint edge that fades"));
+		// the old aftermath, for the measure: 0.75 at first breathed on for minutes
+		Check(BreathGap(0.75) > 0, TEXT("the measure catches the old aftermath's breathing"));
+	}
 	// the way up and the way down
 	double Up = 0;
 	for (int32 I = 0; I < 40; ++I) Up = Advance(Up, 1.0, 0.1, false);

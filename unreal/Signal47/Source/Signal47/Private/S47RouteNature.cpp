@@ -1,5 +1,6 @@
 // Original roadside composition using a private, bounded native nature kit.
 #include "S47RouteNature.h"
+#include "S47SaroClip.h"
 #include "S47Web.h"
 #include "S47Geo.h"
 #include "S47GroundCover.h"
@@ -21,7 +22,43 @@ namespace
  using namespace S47RoadTerrain;
  const FVector SiteToCanonical(8024,0,-300);
 #include "S47RouteNatureSeam.inl"
- struct FFamily { const TCHAR* Name; int32 Cull; bool Rock; UStaticMesh* Mesh=nullptr; TArray<FTransform> Instances; };
+ struct FFamily { const TCHAR* Name; int32 Cull; bool Rock; UStaticMesh* Mesh=nullptr; TArray<FTransform> Instances; TArray<FTransform> Before; };
+ // PT-ROCKS-20261109 (Tom, d36: "store steiner i ørkenen er bare delvis modellert (avkuttet side)"): the scanned rocks of the private kit
+ // are open or cut flat where the scan ended (Megascans: a cliff's back, a boulder's underside), and through the opening one sees the
+ // inside of the far wall, black. Each family's largest cut, measured in its own axes by Tools/routenature/cut_faces.py (the drawn
+ // LOD0, welded: open boundaries and flat patches): its outward normal, and how high its top edge stands over the mesh's lowest point
+ // (metres at scale 1). A cut that faces sideways is turned away from the road, where nobody stands; one that faces down is sunk
+ // under the ground to its top edge. A family not listed here stands as authored.
+ struct FCut { const TCHAR* Name; double Nx,Ny,Nz,Rise; };
+ const FCut Cuts[]={
+  // Measured 9 November 13:30 (cut_faces.json, the drawn LOD0 welded; none of the four materials two-sided, their LODs in one frame).
+  // Every one is an open shell: what showed black through the opening was the inside of the far wall.
+  {TEXT("Cliff_A"),.003,-.996,-.094,7.23},   // the whole back open, top to foot: 28 % of the surface
+  {TEXT("Boulder_A"),0,0,-1,.01},            // the underside open, at the base
+  {TEXT("Boulder_B"),.001,-.002,-1,.04},     // the underside open, at the base
+  {TEXT("Outcrop_A"),-.002,-.517,-.856,.76}, // open behind and under, the whole height: turned away, not sunk
+ };
+ const FCut* CutOf(const TCHAR* Name)
+ {
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47RocksAsAuthored")))return nullptr;
+  for(const FCut& C:Cuts)if(*C.Name&&FCString::Strcmp(C.Name,Name)==0)return &C;
+  return nullptr;
+ }
+ // The turn that sets the cut's outward side away from the road (Side: -1 the rock stands west of it, +1 east), within +-12 degrees of
+ // straight out by the authored turn, so that the group does not line up. Unreal's yaw turns +X toward +Y; road-local X is Unreal's X.
+ double FaceAway(const FFamily& F,double Yaw,double Side)
+ {
+  const FCut* C=CutOf(F.Name);
+  if(!C||FMath::Square(C->Nx)+FMath::Square(C->Ny)<.09)return Yaw; // none, or one that faces down: the sink hides it
+  const double Out=Side<0?180.:0.,Cut=FMath::RadiansToDegrees(FMath::Atan2(C->Ny,C->Nx));
+  return Out-Cut+(FMath::Fmod(FMath::Abs(Yaw),24.)-12.);
+ }
+ // How much deeper than the old tenth of a metre: a cut straight down to its top edge, and 4 cm more.
+ double CutSink(const FFamily& F,double Scale)
+ {
+  const FCut* C=CutOf(F.Name);
+  return C&&C->Nz<-.95?(C->Rise+.04)*Scale:0.; // (straight down only: the outcrop's open back-and-under is turned; sinking it would bury it)
+ }
  struct FCluster { double X,Z,Scale; int32 Seed; };
  // Road-local metres: four distinct outcrops on the SARO approach, two on the
  // middle highway and one south of Caliche. The road and its long sightline stay open.
@@ -75,9 +112,12 @@ namespace
   return Y;
  }
 
- bool Place(FFamily& Family,double X,double Z,double Scale,double Yaw,const FFamily* RockFamilies=nullptr)
+ bool Place(FFamily& Family,double X,double Z,double Scale,double Yaw,const FFamily* RockFamilies=nullptr,double Side=0)
  {
   if(!Family.Mesh)return false;
+  // (PT-ROCKS-20261109: turned so the cut faces away from the road; the authored turn kept for F10's before picture)
+  const double Authored=Yaw;
+  if(Family.Rock&&Side!=0)Yaw=FaceAway(Family,Yaw,Side);
   const FBox Bounds=Family.Mesh->GetBoundingBox();
   FTransform T(FRotator(0,Yaw,0),FVector::ZeroVector,FVector(Scale));
   const FBox Rotated=Bounds.TransformBy(T);
@@ -98,9 +138,20 @@ namespace
   // float on the higher centre sample. Native pivots may lie below/above their base.
   for(double Dx:{Rotated.Min.X,Rotated.Max.X})for(double Dz:{Rotated.Min.Y,Rotated.Max.Y})
    Y=FMath::Min(Y,Ground(X+Dx/100.,Z+Dz/100.));
-  const double Sink=Family.Rock?.10*Scale:Gravel?.006:.015;
+  const double Sink=Family.Rock?.10*Scale+CutSink(Family,Scale):Gravel?.006:.015;
   T.SetTranslation(S47Three::ToUE(8000+X,Y-Rotated.Min.Z/100.-Sink,Z));
-  Family.Instances.Add(T);return true;
+  Family.Instances.Add(T);
+  if(Family.Rock)
+  {
+   // as it stood before 9 November at the same place: the authored turn, a tenth of a metre down from its own lowest corner
+   FTransform B(FRotator(0,Authored,0),FVector::ZeroVector,FVector(Scale));
+   const FBox RB=Family.Mesh->GetBoundingBox().TransformBy(B);
+   double YB=Ground(X,Z);
+   for(double Dx:{RB.Min.X,RB.Max.X})for(double Dz:{RB.Min.Y,RB.Max.Y})YB=FMath::Min(YB,Ground(X+Dx/100.,Z+Dz/100.));
+   B.SetTranslation(S47Three::ToUE(8000+X,YB-RB.Min.Z/100.-.10*Scale,Z));
+   Family.Before.Add(B);
+  }
+  return true;
  }
 
  void AddBlock(AS47Web* W,const FBox& B,const FString& Area,const FString& Id)
@@ -116,6 +167,46 @@ namespace
   TArray<TSharedPtr<FJsonValue>> Box={MakeShared<FJsonValueNumber>(R.MinX),MakeShared<FJsonValueNumber>(R.MaxX),
    MakeShared<FJsonValueNumber>(R.MinZ),MakeShared<FJsonValueNumber>(R.MaxZ)};
   All.Add(MakeShared<FJsonValueArray>(Box));(*Leg)->SetArrayField(TEXT("obstacles"),All);
+ }
+
+ // BLOCKERS-20261109: the strips a big rock's foot is held by (Unreal centimetres; Ground the foot's points, Foot their box, In how far
+ // in from the outline). None for a foot under 2.5 m either way: there one box is close enough, and the walk keeps few boxes.
+ void SliceFoot(const TArray<FVector2D>& Ground,const FBox& Foot,const FVector& In,double Z0,double Z1,TArray<FBox>& Out)
+ {
+  constexpr double Big=250,Strip=60;
+  const FVector Size=Foot.GetSize();
+  if(Ground.Num()<3||Size.X<Big||Size.Y<Big)return;
+  // The convex hull of the foot (Andrew's monotone chain), anticlockwise.
+  TArray<FVector2D> P=Ground;
+  P.Sort([](const FVector2D& A,const FVector2D& B){return A.X<B.X||(A.X==B.X&&A.Y<B.Y);});
+  const auto Turn=[](const FVector2D& O,const FVector2D& A,const FVector2D& B){return (A.X-O.X)*(B.Y-O.Y)-(A.Y-O.Y)*(B.X-O.X);};
+  TArray<FVector2D> Hull;Hull.SetNum(2*P.Num());int32 K=0;
+  for(int32 I=0;I<P.Num();++I){while(K>=2&&Turn(Hull[K-2],Hull[K-1],P[I])<=0)--K;Hull[K++]=P[I];}
+  for(int32 I=P.Num()-2,Lower=K+1;I>=0;--I){while(K>=Lower&&Turn(Hull[K-2],Hull[K-1],P[I])<=0)--K;Hull[K++]=P[I];}
+  Hull.SetNum(FMath::Max(K-1,0));
+  if(Hull.Num()<3)return;
+  // Cut across the longer side: Along is that axis (0 x, 1 y), Across the other.
+  const int32 Along=Size.X>=Size.Y?0:1,Across=1-Along;
+  const double A0=Foot.Min[Along],A1=Foot.Max[Along];
+  const int32 N=FMath::CeilToInt((A1-A0)/Strip);
+  for(int32 S=0;S<N;++S)
+  {
+   const double S0=A0+(A1-A0)*S/N,S1=A0+(A1-A0)*(S+1)/N,Mid=(S0+S1)*.5;
+   double C0=1e18,C1=-1e18;
+   for(int32 I=0;I<Hull.Num();++I)
+   {
+    const FVector2D& Pa=Hull[I];const FVector2D& Pb=Hull[(I+1)%Hull.Num()];
+    const double Ha=Pa[Along]-Mid,Hb=Pb[Along]-Mid;
+    if(Ha*Hb>0||Ha==Hb)continue;
+    const double C=Pa[Across]+(Pb[Across]-Pa[Across])*(Ha/(Ha-Hb));
+    C0=FMath::Min(C0,C);C1=FMath::Max(C1,C);
+   }
+   C0+=In[Across];C1-=In[Across];
+   if(C1-C0<10)continue; // a sliver at a tip: the walker's radius covers it
+   FVector Lo(0,0,Z0),Hi(0,0,Z1);
+   Lo[Along]=S==0?S0+In[Along]:S0;Hi[Along]=S==N-1?S1-In[Along]:S1;Lo[Across]=C0;Hi[Across]=C1;
+   Out.Add(FBox(Lo,Hi));
+  }
  }
 
  bool LegacyNature(const FString& Name)
@@ -195,6 +286,62 @@ namespace
  }
 }
 
+namespace { TWeakPtr<FS47RouteNature>& LiveRouteNature() { static TWeakPtr<FS47RouteNature> P; return P; } }
+
+FS47RouteNature* FS47RouteNature::Live() { return LiveRouteNature().Pin().Get(); }
+
+TArray<FS47RouteNature::FRock> FS47RouteNature::Rocks() const
+{
+ TArray<FRock> Out;
+ for(const FRockSet& S:RockSets)
+ {
+  const UInstancedStaticMeshComponent* C=S.C.Get();if(!C)continue;
+  for(int32 I=0;I<C->GetInstanceCount();++I)
+  {
+   FTransform T;if(!C->GetInstanceTransform(I,T,true))continue;
+   FRock R;R.Family=S.Family;R.UE=C->Bounds.Origin;
+   if(const UStaticMesh* Mesh=C->GetStaticMesh())R.UE=Mesh->GetBoundingBox().TransformBy(T).GetCenter();
+   // road-local metres from the component's own frame (it stood at road x 8000 when built; the shared root moves it between areas)
+   FTransform L;C->GetInstanceTransform(I,L,false);
+   const FVector Road=S47Three::ToThree(L.GetLocation());
+   R.Road=Road;R.Side=Road.X<0?-1:1;
+   double Best=1e18;
+   for(int32 K=0;K<UE_ARRAY_COUNT(Clusters);++K){const double D=FMath::Square(Road.X-Clusters[K].X)+FMath::Square(Road.Z-Clusters[K].Z);if(D<Best){Best=D;R.Cluster=K;}}
+   Out.Add(R);
+  }
+ }
+ return Out;
+}
+
+void FS47RouteNature::DevBefore(bool bBefore)
+{
+ if(bDevBefore==bBefore)return;
+ bDevBefore=bBefore;
+ for(FRockSet& S:RockSets)if(UInstancedStaticMeshComponent* C=S.C.Get())
+ {
+  const TArray<FTransform>& Want=bBefore?S.Before:S.Now;
+  if(Want.Num()!=C->GetInstanceCount())continue;
+  C->BatchUpdateInstancesTransforms(0,Want,false,true,true); // (local: Build keeps them in the component's frame)
+  if(auto* H=Cast<UHierarchicalInstancedStaticMeshComponent>(C))H->BuildTreeIfOutdated(false,true);
+ }
+}
+
+void FS47RouteNature::DevRayTracing(bool bOn)
+{
+ for(FRockSet& S:RockSets)if(UInstancedStaticMeshComponent* C=S.C.Get())C->SetVisibleInRayTracing(bOn);
+}
+
+FString FS47RouteNature::CutNote() const
+{
+ FString Out;
+ for(const FRockSet& S:RockSets)
+ {
+  const FCut* C=CutOf(*S.Family);
+  Out+=FString::Printf(TEXT("%s%s %s"),Out.IsEmpty()?TEXT(""):TEXT(", "),*S.Family,!C?TEXT("as authored"):C->Nz<-.95?TEXT("sunk"):TEXT("turned away"));
+ }
+ return Out;
+}
+
 TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
 {
  if(!W||FParse::Param(FCommandLine::Get(),TEXT("S47RouteNatureOff"))||FParse::Param(FCommandLine::Get(),TEXT("S47LegacyHighway"))||
@@ -227,19 +374,20 @@ TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
  for(int32 I=0;I<UE_ARRAY_COUNT(Clusters);++I)
  {
   const auto& C=Clusters[I];const double Side=C.X<0?-1:1;FRandomStream R(C.Seed);
-  if(Place(Families[0],C.X+Side*5.2,C.Z+2.2,C.Scale,18+I*47))
+  if(Place(Families[0],C.X+Side*5.2,C.Z+2.2,C.Scale,18+I*47,nullptr,Side))
   {
    const FBox Cliff=Families[0].Mesh->GetBoundingBox().TransformBy(Families[0].Instances.Last());
    // Nest the descending rocks into the actual road-facing foot, accounting for
    // native pivots, scale and yaw. A small overlap joins their irregular surfaces.
    auto AtFoot=[&](FFamily& F,const FBox& Support,double Scale,double Yaw,double Along,double Overlap)
    {
-    const FBox Local=F.Mesh->GetBoundingBox().TransformBy(FTransform(FRotator(0,Yaw,0),FVector::ZeroVector,FVector(Scale)));
+    // (PT-ROCKS: the nest is worked out for the turn Place will give it from the same authored turn)
+    const FBox Local=F.Mesh->GetBoundingBox().TransformBy(FTransform(FRotator(0,FaceAway(F,Yaw,Side),0),FVector::ZeroVector,FVector(Scale)));
     const double Edge=Side<0?Support.Max.X:Support.Min.X;
     const double Back=Side<0?Local.Min.X:Local.Max.X;
     const double X=(Edge+Side*Overlap*100-Back)/100.-8000;
     const double Z=(Support.GetCenter().Y-Local.GetCenter().Y)/100.+Along;
-    return Place(F,X,Z,Scale,Yaw);
+    return Place(F,X,Z,Scale,Yaw,nullptr,Side);
    };
    const bool Boulder=AtFoot(Families[2],Cliff,C.Scale*.95,133+I*31,-1.4*C.Scale,.65*C.Scale);
    const FBox Foot=Boulder?Families[2].Mesh->GetBoundingBox().TransformBy(Families[2].Instances.Last()):Cliff;
@@ -247,13 +395,14 @@ TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
   }
   else
   {
-   Place(Families[2],C.X-Side*1.7,C.Z-4.1,C.Scale*.95,133+I*31);
-   Place(Families[3],C.X-Side*5.2,C.Z+2.7,C.Scale*1.25,59-I*28);
+   Place(Families[2],C.X-Side*1.7,C.Z-4.1,C.Scale*.95,133+I*31,nullptr,Side);
+   Place(Families[3],C.X-Side*5.2,C.Z+2.7,C.Scale*1.25,59-I*28,nullptr,Side);
   }
   for(int32 K=0;K<9;++K)
   {
    const double A=R.FRandRange(0.f,2*PI),D=R.FRandRange(2.f,10.f);
-   Place(Families[1],C.X+FMath::Cos(A)*D,C.Z+FMath::Sin(A)*D,C.Scale*R.FRandRange(.65f,1.5f),R.FRandRange(0.f,360.f));
+   const double Sx=C.X+FMath::Cos(A)*D,Sz=C.Z+FMath::Sin(A)*D,Ss=C.Scale*R.FRandRange(.65f,1.5f),Sy=R.FRandRange(0.f,360.f);
+   Place(Families[1],Sx,Sz,Ss,Sy,nullptr,Sx<0?-1.:1.);
   }
   for(int32 K=0;K<150;++K)
   {
@@ -323,18 +472,53 @@ TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
    const FTransform& T=F.Instances[I];C->AddInstance(T,true);
    if(F.Rock)
    {
-    const FBox B=F.Mesh->GetBoundingBox().TransformBy(T);
-    const FString Id=FString::Printf(TEXT("routeNature:%s:%d"),F.Name,I);
-    Block(B,TEXT("road"),Id);
-    const FVector Pos=S47Three::ToThree(T.GetLocation());
-    if(Pos.Z<600)
+    // FENCES-INVISIBLE-20261108: the turned rock's whole box held one off half a metre and more of bare ground at its corners.
+    // The block is what the rock stands on at walking height: its vertices in the lowest metre and a half, a tenth in from them.
+    FBox B=F.Mesh->GetBoundingBox().TransformBy(T);
+    TArray<FBox> Parts;
     {
-     const FVector Delta=S47Three::ToUE(SiteToCanonical);Block(FBox(B.Min-Delta,B.Max-Delta),TEXT("saro"),Id);
+     bool bExact=false;const TArray<FVector3f>& V=S47SaroClip::Vertices(F.Mesh,bExact);
+     if(bExact)
+     {
+      FBox Foot(ForceInit);const double Low=B.Min.Z+150;TArray<FVector2D> Ground;
+      for(const FVector3f& Corner:V){const FVector At=T.TransformPosition(FVector(Corner));if(At.Z<=Low){Foot+=At;Ground.Add(FVector2D(At.X,At.Y));}}
+      if(Foot.IsValid)
+      {
+       // (critic round 4: a tenth of a cliff's width is half a metre and more, past the walker's 0.27 m radius: one walked into its corners;
+       // at most 15 cm in, which the radius covers)
+       const FVector In(FMath::Min((Foot.Max.X-Foot.Min.X)*.1,15.),FMath::Min((Foot.Max.Y-Foot.Min.Y)*.1,15.),0.);
+       // BLOCKERS-20261109: even so the one square box round a turned cliff stood out past its foot at the corners (F10 "Looks (M6)":
+       // routeNature:Cliff_A:0 and :1, 28 % of the edge bare). A big rock's foot is cut across its long side into strips of at most
+       // 60 cm, each as deep as the outline of the foot (its convex hull) at the strip's middle, the same distance in from that outline.
+       SliceFoot(Ground,Foot,In,B.Min.Z,B.Max.Z,Parts);
+       Foot.Min+=FVector(In.X,In.Y,0);Foot.Max-=FVector(In.X,In.Y,0);
+       B=FBox(FVector(Foot.Min.X,Foot.Min.Y,B.Min.Z),FVector(Foot.Max.X,Foot.Max.Y,B.Max.Z));
+      }
+     }
+    }
+    if(Parts.IsEmpty())Parts.Add(B);
+    const FString Id=FString::Printf(TEXT("routeNature:%s:%d"),F.Name,I);
+    const FVector Pos=S47Three::ToThree(T.GetLocation());
+    for(const FBox& Part:Parts)
+    {
+     Block(Part,TEXT("road"),Id);
+     if(Pos.Z<600)
+     {
+      const FVector Delta=S47Three::ToUE(SiteToCanonical);Block(FBox(Part.Min-Delta,Part.Max-Delta),TEXT("saro"),Id);
+     }
     }
     ++Result->RockColliders;
    }
   }
   C->BuildTreeIfOutdated(false,true);
+  // Kept in the component's own frame (critic round 7): the shared root moves it between areas, so F10's before/now must not put
+  // back where the instances stood in the world when they were built.
+  if(F.Rock)
+  {
+   const FTransform CT=C->GetComponentTransform();
+   const auto Local=[&CT](const TArray<FTransform>& In){TArray<FTransform> Out;Out.Reserve(In.Num());for(const FTransform& T:In)Out.Add(T.GetRelativeTransform(CT));return Out;};
+   Result->RockSets.Add({F.Name,C,Local(F.Instances),Local(F.Before)});
+  }
   Result->Nodes.Add(W->AdoptNode(C,Parent,FString(TEXT("highway:routeNature:"))+F.Name));Result->Counts.Add(F.Instances.Num());
   UE_LOG(LogTemp,Display,TEXT("S47: RouteNature %s instances=%d nativeBounds_cm=%s LODs=%d cull=%dm shadowRT=%d"),
    F.Name,F.Instances.Num(),*F.Mesh->GetBoundingBox().ToString(),F.Mesh->GetNumLODs(),F.Cull/100,F.Rock);
@@ -366,6 +550,7 @@ TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
    if(Replace&&C->RemoveInstance(K))++Result->RetiredInstances;
   }
  }
+ LiveRouteNature()=Result;
  UE_LOG(LogTemp,Display,TEXT("S47: RouteNature ready: 7 composed groups, 8 native families, %d solid rock footprints, %d superseded instances, %d seam triangles; shared highway coordinates, original floors and routes retained"),Result->RockColliders,Result->RetiredInstances,Result->SeamTriangles);
  return Result;
 }

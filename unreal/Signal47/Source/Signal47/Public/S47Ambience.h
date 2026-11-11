@@ -48,6 +48,9 @@ public:
 	 *  level and comes back (about a third of each in seconds: story/abduction.ts starts the
 	 *  crickets again all at once). */
 	void Hush(double Secs, double Level = 0.08, double Tau = 0.35, double BackTau = 2.2);
+	/** N1110 (pace, pure): a new hush while one is held only extends it: the later end, the lower level. Remaining: seconds left of the held
+	 *  hush (0 or less: none held). */
+	static void MergeHush(double Remaining, double HeldLevel, double Secs, double Level, double& OutSecs, double& OutLevel);
 	/** The yard holds its breath (the first time out, chapter one): at once nothing at all; then the
 	 *  crickets one at a time, the wind coming up under them, and the crickets' bed last, all back by
 	 *  `secs`. Then the night as it was, thinned as the curve has it (`thin`). */
@@ -165,6 +168,7 @@ private:
 	TSharedPtr<FS47GainNode> WindIn, BedIn;
 	struct FHeld { double T = 0, Len = 0; TArray<double> Cues; int32 N = 0; };
 	TOptional<FHeld> Held;
+	double HushUntil = 0, HushLevel = 1; // N1110 (pace): the audio clock the held hush ends, and its level
 	// still() and the window: a gate after everything, and the birds on a bus of their own that also
 	// goes past the walls' low-pass, through the glass
 	TSharedPtr<FS47GainNode> Gate, BirdBus, Win;

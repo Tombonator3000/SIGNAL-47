@@ -1,4 +1,5 @@
 #include "S47Office.h"
+#include "S47SaroFixes.h"
 #include "S47Evening.h"
 #include "S47Flow.h"
 #include "S47Inter.h"
@@ -6,6 +7,8 @@
 #include "S47SaroInterior.h"
 #include "S47SaroDoorDetail.h"
 #include "S47OfficeOwned.h"
+#include "SS47Dev.h"
+#include "S47OfficeTv.h"
 #include "S47OfficeWindow.h"
 #include "S47Sky.h"
 #include "S47Main.h"
@@ -183,6 +186,8 @@ struct FS47Office::FVisual
  TArray<FSheet> Sheets;
  struct FReference { FString Name; FS47Obj Surface; TWeakObjectPtr<UTexture2D> Texture; };
  TArray<FReference> References;
+ // TV-SCHEDULE-20261109: Dale's set on the shelf, on the late station (S47OfficeTv.h).
+ TUniquePtr<FS47OfficeTv> Tv;
 };
 
 FS47Office::FS47Office(US47Main* InM) : Visual(MakeUnique<FVisual>()), M(InM) {}
@@ -298,20 +303,31 @@ void FS47Office::Init()
  // The Blender leaf includes real lock cylinder, lever, hinges and kick plates.
  Label(TEXT("office:doorTitle"), TEXT("DALE / OPERATIONS"), FVector(.47, 1.662, HingeZ - .039), -90, 3.3f, Visual->Leaf.I);
  Label(TEXT("office:doorTitleInside"), TEXT("OPERATIONS"), FVector(.47, 1.662, HingeZ + .039), 90, 3.3f, Visual->Leaf.I);
- Box(TEXT("office:spareNotice"), FVector(-.29, 1.45, 6.585 + FrontOffset), FVector(.30, .31, .018), Paper);
- Label(TEXT("office:spareText"), TEXT("SPARE IN\nSERVICE DRAWER"), FVector(-.29, 1.45, 6.572 + FrontOffset), -90, 2.8f);
+ // PT-HALL (Tom's test of d36): the paper "SPARE IN SERVICE DRAWER" and the "SERVICE / SPARE" label are gone as needless text;
+ // the door's own words say where the spare is kept. -S47SaroFixesBefore keeps the old for F10's before pictures.
+ const bool bHallBefore = S47SaroFixes::Before();
+ if (bHallBefore)
+ {
+  Box(TEXT("office:spareNotice"), FVector(-.29, 1.45, 6.585 + FrontOffset), FVector(.30, .31, .018), Paper);
+  Label(TEXT("office:spareText"), TEXT("SPARE IN\nSERVICE DRAWER"), FVector(-.29, 1.45, 6.572 + FrontOffset), -90, 2.8f);
+ }
  // Own service cabinet at the workbench. It is unrelated to the archive's REEL047 drawer.
- Mesh(TEXT("office:serviceCabinet"), Cabinet, FVector(-.59, .525, 6.32 + FrontOffset), FVector::OneVector, nullptr);
- Collider(TEXT("office:serviceCabinetFoot"), -.94, -.26, 6.045 + FrontOffset, 6.60 + FrontOffset);
- FS47Obj DrawerFront = Mesh(TEXT("office:serviceDrawer"), Drawer, FVector(-.59, .85, 6.22 + FrontOffset), FVector::OneVector, nullptr);
+ // SARO-CLIP-20261108: 12 cm east of where it stood, which put its west side 12 cm into the passing bay's west wall (x -.82).
+ // PT-HALL: it still stood across the bay's west corner: 0.57 m deep in a 0.5 m bay, so from the corridor its back went into the
+ // corner's wall. It now stands out in the corridor against the records partition (its painted face about z 6.586), clear of the
+ // bay, the records door (x -4.4..-3.4), the poster (x -2.51..-2.09) and the clock over it (x -1.15, 2.3 m).
+ const double CabinetDx = bHallBefore ? .12 : -1.35 + .59, CabinetDz = bHallBefore ? FrontOffset : -.02;
+ Mesh(TEXT("office:serviceCabinet"), Cabinet, FVector(-.59 + CabinetDx, .525, 6.32 + CabinetDz), FVector::OneVector, nullptr);
+ Collider(TEXT("office:serviceCabinetFoot"), -.94 + CabinetDx, -.26 + CabinetDx, 6.045 + CabinetDz, 6.60 + CabinetDz);
+ FS47Obj DrawerFront = Mesh(TEXT("office:serviceDrawer"), Drawer, FVector(-.59 + CabinetDx, .85, 6.22 + CabinetDz), FVector::OneVector, nullptr);
  Visual->DrawerParts.Add({DrawerFront, DrawerFront.Position()});
- FS47Obj KeyBody = Mesh(TEXT("office:taggedSpare"), Spare, FVector(-.59, .805, 6.17 + FrontOffset), FVector::OneVector, nullptr);
+ FS47Obj KeyBody = Mesh(TEXT("office:taggedSpare"), Spare, FVector(-.59 + CabinetDx, .805, 6.17 + CabinetDz), FVector::OneVector, nullptr);
  Visual->DrawerParts.Add({KeyBody, KeyBody.Position()}); Visual->KeyParts.Add(KeyBody);
  // The real paper inset on the plastic tag is the usable face. The bounds centre
  // of the entire cut key falls inside its open split ring and is not a surface.
- FS47Obj KeyTag = Box(TEXT("office:keyTagPaper"), FVector(-.513, .8086, 6.215 + FrontOffset), FVector(.053, .001, .025), Paper);
+ FS47Obj KeyTag = Box(TEXT("office:keyTagPaper"), FVector(-.513 + CabinetDx, .8086, 6.215 + CabinetDz), FVector(.053, .001, .025), Paper);
  Visual->DrawerParts.Add({KeyTag, KeyTag.Position()}); Visual->KeyParts.Add(KeyTag);
- Label(TEXT("office:drawerLabel"), TEXT("SERVICE / SPARE"), FVector(-.59, 1.14, 6.565 + FrontOffset), -90, 3.f);
+ if (bHallBefore) Label(TEXT("office:drawerLabel"), TEXT("SERVICE / SPARE"), FVector(-.59 + CabinetDx, 1.14, 6.565 + CabinetDz), -90, 3.f);
  // The native desk's measured top is .790m. A 10mm height offset retains the
  // existing .800m work surface and all six independent document/use anchors.
  Mesh(TEXT("office:desk"), Desk, FVector(.37, .01, 9.73), FVector::OneVector, nullptr, PI);
@@ -416,9 +432,10 @@ void FS47Office::Init()
  FS47Obj TVObj = Mesh(TEXT("office:fieldDeck"), TV, FVector(-.45, .73, 7.75), FVector(.7), nullptr);
  if (const FS47WebNode* N = W->Node(TVObj.I)) if (UStaticMeshComponent* C = Cast<UStaticMeshComponent>(N->Comp.Get()))
  {
-  // The unproduced tape has no substitute image, moving sequence or pilot glow.
-  if (C->GetNumMaterials() > 1) C->SetMaterial(1, Ink);
-  if (C->GetNumMaterials() > 2) C->SetMaterial(2, Ink);
+  // The unproduced tape still has no substitute image: the set is on the late station instead (TV-SCHEDULE-20261109, Tom), its
+  // KELVORA screen and pilot driven by FS47OfficeTv. Without its screen slot it stays dark, as before.
+  if (C->GetNumMaterials() > 2) Visual->Tv = MakeUnique<FS47OfficeTv>(M, C, TVObj, [this] { return M && M->Player && Contains(M->Player->Pos); }, &bTvOff);
+  else { if (C->GetNumMaterials() > 1) C->SetMaterial(1, Ink); }
  }
  Collider(TEXT("office:deckFoot"), -.77, -.17, 7.43, 8.07);
  FS47Obj Deck = Box(TEXT("office:cassette"), FVector(-.43, .72, 8.08), FVector(.20, .025, .12), Ink);
@@ -482,7 +499,10 @@ void FS47Office::Init()
   };
   It.Use = [this, Id] { Use(Id); }; It.Examine = [this, Id]
   {
-   if (Id == TEXT("office:door") || Id == TEXT("officeDoor")) return FString(TEXT("OPERATIONS. The spare is in the service drawer at the workbench. The office uses its own tagged key."));
+   // PT-HALL moved the cabinet out into the hall (critic round 7: as the locked door's toast says it, one place to look).
+   if (Id == TEXT("office:door") || Id == TEXT("officeDoor")) return FString(S47SaroFixes::Before()
+    ? TEXT("OPERATIONS. The spare is in the service drawer at the workbench. The office uses its own tagged key.")
+    : TEXT("OPERATIONS. Dale keeps a spare in the service cabinet in the hall. The office uses its own tagged key."));
    if (Id == TEXT("office:tape")) return FString(TEXT("SERVICE ROAD / FIELD 01. The deck is present, but this tape cannot be played. The paper beside the maintenance forms gives the camera position."));
    return FString(TEXT("An ordinary Operations working copy. Survey-station records keep their separate file."));
   }; M->Inter->Add(It);
@@ -528,7 +548,7 @@ void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
  bRequired = bNewNight; bKey = bUnlocked = bEverOpened = bEntered = false;
  bDoorInspected = bDoorTarget = bDrawerTarget = false;
  bDeskSeen = bIndexRead = bClippingsRead = bNoteRead = bContactRead = bFieldSheet = bDeparted = false;
- ReadDocuments.Reset();
+ ReadDocuments.Reset(); bTvOff = false;
  DoorK = DrawerK = FieldSheetAt = SyncWait = 0;
  double Version = 0;
  if (Saved.IsValid() && Saved->HasTypedField<EJson::Number>(TEXT("v")) && Saved->TryGetNumberField(TEXT("v"), Version) && Version == 1.)
@@ -541,7 +561,7 @@ void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
   bKey = S47J::Bool(Saved, TEXT("key")); bUnlocked = bKey && S47J::Bool(Saved, TEXT("unlocked"));
   bEverOpened = bUnlocked && S47J::Bool(Saved, TEXT("everOpened")); bEntered = bEverOpened && S47J::Bool(Saved, TEXT("entered"));
   bDoorInspected = S47J::Bool(Saved, TEXT("doorInspected")); bDoorTarget = bUnlocked && S47J::Bool(Saved, TEXT("doorOpen"));
-  bDrawerTarget = S47J::Bool(Saved, TEXT("drawerOpen"));
+  bDrawerTarget = S47J::Bool(Saved, TEXT("drawerOpen")); bTvOff = S47J::Bool(Saved, TEXT("tvOff"));
   bDeskSeen = bEntered && S47J::Bool(Saved, TEXT("deskSeen")); bIndexRead = bEntered && S47J::Bool(Saved, TEXT("indexRead"));
   bClippingsRead = bEntered && S47J::Bool(Saved, TEXT("clippingsRead")); bNoteRead = bEntered && S47J::Bool(Saved, TEXT("noteRead")); bContactRead = bEntered && S47J::Bool(Saved, TEXT("contactRead"));
   const bool bHasAcquisitionTime = Saved->HasTypedField<EJson::Number>(TEXT("fieldSheetAt")) && Saved->TryGetNumberField(TEXT("fieldSheetAt"), FieldSheetAt) && FMath::IsFinite(FieldSheetAt);
@@ -722,6 +742,7 @@ void FS47Office::SyncFacts()
  // There is no produced 72-second tape. Neither tape-start nor vhs_seen is acknowledged.
 }
 
+FS47OfficeTv* FS47Office::Television() const { return Visual ? Visual->Tv.Get() : nullptr; }
 void FS47Office::Changed() { Apply(); SyncFacts(); if (M) M->RequestAutosave(); }
 
 bool FS47Office::AuditDocumentArt(TArray<FString>& Lines) const
@@ -825,7 +846,7 @@ bool FS47Office::Use(const FString& Id)
  }
  if (Id == TEXT("office:door") || Id == TEXT("officeDoor"))
  {
-  if (!bKey) { bDoorInspected = true; Changed(); M->UI->Toast(TEXT("OPERATIONS / LOCKED. The paper label reads: SPARE IN SERVICE DRAWER."), 4); return true; }
+  if (!bKey) { bDoorInspected = true; Changed(); M->UI->Toast(S47SaroFixes::Before() ? TEXT("OPERATIONS / LOCKED. The paper label reads: SPARE IN SERVICE DRAWER.") : TEXT("OPERATIONS / LOCKED. Dale keeps a spare in the service cabinet in the hall."), 4); return true; }
   if (bDoorTarget && InDoorSweep(M->Player->Pos, M->Player->Radius)) { M->UI->Toast(TEXT("Step clear of the doorway before closing it."), 3); return true; }
   bUnlocked = true; bDoorTarget = !bDoorTarget; Changed(); return true;
  }
@@ -1033,6 +1054,7 @@ void FS47Office::Step(double Dt)
  if (!bEntered && WasUnlocked() && bEverOpened && Here() && Contains(M->Player->Pos)) { bEntered = true; Changed(); }
  SyncWait -= SafeDt;
  if (SyncWait <= 0) { SyncFacts(); SyncWait = .25; }
+ if (Visual->Tv) Visual->Tv->Step(SafeDt);
 }
 
 S47J::FObj FS47Office::Save() const
@@ -1045,6 +1067,7 @@ S47J::FObj FS47Office::Save() const
  if (bFieldSheet && FMath::IsFinite(FieldSheetAt)) S47J::Set(O, TEXT("fieldSheetAt"), FieldSheetAt);
  TArray<TSharedPtr<FJsonValue>> Read; for (const FString& Id : ReadDocuments) if (DocumentRead(Id)) Read.Add(MakeShared<FJsonValueString>(Id));
  O->SetArrayField(TEXT("readDocuments"), Read);
+ if (bTvOff) S47J::Set(O, TEXT("tvOff"), true); // (an optional field: a set left on saves as it always did)
  S47J::Set(O, TEXT("hasFieldSheet"), HasFieldSheet()); S47J::Set(O, TEXT("departed"), DepartureReleased()); return O;
 }
 
@@ -1081,5 +1104,7 @@ bool FS47Office::SelfTest(TArray<FString>& Lines)
  Check(SharedRoom.WantsDeparture() && DepartureQueries==1,TEXT("Story still queries its existing departure requirements"));
  SharedRoom.bDeparted=true;
  Check(SharedRoom.DepartureReleased(),TEXT("Story retains an explicitly released departure"));
+ Ok &= FS47OfficeTv::SelfTest(Lines);
+ Ok &= SS47Dev::SelfTest(Lines); // FIX10-6: where a group stands in the F10 screen, and what a search finds
  return Ok;
 }

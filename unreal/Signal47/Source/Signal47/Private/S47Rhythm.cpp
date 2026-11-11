@@ -8,13 +8,17 @@
 #include "S47FreeformCases.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
+#include "S47GameStyle.h"
 #include "S47Glimpses.h"
 #include "S47Happenings.h"
+#include "S47WeekCase.h"
 #include "S47HighwayUfo.h"
 #include "S47IndoorDread.h"
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47NightRhythm.h"
+#include "S47Predecessor.h"
+#include "S47ScriptPlayer.h"
 #include "S47SkyVisitors.h"
 #include "S47SmallHints.h"
 #include "S47Taken.h"
@@ -57,6 +61,16 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
  const auto H=S47J::Obj(G,TEXT("their_hours"));
  Out.Earliest=S47J::Num(H,TEXT("earliest"),-1);Out.Latest=S47J::Num(H,TEXT("latest"),-1);Out.End=S47J::Num(H,TEXT("end"),-1);Out.DevFixed=S47J::Num(H,TEXT("dev_fixed"),2);
  if(!(Out.Earliest>=0&&Out.Earliest<=Out.Latest&&Out.Latest<=Out.End&&Out.End<=12)){Why=TEXT("their_hours are impossible");return false;}
+ // The tiers (TIERS-20261109): optional, the code's own when absent; glimpses before full, both in the small hours or the late evening.
+ if(const auto Tiers=S47J::Obj(G,TEXT("tiers")))
+ {
+  Out.TierGlimpse=S47J::Num(Tiers,TEXT("glimpse_from"),-1);Out.TierFull=S47J::Num(Tiers,TEXT("full_from"),-1);
+  Out.TierLateGlimpse=S47J::Num(Tiers,TEXT("late_glimpse_from"),-1);Out.TierLateFull=S47J::Num(Tiers,TEXT("late_full_from"),-1);
+  Out.TierLateNight=S47J::Int(Tiers,TEXT("late_from_night"),-1);
+  const auto Night=[](double H){return H<0||H>=24?-1.:H<12?H+24:H;};
+  if(!(Night(Out.TierGlimpse)>=18&&Night(Out.TierGlimpse)<=Night(Out.TierFull)&&Night(Out.TierLateGlimpse)>=18&&Night(Out.TierLateGlimpse)<=Night(Out.TierLateFull)&&Out.TierLateNight>=1))
+  {Why=TEXT("tiers: glimpse_from before full_from, in the night, and late_from_night a night");return false;}
+ }
  if(!Range(G,TEXT("tick_seconds"),Out.TickMin,Out.TickMax)||Out.TickMin<=0||Out.TickMin>Out.TickMax){Why=TEXT("tick_seconds");return false;}
  const auto Rest=S47J::Obj(G,TEXT("rest_after"));
  Out.RestDanger=S47J::Num(Rest,TEXT("danger"),-1);Out.RestOther=S47J::Num(Rest,TEXT("other"),-1);Out.RestTaken=S47J::Num(Rest,TEXT("taken"),-1);
@@ -68,6 +82,9 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
  if(!Range(B,TEXT("sky"),A0,A1)||A0<0||A0>A1){Why=TEXT("budget sky");return false;}Out.SkyMin=int32(A0);Out.SkyMax=int32(A1);
  // null, or not there at all: no limit.
  Out.DangerPerNight=G->HasTypedField<EJson::Number>(TEXT("danger_per_night"))?S47J::Int(G,TEXT("danger_per_night")):-1;
+ // LOOP-1-20261109: the night's pointing-out at the land (the bearing slip). Absent: one.
+ Out.PointOutPerNight=G->HasTypedField<EJson::Number>(TEXT("point_out_per_night"))?S47J::Int(G,TEXT("point_out_per_night")):1;
+ if(Out.PointOutPerNight<0||Out.PointOutPerNight>3){Why=TEXT("point_out_per_night: 0 to 3");return false;}
  // The moon: optional, 0.3 to 2 at each end.
  if(const auto Moon=S47J::Obj(G,TEXT("moon")))
  {
@@ -77,19 +94,36 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
  // The curve, week by week: optional, but whole when it is there (a week that starts the game, in order, factors in range).
  if(const auto Curve=S47J::Obj(G,TEXT("curve")))
  {
+  // One row: its factors in range, and its own danger limit (absent: the file's).
+  const auto ReadRow=[&Why](const S47J::FObj& W,FS47RhythmWeek& Wk)
+  {
+   Wk.Hint=float(S47J::Num(W,TEXT("hint"),1));Wk.Observation=float(S47J::Num(W,TEXT("observation"),1));Wk.Presence=float(S47J::Num(W,TEXT("presence"),1));
+   Wk.Danger=float(S47J::Num(W,TEXT("danger"),-1));Wk.Near=S47J::Num(W,TEXT("near"),1);
+   Wk.DangerPerNight=W->HasTypedField<EJson::Number>(TEXT("danger_per_night"))?S47J::Int(W,TEXT("danger_per_night")):-1;
+   for(const float K:{Wk.Hint,Wk.Observation,Wk.Presence})if(!(K>=0&&K<=3)){Why=TEXT("curve: a level's worth is 0 to 3");return false;}
+   if(!(Wk.Danger>=0&&Wk.Danger<=1)||!(Wk.Near>.1&&Wk.Near<=2)){Why=TEXT("curve: danger 0 to 1, near above 0.1");return false;}
+   if(W->HasField(TEXT("danger_per_night"))&&Wk.DangerPerNight<0){Why=TEXT("curve: danger_per_night a whole number");return false;}
+   return true;
+  };
   int32 Last=0;
   for(const auto& V:S47J::Arr(Curve,TEXT("weeks")))
   {
    const S47J::FObj* WPtr=nullptr;if(!V.IsValid()||!V->TryGetObject(WPtr)||!WPtr){Why=TEXT("curve: a week is not an object");return false;}
    const S47J::FObj& W=*WPtr;
    FS47RhythmWeek Wk;Wk.FromDay=S47J::Int(W,TEXT("from_day"),0);
-   Wk.Hint=float(S47J::Num(W,TEXT("hint"),1));Wk.Observation=float(S47J::Num(W,TEXT("observation"),1));Wk.Presence=float(S47J::Num(W,TEXT("presence"),1));
-   Wk.Danger=float(S47J::Num(W,TEXT("danger"),-1));Wk.Near=S47J::Num(W,TEXT("near"),1);
+   if(!ReadRow(W,Wk))return false;
    const bool bFirst=Out.Weeks.IsEmpty();
    if((bFirst&&Wk.FromDay!=1)||(!bFirst&&Wk.FromDay<=Last)){Why=TEXT("curve: weeks start on day 1, in order");return false;}
-   for(const float K:{Wk.Hint,Wk.Observation,Wk.Presence})if(!(K>=0&&K<=3)){Why=TEXT("curve: a level's worth is 0 to 3");return false;}
-   if(!(Wk.Danger>=0&&Wk.Danger<=1)||!(Wk.Near>.1&&Wk.Near<=2)){Why=TEXT("curve: danger 0 to 1, near above 0.1");return false;}
    Last=Wk.FromDay;Out.Weeks.Add(Wk);
+  }
+  // The last nights before the assessment (M7): a row of their own, read whenever the game knows that day.
+  if(const auto Fin=S47J::Obj(Curve,TEXT("finale")))
+  {
+   FS47RhythmWeek Wk;Wk.bFinale=true;
+   if(!ReadRow(Fin,Wk))return false;
+   Out.FinaleBefore=S47J::Int(Fin,TEXT("before_assess"),-1);
+   if(Out.FinaleBefore<0||Out.FinaleBefore>10){Why=TEXT("curve: finale before_assess 0 to 10");return false;}
+   Out.Finale=Wk;Out.bHasFinale=true;
   }
  }
  for(const auto& Value:S47J::Arr(Doc,TEXT("events")))
@@ -107,6 +141,10 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
   if(Hours==TEXT("any"))E.Hours=ES47RhythmHours::Any;else if(Hours==TEXT("night"))E.Hours=ES47RhythmHours::Night;else if(Hours==TEXT("their_hours"))E.Hours=ES47RhythmHours::Theirs;
   else if(Range(O,TEXT("hours"),E.From,E.To)&&E.From>=0&&E.From<=24&&E.To>=0&&E.To<=24)E.Hours=ES47RhythmHours::Window;
   else{Why=Id+TEXT(": hours");return false;}
+  const FString TierName=S47J::Str(O,TEXT("tier"));
+  if(TierName.IsEmpty())E.Tier=E.Hours==ES47RhythmHours::Theirs?ES47Allowed::Full:ES47Allowed::Hint;
+  else if(!S47NightTiers::FromName(TierName,E.Tier)){Why=Id+TEXT(": tier is hint, glimpse or full");return false;}
+  E.bEarly=S47J::Bool(O,TEXT("early"));
   E.Areas=S47J::Strs(O,TEXT("areas"));
   if(const auto Draw=S47J::Obj(O,TEXT("draw")))
   {
@@ -119,6 +157,14 @@ bool FS47Rhythm::Parse(const FString& Json,FS47RhythmData& Out,FString& Why)
     E.DrawFrom=At0<12?At0+24:At0;E.DrawTo=At1<12?At1+24:At1;
     if(E.DrawFrom<18||E.DrawTo>30||E.DrawTo<=E.DrawFrom){Why=Id+TEXT(": draw.at is not in the night, or ends before it starts");return false;}
    }
+  }
+  // later: the same event more often from a day on, after its own from_day and in order (M7).
+  for(const auto& LV:S47J::Arr(O,TEXT("later")))
+  {
+   const S47J::FObj* LPtr=nullptr;if(!LV.IsValid()||!LV->TryGetObject(LPtr)||!LPtr){Why=Id+TEXT(": later is not a list of objects");return false;}
+   const int32 LDay=S47J::Int(*LPtr,TEXT("from_day"),0);const double LPer=S47J::Num(*LPtr,TEXT("per_night"),-1);
+   if(LDay<=(E.Later.IsEmpty()?E.FromDay:E.Later.Last().Key)||!(LPer>=0&&LPer<=1)){Why=Id+TEXT(": later, from_day after the last and per_night 0 to 1");return false;}
+   E.Later.Add(TPair<int32,double>(LDay,LPer));
   }
   double C0,C1;if(Range(O,TEXT("cooldown_days"),C0,C1)){E.CoolMin=int32(C0);E.CoolMax=int32(C1);}
   E.MinNights=S47J::Int(O,TEXT("min_nights_between"));E.bFixedTable=S47J::Str(O,TEXT("schedule"))==TEXT("fixed_table");
@@ -144,6 +190,10 @@ int32 FS47Rhythm::CoolDays(const FString& Id,int32 Last,int32 Min,int32 Max)
 void FS47Rhythm::Load()
 {
  LoadRules();
+ BindRules();
+}
+void FS47Rhythm::BindRules()
+{
  // The night's moon, from the real date of the shift day at eleven at night (S47Weather::Moon).
  Rules.LitOf=[this](int32 Day)
  {
@@ -158,6 +208,13 @@ void FS47Rhythm::Load()
   if(!M||!M->Freeform||!M->Freeform->RulesLive())return 0.;
   const S47Weather::FDay D=S47Weather::Day(M->Freeform->Seed(),Day);
   return D.NightStorm>.5f?double(D.NightStorm):0.;
+ };
+ // The assessment while it is ahead (M7: the finale row), from Dr. Ward's own day: a decided one, or none, has no finale.
+ Rules.AssessOf=[this]()->int32
+ {
+  if(!M||!M->Freeform||!M->Freeform->Predecessor||!M->Freeform->RulesLive())return 0;
+  const FS47Predecessor& P=*M->Freeform->Predecessor;
+  return P.Result()==FS47Predecessor::EOutcome::None?P.AssessmentDay():0;
  };
 }
 void FS47Rhythm::LoadRules()
@@ -190,6 +247,8 @@ bool FS47Rhythm::LoadOverride(FString& Why)
  FS47RhythmData Got;
  if(!Parse(Text,Got,Why))return false;
  Rules=MoveTemp(Got);bOverride=true;SourceName=TEXT("override");
+ // The parse has none of the game's own: without them the finale row, the moon and the wind were gone (critic round 5).
+ BindRules();
  UE_LOG(LogS47Rhythm,Warning,TEXT("S47: rhythm: OVERRIDE from %s by hand, %d events"),*OverrideFile(),Rules.Events.Num());
  return true;
 }
@@ -209,6 +268,13 @@ FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FNa
  case ES47RhythmHours::Window:if(!InWindow(Hour,E->From,E->To))return No(TEXT("outside_hours"),FString::Printf(TEXT("%.1f to %.1f"),E->From,E->To));break;
  default:break;
  }
+ // The night's tier (TIERS-20261109): a glimpse waits for midnight, a full meeting for two (an hour sooner in the fourth week), unless
+ // the file sets it early on purpose. Being taken is the end of a meeting that was let start in its own tier: not held again here.
+ {
+  const int32 Night=FS47FreeformSession::NightOf(Now.Clock);
+  if(Id!=TEXT("taken")&&!S47NightTiers::Allows(E->Tier,Hour,Night,E->bEarly))
+   return No(TEXT("tier"),FString::Printf(TEXT("%s from %s"),S47NightTiers::Name(E->Tier),*ClockText(S47NightTiers::FromClockHour(E->Tier,Night)*3600.)));
+ }
  const FString IdText=Id.ToString();
  if(const int32* Last=Now.LastDays.Find(Id))
  {
@@ -224,7 +290,11 @@ FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FNa
  if(E->Budget==TEXT("minor")&&Now.MinorLeft<=0)return No(TEXT("budget"),TEXT("small"));
  if(E->Budget==TEXT("invest")&&Now.InvestLeft<=0)return No(TEXT("budget"),TEXT("investigation"));
  if(E->Budget==TEXT("sky")&&Now.SkyLeft<=0)return No(TEXT("budget"),TEXT("sky"));
- if(E->Level==ES47RhythmLevel::Danger&&Rules.DangerPerNight>=0&&Now.DangerTonight>=Rules.DangerPerNight)return No(TEXT("danger_night"),FString::Printf(TEXT("%d tonight"),Now.DangerTonight));
+ {
+  // The week's own limit (the fourth week and the finale may have two), or the file's.
+  const int32 Limit=Rules.DangerLimit(Now.Day,Now.AssessDay);
+  if(E->Level==ES47RhythmLevel::Danger&&Limit>=0&&Now.DangerTonight>=Limit)return No(TEXT("danger_night"),FString::Printf(TEXT("%d tonight"),Now.DangerTonight));
+ }
  if(E->Level==ES47RhythmLevel::Danger&&Now.bHumorTonight)return No(TEXT("humor_night"));
  if(!E->Areas.IsEmpty()&&!E->Areas.Contains(Now.Area))return No(TEXT("not_here"),E->Areas[0]);
  if(Need)for(const FName N:E->Needs)if(!Need(N))return No(FString::Printf(TEXT("needs:%s"),*N.ToString()));
@@ -237,7 +307,7 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
  FS47RhythmNow N;
  auto* F=M&&M->IsFreeform()&&M->Freeform&&M->Freeform->Active()?M->Freeform.Get():nullptr;
  if(!F){N.bFreeform=false;return N;}
- N.Clock=F->Clock();N.Day=F->Day();N.bTutorial=F->InTutorial();
+ N.Clock=F->Clock();N.Day=F->Day();N.bTutorial=F->InTutorial();N.AssessDay=Rules.AssessNow();
  N.SinceStart=N.Clock-LastStartClock;N.StartGap=StartGap;
  N.bQuiet=F->QuietNight(FS47FreeformSession::NightOf(N.Clock));N.bTheirHours=F->TheirHoursNow(N.Clock);
  N.Area=M->Web?M->Web->Area():FString();
@@ -251,6 +321,10 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
   if(F->IndoorDread->DoorActive())N.Busy=TEXT("door_visit");else if(F->IndoorDread->PeekActive())N.Busy=TEXT("peek");
  }
  if(F->Happenings)F->Happenings->FillRhythm(N);
+ // CRIT6-20261109: a director script under way holds the ground: no meeting, no taking and no big night starts on top of it.
+ if(FS47ScriptPlayer::Busy(M))N.Busy=TEXT("script");
+ // WEEKLY-CASE-20261109: the week's case on the ground holds it (S47WeekCase.h).
+ if(FS47WeekCase::Holds(M))N.Busy=TEXT("week_case");
  if(F->Taken&&F->Taken->Busy())N.Busy=TEXT("taken");
  if(F->FarmSite&&F->FarmSite->VisitWantsGround())N.Busy=F->FarmSite->FieldVisit()?TEXT("field_visit"):TEXT("site_visit");
  if(M->HighwayUfo&&M->HighwayUfo->StageName()!=TEXT("idle")&&M->HighwayUfo->StageName()!=TEXT("done"))N.Busy=TEXT("highway_ufo");
@@ -285,6 +359,17 @@ void FS47Rhythm::Began(FName Id)
  if(!F||!F->Director||!E)return;
  // Being taken at the end of a visit, at a door or under a night event's light (FS47Happenings::HoldsTaking) is the same meeting.
  if(Id==TEXT("taken")&&((F->IndoorDread&&F->IndoorDread->DoorActive())||(F->FarmSite&&F->FarmSite->VisitWantsGround())||F->Director->ActiveEvent()==TEXT("service_presence")||(F->Happenings&&F->Happenings->HoldsTaking())))return;
+ // The night's danger slot (M7): the first that comes near while it is open has it, wherever the player is.
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ if(BeganSeed!=F->Seed()){BeganNight.Reset();BeganSeed=F->Seed();}
+ if(E->bGround&&E->Level>=ES47RhythmLevel::Presence&&DangerSlotOpen())
+ {
+  // The Director keeps it, and saves it (critic round 5): a load of the same night has it taken or not as it was then.
+  F->Director->SlotNight=Night;
+  UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm danger slot of night %d taken by %s at %s"),Night,*Id.ToString(),*ClockText(F->Clock()));
+ }
+ BeganNight.Add(Id,Night);
+ if(Id==TEXT("peek"))F->Director->PeekNight=Night;
  // The common log of starts: the next, of anything, waits two to six minutes of the clock (May, "spacing").
  LastStartClock=F->Clock();StartGap=120.+240.*FS47NightRhythm::Roll(F->Seed(),int32(LastStartClock/60.),0x53504143u);
  if(E->Level==ES47RhythmLevel::Danger)
@@ -307,12 +392,50 @@ float FS47RhythmData::MoonOn(int32 Day) const
  if(!LitOf||Day<=0||(MoonFull==1.f&&MoonNew==1.f))return 1.f;
  return FMath::Lerp(MoonNew,MoonFull,float(FMath::Clamp(LitOf(Day),0.,1.)));
 }
+const FS47RhythmWeek& FS47RhythmData::Row(int32 Day,int32 Assess,int32* SpanFrom,int32* SpanTo) const
+{
+ static const FS47RhythmWeek Plain;
+ if(bHasFinale&&Assess>0&&Day>=Assess-FinaleBefore&&Day<=Assess)
+ {
+  if(SpanFrom)*SpanFrom=Assess-FinaleBefore;
+  if(SpanTo)*SpanTo=Assess;
+  return Finale;
+ }
+ int32 At=INDEX_NONE;
+ for(int32 K=0;K<Weeks.Num();++K)if(Day>=Weeks[K].FromDay)At=K;
+ if(SpanFrom)*SpanFrom=At==INDEX_NONE?Day:Weeks[At].FromDay;
+ // The last row's own week, for its moon: it holds to the end, but a full moon is measured against the nights round it. Critic
+ // round 5: past its first week, against the week of seven nights the day is in (a fixed 22 to 28 blew June up by up to 1.67).
+ if(SpanTo)*SpanTo=At==INDEX_NONE?Day:Weeks.IsValidIndex(At+1)?Weeks[At+1].FromDay-1:Weeks[At].FromDay+6;
+ if(At!=INDEX_NONE&&!Weeks.IsValidIndex(At+1)&&Day>Weeks[At].FromDay+6)
+ {
+  const int32 Block=Weeks[At].FromDay+7*((Day-Weeks[At].FromDay)/7);
+  if(SpanFrom)*SpanFrom=Block;
+  if(SpanTo)*SpanTo=Block+6;
+ }
+ return At==INDEX_NONE?Plain:Weeks[At];
+}
+int32 FS47RhythmData::DangerLimit(int32 Day,int32 Assess) const
+{
+ const FS47RhythmWeek& R=Row(Day,Assess);
+ return R.DangerPerNight>=0?R.DangerPerNight:DangerPerNight;
+}
+float FS47RhythmData::MoonIn(int32 Day,int32 Assess) const
+{
+ if(!LitOf||Day<=0||(MoonFull==1.f&&MoonNew==1.f))return 1.f;
+ int32 A=Day,B=Day;Row(Day,Assess,&A,&B);
+ A=FMath::Max(1,A);B=FMath::Clamp(B,A,A+13);
+ double Sum=0;for(int32 D=A;D<=B;++D)Sum+=MoonOn(D);
+ const double Mean=Sum/double(B-A+1);
+ return Mean>0?float(double(MoonOn(Day))/Mean):1.f;
+}
 FS47RhythmWeek FS47RhythmData::Week(int32 Day) const
 {
- FS47RhythmWeek Got;
- for(const FS47RhythmWeek& W:Weeks)if(Day>=W.FromDay)Got=W;
- // The moon: a full one brighter and quieter, a new one darker and busier (MOON-20261108). How near things come is the week's.
- const float K=MoonOn(Day);
+ const int32 Assess=AssessNow();
+ FS47RhythmWeek Got=Row(Day,Assess);
+ // The moon: a full one brighter and quieter, a new one darker and busier (MOON-20261108), against the other nights of the row (M7),
+ // so that the build-up from week to week stands whatever the moon does. How near things come is the week's.
+ const float K=MoonIn(Day,Assess);
  if(K!=1.f){Got.Hint*=K;Got.Observation*=K;Got.Presence*=K;Got.Danger=FMath::Clamp(Got.Danger*K,0.f,1.f);}
  // A night the wind holds into: more comes near under the noise of it (WEATHER-20261108). The small things are the moon's alone.
  const float St=StormOn(Day);
@@ -332,15 +455,57 @@ float FS47RhythmData::Worth(ES47RhythmLevel Level,int32 Day) const
  case ES47RhythmLevel::Hint:return W.Hint;
  case ES47RhythmLevel::Observation:return W.Observation;
  case ES47RhythmLevel::Presence:return W.Presence;
- default:return 1.f; // a danger's own chance is the shape it takes in the night's one slot (FS47Happenings::PlanTonight)
+ // A danger outside the slot (the door, the lit room, the yard's presence): the row's danger against the third week's. The slot's
+ // own shapes are asked with no day (FS47Happenings::PlanTonight), since the slot already has the week's danger in it.
+ default:return FMath::Clamp(W.Danger/DangerPivot,0.f,2.f);
  }
+}
+int32 FS47Rhythm::DayNow() const
+{
+ // As FS47RhythmNow has it (ReadNow), and only where the night's own rules run: a developer's fixtures keep their fixed numbers.
+ const auto* F=M&&M->IsFreeform()&&M->Freeform&&M->Freeform->Active()?M->Freeform.Get():nullptr;
+ return F&&F->RulesLive()?F->Day():0;
 }
 float FS47Rhythm::PerNight(FName Id,float Otherwise,int32 Day) const
 {
  const auto* E=Rules.Find(Id);
- const float Base=E&&E->PerNight>=0?float(E->PerNight):Otherwise;
- if(Day<=0||!E||E->System!=TEXT("night"))return Base;
+ float Base=E&&E->PerNight>=0?float(E->PerNight):Otherwise;
+ if(!E||Day<0)return Base;
+ if(Day==0)Day=DayNow();
+ if(Day<=0)return Base;
+ if(Day<E->FromDay)return 0.f;
+ for(const TPair<int32,double>& L:E->Later)if(Day>=L.Key)Base=float(L.Value);
  return FMath::Clamp(Base*Rules.Worth(E->Level,Day),0.f,1.f);
+}
+bool FS47Rhythm::SameGame() const{return M&&M->Freeform&&BeganSeed==M->Freeform->Seed();}
+int32 FS47Rhythm::BeganOn(FName Id) const
+{
+ if(Id==TEXT("peek"))return M&&M->Freeform&&M->Freeform->Director?M->Freeform->Director->PeekNight:0;
+ return SameGame()?BeganNight.FindRef(Id):0;
+}
+double FS47Rhythm::DangerSlotHour(int32 Seed,int32 Night,float SlotChance,double StartHour,bool bCalm)
+{
+ // Until five, from an hour in their hours: the same dice FS47Happenings has always thrown for it.
+ if(bCalm||Night<2||SlotChance<=0||FS47NightRhythm::Roll(Seed,Night,0x534c4f54u)>=SlotChance)return -1;
+ const double Start=StartHour+24;
+ return Start+FMath::Max(0.,27.8-Start)*FS47NightRhythm::Roll(Seed,Night,0x534c4f55u);
+}
+double FS47Rhythm::SlotHourTonight() const
+{
+ const auto* F=M&&M->IsFreeform()&&M->Freeform&&M->Freeform->Active()?M->Freeform.Get():nullptr;
+ if(!F||!F->RulesLive()||F->InTutorial())return -1;
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ return DangerSlotHour(F->Seed(),Night,Rules.Week(Night).Danger,F->BodyStartHour(Night),F->QuietNight(Night));
+}
+bool FS47Rhythm::DangerSlotOpen(double Grace) const
+{
+ const auto* F=M&&M->IsFreeform()&&M->Freeform&&M->Freeform->Active()?M->Freeform.Get():nullptr;
+ if(!F||!F->Director||F->Director->DangerTonight()>0||F->Director->SlotNight==FS47FreeformSession::NightOf(F->Clock()))return false;
+ // Not while one of the night's own dangers is out there (met or not yet).
+ if(F->Happenings)for(const TCHAR* Id:{TEXT("figure_near"),TEXT("hitchhiker"),TEXT("car_light"),TEXT("cb_echo")})if(F->Happenings->Live(Id))return false;
+ const double Slot=SlotHourTonight();
+ const double H=FS47Happenings::NightHour(F->Clock());
+ return Slot>0&&H>=Slot+FMath::Max(0.,Grace)&&H<29.;
 }
 bool FS47Rhythm::DrawHours(FName Id,double& From,double& To) const
 {
@@ -471,11 +636,15 @@ FString FS47Rhythm::PanelText(bool bFull) const
  const FS47RhythmNow Now=ReadNow();
  const double Hour=HourOf(Now.Clock);
  FString T=FString::Printf(TEXT("DIRECTOR  DAG %d  %s  %s%s%s"),Now.Day,*ClockText(Now.Clock),(Hour>=19||Hour<6)?TEXT("natt"):TEXT("dag"),Now.bQuiet?TEXT("  ROLIG NATT"):TEXT(""),bOverride?TEXT("  [OVERRIDE AKTIV]"):TEXT(""));
- T+=FString::Printf(TEXT("\nIgjen i dag: små %d  undersøkelser %d  himmel %d   Fare i natt %d/%s"),Now.MinorLeft,Now.InvestLeft,Now.SkyLeft,Now.DangerTonight,Rules.DangerPerNight<0?TEXT("-"):*FString::FromInt(Rules.DangerPerNight));
+ const int32 Limit=Rules.DangerLimit(Now.Day,Now.AssessDay);
+ T+=FString::Printf(TEXT("\nIgjen i dag: små %d  undersøkelser %d  himmel %d   Fare i natt %d/%s"),Now.MinorLeft,Now.InvestLeft,Now.SkyLeft,Now.DangerTonight,Limit<0?TEXT("-"):*FString::FromInt(Limit));
  {
   // The build-up this week (curve): what each level of the night events is worth, the night's danger slot, how near.
-  const FS47RhythmWeek& W=Rules.Week(Now.Day);
-  T+=FString::Printf(TEXT("\nKURVE     uke fra dag %d: små x%.2f  sett x%.2f  nær x%.2f  farens plass %.0f %%  avstand x%.2f"),W.FromDay,W.Hint,W.Observation,W.Presence,W.Danger*100.f,W.Near);
+  const FS47RhythmWeek W=Rules.Week(Now.Day);
+  const FString From=W.bFinale?FString::Printf(TEXT("FINALE, vurdering dag %d"),Now.AssessDay):FString::Printf(TEXT("uke fra dag %d"),W.FromDay);
+  const double Slot=SlotHourTonight();
+  T+=FString::Printf(TEXT("\nKURVE     %s: små x%.2f  sett x%.2f  nær x%.2f  farens plass %.0f %%  avstand x%.2f  måne x%.2f%s"),*From,W.Hint,W.Observation,W.Presence,W.Danger*100.f,W.Near,Rules.MoonIn(Now.Day,Now.AssessDay),
+   Slot>0?*FString::Printf(TEXT("  farens time %s%s"),*ClockText(FMath::Fmod(Slot,24.)*3600.),DangerSlotOpen()?TEXT(" (åpen)"):TEXT("")):TEXT(""));
  }
  T+=FString::Printf(TEXT("\nNÅ        %s"),Now.Busy.IsNone()?TEXT("ingen"):*Now.Busy.ToString());
  if(Now.RestLeft>0)T+=FString::Printf(TEXT("\nRO        %.0f s igjen"),Now.RestLeft);
@@ -531,6 +700,7 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
  Check(D.Earliest==FS47NightRhythm::EarliestHour&&D.Latest==FS47NightRhythm::LatestHour&&D.End==FS47NightRhythm::EndHour,TEXT("their hours as FS47NightRhythm has them"));
  const auto Chance=[&](const TCHAR* Id){const auto* E=D.Find(Id);return E?E->PerNight:-1.;};
  Check(FMath::IsNearlyEqual(float(Chance(TEXT("door_visit"))),float(FS47DoorVisit::ComeChance),.001f),TEXT("door visit's chance as FS47DoorVisit has it"));
+ Check(D.PointOutPerNight==1,TEXT("one pointing-out at the land a night (point_out_per_night, LOOP-1-20261109)"));
  Check(D.TickMin==240&&D.TickMax==420&&D.RestDanger==170&&D.RestOther==45&&D.RestTaken==1800&&D.MinorMin==2&&D.MinorMax==4&&D.InvestMin==0&&D.InvestMax==2&&D.SkyMin==0&&D.SkyMax==1,TEXT("ticks, rest and budgets as the Director has them"));
  // Every event a save can name.
  bool bAll=true;FString Missing;
@@ -553,6 +723,20 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
  }
  {FS47RhythmNow A=N;A.bTheirHours=false;Check(Says(TEXT("service_presence"),A)==TEXT("outside_hours"),TEXT("not outside their hours"));}
  {FS47RhythmNow A=N;A.Clock=4*86400.+12*3600.;Check(Says(TEXT("flyover"),A)==TEXT("outside_hours"),TEXT("a night event not by day"));A.Clock=4*86400.+23*3600.;Check(R.May(TEXT("flyover"),A).bMay,TEXT("and may at 23:00"));}
+ {
+  // TIERS-20261109: the file's tiers are the code's, every event has one, and May holds each to it.
+  Check(D.TierGlimpse==FMath::Fmod(S47NightTiers::GlimpseFrom,24.)&&D.TierFull==S47NightTiers::FullFrom-24.&&D.TierLateGlimpse==S47NightTiers::LateGlimpseFrom&&D.TierLateFull==S47NightTiers::LateFullFrom-24.&&D.TierLateNight==S47NightTiers::LateFromNight,TEXT("the tiers as S47NightTiers has them"));
+  bool bTheirsFull=true;FString Off;
+  for(const FS47RhythmEvent& E:D.Events)if((E.Hours==ES47RhythmHours::Theirs&&E.Tier!=ES47Allowed::Full)||E.bEarly){bTheirsFull=false;Off+=E.Id.ToString()+TEXT(" ");}
+  Check(bTheirsFull&&R.TierOf(TEXT("horizon_figure"))==ES47Allowed::Glimpse&&R.TierOf(TEXT("big_night"))==ES47Allowed::Full&&R.TierOf(TEXT("flyover"))==ES47Allowed::Hint&&R.TierOf(TEXT("no_such_event"))==ES47Allowed::Full,TEXT("what comes in their hours is full, the figure on the horizon a glimpse, lights a hint, and nothing is early yet ")+Off);
+  const auto At=[&](int32 Night,double Hour){FS47RhythmNow A=N;A.Day=Night;A.Clock=(Night-1)*86400.+Hour*3600.+(Hour<12?86400.:0.);return A;};
+  Check(Says(TEXT("horizon_figure"),At(5,23.5))==TEXT("tier")&&R.May(TEXT("horizon_figure"),At(5,.5)).bMay,TEXT("the figure on the horizon not at 23:30 in the first week, and at 00:30"));
+  Check(Says(TEXT("door_visit"),At(5,1.5))==TEXT("tier")&&R.May(TEXT("door_visit"),At(5,2+10/60.)).bMay,TEXT("a visit at the door not at 01:30, and at 02:10"));
+  Check(R.May(TEXT("horizon_figure"),At(22,23+10/60.)).bMay&&Says(TEXT("door_visit"),At(22,.9))==TEXT("tier")&&R.May(TEXT("door_visit"),At(22,1+10/60.)).bMay,TEXT("in the fourth week a glimpse at 23:10 and the door at 01:10"));
+  FS47Rhythm Ex(nullptr);FString W;const bool bExParsed=Parse(FString(S47RhythmDefaultJson).Replace(TEXT("\"id\": \"door_visit\","),TEXT("\"id\": \"door_visit\", \"early\": true,")),Ex.Rules,W);
+  Check(bExParsed&&Ex.Rules.Find(TEXT("door_visit"))&&Ex.Rules.Find(TEXT("door_visit"))->bEarly&&Ex.May(TEXT("door_visit"),At(5,23.5)).bMay&&Says(TEXT("door_visit"),At(5,23.5))==TEXT("tier"),TEXT("an authored early start may come before its tier only when the file sets it"));
+  FS47RhythmData Bad2;Check(!Parse(FString(S47RhythmDefaultJson).Replace(TEXT("\"tier\": \"glimpse\""),TEXT("\"tier\": \"near\"")),Bad2,W),TEXT("an unknown tier is turned away"));
+ }
  {FS47RhythmNow A=N;A.LastDays.Add(TEXT("service_presence"),5);Check(Says(TEXT("service_presence"),A)==TEXT("cooldown"),TEXT("not on the day it was last"));A.LastDays.Add(TEXT("service_presence"),1);Check(R.May(TEXT("service_presence"),A).bMay,TEXT("and may four days on"));}
  {FS47RhythmNow A=N;A.Busy=TEXT("door_visit");Check(Says(TEXT("service_presence"),A)==TEXT("slot_taken:door_visit"),TEXT("one on the ground at a time"));Check(R.May(TEXT("sky_formation"),A).bMay==(A.Clock>=0&&InWindow(HourOf(A.Clock),21.5,5.5)),TEXT("the sky may run under it"));}
  {FS47RhythmNow A=N;A.RestLeft=100;Check(Says(TEXT("door_visit"),A)==TEXT("rest"),TEXT("no one comes during rest"));}
@@ -581,11 +765,57 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
   FS47Rhythm C(nullptr);FString W;Parse(S47RhythmDefaultJson,C.Rules,W);
   {
    // The moon (MOON-20261108): a new moon makes a night's levels and its danger worth more, a full one less; a half one about as the week.
+   // M7: against the other nights of its week, so that the week as a whole is the week's whatever the moon does.
    FS47RhythmData Mn=D;
    Mn.LitOf=[](int32 Day){return Day==10?0.:Day==11?1.:.5;};
-   const FS47RhythmWeek NewNight=Mn.Week(10),FullNight=Mn.Week(11),HalfNight=Mn.Week(12),Plain=D.Week(12);
-   Check(D.MoonNew>1.f&&D.MoonFull<1.f&&NewNight.Presence>FullNight.Presence&&NewNight.Danger>FullNight.Danger&&FMath::IsNearlyEqual(HalfNight.Presence,Plain.Presence*FMath::Lerp(D.MoonNew,D.MoonFull,.5f),1e-4f)&&NewNight.Near==FullNight.Near,
-    TEXT("the moon: a new one darker and busier, a full one brighter and quieter, how near things come the week's"));
+   const FS47RhythmWeek NewNight=Mn.Week(10),FullNight=Mn.Week(11),Plain=D.Week(12);
+   double Sum=0;for(int32 Dd=8;Dd<=14;++Dd)Sum+=Mn.Week(Dd).Presence;
+   Check(D.MoonNew>1.f&&D.MoonFull<1.f&&NewNight.Presence>FullNight.Presence&&NewNight.Danger>FullNight.Danger&&FMath::IsNearlyEqual(float(Sum/7.),Plain.Presence,1e-3f)&&NewNight.Near==FullNight.Near,
+    TEXT("the moon: a new one darker and busier, a full one brighter and quieter, the week as a whole and how near things come the week's"));
+  }
+  {
+   // M7, the rhythm review: every new game starts on 28 April 1986, the new moon on day 11 and the full one on day 26, and the moon
+   // on the whole week made the fourth quieter than the second. With the real moon of those dates and the assessment on day 30:
+   // the weeks' means rise, and the last nights before it are above the third week.
+   FS47RhythmData Real=D;
+   Real.LitOf=[](int32 Day){return S47Weather::Moon(S47Game::GameDate(true,Day,0,false),23*3600.).Lit;};
+   Real.AssessOf=[]{return int32(FS47Predecessor::FirstAssess);};
+   const auto Mean=[&Real](int32 A,int32 B,int32 Which)
+   {
+    double S=0;
+    for(int32 Dd=A;Dd<=B;++Dd){const FS47RhythmWeek Wk=Real.Week(Dd);S+=Which==0?Wk.Observation:Which==1?Wk.Presence:Wk.Danger;}
+    return S/double(B-A+1);
+   };
+   bool bRise=true;FString Said;
+   for(int32 Which=0;Which<3;++Which)
+   {
+    const double M2=Mean(8,14,Which),M3=Mean(15,21,Which),M4=Mean(22,26,Which),Fin=Mean(27,30,Which);
+    bRise&=M2<M3&&M3<M4&&M3<Fin;
+    Said+=FString::Printf(TEXT(" %s %.2f %.2f %.2f %.2f;"),Which==0?TEXT("seen"):Which==1?TEXT("near"):TEXT("danger"),M2,M3,M4,Fin);
+   }
+   Check(bRise&&Real.Week(28).bFinale&&!Real.Week(26).bFinale,TEXT("with the real moon of May 1986 the weeks build, and the last nights are the fullest (weeks 2, 3, 4, finale):")+Said);
+   // Critic round 5: past the last row's first week (KEPT OPEN, or a reprieve to day 44) the moon is measured against the week of
+   // nights round the day, not against 22 to 28 around the full moon of 23 May: June's nights no longer come up to 1.67 times.
+   FS47RhythmData Late=Real;Late.AssessOf=[]{return 0;};
+   double Sum=0,Most=0;for(int32 Dd=29;Dd<=49;++Dd){const double K=Late.MoonIn(Dd,0);Sum+=K;Most=FMath::Max(Most,K);}
+   Check(FMath::Abs(Sum/21.-1.)<=.01&&Most<=1.45&&Late.MoonIn(41,0)<1.3f,FString::Printf(TEXT("after day 28 the moon moves the nights round their own week: mean %.3f, most %.2f, day 41 %.2f"),Sum/21.,Most,Late.MoonIn(41,0)));
+  }
+  {
+   // Critic round 5: a reload by hand (F10's override) keeps the game's own moon, wind and assessment on the rules.
+   FS47Rhythm Bound(nullptr);FString Bw;Parse(S47RhythmDefaultJson,Bound.Rules,Bw);
+   const bool bBare=!Bound.Rules.AssessOf&&!Bound.Rules.LitOf&&!Bound.Rules.StormOf;Bound.BindRules();
+   Check(bBare&&Bound.Rules.AssessOf&&Bound.Rules.LitOf&&Bound.Rules.StormOf&&Bound.Rules.AssessNow()==0,TEXT("the rules read again by hand are bound to the game's moon, wind and assessment again"));
+  }
+  {
+   // The finale's row from three days before the assessment until it, its own danger limit, and none once it has been decided.
+   FS47RhythmData Fn=D;Fn.AssessOf=[]{return 30;};
+   FS47RhythmData None=D;None.AssessOf=[]{return 0;};
+   Check(D.bHasFinale&&Fn.Week(27).bFinale&&Fn.Week(30).bFinale&&!Fn.Week(26).bFinale&&!Fn.Week(31).bFinale&&!None.Week(28).bFinale&&Fn.Week(28).Presence>D.Week(28).Presence&&Fn.Week(28).Danger>=D.Week(28).Danger&&Fn.Week(28).Near<=D.Week(28).Near,
+    TEXT("the finale: from three days before the assessment until it, nearer and fuller than the fourth week, and gone once it is decided"));
+   Check(D.DangerLimit(9,0)==1&&D.DangerLimit(25,0)>=2&&D.DangerLimit(28,30)>=2,FString::Printf(TEXT("dangers a night: %d in the second week, %d in the fourth, %d in the finale"),D.DangerLimit(9,0),D.DangerLimit(25,0),D.DangerLimit(28,30)));
+   FS47RhythmNow A=N;A.DangerTonight=1;A.Day=25;
+   const bool bFourth=R.May(TEXT("door_visit"),A).bMay;A.Day=9;
+   Check(bFourth&&Says(TEXT("door_visit"),A)==TEXT("danger_night"),TEXT("a second danger may come in the fourth week, not in the second"));
   }
   {
    // The night's wind (WEATHER-20261108): a night the storm holds into is a little busier, a still one as the week has it.
@@ -595,7 +825,33 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
    Check(Stormy.Presence>Plain12.Presence&&Stormy.Danger>=Plain12.Danger&&Stormy.Presence<=Plain12.Presence*1.2f&&Stormy.Hint==Plain12.Hint&&Still.Presence==Plain13.Presence&&Stormy.Near==Plain12.Near,
     TEXT("a stormy night: more comes near and the danger a little likelier, the small things and how near the week's"));
   }
-  Check(C.PerNight(TEXT("cattle_ring"),0.f,2)<C.PerNight(TEXT("cattle_ring"),0.f,25)&&C.PerNight(TEXT("service_presence"),.35f,2)==C.PerNight(TEXT("service_presence"),.35f),TEXT("a night event's chance follows the curve; the Director's own does not"));
+  // M7: every system follows the curve, not only the night's: the Director's, the door, the window and the lit room.
+  Check(C.PerNight(TEXT("cattle_ring"),0.f,2)<C.PerNight(TEXT("cattle_ring"),0.f,25)&&C.PerNight(TEXT("service_presence"),.35f,9)<C.PerNight(TEXT("service_presence"),.35f,25)&&C.PerNight(TEXT("observer"),.5f,2)<C.PerNight(TEXT("observer"),.5f,25)
+   &&C.PerNight(TEXT("farm_lights"),.45f,2)<C.PerNight(TEXT("farm_lights"),.45f,25)&&C.PerNight(TEXT("door_visit"),float(FS47DoorVisit::ComeChance),9)<C.PerNight(TEXT("door_visit"),float(FS47DoorVisit::ComeChance),25)&&C.PerNight(TEXT("peek"),.5f,9)<C.PerNight(TEXT("peek"),.5f,25),
+   TEXT("every system's chance follows the curve: the Director's, the door and the window too"));
+  Check(C.PerNight(TEXT("peek"),.5f,2)==0.f&&C.PerNight(TEXT("door_visit"),float(FS47DoorVisit::ComeChance),2)==0.f&&C.PerNight(TEXT("lit_room"),.4f,2)==0.f&&C.PerNight(TEXT("service_presence"),.35f,2)==0.f&&C.PerNight(TEXT("peek"),.5f,9)>0.f&&C.PerNight(TEXT("door_visit"),float(FS47DoorVisit::ComeChance),9)>0.f,
+   TEXT("the second night is quiet indoors: no face at the window, nobody at the door, no lit room, nothing in the yard while the week's danger is 0"));
+  Check(C.PerNight(TEXT("service_presence"),.35f)==.35f&&C.PerNight(TEXT("figure_near"),.6f,-1)==float(C.Rules.Find(TEXT("figure_near"))->PerNight),TEXT("without a game, or for a shape of the danger slot, the file's own number"));
+  {
+   // later: the same shapes more often from day 15 and 22 (M7: nothing new came after day 8), and turned away out of order.
+   const auto* Cp=C.Rules.Find(TEXT("close_pass"));
+   Check(Cp&&Cp->Later.Num()>=2&&C.PerNight(TEXT("close_pass"),.1f,25)>2.f*C.PerNight(TEXT("close_pass"),.1f,12)&&C.PerNight(TEXT("close_pass"),.1f,-1)==.1f,TEXT("a later row: close_pass more often from the third week, its own number without a day"));
+   FS47RhythmData Bad3;
+   Check(!Parse(FString(S47RhythmDefaultJson).Replace(TEXT("{ \"from_day\": 15, \"per_night\": 0.15 }"),TEXT("{ \"from_day\": 1, \"per_night\": 0.15 }")),Bad3,W),TEXT("a later row before the event's own day is turned away"));
+  }
+  {
+   // The night's one danger slot, as FS47Happenings draws it: none on a calm night, the first night or with no danger in the week;
+   // always within their hours and before five.
+   bool bSlots=true;int32 Had=0;
+   for(int32 Seed=1;Seed<=50;++Seed)for(int32 Night=1;Night<=30;++Night)
+   {
+    const double Start=FS47NightRhythm::StartHour(Seed,Night);
+    const double S1=DangerSlotHour(Seed,Night,1.f,Start,false);
+    bSlots&=DangerSlotHour(Seed,Night,1.f,Start,true)<0&&DangerSlotHour(Seed,Night,0.f,Start,false)<0&&(Night>=2?(S1>=Start+24&&S1<=FMath::Max(Start+24,27.8)):S1<0);
+    Had+=S1>0?1:0;
+   }
+   Check(bSlots&&Had==50*29,TEXT("the danger slot: in their hours, before five, never the first night, a calm one or a week without danger"));
+  }
   double A=0,B=0;
   Check(C.DrawHours(TEXT("car_dies"),A,B)&&A>=19&&B<=30&&A<B&&!C.DrawHours(TEXT("service_presence"),A,B),TEXT("a night event is drawn in its own hours of the night"));
   FS47RhythmData Bad2;

@@ -23,18 +23,30 @@ public:
  // Renames a line in place, for a line that says what it is set to now.
  void Relabel(const FString& OldLabel, const FString& NewLabel);
  void Open();
+ // The F10 screen while it is open (SS47Dev.h), for -S47DevMenuTest.
+ TSharedPtr<class SS47Dev> Menu() const { return MenuEl.Pin(); }
  void Step(double Dt);
  void Stop();
  void ControlTest(double Dt);
  const TArray<FEvent>& Events() const { return List; }
  FS47DevFreeform* FreeformDev() const { return FreeformLines.Get(); }
  TOptional<FVector> PalePresence() const { return PaleLeft>0 && Pale.Rendered()?TOptional<FVector>(PaleAt+FVector(0,1.8,0)):TOptional<FVector>(); }
+ // D45-20261110: the look-only walks (tall, crab, Pale One walking), at the head while they are out, so that the set, the dread
+ // ground and the music hear them as they hear any body (FS47FieldRadio::Nearby). Never hunting: they only walk up and away.
+ TArray<FVector> GaitPresence() const
+ {
+  TArray<FVector> Out;
+  for (int32 Kind = 0; Kind < GaitCount; ++Kind)
+   if (Gaits[Kind].Left > 0) Out.Add(Gaits[Kind].At + FVector(0, Kind == GaitCrab ? .6 : Kind == GaitPale ? 1.8 : 1.9, 0));
+  return Out;
+ }
 private:
  US47Main* M = nullptr;
  TArray<FEvent> List;
  // Freeform's own lines and the night run at speed (S47DevFreeform.h).
  TSharedPtr<class FS47DevFreeform> FreeformLines;
  FString ReopenGroup;
+ TWeakPtr<class SS47Dev> MenuEl;
  double ShowerLeft = 0, ShowerNext = 0;
  FS47PaleBody Pale;
  // Tall, crab and Pale One, coming from a distance so their gait can be judged. The Pale One is Pale above, one body.

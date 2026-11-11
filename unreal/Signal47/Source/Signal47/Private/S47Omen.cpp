@@ -111,8 +111,9 @@ double FS47Omen::SenseFrom(const FVector& Where, const TArray<FS47OmenSource>& I
 
 bool FS47Omen::MissesFor(int32 Seed, int32 Night, const FString& SourceId, ES47OmenChannel Channel)
 {
-	// F10's made-up presence and being taken are felt by everything: one is a test, the other is everything at once.
-	if (SourceId.IsEmpty() || SourceId == TEXT("dev") || SourceId == TEXT("taken") || Channel == ES47OmenChannel::Count) return false;
+	// F10's made-up presence and being taken are felt by everything: one is a test, the other is everything at once. The week's case
+	// too (WEEKLY-CASE-20261109, "weekcase:shed"): the yard's lamp and the lantern flicker together, as its beat is written.
+	if (SourceId.IsEmpty() || SourceId == TEXT("dev") || SourceId == TEXT("taken") || SourceId.StartsWith(TEXT("weekcase:")) || Channel == ES47OmenChannel::Count) return false;
 	const uint32 Salt = FCrc::StrCrc32(*SourceId) ^ (uint32(Channel) + 1u) * 0x85ebca6bu;
 	return S47OmenLocal::Unit(S47OmenLocal::Key(Seed, Night, Salt)) < MissShare;
 }

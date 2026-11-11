@@ -3,10 +3,15 @@
 #include "S47Json.h"
 #include "S47Obj.h"
 #include "S47RoswellWorld.h"
+#include "S47RoadGlimpse.h"
 class US47Main;
 class AS47Web;
+class FS47FreeformDirector;
+class FS47AnimalWarn;
+class FS47Calm;
 class UStaticMeshComponent;
 class UPointLightComponent;
+class UPrimitiveComponent;
 struct FS47MapView;
 struct FS47RhythmNow;
 struct FS47EventPlace;
@@ -29,6 +34,10 @@ struct FS47EventPlace;
 //                 Each skips itself when its model is missing.
 //   figure_near   on foot out in the dark (a danger, from the second week): a figure on the open ground that is gone when it is seen
 //                 and stands nearer the next time, until a light comes down over whoever is still out there (S47Taken).
+//   road_glimpse  at the wheel between midnight and two (the glimpse tier), at most once a week: something tall and thin, or low on
+//                 four, crosses the highway 60 to 120 m ahead in the lights and is gone before the truck comes up; some nights prints
+//                 on the far shoulder the next day (S47RoadGlimpse). The figure on the rise and the one on foot may be Tom's Nordic or
+//                 Cosmic (the seed's, when this build has them); Zet stays in the humorous ones.
 //
 // The build-up (Tom's critics, 8 November): director.json's curve says, week by week, what each level is worth, how likely the
 // night's one danger is and how near things come; each night builds toward their hours (draw.at), with the small things first.
@@ -60,6 +69,9 @@ public:
  bool Live(const FString& Id) const;
  // The one holding the ground now, empty when none.
  const FString& Ground() const;
+ // F10-NORDIC-COSMIC-20261109: the variant the one on the ground was given; for the figures and the crossing, its body ("nordic",
+ // "cosmic", "tall", "shadow", "crawler"; empty: the shade). Empty when none is on.
+ const FString& LiveVariant() const;
  void FillRhythm(FS47RhythmNow& Out) const;
  // A humorous one happened tonight: nothing dangerous may follow it (Tom: never the same night as a danger).
  bool HumorTonight() const;
@@ -68,10 +80,14 @@ public:
  static FString DashClock(const US47Main* M,const FString& Usual);
  double DashAhead() const;
  // F10 and tests: start one here and now, past its draw. Variant: real, empty or wrong for cb_stranded; car, singer, crossing or
- // pump for humor. Why: what stopped it.
+ // pump for humor; nordic, cosmic or shade for horizon_figure and figure_near; tall, low or a body for road_glimpse. Why: what
+ // stopped it.
  bool DevStart(const FString& Id,const FString& Variant,FString& Why);
  // F10 and tests: as the night itself would start it, with every condition asked (only the rhythm's dice and draws left out).
  bool DevTry(const FString& Id,FString& Why){return StartEvent(Id,FString(),false,Why);}
+ // PT-FEEDER-20261109: asked for by a place the player has come out to (FS47FarmSite: a figure far off past the marks), with every
+ // condition asked as the night itself would ask it: the rhythm, the tier, the player's situation. Why: what stopped it.
+ bool Request(const FString& Id,FString& Why){return StartEvent(Id,FString(),false,Why);}
  int32 DangersMet() const{return MetTotal;}
  // Whatever is on the ground is over at once; with bSites the lasting ones go too. Test runs only.
  void DevClear(bool bSites);
@@ -101,6 +117,9 @@ public:
  float GeigerReading() const{return Dose;}
  bool GeigerShown() const{return bGeigerUp;}
  void DevGeiger(bool bGive,bool bHold){bDevGeiger|=bGive;bGeigerHeld=bHold;}
+ // D45-20261110 (F10): the ring's coals as they are now (shown, heat, smoke and how it is drawn, crackle), and the ring made Hours older.
+ bool DevEmbers(FString& Out) const;
+ bool DevAgeRing(double Hours);
  // The bench's job for the counter (FS47FreeformWorld): empty when the tube is there.
  static FString GeigerBench(const US47Main* M);
 
@@ -116,9 +135,131 @@ public:
  int32 UneaseDoneTonight() const{return UneaseDone.Num();}
  static bool SelfTest(TArray<FString>& Lines);
 
+ // LOOP-4-20261109 (HELHETLIG_LOKKE step 4). The night's one pointing-out at the land (FS47FreeformDirector::MayPointOut) is taken by
+ // the array's own burst and by a landing the array logs with nobody watching, as by the bearing slip: true when this one may point
+ // out (and it is counted); without a Director, always.
+ static bool TakePointOut(FS47FreeformDirector* Director,int32 Night);
+ // D45-20261110 (D45-26: night 1 had nothing an operator indoors could meet). The first night's one sure thing before midnight is the
+ // array's burst at SARO, drawn between 22:00 and 23:15 (FirstBurstHour, from the seed), toward the noon slip's place with its bearing
+ // (FS47Places::ArcPlace). It waits for the player to be in the building until 01:30 (FirstBurstUntil) and is never swapped away; until
+ // it has come the night's one pointing-out is kept for it (FirstBurstOwed: a slip printed before it does not take it). The
+ // night's one unease is pinned before midnight too, half an hour or more from the burst (FirstUneaseHour). Pure but the last.
+ static constexpr double FirstBurstFrom=22.,FirstBurstSpan=1.25,FirstBurstUntil=25.5;
+ static double FirstBurstHour(int32 Seed);
+ static double FirstUneaseHour(int32 Seed);
+ bool FirstBurstOwed(int32 Night) const;
+ // The magnetometer's history (FS47Places::Use): something has happened near a place in the last two nights, whether or not anyone
+ // saw it (what stands out there now, and what stood there and has gone). Road-local metres; Day as FS47FreeformSession::Day. Not a
+ // bearing's sector: a needle that swung wherever a bearing points would be a metal detector.
+ struct FStir{double X=0,Z=0;int32 Night=0;};
+ static constexpr double StirReach=350;
+ static constexpr int32 StirNights=2,MostPast=24;
+ static bool Stirred(const TArray<FStir>& Near,double X,double Z,int32 Day);
+ bool StirredNear(double X,double Z) const;
+
+ // CHAIN-1-20261109: the night's one thing out on the land that the station's own work can lead to. Of what was drawn for tonight
+ // (PlanTonight, from the seed), the first of these that leaves something standing, and its place from the place list, drawn at
+ // dusk from SARO instead of when it starts. What comes, and when, is as before; only where is settled early, so that a card's
+ // discrepancy and the bearing slip (FS47Places::AfterRegistered) are about the same thing. Saved ("lead"; an older save has
+ // none and draws it again). A calm night, or one with none of these drawn, has none: nothing is made up.
+ struct FLead{int32 Night=0;FString Kind,Place;bool bPointed=false;bool IsSet() const{return Night>0&&!Kind.IsEmpty()&&!Place.IsEmpty();}};
+ const FLead& Lead() const{return LeadNow;}
+ // Which of a night's draws it is: a landing before a carcass before a missing man's pickup, a camper, a stuck driver. Empty: none.
+ static FString LeadKindOf(const TMap<FString,double>& Drawn);
+ // Whether it may start at its drawn place with the player this far off (road-local metres, under 0: no player). Never on top of
+ // the player; once a slip has pointed there (bPointed) it is held to, however far off that is.
+ static bool LeadFits(double Away,double MinM,double MaxM,bool bPointed);
+ // What is out there tonight for a bearing to point at: what has come already and nobody has been out to (where it stands), or the
+ // one still to come (bAhead; where it will be). Event: its id in director.json, for the tier. False: nothing real tonight.
+ bool OutTonight(int32 Night,FString& Event,FString& Title,double& X,double& Z,bool& bAhead) const;
+ // A slip pointed at the one still to come: it is held to its place, and waits out the night for its chance.
+ void PointedTonight(int32 Night);
+ // CHAIN-5B-20261109 (SAMMENFLETTING, dead time at SARO): one word a night about what is out there tonight (OutTonight), from Earl on
+ // the request line, the CB in the truck or the printer at the rack, whichever the player comes to first ("earl", "cb", "printer").
+ // Never a place's name and never on the map: a compass word from SARO, for what has come already, or for the one still to come only
+ // once a slip has pointed there (it agrees with the slip). It takes nothing from the night's one pointing-out. Empty: nothing tonight,
+ // said already tonight, or not the night's hours (20:00 to 05:30).
+ FString WordOfTonight(const FString& Who);
+ // The words by themselves: Kind the event's id (OutTonight's Event), Way a compass word or empty, bAhead it has not come yet.
+ static FString WordLine(const FString& Who,const FString& Kind,const FString& Way,bool bAhead);
+
+ // M7, the first big night (Tom, 9 November: «Det må skje noe stort natt to eller tre», S47BigNight.cpp). Once in a game, on the
+ // second or third night (the seed's), after two: the whole array turns by itself to one point low on the horizon while the power
+ // flickers, every instrument in the rack goes off at once, a low note comes up through the ground, and for a few seconds something
+ // stands, falls or rises out on the land in that direction (the seed's variant: "column", "fall" or "rise"). Felt wherever the
+ // player is: at SARO the lights and the rack, in the truck the dash and the lamps, in Caliche the street lamps, on foot the lamp.
+ // Nothing dangerous and nobody taken. It leaves a mark at the place, a line in the night log (the array's own record), the array
+ // still pointing there in the morning, Dale on the walkie, 1420 and the CB talking, the Ledger's front page, and a lead to the
+ // visitors' case. Slept through, it still happened: the morning finds what it left.
+ struct FBigPlan{int32 Night=0;double Hour=0;int32 Variant=0;};
+ // Pure, from the seed: the night (2 or 3), the hour of the night (26.1 to 27.6, never the 02:20s to 02:40s), the variant.
+ static FBigPlan BigPlanFor(int32 Seed);
+ // CHAIN-4-20261109 (SAMMENFLETTING step 4): the same night again in week two (Round 1, nights 9 to 12) and week three (Round 2, 16 to
+ // 19), each in a shape the player has not had (Had: the shapes that came) and somewhere it has not stood. Round 0 is BigPlanFor.
+ static constexpr int32 BigRounds=3;
+ static FBigPlan BigPlanAt(int32 Seed,int32 Round,const TArray<int32>& Had);
+ static const TCHAR* BigVariantName(int32 Variant);
+ static int32 BigVariantOf(const FString& Name);
+ // This game's: from the seed, moved to the other of the two nights when the drawn one is calm and the other is not. CHAIN-4: the
+ // round still to come once one has come (BigAhead), the last one's own after the third.
+ FBigPlan BigPlan() const;
+ // The night the first one came (or was slept through), 0 not yet, -1 never in this game (a save from after its nights).
+ int32 BigHappened() const{return BigPast.IsEmpty()?BigNight:BigPast[0].Night;}
+ // CHAIN-4: the night the latest round came (its day after: 1420, the night log), 0 while the next waits; the round still to come, -1 none.
+ int32 BigLatest() const{return BigNight;}
+ int32 BigAhead() const{return BigNight==0?BigRound:BigRound+1<BigRounds?BigRound+1:-1;}
+ bool BigLive() const{return Now.Id==TEXT("big_night");}
+ // N1110 (pace, critic 2): clock seconds of the last false alarm (S47Calm), -1e9 if none: the animals' lone warning keeps clear of it.
+ double LastFalseAlarmAt() const;
+ // A sleeper on this night is woken for it (FS47FreeformDirector::DrawForNight).
+ bool BigWakes(int32 Night) const;
+ // PT-FEEDER-20261109 (d37): the big night's night is its own from dusk to morning, before it comes and after: no lights reported or
+ // seen elsewhere (FS47FreeformDirector::LightsMayCome), no bearing slip (FS47Places), nothing more to marks already standing.
+ bool BigOwns(int32 Night) const;
+ // The rule by itself: the planned night while it has not come (and the game is not a dev run), or the night it came.
+ static bool BigOwnsNight(int32 Night,int32 PlannedNight,int32 CameNight,bool bWaits){return Night>0&&((CameNight==0&&bWaits&&Night==PlannedNight)||CameNight==Night);}
+ // What of the day after has come: "array", "dale", "slip", "radio", "cb", "seen", "felt", "trace", "unseen".
+ bool BigHas(const FString& What) const{return BigFollow.Contains(What);}
+ // F10 and tests: the day after's follow-ups now, as far as where the player is allows (Dale's hail, the array's record).
+ void DevBigMorning();
+ // F10: the planner's own draw from now on, in a developer run too, as if this game had not reached it yet.
+ void DevBigNatural();
+ // F10: tonight's big night as if slept through, in this shape (empty: the seed's): the mark is out there, the day after to come.
+ bool DevBigSlept(const FString& Variant,FString& Why);
+ // F10: as E on the mark.
+ void DevUseBig(){UseBig();}
+ // BIGNIGHT-SEEN-20261109: how long its height has waited for the player's eyes (seconds of the night), and whether it has come.
+ double BigHeldFor() const;
+ bool BigCameUp() const;
+ double BigBearing() const{return BigAz;}
+ double BigElevation() const{return BigEl;}
+ const FString& BigPlaceTitle() const{return BigTitle;}
+ static bool BigSelfTest(TArray<FString>& Lines);
+
+ // D46-20261110 (D46-3, Tom 10 November: "must have more action/events the first 24 hours"; S47FirstDay.cpp). The first day's
+ // script: small authored beats across day 1 and night 1 from what the game already has (the CB in the truck, Dale's set in OPS, a
+ // dog far off, the rack, the phone), each one that can be explained away before midnight and only machinery and sound after it,
+ // and the cliffhanger at 00:41: every dish on remote turns by itself to the night's line (the burst's bearing) and stays there; slept
+ // through or away, it is found turned at SARO before the evening after. Its once-flag is the field record FirstTurnKey (no new save
+ // key); Dale's first line on day 2 answers it (FS47Predecessor, bark "turned"). The beats themselves are not saved: a Continue drops
+ // those whose window has opened. Hours are hours from midnight before day 1 (night 1 is 8 to 32).
+ struct FFirstBeat{const TCHAR* Id;double From,Until;bool bHint;};
+ static const TArray<FFirstBeat>& FirstBeats();
+ static constexpr double FirstTurnHour=24.+41./60.,FirstTurnLive=25.5,FirstFoundUntil=24.+18.;
+ static constexpr const TCHAR* FirstTurnKey=TEXT("array_turn_d1");
+ // What the cliffhanger does now: wait, turn in front of the player, be found turned, or never (past the evening after).
+ enum class EFirstTurn:uint8{Wait,Live,Found,Never};
+ static EFirstTurn FirstTurnFate(double Hour,bool bAtSaro,bool bPowered,bool bMissed,bool bBusy);
+ // Real minutes from 08:00 on day 1 to Hour on an unheld clock (daylight 13 h in 30 minutes, the dark 11 h in 45).
+ static double FirstRealMinutes(double Hour);
+ static bool FirstDaySelfTest(TArray<FString>& Lines);
+
  // A place for one of these, with what it needs: the catalogue's, or the land's own.
  struct FSpot{FString Place,Title;double X=0,Z=0;bool bSet=false;};
  struct FProp;
+ // D48-20261110: what the camera may find among the drawn props of this area: its kind, the box round its drawn parts (UE) and those parts.
+ struct FPhotoSubject{FString Kind;FBox Box=FBox(ForceInit);TArray<const UPrimitiveComponent*> Parts;};
+ void PhotoSubjects(TArray<FPhotoSubject>& Out) const;
 private:
  US47Main* M=nullptr;
  TSharedPtr<uint8> Life;
@@ -147,6 +288,8 @@ private:
  // For what the interaction list holds on to: lives as long as this does, across every Begin.
  TSharedPtr<uint8> Alive=MakeShared<uint8>(0);
  TArray<FSite> Sites;
+ // LOOP-4-20261109: where something stood out there that has since gone, and its night (saved, "past"; an older save has none).
+ TArray<FStir> Past;
  TMap<FString,int32> LastDays;
  TArray<FString> Deeds; // what the player did, in a voice's words, for one that repeats it
  int32 Serial=0,HumorNight=-100,EchoFrom=0,LateNight=0,PlanNight=0,AheadNight=0;
@@ -166,10 +309,17 @@ private:
  // The passing over the truck, and the truck's electrics while it is over them.
  double DimLeft=0;bool bDimmed=false;
  // The counter.
- float Dose=0,Needle=0;double TickDebt=0,GeigerUpFor=0,GeigerNoteIn=0;bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false,bGeigerAway=false;
+ // D45-20261110: no tick debt any more (the counts are a Poisson process, S47Hap::PoissonCount): GmMeter is the dial's own count rate,
+ // counts a second through its time constant, and bGmRoar whether the dense loop of counts is playing where it pegs.
+ float Dose=0,Needle=0;double GmMeter=0,GeigerUpFor=0,GeigerNoteIn=0;bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false,bGeigerAway=false,bGmRoar=false;
  TSet<FString> GeigerNoted;
  // ---- the night ----
  void PlanTonight(int32 Night);
+ // CHAIN-1-20261109: tonight's lead (above), and its draw at the end of PlanTonight.
+ FLead LeadNow;
+ void DrawLead(int32 Night);
+ // CHAIN-5B-20261109: the night the word of tonight was said (WordOfTonight; saved, "wordNight"), and when the CB may next try it.
+ int32 WordNight=0;double WordTry=0;
  // The night's own pace: one at x1 in play; F10's natural night runs its minutes at its speed, so what lasts is measured in the
  // night's minutes and not in seconds of the screen (critics, 8 November: at x30 a figure held the ground for twenty hours).
  double NightPace() const;
@@ -243,6 +393,9 @@ private:
  double RumorTry=0;
  // A draw has its window: an hour and a half from its time, then it is gone (or given to one that fits, StepSwap).
  static constexpr double DrawWindow=1.5;
+ // LEAD-FIX-20261110: hours of the night each draw was held back by a pointed landing sitting on the ground (S47Hap::SitHold), added
+ // to its window (Due) so it comes right after instead of losing its night; and the clock when that was last counted (-1: not sitting).
+ TMap<FString,double> SitHeld;double SitHeldClock=-1;
  // Between 23 and 01: tonight's hour for the reserve, and the nights that keep a hush instead.
  double LateAt=24.5;bool bLateHush=false;
  // The truck walked back to after a while away (hood_warm, truck_tracks): main's seconds then, and how long away (game seconds).
@@ -263,8 +416,11 @@ private:
  bool BeginHitcher(bool bForced,FString& Why);
  bool BeginRv(bool bForced,FString& Why);
  bool BeginHumor(const FString& Variant,bool bForced,FString& Why);
- bool BeginFigure(bool bForced,FString& Why);
+ // Variant: "nordic" or "cosmic" (F10), or "shade"; empty: the seed's (S47RoadGlimpse::FigureFor).
+ bool BeginFigure(const FString& Variant,bool bForced,FString& Why);
  void StepFigure(double Dt);
+ // The crossing far ahead now on the road (road_glimpse): its body, side, distance, and whether it stops or leaves prints.
+ S47RoadGlimpse::FPlan Glimpse;
  // What the figure did, for the one record at the end: each time it stood and was seen, how far and which way.
  TArray<FString> FigureSeen;
  double FigureSeenFor=0;int32 FigureStageSeen=-1;
@@ -284,6 +440,8 @@ private:
  void UseHumor();
  // ---- the world ----
  FSpot Where(const FString& Kind,uint32 All,uint32 Any,uint32 Not,double MinM,double MaxM,float FarShare,uint32 Salt,bool bSameArea=false) const;
+ // CHAIN-1-20261109: the lead's own place for the event that is tonight's lead, when it fits (LeadFits). Not set: draw as before.
+ FSpot LeadSpot(const FString& Kind,double MinM,double MaxM) const;
  void UsedPlace(const FString& Place,const FString& Kind) const;
  bool PlayerRoad(double& X,double& Z) const;
  bool WorldOf(double RoadX,double RoadZ,FVector& Out) const;
@@ -330,8 +488,69 @@ private:
  bool FireUnease(int32 I,bool bForced,FString& Why);
  void StepUneasy(double Dt,double Pc=1);
  void EndUneasy();
+ // ---- the first big night (S47BigNight.cpp) ----
+ int32 BigNight=0,BigVar=-1,BigSerial=0,BigDaleAt=0;
+ // CHAIN-4-20261109: which round the state above is (0 the first), and the rounds put by (saved, optional: an older save has none).
+ int32 BigRound=0;
+ struct FBigPast{int32 Night=0,Var=-1;FString Place,Title;};
+ TArray<FBigPast> BigPast;
+ void BigNextRound();
+ double BigClock=0,BigAz=0,BigEl=3,BigX=0,BigZ=0,BigTry=0,BigFollowTry=0,BigFlick=0,BigDaleIn=0;
+ FString BigPlace,BigTitle;
+ TSet<FString> BigFollow;
+ TArray<FString> BigDaleLines;
+ // Stepped during its night in this game (saved): only then is a night slept through the night it happened.
+ bool bBigSawNight=false,bBigPower=false,bBigMotors=false,bBigDimmed=false,bBigToneOn=false;
+ // F10's natural line: the plan is asked outside the night's own rules too (not saved).
+ bool bBigDevNatural=false;
+ // The last clock StepBigDue saw (a long jump is a rest), whether the player slept on its night, and the hour a waking brings it on.
+ double BigLastClock=-1,BigSoon=-1;bool bBigSlept=false;
+ bool BeginBig(const FString& Variant,bool bForced,FString& Why);
+ void StepBig(double Dt);
+ void StepBigDue();
+ void StepBigAfter();
+ void EndBigEffects();
+ void UseBig();
+ void BigTurnArray(bool bSnap);
+ void BigRecordArray(bool bWasThere);
+ void BigUnseen(int32 Night,bool bSlept);
+ void BigFelt();
+ bool BigSite(int32 Night,double Clock);
+ FString BigSpoken() const;
+ S47J::FObj SaveBig() const;
+ void LoadBig(const S47J::FObj& O);
+ void ResetBig();
+ // BIGNIGHT-SEEN-20261109 (S47BigNight.cpp): what is drawn of it (soft light, one set for every area), the wait for the player's eyes
+ // before its height, and its words on the walkie, the CB and 1420, one at a time.
+ struct FBigNow;
+ TSharedPtr<FBigNow> BigNow;
+ FBigNow& BigState();
+ void DrawBig(double Age,const FVector& Ground,bool bHere);
+ void HideBigLook();
+ void SayBig();
+ void QueueBig(int32 Kind,const TArray<FString>& Lines,const FString& Voice,double In,double Within);
+ // A drawn thing of the big night: built if need be, at Foot, each part's size times Scale, its lamps at LampK of their strength.
+ bool ShowBig(const FString& Kind,const FVector& Foot,double Yaw,const FVector& Scale,float LampK,bool bOn);
  // ---- the counter ----
  void StepGeiger(double Dt);
  float DoseAt(const FVector& Foot,FString& Near,double& NearM) const;
  void PoseGeiger(bool bShow);
+ // D45-20261110: a landing's coals and their smoke at its ring, Hot and SmokeK from 1 down to 0 over the hours after it came down.
+ void StepEmbers(FProp& P,double Hot,double SmokeK);
+ // ---- the first day's script (S47FirstDay.cpp, D46-20261110) ----
+ struct FFirstDayNow
+ {
+  TSet<FString> Done;
+  TArray<TPair<double,TFunction<void()>>> Later; // what a beat does a few seconds on (Paced)
+  double LastHour=-1,MotorsAt=0;
+  bool bPrimed=false,bLoaded=false,bMissed=false,bMotors=false;
+ };
+ FFirstDayNow FirstDay;
+ TSharedPtr<FS47AnimalWarn> AnimalWarn; // N1110 (ANIMALS-20261108): the animals a few seconds before some events (S47AnimalWarn.cpp)
+ TSharedPtr<FS47Calm> Calm; // N1110 (rhythm, items 5 and 11): false alarms and the ease after a danger (S47Calm.cpp)
+ void StepFirstDay();
+ void EndFirstDay();
+ bool FirstBeat(const FString& Id);
+ double FirstBearing() const;
+ void TurnFirstArray(bool bFound);
 };

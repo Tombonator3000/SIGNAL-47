@@ -3,6 +3,7 @@
 #include "S47Json.h"
 class US47Main;
 class AS47Web;
+class UPointLightComponent;
 // Temporary playtest admission. Owns only the authored town/homes overlay, never story facts.
 namespace S47CalicheAccess
 {
@@ -20,6 +21,12 @@ namespace S47CalicheAccess
  bool MoveNearestDoor(const FVector& At,double Range);
  // The rooms' own lamps, 1 as built and 0 out.
  void SetLampLevel(double K);
+ // NPC-DAY: one room's lamp (by its id: "Sheriff", "H02"...), 1 as built and 0 out: whether anyone is home. Times the level above.
+ void SetRoomLamp(const FString& Id,double K);
+ // CALICHE-HOMES: a home's lamp that is not a room's (the trailer, S47CalicheNewHomes) under the same two switches, by its own id
+ // ("H08"); and what a home's lamp is at now (the level times whether anyone is home), 0 for none: its windows go by it.
+ void AddLamp(const FString& Id,UPointLightComponent* Light,double Lumens);
+ double LampLevel(const FString& Id);
  // Test: the middle of a room's floor, by its id or use.
  bool RoomMiddle(const FString& Id,FVector& Out);
  // The room this point is in, by its id. False: none of them.

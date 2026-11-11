@@ -1,6 +1,8 @@
 # SIGNAL / 47
 
-Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986. Gjeldende spillutgave utvikles i Unreal Engine.
+Førstepersons skrekk- og mysteriespill med jobbsimulator i åpen ørken. Det er april 1986, og du er nattvakt på radioobservatoriet SARO i New Mexico. Om dagen og kvelden gjør du vanlige jobber for lønn; om natta bruker du pengene, utstyret og timene dine på å finne ut hva som skjer der ute, mens noe der ute begynner å legge merke til deg.
+
+*Sjanger: job-sim horror / investigative mystery / open-world desert, med lett overlevelse og sniking.* Gjeldende spillutgave utvikles i Unreal Engine.
 
 ## Finn frem
 

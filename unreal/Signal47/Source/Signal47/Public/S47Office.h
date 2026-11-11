@@ -42,6 +42,8 @@ public:
  // The chapter host owns Nora, P04/P05, calls and its original end callback.
  TFunction<bool()> CanDepart;
  TFunction<void()> OnDepart;
+ // TV-CHANNEL-20261110: Dale's set on the shelf (F10 and the tests); null where its mesh has no screen.
+ class FS47OfficeTv* Television() const;
 private:
  struct FVisual;
  TUniquePtr<FVisual> Visual;
@@ -51,6 +53,7 @@ private:
  bool bDoorInspected = false, bDoorTarget = false, bDrawerTarget = false;
  bool bDeskSeen = false, bIndexRead = false, bClippingsRead = false;
  bool bNoteRead = false, bContactRead = false, bFieldSheet = false, bDeparted = false;
+ bool bTvOff = false; // TV-CHANNEL-20261110: Dale's set switched off by the operator (Freeform; FS47OfficeTv holds the switch)
  double DoorK = 0, DrawerK = 0, FieldSheetAt = 0, SyncWait = 0;
  TArray<FString> ReadDocuments;
  bool Here() const;

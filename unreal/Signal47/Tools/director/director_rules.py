@@ -2,10 +2,12 @@
 """The one check of Content/Director/director.json: used by generate.py now, and by the editor when it comes.
 Keep NEEDS and the reasons in step with S47Rhythm.cpp; S47Rhythm's self-test reads the same file."""
 import json
-SYSTEMS = {'director', 'indoor', 'site', 'taken', 'highway', 'sky', 'night'}
+# WEEKLY-CASE-20261109: 'week', the week's authored case (S47WeekCase.h), one event of its own.
+SYSTEMS = {'director', 'indoor', 'site', 'taken', 'highway', 'sky', 'night', 'week'}
 SLOTS = {'ground', 'background'}
 LEVELS = {'hint', 'observation', 'presence', 'danger'}
 BUDGETS = {'minor', 'invest', 'sky'}
+TIERS = {'hint', 'glimpse', 'full'}  # TIERS-20261109, S47NightTiers.h
 NEEDS = {'reference_filed', 'has_finding', 'no_power_fault', 'no_array_fault', 'roof_window_free', 'room_left_dark',
          'native_body', 'no_bodies_out', 'near_feeder', 'near_service', 'indoors', 'outdoors', 'door_found', 'peek_place',
          'flood_room', 'site_waiting', 'on_foot', 'not_driving', 'past_fence', 'driving'}
@@ -23,6 +25,14 @@ def check(doc):
     g = doc.get('globals', {})
     hours = g.get('their_hours', {})
     if not (0 <= hours.get('earliest', -1) <= hours.get('latest', -1) <= hours.get('end', -1) <= 12): bad('their_hours: earliest <= latest <= end, past midnight')
+    # The night's tiers (TIERS-20261109, S47NightTiers.h): clock hours a glimpse and a full meeting may start from, and the same from
+    # the fourth week's first night. Optional; S47Rhythm.cpp turns away the same.
+    tiers = g.get('tiers')
+    if tiers is not None:
+        night = lambda h: h + 24 if isinstance(h, (int, float)) and 0 <= h < 12 else h if isinstance(h, (int, float)) and 12 <= h < 24 else -1
+        if not (18 <= night(tiers.get('glimpse_from', -1)) <= night(tiers.get('full_from', -1)) and 18 <= night(tiers.get('late_glimpse_from', -1)) <= night(tiers.get('late_full_from', -1))):
+            bad('tiers: glimpse_from before full_from, in the night, also late_')
+        if not isinstance(tiers.get('late_from_night'), int) or tiers['late_from_night'] < 1: bad('tiers: late_from_night a night')
     tick = g.get('tick_seconds', [])
     if len(tick) != 2 or not 0 < tick[0] <= tick[1]: bad('tick_seconds: [low, high]')
     rest = g.get('rest_after', {})
@@ -34,6 +44,9 @@ def check(doc):
         if len(r) != 2 or not 0 <= r[0] <= r[1]: bad('budget_per_day.' + k)
     limit = g.get('danger_per_night')
     if limit is not None and (not isinstance(limit, int) or limit < 0): bad('danger_per_night: null or a whole number')
+    # LOOP-1-20261109: how many times a night SARO points the player out at the land (the bearing slip); S47Rhythm.cpp the same.
+    point = g.get('point_out_per_night', 1)
+    if not isinstance(point, int) or isinstance(point, bool) or not 0 <= point <= 3: bad('point_out_per_night: a whole number 0 to 3')
     # The build-up (Tom's critics, 8 November): one row a week from day 1, in order; S47Rhythm.cpp turns away the same.
     weeks = g.get('curve', {}).get('weeks', [])
     last = 0
@@ -81,6 +94,13 @@ def check(doc):
         for n in e.get('needs', []):
             if n not in NEEDS: bad(i + ': needs ' + n)
         if not isinstance(e.get('enforce'), bool): bad(i + ': enforce')
+        if 'tier' in e and e['tier'] not in TIERS: bad(i + ': tier is hint, glimpse or full')
+        if 'early' in e and not isinstance(e['early'], bool): bad(i + ': early')
+        if h == 'their_hours' and e.get('tier', 'full') != 'full': bad(i + ': what comes in their hours is full')
+        # Tom, 9 November: the tiers hold every start; an hour window that opens before its tier says less than it seems.
+        if e.get('tier') in ('glimpse', 'full') and isinstance(h, list) and not e.get('early'):
+            start = h[0] + 24 if h[0] < 12 else h[0]
+            if start < (23 if e['tier'] == 'glimpse' else 25): warnings.append(i + f": its hours open before its tier ({e['tier']}) in any week; the tier holds it back until then")
         # Tom, 7 November: the evening is a normal job. It says so; it does not stop anything, since two o'clock is no longer absolute.
         if e.get('level') == 'danger' and isinstance(h, list) and (h[0] >= 18 or h[0] < 1): warnings.append(i + ': a danger in the evening goes against Tom\'s rule that the evening is work')
     for i in SAVED_IDS - seen:

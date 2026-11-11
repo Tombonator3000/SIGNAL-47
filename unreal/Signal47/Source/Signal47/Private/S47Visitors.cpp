@@ -3,6 +3,7 @@
 #include "S47EventPlaces.h"
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
+#include "S47GameStyle.h"
 #include "S47FreeformDirector.h"
 #include "S47Geo.h"
 #include "S47Inter.h"
@@ -34,7 +35,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Visitors, Log, All);
 namespace S47VisitorsLocal
 {
 	const TCHAR* const Weekdays[] = { TEXT("Monday"), TEXT("Tuesday"), TEXT("Wednesday"), TEXT("Thursday"), TEXT("Friday"), TEXT("Saturday"), TEXT("Sunday") };
-	FString WeekdayOf(int32 Day) { return Weekdays[(FMath::Max(1, Day) - 1) % 7]; }
+	// M7 (C): from the date the HUD shows, so that a game on the old calendar (day 1 Sunday, April 13) has the right day too.
+	FString WeekdayOf(int32 Day, bool bOldCalendar) { return Weekdays[FMath::Clamp(int32(S47Game::GameDate(true, FMath::Max(1, Day), 0, bOldCalendar).GetDayOfWeek()), 0, 6)]; }
 	// The van on the Mesa's lot, north of the diner (road-local, clear of its walls and its lot).
 	constexpr double VanX = -40, VanZ = 1982;
 	// SARO's visitors' lot by the gate (SARO's own x -18.2 to -7.8, z 10.5 to 20.5), road-local: where the Sky Watch pulls in.
@@ -53,9 +55,9 @@ namespace S47VisitorsLocal
 		TEXT("In '79 I lost an afternoon. Sat down on this porch at two and it was dark. My coffee was still hot. Explain that."),
 		TEXT("Those dishes went up and the coyotes changed their hours. You can write that down. You people write everything down.") };
 	// Where he says to go and look that is nowhere at all (pencilled on the sheet like the souvenir man's nonsense).
-	struct FBunk { const TCHAR* Label; double X, Z; };
+	struct FBunk { const TCHAR* Label; const TCHAR* Said; double X, Z; }; // Label for the map pin, Said for his own mouth
 	constexpr int32 NumTales = UE_ARRAY_COUNT(OldTales);
-	const FBunk BacaBunk[] = { { TEXT("Baca's burned circle"), 1150, 520 }, { TEXT("Baca's singing rock"), 980, 1820 }, { TEXT("Baca's cold spot"), 640, 2350 } };
+	const FBunk BacaBunk[] = { { TEXT("Baca's burned circle"), TEXT("The burned circle"), 1150, 520 }, { TEXT("Baca's singing rock"), TEXT("The singing rock"), 980, 1820 }, { TEXT("Baca's cold spot"), TEXT("The cold spot"), 640, 2350 } };
 	const TCHAR* const NotSaid[] = { TEXT("chevy"), TEXT("ford"), TEXT("dodge"), TEXT("jeep"), TEXT("coke"), TEXT("alien"), TEXT("ufo"), TEXT("roswell"), TEXT("tyre"), TEXT("grey"), TEXT("colour"), TEXT("petrol") };
 	const TCHAR* SetArea(int32 Set) { return Set == 1 ? TEXT("saro") : TEXT("road"); }
 	// The helicopter, in parts (critics: a black disc over the farm by day read as a saucer): an olive drab body, a tail boom with its
@@ -728,7 +730,7 @@ void FS47Visitors::StepMilitary(double Dt)
 		if (!P) continue;
 		const FVector2D Raked = V.bRake ? FVector2D(V.RakeX, V.RakeZ) : FVector2D(P->X, P->Z);
 		if (FVector2D::Distance(Me, Raked) > S47VisitorsLocal::RakeRadius + 6) continue;
-		const FString Text = FString::Printf(TEXT("%s, the morning after: tire tracks over everything, the ground raked smooth in a wide circle, and a cigarette end of a brand nobody sells in this county. Whatever was there has been taken."), *PlaceTitle(V.Place));
+		const FString Text = FString::Printf(TEXT("%s, the morning after: tire tracks over everything, the ground raked smooth in a wide circle, and a cigarette end of a brand nobody sells in this county. If anything was there, it isn't now."), *PlaceTitle(V.Place));
 		F.RegisterFinding(Id, Text);
 		if (M->UI) M->UI->Open(S47Kit::Shell(M->UI, TEXT("SOMEBODY GOT HERE FIRST"), S47Kit::Col({ S47Kit::Text(Text), S47Kit::Small(TEXT("Kept as a field record.")) }), 760));
 		UE_LOG(LogS47Visitors, Display, TEXT("S47: visitors: the raked ground at %s read, night %d"), *V.Place, V.Night);
@@ -862,7 +864,7 @@ FS47Visitors::FTale FS47Visitors::Tale(int32 Day) const
 				if (Near && Roll < .3f) Where = Near->Title; else When = FMath::Max(1, BestNight - 1);
 			}
 			T.Place = Best->Id;
-			T.Text = FString::Printf(TEXT("%s night there were lights down over %s. I watched them from this porch with my coffee. Then they went up, slow, like they had all night."), *WeekdayOf(When), *Where);
+			T.Text = FString::Printf(TEXT("%s night there were lights down over %s. I watched them from this porch with my coffee. Then they went up, slow, like they had all night."), *WeekdayOf(When, F.OldCalendar()), *Where);
 			return T;
 		}
 	}
@@ -873,7 +875,7 @@ FS47Visitors::FTale FS47Visitors::Tale(int32 Day) const
 		const FString New = bReal && F.Places ? F.Places->NextUnknown(Day * 17) : FString();
 		if (!New.IsEmpty() && !BacaTold.Contains(TEXT("look:") + New)) { T.Key = TEXT("look:") + New; T.Place = New; T.Text = FString::Printf(TEXT("You want to look at something, go out to %s. Go in the daytime. I mean that."), *PlaceTitle(New)); return T; }
 		const FBunk& B = BacaBunk[Day % 3];
-		if (!BacaTold.Contains(FString(TEXT("bunk:")) + B.Label)) { T.Key = FString(TEXT("bunk:")) + B.Label; T.bTrue = false; T.Text = FString::Printf(TEXT("Nobody goes where I'm going to tell you. %s. It's on no map, so I'll put it on yours."), B.Label); return T; }
+		if (!BacaTold.Contains(FString(TEXT("bunk:")) + B.Label)) { T.Key = FString(TEXT("bunk:")) + B.Label; T.bTrue = false; T.Text = FString::Printf(TEXT("Nobody goes where I'm going to tell you. %s. It's on no map, so I'll put it on yours."), B.Said); return T; }
 	}
 	for (int32 I = 0; I < NumTales; ++I)
 	{
@@ -909,7 +911,9 @@ void FS47Visitors::OpenBaca()
 		M->UI->Open(S47Kit::Shell(M->UI, TEXT("THE BACA PLACE"), S47Kit::Col(Rows), 760));
 		return;
 	}
-	Rows.Add(S47Kit::Paper(TEXT("An old man in a pressed shirt comes to the screen door before you knock. \"You're from the dishes. Sit down. I've been waiting for one of you to come out here for four years.\"")));
+	// The first time he says what he has waited for; after that the coffee is just on.
+	Rows.Add(S47Kit::Paper(BacaTold.IsEmpty() ? TEXT("An old man in a pressed shirt comes to the screen door before you knock. \"You're from the dishes. Sit down. I've been waiting for one of you to come out here for four years.\"")
+		: TEXT("He is at the screen door before you knock. \"Sit down. The coffee's on.\"")));
 	FString Said = BacaLast;
 	if (BacaDay != F.Day() || BacaLast.IsEmpty())
 	{
@@ -952,7 +956,10 @@ void FS47Visitors::OpenVan()
 	if (!M || !M->UI || !M->Freeform) return;
 	FS47FreeformSession& F = *M->Freeform;
 	TArray<TSharedRef<SWidget>> Rows;
-	Rows.Add(S47Kit::Paper(TEXT("THE SOCORRO SKY WATCH, painted by hand on the side of a cream van. Three of them: a retired schoolteacher with binoculars on a strap, her nephew with a tape recorder, and a quiet man in the back seat in a tie, who doesn't get out.")));
+	// Once he has got out and walked off toward the highway (the "tie" choice), he is not in the back seat any more.
+	const bool bTieGone = Flags.Contains(TEXT("tie_seen"));
+	Rows.Add(S47Kit::Paper(bTieGone ? TEXT("THE SOCORRO SKY WATCH, painted by hand on the side of a cream van. Two of them now: a retired schoolteacher with binoculars on a strap and her nephew with a tape recorder. The back seat is empty.")
+		: TEXT("THE SOCORRO SKY WATCH, painted by hand on the side of a cream van. Three of them: a retired schoolteacher with binoculars on a strap, her nephew with a tape recorder, and a quiet man in the back seat in a tie, who doesn't get out.")));
 	if (VanChoiceDay == F.Day())
 	{
 		Rows.Add(S47Kit::Text(VanChoice.StartsWith(TEXT("in")) ? TEXT("\"Tonight, then! We'll be at your gate at nine sharp.\" The nephew is already checking his batteries.")
@@ -961,13 +968,19 @@ void FS47Visitors::OpenVan()
 	else
 	{
 		Rows.Add(S47Kit::Text(TEXT("THE SCHOOLTEACHER: We're scientists, more or less. We only want to see the instruments. One night. We'll bring donuts. We'll make a donation.")));
-		Rows.Add(S47Kit::Button(TEXT("Let them in tonight / a $15 donation"), [this]
+		// CRIT6-20261109: the donation is field allowance, under the week's cap (FS47FreeformSession::EarnSide): the button says what it
+		// will be, and the toast what it was.
+		const int32 Offer = F.RulesLive() ? FMath::Min(15, F.SideLeftThisWeek()) : 15;
+		Rows.Add(S47Kit::Button(Offer > 0 ? FString::Printf(TEXT("Let them in tonight / a $%d donation"), Offer) : FString(TEXT("Let them in tonight / no donation: this week's field allowance is used up")), [this]
 		{
-			FS47FreeformSession& G = *M->Freeform; VanChoiceDay = G.Day(); VanChoice = TEXT("in"); G.Earn(15); Note(TEXT("let_in")); VanArrivedDay = 0; VanSpotKey.Empty();
+			FS47FreeformSession& G = *M->Freeform; VanChoiceDay = G.Day(); VanChoice = TEXT("in"); const int32 Paid = G.EarnSide(15, TEXT("van donation")); Note(TEXT("let_in")); VanArrivedDay = 0; VanSpotKey.Empty();
 			// Their newsletter, mimeographed: a rumor in it. Tonight at nine they are at SARO's gate.
 			const FString New = G.Places ? G.Places->NextUnknown(G.Day() * 29) : FString();
 			if (!New.IsEmpty()) G.Places->Hear(New);
-			if (M->UI) M->UI->Toast(New.IsEmpty() ? TEXT("$15 and a newsletter. Tonight at nine, at SARO's gate.") : FString::Printf(TEXT("$15 and their newsletter. It says to watch %s. Tonight at nine, at SARO's gate."), *PlaceTitle(New)), 8);
+			const FString Money = Paid >= 15 ? FString(TEXT("$15 and"))
+				: Paid > 0 ? FString::Printf(TEXT("$%d of their $15 (with that, this week's field allowance is used up) and"), Paid)
+				: FString(TEXT("They press $15 on you; this week's field allowance is used up, so you tell them to keep it. You take"));
+			if (M->UI) M->UI->Toast(New.IsEmpty() ? FString::Printf(TEXT("%s a newsletter. Tonight at nine, at SARO's gate."), *Money) : FString::Printf(TEXT("%s their newsletter. It says to watch %s. Tonight at nine, at SARO's gate."), *Money, *PlaceTitle(New)), 8);
 			OpenVan();
 		}));
 		Rows.Add(S47Kit::Button(TEXT("Turn them down"), [this]
@@ -981,7 +994,7 @@ void FS47Visitors::OpenVan()
 			UE_LOG(LogS47Visitors, Display, TEXT("S47: visitors: the Sky Watch goes out to %s tonight"), *OutPlace);
 			OpenVan();
 		}));
-		Rows.Add(S47Kit::Button(TEXT("Ask who the quiet one in the back is"), [this]
+		if (!bTieGone) Rows.Add(S47Kit::Button(TEXT("Ask who the quiet one in the back is"), [this]
 		{
 			FS47FreeformSession& G = *M->Freeform; VanChoiceDay = G.Day(); VanChoice = TEXT("tie"); Note(TEXT("tie_seen"));
 			if (M->UI) M->UI->Toast(TEXT("\"From Albuquerque,\" he says. His shoes are from somewhere else. He gets out, thanks them for the ride, and walks off toward the highway."), 8);
@@ -1115,7 +1128,7 @@ bool FS47Visitors::SelfTest(TArray<FString>& Lines)
 		bool bClean = true; FString Bad;
 		TArray<FString> All;
 		for (const TCHAR* T : OldTales) All.Add(T);
-		for (const FBunk& B : BacaBunk) { All.Add(B.Label); bClean &= S47OpenLand::InRim(B.X, B.Z, 30); }
+		for (const FBunk& B : BacaBunk) { All.Add(B.Label); All.Add(B.Said); bClean &= S47OpenLand::InRim(B.X, B.Z, 30); }
 		for (const FString& S : All)
 		{
 			FString Word; const FString Lower = S.ToLower() + TEXT(" ");

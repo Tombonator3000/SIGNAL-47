@@ -183,6 +183,14 @@ S47J::FObj FS47WardReport::Save() const
 	return O;
 }
 
+int32 FS47WardReport::TrustAtReview() const { return TrustAtReview(TrustNow, Kept); }
+int32 FS47WardReport::TrustAtReview(int32 TrustThen, const TArray<FReport>& Reports)
+{
+	int32 T = TrustThen;
+	for (const FReport& Rep : Reports)
+		if (Rep.Sent >= 0 && Rep.Read == -1 && LeftOut(Rep) == 0 && LiesIn(Rep).IsEmpty()) ++T;
+	return FMath::Clamp(T, -MostTrust, MostTrust);
+}
 int32 FS47WardReport::SentCount() const { int32 Nn = 0; for (const FReport& Rep : Kept) Nn += Rep.Sent >= 0 ? 1 : 0; return Nn; }
 int32 FS47WardReport::CaughtCount() const { int32 Nn = 0; for (const FLie& L : Lies) Nn += L.bCaught ? 1 : 0; return Nn; }
 
@@ -233,6 +241,9 @@ void FS47WardReport::Make(int32 Week)
 			if (Sh.Night < Rep.First || Sh.Night > Rep.Last) continue;
 			for (const FS47NightLog::FLine& L : Sh.Facts)
 			{
+				// CASES-OPS-20261109: a case's own records are the station's business, not the week's report: nothing to leave out and
+				// nothing that makes "in order" a lie
+				if (FS47NightLog::CaseLine(L.Text)) continue;
 				FItem It; It.Cat = CatOf(L.Part); It.Night = Sh.Night; It.Clock = L.Clock; It.Text = L.Text;
 				if (PerCat[int32(It.Cat)]++ < MostItems) Rep.Items.Add(It);
 			}
@@ -309,9 +320,19 @@ void FS47WardReport::Receive(double ClockNow)
 		const bool bSeen = Rep.Items.ContainsByPredicate([](const FItem& It) { return It.Cat == ECat::Seen && It.bOn; });
 		Rep.Reply = bWhole ? FString(TEXT("Received in full. Thank you.")) : !Fuller.IsEmpty() ? FString::Printf(TEXT("Received. Your night log of %s has more in it than this. Send what happened as it happened."), *Fuller) : FString(TEXT("Received."));
 		if (bSeen) Rep.Reply += TEXT(" Keep the originals at the station.");
-		File(Rep);
 		UE_LOG(LogS47WardReport, Display, TEXT("S47: ward report: week %d read at %s, trust %+d to %d: %s"), Rep.Week, *ClockOf(ClockNow), Rep.Delta, TrustNow, *Rep.Reply);
-		if (M->UI) M->UI->Toast(TEXT("Dr. Ward's office has read your weekly report. The reply is on it."), 5);
+		// TELEX-20261109: the reply prints on the telex; the report in the notebook has it once it is torn off (Received). A full machine
+		// files it at once, as before.
+		const FString Page = FString::Printf(TEXT("DR. WARD'S OFFICE\nTO SARO NIGHT OPERATOR\nRE YOUR WEEKLY REPORT, WEEK %d\n\nRECEIVED %s. %s\n\nW."), Rep.Week, *ClockOf(Rep.Read), *Rep.Reply);
+		if (M->Freeform->QueueTelex(FString::Printf(TEXT("telex-wardreport-%d"), Rep.Week), FString::Printf(TEXT("Dr. Ward's office: your weekly report, week %d"), Rep.Week), TEXT("TELEX / READ"), Page))
+		{
+			if (M->UI) M->UI->Toast(TEXT("In the control room, the telex starts up: Dr. Ward's office, about your weekly report."), 5);
+		}
+		else
+		{
+			File(Rep);
+			if (M->UI) M->UI->Toast(TEXT("Dr. Ward's office has read your weekly report. The reply is on it."), 5);
+		}
 		M->RequestAutosave();
 	}
 }
@@ -322,7 +343,9 @@ void FS47WardReport::Query(const FLie& Ln)
 	if (!L || L->bCaught || !M) return;
 	L->bCaught = true;
 	TrustNow = FMath::Clamp(TrustNow - 2, -MostTrust, MostTrust);
-	if (M->Story)
+	// TELEX-20261109: her query prints on the telex and is a paper once it is torn off; a full machine files it at once, as before.
+	bool bOnTelex = false;
+	if (M->Story || M->Freeform)
 	{
 		FS47Doc D;
 		D.Id = FString::Printf(TEXT("ward-query-%d-%d"), L->Week, int32(L->Cat));
@@ -331,11 +354,17 @@ void FS47WardReport::Query(const FLie& Ln)
 		D.Page = FString::Printf(TEXT("TO SARO NIGHT OPERATOR\nRE YOUR WEEKLY REPORT, WEEK %d\n\nYour report says: \"%s\"\n%s\n\nI need the station's record as it is, not as it ought to be. Send what happened as it happened.\n\nW."),
 			L->Week, RoutineLine(L->Cat) ? RoutineLine(L->Cat) : TEXT(""), *L->Proof);
 		D.Transcript = D.Page;
-		M->Story->AddDoc(D);
+		bOnTelex = M->Freeform && M->Freeform->QueueTelex(D.Id, D.Title, D.Stamp, D.Page);
+		if (!bOnTelex && M->Story) M->Story->AddDoc(D);
 	}
 	UE_LOG(LogS47WardReport, Display, TEXT("S47: ward report: week %d, %s found out, trust %d"), L->Week, CatTitle(L->Cat), TrustNow);
-	if (M->UI) M->UI->Toast(TEXT("A telex from Dr. Ward's office about your weekly report. Documents, in your notebook."), 6);
+	if (M->UI) M->UI->Toast(bOnTelex ? TEXT("In the control room, the telex starts up: Dr. Ward's office, about your weekly report.") : TEXT("A telex from Dr. Ward's office about your weekly report. Documents, in your notebook."), 6);
 	M->RequestAutosave();
+}
+
+void FS47WardReport::Received(int32 Week)
+{
+	if (const FReport* Rep = Find(Week); Rep && Rep->Read >= 0) File(*Rep);
 }
 
 void FS47WardReport::File(const FReport& Rep) const
@@ -367,7 +396,9 @@ void FS47WardReport::OpsRows(TArray<TSharedRef<SWidget>>& Into)
 	}
 	const FReport* Last = nullptr;
 	for (const FReport& Rep : Kept) if (Rep.Read >= 0 && (!Last || Rep.Read > Last->Read)) Last = &Rep;
-	Col.Add(FT::Small(Last ? FString::Printf(TEXT("Week %d came back: \"%s\""), Last->Week, *Last->Reply) : FString(TEXT("Made from the week's night logs. You choose what goes in."))));
+	// TELEX-20261109: what came back is read off the telex first
+	const bool bOnTelex = Last && M->Freeform->OnTelex(FString::Printf(TEXT("telex-wardreport-%d"), Last->Week));
+	Col.Add(FT::Small(bOnTelex ? FString::Printf(TEXT("Week %d came back: the reply is on the telex."), Last->Week) : Last ? FString::Printf(TEXT("Week %d came back: \"%s\""), Last->Week, *Last->Reply) : FString(TEXT("Made from the week's night logs. You choose what goes in."))));
 	Into.Add(FT::Panel(TEXT("WEEKLY REPORT"), S47Kit::Col(Col)));
 }
 
@@ -483,5 +514,13 @@ bool FS47WardReport::SelfTest(TArray<FString>& Lines)
 	Check(Page.Contains(TEXT("No time unaccounted for.")) && Told.Num() == 1 && Told[0] == ECat::Time, TEXT("'in order' over what happened is a lie; over a quiet part it is only true"));
 	Check(PointsFor(0) == 0 && PointsFor(2) == 1 && PointsFor(5) == 2 && PointsFor(-2) == -1 && PointsFor(-6) == -2, TEXT("trust counts a little in her assessment, either way"));
 	Check(RoutineLine(ECat::Seen) == nullptr, TEXT("what was seen can be left out, never written away"));
+	{
+		// M7: a whole report telexed the evening before the assessment counts at the assessment, unread or not; a partial one does not.
+		FReport Whole = Rep; for (FItem& It : Whole.Items) It.bOn = true; Whole.Routine = 0; Whole.Sent = 10; Whole.Read = -1;
+		FReport Part = Rep; Part.Sent = 10; Part.Read = -1;
+		FReport Done = Whole; Done.Read = 20;
+		Check(TrustAtReview(2, { Whole }) == 3 && TrustAtReview(2, { Part }) == 2 && TrustAtReview(2, { Done }) == 2 && TrustAtReview(MostTrust, { Whole }) == MostTrust,
+			TEXT("the last week's report, telexed whole and not yet read, counts at the assessment"));
+	}
 	return bOk;
 }

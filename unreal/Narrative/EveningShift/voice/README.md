@@ -1,5 +1,7 @@
 # Stemmetakes for kveldspakken
 
+> **9. november (DALE-STORY-SWAP):** Dale bruker ikke lenger Kinski-profilen. `pack.json` gir DALE `voice_profile: dale`, og hans 56 takes kommer fra [DaleVoice](../../DaleVoice/README.md) (`takes.json` der, WAV-ene i `Content/Audio/DaleVoice`). `takes.json` her har bare servitrisen og verten (53), og `generate.py`/`verify.py` hopper over Dales cues. Teksten nedenfor beskriver den opprinnelige produksjonen. De gamle Kinski-takene ligger urørt i `~/.cache/signal47-eveningshift/takes`, og Content-kopiene i `kinski-retired-from-content` ved siden av.
+
 109 rene engelske takes for alle innspilte cues i `../generated/recording_manifest.json`: 56 Dale, 43 servitrise og 10 lokalradiovert. `D61_FIXED_FRAGMENT_001` gjenbruker `D01_HANDOVER_001` gjennom `recording_aliases` og har ingen egen take. Pakken har ingen Ward- eller ekspeditørreplikker; Ward og Nora får derfor ingen opptak herfra, og aldri Dales stemme.
 
 Takes er laget med eksisterende lokal VoiceStudio 0.5.6 og OmniVoice (`k2-fsa/OmniVoice`, revisjon `c5fdb5cc…`), headless mot det lokale API-et på `127.0.0.1:3900`. Ingen ny motor er installert.

@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "id": "calm_after",
+  "name": "The night eases after a danger",
+  "notes": "N1110 (rhythm, item 11; pace). N1110 (pace, critic 3): three variants, calm_after, calm_after_b and calm_after_c, chosen by the day (FS47Calm::ReliefScript: day modulo three), each with its own thought for indoors, outdoors on foot and the truck and its own Dale line, so the same relief is not heard twice in a row. This is the first (days 1, 4, 7...). Played by FS47Calm ninety seconds-plus after a danger has ended, eight to ten minutes of the clock (not after a long absence): the wind and a far dog come back gently, one calm thought chosen by where the player is (indoors, outdoors on foot, in the truck), the radio at 1420 AM finds an ordinary program if the player is indoors or in the truck (the long drive home line only in the truck), Dale checks in. No finding, no map mark, no new event. The director's own rest after a danger (rest_after.danger) holds the night meanwhile.",
+  "enabled": true,
+  "gates": { "from_day": 2, "tier": "hint" },
+  "beats": [
+    { "at": 0, "do": "sound", "sound": "gust", "gain": 0.16, "lp": 1800 },
+    { "at": 3.5, "do": "sound", "sound": "dog0", "gain": 0.1, "lp": 900 },
+    { "at": 7, "do": "thought", "text": "The walls are quiet again. Good.", "secs": 4, "if": ["indoors"] },
+    { "at": 7, "do": "thought", "text": "Crickets again. Good.", "secs": 4, "if": ["outdoors", "on_foot"] },
+    { "at": 7, "do": "thought", "text": "Engine ticking as it cools. Crickets again. Good.", "secs": 4, "if": ["in_truck"] },
+    { "at": 10, "do": "line", "who": "radio", "text": "...clear and cool out there tonight, folks, light wind out of the southwest. Here's a quiet one for the late shift.", "if": ["indoors"] },
+    { "at": 10, "do": "line", "who": "radio", "text": "...clear and cool out there tonight, folks, light wind out of the southwest. Here's one for the long drive home.", "if": ["in_truck"] },
+    { "at": 16, "do": "line", "who": "dale", "text": "You still with me? Over." }
+  ]
+}

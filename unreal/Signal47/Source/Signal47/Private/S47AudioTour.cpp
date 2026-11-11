@@ -49,7 +49,7 @@ void US47Audio::Tour(const FString& Path)
 		Part(TEXT("signature 4/7 clicks")); A->Signature(0.45f); Run(3.2, false);
 		Part(TEXT("dial and ringback")); { const float D = A->Dial(TEXT("555-0147")); A->Ringback(2, D); } Run(8.5, false);
 		Part(TEXT("call line 3 s")); A->CallLine(3); Run(3.5, false);
-		Part(TEXT("phone call (Nora, recorded)"));
+		Part(TEXT("phone call (Nora: captions, no voice since VOICE-OUT-3)"));
 		{
 			TArray<FS47PhoneCue> Lines;
 			Lines.Add({ TEXT("Sierra Motor Court."), TEXT("N. VEGA") });

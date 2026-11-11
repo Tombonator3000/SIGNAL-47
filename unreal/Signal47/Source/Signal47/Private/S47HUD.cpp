@@ -1,4 +1,8 @@
 #include "S47HUD.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "S47StreetLamps.h"
+#include "S47CarPaint.h"
 #if PLATFORM_LINUX
 #include "Linux/LinuxPlatformApplicationMisc.h"
 #endif
@@ -10,12 +14,18 @@
 #include "S47TitleEraseSound.h"
 #include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
+#include "S47DaleVoice.h"
 #include "S47HudGauges.h"
+#include "S47FreeformTerminal.h"
+#include "S47MessageQueue.h"
+#include "S47Thoughts.h"
+#include "S47TonightNote.h"
 #include "S47SaroSave.h"
 #include "S47Stress.h"
 #include "S47Fatigue.h"
 #include "S47Handling.h"
 #include "S47SaroCot.h"
+#include "S47Hide.h"
 #include "S47WeatherLive.h"
 #include "S47Sneak.h"
 #include "S47Omen.h"
@@ -50,19 +60,27 @@
 #include "S47NightRhythm.h"
 #include "S47DeputyRound.h"
 #include "S47LeftGear.h"
+#include "S47Balloon.h"
 #include "S47Places.h"
 #include "S47EventPlaces.h"
 #include "S47Predecessor.h"
 #include "S47Mail.h"
+#include "S47ArrayFence.h"
 #include "S47RadioTips.h"
 #include "S47TownSites.h"
+#include "S47CalicheNewHomes.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
 #include "S47Visitors.h"
 #include "S47MotelNight.h"
 #include "S47Openings.h"
 #include "S47Happenings.h"
+#include "S47WeekCase.h"
+#include "S47Script.h"
+#include "S47EventScript.h"
+#include "S47CameraMoment.h"
 #include "S47FieldLife.h"
+#include "S47Outfit.h"
 #include "S47NightLog.h"
 #include "S47Tape.h"
 #include "S47PinBoard.h"
@@ -76,6 +94,7 @@
 #include "S47Substation.h"
 #include "S47Office.h"
 #include "S47RoomLights.h"
+#include "S47Darkroom.h"
 #include "S47RoomLightsTest.h"
 #include "S47ReactiveLightTest.h"
 #include "S47FarmWorld.h"
@@ -166,9 +185,12 @@
 #include "S47UI.h"
 #include "S47World.h"
 #include "S47Mirrors.h"
+#include "S47Bobblehead.h"
 #include "S47WorldLife.h"
 #include "S47Walker.h"
 #include "SS47Crt.h"
+#include "S47EyeGlint.h"
+#include "S47TripoNew.h"
 #include "SS47ScreenView.h"
 #include "SS47Widgets.h"
 #include "Slate/WidgetRenderer.h"
@@ -215,6 +237,7 @@ void AS47HUD::Start()
 		bOk &= S47Saves::SelfTest(Lines) & US47Flow::SelfTest(Lines);
 		bOk &= S47Drive::SelfTest(Lines);
 		bOk &= FS47Mirrors::SelfTest(Lines); // (the Jeep's live mirrors: switch, captures in the cab only, their render targets)
+		bOk &= FS47BobbleSpring::SelfTest(Lines); // (D45-20261110, D45-29: the dashboard bobblehead's head on its spring, and its place on the Jeep's dash)
 		bOk &= US47Chapter1::SelfTest(Lines); // (with the field camera's and the drawings')
 		bOk &= US47CaseBoard::SelfTest(Lines);
 		bOk &= US47Night::SelfTest(Lines); // (the seen log, the lines, the curve, the night's events, the calls, the glimpses, the flashlight, the film's face, the album)
@@ -233,6 +256,13 @@ void AS47HUD::Start()
 		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines) & S47Gamepad::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
+		bOk &= S47StreetLamps::SelfTest(Lines); // (STREETLAMP-GLOW: every LOD's lens, no WorldGrid slot, the spot in the head, the glow on and off)
+		// D37-SARO-EMPTY-20261109: the fleet cars keep their paint; no parked staff cars at SARO, no S-03 text on any car.
+		bOk &= S47CarPaint::SelfTest(Lines);
+		if (Saro.IsValid() && !Saro->AuditStaffFleet(Lines) && !Lines.Last().StartsWith(TEXT("SKIP"))) bOk = false;
+		// D45-20261110 (D45-14): the array fence's panel layout (counts, stretch within 10 %), and the fence as built when the kit is imported.
+		bOk &= S47ArrayFence::SelfTest(Lines);
+		if (Saro.IsValid() && S47ArrayFence::Audit(Saro.Get(), Lines) > 0) bOk = false;
 		bOk &= FS47Evening::SelfTest(Lines);
 		bOk &= FS47Horror::SelfTest(Lines);
 		bOk &= FS47Observing::SelfTest(Lines);
@@ -252,33 +282,49 @@ void AS47HUD::Start()
 		bOk &= FS47SC11::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
+		bOk &= FS47MessageQueue::SelfTest(Lines); // MSG-ONE-20261109, TRUCK-HINT-20261109
+		bOk &= S47Thoughts::SelfTest(Lines); // D46-5-20261110
+		bOk &= FS47DaleVoice::SelfTest(Lines); // (DALE-WIRE-20261109: Dale's own takes on the walkie and the service line)
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
+		bOk &= S47FreeformTerminal::SelfTest(Lines); // (D45-20261110: the tubes' rare, faint hum bar)
 		bOk &= FS47Fatigue::SelfTest(Lines) & FS47WeatherLive::SelfTest(Lines); // (M5: FATIGUE-20261108, WEATHER-20261108; the day's weather itself with the paper's: FS47Mail)
-		bOk &= FS47Handling::SelfTest(Lines) & FS47SaroCot::SelfTest(Lines); // (M5: PHYSICS-20261108 and its lure, SARO-COT)
+		bOk &= FS47Handling::SelfTest(Lines) & FS47SaroCot::SelfTest(Lines) & FS47Hide::SelfTest(Lines); // (N1110: hiding; M5: PHYSICS-20261108 and its lure, SARO-COT)
 		bOk &= FS47SaroDeparture::SelfTest(Lines); // (SAVE-SARO-20261108: one autosave each time the player leaves the station)
 		bOk &= FS47Omen::SelfTest(Lines) & FS47GearFlicker::SelfTest(Lines) & FS47Soundscape::SelfTest(Lines) & FS47Animals::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
 		bOk &= FS47Taken::SelfTest(Lines);
 		bOk &= FS47NightRhythm::SelfTest(Lines);
+		bOk &= S47NightTiers::SelfTest(Lines); // (TIERS-20261109: hint, glimpse, full by the clock and the week)
+		bOk &= S47TonightNote::SelfTest(Lines); // (TONIGHT-NOTE-20261109: the pause menu's note: the next step, done ticked, the spoiler limits)
 		bOk &= FS47DeputyRound::SelfTest(Lines);
 		bOk &= FS47LeftGear::SelfTest(Lines);
 		bOk &= FS47Places::SelfTest(Lines);
+		bOk &= FS47Balloon::SelfTest(Lines); // (D48-20261110: the balloon find, its beacon and its instrument box)
 		bOk &= FS47EventPlaces::SelfTest(Lines);
 		bOk &= FS47Predecessor::SelfTest(Lines);
 		bOk &= FS47Mail::SelfTest(Lines); // (the post, the Ledger and the weather and almanac it prints: S47Weather)
 		bOk &= FS47RadioTips::SelfTest(Lines);
 		bOk &= S47TownSites::SelfTest(Lines) & FS47TownUse::SelfTest(Lines) & FS47Townsfolk::SelfTest(Lines) & FS47Visitors::SelfTest(Lines) & FS47MotelNight::SelfTest(Lines); // (M4: the temporary boxes, Caliche's counters and its regulars)
+		bOk &= S47CalicheNewHomes::SelfTest(Lines); // (CALICHE-HOMES: no house in the road or in another, a home for each of the town's people)
 		bOk &= FS47Openings::SelfTest(Lines);
 		bOk &= FS47YardAlarm::SelfTest(Lines);
 		bOk &= FS47Happenings::SelfTest(Lines);
+		bOk &= FS47WeekCase::SelfTest(Lines); // (WEEKLY-CASE-20261109: the week's case, its ways out, the gate on Story's minute)
+		bOk &= S47Script::SelfTest(Lines); // (DIRECTOR-TOOL-20261109: the scripted events' JSON, triggers, the night's tiers and the lint)
+		bOk &= S47EventScript::SelfTest(Lines); // (D46-20261110: every event script parses, knows its beats and keeps to the rules)
+		bOk &= S47CameraMoment::SelfTest(Lines); // (N1110: the camera moment's curve, look-at and reduced motion)
+		bOk &= S47EyeGlint::SelfTest(Lines); // (ALIEN-EYES: the faint dot in the aliens' eyes, only in the dark and within 50 m)
+		bOk &= S47TripoNew::SelfTest(Lines); // (TRIPO-NEW: Tom's nine Tripo models of 9 November, private, with stand-ins when missing)
 		bOk &= FS47TruckCare::SelfTest(Lines);
+		bOk &= FS47Outfit::SelfTest(Lines); // (M7: the truck's upgrades and the gear that opens the night)
 		bOk &= FS47TripCamera::SelfTest(Lines);
 		bOk &= FS47DayRound::SelfTest(Lines);
 		bOk &= FS47NightLog::SelfTest(Lines) & S47FieldMap::SelfTest(Lines) & FS47Tape::SelfTest(Lines) & FS47PinBoard::SelfTest(Lines) & FS47Enlarger::SelfTest(Lines) & FS47WardReport::SelfTest(Lines) & FS47Answer::SelfTest(Lines); // (NIGHTLOG, MAP and TAPE, 8 November)
 		bOk &= FS47RoadsideCar::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47RoomLights::SelfTest(Lines);
+		bOk &= FS47Darkroom::SelfTest(Lines); // (D45-20261110: the darkroom's door and safelight rule, the fogged print, its saved switch)
 		bOk &= S47FarmWorld::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);
 		bOk &= FS47Anomaly::SelfTest(Lines);
@@ -290,6 +336,8 @@ void AS47HUD::Start()
 		for (const FString& L : Lines)
 			if (L.StartsWith(TEXT("FAIL")) || L.Contains(TEXT(": FAIL")) || L.EndsWith(TEXT(" FAIL")))
 				UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
+		// D45-20261110: a failure whose line has none of the markers above is still findable: every line goes to Saved
+		if (!bOk) FFileHelper::SaveStringArrayToFile(Lines, *(FPaths::ProjectSavedDir() / TEXT("S47SelfTest-lines.txt")));
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
 
@@ -863,9 +911,8 @@ void AS47HUD::ShowDocument(const FS47Doc& Doc, TFunction<void()> OnClose)
 {
 	TWeakObjectPtr<AS47HUD> Self = this;
 	if (Audio) Audio->Play(TEXT("paper0"), 0.5f);
-	// UI.document: the page read by Kinski (Read document, without its pencil marks and rules) and the
-	// transcript by the description reader (Read description), each when that reader is on: the view's
-	// own actions (SS47Document)
+	// UI.document: the page is text only (KINSKI-READ-OUT); the transcript is read by the description
+	// reader (Read description) when it is on: the view's own actions (SS47Document)
 	US47UI* UI = US47Main::Get(this)->UI;
 	if (UI) UI->StopSpeech();
 	SetModal(SNew(SS47Document).Doc(Doc).UI(UI).OnClose([Self] { if (Self.IsValid()) Self->CloseModal(); }), MoveTemp(OnClose));

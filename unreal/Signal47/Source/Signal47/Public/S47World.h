@@ -117,6 +117,9 @@ public:
 	FS47TruckTrouble Trouble;
 	/** The next time the truck is got into, its engine is dead and wants the key (story/abduction.ts). */
 	bool bKeyStall = false;
+	/** WEEKLY-CASE-20261109: something at the cab rocking the truck, 0 to 1 (the eye in the cab jolts with it, unevenly; none with
+	 *  head motion off in Comfort). Set by whoever does it every frame it goes on; it dies away by itself in about a second. */
+	double CabShake = 0;
 
 	void Enter(const FString& NewArea);
 	void PlaceAtStation();
@@ -217,6 +220,8 @@ public:
  void WalkOver();
  /** A leg's drive area and what OnLand refuses here in the current area, by name: for S47ReliefProbe's measure of how far one gets. */
  IS47DriveArea* LegArea(const FString& Id) const;
+ /** What the open land of an area keeps out (FLand::Out), for S47Blockers' list of what stops one with nothing drawn. Null: no land. */
+ const TArray<FS47Box2>* LandOut(const FString& InArea) const;
  FString WhyNotLand(double X, double Z);
  // An old save can leave the parked service truck inside a new farm wall: put it on the nearest clear ground, same heading. No save field changes.
  void KeepParkedOutOfFarmWalls();
@@ -326,6 +331,8 @@ private:
 	bool bHaveView = false;
 
 	void ParkAt(FString Id);
+	// Each truck shown where it stands or is being driven, in the area the player is in (Enter, and PlaceTruck: TOW-SHOW-20261109).
+	void ShowTrucks();
 	void BringTruckOver(const FString& ToLeg);
 	void LightsOn(FS47Truck& T);
 	void TripStep(double Dt);
@@ -348,4 +355,8 @@ private:
 	void Toast(const FString& Text, float Secs);
 	bool FirstTime(const FString& Id);
 	TSet<FString> Hints;
+	// TRUCK-HINT-20261109: the Freeform line about the gas station and GARAGE RECEIVING: whether it has been said this run, and the
+	// situations it was last said or held for (S47TruckHint::Due). For the run, as Hints.
+	bool bTruckHintSaid = false;
+	TSet<FString> TruckHintFor;
 };

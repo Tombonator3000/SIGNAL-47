@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "id": "roof_steps",
+  "name": "Slow steps on the roof",
+  "notes": "N1110. Played by S47FreeformDirector when the steps begin above the station (night, SARO). The night goes still first, a low hum sits under it, and the gear answers faintly. The code keeps the steps themselves (it holds them back about 3.5 s so the quiet comes first), the report and the finding. The yard stage is roof_steps_yard, the end roof_steps_end. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 6, "level": 0.05 },
+    { "at": 0.4, "do": "tone", "hz": 50, "secs": 5, "gain": 0.025, "wave": "sine" },
+    { "at": 2.5, "do": "light", "kind": "gear", "strength": 0.2, "secs": 2 },
+    { "at": 4, "do": "thought", "text": "Footsteps overhead. Slow ones.", "secs": 4, "if": ["indoors"] }
+  ]
+}

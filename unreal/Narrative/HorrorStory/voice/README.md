@@ -1,5 +1,7 @@
 # SC01: fem produserte stemmetakes
 
+> **9. november (DALE-STORY-SWAP):** Dale bruker ikke lenger Kinski-profilen. `pack.json` gir DALE `voice_profile: dale`. Banken `horror` har alle ni Dale-replikkene (H01, H02, H04) fra [DaleVoice](../../DaleVoice/README.md) og de to dispatch-takene herfra. `takes.json` her har bare dispatch, og `generate.py`/`verify.py` hopper over Dales cues. `audio-raw.py` importerer banken. De tre gamle H01-takene ligger urørt i `~/.cache/signal47-horror/sc01/takes`. Teksten nedenfor beskriver den opprinnelige SC01-produksjonen.
+
 Denne leveransen dekker bare H01_BRIEF_001/002/003 og SC01_FIRST_REPORT_001/002. Alle fem er faktiske syntetiske opptak fra eksisterende lokal VoiceStudio0.5.6/OmniVoice. Andre HorrorStory-cues er fortsatt uprodusert. Ingen ny motor, modellnedlasting eller betalt tjeneste er brukt.
 
 Dale bruker samme festede Kinski-profil som kveldspakken. DISPATCH får egen caliche_dispatch-identitet gjennom den eksisterende anonyme CC0-innringerprofilen1a160d70 fra Butter.wav. Ingen navngitt NPC omcastes. Referansehasher og kildegrunnlag står i casting.json/provenance.json.

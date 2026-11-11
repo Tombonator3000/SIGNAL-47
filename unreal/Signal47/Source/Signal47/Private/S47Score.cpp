@@ -8,6 +8,7 @@
 #include "S47Main.h"
 #include "S47Media.h"
 #include "S47Story.h"
+#include "S47Taken.h"
 #include "S47Walker.h"
 #include "S47World.h"
 #include "HAL/FileManager.h"
@@ -225,7 +226,7 @@ void FS47Score::Start(const FString& Cue, const FString& InTrack)
 void FS47Score::RetireOutgoing()
 {
 	FS47AudioContext::FBatch B(*Ctx);
-	SilenceDeck(Outgoing, OutgoingGain); OutgoingUntil = 0;
+	SilenceDeck(Outgoing, OutgoingGain); OutgoingUntil = 0; OutgoingCue.Empty();
 }
 
 void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSeconds)
@@ -243,12 +244,12 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 	const double Now = Ctx->CurrentTime();
 	if (Outgoing && OutgoingGain && Gain && OutgoingGain->Gain.ValueAt(Now) > Gain->Gain.ValueAt(Now))
 	{
-		Swap(El, Outgoing); Swap(Gain, OutgoingGain);
+		Swap(El, Outgoing); Swap(Gain, OutgoingGain); Swap(Playing, OutgoingCue); // Playing is set again below
 	}
 	RetireOutgoing(); ++Generation; bFading = false;
 	if (El)
 	{
-		Outgoing = El; OutgoingGain = Gain;
+		Outgoing = El; OutgoingGain = Gain; OutgoingCue = Playing;
 		Outgoing->OnEnded = nullptr; Outgoing->OnError = nullptr;
 		OutgoingGain->Gain.CancelAndHoldAtTime(Now);
 		OutgoingGain->Gain.LinearRampToValueAtTime(0, Now + FadeSeconds);
@@ -360,6 +361,30 @@ double FS47Score::MusicDuck() const
 	return M->Freeform->TerminalOnGlass() && M->Freeform->ActiveTerminalScreen() == 1 ? .22 : 1.;
 }
 
+bool FS47Score::PlaceCue(const FString& Cue)
+{
+	return Cue == TEXT("town") || Cue == TEXT("dawn") || Cue == TEXT("motel") || Cue == TEXT("drive");
+}
+
+bool FS47Score::PlacePieceSounding() const
+{
+	return (El.IsValid() && PlaceCue(Playing)) || (Outgoing.IsValid() && PlaceCue(OutgoingCue));
+}
+
+double FS47Score::DreadDuck(bool bPlacePiece, double Dread, double Heard)
+{
+	// Critics, 10 Nov: the bought ground under a meeting is the music then (Tom's idea); the score stands back to a third.
+	// D45-20261110: a place's own piece goes all but under it, and already as something is heard coming.
+	const double D = FMath::IsFinite(Dread) ? FMath::Clamp(Dread, 0., 1.) : 0.;
+	const double H = FMath::IsFinite(Heard) ? FMath::Clamp(Heard, 0., 1.) : 0.;
+	return FMath::Clamp(bPlacePiece ? 1. - FMath::Max(.95 * D, .8 * H) : 1. - FMath::Max(.66 * D, .5 * H), 0., 1.); // (both close, so the end of a crossfade does not swell)
+}
+
+bool FS47Score::TakenHolds(bool bFree, int32 Stage)
+{
+	return bFree && (Stage == int32(FS47Taken::EStage::Flood) || Stage == int32(FS47Taken::EStage::Lift));
+}
+
 void FS47Score::SetDuck(double Level)
 {
 	if (!Bus) return;
@@ -386,6 +411,8 @@ bool FS47Score::MusicHeld() const
 	const bool bDecoderHeld = Game && bSaroListening && ((!Free && Game->Night().bTapeA)
 		|| (Game->Decoder && (Game->Decoder->Playing() || Game->Decoder->Answering())));
 	const bool bFreeformListening = Free && M->Freeform && M->Freeform->AudioPlaying();
+	// D45-20261110: the take owns the room in its flood and its lift: the score fades in a third of a second and waits.
+	const bool bTakenHeld = Free && M->Freeform && M->Freeform->Taken && TakenHolds(Free, int32(M->Freeform->Taken->Stage()));
 	const bool bReferenceListening = M->Audio && M->Audio->SoundMixPlaying(TEXT("receiver_reference"));
 	// These Story layers do not advance in Freeform. Their saved quiet timers must
 	// not suppress its outdoor score indefinitely. Audible sources still own holds.
@@ -394,7 +421,7 @@ bool FS47Score::MusicHeld() const
 		|| Value(Held.FaceQuiet) > 0 || Value(Held.NinthQuiet) > 0 || On(Held.RoofStepsBusy) || On(Held.ReelTapeBusy)
 		|| On(Held.SaroDarkBusy) || On(Held.OfficePhoneBusy) || On(Held.ArchiveBusy) || On(Held.ArrayBackBusy)
 		|| On(Held.TruckBRacing) || On(Held.MorningBusy));
-	return bDecoderHeld || bFreeformListening || bReferenceListening || bStoryHeld
+	return bDecoderHeld || bFreeformListening || bTakenHeld || bReferenceListening || bStoryHeld
 		|| (!Free && M->Audio && M->Audio->ReceiverMonitorOn())
 		|| (M->Audio && M->Audio->RadioOn() && M->Space != TEXT("yard")) || M->bRadioHeard
 		|| (M->Audio && M->Audio->Night && M->Audio->Night->Breathing().IsSet());
@@ -479,6 +506,23 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 	Check(State.MusicHeld(),TEXT("Freeform audible car radio still holds the score"));
 	Main->bRadioHeard=false;
 	Check(!State.MusicHeld(),TEXT("Freeform radio off releases the driving score"));
+	// D45-20261110: the feed store. Something heard coming takes the town's piece to eerie, and it comes back after.
+	Main->World->bDriving=false;
+	State.RequestMood(TEXT("eerie"), .3);
+	Check(State.MusicWant()==TEXT("eerie"),TEXT("Freeform town gives way to eerie while something is heard coming"));
+	State.Update(0, FString(), true);
+	Check(State.MusicWant()==TEXT("town")&&!State.MusicHeld(),TEXT("Freeform town comes back once nothing is heard, and nothing holds it"));
+	Main->World->bDriving=true;
+	Check(FMath::IsNearlyEqual(DreadDuck(true, 1), .05) && FMath::IsNearlyEqual(DreadDuck(false, 1), .34) && DreadDuck(true, 0) == 1 && FMath::IsNearlyEqual(DreadDuck(false, 0, 1), .5),
+		TEXT("under the full ground a place's piece is ducked to a twentieth, an adaptive cue to a third, and nothing ducks without it"));
+	Check(FMath::IsNearlyEqual(DreadDuck(true, .1, .5), .6) && FMath::IsNearlyEqual(DreadDuck(true, .9, .2), 1 - .95 * .9),
+		TEXT("a place's piece already stands back as something is heard coming"));
+	Check(PlaceCue(TEXT("town")) && PlaceCue(TEXT("dawn")) && PlaceCue(TEXT("motel")) && PlaceCue(TEXT("drive")) && !PlaceCue(TEXT("eerie")) && !PlaceCue(TEXT("tension")) && !PlaceCue(TEXT("action")) && !PlaceCue(TEXT("night")),
+		TEXT("town, dawn, the motel and the drive are a place's own pieces; the adaptive cues are not"));
+	Check(!State.PlacePieceSounding(), TEXT("no deck, no place piece sounding"));
+	Check(TakenHolds(true, int32(FS47Taken::EStage::Flood)) && TakenHolds(true, int32(FS47Taken::EStage::Lift)) && !TakenHolds(true, int32(FS47Taken::EStage::Dread))
+		&& !TakenHolds(true, int32(FS47Taken::EStage::None)) && !TakenHolds(false, int32(FS47Taken::EStage::Flood)),
+		TEXT("Freeform: the take's flood and lift hold the score; its dread before them does not, nor does Story"));
 	Main->SessionMode=ES47SessionMode::Story;
 	Check(State.MusicHeld(),TEXT("Story retains its narrative silence hooks"));
 	// Optional content-backed checks use the real imported recording through the context, with

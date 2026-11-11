@@ -3,7 +3,9 @@
 #include "S47Mail.h"
 #include "S47FieldLife.h"
 #include "S47Legs.h"
+#include "S47OpenLand.h"
 #include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 #include "S47Observing.h"
 #include "S47Happenings.h"
 #include "S47FreeformCarry.h"
@@ -20,14 +22,19 @@
 #include "S47Substation.h"
 #include "S47Audio.h"
 #include "S47Night.h"
+#include "S47Flashlight.h"
+#include "S47Props.h"
 #include "S47Glow.h"
 #include "S47Album.h"
+#include "S47SaroNight.h"
+#include "S47SaroPower.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "CoreGlobals.h"
+#include "S47Outfit.h"
 #include "UObject/UObjectGlobals.h"
 #include "UObject/GarbageCollection.h"
 
@@ -70,25 +77,47 @@ namespace
   if(OnRetiredBench(Legacy))Legacy+=Delta;
   return Original;
  }
- const FVector GeneratorAt(5.93,1.35,.65);
+ // SARO-GEN-RAMP-20261109 (Tom's test of d37): started and fuelled at the standby generator itself, outside in the pocket behind the
+ // control room (Grounds.ts things(): the housing at x 4.3, z 8.4 on the ground at -0.6), at the black control box on its east face
+ // (0.25 x 0.35 x 0.18 at x 4.9, y 0.45, z 7.6). The brown box on the control room's east wall (5.89, 1.35, .65) is gone.
+ const FVector GeneratorAt(4.9,.45,7.6);
+ const FVector GeneratorBox(.27,.37,.20); // the control box's own, a centimetre proud of it all round: one dark box, a bigger mark to aim at
  // Original S-03 CABLE JUNCTION front, unchanged ground placement and atlas.
  FVector ServiceAt() { return FVector(4.647,-.01,-39.4); }
- const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil"), TEXT("drive_motor"), TEXT("water"), TEXT("spare") };
+ const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film"), TEXT("recorder_donor"), TEXT("cell"), TEXT("foil"), TEXT("drive_motor"), TEXT("water"), TEXT("spare"), TEXT("tubes") }; // N1110: tubes, a pair of ceiling fluorescents for the control room (FS47FreeformSession::MendTubes)
  // TOWN-USE-20261108: what the Feed & Seed sells besides the counter's own supplies (S47TownUse.cpp); carried and unpacked the same way.
  // rope: the come-along digs the truck out quicker (FS47TruckCare); wire: a longer trip line (FS47TripCamera); salt and feed: set out
  // at a place on the land, they say in the morning what came to them (FS47TownUse).
  const TCHAR* TownItems[] = { TEXT("rope"), TEXT("wire"), TEXT("salt"), TEXT("feed") };
  TArray<const TCHAR*> AllItems() { TArray<const TCHAR*> A; for(const TCHAR* I:Items)A.Add(I); for(const TCHAR* I:TownItems)A.Add(I); return A; }
- int32 Price(const FString& Id) { return Id==TEXT("water")?1:Id==TEXT("spare")?15:Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:Id==TEXT("recorder_donor")?20:Id==TEXT("cell")?4:Id==TEXT("foil")?3:Id==TEXT("drive_motor")?35:Id==TEXT("rope")?12:Id==TEXT("wire")?4:Id==TEXT("salt")?3:Id==TEXT("feed")?6:0; }
- FString ItemTitle(const FString& Id) { return Id==TEXT("water")?TEXT("can of radiator water"):Id==TEXT("spare")?TEXT("spare wheel"):Id==TEXT("drive_motor")?TEXT("reconditioned antenna drive motor"):Id==TEXT("splice_kit")?TEXT("feed-cable splice"):Id==TEXT("recorder_donor")?TEXT("used field recorder, untested / strip at bench"):Id==TEXT("cell")?TEXT("dry cell"):Id==TEXT("foil")?TEXT("shielding foil"):Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("photographic film / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):Id==TEXT("rope")?TEXT("tow rope and come-along"):Id==TEXT("wire")?TEXT("roll of smooth fence wire"):Id==TEXT("salt")?TEXT("salt lick block"):Id==TEXT("feed")?TEXT("sack of range cubes"):TEXT("six-hour fuel can"); }
+ int32 Price(const FString& Id) { return Id==TEXT("water")?1:Id==TEXT("spare")?15:Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:Id==TEXT("recorder_donor")?20:Id==TEXT("cell")?4:Id==TEXT("foil")?3:Id==TEXT("drive_motor")?35:Id==TEXT("rope")?12:Id==TEXT("wire")?4:Id==TEXT("salt")?3:Id==TEXT("feed")?6:Id==TEXT("tubes")?4:0; }
+ // D46-20261110 (D46-10): the stores list is where a new operator first reads that a trip camera can be built from a donor at the bench.
+ FString ItemTitle(const FString& Id) { return Id==TEXT("water")?TEXT("can of radiator water"):Id==TEXT("spare")?TEXT("spare wheel"):Id==TEXT("drive_motor")?TEXT("reconditioned antenna drive motor"):Id==TEXT("splice_kit")?TEXT("feed-cable splice"):Id==TEXT("recorder_donor")?TEXT("used field recorder, untested / strip at bench for a logger or a trip camera"):Id==TEXT("cell")?TEXT("dry cell"):Id==TEXT("foil")?TEXT("shielding foil"):Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("photographic film / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):Id==TEXT("rope")?TEXT("tow rope and come-along"):Id==TEXT("wire")?TEXT("roll of smooth fence wire"):Id==TEXT("salt")?TEXT("salt lick block"):Id==TEXT("feed")?TEXT("sack of range cubes"):Id==TEXT("tubes")?TEXT("fluorescent tubes, pair / for the control room ceiling"):TEXT("six-hour fuel can"); }
  bool ValidItem(const FString& Id) { return Price(Id)>0 || Id==TEXT("splice_kit") || Id==TEXT("battery") || Id==TEXT("fragment") || Id==TEXT("archived_fragment"); }
  // Cash is integer-valued: each completed metering interval delivers up to
  // one quarter of the shared tank unit and costs exactly one operating dollar.
- double PumpIncrement(double Tank,double Remaining) { return FMath::Max(0.,FMath::Min(.25,FMath::Min(4.-Tank,Remaining))); }
+ // M7 (Tom, 9 November): Cap is the truck's tank (four units, six with the auxiliary tank, FS47Outfit) and Per what a dollar buys this
+ // week (FuelPerDollar: the price goes up a little with the weeks).
+ double PumpIncrement(double Tank,double Remaining,double Cap=4.,double Per=.25) { return FMath::Max(0.,FMath::Min(Per,FMath::Min(Cap-Tank,Remaining))); }
  double DayClock(double T) { return FMath::Fmod(FMath::Fmod(T,86400.)+86400.,86400.); }
+ // M7 (C): the pump runs on to a full tank, unless the nozzle is put back or the budget runs out first (StepPump).
+ double PumpVolumeFor(double Tank,double Cap=4.) { return FMath::Max(0.,Cap-Tank); }
+ // M7 (C, TODO "Henting av bilen skal koste"): the county's roadside return. A dry tank is the cheap call-out (no hook-up, a can and
+ // a ride), a truck in trouble the full tow; both take the tow's 45 to 90 minutes by how far out it is, and after dark the one wrecker
+ // on duty is three quarters of an hour longer coming. Nobody is sent while something is close (the Director's RestBlock, as a wait).
+ constexpr int32 EmptyTankFee=20;
+ constexpr double NightTowWait=45;
+ struct FRoadsideTerms { int32 Fee=0; double Minutes=0; bool bRefused=false; };
+ FRoadsideTerms RoadsideTermsFor(bool bTrouble,int32 TowFee,double TowMinutes,double Hour,const FString& Block)
+ {
+  FRoadsideTerms T;T.bRefused=!Block.IsEmpty();
+  T.Fee=bTrouble?FMath::Max(0,TowFee):FMath::Max(EmptyTankFee,TowFee-15);
+  T.Minutes=FMath::Clamp(TowMinutes,45.,90.)+(Hour>=21||Hour<6?NightTowWait:0.);
+  return T;
+ }
 }
 
-FS47FreeformWorld::FS47FreeformWorld(US47Main* InM) : M(InM), Carry(MakeShared<FS47FreeformCarry>(InM)) {}
+FS47FreeformWorld::FS47FreeformWorld(US47Main* InM) : M(InM), Carry(MakeShared<FS47FreeformCarry>(InM)) { for(int32 I=0;I<27;++I){PilotOf[I]=-1;PilotShown[I]=-1;PilotSize[I]=.14f;PilotBlink[I]=FVector2D::ZeroVector;} }
 FS47FreeformWorld::~FS47FreeformWorld() { Stop(); Life.Reset(); }
 bool FS47FreeformWorld::Ready() const { return bActive && M && M->Freeform && M->Freeform->Active() && M->Web && M->Player; }
 int32 FS47FreeformWorld::InventoryCount(const FString& Id) const { return Stock.FindRef(Id); }
@@ -164,15 +193,15 @@ bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Serv
   Delivered=FMath::Clamp(S47J::Int(O,TEXT("delivered")),0,1000000);DeliveredByTruck=FMath::Clamp(S47J::Int(O,TEXT("cargoDelivered")),0,1000000);
   ServiceDeliveries=FMath::Clamp(S47J::Int(O,TEXT("serviceDelivered")),0,1000000);DonorTests=FMath::Clamp(S47J::Int(O,TEXT("donorTests")),0,1000000);ServiceTests=FMath::Clamp(S47J::Int(O,TEXT("serviceTests")),0,1000000);
   bGenerator=S47J::Bool(O,TEXT("generator"));GeneratorSeconds=FMath::Clamp(S47J::Num(O,TEXT("generatorSeconds")),0.,43200.);
-  Fuel=FMath::Clamp(S47J::Num(O,TEXT("fuel"),3),0.,4.);LastClock=S47J::Num(O,TEXT("lastClock"),-1);
-  bPumping=S47J::Bool(O,TEXT("pumping"));PumpRemaining=FMath::Clamp(S47J::Num(O,TEXT("pumpRemaining")),0.,1.);
-  PumpElapsed=FMath::Clamp(S47J::Num(O,TEXT("pumpElapsed")),0.,2.);PumpVolume=FMath::Clamp(S47J::Num(O,TEXT("pumpVolume")),0.,1.);PumpPaid=FMath::Clamp(S47J::Int(O,TEXT("pumpPaid")),0,4);
-  if(PumpRemaining<.00001||Fuel>=3.99999)bPumping=false;
+  Fuel=FMath::Clamp(S47J::Num(O,TEXT("fuel"),3),0.,FS47Outfit::BigTank);LastClock=S47J::Num(O,TEXT("lastClock"),-1);
+  bPumping=S47J::Bool(O,TEXT("pumping"));PumpRemaining=FMath::Clamp(S47J::Num(O,TEXT("pumpRemaining")),0.,FS47Outfit::BigTank);
+  PumpElapsed=FMath::Clamp(S47J::Num(O,TEXT("pumpElapsed")),0.,2.);PumpVolume=FMath::Clamp(S47J::Num(O,TEXT("pumpVolume")),0.,FS47Outfit::BigTank);PumpPaid=FMath::Clamp(S47J::Int(O,TEXT("pumpPaid")),0,40);
+  if(PumpRemaining<.00001||Fuel>=FS47Outfit::BigTank-.00001)bPumping=false;
   ServiceAz=S47J::Num(O,TEXT("serviceAz"));ServiceEl=S47J::Num(O,TEXT("serviceEl"));Settle=FMath::Clamp(S47J::Num(O,TEXT("settle")),0.,1.);
   BenchJob=S47J::Str(O,TEXT("benchJob"));if(BenchJob!=TEXT("donor")&&BenchJob!=TEXT("fragment")&&!BenchJob.StartsWith(TEXT("ws:")))BenchJob.Empty();BenchSeconds=FMath::Clamp(S47J::Num(O,TEXT("benchSeconds")),0.,3.);
   FeederSeconds=FMath::Clamp(S47J::Num(O,TEXT("feederSeconds")),0.,3.);
   const auto P=S47J::Nums(O,TEXT("dropped"));if(P.Num()==3 && FMath::IsFinite(P[0])&&FMath::IsFinite(P[1])&&FMath::IsFinite(P[2]))Dropped=FVector(P[0],P[1],P[2]);else if(Payload==4){Payload=1;}
-  const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit"),TEXT("rope"),TEXT("wire"),TEXT("salt"),TEXT("feed")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
+  const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit"),TEXT("rope"),TEXT("wire"),TEXT("salt"),TEXT("feed"),TEXT("tubes")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
  }
  if(Logger.Site>=0&&Item==TEXT("fieldlogger")){Item.Empty();Payload=0;}
  // Old saves already carrying the device retain their physical loan. New loans
@@ -197,6 +226,8 @@ bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Serv
 void FS47FreeformWorld::Stop()
 {
  bActive=false;bPumping=false;if(Carry)Carry->Stop();
+ ChargerShown=-1; // D45-20261110: the charger is hidden with the other parts below; its next lit frame shows it again
+ StopGeneratorSound(); // D45-20261110: the generator's loop goes with the session (guarded for engine exit); a load brings it back
  // The shared session is also released from US47Main's UObject destructor.
  // At purge/engine exit its actor-owned maps and callbacks may already be gone.
  if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))
@@ -212,6 +243,7 @@ void FS47FreeformWorld::Stop()
  if(!Live(Web)||Web->IsActorBeingDestroyed())return;
  RestorePumpModel();
  RestoreServiceCabinet();
+ RestorePilots();
  SetFieldZone(false);PlacedTarget.Empty();bFirstDoorStep=true;DoorK=0;
  for(auto& C:Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench")||C.Id==TEXT("ff:sample")||C.Id==TEXT("ff:depot")||C.Id==TEXT("ff:delivery")||C.Id==TEXT("ff:service"))C.bEnabled=false;
  if(ServiceDishIndex()>=0)Web->SetDishRemoteAvailable(ServiceDishIndex(),true);
@@ -238,7 +270,7 @@ S47J::FObj FS47FreeformWorld::Save() const
  S47J::Set(O,TEXT("serviceDish"),ServiceTarget);S47J::Set(O,TEXT("ordinaryServiceSerial"),OrdinaryServiceSerial);
  S47J::Set(O,TEXT("serviceAz"),ServiceAz);S47J::Set(O,TEXT("serviceEl"),ServiceEl);S47J::Set(O,TEXT("settle"),Settle);
  S47J::Set(O,TEXT("benchJob"),BenchJob);S47J::Set(O,TEXT("benchSeconds"),BenchSeconds);S47J::Set(O,TEXT("feederSeconds"),FeederSeconds);
- S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit"),TEXT("rope"),TEXT("wire"),TEXT("salt"),TEXT("feed")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
+ S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment"),TEXT("recorder_donor"),TEXT("cell"),TEXT("foil"),TEXT("drive_motor"),TEXT("water"),TEXT("spare"),TEXT("splice_kit"),TEXT("rope"),TEXT("wire"),TEXT("salt"),TEXT("feed"),TEXT("tubes")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
 }
 
 bool FS47FreeformWorld::Near(const FVector& At,double Range) const
@@ -319,43 +351,43 @@ bool FS47FreeformWorld::StartPump()
  if(!Ready()||M->Freeform->Held()||bPumping)return false;
  if(!M->Web->Obj(TEXT("world.town.proxies.pumps"))||!PumpConditions())
  {Change(TEXT("Park the SARO service truck beside the red REGULAR pump, get out, and approach with empty hands."));return false;}
- const double Volume=FMath::Min(1.,4.-Fuel);
+ const double Volume=PumpVolumeFor(Fuel,TankCap());
  if(Volume<.00001){Change(TEXT("Service truck tank is full."));return false;}
  // Metered: the last dollars still buy what they cover. StepPump stops when the budget runs out.
  if(M->Freeform->Budget()<1){Change(TEXT("REGULAR: the budget is empty, so the pump stays off. Work registered at OPS pays into it. On a dry tank, you can still call roadside return from the truck."));return false;}
  bPumping=true;PumpRemaining=Volume;PumpElapsed=PumpVolume=0;PumpPaid=0;
- Change(TEXT("REGULAR into the SARO truck: $1 every two seconds while it runs. Use the pump again to stop; you pay only for what went in."));return true;
+ Change(FString::Printf(TEXT("REGULAR into the SARO truck at $%.2f a unit this week: $1 every two seconds while it runs. Use the pump again to stop; you pay only for what went in."),1./FuelPerDollar()));return true;
 }
 void FS47FreeformWorld::StopPump()
 {
  if(!bPumping)return;bPumping=false;PumpRemaining=PumpElapsed=0;
- ApplyPump();Change(FString::Printf(TEXT("Nozzle back on the pump. Pumped %.2f for $%d; the gauge reads %.2f / 4."),PumpVolume,PumpPaid,Fuel));
+ ApplyPump();Change(FString::Printf(TEXT("Nozzle back on the pump. Pumped %.2f for $%d; the gauge reads %.2f / %.0f."),PumpVolume,PumpPaid,Fuel,TankCap()));
 }
 void FS47FreeformWorld::StepPump(double Dt)
 {
  if(!bPumping)return;
  if(!PumpConditions()){StopPump();return;}
  PumpElapsed+=FMath::Clamp(Dt,0.,.1);if(PumpElapsed<2.)return;
- const double Amount=PumpIncrement(Fuel,PumpRemaining);
+ const double Amount=PumpIncrement(Fuel,PumpRemaining,TankCap(),FuelPerDollar());
  if(Amount<.00001||!M->Freeform->Spend(1)){StopPump();return;}
  // Spend's autosave request is deferred; fuel and receipt are updated in this
  // same game-thread transaction before any snapshot can observe the new cash.
- Fuel=FMath::Min(4.,Fuel+Amount);PumpRemaining=FMath::Max(0.,PumpRemaining-Amount);PumpVolume+=Amount;++PumpPaid;PumpElapsed=0;
+ Fuel=FMath::Min(TankCap(),Fuel+Amount);PumpRemaining=FMath::Max(0.,PumpRemaining-Amount);PumpVolume+=Amount;++PumpPaid;PumpElapsed=0;
  if(bFuelHeld&&M->World){M->World->HoldTruck(0);bFuelHeld=false;}
- if(PumpRemaining<.00001||Fuel>=3.99999)StopPump();else{M->RequestAutosave();ApplyPump();}
+ if(PumpRemaining<.00001||Fuel>=TankCap()-.00001)StopPump();else{M->RequestAutosave();ApplyPump();}
 }
 FString FS47FreeformWorld::PumpDisplay() const
 {
- if(bPumping)return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / 4\nSALE $%d / %.2f\nNEXT %.2f / $1\n%.0f%% / E STOP"),Fuel,PumpPaid,PumpVolume,PumpIncrement(Fuel,PumpRemaining),FMath::Clamp(PumpElapsed/2.,0.,1.)*100.);
- const double Volume=FMath::Min(1.,4.-Fuel);return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / 4\nUP TO %.2f / $%d\nE START / E STOP\nLAST $%d / %.2f"),Fuel,Volume,FMath::CeilToInt(Volume/.25-.00001),PumpPaid,PumpVolume);
+ if(bPumping)return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / %.0f\nSALE $%d / %.2f\nNEXT %.2f / $1\n%.0f%% / E STOP"),Fuel,TankCap(),PumpPaid,PumpVolume,PumpIncrement(Fuel,PumpRemaining,TankCap(),FuelPerDollar()),FMath::Clamp(PumpElapsed/2.,0.,1.)*100.);
+ const double Volume=PumpVolumeFor(Fuel,TankCap());return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / %.0f\nUP TO %.2f / $%d\nE START / E STOP\nLAST $%d / %.2f"),Fuel,TankCap(),Volume,FMath::CeilToInt(Volume/FuelPerDollar()-.00001),PumpPaid,PumpVolume);
 }
 void FS47FreeformWorld::ApplyPump()
 {
  const FString Display=PumpDisplay();if(Display==LastPumpDisplay)return;LastPumpDisplay=Display;
  if(bTripoPump)
  {
-  const FString Left=FString::Printf(TEXT("TANK\n%.2f OF 4\nSALE $%d"),Fuel,PumpPaid);
-  const FString Right=FString::Printf(TEXT("FUEL $4/U\n%.2f SOLD\nE %s"),PumpVolume,bPumping?TEXT("STOP"):TEXT("START"));
+  const FString Left=FString::Printf(TEXT("TANK\n%.2f OF %.0f\nSALE $%d"),Fuel,TankCap(),PumpPaid);
+  const FString Right=FString::Printf(TEXT("FUEL $%.2f/U\n%.2f SOLD\nE %s"),1./FuelPerDollar(),PumpVolume,bPumping?TEXT("STOP"):TEXT("START"));
   if(auto* C=PumpTextEast.Get())C->SetText(FText::FromString(Left));if(auto* C=PumpTextWest.Get())C->SetText(FText::FromString(Right));
  }
  else for(const auto& Weak:{PumpTextEast,PumpTextWest})if(auto* C=Weak.Get())C->SetText(FText::FromString(Display));
@@ -663,7 +695,8 @@ bool FS47FreeformWorld::Build()
  for(int32 I=0;I<FS47ArrayWear::Branches().Num()&&I<4;++I)
  {
   const FVector At=InteractionPoint(FString(TEXT("field:"))+FS47ArrayWear::Branches()[I].Junction);
-  if(!At.IsNearlyZero())WearLamps[I]=Box(FString::Printf(TEXT("FreeformBranchFaultLamp%d"),I),At+FVector(0,.80,0),FVector(.11,.09,.11),0xd08a2c,Saro);
+  // D45-20261110: red, as the cabinet pilots of the dead antennas are; this one marks where the branch is mended
+  if(!At.IsNearlyZero())WearLamps[I]=Box(FString::Printf(TEXT("FreeformBranchFaultLamp%d"),I),At+FVector(0,.80,0),FVector(.11,.09,.11),0xd8321e,Saro);
  }
  // EASTWING workshop tray: one small part per slot on the free right of the worktop.
  for(int32 I=0;I<FS47Workshop::TraySize;++I)
@@ -686,7 +719,7 @@ bool FS47FreeformWorld::Build()
  CargoSaro=Box(TEXT("FreeformCargoSaro"),TruckPoint(),FVector(.62,.12,.52),0x383e37,Saro);
  CargoRoad=Box(TEXT("FreeformCargoRoad"),TruckPoint(),FVector(.62,.12,.52),0x383e37,Road);
  Bind(CargoSaro,TEXT("ff:cargo"),3.0);M->Web->MarkUsable(CargoRoad.I,TEXT("ff:cargo"));
- Generator=Box(TEXT("FreeformBackupSelector"),GeneratorAt,FVector(.20,.22,.10),0x776044,Saro,TEXT("ff:generator"));
+ Generator=Box(TEXT("FreeformGeneratorControl"),GeneratorAt,GeneratorBox,0x2a2c2e,Saro,TEXT("ff:generator"));
  {
   const FVector At=ServiceAt();
   // Adapt the authored cabinet. Its existing ground collider remains authoritative.
@@ -755,7 +788,7 @@ void FS47FreeformWorld::Apply()
   const FS47ArrayWear::FBranch& B=FS47ArrayWear::Branches()[I];const bool Down=bActive&&Wear.bActive&&!Wear.IsRestored(B.Id);
   WearLamps[I].SetVisible(Down);
   if(const auto* N=M->Web->Node(WearLamps[I].I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-  if(Down)WearLamps[I].SetEmissive(S47Three::Hex(0xd08a2c),Wear.Job==B.Id?1.f:.45f);
+  if(Down){WearLamps[I].SetColor(S47Three::Hex(0xd8321e));WearLamps[I].SetEmissive(S47Three::Hex(0xd8321e),Wear.Job==B.Id||Wear.NextBranch()==&B?1.f:.6f);} // D45-20261110: brighter on the next one
  }
  for(int32 I=0;I<FS47Workshop::TraySize;++I)if(TrayParts[I])
  {
@@ -783,6 +816,61 @@ void FS47FreeformWorld::Apply()
  {
   const bool Show=bActive&&Pair.Value&&M&&M->World&&!M->World->bDriving;if(const auto* N=Pair.Key.W->Node(Pair.Key.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetWorldLocation(S47Three::ToUE(TruckPoint()));C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);C->SetRenderInMainPass(false);C->SetRenderInDepthPass(false);C->SetCastShadow(false);C->SetVisibleInRayTracing(false);}Pair.Key.SetVisible(Show);
  }
+ ApplyPilots();
+}
+void FS47FreeformWorld::ApplyPilots()
+{
+ // D45-20261110 (Tom: every box out there shows green): each drive cabinet's pilot says what its antenna is doing. Green in service,
+ // red out of service, amber under local work or test, red blinking on the one the operator has made next. Set only on a change.
+ // While SARO is dark FS47SaroPower owns these lamps (a colour set then would become the lamp's own); the first lit frame catches up.
+ if(!bActive||!M||!M->Web||!M->Freeform)return;
+ if(!M->Freeform->HasPowerForReactiveLight()||(IsValid(M->SaroNight)&&M->SaroNight->Power&&M->SaroNight->Power->Out()))return;
+ FS47GlowPoints* G=M->Web->Glow(TEXT("world.field.glow.points"));if(!G||G->Num()==0)return;
+ const int32 N=FMath::Min(M->Web->DishCount(),27);
+ if(PilotGlow!=G)
+ {
+  // The pilot nearest each cabinet (the export adds them in antenna order; S-03's sits on its service box)
+  const FS47GlowView View(M->Web,TEXT("world.field.glow.points"));
+  for(int32 I=0;I<27;++I)
+  {
+   PilotOf[I]=-1;PilotShown[I]=-1;if(I>=N)continue;
+   const FVector Cab=InteractionPoint(TEXT("field:")+M->Web->DishId(I));double Best=3.;
+   if(!Cab.IsNearlyZero())for(int32 K=0;K<G->Num();++K){const FVector At=View.Pos(K);const double D=FVector2D(At.X-Cab.X,At.Z-Cab.Z).Size();if(D<Best){Best=D;PilotOf[I]=K;}}
+   if(PilotOf[I]<0&&G->Num()==N)PilotOf[I]=I;
+   const int32 Pk=PilotOf[I];if(Pk<0)continue;
+   PilotBase[I]=View.Col(Pk);PilotSize[I]=G->Size.IsValidIndex(Pk)?G->Size[Pk]:.14f;PilotBlink[I]=G->Blink.IsValidIndex(Pk)?G->Blink[Pk]:FVector2D::ZeroVector;
+  }
+  PilotGlow=G;
+ }
+ static const FLinearColor PilotRed=S47Three::Hex(0xff3424),PilotAmber=S47Three::Hex(0xffa040),PilotGreen=S47Three::Hex(0x7dff9a);
+ const FS47ArrayWear::FBranch* Next=Wear.NextBranch();
+ const FS47ArrayWear::FBranch* Working=Wear.Job.IsEmpty()?nullptr:FS47ArrayWear::Branch(Wear.Job);
+ const bool bRelayNext=HasArrayFault()&&Service<=2&&(M->Freeform->ServiceGuideFocused()||!Next); // as MAINTENANCE lists it first
+ for(int32 I=0;I<N;++I)
+ {
+  const int32 Pk=PilotOf[I];if(Pk<0||Pk>=G->Num())continue;
+  const FString Id=M->Web->DishId(I);
+  int32 Want=Wear.BranchOfDish(Id)||!M->Web->DishRemoteAvailable(I)?1:0;
+  if(bRelayNext?Id==ServiceTarget:Next&&Id==Next->Junction)Want=3;
+  if((Id==ServiceTarget&&Service>=3&&Service<=8)||(Working&&Id==Working->Junction))Want=2;
+  if(Want==PilotShown[I])continue;
+  PilotShown[I]=int8(Want);
+  G->SetColor(Pk,Want==0?(Id==TEXT("S-03")?PilotGreen:PilotBase[I]):Want==2?PilotAmber:PilotRed);
+  G->SetBlink(Pk,Want==3?FVector2D(4.2,0):PilotBlink[I]);
+  G->SetSize(Pk,Want==0?PilotSize[I]:FMath::Max(PilotSize[I],.20f)); // a lit fault reads from the apron, not only up close
+ }
+}
+void FS47FreeformWorld::RestorePilots()
+{
+ // D45-20261110: outside Freeform (Story, the title) the pilots are as exported again
+ FS47GlowPoints* G=M&&IsValid(M->Web)?M->Web->Glow(TEXT("world.field.glow.points")):nullptr;
+ for(int32 I=0;I<27;++I)
+ {
+  const int32 Pk=PilotOf[I];
+  if(G&&G==PilotGlow&&PilotShown[I]>=0&&Pk>=0&&Pk<G->Num()){G->SetColor(Pk,PilotBase[I]);G->SetBlink(Pk,PilotBlink[I]);G->SetSize(Pk,PilotSize[I]);}
+  PilotShown[I]=-1;
+ }
+ PilotGlow=nullptr;
 }
 
 void FS47FreeformWorld::TrackPowerFault(bool bFault)
@@ -815,7 +903,7 @@ bool FS47FreeformWorld::RequestEmergencyFuse()
  }
  if(!M->Freeform->ChargeEmergencyFeederFuse()){Change(TEXT("The requisition balance cannot cover another $5. No parcel was issued or budget charged."));return false;}
  EmergencyFuseFault=PowerFaultSerial;Item=TEXT("fuse");Contents.Reset();Contents.Add(Item,1);Payload=1;bParcelWasLoaded=false;
- Change(TEXT("One feeder-repair fuse, labeled for SARO: $5 on the budget or the requisition debt. Collect the parcel, unpack it at SARO and repair the feeder."));return true;
+ Change(TEXT("One feeder-repair fuse, labeled for SARO: $5 on the budget or the requisition. Collect the parcel, unpack it at SARO and repair the feeder."));return true;
 }
 int32 FS47FreeformWorld::ShopPrice(const FString& Supply){return Price(Supply);}
 FString FS47FreeformWorld::SupplyTitle(const FString& Supply){return ItemTitle(Supply);}
@@ -833,6 +921,8 @@ bool FS47FreeformWorld::Purchase(const FString& Id,bool Emergency)
 {
  if(!AtShopCounter()||Price(Id)<=0||(Emergency?Payload!=0:!CanAddShopItem()))return false;
  if(InventoryCount(Id)+Contents.FindRef(Id)>=99){Change(TEXT("SARO stock plus this paid parcel has reached the 99-item storage limit for that supply."));return false;}
+ // M7 (Tom, 9 November): one parcel is what the truck's rack takes (FS47Outfit: eight items, twenty with the bed rack)
+ if(!Emergency&&Payload==1&&ParcelCount()>=ParcelRoom()){Change(FString::Printf(TEXT("The parcel is as big as the truck's rack takes: %d items.%s"),ParcelRoom(),ParcelRoom()<FS47Outfit::RackLoad?TEXT(" A bed rack (OPS stores list) takes more."):TEXT("")));return false;}
  if(!Emergency&&!ShopOpen()){Change(TEXT("The shop counter sells supplies 08:00–20:00. Essential credit requisitions remain available here after hours."));return false;}
  if(Emergency&&((Id==TEXT("donor")||Id==TEXT("film")||Id==TEXT("recorder_donor")||Id==TEXT("cell")||Id==TEXT("foil")||Id==TEXT("drive_motor"))||EmergencyDay==M->Freeform->Day())){Change(TEXT("One essential emergency parcel per day; donor equipment is sold during opening hours."));return false;}
  // A coupon clipped from this week's Ledger takes something off (FS47Mail); never off an emergency requisition.
@@ -840,6 +930,8 @@ bool FS47FreeformWorld::Purchase(const FString& Id,bool Emergency)
  if(!M->Freeform->Spend(Cost,Emergency)){Change(M->Freeform->FeedbackText());return false;}
  if(Emergency)EmergencyDay=M->Freeform->Day();if(Payload==0){Item=Id;Contents.Reset();}++Contents.FindOrAdd(Id);Payload=1;bParcelWasLoaded=false;Change(TEXT("Paid and added to your counter parcel. Add more supplies or close the list and collect the sealed parcel."));return true;
 }
+int32 FS47FreeformWorld::ParcelCount() const{int32 N=0;for(const auto& Pair:Contents)N+=FMath::Max(0,Pair.Value);return N;}
+int32 FS47FreeformWorld::ParcelRoom() const{return FS47Outfit::TuneFor(M?M->Freeform.Get():nullptr).Load;}
 bool FS47FreeformWorld::CanAddShopItem() const
 {
  return Payload==0||(Payload==1&&Price(Item)>0&&!Contents.IsEmpty());
@@ -855,22 +947,22 @@ void FS47FreeformWorld::OpenShop()
 {
  if(!AtShopCounter()||!M->UI)return;TArray<S47Kit::FW> Rows;
  TrackPowerFault(M->Freeform->PowerFault());
- Rows.Add(S47Kit::Paper(FString::Printf(TEXT("SUPPLIES / 08:00–20:00 / BUDGET $%d\nBuy items here, then close this list and collect your parcel.\nLoad the Truck; unpack at GARAGE RECEIVING to add stock."),M->Freeform->Budget())));
+ Rows.Add(S47Kit::Paper(FString::Printf(TEXT("SUPPLIES / 08:00–20:00 / BUDGET $%d\nBuy items here, then close this list and collect your parcel.\nLoad the Truck; unpack at GARAGE RECEIVING to add stock.\nTHE TRUCK'S RACK TAKES %d ITEMS IN ONE PARCEL"),M->Freeform->Budget(),ParcelRoom())));
  if(Payload>0)Rows.Add(S47Kit::Paper(TEXT("PAID PARCEL / ")+ParcelDescription()));
  if(!CanAddShopItem())Rows.Add(S47Kit::Small(TEXT("The counter handles one parcel at a time, and you already have one out. GARAGE RECEIVING: Unpack supplies. CALIBRATION / REPAIR: Return a service case or logger. Then buy here again.")));
- if(Fuel<=.001)Rows.Add(S47Kit::Small(TEXT("TANK EMPTY: A fuel can from this counter must be unpacked at SARO before it can be poured. Use the truck to call roadside return; it costs time, not money.")));
+ if(Fuel<=.001)Rows.Add(S47Kit::Small(TEXT("TANK EMPTY: A fuel can from this counter must be unpacked at SARO before it can be poured. Roadside return from the truck costs money and a long wait.")));
  for(const TCHAR* Id:Items)
  {
   const FString Key(Id);
   const int32 Cost=M->Freeform->Mail?M->Freeform->Mail->CounterPrice(Key,Price(Key)):Price(Key);
   const FString Tag=Cost<Price(Key)?FString::Printf(TEXT("%s / $%d WITH THE LEDGER'S COUPON (was $%d)"),*ItemTitle(Key),Cost,Price(Key)):FString::Printf(TEXT("%s / $%d"),*ItemTitle(Key),Price(Key));
-  Rows.Add(S47Kit::Button(Tag,[this,Key]{Purchase(Key);OpenShop();},false,CanAddShopItem()&&ShopOpen()&&InventoryCount(Key)+Contents.FindRef(Key)<99));
+  Rows.Add(S47Kit::Button(Tag,[this,Key]{Purchase(Key);OpenShop();},false,CanAddShopItem()&&ShopOpen()&&InventoryCount(Key)+Contents.FindRef(Key)<99&&(Payload!=1||ParcelCount()<ParcelRoom())));
  }
  Rows.Add(S47Kit::Small(TEXT("Essential after-hours/credit requisition: one per day, charged against future work, and only with no requisition balance already standing. Donor controllers require bench testing before harvesting their relay.")));
  for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("fuel")}){const FString Key(Id);Rows.Add(S47Kit::Button(FString(TEXT("Emergency "))+ItemTitle(Key),[this,Key]{if(Purchase(Key,true))M->UI->Close();},false,Payload==0&&EmergencyDay!=M->Freeform->Day()));}
  if(M->Freeform->PowerFault())
  {
-  Rows.Add(S47Kit::Small(TEXT("ACTIVE FEEDER FAULT: one repair fuse may be charged to requisition debt even with an older balance or today's essential parcel already used. Use existing stock or a paid parcel first.")));
+  Rows.Add(S47Kit::Small(TEXT("ACTIVE FEEDER FAULT: one repair fuse may be charged to the requisition even with an older balance or today's essential parcel already used. Use existing stock or a paid parcel first.")));
   Rows.Add(S47Kit::Button(TEXT("Request feeder-repair fuse / $5 / credit available"),[this]{if(RequestEmergencyFuse())M->UI->Close();},true,EmergencyFuseAvailable()));
  }
  // The attendant's one thing today, or who is minding the counter while he is gone (TOWNSFOLK-20261108, S47Townsfolk).
@@ -913,7 +1005,7 @@ bool FS47FreeformWorld::CargoUse()
  else
  {
   // A loaded rack on an empty tank still opens this menu: roadside return carries the truck and its cargo.
-  TArray<S47Kit::FW> R;R.Add(S47Kit::Section(TEXT("FUEL"),FString::Printf(TEXT("%.1f / 4"),Fuel)));
+  TArray<S47Kit::FW> R;R.Add(S47Kit::Section(TEXT("FUEL"),FString::Printf(TEXT("%.1f / %.0f"),Fuel,TankCap())));
   R.Add(S47Kit::Section(TEXT("CARGO")));
   R.Add(S47Kit::Status(TEXT("Parcel"),Payload==3?TEXT("LOADED"):TEXT("EMPTY"),Payload==3?1:0,FString(),false,Payload==3));
   if(Payload==3)
@@ -922,7 +1014,7 @@ bool FS47FreeformWorld::CargoUse()
    for(const TCHAR* Key:AllItems())if(const int32 Count=Contents.FindRef(Key);Count>0)Lines.Add({ItemTitle(Key),FString::FromInt(Count)});
    if(!Lines.IsEmpty())R.Add(S47Kit::Table(TEXT("CONTENTS"),TEXT("QTY"),Lines));
   }
-  R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<3.99));
+  R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<TankCap()-.01));
   // The truck's own trouble: what the player can do about it, and the county if not.
   const auto* Care=M->Freeform->Care.Get();const bool bCare=Care&&Care->NeedsRescue();
   if(bCare)R.Add(S47Kit::Paper(Care->Steps(InventoryCount(TEXT("spare")),InventoryCount(TEXT("water")))));
@@ -935,9 +1027,11 @@ bool FS47FreeformWorld::CargoUse()
    if(Care->Flat())R.Add(S47Kit::Button(FString::Printf(TEXT("Jack it up and change the wheel / about %.0f minutes"),FS47TruckCare::WheelMinutes),[this]{M->Freeform->Care->ChangeWheel();M->UI->Close();},true,InventoryCount(TEXT("spare"))>0));
    if(Care->Water()<1)R.Add(S47Kit::Button(TEXT("Fill the radiator from a can"),[this]{M->Freeform->Care->TopUp();M->UI->Close();},Care->Hot(),InventoryCount(TEXT("water"))>0));
   }
-  R.Add(S47Kit::Button(bCare?FString::Printf(TEXT("Call the county tow to SARO / $%d / about %.0f minutes"),Care->TowFee(),Care->TowMinutes()):FString(TEXT("Request roadside return to SARO")),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001||bCare));
+  // What the county will charge and how long it will be, by how far out and the hour (RoadsideAssist charges the same).
+  const auto Terms=RoadsideTermsFor(bCare,Care?Care->TowFee():FS47TruckCare::TowFeeFor(0),Care?Care->TowMinutes():FS47TruckCare::TowMinutesFor(0),DayClock(M->Freeform->Clock())/3600.,FString());
+  R.Add(S47Kit::Button(bCare?FString::Printf(TEXT("Call the county tow to SARO / $%d / about %.0f minutes"),Terms.Fee,Terms.Minutes):FString::Printf(TEXT("Request roadside return to SARO / $%d / about %.0f minutes"),Terms.Fee,Terms.Minutes),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001||bCare));
   if(Payload==3)R.Add(S47Kit::Button(TEXT("Unload parcel from the rack"),[this,Unload]{Unload();M->UI->Close();}));
-  R.Add(S47Kit::Small(bCare?FString::Printf(TEXT("The county tow brings you, the truck and its cargo back to SARO and leaves it sound. $%d, paid from the budget if it covers it, otherwise on the weekly sheet; it takes about %.0f minutes. Mending it yourself costs only time."),Care->TowFee(),Care->TowMinutes()):Fuel>.001?TEXT("Roadside return is available when the truck is out of fuel, out of water or stuck."):TEXT("TANK EMPTY: County roadside service brings you, the truck and its cargo back to SARO with a reserve in the tank. It costs time, not money.")));
+  R.Add(S47Kit::Small(bCare?FString::Printf(TEXT("The county tow brings you, the truck and its cargo back to SARO and leaves it sound. $%d, paid from the budget if it covers it, otherwise on the weekly sheet; it takes about %.0f minutes. Mending it yourself costs only time."),Terms.Fee,Terms.Minutes):Fuel>.001?FString(TEXT("Roadside return is available when the truck is out of fuel, out of water or stuck.")):FString::Printf(TEXT("TANK EMPTY: County roadside service brings you, the truck and its cargo back to SARO with a reserve in the tank. $%d for the call-out, paid from the budget if it covers it, otherwise on the weekly sheet; about %.0f minutes. After dark the one wrecker on duty is slow to come. A fuel can from stock costs nothing."),Terms.Fee,Terms.Minutes)));
   M->UI->Open(S47Kit::Shell(M->UI,TEXT("SERVICE TRUCK / CARGO"),S47Kit::Col(R),800));
  }
  return true;
@@ -990,7 +1084,7 @@ bool FS47FreeformWorld::AnalyzeSample()
 void FS47FreeformWorld::OpenWorkbench()
 {
  if(!Ready()||!Near(BenchAt)||!M->UI)return;
- TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SARO / EAST WING / CALIBRATION BENCH\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d\nGENERATOR %.1f h / TRUCK %.1f / 4\n%s"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")),GeneratorHours(),Fuel,BenchJob.IsEmpty()?TEXT("Bench ready"):BenchJob==TEXT("fragment")?TEXT("Field sample comparison running"):TEXT("Controller relay test running"))));
+ TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SARO / EAST WING / CALIBRATION BENCH\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d\nGENERATOR %.1f h / TRUCK %.1f / %.0f\n%s"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")),GeneratorHours(),Fuel,TankCap(),BenchJob.IsEmpty()?TEXT("Bench ready"):BenchJob==TEXT("fragment")?TEXT("Field sample comparison running"):TEXT("Controller relay test running"))));
  R.Add(S47Kit::Small(Logger.bOwned?FString::Printf(TEXT("FIELD LOGGER / operator-built, two field sites, %.0f-hour battery. Measures local electrical noise only."),Logger.MaxBattery()/3600.):LoggerAccess()?TEXT("FIELD LOGGER AUTHORIZED / loan kit, two field sites, six-hour battery. Measures local electrical noise only."):TEXT("FIELD LOGGER LOCKED / complete a supported conclusion in The repeated interval.")));
  if(LoggerAccess()&&!Logger.bLoanIssued)R.Add(S47Kit::Small(TEXT("PARTS STORAGE: Collect the loan kit once at EQUIPMENT CHECKOUT, then carry it to this bench. All later preparation, collection, return and comparison happen here.")));
  if(LoggerAccess()&&Logger.bLoanIssued)
@@ -1231,9 +1325,15 @@ void FS47FreeformWorld::FinishBranch(const FString& BranchId)
   M->Web->SetDishRemoteAvailable(I,true);M->Web->PointDish(I,Aim.X,Aim.Y,2.2,true); // visibly comes back up
   WearPose.Remove(I);
  }
- const int32 Up=M->Web->DishCount()-Wear.DownCount();
+ const int32 Up=M->Freeform->ArrayUpCount(); // D45-20261110: the one live count, as the station goal shows it
  M->Freeform->RecordEvidence(TEXT("service-branch-")+BranchId,FString(B->Title)+FString::Printf(TEXT(" repaired and tested at its junction. %d of 27 antennas in service."),Up));
  Change(FString::Printf(TEXT("%s back in service. ARRAY %d/27 / MEASUREMENT %.0f%%."),B->Title,Up,100*FS47ArrayWear::RateForCount(Up))+(Wear.DownCount()==0?TEXT(" SARO is whole again."):TEXT("")));
+}
+bool FS47FreeformWorld::PlanBranch(const FString& BranchId,int32 To)
+{
+ // D45-20261110: the order is the operator's; the repair itself stays at the junction cabinet
+ if(!bActive||!Wear.Move(BranchId,To))return false;
+ Change();return true;
 }
 void FS47FreeformWorld::RestoreWholeArrayFixture()
 {
@@ -1268,17 +1368,43 @@ void FS47FreeformWorld::OpenDepot()
  R.Add(S47Kit::Paper(FString::Printf(TEXT("PARTS STORAGE\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")))));
  R.Add(S47Kit::Small(!LoggerAccess()?TEXT("EQUIPMENT CHECKOUT LOCKED: Complete a supported conclusion in The repeated interval."):!Logger.bLoanIssued?TEXT("EQUIPMENT CHECKOUT / fieldlogger01: First issue only. Collect the loan kit here, then carry it to CALIBRATION / REPAIR for assembly and clock calibration."):TEXT("EQUIPMENT CHECKOUT / fieldlogger01: Already issued. All preparation, collection, return and original comparison now happen at CALIBRATION / REPAIR.")));
  if(LoggerAccess()&&!Logger.bLoanIssued)R.Add(S47Kit::Button(TEXT("Issue loan field logger / carry kit to workbench"),[this]{LoggerAction(TEXT("issue"));},true,Payload==0));
+ // N1110 (Tom): the sabotage takes two ceiling tubes each time. A pair from the store (CALICHE / SHOP COUNTER, $4) puts the last two back.
+ if(M->Freeform->BrokenTubeCount()>0||InventoryCount(TEXT("tubes"))>0)
+ {
+  const int32 Out=M->Freeform->BrokenTubeCount(),Pairs=InventoryCount(TEXT("tubes"));
+  R.Add(S47Kit::Small(FString::Printf(TEXT("CONTROL ROOM CEILING / %d tubes dark, %d pairs of tubes in stock. A pair is $4 at the Caliche shop counter."),Out,Pairs)));
+  R.Add(S47Kit::Button(TEXT("Fit a pair of fluorescent tubes in the control room ceiling"),[this]
+  {
+   if(!Ready()||M->Freeform->BrokenTubeCount()<=0||!Consume(TEXT("tubes")))return;
+   const int32 Back=M->Freeform->MendTubes(2);
+   Change(Back>1?FString(TEXT("A pair of tubes goes up in the control room ceiling. The room is brighter.")):FString(TEXT("The last dark tube is replaced. The control room ceiling is whole again.")));
+   OpenDepot();
+  },false,Out>0&&Pairs>0));
+ }
  R.Add(S47Kit::Small(TEXT("Small spares travel in your service pouch. GARAGE RECEIVING: Unpack purchased parcels. PHOTO LAB: Load the stocked 36-exposure photographic film at the dry bench.")));
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / PARTS STORAGE"),S47Kit::Col(R),880));
 }
-void FS47FreeformWorld::RefuelTruck(){if(Ready()&&Near(TruckPoint(),3.3)&&Fuel<3.99&&Consume(TEXT("fuel"))){Fuel=FMath::Min(4.,Fuel+2.);Change(TEXT("Fuel can transferred to the service truck."));}}
+double FS47FreeformWorld::TankCap()const{return FS47Outfit::TuneFor(M?M->Freeform.Get():nullptr).Tank;}
+double FS47FreeformWorld::FuelPerDollar()const
+{
+ // M7 (Tom, 9 November): the pump's price goes up a little with the weeks, $4.00 a unit in week 1 to $4.55 from week 4
+ static const double Per[]={.25,.24,.23,.22};
+ const int32 Week=M&&M->Freeform&&M->Freeform->RulesLive()?(M->Freeform->Day()-1)/7:0;
+ return Per[FMath::Clamp(Week,0,3)];
+}
+void FS47FreeformWorld::RefuelTruck(){if(Ready()&&Near(TruckPoint(),3.3)&&Fuel<TankCap()-.01&&Consume(TEXT("fuel"))){Fuel=FMath::Min(TankCap(),Fuel+2.);Change(TEXT("Fuel can transferred to the service truck."));}}
 void FS47FreeformWorld::RoadsideAssist()
 {
  const bool bTrouble=M&&M->Freeform&&M->Freeform->Care&&M->Freeform->Care->NeedsRescue();
  if(!Ready()||!M->World||(Fuel>.001&&!bTrouble))return;
- // A truck that cannot be mended is towed for money and a longer wait; an empty tank alone is still only time (the safety net).
- const int32 Fee=bTrouble?M->Freeform->Care->TowFee():0;const double Minutes=bTrouble?M->Freeform->Care->TowMinutes():15.;
- bool bCash=true;if(bTrouble)bCash=M->Freeform->BillTow(Fee);
+ // M7 (C): a dry tank is no longer free, and nobody comes while something is close. A truck that cannot be mended is the full tow.
+ const FS47TruckCare* Care=M->Freeform->Care.Get();
+ const double Hour=DayClock(M->Freeform->Clock())/3600.;
+ const FString Block=M->Freeform->Director?M->Freeform->Director->RestBlock():FString();
+ const FRoadsideTerms Terms=RoadsideTermsFor(bTrouble,Care?Care->TowFee():FS47TruckCare::TowFeeFor(0),Care?Care->TowMinutes():FS47TruckCare::TowMinutesFor(0),Hour,Block);
+ // (not the rest block's words: they are about lying down, and would say what is out there)
+ if(Terms.bRefused){Change(TEXT("The county radio answers, then only static. Nobody is coming out yet."));return;}
+ const bool bCash=M->Freeform->BillTow(Terms.Fee);
  if(M->World->bDriving)M->World->GetOutHere(true);
  if(M->Freeform->Care)M->Freeform->Care->Clear();
  M->World->Enter(TEXT("saro"));M->World->PlaceTruck(TEXT("saro"));M->Player->Place(16,9,0);
@@ -1286,13 +1412,23 @@ void FS47FreeformWorld::RoadsideAssist()
  // and Caliche use separate scene origins; their 8-km rendering offset is
  // not a driven segment. This still leaves ample margin for the full return
  // supply journey and a feeder detour before stock fuel can be unpacked.
- Fuel=FMath::Max(Fuel,2.);M->Freeform->SpendTime(Minutes*60);
- const FString Billed=!bTrouble?FString():bCash?FString::Printf(TEXT(" Tow $%d paid in cash."),Fee):FString::Printf(TEXT(" Tow $%d is on the weekly sheet."),Fee);
- Change(FString(TEXT("The county roadside service brought the truck and cargo back to SARO, with at least fifteen miles of fuel in the tank."))+Billed+TEXT(" Collect supplies in Caliche and refuel before the next long trip."));
+ Fuel=FMath::Max(Fuel,2.);M->Freeform->SpendTime(Terms.Minutes*60);
+ const FString Billed=bCash?FString::Printf(TEXT(" $%d paid from the budget."),Terms.Fee):FString::Printf(TEXT(" $%d is on the weekly sheet."),Terms.Fee);
+ // No minutes in the telling: they are on the button already.
+ const FString Wait=Hour>=21||Hour<6?FString(TEXT("You sat in the dark cab a long while, the engine ticking as it cooled, before the county's amber light came up the road. "))
+  :FString(TEXT("The county truck was a long time coming out. "));
+ Change(Wait+(bTrouble?TEXT("It towed the truck and cargo back to SARO and left it sound, with at least fifteen miles of fuel in the tank."):TEXT("It brought the truck and cargo back to SARO, with at least fifteen miles of fuel in the tank."))+Billed+TEXT(" Collect supplies in Caliche and refuel before the next long trip."));
  M->Freeform->RecordEvidence(TEXT("roadside"),FString(TEXT("Roadside return used; the interrupted trip and cargo were retained."))+Billed);
+ UE_LOG(LogTemp,Display,TEXT("S47: roadside return: %s, $%d, %.0f minutes (%s)"),bTrouble?TEXT("tow"):TEXT("dry tank"),Terms.Fee,Terms.Minutes,bCash?TEXT("cash"):TEXT("on the sheet"));
 }
 
 void FS47FreeformWorld::SkipFaultToday(){if(M&&M->Freeform)LastFaultDay=M->Freeform->Day();}
+FString FS47FreeformWorld::NextServiceDish() const
+{
+ int32 Serial=OrdinaryServiceSerial;
+ for(int32 Skip=0;Skip<27&&Wear.BranchOfDish(OrdinaryServiceDish(Serial));++Skip)Serial=(Serial+1)%27;
+ return OrdinaryServiceDish(Serial);
+}
 bool FS47FreeformWorld::TriggerServiceFault(bool bTraining,const FString& RequestedDish)
 {
  if(!Ready()||HasArrayFault()||M->Freeform->PowerFault()||(Service==9&&M->Freeform->ActiveServiceGuide()==1))return false;
@@ -1335,12 +1471,22 @@ bool FS47FreeformWorld::ServiceUse()
  }
  return true;
 }
+int32 FS47FreeformWorld::SkyTransfer()
+{
+ if(!Ready()||bGenerator||!M->Freeform->HasKit(TEXT("transfer")))return -1;
+ if(GeneratorSeconds<=0&&Consume(TEXT("fuel")))GeneratorSeconds=6*3600.;
+ if(M->Audio)M->Audio->Sfx(TEXT("switch"),FS47Sound{.Gain=.6f});
+ if(GeneratorSeconds<=0){GeneratorSound(EGenSound::Dry);return 0;} // D45-20261110: it turns over and does not catch
+ bGenerator=true;GeneratorSound(EGenSound::Start);Change();
+ return 1;
+}
 bool FS47FreeformWorld::GeneratorUse()
 {
  if(!Near(GeneratorAt,2.9))return true;
- if(bGenerator){bGenerator=false;Change(TEXT("Backup generator stopped. Remaining tank fuel is retained."));return true;}
- if(GeneratorSeconds<=0){if(!Consume(TEXT("fuel"))){Change(TEXT("Generator tank empty. Bring a fuel can from the depot or Caliche."));return true;}GeneratorSeconds=6*3600.;}
- bGenerator=true;Change(TEXT("Backup generator running. A full can keeps it going for six hours."));return true;
+ // D45-20261110: each use is heard at the generator: the stop, a dry crank, the start (the loop follows in StepGeneratorSound)
+ if(bGenerator){bGenerator=false;GeneratorSound(EGenSound::Off);Change(TEXT("Backup generator stopped. Remaining tank fuel is retained."));return true;}
+ if(GeneratorSeconds<=0){if(!Consume(TEXT("fuel"))){GeneratorSound(EGenSound::Dry);Change(TEXT("Generator tank empty. Bring a fuel can from the depot or Caliche."));return true;}GeneratorSeconds=6*3600.;}
+ bGenerator=true;GeneratorSound(EGenSound::Start);Change(TEXT("Backup generator running. A full can keeps it going for six hours."));return true;
 }
 bool FS47FreeformWorld::FeederUse()
 {
@@ -1348,7 +1494,7 @@ bool FS47FreeformWorld::FeederUse()
  if(!M->Freeform->PowerFault()){Change(TEXT("SARO feeder voltage and local fuse are normal."));return true;}
  if(Feeder<=1){Feeder=2;Change(TEXT("SERVICE BAY FEEDER: Low supply confirmed. Open the enclosed isolation switch."));}
  else if(Feeder==2){Feeder=3;Change(TEXT("SERVICE BAY FEEDER: Supply isolated. Replace the blown control fuse from your service stock."));}
- else if(Feeder==3){if(!Consume(TEXT("fuse"))){Change(TEXT("No spare fuse in stock. The CALICHE STORE COUNTER sells a $5 feeder fuse on credit, any hour, even in debt. Unpack it at GARAGE RECEIVING, then come back here."));return true;}Feeder=4;Change(TEXT("SERVICE BAY FEEDER: Replacement fuse seated. Start the enclosed three-second test."));}
+ else if(Feeder==3){if(!Consume(TEXT("fuse"))){Change(TEXT("No spare fuse in stock. The CALICHE STORE COUNTER sells a $5 feeder fuse on requisition, any hour, even with a balance standing. Unpack it at GARAGE RECEIVING, then come back here."));return true;}Feeder=4;Change(TEXT("SERVICE BAY FEEDER: Replacement fuse seated. Start the enclosed three-second test."));}
  else if(Feeder==4){if(FeederSeconds<=0){FeederSeconds=.001;Change(TEXT("SERVICE BAY FEEDER: Wait for the automatic three-second test. The indicator settles and mains supply returns when it passes."));}}
  return true;
 }
@@ -1356,6 +1502,18 @@ bool FS47FreeformWorld::FeederUse()
 bool FS47FreeformWorld::Use(const FString& Id)
 {
  if(!Ready())return false;
+ if(Id==TEXT("ff:charger"))
+ {
+  // D45-20261110: the lamp goes off on the charger; the old rule does the charging (off, indoors at SARO, on station power)
+  FS47Flashlight* Lamp=M->Night&&M->Night->Flashlight?M->Night->Flashlight.Get():nullptr;
+  if(Lamp&&Lamp->bHave&&Lamp->bOn&&Lamp->Toggle())
+  {
+   if(M->UI)M->UI->Toast(TEXT("You switch the flashlight off and stand it on the charger. It fills while you're in the building and the station has power."),5);
+   return true;
+  }
+  if(M->UI)M->UI->Toast(Label(Id),4);
+  return true;
+ }
  if(Id==TEXT("ff:film"))return LoadFilmAtPhotoLab();
  if(Id==TEXT("ff:logger-device"))return Logger.Site>=0&&LoggerAction(Logger.Site==0?TEXT("site0"):TEXT("site1"));
  if(Id==TEXT("ff:logger-a")||Id==TEXT("ff:logger-b"))return LoggerAction(Id==TEXT("ff:logger-a")?TEXT("site0"):TEXT("site1"));
@@ -1384,6 +1542,16 @@ bool FS47FreeformWorld::Use(const FString& Id)
 FString FS47FreeformWorld::Label(const FString& Id) const
 {
  if(!Ready())return FString();
+ if(Id==TEXT("ff:charger"))
+ {
+  // D45-20261110: the charger says what it is doing
+  const FS47Flashlight* Lamp=M->Night&&M->Night->Flashlight?M->Night->Flashlight.Get():nullptr;
+  if(!Lamp||!Lamp->bHave)return TEXT("Flashlight charger / the flashlight is still on the truck's passenger seat");
+  const int32 Pct=FMath::RoundToInt32(100*Lamp->BatteryLevel());
+  if(ChargerState()==0)return FString::Printf(TEXT("Flashlight charger / no station power / the lamp at %d%%"),Pct);
+  if(Lamp->bOn)return FString::Printf(TEXT("Flashlight charger / switch the lamp off and leave it to charge (%d%%)"),Pct);
+  return Pct>=100?FString(TEXT("Flashlight charger / the lamp is full")):FString::Printf(TEXT("Flashlight charger / charging, %d%%"),Pct);
+ }
  if(Id==TEXT("ff:film"))return FString::Printf(TEXT("PHOTO LAB: Load photographic film / 36 exposures / %d packs in stock"),InventoryCount(TEXT("film")));
  if(Id==TEXT("ff:logger-device"))return Logger.Site>=0?TEXT("Retrieve field logger and original tape"):FString();
  if(Id==TEXT("ff:logger-a")||Id==TEXT("ff:logger-b"))return !LoggerAccess()?FString():FString(Id==TEXT("ff:logger-a")?TEXT("FIELD SITE A / generator path / "):TEXT("FIELD SITE B / array east / "))+(Logger.Site==(Id==TEXT("ff:logger-a")?0:1)?TEXT("retrieve logger and original tape"):TEXT("place carried logger and start two-hour record"));
@@ -1391,8 +1559,8 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  {
   if(AtDiesel())return TEXT("DIESEL / service truck needs the red REGULAR pump");
   if(bTripoPump)return bPumping?TEXT("Stop pump"):TEXT("Use pump");
-  if(bPumping)return FString::Printf(TEXT("Stop fuel / tank %.2f / 4 / delivered %.2f / $%d"),Fuel,PumpVolume,PumpPaid);
-  const double Volume=FMath::Min(1.,4.-Fuel);return Volume<.00001?TEXT("REGULAR / service truck tank full"):FString::Printf(TEXT("REGULAR / add up to %.2f / $%d / tank %.2f of 4"),Volume,FMath::CeilToInt(Volume/.25-.00001),Fuel);
+  if(bPumping)return FString::Printf(TEXT("Stop fuel / tank %.2f / %.0f / delivered %.2f / $%d"),Fuel,TankCap(),PumpVolume,PumpPaid);
+  const double Volume=PumpVolumeFor(Fuel,TankCap());return Volume<.00001?TEXT("REGULAR / service truck tank full"):FString::Printf(TEXT("REGULAR / fill up to %.2f / $%d / tank %.2f of %.0f"),Volume,FMath::CeilToInt(Volume/FuelPerDollar()-.00001),Fuel,TankCap());
  }
  if(Id==TEXT("ff:carry"))return Payload==2?TEXT("Handle carried parcel / set down or drop"):FString();
  if(Id==TEXT("ff:shop"))return ShopOpen()?TEXT("Buy service supplies / collect a physical parcel"):TEXT("Store counter closed / essential requisition");
@@ -1434,21 +1602,40 @@ void FS47FreeformWorld::Step(double Dt)
 {
  if(!Ready())return;if(!bBuilt)Build();
  SetFieldZone(true);StepServiceDoor(Dt);
+ StepCharger(Dt); // D45-20261110
+ const bool bFaultBefore=bTrackedPowerFault;
  TrackPowerFault(M->Freeform->PowerFault());
+ // M7 (C): the transfer switch from OPS (week 3 on, FS47Openings "transfer"): a feeder fault as it starts throws the backup generator
+ // in by itself, from its own tank or a stock can. Heard in the building; what runs on the generator (HasPower) runs on.
+ if(!bFaultBefore&&bTrackedPowerFault&&!bGenerator&&M->Freeform->HasKit(TEXT("transfer")))
+ {
+  if(GeneratorSeconds<=0&&Consume(TEXT("fuel")))GeneratorSeconds=6*3600.;
+  if(M->Audio)M->Audio->Sfx(TEXT("switch"),FS47Sound{.Gain=.6f});
+  if(GeneratorSeconds>0)
+  {
+   bGenerator=true;GeneratorSound(EGenSound::Start); // D45-20261110: placed at the generator, and its running loop follows
+   Change(TEXT("The lights dip. Down in the service bay the transfer switch clunks over, and out behind the control room the standby generator coughs and takes the load."));
+  }
+  else{GeneratorSound(EGenSound::Dry);Change(TEXT("The lights go. Down in the service bay the transfer switch clunks over, and out behind the control room the standby generator turns and does not catch: no fuel for it."));}
+  UE_LOG(LogTemp,Display,TEXT("S47: transfer switch: generator %s"),bGenerator?TEXT("started"):TEXT("dry"));
+ }
  if(Carry)Carry->Step(Dt,Payload,Item,Payload==1?ParcelShopPoint():Payload==3?TruckPoint():Dropped);
  const double Now=M->Freeform->Clock();if(LastClock<0)LastClock=Now;
  const double WorldDelta=FMath::Max(0.,Now-LastClock);
- if(M->Freeform->Held()||WorldDelta>3.){AdvanceUnobservedTo(Now);Apply();return;}
+ if(M->Freeform->Held()||WorldDelta>3.){AdvanceUnobservedTo(Now);Apply();StepGeneratorSound(Dt);return;} // D45-20261110: a jump that drained the tank fades the loop
  LastClock=Now;
  StepLogger(Dt,WorldDelta);
  StepPump(Dt);
- if(bGenerator){GeneratorSeconds=FMath::Max(0.,GeneratorSeconds-WorldDelta);if(GeneratorSeconds<=0){bGenerator=false;Change(TEXT("Backup generator tank empty. Array work needs restored mains or another fuel can."));}}
+ if(bGenerator){GeneratorSeconds=FMath::Max(0.,GeneratorSeconds-WorldDelta);if(GeneratorSeconds<=0){GeneratorSound(EGenSound::Stall);bGenerator=false;Change(TEXT("Backup generator tank empty. Array work needs restored mains or another fuel can."));}}
+ StepGeneratorSound(Dt); // D45-20261110: the running loop follows the generator's state every frame
  if(M->World&&M->World->bDriving)
  {
-  Fuel=FMath::Max(0.,Fuel-FMath::Abs(M->World->DrivingSpeed())*FMath::Min(Dt,.2)/12000.);
+  // (M7: the engine rebuild drinks a tenth more, FS47Outfit)
+  Fuel=FMath::Max(0.,Fuel-FMath::Abs(M->World->DrivingSpeed())*FMath::Min(Dt,.2)/12000.*FS47Outfit::TuneFor(M->Freeform.Get()).Burn);
+  Fuel=FMath::Min(Fuel,TankCap());
   if(Fuel<=.001)
   {
-   if(!bFuelHeld)Change(TEXT("SERVICE TRUCK: Tank empty; the engine dies. Stop, get out and use the truck to call roadside return. It costs time, not money."));
+   if(!bFuelHeld)Change(TEXT("SERVICE TRUCK: Tank empty; the engine dies. Stop, get out and use the cargo rack: a fuel can from stock, or the county's roadside return, which costs money and a long wait."));
    M->World->HoldTruck(25.);bFuelHeld=true;
   }
   else if(bFuelHeld){M->World->HoldTruck(0);bFuelHeld=false;}
@@ -1458,7 +1645,7 @@ void FS47FreeformWorld::Step(double Dt)
   const int32 I=ServiceDishIndex();if(I>=0){const double Target=ServiceAz+(Service==7?5.:0.);
    const bool On=FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Target))<=.1&&FMath::Abs(M->Web->DishEl(I)-ServiceEl)<=.1;
    Settle=On?Settle+FMath::Min(Dt,.1):0;
-   if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-")+ServiceTarget.ToLower().Replace(TEXT("-"),TEXT("")),ServiceWords(TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored.")));Change(M->Freeform->ActiveServiceGuide()==1?TEXT("OPS (corner PC), SERVICE: Local test passed; REMOTE restored. Verify and archive the completed work order."):TEXT("TRACKING (right-hand PC): S-03 local test passed and REMOTE is restored. Resume the selected observation."));}}
+   if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-")+ServiceTarget.ToLower().Replace(TEXT("-"),TEXT("")),ServiceWords(TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored.")));Change(FString(M->Freeform->ActiveServiceGuide()==1?TEXT("ARRAY STATUS (left-hand PC) / MAINTENANCE: Local test passed and REMOTE is back. Sign off the work order there."):TEXT("TRACKING (right-hand PC): S-03 local test passed and REMOTE is restored. Resume the selected observation."))+FString::Printf(TEXT(" ARRAY %d/27."),M->Freeform->ArrayUpCount()));}} // D45-20261110: a relay fix moves the count too
   }
  }
  if(!Wear.Job.IsEmpty())
@@ -1494,9 +1681,57 @@ void FS47FreeformWorld::Step(double Dt)
  Apply();
 }
 
+bool FS47FreeformWorld::LampCharging() const
+{
+ // D45-20261110: S47Night::FlashlightStep's rule, read here for the pilot and the notebook (it is not changed)
+ const FS47Flashlight* Lamp=M&&M->Night&&M->Night->Flashlight?M->Night->Flashlight.Get():nullptr;
+ if(!Lamp||!Lamp->bHave||Lamp->bOn||Lamp->BatteryLevel()>=1||M->Space!=TEXT("room"))return false;
+ const FString Where=M->World?M->World->Area:M->Web?M->Web->Area():FString(TEXT("saro"));
+ return Where==TEXT("saro")&&M->Freeform&&M->Freeform->HasPowerForReactiveLight();
+}
+int32 FS47FreeformWorld::ChargerState() const
+{
+ if(!M||!M->Freeform||!M->Freeform->HasPowerForReactiveLight())return 0;
+ return LampCharging()?1:2;
+}
+FString FS47FreeformWorld::FlashlightHelpFor(bool bCharger)
+{
+ return bCharger?FString(TEXT("Put the lamp on the charger on the hall dresser, or buy dry cells at Earl's (1420 AM) or the Feed & Seed."))
+  :FString(TEXT("Switch it off indoors at SARO and it charges on station power, or buy dry cells at Earl's (1420 AM) or the Feed & Seed."));
+}
+void FS47FreeformWorld::StepCharger(double Dt)
+{
+ // D45-20261110: looked for once a second until the dresser is placed (the props come after the web; FS47FieldRadio::Rest does the
+ // same), then its pilot follows the lamp, set only on a change. On the dresser's top from its bounds: between the recorder at its
+ // left end and the walkie at its right (C.X+.34), a squat dark box with the pilot on its face to the corridor (+Z).
+ if(!ChargerBody||ChargerBody.W!=M->Web.Get())
+ {
+  ChargerRetry-=Dt;if(ChargerRetry>0||!bActive)return;
+  ChargerRetry=1;
+  const UStaticMeshComponent* Dresser=AS47Props::PlacedMesh(TEXT("hallDresser"));
+  const int32 Saro=M->Web->Handle(TEXT("ext.group"));
+  if(!Dresser||Saro<0)return;
+  const FBox Top=Dresser->Bounds.GetBox();const FVector C=S47Three::ToThree(Top.GetCenter());const double Y=Top.Max.Z/100.;
+  ChargerBody=Box(TEXT("FreeformFlashlightCharger"),FVector(C.X+.04,Y+.045,C.Z+.02),FVector(.17,.09,.12),0x2f322d,Saro,TEXT("ff:charger"));
+  if(!ChargerBody)return;
+  ChargerLamp=Box(TEXT("FreeformFlashlightChargerPilot"),FVector(C.X+.10,Y+.06,C.Z+.083),FVector(.018,.018,.008),0x1a1a16,Saro);
+  if(ChargerLamp)M->Web->MarkUsable(ChargerLamp.I,TEXT("ff:charger"));
+  ChargerShown=-1;
+  UE_LOG(LogTemp,Display,TEXT("S47: flashlight charger: on the hall dresser (%.2f %.2f %.2f)"),C.X+.04,Y,C.Z+.02);
+ }
+ const int32 Want=bActive?ChargerState():-1;
+ if(Want==ChargerShown)return;
+ ChargerShown=Want;
+ ChargerBody.SetVisible(bActive);ChargerLamp.SetVisible(bActive);
+ const FLinearColor Pilot=S47Three::Hex(Want==1?0xffa040:Want==2?0x7dff9a:0x1a1a16);
+ ChargerLamp.SetColor(Pilot);ChargerLamp.SetEmissive(Pilot,Want==1?1.f:Want==2?.6f:0.f);
+}
 bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;auto C=[&](bool B,const TCHAR* T){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+T);};
+ // D45-20261110 (Tom: where is the flashlight's charger?): the help says where it charges and where cells are sold, plainly
+ C(FlashlightHelpFor(true).Contains(TEXT("charger on the hall dresser"))&&FlashlightHelpFor(true).Contains(TEXT("Feed & Seed"))&&FlashlightHelpFor(true).Contains(TEXT("Earl's"))
+  &&!FlashlightHelpFor(false).Contains(TEXT("dresser"))&&FlashlightHelpFor(false).Contains(TEXT("indoors at SARO")),TEXT("D45: the flashlight help names the charger on the hall dresser and the two counters that sell dry cells"));
  FS47FreeformWorld W(nullptr);W.Begin();C(W.InventoryCount(TEXT("fuse"))==3&&W.InventoryCount(TEXT("relay"))==1&&W.InventoryCount(TEXT("fuel"))==2,TEXT("Freeform depot starts with bounded essential spares"));
  W.AddItem(TEXT("relay"),200);C(W.InventoryCount(TEXT("relay"))==99,TEXT("Freeform stock is bounded"));for(int32 I=0;I<99;++I)W.Consume(TEXT("relay"));C(!W.Consume(TEXT("relay"))&&W.InventoryCount(TEXT("relay"))==0,TEXT("Freeform cannot consume nonexistent stock"));
  W.Item=TEXT("fuel");W.Contents.Add(TEXT("fuel"),1);W.Payload=3;W.bParcelWasLoaded=true;W.Delivered=4;W.DeliveredByTruck=3;W.ServiceDeliveries=2;W.DonorTests=1;W.ServiceTests=2;W.Service=4;W.Fuel=.7;W.BenchJob=TEXT("donor");W.BenchSeconds=1.2;W.GeneratorSeconds=7200;W.bGenerator=true;
@@ -1629,6 +1864,35 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
  C(LoggerOriginalComplete(Original),TEXT("Logger original gate accepts actual complete retained acquisition"));
  Original.Elapsed=4;C(!LoggerOriginalComplete(Original),TEXT("Logger comparison rejects partial acquisition even with recorded stage and document"));Original.Elapsed=12;Original.bLegacyTrace=true;
  C(!LoggerOriginalComplete(Original),TEXT("Logger comparison cannot promote reconstructed legacy trace into measured original"));
+ {
+  // M7 (C): the pump fills the tank in one go; the county's roadside return costs money and a wait, and is refused while something is close.
+  double PTank=.1,PLeft=PumpVolumeFor(PTank);int32 PDollars=0;
+  for(int32 Guard=0;Guard<100;++Guard){const double A=PumpIncrement(PTank,PLeft);if(A<.00001)break;PTank=FMath::Min(4.,PTank+A);PLeft-=A;++PDollars;}
+  C(FMath::IsNearlyEqual(PTank,4.)&&PDollars==16,TEXT("M7: one use of the pump fills a dry tank from 0.1 to 4 for $16"));
+  const FRoadsideTerms RDry=RoadsideTermsFor(false,FS47TruckCare::TowFeeFor(0),FS47TruckCare::TowMinutesFor(0),14,FString());
+  const FRoadsideTerms RFar=RoadsideTermsFor(false,FS47TruckCare::TowFeeFor(20000),FS47TruckCare::TowMinutesFor(20000),14,FString());
+  const FRoadsideTerms RNight=RoadsideTermsFor(false,FS47TruckCare::TowFeeFor(0),FS47TruckCare::TowMinutesFor(0),2.5,FString());
+  const FRoadsideTerms RTow=RoadsideTermsFor(true,FS47TruckCare::TowFeeFor(4000),FS47TruckCare::TowMinutesFor(4000),14,FString());
+  const FRoadsideTerms RNear=RoadsideTermsFor(false,35,45,2.5,TEXT("Not now."));
+  C(RDry.Fee>0&&RDry.Fee==EmptyTankFee&&RDry.Minutes>=45&&RFar.Fee>RDry.Fee&&RFar.Fee<RTow.Fee+20&&RFar.Minutes<=90&&!RDry.bRefused,TEXT("M7: a dry tank's roadside return costs $20 to $45 and 45 to 90 minutes by how far out"));
+  C(RNight.Minutes>=RDry.Minutes+NightTowWait-.001&&RTow.Fee==FS47TruckCare::TowFeeFor(4000)&&RNear.bRefused,TEXT("M7: after dark the wrecker is longer coming; a truck in trouble pays the full tow; nobody comes while something is close (RestBlock)"));
+ }
+ // SARO-GEN-RAMP-20261109: no generator button inside; one starts and fuels it at the standby generator outside, from the open
+ // ground east of its housing (its walk box x 3.7..4.9, z 7.05..9.75; the pocket's zone x 2.65..6.55, z 5.95..20).
+ {
+  FS47FreeformWorld G(nullptr);G.Begin();
+  const FVector At=G.InteractionPoint(TEXT("ff:generator")),Old(5.89,1.35,.65);
+  const bool Outside=!(At.X>-6.7&&At.X<6.7&&At.Z>-5.9&&At.Z<5.9)&&!(At.X>-6.6&&At.X<2.6&&At.Z>5.8&&At.Z<11.1);
+  C(Outside&&FVector2D(At.X-Old.X,At.Z-Old.Z).Size()>5&&G.InteractionPoint(TEXT("obs:generator"))==At,TEXT("SARO-GEN: no generator button in the control room; the start point is outside, not on its east wall"));
+  C(At.X>4.85&&At.X<5.05&&At.Z>7.05&&At.Z<9.75&&At.Y>0&&At.Y<1&&At.X+.3<6.55-.27,TEXT("SARO-GEN: the start point is the standby generator's control box, on the housing's east face, with room to stand by it in the pocket"));
+  // One standing on the ground just east of the box: in the pocket's zone, clear of the housing's walk box, near enough (Near: 2.9 m).
+  const double Body=.27,Stand=At.X+GeneratorBox.X*.5+Body+.05;
+  C(Stand>=2.65+Body&&Stand<=6.55-Body&&Stand>=4.9+Body&&FMath::Abs(Stand-At.X)<2.9&&FMath::Abs(-.6-At.Y)<3.,TEXT("SARO-GEN: one standing on the ground beside the box can start and fuel it"));
+ }
+ // SARO-GEN-RAMP-20261109: nothing on the way down off the truck ramp's sides for one on foot; the truck's lines and the pad stay.
+ C(S47OpenLand::TruckRampSide(6.6,6.6,12.4,16.6)&&S47OpenLand::TruckRampSide(13,13,12.4,16.6),TEXT("SARO-RAMP: the truck ramp's west and east sides do not hold one on foot"));
+ C(!S47OpenLand::TruckRampSide(6.6,6.6,3.4,12.4)&&!S47OpenLand::TruckRampSide(13,13,3.4,12.4)&&!S47OpenLand::TruckRampSide(6.6,6.6,3.4,16.6)&&!S47OpenLand::TruckRampSide(6.6,13,3.4,3.4)&&!S47OpenLand::TruckRampSide(6.15,6.45,16.75,17.05),
+  TEXT("SARO-RAMP: the pad's sides, its north edge and the bollard at the ramp's foot still hold"));
  OK &= FS47FieldLogger::SelfTest(Lines);
  OK &= FS47FreeformCarry::SelfTest(Lines);return OK;
 }
@@ -1776,4 +2040,60 @@ void FS47FreeformWorld::StepLogger(double Dt,double WorldDelta)
  }
  else Logger.Sample(Now,WorldDelta,GeneratorRunning(),M->Freeform->PowerFault(),Id,Acquired,P?P->F:0);
  if(Was&&!Logger.bRecording)Change(TEXT("Field logger recording window ended. The original remains at its field post until physically retrieved."));
+}
+
+// D45-20261110 (Tom's test of d45: the backup generator needs sound). No generator recording in the free or the bought sounds, so the
+// truck's Jeep clips (engineStart, engineIdle, engineOff; Freesound, credited) played slower and through the housing, as the RV's
+// generator (FS47Happenings) and Story's standby diesel (FS47Observing) do, placed at the control box behind the control room.
+namespace { const TCHAR* const GenLoopKey=TEXT("ffGenerator"); constexpr double GenRate=.62,GenLevel=.34; }
+void FS47FreeformWorld::GeneratorSound(EGenSound Kind)
+{
+ US47Audio* A=M&&IsValid(M->Audio)?M->Audio.Get():nullptr;
+ if(!A||!A->Ctx.IsValid()||!M->Web||M->Web->Area()!=TEXT("saro"))return; // heard only at SARO; elsewhere the loop is already gone
+ FS47Sound O;O.At=GeneratorAt;O.Lp=2400;O.Rate=.82f;O.Gain=.6f; // a bigger, slower engine than the truck's, through its housing
+ switch(Kind)
+ {
+ case EGenSound::Start:A->Sfx(TEXT("engineStart"),O);GenLoopDelay=2.3/.82;break; // the loop takes over as the clip settles (2.3 s of it)
+ case EGenSound::Dry: // the starter turns it twice (the clip's cranking, 0-1.4 s, before it catches) and it does not catch
+  O.Dur=1.4f;A->Sfx(TEXT("engineStart"),O);O.When=1.9f;O.Rate=.76f;O.Dur=1.2f;A->Sfx(TEXT("engineStart"),O);break;
+ case EGenSound::Off:O.Gain=.5f;A->Sfx(TEXT("engineOff"),O);A->Stop(GenLoopKey,.35f);bGenSound=false;GenSrc.Reset();GenGain.Reset();break;
+ case EGenSound::Stall: // dry: it chugs and winds down (the rate falls as the CB's engine dies, S47CB.cpp)
+  O.Gain=.5f;O.Rate=.72f;A->Sfx(TEXT("engineOff"),O);
+  if(GenSrc.IsValid()){FS47AudioContext::FBatch B(*A->Ctx);const double T=A->Ctx->CurrentTime();GenSrc->PlaybackRate.CancelAndHoldAtTime(T);GenSrc->PlaybackRate.ExponentialRampToValueAtTime(.22,T+1.2);}
+  A->Stop(GenLoopKey,.45f);bGenSound=false;GenSrc.Reset();GenGain.Reset();break;
+ }
+}
+void FS47FreeformWorld::StepGeneratorSound(double Dt)
+{
+ US47Audio* A=M&&IsValid(M->Audio)?M->Audio.Get():nullptr;
+ GenLoopDelay=FMath::Max(0.,GenLoopDelay-Dt);
+ if(bGenSound) // stopped by someone else (a new audio context, a stop-all): start it again
+ {
+  bool bGone=!A||!A->Ctx.IsValid()||!GenSrc.IsValid();if(!bGone){FS47AudioContext::FBatch B(*A->Ctx);bGone=GenSrc->Ended();}
+  if(bGone){bGenSound=false;GenSrc.Reset();GenGain.Reset();}
+ }
+ const bool bWant=A&&A->Ctx.IsValid()&&GeneratorRunning()&&M->Web&&M->Web->Area()==TEXT("saro");
+ if(bWant&&!bGenSound)
+ {
+  FS47Sound O;O.At=GeneratorAt;O.Gain=float(GenLevel);O.Rate=float(GenRate);O.Lp=900;O.bLoop=true;O.When=float(GenLoopDelay);
+  const FS47Play P=A->LoopSfx(GenLoopKey,TEXT("engineIdle"),O);bGenSound=P.IsValid();GenSrc=P.Src;GenGain=P.Gain;GenCoughIn=FMath::FRandRange(5.f,12.f);
+  if(GenGain.IsValid()&&GenLoopDelay>0) // fades in under the start clip's tail, so the two engines meet without a seam
+  {FS47AudioContext::FBatch B(*A->Ctx);const double T=A->Ctx->CurrentTime()+GenLoopDelay;GenGain->Gain.SetValueAtTime(0,T);GenGain->Gain.LinearRampToValueAtTime(GenLevel,T+.5);}
+  GenLoopDelay=0;
+ }
+ else if(!bWant&&bGenSound){if(A)A->Stop(GenLoopKey,.8f);bGenSound=false;GenSrc.Reset();GenGain.Reset();}
+ // the last twenty minutes in the tank: it hunts now and then, more often as it runs out
+ if(bGenSound&&GenGain.IsValid()&&GeneratorSeconds<1200&&(GenCoughIn-=Dt)<=0)
+ {
+  FS47AudioContext::FBatch B(*A->Ctx);const double T=A->Ctx->CurrentTime();
+  FS47AudioParam& G=GenGain->Gain;G.CancelAndHoldAtTime(T);G.LinearRampToValueAtTime(GenLevel*.1,T+.09);G.LinearRampToValueAtTime(GenLevel*1.15,T+.26);G.LinearRampToValueAtTime(GenLevel,T+.45);
+  FS47AudioParam& R=GenSrc->PlaybackRate;R.CancelAndHoldAtTime(T);R.LinearRampToValueAtTime(GenRate*.72,T+.12);R.LinearRampToValueAtTime(GenRate,T+.4);
+  GenCoughIn=FMath::FRandRange(2.5f,8.f)*(.3+GeneratorSeconds/1200.);
+ }
+}
+void FS47FreeformWorld::StopGeneratorSound()
+{
+ const bool bWas=bGenSound;bGenSound=false;GenLoopDelay=GenCoughIn=0;GenSrc.Reset();GenGain.Reset();
+ if(!bWas||IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||!IsValid(M->Audio))return;
+ M->Audio->Stop(GenLoopKey,.2f);
 }

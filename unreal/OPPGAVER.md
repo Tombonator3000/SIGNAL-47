@@ -2,6 +2,12 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## Dagskift 9. november til 20:00, Claude Code
+
+Tom ca. 08:30: fortsett til kl. 20 med ultracode og agenter (kvoten nullstilles da). Kopier: `~/SIGNAL-47` (Claude, `claude/day-20261109`, koordinator, bygg og installasjon), `~/SIGNAL-47-cosmic` (Codex), og to agent-worktrees (øyeglimt på alle aliens; UFO-lys med skimring). Seks patch-agenter uten egen kopi tar M7-pakkene A, B1, B2, C, D og E fra gjennomgangen (planen og funnene i scratchpad `m7plan.md` og `m7audit.json`), med faste fileiere. Én tung motorjobb om gangen via `q.py`.
+
+Ettermiddag: Tom testet d36 11:50–14:20 (motorpause). Etterpå patch-agenter for testfunnene, kritikk 6–8, saker og telex, byen (dagsplan, hus, animasjoner), Dale-stemmen (VoiceStudio bare under reservasjon), nattradio og CB, og spilløkka trinn 1–4; ultracode-runder for saker og OPS, helhetlig løkke og ukesaker. d37 installert 17:03 (`2c88bf9f`). Ikke i d37: nattradio og CB (`f4bfa9b9`) og spilløkka trinn 3–4 (`933b1af3`). Under arbeid: ukesak uke 1, patch 1 (`S47WeekCase`). Testvinduer åpnes på venstre skjerm uten fokus (KWin-regel). Kveld: Tom testet d37 17:05–18:52. Agentene rettet funnene og kritikk 9, og designrunder ble gjort for notatbok og ukesaker. Bygget og selvtestet 19:03. d38 ble pakket, men ikke installert før 19:58 (kandidat i `d38/candidate`; første forsøk ligger i `d38-failed-1`). Skiftet sluttet 20:13 på `2010d8e8`. Neste: bygg, selvtest, editorjobbene fra STATUS, sweeper, og pakk/installer d38 på nytt fra HEAD.
+
 ## Nattskift 8.–9. november til 10:00, Claude Code
 
 Tom ca. 22:30: ta alt, så TODO-lista til kl. 10:00 med agenter og ultracode. Kopier: `~/SIGNAL-47` (Claude, `claude/m2-20261108`, koordinator), `~/SIGNAL-47-cosmic` (Codex), og høyst to agent-worktrees (kart og nattlogg; lagring på SARO). Patch-agenter uten egen kopi for mindre oppgaver. Én tung motorjobb om gangen via `q.py`.
@@ -595,3 +601,18 @@ Codex eier `codex/alien-interference-20261106` i cosmic-kopien fra oppdatert mai
 7. november 2026 kl.01:05 Claude, natt: arbeidskopier er hovedkopi (`claude/night-c-20261107`), cosmic (Codex, lommelyktbatteri, urørt) og to agent-worktrees: `alien-hendelser` (Crab og Tall i hendelser, vinduer, skrekkforslag 6-9) og `feilretting` (tunlampe, lagret bil, egen radiolyd). Maks fire er nådd; begge fjernes når de er flettet.
 
 7. november 2026 kl.10:05 Claude: arbeidskopier er hovedkopi (`claude/night-h-20261107`), cosmic (Codex), og to agent-worktrees: nye fjell fra ekte data og innsetting av Toms `Pale-One.glb`. Grensen på fire holdes.
+
+9. november 2026 kl. 22:50 Claude, nattskift til 08:00 10. november (Toms bestilling): arbeidskopier er hovedkopi (`claude/day-20261109`), cosmic (Codex, urørt) og to låste agent-worktrees fra tidligere; grensen på fire er nådd, så nattens agenter leverer patcher i scratchpad uten nye kopier. Disk 128 GB ledig; kandidatpakkene d30–d35 er verifisert overflødige (d36–d39 beholdes) og ryddes i denne samlede kjøringen. Motorjobber: Claude via q.py. Filansvar i natt: all Freeform-C++ (Claude).
+9. november 23:15 Claude: samlet rydding før nattskift utført: kandidatpakkene d30–d35 fjernet (logger og bevis beholdt), d36–d39 står. Ledig etterpå: se df i loggen; ingen ny rydderunde i natt uten konkret plassbehov.
+10. november 06:50 Claude, nattskift: installert i natt d40 (02:38), d41 (04:11), d42 (05:39) og d43 (06:40, `7d1ae9ec`); motoren brukes til testspilling fram til ca. 07:10 og er ledig etterpå. Ingen nye arbeidskopier. Disk 142 GB ledig. Kan ryddes ved neste samlede kjøring: kandidatpakkene d36–d40 (d41–d43 beholdes).
+10. november 12:45 Claude, dagskift: arbeidskopier er uendret (hovedkopi `claude/day-20261109`, cosmic (Codex), to låste agent-worktrees); ingen nye. Rydding ved konkret plassbehov før installasjon: kandidatpakkene d36–d40 fjernet (kvitteringer og logger beholdt). d45 installert 12:40 (`d99bd64f`); disk 130 GB ledig. Kan ryddes ved neste samlede kjøring: den avviste kandidaten d44 og kandidatpakken d41 (d42, d43 og d45 beholdes).
+10. november 16:50 Claude, dagskift: d46 installert 16:47 (`ebe038ad`); disk 124 GB ledig. Arbeidskopier uendret (fire). Private importer utenfor Git: `Content/Licensed/MilitaryBarriers` (fra engangsprosjektet `~/scratch-models/fence58`, kan ryddes), `Content/Licensed/Models/alienbubblehead`, `Content/Rocket` (Cosmos-røyk), 32 fotsteg i `Content/Licensed/Raw`. Kan ryddes ved neste samlede kjøring: kandidatene d41, d42 og den avviste d44 (d43, d45 og d46 beholdes), `~/scratch-models/fence58`.
+10. november 20:05 Claude, nattskift til 08:00 11. november (Toms bestilling): arbeidskopier uendret (fire); agenter leverer patcher i scratchpad. Motorjobber via q.py, aldri mens Toms spill kjører. Disk 124 GB ledig. Filansvar: all Freeform-C++ (Claude).
+11. november 00:12 Claude, nattskift: d50 installert; disk 127 GB. Kandidatpakkene d45 og d46 ryddet for plass (kvitteringer beholdt); d47–d50 står.
+11. november 01:02 Claude, nattskift: kandidatpakken d47 ryddet for plass før d51 (kvitteringer beholdt); d48–d50 står.
+11. november 01:55 Claude, nattskift: kandidatpakken d48 ryddet før d52; d49–d51 står.
+11. november 02:35 Claude, nattskift: kandidatpakken d49 ryddet før d53; d50–d52 står.
+11. november 03:18 Claude, nattskift: kandidatpakken d50 ryddet før d54; d51–d53 står.
+11. november 04:10 Claude, nattskift: kandidatpakken d51 ryddet før d55; d52–d54 står.
+- 11. nov 05:20 (Claude): d52-kandidaten fjernet før d56 (beholdt d53, d54, d55); ledig før: 127 GB.
+- 11. nov 06:06 (Claude): d53- og d54-kandidatene fjernet før d57 for diskreserven (beholdt d55, d56).

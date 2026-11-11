@@ -27,6 +27,7 @@
 #include "S47Startup.h"
 #include "S47Night.h"
 #include "S47Album.h"
+#include "S47Darkroom.h"
 #include "S47Image.h"
 #include "Misc/Base64.h"
 #include "Engine/World.h"
@@ -77,6 +78,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))S47J::Set(O,TEXT("scope"),TEXT("field-plan-disk-continue"));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("scope"),TEXT("legacy-printer-queue-regression"));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightWorkTest")))S47J::Set(O,TEXT("scope"),TEXT("night-work-state-fixtures"));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47SpineLeakTest")))S47J::Set(O,TEXT("scope"),TEXT("story-then-freeform-spine-leak"));
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -90,13 +92,13 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit prepared-job fixtures, real timed printer feed, native paper transform and audio-loop state, disk/Flow Continue, power interruption and production collection. No natural acquisition or subjective listening acceptance."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))S47J::Set(O,TEXT("method"),TEXT("Fresh unowned camera, physical photolab model and actual interaction ray/use, production toggle/shutter, two disk/Flow restores, explicit legacy-field migration and Story placement smoke. Fixture player placement, not a natural walk or full Story regression."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))S47J::Set(O,TEXT("method"),TEXT("Native store menu clicks, one paid multi-item parcel, production pickup/load/unload/receiving, disk/Flow Continue and legacy singleton fixture. Clock/player placement and truck relocation are explicit fixtures; no natural drive, walk or credit-policy regression claimed."));
- if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass OPS buttons across all six pages, daily job selection, empty archive guidance, service accept/focus and a separate physical screen leave. Fixture screen approach; no OS-input or full work-order completion claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass OPS buttons across all seven pages, daily job selection, empty archive guidance, service accept/focus and a separate physical screen leave. Fixture screen approach; no OS-input or full work-order completion claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit roof_steps case lead and production PlanCaseTest(2,1), followed by real disk/Flow Continue. Tests retained pending plan only; no enacted world test, field evidence or reward claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit settled source-2 fixtures measure ten production Step(.1) calls at 27/24/23/repaired27 capacity; actual S-03 service fault persists through disk/Flow Continue. Receiver screenshot at degraded capacity; no natural acquisition or motor trajectory claim."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit pre-3b6a6c1c original-document format and missing legacy fields; real disk/Flow Continue, timed subsequent sheet and production Use(printer). Rejected legacy copy must release the queue without evidence or reward; no natural acquisition claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass accept/register buttons, real encoder movement, timed receiver and printer, normal digital completion and disk/Flow restores mid-recording/after completion/legacy. Explicit player approach, receiver tuning and due-scheduler fixtures; no stage, payment or completion injection. Not a human tutorial usability test."));
- if(FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest")))S47J::Set(O,TEXT("method"),TEXT("Native early OPS SERVICE/accept clicks, initial S-03 plus three explicit ordinary fault targets, wrong-cabinet rejection, actual out-and-back encoders, one relay per repair and mid-repair disk/Flow Continue. Player approaches, spare stock and fault targets are explicit fixtures; no service stage or completion injection."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest")))S47J::Set(O,TEXT("method"),TEXT("Native early array PC MAINTENANCE/accept clicks (D48-20261110: OPS has no SERVICE section), initial S-03 plus three explicit ordinary fault targets, wrong-cabinet rejection, actual out-and-back encoders, one relay per repair and mid-repair disk/Flow Continue. Player approaches, spare stock and fault targets are explicit fixtures; no service stage or completion injection."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightWorkTest")))S47J::Set(O,TEXT("method"),TEXT("Prepared routine/legacy packet and completed-day fixtures; production registration, case planning/focus and optional-reference callbacks; disk/Flow Continue. No natural acquisition or human input asserted."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightLoggerTest"))){S47J::Set(O,TEXT("scope"),TEXT("night-logger-film-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit case-access and player-placement fixtures, actual timed bench calibration, production custody callbacks, native camera and film ray, three disk/Flow Continue rounds. No full field recording or natural travel claimed."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldTest"))){S47J::Set(O,TEXT("scope"),TEXT("case-field-native-controls"));S47J::Set(O,TEXT("method"),TEXT("Explicit session-seed/open-case/player-placement fixtures. Actual native planning/wait buttons, interaction rays, physical preparation/inspection, natural active clock ticks through the entire gate window and timed roof listening, paused/absent listening checks and disk/Flow Continue. Time jumps occur before valid windows or deliberately invalidate the skipped window. No human input, natural lead discovery or subjective listening acceptance."));}
@@ -108,6 +110,11 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))){S47J::Set(O,TEXT("scope"),TEXT("array-wear-native"));S47J::Set(O,TEXT("method"),TEXT("New worn game with explicit stock and player-placement fixtures; physical eye-ray at branch junctions, actual repair button, disk/Flow restore. No drive to the antennas or shop trip."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){S47J::Set(O,TEXT("scope"),TEXT("internal-control-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit discrepancy and tuning fixtures; real recording, printer, RECORD tab and SimulateClick; no OS mouse."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))){S47J::Set(O,TEXT("scope"),TEXT("garage-start-native"));S47J::Set(O,TEXT("method"),TEXT("Real walking and driving input from the new-game start; door toggles and the wall control use production callbacks without aiming; the trip to the garage is a declared placement."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47StationFilesTest"))){S47J::Set(O,TEXT("scope"),TEXT("station-files-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room. The files are shown through the session's own records screen, on the OPS glass and as the binder's paper; the clock is advanced to the third morning."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47TvChannelTest"))){S47J::Set(O,TEXT("scope"),TEXT("tv-channel-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room, the operator set down in front of Dale's set in Operations. The switch is used through the player's own use callback; the interference is asked for as F10 asks for it; the clock is advanced to half a minute before two and the sign-off then comes by itself, in real time."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47DevMenuTest"))){S47J::Set(O,TEXT("scope"),TEXT("dev-menu-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room. F10 is opened as the key opens it; the keys and the typed search go to the screen's own key handlers; a line is started from a search and its effect read back from the station's channel."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47SkyCutTest"))){S47J::Set(O,TEXT("scope"),TEXT("sky-cut-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room. A flyover forced with its sag (SkyCutNext, 6 s and 8 s instead of 45 and 75), the generator given a fuelled tank and started at its own control."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))){S47J::Set(O,TEXT("scope"),TEXT("first-start-native"));S47J::Set(O,TEXT("method"),TEXT("New game at the mailbox (-S47MailboxStart). Production door, mailbox and switch callbacks without aiming; real walking through the visitor entrance; the trips between the box and the door are declared placements."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47WorkshopTest"))){S47J::Set(O,TEXT("scope"),TEXT("workshop-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit stock, player-placement and tuning fixtures; physical bench ray, actual SButton callbacks, three disk/Flow restores. No shop trip, natural discovery or full two-hour tape."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FreeLifeTest"))){S47J::Set(O,TEXT("scope"),TEXT("freeform-life"));S47J::Set(O,TEXT("method"),TEXT("Developer run with the live rules switched on. The field visit starts from its own draw and dwell; only the roll and the player's position are given. Taken, gear, fetch and the day's cards are then real."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47MailTest"))){S47J::Set(O,TEXT("scope"),TEXT("freeform-mail"));S47J::Set(O,TEXT("method"),TEXT("Developer run with the live rules on. The player is placed in front of the box; the eye-ray and E open it; the order, the carrier's rounds and the lift use the mail's test hooks; time is jumped day by day; one disk/Flow Continue. No real drive to the box, no human listening to the carrier."));}
@@ -229,7 +236,46 @@ void FS47FreeformTest::Step(double Dt)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))){StepArrayWear(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))){StepRescueJourney(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))){StepGarageStart(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))){StepFirstStart(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47SkyCutTest"))){StepSkyCut(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47TvChannelTest"))){StepTvChannel(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47DevMenuTest"))){StepDevMenu(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47StationFilesTest"))){StepStationFiles(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){StepInternalControl(Dt);return;}
+ // D45-20261110 (-S47FreeformTest -S47SpineLeakTest): a Story night, then Freeform in the same run, as Tom played d45. The spine's
+ // placeholder posts must stay hidden through an area pass, and the Freeform save must carry no "spine" block.
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47SpineLeakTest")))
+ {
+  if(!M||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking()||!M->Spine)return;
+  Age+=FMath::Min(Dt,.2);if(Age>300){Finish(false,TEXT("bounded spine leak timeout"));return;}if(Hold>0){Hold-=Dt;return;}
+  if(Stage==0)
+  {
+   if(!M->Freeform||!M->Freeform->Active()||Age<3)return;
+   Snapshot=S47J::Read(S47J::Write(M->Flow->GameState()));
+   M->Flow->ToTitle();US47Flow::FStart Story;Story.bDev=true;Story.Jump=TEXT("chapter1");M->Flow->StartGame(Story);Go(9401,.5);return;
+  }
+  if(Stage==9401)
+  {
+   if(M->IsFreeform())return;
+   // the spine on, as a saved evening night has it; Spine::Step builds the posts on the next ticks
+   auto Saved=S47J::New();S47J::Set(Saved,TEXT("v"),FS47Spine::Version);M->Spine->Begin(Saved,false);Go(9402,1.);return;
+  }
+  if(Stage==9402)
+  {
+   if(!Check(M->Spine->Enabled()&&M->Spine->PostCount()==int32(FS47Spine::GateCount)&&!M->Spine->PostsShown(),TEXT("Story built the spine's placeholder posts and keeps them hidden")))return;
+   M->Flow->ToTitle();US47Flow::FStart Free;Free.bDev=true;Free.State=Snapshot;M->Flow->StartGame(Free);++Restores;Go(9403,.5);return;
+  }
+  if(Stage==9403)
+  {
+   if(!M->Freeform||!M->Freeform->Active())return;
+   M->Web->Enter(M->Web->Area()); // an area pass, as a drive in or out makes (AS47Web::ApplyVisibility)
+   const auto Saved=M->Flow->GameState();
+   if(!Check(M->IsFreeform()&&!M->Spine->Enabled()&&!M->Spine->PostsShown(),TEXT("Freeform after Story: spine off, no placeholder post drawn after an area pass")))return;
+   if(!Check(Saved.IsValid()&&!Saved->HasField(TEXT("spine")),TEXT("the Freeform save carries no spine block")))return;
+   Finish(true,TEXT("Story then Freeform in one run: the spine's placeholder posts stay hidden and Freeform saves no spine"));return;
+  }
+  return;
+ }
  if(Stage==8690&&FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
  {
   if(!M||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
@@ -468,15 +514,18 @@ void FS47FreeformTest::Step(double Dt)
    if(Age<3)return;
    if(!Check(M->Flow->bDevRun&&M->World->Area==TEXT("saro"),TEXT("isolated SARO service fixture")))return;
    F.Director->Stop();W.AddItem(TEXT("relay"),4);ServiceTrial=0;
-   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X,P.Z+1.1,0);F.Use(TEXT("opsTerminal"));Go(9200,.5);return;
+   // D45-20261110: the work order is issued on the array PC's MAINTENANCE tab
+   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("crtLeft")));M->Player->Place(P.X,P.Z+1.1,0);F.Use(TEXT("crtLeft"));Go(9200,.5);return;
   }
-  if(Stage==9200){if(!Click(TEXT("SERVICE")))return;Go(9201,.3);return;}
-  if(Stage==9201){if(!Click(TEXT("Accept / use SARO stock")))return;Go(9202,.3);return;}
+  if(Stage==9200){if(!Click(TEXT("MAINTENANCE")))return;Go(9201,.3);return;}
+  if(Stage==9201){Shot(TEXT("service-maintenance-tab"));if(!Click(TEXT("ISSUE WORK ORDER / USE STOCK")))return;Go(9202,.3);return;}
   if(Stage==9202)
   {
-   if(!Check(F.TerminalOnGlass()&&F.ActiveTerminalScreen()==3&&F.OperationsSection()==4&&W.ServiceStage()==1&&W.ServiceDishId()==TEXT("S-03"),FString::Printf(TEXT("service acceptance: glass=%d screen=%d ops=%d stage=%d target=%s guide=%d"),F.TerminalOnGlass(),F.ActiveTerminalScreen(),F.OperationsSection(),W.ServiceStage(),*W.ServiceDishId(),F.ActiveServiceGuide())))return;
+   if(!Check(F.TerminalOnGlass()&&F.ActiveTerminalScreen()==0&&W.ServiceStage()==1&&W.ServiceDishId()==TEXT("S-03")&&F.ActiveServiceGuide()==1,FString::Printf(TEXT("service acceptance on the array PC: glass=%d screen=%d stage=%d target=%s guide=%d"),F.TerminalOnGlass(),F.ActiveTerminalScreen(),W.ServiceStage(),*W.ServiceDishId(),F.ActiveServiceGuide())))return;
    if(!Check(!F.CanCompleteServiceGuide(),TEXT("unfinished service cannot be archived")))return;
-   Shot(TEXT("service-accepted"));if(!Click(TEXT("Continue service / return to room")))return;Go(9205,.2);return;
+   if(!Check(F.TerminalLines(0).Contains(FString(TEXT("MAINTENANCE / 1 FAULT / NEXT S-03"))),TEXT("the array PC's glass names the open relay order as next")))return;
+   if(!Check(F.TerminalLines(0).Contains(FString(TEXT("LAST PAGE / MAINTENANCE"))),TEXT("N1110: the array PC's idle glass names the page it was left on")))return;
+   Shot(TEXT("service-accepted"));M->UI->Close(true);Go(9205,.2);return;
   }
   if(Stage==9205)
   {
@@ -534,6 +583,7 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(ServiceMoved&&M->Web->DishRemoteAvailable(I)&&F.AvailableDishCount()==27&&W.ServiceCompletions()==ServiceBefore+1&&W.InventoryCount(TEXT("relay"))==ServiceRelays-1&&FMath::Abs(FMath::FindDeltaAngleDegrees(InitialAz,M->Web->DishAz(I)))<=.1&&FMath::Abs(InitialEl-M->Web->DishEl(I))<=.1,TEXT("actual outward/return test restores selected antenna once: ")+ServiceTarget))return;
    if(ServiceTrial==0)
    {
+    // D45-20261110: sign-off at OPS stays accepted for one build (orders taken there in d45); the array PC is tested in the journey
     const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X,P.Z+1.1,0);
     if(!Check(F.CompleteServiceGuide(),TEXT("initial S-03 tutorial archives only after actual repair")))return;
    }
@@ -812,10 +862,10 @@ void FS47FreeformTest::Step(double Dt)
    Job.Phenomenon=TEXT("extra_pulse");Job.ControlAt=4;
    if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN REVIEW BOTH RECORDINGS"),TEXT("Receiver rack")))return;
    Job.ControlAt=8;if(!Hint(TEXT("REEL DECK"),TEXT("MARK THE EXTRA TICKS"),TEXT("Reel deck")))return;
-   Job.bAudioReviewed=true;if(!Hint(TEXT("OPS"),TEXT("REGISTER THE SUPPORTED"),TEXT("OPS")))return;
+   Job.bAudioReviewed=true;if(!Hint(TEXT("OPS"),TEXT("REGISTER THE COMPARISON"),TEXT("OPS")))return;
    Job.Stage=J::Registered;Job.PacketFeed=FS47FreeformSession::PrinterSeconds;if(!Hint(TEXT("PRINTER"),TEXT("COLLECT"),TEXT("Printer")))return;
    Job.Stage=J::Packet;if(!Hint(TEXT("RECORDS ROOM"),TEXT("BINDER"),TEXT("binder")))return;
-   Job.Stage=J::Filed;if(!Check(F.JobNextAction(Job).Contains(TEXT("DAILY WORK OR CASE ARCHIVE")),TEXT("filed work directs to further work or retained archive")))return;
+   Job.Stage=J::Filed;if(!Check(F.JobNextAction(Job).Contains(TEXT("DAILY WORK OR RECORDS")),TEXT("filed work directs to further work or retained archive")))return;
    auto Save=S47J::Read(S47J::Write(F.Save()));auto O=S47J::Arr(Save,TEXT("jobs"))[0]->AsObject();
    S47J::Set(O,TEXT("stage"),int32(J::Recorded));S47J::Set(O,TEXT("anomaly"),true);S47J::Set(O,TEXT("phenomenon"),TEXT("time_disagreement"));S47J::Set(O,TEXT("control"),true);S47J::Set(O,TEXT("controlAt"),8.);S47J::Set(O,TEXT("clockMeasured"),true);S47J::Set(O,TEXT("reviewed"),false);S47J::Set(Save,TEXT("selected"),0);F.Begin(Save);F.Director->Stop();
    GuidanceExpected=F.NextAction();
@@ -831,7 +881,7 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))
  {
-  if(Age>60){Finish(false,TEXT("bounded OPS navigation timeout"));return;}
+  if(Age>90){Finish(false,TEXT("bounded OPS navigation timeout"));return;}
   auto Roots=[&](){TArray<TSharedRef<SWidget>> Out;TSet<const SWidget*> Seen;
    if(F.TerminalOnGlass()&&FSlateApplication::IsInitialized())FSlateApplication::Get().ForEachUser([&](FSlateUser& User){TSharedPtr<SWidget> W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;if(W->GetTypeAsString().Contains(TEXT("Window"))&&!Seen.Contains(W.Get())){Seen.Add(W.Get());Out.Add(W.ToSharedRef());}},true);return Out;};
   auto Click=[&](const FString& Label){TArray<TSharedRef<SButton>> Buttons;for(const auto& W:Roots())PhotoButtons(W,Label,Buttons);
@@ -846,7 +896,8 @@ void FS47FreeformTest::Step(double Dt)
   Contains=[&](const TSharedRef<SWidget>& W,const FString& Text){if(!W->GetVisibility().IsVisible())return false;if(W->GetTypeAsString()==TEXT("STextBlock")&&StaticCastSharedRef<STextBlock>(W)->GetText().ToString().Contains(Text))return true;auto* C=W->GetChildren();for(int32 I=0;C&&I<C->Num();++I)if(Contains(C->GetChildAt(I),Text))return true;return false;};
   auto HasText=[&](const FString& Text){for(const auto& W:Roots())if(Contains(W,Text))return true;return false;};
   auto StillAtOps=[&](){return F.TerminalOnGlass()&&F.ActiveTerminalScreen()==3&&M->Hud->ModalWidget()==OpsModal.Pin()&&M->UI->Modal();};
-  static const TCHAR* Labels[]={TEXT("DAILY WORK"),TEXT("CASE BOARD"),TEXT("CASE ARCHIVE"),TEXT("SERVICE"),TEXT("SUPPLIES")};
+  // CASES-OPS-20261109: CASE ARCHIVE is RECORDS; FIX-20261110: the film record; D48-20261110: no SERVICE section (the array PC's MAINTENANCE tab owns it), so the sections skip 4
+  static const TCHAR* Labels[]={TEXT("DAILY WORK"),TEXT("CASE BOARD"),TEXT("RECORDS"),TEXT("SUPPLIES"),TEXT("PHOTOGRAPHS")};static const int32 Sections[]={1,2,3,5,6};
   if(Stage==0)
   {
    if(Age<3)return;
@@ -864,7 +915,7 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==8803)
   {
-   if(!Check(StillAtOps()&&F.OperationsSection()==OpsNavStep+1,FString(TEXT("OPS navigation changes page without closing or replacing the physical screen: "))+Labels[OpsNavStep]))return;
+   if(!Check(StillAtOps()&&F.OperationsSection()==Sections[OpsNavStep],FString(TEXT("OPS navigation changes page without closing or replacing the physical screen: "))+Labels[OpsNavStep]))return;
    if(OpsNavStep==0)
    {
     if(!Check(HasText(TEXT("MORE WORK /")),TEXT("daily work explains available and carried-over jobs")))return;
@@ -874,23 +925,27 @@ void FS47FreeformTest::Step(double Dt)
    }
    if(OpsNavStep==2)
    {
-    if(!Check(HasText(TEXT("NO RETAINED RECORDS YET"))&&HasText(TEXT("collect its original at the printer")),TEXT("empty archive explains where retained records come from")))return;
+    if(!Check(HasText(TEXT("NO RETAINED RECORDS YET"))&&HasText(TEXT("INDEXED HERE AS THEY ARE RETAINED")),TEXT("empty archive explains where retained records come from")))return;
     Shot(TEXT("ops-empty-archive"));Go(8804,.3);return;
+   }
+   if(OpsNavStep==1)
+   {
+    // D48-20261110: the board without an open case says what opens one, and the nav has no SERVICE
+    if(!Check((HasText(TEXT("NO OPEN CASE"))||HasText(TEXT("CASES")))&&!HasText(TEXT("SERVICE")),TEXT("CASE BOARD explains what opens a case, or lists the cases; OPS has no SERVICE section")))return;
+    Shot(TEXT("ops-case-board-empty"));Go(8804,.3);return;
    }
    if(OpsNavStep==3)
    {
-    if(!Click(TEXT("Accept / use SARO stock")))return;Go(88031,.3);return;
+    // D45-20261110 (Tom: the stores list must be sorted better): the work in hand on top, the depot's parts and cells, then the bands
+    if(!Check(HasText(TEXT("FOR THE WORK NOW"))&&HasText(TEXT("DEPOT STOCK"))&&HasText(TEXT("DRY CELLS"))&&HasText(TEXT("DRIVE MOTOR"))&&HasText(TEXT("SPLICE KIT"))
+     &&HasText(TEXT("CAN BUY NOW"))&&HasText(TEXT("COMING")),TEXT("SUPPLIES: the work in hand on top, parts and dry cells in stock, the stores list in bands")))return;
+    Shot(TEXT("ops-supplies"));Go(8804,.3);return;
    }
-   Go(8804);return;
-  }
-  if(Stage==88031)
-  {
-   if(!Check(StillAtOps()&&F.OperationsSection()==4&&F.Field->HasArrayFault(),TEXT("accepting service order refreshes SERVICE while the same OPS screen stays open")))return;
-   if(!Click(TEXT("Show observing objective / retain unfinished service")))return;Go(88032,.3);return;
-  }
-  if(Stage==88032)
-  {
-   if(!Check(StillAtOps()&&F.OperationsSection()==4&&HasText(TEXT("Follow service objective")),TEXT("service focus toggle remains inside OPS and offers the inverse action")))return;
+   if(OpsNavStep==4)
+   {
+    if(!Check(HasText(TEXT("FILM RECORD /")),TEXT("PHOTOGRAPHS opens the film record inside OPS")))return;
+    Shot(TEXT("ops-photographs"));Go(8804,.3);return;
+   }
    Go(8804);return;
   }
   if(Stage==8804)
@@ -901,6 +956,18 @@ void FS47FreeformTest::Step(double Dt)
   {
    if(!Check(StillAtOps()&&F.OperationsSection()==0,TEXT("OVERVIEW returns home without a physical exit")))return;
    if(++OpsNavStep<5){Go(8802);return;}
+   // D48-20261110: the summary that points to the array PC hangs off OVERVIEW (its ARRAY PC / MAINTENANCE key, shown once the first
+   // shift is accepted); opened directly here, under OVERVIEW, and it issues nothing itself
+   F.OpenServiceGuide();Go(88031,.3);return;
+  }
+  if(Stage==88031)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==0&&HasText(TEXT("WORK ORDERS ARE ISSUED AND SIGNED THERE"))&&!HasText(TEXT("ISSUE WORK ORDER")),TEXT("OPS points to the array PC's MAINTENANCE tab and issues nothing itself")))return;
+   if(!Click(TEXT("SHOW ON THE ARRAY PC")))return;Go(88032,.3);return;
+  }
+  if(Stage==88032)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==0&&HasText(TEXT("is set to MAINTENANCE"))&&!F.Field->HasArrayFault()&&F.ActiveServiceGuide()!=1,TEXT("SHOW ON THE ARRAY PC keeps the same OPS screen open and starts no work order")))return;
    // Explicit completed-work/retained-original fixture for the two alternate UI states.
    auto Save=S47J::Read(S47J::Write(F.Save()));auto Jobs=S47J::Arr(Save,TEXT("jobs"));
    for(const auto& V:Jobs)S47J::Set(V->AsObject(),TEXT("stage"),int32(J::Filed));
@@ -909,8 +976,13 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==88051)
   {
-   if(!Check(StillAtOps()&&HasText(TEXT("ALL AVAILABLE WORK COMPLETE"))&&HasText(TEXT("REST UNTIL MORNING")),TEXT("explicit completed-work fixture explains how to get the next day's jobs")))return;
-   if(!Click(TEXT("CASE ARCHIVE")))return;Go(88052,.3);return;
+   if(!Check(StillAtOps()&&HasText(TEXT("ALL OBSERVING WORK COMPLETE"))&&HasText(TEXT("REST UNTIL MORNING")),TEXT("explicit completed-work fixture explains how to get the next day's jobs")))return;
+   if(!Click(TEXT("RECORDS")))return;Go(88052,.3);return;
+  }
+  if(Stage==88052&&F.OperationsSection()==3&&!HasText(F.Jobs()[0].Id+TEXT(" / ORIGINAL"))&&!bOriginalsTab)
+  {
+   // FIX10-2: RECORDS opens on a station file that is due (day 1 has two); the originals are one tab over
+   bOriginalsTab=true;{FString Tab;for(int32 N=0;N<40&&Tab.IsEmpty();++N){TArray<TSharedRef<SButton>> Found;const FString Try=FString::Printf(TEXT("ORIGINALS %d"),N);for(const auto& W:Roots())PhotoButtons(W,Try,Found);if(Found.Num()==1)Tab=Try;}if(!Check(!Tab.IsEmpty(),TEXT("the RECORDS tab ORIGINALS n is on the glass")))return;if(!Click(Tab))return;}Go(88052,.3);return; // (the glass tab carries its count)
   }
   if(Stage==88052)
   {
@@ -926,7 +998,29 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==8806)
   {
    if(!Check(!F.TerminalOnGlass()&&!M->UI->Modal()&&F.ActiveTerminalScreen()==-1,TEXT("separate physical leave returns to room and clears OPS modal")))return;
-   Finish(true,TEXT("All OPS pages, job selection, empty archive, service accept/focus, overview return and physical leave passed."));return;
+   // FIX-20261110: the array PC has work of its own: the drive check runs every element and says what it heard.
+   const FVector Left=S47Three::ToThree(M->Web->PropLocation(TEXT("crtLeft")));M->Player->Place(Left.X,Left.Z+1.1,0);F.Use(TEXT("crtLeft"));Go(8807,1.);return;
+  }
+  if(Stage==8807&&F.TerminalOnGlass()&&!HasText(TEXT("OFF THE MAIN BEAM"))&&!bStatusTab)
+  {
+   // D45-11: the array PC reopens on the tab it was left on; the drive check is on STATUS
+   bStatusTab=true;if(!Click(TEXT("STATUS")))return;Go(8807,.4);return;
+  }
+  if(Stage==8807)
+  {
+   if(!Check(F.TerminalOnGlass()&&F.ActiveTerminalScreen()==0&&HasText(TEXT("OFF THE MAIN BEAM"))&&HasText(TEXT("NOT RUN TODAY"))&&!F.DriveCheckedToday(),TEXT("array PC offers the drive check and the off-beam log")))return;
+   Shot(TEXT("array-status"));if(!Click(TEXT("RUN DRIVE CHECK")))return;Go(8808,3.);return;
+  }
+  if(Stage==8808)
+  {
+   if(!Check(F.DriveCheckRunning()&&HasText(TEXT("TESTING /")),TEXT("drive check runs on the open array terminal")))return;
+   Shot(TEXT("array-drive-check"));Go(8809,7.);return;
+  }
+  if(Stage==8809)
+  {
+   if(!Check(F.DriveCheckedToday()&&!F.DriveCheckText().IsEmpty()&&HasText(TEXT("RUN TODAY")),FString(TEXT("drive check reports a result: "))+F.DriveCheckText()))return;
+   Shot(TEXT("array-drive-result"));
+   Finish(true,TEXT("All OPS pages, job selection, empty archive, service accept/focus, overview return, physical leave and the array drive check passed."));return;
   }
   return;
  }
@@ -1456,6 +1550,10 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(Original&&Original->LabStage==0,TEXT("exposed photograph remains undeveloped through full disk Continue")))return;
    Snapshot=S47J::New();S47J::Set(Snapshot,TEXT("photoClock"),Original->Clock);S47J::Set(Snapshot,TEXT("photoTargets"),Original->Targets.Num());
    M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);
+   // D45-20261110 (D45-17): white light blocks the bench; the declared fixture then turns the safelight on (a seam, as SetDoorOpen(...,instant)).
+   if(!Check(F.Darkroom.IsValid(),TEXT("Freeform session owns the darkroom")))return;
+   F.Darkroom->SetSafelight(false,true);if(!Check(!F.Darkroom->Block().IsEmpty()&&F.Darkroom->Block().Contains(TEXT("safelight")),TEXT("door shut but white light on: developing is refused and the line says to switch on the safelight")))return;
+   F.Darkroom->SetSafelight(true,true);if(!Check(F.Darkroom->Block().IsEmpty(),TEXT("door shut and safelight on: the darkroom lets the print be made")))return;
    const auto* Bench=M->Inter->Get(TEXT("wetBench"));if(!Check(Bench&&bool(Bench->Object),TEXT("photo lab uses the existing physical wet-bench object")))return;
    const FVector BenchAt=Bench->Object.WorldPosition();M->Player->Place(BenchAt.X,BenchAt.Z+1,0);Go(80040,.4);return;
   }
@@ -1503,6 +1601,7 @@ void FS47FreeformTest::Step(double Dt)
   {
    const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
    if(!Check(Original&&Original->LabStage==1&&!Original->IsDeveloped(),TEXT("tank-processing state survives full disk Continue without becoming a finished print")))return;
+   if(!Check(F.Darkroom&&F.Darkroom->SafelightOn()&&F.Darkroom->PrintAtRisk(),TEXT("the safelight survives full disk Continue and the loaded print in the developer is not fogged")))return; // D45-20261110
    Go(80040,.2);return;
   }
   if(Stage==80044)
@@ -1544,13 +1643,15 @@ void FS47FreeformTest::Step(double Dt)
  {
   M->UI->Close(true);F.SelectJob(JobIndex);const auto P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("selected job supplies real receiver profile")))return;
   auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
-  if(JobIndex==1)F.SetAnomaly(true);InitialAz=M->Web->DishAz(2);InitialEl=M->Web->DishEl(2);
+  // D45-20261110: watch a dish that is on remote (a journey's diagnosed fault or a worn branch may hold dish 2 in place)
+  WatchDish=2;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I)){WatchDish=I;break;}
+  if(JobIndex==1)F.SetAnomaly(true);InitialAz=M->Web->DishAz(WatchDish);InitialEl=M->Web->DishEl(WatchDish);
   if(!Check(!F.StartAcquisition()&&F.PointSelected(),TEXT("receiver cannot acquire before a physical pointing command")))return;
   F.OpenTracking();Go(2,.5);return;
  }
  if(Stage==2)
  {
-  if(!Check(FMath::Abs(M->Web->DishAz(2)-InitialAz)>.01||FMath::Abs(M->Web->DishEl(2)-InitialEl)>.01,TEXT("actual native antenna encoders move while tracking telemetry is open")))return;
+  if(!Check(FMath::Abs(M->Web->DishAz(WatchDish)-InitialAz)>.01||FMath::Abs(M->Web->DishEl(WatchDish)-InitialEl)>.01,TEXT("actual native antenna encoders move while tracking telemetry is open")))return;
   Shot(TEXT("tracking"));M->UI->Close(true);Go(3,.1);return;
  }
  if(Stage==3)
@@ -1584,8 +1685,13 @@ void FS47FreeformTest::Step(double Dt)
  {
   if(F.AudioPlaying())return;
   if(!Check(F.CurrentJob()->ControlCovered>=8,TEXT("independent control recording really played through")))return;
-  F.AudioAction(TEXT("original"));F.SeekAudio(9.1);F.AudioAction(TEXT("mark_start"));F.SeekAudio(13.0);F.AudioAction(TEXT("mark_end"));Shot(TEXT("audio-comparison"));Go(8,.3);return;
+  F.AudioAction(TEXT("original"));F.SeekAudio(9.1);F.AudioAction(TEXT("mark_start"));F.SeekAudio(13.0);F.AudioAction(TEXT("mark_end"));Shot(TEXT("audio-comparison"));Go(FParse::Param(FCommandLine::Get(),TEXT("S47ReelShots"))?71:8,.3);return;
  }
+ // FIX-20261110: -S47ReelShots stops here with the reel deck panel open, still and then running (pictures only).
+ if(Stage==71){F.OpenTapePanel();Go(72,1.2);return;}
+ if(Stage==72){Shot(TEXT("reel-panel"));F.AudioAction(TEXT("play"));Go(73,1.6);return;}
+ if(Stage==73){Shot(TEXT("reel-panel-playing"));Go(74,.5);return;}
+ if(Stage==74){Finish(true,TEXT("Reel deck panel pictures taken; the journey was not continued."));return;}
  if(Stage==8)
  {
   if(!Check(F.AudioAction(TEXT("confirm"))&&F.CurrentJob()->bAudioReviewed,TEXT("supported interval is retained only after both recordings")))return;

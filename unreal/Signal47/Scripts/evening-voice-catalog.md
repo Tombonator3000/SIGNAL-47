@@ -2,7 +2,7 @@
 
 `evening-voice-catalog.py` lager en isolert `evening`-oppføring for `Content/Audio/Raw/voices.json`. Denne kommandoen lager ingen stemmer, konverterer ingen filer og endrer ingen eksisterende assets. Katalogen bruker `voice_profile` og eksakt engelsk undertekst slik `FS47RadioVoice("evening")` slår opp dialog. Importløypa nedenfor bruker samme validering.
 
-Legg de 109 godkjente originalopptakene i én mappe, med filnavn `<line_id>.wav`. Kravet er ukomprimert PCM16, 48 kHz og mono. `D61_FIXED_FRAGMENT_001` skal ikke ha egen fil: katalogen peker til `D01_HANDOVER_001.wav`. Manglende eller uventede WAV-filer, feil format, avkuttet innhold, identitetskonflikter og feil alias stopper eksporten.
+Legg de 53 godkjente originalopptakene for servitrisen og verten i én mappe, med filnavn `<line_id>.wav`. Dales 56 takes (stemmen `dale`, 9. november) leses fra `--dale-wav-dir` (standard `Content/Audio/DaleVoice`) med hash og tider fra `Narrative/DaleVoice/takes.json` (`--dale-takes`). En gammel Kinski-take som ligger igjen i kveldsmappa, er en uventet WAV og stopper eksporten. Kravet er ukomprimert PCM16, 48 kHz og mono. `D61_FIXED_FRAGMENT_001` skal ikke ha egen fil: katalogen peker til `D01_HANDOVER_001.wav`. Manglende eller uventede WAV-filer, feil format, avkuttet innhold, identitetskonflikter og feil alias stopper eksporten.
 
 Fra `unreal/Signal47`:
 
@@ -16,7 +16,7 @@ python3 Scripts/evening-voice-catalog.py \
   --output /tmp/s47-evening-voices.entry.json --check
 ```
 
-Standardinnganger er kveldspakkens genererte `recording_manifest.json` og `subtitles.json`, samt `voice/takes.json`. Manifestet inneholder ikke selve replikkteksten, derfor er underteksteksporten også nødvendig. Andre plasseringer kan gis med `--manifest`, `--subtitles` og `--takes`. `audio_file` kan være `<LINE_ID>.wav` eller `EveningShift/<LINE_ID>.wav`; originalmappen inneholder bare de 109 WAV-filene.
+Standardinnganger er kveldspakkens genererte `recording_manifest.json` og `subtitles.json`, samt `voice/takes.json`. Manifestet inneholder ikke selve replikkteksten, derfor er underteksteksporten også nødvendig. Andre plasseringer kan gis med `--manifest`, `--subtitles` og `--takes`. `audio_file` kan være `<LINE_ID>.wav` eller `EveningShift/<LINE_ID>.wav`; originalmappen inneholder bare de 53 WAV-filene for de andre rollene.
 
 Varigheten måles fra faktiske PCM-rammer; SHA-256 og rammetall følger hvert klipp. Hash og varighet må stemme med `takes.json`; målt talestart og taleslutt må også stemme med underteksteksporten, inkludert aliaset. Disse tidene følger katalogen. Kontrollen beviser filformat, varighet og kobling, mens riktig karakterstemme, uttale, ren start/slutt og opplevd underteksttiming må gjennomgås ved lytting. Katalogen merker ikke opptak som ferdig godkjent.
 
@@ -35,7 +35,7 @@ Samme native import med valgfri Unreal-assetimport:
 
 ```sh
 S47_AUDIO_EVENING_ONLY=1 S47_AUDIO_RAW_ONLY=1 Scripts/import-audio.sh
-# Uten RAW_ONLY importeres også 109 v_<LINE_ID>-assets til /Game/Audio/Voice/Evening.
+# Uten RAW_ONLY importeres også v_<LINE_ID>-assets til /Game/Audio/Voice/Evening.
 S47_AUDIO_EVENING_ONLY=1 Scripts/import-audio.sh
 ```
 

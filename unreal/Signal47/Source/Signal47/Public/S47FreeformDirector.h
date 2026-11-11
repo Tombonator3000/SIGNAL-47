@@ -3,6 +3,7 @@
 #include "S47Json.h"
 #include "S47DuskOrb.h"
 #include "S47FreeformObservation.h"
+#include "S47NightTiers.h"
 class US47Main;
 struct FS47AlbumShot;
 
@@ -16,6 +17,28 @@ public:
  void FillRhythm(struct FS47RhythmNow& Out) const;
  void NoteDanger();
  int32 DangerTonight() const;
+ // LOOP-1-20261109 (HELHETLIG_LOKKE step 1): what at SARO points the player out at the land (the bearing slip a registration gives,
+ // FS47Places::AfterRegistered) comes at most PointOutLimit times a night: director.json's globals.point_out_per_night, 1 without
+ // it. Nights as FS47FreeformSession::NightOf; saved with the night, so a Continue does not give a second one.
+ int32 PointOutLimit() const;
+ int32 PointOutsOn(int32 Night) const{return PointNight==Night?PointCount:0;}
+ bool MayPointOut(int32 Night) const{return PointOutsOn(Night)<PointOutLimit();}
+ void NotePointOut(int32 Night);
+ // PT-FEEDER-20261109 (d37): whether lights may come tonight, past their own dice and hours. Neither kind on the big night's night
+ // (FS47Happenings::BigOwns): it owns the night. And lights heard of (town_lights) send the player out, so they are the night's one
+ // pointing-out: not after a bearing slip, and none after them (Start notes it).
+ static bool LightsMayCome(const FString& Id,bool bBigOwnsNight,bool bMayPointOut){return !bBigOwnsNight&&(Id!=TEXT("town_lights")||bMayPointOut);}
+ // FEEDER-LEAD-20261110: a feeder fault on a night with a lead drawn would leave the lead unreachable (no power, no pointing, until the road
+ // cabinet is mended): none starts then. Mended, or already out, it is as before.
+ static bool FeederMayFail(bool bLeadTonight){return !bLeadTonight;}
+ // Whether what an event left out on the land may be pointed at now: the event's tier in director.json against the hour
+ // (S47NightTiers: before midnight only a hint). An event the file does not have counts as full.
+ bool MayPointAt(const FString& EventId,double Clock,int32 Night) const;
+ static bool TierAllowsAt(ES47Allowed Need,double Clock,int32 Night);
+ int32 PointNight=0,PointCount=0;
+ // Critic round 5: the night the rhythm's danger slot was taken (FS47Rhythm::Began, DangerSlotOpen) and the night of the last peek in
+ // at a window (FS47Rhythm::BeganOn), saved with the night's dangers: a load of the same night, or a Continue, has them as they were.
+ int32 SlotNight=0,PeekNight=0;
  // The hint on the player's objective line while lights are reported somewhere.
  FString TipLine() const;
  // Test: tonight is a night for lights, at the next scheduler tick.
@@ -72,8 +95,21 @@ public:
  void EndForRest();
  // A task row while lights are reported somewhere, and while their marks stand. Empty otherwise.
  FString ReportedLine() const;
+ // D45-20261110 (D45-26: Tom rested at 21:02 and never saw the 21:15 visit). The first evening's appointment: from 19:00 on the first
+ // night while the night's first visit of the low lights is still to come, a task row (and a toast once, as it goes on the note) that
+ // they are seen over the dishes most evenings around nine. Empty otherwise. EveningLightsAt: the same, pure.
+ FString EveningLightsLine() const;
+ static FString EveningLightsAt(double Clock,int32 NightVisits,double NightDue);
+ // PT-FEEDER-20261109 (d37: the feeder looked at, the line still open): the report on tonight's note is ticked off once the player
+ // has been to the place and found something there, or found it gone over and empty (FS47FarmSite::Checked). Not while the lights
+ // are still up, and not for a landing's report, which is its own.
+ bool ReportDone() const;
+ static bool ReportDoneWith(bool bLightsUp,bool bArmed,bool bChecked){return !bLightsUp&&bArmed&&bChecked;}
  // What the night's mystery still has to show, as a task row, while it can be found.
  FString MysteryTrailHint() const;
+ // PT-NOTEBOOK-20261109 (Tom, d37: the feeder looked at, its line gone without a tick): the trail's rows while it can be found
+ // (until MysteryClearAt), each clue's row ticked off once it is seen instead of dropped: the remote feeder, the receiver chart.
+ TArray<TPair<FString,bool>> MysteryTrailRows() const;
  explicit FS47FreeformDirector(US47Main* Main);
  ~FS47FreeformDirector();
  void Begin(const S47J::FObj& Saved);
@@ -86,6 +122,10 @@ public:
  void RoomLightInput(const FString& Room,int32 Serial,bool bOff);
  FString InspectRoomLight(const FString& Room);
  bool Force(const FString& Id); // explicit developer/test action; still needs a usable world
+ // FIX-20261110 (Tom, point 2): the next forced flyover or close pass takes the mains as one in play does (a fixture otherwise
+ // keeps its older, immediate life). Sag: seconds of dips before it; After: seconds the mains stay out once it has gone.
+ void SkyCutNext(double Sag=45,double After=75){bSkyCutNext=true;SkyCutSag=FMath::Max(1.,Sag);SkyCutAfter=FMath::Max(1.,After);}
+ bool SkyCutHeld() const{return SkyPrelude>0;}
  bool ForceLights(const FString& Place); // town lights at one named place, same conditions as Force
  // F10: this event at this place from the list (S47EventPlaces), same conditions as Force. Place empty: the draw, as in play.
  bool ForceAt(const FString& Id,const FString& Place);
@@ -96,8 +136,22 @@ public:
  FVector LightPlacePoint(const FString& Place) const;
  FString LightPlaceTitle(const FString& Place) const;
  struct FPhotoClaim { FString Id,PhotoId,Title,ControlOriginalId,ControlPhotoId,LocalNoiseOriginalId; double ControlPlannedAt=-1,LocalNoisePlannedAt=-1; int32 Reward=20; double Quality=0; bool bPaid=false; };
+ // D48-20261110 (Tom: every photo of aliens, events and strange things pays, if it is good enough). A strange subject outside the
+ // Director's own incidents (a visitor's body, a figure on the road, the lights in the high sky, a landing's ring, a dead cow, ...)
+ // makes a claim named "strange.<group>.n<night>": one a group a night, the best frame stands, paid once at OPS through the same
+ // path. StrangeGroupOf: a happenings prop kind's group, empty for the ordinary (dust devil, animals, people, cars, humour: no pay).
+ // StrangeBase: the group's pay before quality (rarer pays more, never above the week's side cap); PhotoReward: the claim's pay,
+ // 20 for the Director's own incidents as before, base times 0.6 (just legible) to 1.25 (large in frame) for the rest.
+ static FString StrangeGroupOf(const FString& PropKind);
+ static int32 StrangeBase(const FString& Group);
+ static int32 PhotoReward(const FString& ClaimId,double Quality);
  const TArray<FPhotoClaim>& PhotoClaims() const { return Claims; }
  bool RegisterPhotoClaim(const FString& Id);
+ // LOOP-3-20261109 (HELHETLIG_LOKKE step 3): OPS's one way to register what came back from the field. A claim (one of the Director's
+ // own incidents) as RegisterPhotoClaim; otherwise Id is an album photograph from one of the night's happenings out there, or a trip
+ // camera frame, which OPS pays for once as field money under the week's cap (FS47FreeformSession::RegisterNightPhoto). Dr. Ward's
+ // count of the album does not wait on it.
+ bool RegisterFieldRecord(const FString& Id);
  bool PlanPhotoControl(const FString& Id);
  bool PlanLocalNoiseCheck(const FString& Id);
  FString LocalNoisePlanHint(const FString& Id) const;
@@ -202,6 +256,7 @@ private:
  bool bTestHush=false;
  // The first shift was on at the last tick (Step): its end gives the scheduler an ordinary interval before its first draw.
  bool bWasFirstShift=false;
+ bool bEveningTold=false; // D45-20261110: EveningLightsLine's toast said in this sitting (a Continue in the evening says it again)
  void RollTonight(int32 Day);
  bool SameScene() const;
  double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them
@@ -209,6 +264,7 @@ private:
  int32 OrbLightProbe=0;
  int32 OrbStopLogged[FS47DuskOrb::Count]={-1,-1,-1};
  double Age=0,ActiveTime=0,NextAt=90,RestUntil=0,SoundAt=0,LastPhotoAt=-10;
+ double SkyPrelude=0,SkyCutSag=45,SkyCutAfter=75;bool bSkyCut=false,bSkyCutNext=false; // not saved: see FS47FreeformSession::SkyCutBegin
  FVector Anchor=FVector::ZeroVector;
  FRandomStream Random;
  TMap<FString,int32> LastDays;

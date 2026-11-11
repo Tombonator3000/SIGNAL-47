@@ -16,6 +16,12 @@ constant gain, no channel filter) are written to --out. Only metadata is committ
 speech-overrides.json may give a pronunciation spelling for one cue (same words,
 e.g. 'Ray-yes?' for the name Reyes, which the model otherwise drops). The cue
 text in the pack, manifest and subtitles stays exact.
+
+A casting profile without profile_id is a proposal (not created in VoiceStudio
+yet) and is skipped. A profile marked deprecated_for_new_lines (kinski, Tom
+9 November) keeps its existing takes, but no new take is synthesised with it
+unless --allow-deprecated is given. ../../DaleVoice/generate.py reuses this
+pipeline for Dale's own voice.
 """
 from pathlib import Path
 import argparse
@@ -225,8 +231,15 @@ def cues():
     for item in manifest['recordings']:
         if not item['recording_required']:
             continue
+        if item['voice_profile'] == 'dale':
+            continue  # Dale's takes are made, checked and kept by ../../DaleVoice (DALE-STORY-SWAP)
         out.append({**item, 'text': texts[item['line_id']]['text'], 'delivery_nb': texts[item['line_id']]['delivery_nb']})
     return out
+
+
+def load_casting():
+    """The casting the cues are bound to; wrappers (HorrorStory, DaleVoice) replace HERE or this function."""
+    return json.loads((HERE / 'casting.json').read_text())
 
 
 def profile_list(endpoint):
@@ -238,6 +251,8 @@ def bind_profiles(endpoint, casting):
     live = {p['id']: p for p in profile_list(endpoint)}
     bound = {}
     for name, role in casting['profiles'].items():
+        if not role.get('profile_id'):
+            continue  # proposed, not created in VoiceStudio yet
         profile = live.get(role['profile_id'])
         if not profile or profile['name'] != role['profile_name'] or profile['kind'] != role['kind']:
             raise ValueError(f'Profile {role["profile_id"]} for {name} missing or renamed')
@@ -248,7 +263,8 @@ def bind_profiles(endpoint, casting):
         settings = {**BASE_SETTINGS, 'profile_id': role['profile_id']}
         identity = hashlib.sha256(json.dumps({'settings': settings, 'ref_sha256': reference_hash},
                                              sort_keys=True).encode()).hexdigest()[:16]
-        bound[name] = {'settings': settings, 'reference_sha256': reference_hash, 'cache_identity': identity}
+        bound[name] = {'settings': settings, 'reference_sha256': reference_hash, 'cache_identity': identity,
+                       'deprecated_for_new_lines': bool(role.get('deprecated_for_new_lines'))}
     return bound
 
 
@@ -263,16 +279,21 @@ def main():
     parser.add_argument('--sync', type=Path, action='append', default=[])
     parser.add_argument('--until-asr', nargs='*', default=[])
     parser.add_argument('--attempts', type=int, default=6)
+    parser.add_argument('--allow-deprecated', action='store_true',
+                        help='synthesise new takes even with a profile marked deprecated_for_new_lines')
     args = parser.parse_args()
     takes_dir = args.data / 'takes'
     if args.sync:
         for target in args.sync:
             target.mkdir(parents=True, exist_ok=True)
-            for wav in sorted(takes_dir.glob('*.wav')):
+            # Only the current cues' takes: the retired kinski Dale takes stay in the cache (DALE-STORY-SWAP).
+            wanted = {cue['line_id'] + '.wav' for cue in cues()}
+            synced = [wav for wav in sorted(takes_dir.glob('*.wav')) if wav.name in wanted]
+            for wav in synced:
                 shutil.copy2(wav, target / wav.name)
-            print(json.dumps({'synced': len(list(takes_dir.glob('*.wav'))), 'to': str(target)}))
+            print(json.dumps({'synced': len(synced), 'to': str(target)}))
         return
-    casting = json.loads((HERE / 'casting.json').read_text())
+    casting = load_casting()
     retakes_path = HERE / 'retakes.json'
     retakes = json.loads(retakes_path.read_text()) if retakes_path.exists() else {'version': 1, 'cues': {}}
     for line_id in args.retake:
@@ -315,6 +336,9 @@ def main():
         raw_wav = cache / f"{cue['line_id']}.{take_identity}.wav"
         response_file = raw_wav.with_suffix('.result.json')
         if not raw_wav.exists():
+            if profile.get('deprecated_for_new_lines') and not args.allow_deprecated:
+                raise SystemExit(f"{cue['line_id']}: profile {cue['voice_profile']} is deprecated for new lines "
+                                 '(casting.json); use --allow-deprecated only on Tom\'s word')
             result = api_generate(args.endpoint, request)
             audio = urllib.request.urlopen(args.endpoint + '/audio/' + result['audio_path'], timeout=60).read()
             temporary = raw_wav.with_suffix('.part')
@@ -350,7 +374,8 @@ def main():
                 if attempt == args.attempts - 1:
                     break
                 subprocess.run([sys.executable, __file__, '--endpoint', args.endpoint, '--data', str(args.data),
-                                '--retake', line_id, '--only', line_id, '--reason', f'ASR mismatch: {heard!r}'], check=True,
+                                '--retake', line_id, '--only', line_id, '--reason', f'ASR mismatch: {heard!r}']
+                               + (['--allow-deprecated'] if args.allow_deprecated else []), check=True,
                                stdout=subprocess.DEVNULL)
                 report = json.loads(report_path.read_text())
     print(json.dumps({'complete': sum((takes_dir / f"{c['line_id']}.wav").exists() for c in todo), 'total': len(todo)}), flush=True)

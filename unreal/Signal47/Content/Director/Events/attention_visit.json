@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "id": "attention_visit",
+  "name": "Something comes to the station",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) when a visit begins at SARO, as the mains sag. The code looks for the player when the mains are out. Gates: an early: true here is an authored escalation (from midnight). The night goes quiet as the mains sag (silence beat).",
+  "enabled": true,
+  "gates": {
+    "tier": "full",
+    "areas": [
+      "saro"
+    ]
+  },
+  "beats": [
+    {
+      "at": 0,
+      "do": "silence",
+      "secs": 10,
+      "level": 0.03
+    },
+    {
+      "at": 0,
+      "do": "light",
+      "kind": "gear",
+      "strength": 0.9,
+      "secs": 40
+    },
+    {
+      "at": 0,
+      "do": "tv",
+      "strength": 0.7,
+      "secs": 30
+    },
+    {
+      "at": 1,
+      "do": "sound",
+      "sound": "dog0",
+      "pos": [
+        70,
+        2,
+        -60
+      ],
+      "gain": 0.6,
+      "rate": 0.9
+    },
+    {
+      "at": 3,
+      "do": "line",
+      "who": "dale",
+      "text": "Get inside and keep the lights on. Stay off the windows. Over."
+    },
+    {
+      "at": 5,
+      "do": "thought",
+      "text": "They're here. At the station."
+    },
+    {
+      "at": 12,
+      "do": "sound",
+      "sound": "stepConcrete0",
+      "pos": [
+        -4,
+        4.2,
+        2
+      ],
+      "gain": 0.55,
+      "rate": 0.8
+    },
+    {
+      "at": 13.2,
+      "do": "sound",
+      "sound": "stepConcrete0",
+      "pos": [
+        -3,
+        4.2,
+        1
+      ],
+      "gain": 0.55,
+      "rate": 0.75
+    },
+    {
+      "at": 14.6,
+      "do": "sound",
+      "sound": "stepConcrete0",
+      "pos": [
+        -2,
+        4.2,
+        1.5
+      ],
+      "gain": 0.5,
+      "rate": 0.85
+    },
+    {
+      "at": 20,
+      "do": "thought",
+      "text": "Keep the lights on. Stay inside.",
+      "if": [
+        "in_saro"
+      ]
+    },
+    {
+      "at": 20,
+      "do": "thought",
+      "text": "I need to get inside.",
+      "if": [
+        "outdoors"
+      ]
+    }
+  ]
+}

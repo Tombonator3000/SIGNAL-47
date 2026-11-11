@@ -14,6 +14,7 @@
 #include "Misc/Paths.h"
 #include "Containers/Ticker.h"
 #include "S47CreatureCapture.h"
+#include "S47EyeGlint.h"
 
 void S47CreaturePreview::Start(US47Main* M)
 {
@@ -160,7 +161,7 @@ void S47CreaturePreview::Start(US47Main* M)
    if(FParse::Param(FCommandLine::Get(),TEXT("S47CreatureFace"))&&Fixture->Body.Creature.Mesh.IsValid())
    {
     // Right up to the face, with the dots shown by day so they can be set against it.
-    FS47TripoCreature::bTestGlintsAlways=true;
+    S47EyeGlint::bTestAlways=true;
     auto* Skin=Fixture->Body.Creature.Mesh.Get();
     const FVector Head=S47Three::ToThree(Skin->GetBoneLocationByName(TEXT("head"),EBoneSpaces::WorldSpace));
     const FVector Out=S47Three::ToThree(Skin->GetRightVector()*100.).GetSafeNormal();

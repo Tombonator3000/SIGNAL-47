@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "figure_near_close",
+  "name": "One step, close behind",
+  "notes": "N1110-5. Played by S47Happenings when the figure has come right up behind the walker and one step is heard (the night's danger is met). Point: figure. The camera_snap plays only after 02:00 (the code leaves it out earlier: the step and the thought alone). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "sound", "sound": "stepGravel4", "point": "figure", "gain": 0.5, "lp": 2400 },
+    { "at": 0.4, "do": "camera_snap", "point": "figure", "fov": 40, "in": 0.25, "hold": 0.9, "out": 0.9, "shake": 0.2, "scare": "soft" },
+    { "at": 2.4, "do": "thought", "text": "Right behind me.", "secs": 3.5, "if": ["on_foot"] }
+  ]
+}

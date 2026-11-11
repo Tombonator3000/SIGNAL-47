@@ -15,6 +15,7 @@
 #include "S47FreeformWorld.h"
 #include "S47Story.h"
 #include "S47TripoCreature.h"
+#include "S47EyeGlint.h"
 #include "S47Freeform.h"
 #include "S47FreeformAudioDesk.h"
 #include "S47Album.h"
@@ -238,14 +239,15 @@ namespace
   // opening, the job, its recording and result, the filing by the board's own buttons, the reply and its effect.
   // PASS only if: no body before two; the notice waits for its hour; a menu holds the notice and the morning's reply; a
   // disk Continue in the notice neither loses nor repeats it; nothing is at the feeder before midnight and something is
-  // after; the two places read differently; what the player can read on the board, the plan and the tasks is word for word
+  // after; one of the two places reads straight; what the player can read on the board, the plan and the tasks is word for word
   // the same under another cause; a real control closes what it should and the board stops offering it; filed right, the
   // morning brings what the table says for it, once, also after a disk Continue; back from before the control, filed wrong,
   // it is accepted, survives a Continue before the reply, is answered next morning with no gain, and Rest still goes on.
-  void MysteryBoardOpen(US47Main* M)
+  // D48-20261110: bNotes unfolds the case notes (the traces) as the [+] CASE NOTES key on the board does
+  void MysteryBoardOpen(US47Main* M,bool bNotes=false)
   {
    M->UI->Close(true);const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));
-   M->Player->Place(P.X,P.Z+1.1,0);M->Freeform->Use(TEXT("opsTerminal"));M->Freeform->OpenCaseBoard(FS47FreeformCases::MysteryLine);
+   M->Player->Place(P.X,P.Z+1.1,0);M->Freeform->Use(TEXT("opsTerminal"));M->Freeform->OpenCaseBoard(FS47FreeformCases::MysteryLine,bNotes);
   }
   // What the player can read about it, less the running clock.
   FString MysteryShown(US47Main* M) const
@@ -354,7 +356,8 @@ namespace
     }
     if(!F.HasFinding(FeederClue))return Elapsed-DreadAt>30?Fail(TEXT("after midnight the feeder has something to find")):true;
     const int32 A=F.CaseFile().ClueReading(L,0),B=F.CaseFile().ClueReading(L,1);
-    if(A==B||(A!=MysteryTruth&&B!=MysteryTruth)||F.FindingText(FeederClue)!=F.CaseFile().ClueText(L,1))return Fail(TEXT("the two places must read differently, one of them straight"));
+    // CHAIN-3-20261109: the two places may agree; one of them always tells it straight.
+    if((A!=MysteryTruth&&B!=MysteryTruth)||F.FindingText(FeederClue)!=F.CaseFile().ClueText(L,1))return Fail(TEXT("one of the two places must read straight"));
     M->World->Enter(TEXT("saro"));DreadAt=Elapsed;MysterySub=0;Stage=494;return true;
    }
    if(Stage==494)
@@ -368,7 +371,7 @@ namespace
      if(!MysteryRestore(M,MysteryBefore))return false;
      MysterySub=1;return true;
     }
-    if(MysterySub==1){MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=2;return true;}
+    if(MysterySub==1){MysteryBoardOpen(M,true);DreadAt=Elapsed;MysterySub=2;return true;}
     if(MysterySub==2)
     {
      MysteryBoard=MysteryShown(M);
@@ -382,7 +385,7 @@ namespace
     if(MysterySub==3)
     {
      if(C->Truth==MysteryTruth)return Fail(TEXT("the other seed must mean another cause"));
-     MysteryBoardOpen(M);DreadAt=Elapsed;MysterySub=4;return true;
+     MysteryBoardOpen(M,true);DreadAt=Elapsed;MysterySub=4;return true;
     }
     if(MysterySub==4)
     {
@@ -399,6 +402,12 @@ namespace
     // A real control, on the real job. Off the beam needs no fuel and no second night.
     if(Elapsed-DreadAt<.6)return true;
     if(MysterySub==0)
+    {
+     // D48-20261110: the board plans the selected test; its row is selected first
+     if(!MysteryClick(M,FString(Def.Tests[1].Name)))return Fail(TEXT("the board lists the control"));
+     DreadAt=Elapsed;MysterySub=10;return true;
+    }
+    if(MysterySub==10)
     {
      if(!MysteryClick(M,FString(TEXT("Plan this test: "))+Def.Tests[1].Name))return Fail(TEXT("the board offers the control"));
      DreadAt=Elapsed;MysterySub=1;return true;
@@ -2328,7 +2337,7 @@ namespace
      case 105:Look(25);break;
      case 106:Shot(TEXT("eyes-25m.png"));break;
      case 107:
-      if(FS47TripoCreature::ShownEyeGlints()<2)return Fail(TEXT("the eyes must show at 25 m at night"));
+      if(S47EyeGlint::Shown()<2)return Fail(TEXT("the eyes must show at 25 m at night"));
       Look(60);Stage=110;StageAt=Elapsed;return true;
     }
     ++Stage;StageAt=Elapsed;return true;
@@ -2373,6 +2382,16 @@ namespace
      return true;
     }
     {static double NextLog=0;if(Elapsed>=NextLog){NextLog=Elapsed+5;UE_LOG(LogTemp,Display,TEXT("S47: taken watch, stage %d, visit %d, in light %.1f, body %.1f m, indoors %d"),int32(Tk.Stage()),Site.VisitStage(),Tk.LightOn(),Site.VisitBodyDistance(),Tk.Indoors());}}
+    // D45-20261110: the tall one under a roof: its light comes only once it is out and near (26 m), or when none could be put in sight.
+    {
+     static bool bTallBegan=false;
+     if(TakenKind==2&&!bTallBegan&&Tk.Busy())
+     {
+      bTallBegan=true;const double Body=Site.VisitBodyDistance();
+      UE_LOG(LogTemp,Display,TEXT("S47: taken: the tall one's light begins, body %.1f m off, indoors %d"),Body,Tk.Indoors());
+      if(Body>FS47FarmSite::SitBeyond+1.)return Fail(TEXT("under a roof the tall one's light must wait until it is near"));
+     }
+    }
     if(Stage==150)
     {
      if(Tk.Stage()==FS47Taken::EStage::Dread&&!TakenShot[0]&&Elapsed-VisitFrom>3){TakenShot[0]=true;Shot(TEXT("taken-dread.png"));return true;}
@@ -2790,7 +2809,7 @@ namespace
    if(Stage==110)
    {
     if(Elapsed-StageAt<.5)return true;
-    if(FS47TripoCreature::ShownEyeGlints()!=0)return Fail(TEXT("no eye glint past 50 m"));
+    if(S47EyeGlint::Shown()!=0)return Fail(TEXT("no eye glint past 50 m"));
     Shot(TEXT("eyes-60m.png"));
     if(M->Story)M->Story->SetClock(12*3600);
     Stage=111;StageAt=Elapsed;return true;
@@ -2798,7 +2817,7 @@ namespace
    if(Stage==111)
    {
     if(Elapsed-StageAt<1.5)return true;
-    if(FS47TripoCreature::ShownEyeGlints()!=0)return Fail(TEXT("no eye glint by day"));
+    if(S47EyeGlint::Shown()!=0)return Fail(TEXT("no eye glint by day"));
     UE_LOG(LogTemp,Display,TEXT("S47: eye test PASS: night 10 and 25 m show, 60 m and daylight do not"));FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }
    if(Stage==109)

@@ -8,8 +8,9 @@ using FS47NpcInput = FS47DialogueInput;
 enum class ES47DialogueState : uint8 { Idle, Loading, Playing, Error };
 
 // core/npcDialogue.ts: roles are selected by the authored interaction, never arbitrary text. One
-// instance for the night (main.ts npcDialogue): Caliche's people and N. Vega in room 6 share it
-// (ui.npcDialogue), and ui.speakNora speaks through it.
+// instance for the night (main.ts npcDialogue): Caliche's people share it (ui.npcDialogue). (VOICE-OUT-3,
+// Tom 9 November 2026: N. Vega in room 6, the recorded line and the souvenir man have no voice since the
+// bacall, price and lynch clones are gone, so ui.speakNora is gone too; their lines are text.)
 class SIGNAL47_API FS47NpcDialogue : public FS47RecordedDialogue
 {
 public:
@@ -29,8 +30,6 @@ public:
 
 	/** ui.onCharacterStart (main.ts: the other voices and the calls stop, and the CB). */
 	TFunction<void()> OnCharacterStart;
-	/** ui.speakNora: only Chapter4 calls this, for its authored N. VEGA quote replies and toasts. */
-	void SpeakNora(const FString& Text);
 	/** The quote in `N. VEGA: "..."`, or false. /^N\. VEGA: "([\s\S]*)"$/ */
 	static bool NoraQuote(const FString& Text, FString& Out);
 

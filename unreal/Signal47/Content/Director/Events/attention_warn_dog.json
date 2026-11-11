@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "id": "attention_warn_dog",
+  "name": "The dog stops dead",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) a warning at SARO. A dog down the road, then nothing (a sign: the night goes quiet).",
+  "enabled": true,
+  "gates": {
+    "hours": [
+      "18:00",
+      "05:30"
+    ],
+    "tier": "hint",
+    "areas": [
+      "saro"
+    ]
+  },
+  "beats": [
+    {
+      "at": 0,
+      "do": "sound",
+      "sound": "dog0",
+      "pos": [
+        70,
+        2,
+        -60
+      ],
+      "gain": 0.7
+    },
+    {
+      "at": 2.5,
+      "do": "sound",
+      "sound": "dog1",
+      "pos": [
+        70,
+        2,
+        -60
+      ],
+      "gain": 0.75,
+      "rate": 1.15
+    },
+    {
+      "at": 4,
+      "do": "light",
+      "kind": "gear",
+      "strength": 0.3,
+      "secs": 8
+    },
+    {
+      "at": 4,
+      "do": "silence",
+      "secs": 6,
+      "level": 0.1
+    },
+    {
+      "at": 7,
+      "do": "thought",
+      "text": "The dog quit all at once. Like somebody told it to."
+    },
+    {
+      "at": 8,
+      "do": "evidence",
+      "key": "attention_dog_d{day}",
+      "text": "At {clock} a dog down the road went wild for a few seconds and then stopped dead, and every cricket around the station stopped with it."
+    }
+  ]
+}

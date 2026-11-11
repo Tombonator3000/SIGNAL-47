@@ -1,4 +1,5 @@
 #include "S47FieldLife.h"
+#include "S47Outfit.h"
 #include "S47Audio.h"
 #include "S47Drive.h"
 #include "S47Album.h"
@@ -24,6 +25,7 @@
 #include "S47Geo.h"
 #include "S47EngineSound.h"
 #include "S47Story.h"
+#include "S47Truck.h"
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -39,6 +41,7 @@
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/PackageName.h"
+#include "PhysicsEngine/BodySetup.h"
 #include "UObject/GarbageCollection.h"
 
 // ---------- the truck
@@ -82,14 +85,84 @@ double FS47TruckCare::FlatChance(double Mps,ES47SurfaceKind Kind)
  const double Fast=FMath::Square(FMath::Clamp(FMath::Abs(Mps)/12.,0.,1.));
  return (Kind==ES47SurfaceKind::Dirt?.0035:.0012)*Fast;
 }
+bool FS47TruckCare::FirmNear(double RoadX,double RoadZ,double& OutX,double& OutZ)
+{
+ if(!FMath::IsFinite(RoadX)||!FMath::IsFinite(RoadZ))return false;
+ if(SandAt(RoadX,RoadZ)<.15){OutX=RoadX;OutZ=RoadZ;return true;}
+ // Ring by ring outward, sixteen ways round: the first ring with firm ground on it, and on it the firmest.
+ for(double R=4;R<=FirmReach;R+=4)
+ {
+  double Best=.15;bool bAny=false;
+  for(int32 I=0;I<16;++I)
+  {
+   const double A=I*UE_DOUBLE_PI/8,X=RoadX+FMath::Cos(A)*R,Z=RoadZ+FMath::Sin(A)*R;
+   const double Soft=SandAt(X,Z);
+   if(Soft<Best){Best=Soft;OutX=X;OutZ=Z;bAny=true;}
+  }
+  if(bAny)return true;
+ }
+ return false;
+}
+FString FS47TruckCare::WayTo(double FromX,double FromZ,double ToX,double ToZ)
+{
+ // degrees from north, east 90 (road-local z runs south)
+ double Az=FMath::RadiansToDegrees(FMath::Atan2(ToX-FromX,-(ToZ-FromZ)));if(Az<0)Az+=360;
+ static const TCHAR* const Ways[]={TEXT("north"),TEXT("north-east"),TEXT("east"),TEXT("south-east"),TEXT("south"),TEXT("south-west"),TEXT("west"),TEXT("north-west")};
+ return Ways[int32(FMath::RoundToDouble(Az/45.))%8];
+}
+FS47TruckCare::ESand FS47TruckCare::SandStep(double Dt,double Soft,double Load,double Mps,bool bReverse,double DigScale)
+{
+ if(bStuck||!FMath::IsFinite(Dt)||Dt<=0)return ESand::None;
+ const double Sp=FMath::IsFinite(Mps)?FMath::Abs(Mps):0.;
+ // The grace: driven seconds and driven metres, both. Neither runs out by standing in the sand.
+ if(bGrace)
+ {
+  GraceT+=Dt;GraceM+=Sp*Dt;
+  if(GraceT>=GraceSeconds&&GraceM>=GraceNeed){bGrace=false;ReturnT=0;bReWarned=false;WarnT=0;}
+ }
+ double Rate=BogRate(Soft,Load,Mps,bReverse);
+ if(Rate>0)
+ {
+  if(bGrace)Rate=0; // the brush under the wheels: they do not dig in, though easing off and backing out still bring them up
+  else if(bAfterRescue){ReturnT+=Dt;Rate*=FMath::Lerp(.25,1.,FMath::Clamp(ReturnT/ReturnSeconds,0.,1.));} // and then by degrees
+  Rate*=FMath::IsFinite(DigScale)?FMath::Max(0.,DigScale):1.;
+ }
+ Bog=FMath::Clamp(Bog+Dt*Rate,0.,1.);
+ ESand Out=ESand::None;
+ if(bAfterRescue&&!bGrace)
+ {
+  // It tells first: the wheels dig in again, and only some seconds after that can they hold.
+  if(!bReWarned&&Bog>.2){bReWarned=true;WarnT=0;Out=ESand::Warn;}
+  else if(bReWarned){WarnT+=Dt;if(Bog<.05)bReWarned=false;}
+  if(Bog>=1&&(!bReWarned||WarnT<WarnLead))Bog=.97;
+  // Out on firm ground with the wheels clear: the dig is behind it, and the sand is as it always was.
+  if(Soft<.15&&Bog<=0)bAfterRescue=false;
+ }
+ if(Bog>=1){Bog=1;bStuck=true;bGrace=bAfterRescue=false;Out=ESand::Stuck;}
+ return Out;
+}
+void FS47TruckCare::Rescued(double FirmMetres)
+{
+ bStuck=false;Bog=0;bGrace=bAfterRescue=true;bReWarned=false;GraceT=GraceM=ReturnT=WarnT=0;bSandHinted=false;
+ // Firm ground further off than the grace's own metres: as far as that, and a truck's length or two past it, up to a limit.
+ GraceNeed=FMath::IsFinite(FirmMetres)&&FirmMetres>GraceMetres-10?FMath::Min(FirmReach+10,FirmMetres+10):GraceMetres;
+}
 void FS47TruckCare::Begin(const S47J::FObj& Saved)
 {
  WaterLeft=1;Metres=0;WeekMetres=0;LegMetres=0;bStuck=bFlat=bWarned=bPowerSet=bHeldSet=false;Bog=0;bSandHeld=false;bHissed=false;
+ bGrace=bAfterRescue=bReWarned=false;GraceT=GraceM=ReturnT=WarnT=0;GraceNeed=GraceMetres;LastFirm=FVector2D(1e9,1e9);
  if(!Saved.IsValid())return;
  const double Week=S47J::Num(Saved,TEXT("weekMetres"));WeekMetres=FMath::IsFinite(Week)?FMath::Clamp(Week,0.,1e7):0;
  const double W=S47J::Num(Saved,TEXT("water"),1);WaterLeft=FMath::IsFinite(W)?FMath::Clamp(W,0.,1.):1;
  bStuck=S47J::Bool(Saved,TEXT("stuck"));bFlat=S47J::Bool(Saved,TEXT("flat"));
  const double Leg=S47J::Num(Saved,TEXT("legMetres"));LegMetres=FMath::IsFinite(Leg)?FMath::Clamp(Leg,0.,1e6):0;
+ // STUCK-GRACE-20261109: a dig's grace, as far as it had run.
+ const double Gt=S47J::Num(Saved,TEXT("graceT"),-1),Gm=S47J::Num(Saved,TEXT("graceM"),-1),Gn=S47J::Num(Saved,TEXT("graceNeed"),GraceMetres);
+ if(!bStuck&&FMath::IsFinite(Gt)&&FMath::IsFinite(Gm)&&Gt>=0&&Gm>=0)
+ {
+  GraceT=FMath::Min(Gt,1e5);GraceM=FMath::Min(Gm,1e6);GraceNeed=FMath::IsFinite(Gn)?FMath::Clamp(Gn,GraceMetres,FirmReach+10):GraceMetres;
+  bAfterRescue=true;bGrace=!(GraceT>=GraceSeconds&&GraceM>=GraceNeed);
+ }
 }
 S47J::FObj FS47TruckCare::Save() const
 {
@@ -99,6 +172,7 @@ S47J::FObj FS47TruckCare::Save() const
  if(bFlat)S47J::Set(O,TEXT("flat"),true);
  if(WeekMetres>=1)S47J::Set(O,TEXT("weekMetres"),FMath::RoundToDouble(WeekMetres));
  if(LegMetres>=1)S47J::Set(O,TEXT("legMetres"),FMath::RoundToDouble(LegMetres));
+ if(bAfterRescue&&!bStuck){S47J::Set(O,TEXT("graceT"),FMath::RoundToDouble(GraceT*10)/10);S47J::Set(O,TEXT("graceM"),FMath::RoundToDouble(GraceM*10)/10);if(GraceNeed!=GraceMetres)S47J::Set(O,TEXT("graceNeed"),FMath::RoundToDouble(GraceNeed));}
  return O;
 }
 FString FS47TruckCare::StatusLine() const
@@ -161,8 +235,11 @@ void FS47TruckCare::StepGround(double Dt,FS47DriveController& D,double RoadX,dou
  }
  if(!bStuck)
  {
-  Bog=FMath::Clamp(Bog+Dt*BogRate(Soft,D.Load,D.Speed,D.Reversing()),0.,1.);
-  if(Soft>.05){D.Held=1.8*Soft;bSandHeld=true;}
+  // (M7: mud-and-sand tires dig in half as fast, FS47Outfit; coming out is as quick. STUCK-GRACE-20261109: SandStep has the grace.)
+  if(Soft<.15)LastFirm=FVector2D(RoadX,RoadZ);
+  const ESand Did=SandStep(Dt,Soft,D.Load,D.Speed,D.Reversing(),FS47Outfit::TuneFor(M&&M->Freeform?M->Freeform.Get():nullptr).Bog);
+  // the sand drags, less with the brush under the wheels
+  if(Soft>.05){D.Held=1.8*Soft*(bGrace?.5:1.);bSandHeld=true;}
   else if(bSandHeld){D.Held=0;bSandHeld=false;}
   // the wheel tugs this way and that in the soft ground
   if(Soft>.1&&Going>.5){TugT+=Dt;D.Heading+=Dt*Soft*.1*FMath::Sin(TugT*1.7)*FMath::Min(1.,Going/6.);}
@@ -175,11 +252,16 @@ void FS47TruckCare::StepGround(double Dt,FS47DriveController& D,double RoadX,dou
     if(M->Audio)M->Audio->Sfx(TEXT("gust"),FS47Sound{.Gain=float(.12+.3*Bog),.Rate=1.7f,.Lp=900.f,.Dur=.35f});
     if(Engine&&Bog>.45&&FMath::FRand()<.45f)Engine->Cough(.25+.3*Bog);
    }
-   if(!bSandHinted&&Bog>.4&&M->UI){bSandHinted=true;M->UI->Toast(TEXT("Soft sand. Ease off, or back out."),4);}
+   if(!bSandHinted&&!bAfterRescue&&Bog>.4&&M->UI){bSandHinted=true;M->UI->Toast(TEXT("Soft sand. Ease off, or back out."),4);}
   }
-  if(Bog>=1)
+  if(Did==ESand::Warn)
   {
-   bStuck=true;Bog=1;if(bSandHeld){bSandHeld=false;}Hold();
+   if(M->UI)M->UI->Toast(TEXT("The wheels are digging in again. Ease off, or back out the way you came."),4);
+   UE_LOG(LogTemp,Display,TEXT("S47: truck: the wheels dig in again after the dig, at %.0f, %.0f (depth %.2f)"),RoadX,RoadZ,Soft);
+  }
+  if(Did==ESand::Stuck)
+  {
+   if(bSandHeld){bSandHeld=false;}Hold();
    if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.5f,.Rate=.6f});
    if(M->UI)M->UI->Toast(TEXT("The back end settles. Stuck to the axle in sand."),6);
    UE_LOG(LogTemp,Display,TEXT("S47: truck: bogged in sand at %.0f, %.0f (depth %.2f)"),RoadX,RoadZ,Soft);M->RequestAutosave();
@@ -322,9 +404,35 @@ bool FS47TruckCare::DigOut()
 {
  if(!bStuck||!M||!M->Freeform||!M->World)return false;
  const bool bRope=M->Freeform->InventoryCount(TEXT("rope"))>0;const double Minutes=DigTime();
- bStuck=false;Bog=0;M->Freeform->SpendTime(Minutes*60);if(bHeldSet){M->World->HoldTruck(0);bHeldSet=false;}
- if(M->UI)M->UI->Toast(bRope?FString::Printf(TEXT("%.0f minutes: the spade, then the come-along on a fence post, a click at a time. It comes out."),Minutes):FString::Printf(TEXT("%.0f minutes with the spade and some brush under the wheels. It comes out."),Minutes),6);
- UE_LOG(LogTemp,Display,TEXT("S47: truck: dug out"));M->RequestAutosave();return true;
+ // STUCK-GRACE-20261109: where it stands, how far firm ground is and which way; the way it came in, when that is near enough.
+ double Rx=0,Rz=0,Fx=0,Fz=0;bool bAt=false;
+ if(M->Web)
+ {
+  const FS47Truck* T=M->World->TruckHere();
+  const FVector P=T?T->Position:(M->Player?M->Player->Pos:FVector::ZeroVector);
+  bAt=(T||M->Player)&&S47OpenLand::RoadOf(M->Web->Area(),P.X,P.Z,Rx,Rz);
+ }
+ const bool bSoftHere=bAt&&SandAt(Rx,Rz)>=.15;
+ bool bFirm=bSoftHere&&FirmNear(Rx,Rz,Fx,Fz);
+ bool bBack=false;
+ if(bSoftHere&&LastFirm.X<1e8)
+ {
+  const double Back=FVector2D::Distance(LastFirm,FVector2D(Rx,Rz));
+  if(Back<=FirmReach&&(!bFirm||Back<=FVector2D::Distance(FVector2D(Fx,Fz),FVector2D(Rx,Rz))+15)){Fx=LastFirm.X;Fz=LastFirm.Y;bFirm=bBack=true;}
+ }
+ const double FirmM=!bSoftHere?0.:bFirm?FVector2D::Distance(FVector2D(Fx,Fz),FVector2D(Rx,Rz)):FirmReach;
+ M->Freeform->SpendTime(Minutes*60);if(bHeldSet){M->World->HoldTruck(0);bHeldSet=false;}
+ Rescued(FirmM);
+ // Critics, round 8: in yards, as the rest of the game speaks (an American in 1986 does not say "40 m"), to the nearest five;
+ // past sixty only "a good way off". Where nothing was measured (no road position), nothing said of the ground.
+ const int32 Yards=int32(FMath::Max(5.,FMath::RoundToDouble(FirmM*1.0936/5)*5));
+ const FString HowFar=Yards>60?FString(TEXT("a good way off to the")):FString::Printf(TEXT("about %d yards"),Yards);
+ const FString Way=!bAt?FString():!bSoftHere?FString(TEXT(" It stands on firm ground."))
+  :bFirm?FString::Printf(TEXT(" Firm ground %s %s%s: take it there gently, the brush will hold that far."),*HowFar,*WayTo(Rx,Rz,Fx,Fz),bBack?TEXT(", back the way you came"):TEXT(""))
+  :FString(TEXT(" Sand all round: keep it moving, gently, and the brush will hold a while."));
+ if(M->UI)M->UI->Toast((bRope?FString::Printf(TEXT("%.0f minutes: the spade, then the come-along on a fence post, a click at a time. It comes out."),Minutes):FString::Printf(TEXT("%.0f minutes with the spade and some brush under the wheels. It comes out."),Minutes))+Way,8);
+ UE_LOG(LogTemp,Display,TEXT("S47: truck: dug out%s, grace %.0f s and %.0f m"),bSoftHere?*FString::Printf(TEXT(" in sand, firm ground %.0f m %s"),FirmM,*WayTo(Rx,Rz,Fx,Fz)):TEXT(" on firm ground"),GraceSeconds,GraceNeed);
+ M->RequestAutosave();return true;
 }
 bool FS47TruckCare::ChangeWheel()
 {
@@ -341,7 +449,7 @@ bool FS47TruckCare::TopUp()
  if(M->UI)M->UI->Toast(TEXT("You fill the radiator from the can and wait for it to stop ticking."),5);
  UE_LOG(LogTemp,Display,TEXT("S47: truck: radiator topped up"));M->RequestAutosave();return true;
 }
-void FS47TruckCare::Clear(){bStuck=bFlat=false;Bog=0;bHissed=false;WaterLeft=1;LegMetres=0;bWarned=false;if(M&&M->World){if(bHeldSet)M->World->HoldTruck(0);if(auto* D=M->World->CabDrive();D&&bPowerSet)D->Power=1;}bHeldSet=bPowerSet=false;}
+void FS47TruckCare::Clear(){bStuck=bFlat=false;Bog=0;bHissed=false;bGrace=bAfterRescue=bReWarned=false;GraceT=GraceM=ReturnT=WarnT=0;GraceNeed=GraceMetres;WaterLeft=1;LegMetres=0;bWarned=false;if(M&&M->World){if(bHeldSet)M->World->HoldTruck(0);if(auto* D=M->World->CabDrive();D&&bPowerSet)D->Power=1;}bHeldSet=bPowerSet=false;}
 bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
@@ -383,6 +491,63 @@ bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
   Check(B.Bogging()==0&&FMath::IsNearlyEqual(B.TempNeedle(),.5),TEXT("a Continue starts on firm ground; the needle sits in the middle with a full radiator"));
   B.TestWater(.02);Check(B.TempNeedle()>.9,TEXT("the needle climbs as the radiator runs dry"));
  }
+ // STUCK-GRACE-20261109 (Tom): dug out, the truck is not stuck again inside 12 seconds' driving or 40 metres, the later; then,
+ // still in the sand, it can be, but only after it has said so.
+ {
+  const double Dt=.05;
+  // full throttle at a crawl in the deepest sand, from the dig: when it holds again, and when it warned
+  const auto Drive=[Dt](FS47TruckCare& C,double Mps,double Limit,double& Stuck,double& Warned,double& GraceEnd,double& Metres)
+  {
+   Stuck=Warned=GraceEnd=-1;Metres=0;
+   for(double T=0;T<Limit&&Stuck<0;T+=Dt)
+   {
+    const ESand S=C.SandStep(Dt,1,1,Mps,false);Metres+=Mps*Dt;
+    if(GraceEnd<0&&!C.InGrace())GraceEnd=T;
+    if(S==ESand::Warn&&Warned<0)Warned=T;
+    if(S==ESand::Stuck)Stuck=T;
+   }
+  };
+  double Stuck=0,Warned=0,GraceEnd=0,Metres=0;
+  FS47TruckCare A(nullptr);A.Begin(nullptr);
+  Check(!A.InGrace()&&!A.AfterRescue(),TEXT("STUCK-GRACE: a truck that was never dug out has no grace"));
+  A.TestStick();A.Rescued();
+  Check(!A.Stuck()&&A.Bogging()==0&&A.InGrace()&&FMath::IsNearlyEqual(A.GraceSecondsLeft(),GraceSeconds)&&FMath::IsNearlyEqual(A.GraceMetresLeft(),GraceMetres),TEXT("STUCK-GRACE: dug out, it is free and the grace has begun"));
+  // standing in the sand with the wheels spinning: a minute of it and it has not sunk, and the grace has not run out
+  Drive(A,0,60,Stuck,Warned,GraceEnd,Metres);
+  Check(Stuck<0&&A.InGrace()&&A.Bogging()==0,TEXT("STUCK-GRACE: standing still with the throttle down for a minute, it does not sink and the grace waits"));
+  // at a crawl (1 m/s): 40 m takes 40 s, so the metres are the later; never stuck before them
+  FS47TruckCare Slow(nullptr);Slow.Begin(nullptr);Slow.TestStick();Slow.Rescued();
+  Drive(Slow,1,120,Stuck,Warned,GraceEnd,Metres);
+  Check(GraceEnd>=GraceMetres-.1&&Stuck>GraceEnd&&Stuck*1.>=GraceMetres,*FString::Printf(TEXT("STUCK-GRACE: at 1 m/s the grace runs %.1f s (40 m), stuck again only at %.1f s"),GraceEnd,Stuck));
+  // at 5 m/s: 40 m in 8 s, so the 12 seconds are the later; never stuck before 12 s
+  FS47TruckCare Quick(nullptr);Quick.Begin(nullptr);Quick.TestStick();Quick.Rescued();
+  Drive(Quick,5,120,Stuck,Warned,GraceEnd,Metres);
+  Check(GraceEnd>=GraceSeconds-.1&&GraceEnd<GraceSeconds+.2&&Stuck>GraceEnd,*FString::Printf(TEXT("STUCK-GRACE: at 5 m/s the grace runs %.1f s (12 s), stuck again only at %.1f s"),GraceEnd,Stuck));
+  // after the grace, still in the deepest sand at full throttle: it can stick again, warned first, and not in an instant
+  Check(Stuck>0&&Warned>GraceEnd&&Stuck-Warned>=WarnLead-.01&&Stuck-GraceEnd>=4&&Quick.Stuck(),*FString::Printf(TEXT("STUCK-GRACE: kept in the sand after the grace it sinks again, warned %.1f s before, %.1f s after the grace"),Stuck-Warned,Stuck-GraceEnd));
+  // after the grace it digs in slower at first than a truck that was never dug out
+  FS47TruckCare Fresh(nullptr);Fresh.Begin(nullptr);double FreshStuck=0,Fw=0,Fg=0,Fm=0;Drive(Fresh,2,30,FreshStuck,Fw,Fg,Fm);
+  FS47TruckCare Ramp(nullptr);Ramp.Begin(nullptr);Ramp.TestStick();Ramp.Rescued();double Rs=0,Rw=0,Rg=0,Rm=0;Drive(Ramp,2,120,Rs,Rw,Rg,Rm);
+  Check(FreshStuck>0&&Rs>0&&Rs-Rg>FreshStuck,*FString::Printf(TEXT("STUCK-GRACE: from the grace's end it takes %.1f s to sink, a fresh truck %.1f s"),Rs-Rg,FreshStuck));
+  // out onto firm ground the dig is behind it
+  FS47TruckCare Out(nullptr);Out.Begin(nullptr);Out.TestStick();Out.Rescued();
+  for(double Tm=0;Tm<20;Tm+=Dt)Out.SandStep(Dt,0,1,5,false);
+  Check(!Out.InGrace()&&!Out.AfterRescue()&&!Out.Stuck(),TEXT("STUCK-GRACE: driven out onto firm ground, the sand is as it always was"));
+  // firm ground further off than 40 m: the grace reaches it
+  FS47TruckCare Far(nullptr);Far.Begin(nullptr);Far.TestStick();Far.Rescued(60);
+  Check(FMath::IsNearlyEqual(Far.GraceMetresLeft(),70.),TEXT("STUCK-GRACE: firm ground 60 m off, the grace holds for 70 m"));
+  // the grace survives a Continue as far as it had run; a sound truck writes nothing of it
+  FS47TruckCare Mid(nullptr);Mid.Begin(nullptr);Mid.TestStick();Mid.Rescued();
+  for(double Tm=0;Tm<5;Tm+=Dt)Mid.SandStep(Dt,1,1,2,false);
+  FS47TruckCare Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(Mid.Save())));
+  Check(Kept.InGrace()&&FMath::Abs(Kept.GraceSecondsLeft()-7)<.2&&FMath::Abs(Kept.GraceMetresLeft()-30)<.3&&!Kept.Stuck(),TEXT("STUCK-GRACE: the grace survives a Continue as far as it had run"));
+  FS47TruckCare Done(nullptr);Done.Begin(nullptr);Done.TestStick();Done.Rescued();Done.Clear();
+  Check(Done.Save()->Values.Num()==0&&!Done.InGrace(),TEXT("STUCK-GRACE: the county tow leaves no grace behind and writes nothing"));
+  // where the firm ground is: off the wash's bed within reach, and the words for the way
+  double Fx=0,Fz=0;const bool bFound=FirmNear(-330,500,Fx,Fz);
+  Check(bFound&&SandAt(Fx,Fz)<.15&&FVector2D::Distance(FVector2D(Fx,Fz),FVector2D(-330,500))<=FirmReach&&WayTo(0,0,0,-10)==TEXT("north")&&WayTo(0,0,10,0)==TEXT("east")&&WayTo(0,0,-7,7)==TEXT("south-west"),
+   TEXT("STUCK-GRACE: from the wash's bed firm ground is found within reach, and which way it lies is said in words"));
+ }
  return OK;
 }
 
@@ -390,16 +555,36 @@ bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
 namespace
 {
  FVector TripWorld(const FVector& At){return At+FVector(0,.3,0);}
+ // D46-20261110 (Tom, D46-10): the trip camera as Tools/tripcam/import_assets.sh imports it (a 31 cm olive box on its ground stake,
+ // pivot at the stake's foot, lens towards three's -Z). Only with every material bound and collision to answer the use trace;
+ // otherwise nothing, and the box stands for it as before.
+ UStaticMesh* TripModel()
+ {
+  const FString Package=TEXT("/Game/Licensed/Models/tripcam/StaticMeshes/tripcam");
+  if(!FPackageName::DoesPackageExist(Package))return nullptr;
+  UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*(Package+TEXT(".tripcam")));
+  if(!Mesh||Mesh->GetStaticMaterials().IsEmpty())return nullptr;
+  for(const FStaticMaterial& Slot:Mesh->GetStaticMaterials())if(!Slot.MaterialInterface){UE_LOG(LogTemp,Warning,TEXT("S47: trip camera model has an unbound material slot; the box stands for it"));return nullptr;}
+  const UBodySetup* Body=Mesh->GetBodySetup();
+  if(!Body||(Body->AggGeom.GetElementCount()==0&&Body->GetCollisionTraceFlag()!=CTF_UseComplexAsSimple)){UE_LOG(LogTemp,Warning,TEXT("S47: trip camera model has no collision (import it again); the box stands for it"));return nullptr;}
+  return Mesh;
+ }
+ // The saved yaw, or none: an older save (before D46) left it out, and the lens then looks down -Z as it always stood.
+ double TripYaw(const S47J::FObj& Saved)
+ {
+  const double Y=S47J::Num(Saved,TEXT("yaw"),0);
+  return FMath::IsFinite(Y)?FMath::Clamp(Y,-UE_DOUBLE_TWO_PI,UE_DOUBLE_TWO_PI):0;
+ }
 }
 void FS47TripCamera::Begin(const S47J::FObj& Saved)
 {
- Stop();Life=MakeShared<uint8>(0);bOut=false;Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;
+ Stop();Life=MakeShared<uint8>(0);bOut=false;Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;Yaw=0;
  if(Saved.IsValid()&&S47J::Bool(Saved,TEXT("out")))
  {
   const auto A=S47J::Nums(Saved,TEXT("at"));const double Clock=S47J::Num(Saved,TEXT("clock"));Area=S47J::Str(Saved,TEXT("area"));Title=S47J::Str(Saved,TEXT("title"));
   if(A.Num()==3&&FMath::IsFinite(Clock)&&!Area.IsEmpty())
   {
-   At=FVector(A[0],A[1],A[2]);SetClock=Clock;bAtMarksThen=S47J::Bool(Saved,TEXT("marks"));bOut=true;
+   At=FVector(A[0],A[1],A[2]);SetClock=Clock;bAtMarksThen=S47J::Bool(Saved,TEXT("marks"));bOut=true;Yaw=TripYaw(Saved);
    Caught=ECatch(FMath::Clamp(S47J::Int(Saved,TEXT("caught")),0,2));CaughtClock=S47J::Num(Saved,TEXT("caughtClock"),-1);PhotoId=S47J::Str(Saved,TEXT("photo"));
   }
  }
@@ -412,6 +597,7 @@ S47J::FObj FS47TripCamera::Save() const
 {
  auto O=S47J::New();if(!bOut)return O;
  S47J::Set(O,TEXT("out"),true);S47J::Set(O,TEXT("area"),Area);S47J::Set(O,TEXT("title"),Title);S47J::Set(O,TEXT("clock"),SetClock);S47J::Set(O,TEXT("marks"),bAtMarksThen);S47J::Set(O,TEXT("at"),TArray<double>{At.X,At.Y,At.Z});
+ if(Yaw!=0)S47J::Set(O,TEXT("yaw"),Yaw); // D46-20261110: added to the record; a save without it reads as before
  if(Caught!=ECatch::None){S47J::Set(O,TEXT("caught"),int32(Caught));S47J::Set(O,TEXT("caughtClock"),CaughtClock);}
  if(!PhotoId.IsEmpty())S47J::Set(O,TEXT("photo"),PhotoId);
  return O;
@@ -423,11 +609,18 @@ bool FS47TripCamera::Build()
  const int32 SaroRoot=M->Web->Handle(TEXT("ext.group")),RoadRoot=M->Web->Handle(TEXT("world.legs.road.area.group"));if(SaroRoot<0||RoadRoot<0)return false;
  auto* Box=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
  auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));if(!Box||!Base)return false;
+ // D46-20261110 (D46-10): the imported model when it is there, with its own materials and the stake's foot as its pivot; else the box.
+ UStaticMesh* Model=TripModel();bModel=Model!=nullptr;
+ if(bModel)UE_LOG(LogTemp,Display,TEXT("S47: trip camera drawn from %s (%d triangles)"),*Model->GetPathName(),Model->GetNumTriangles(0));
  const auto Prop=[&](int32 Root,const TCHAR* Name,FS47Obj& Out)
  {
-  auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web.Get());Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.14f,.13f,.1f));Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);
-  auto* C=NewObject<UStaticMeshComponent>(M->Web.Get(),Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(Box);C->SetMaterial(0,Mat);
-  C->SetWorldScale3D(FVector(.2,.14,.6));
+  auto* C=NewObject<UStaticMeshComponent>(M->Web.Get(),Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());
+  if(bModel){C->SetStaticMesh(Model);C->SetForceDisableNanite(true);C->SetCastShadow(true);} // (imported without Nanite: its glTF materials are not marked for it, D44)
+  else
+  {
+   auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web.Get());Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.14f,.13f,.1f));Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);
+   C->SetStaticMesh(Box);C->SetMaterial(0,Mat);C->SetWorldScale3D(FVector(.2,.14,.6));
+  }
   C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();
   Out=M->Web->ObjAt(M->Web->AdoptNode(C,Root,Name));return C;
  };
@@ -447,7 +640,11 @@ void FS47TripCamera::Layout()
   if(!C)continue;
   const bool bThis=bOut&&(C==PropSaro.Get())==(Area==TEXT("saro"));
   C->SetVisibility(bThis);C->SetHiddenInGame(!bThis);C->SetCollisionEnabled(bThis?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
-  if(bThis)C->SetWorldLocation(S47Three::ToUE(TripWorld(At)));
+  if(!bThis)continue;
+  // D46-20261110: the model stands on the ground where it was set (its pivot is the stake's foot), its lens the way the player faced;
+  // the box as before, lifted to stand on its lower end.
+  if(bModel){double E[16];S47Three::Compose(At,S47Three::Euler(0,Yaw,0),FVector::OneVector,E);C->SetWorldTransform(S47Three::MatToUE(E));}
+  else C->SetWorldLocation(S47Three::ToUE(TripWorld(At)));
  }
 }
 bool FS47TripCamera::CanSet() const
@@ -461,10 +658,27 @@ bool FS47TripCamera::SetHere(const FString& InTitle,bool bAtMarks)
  bOut=true;Title=InTitle;bAtMarksThen=bAtMarks;SetClock=Clock;Area=M->Web->Area();Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;
  if(Area==TEXT("diner"))Area=TEXT("road");
  At=FVector(M->Player->Pos.X+1.5,M->Player->FloorY,M->Player->Pos.Z);
+ Yaw=FMath::IsFinite(M->Player->Yaw)?FMath::Fmod(M->Player->Yaw,UE_DOUBLE_TWO_PI):0; // D46-20261110: it watches the way the player looked
  if(!bBuilt)Build();
  Layout();
  if(M->UI)M->UI->Toast(M->Freeform->InventoryCount(TEXT("wire"))>0?TEXT("Trip camera set, and fence wire run out from it across the way in, thirty yards each side. It reads in the morning."):TEXT("Trip camera set, wire across the likely way in. It reads in the morning."),5);
  UE_LOG(LogTemp,Display,TEXT("S47: trip camera set at %s, marks %d"),*Title,bAtMarks);M->RequestAutosave();return true;
+}
+bool FS47TripCamera::SetOutPlace(FVector2D& OutRoad,FString& OutTitle) const
+{
+ // Only for the land test that is planned and not yet read, with the camera built and in the kit, not out.
+ if(!M||!M->Freeform||!M->Freeform->EventPlaces||!CanSet())return false;
+ if(M->Freeform->PlannedFieldTest(FS47FreeformCases::LandLine)!=FS47FreeformCases::LandCamera)return false;
+ const FS47EventPlaces& Places=*M->Freeform->EventPlaces;
+ const FS47EventPlace* Where=nullptr;
+ if(M->Freeform->FarmSite&&M->Freeform->FarmSite->Armed())Where=Places.Find(M->Freeform->FarmSite->PlaceId());
+ if(!Where)
+ {
+  int32 Latest=0;
+  for(const FS47EventPlace& P:Places.All()){const int32 Night=Places.LastNight(P.Id);if(Night>Latest){Latest=Night;Where=&P;}}
+ }
+ if(!Where||!FMath::IsFinite(Where->X)||!FMath::IsFinite(Where->Z))return false;
+ OutRoad=FVector2D(Where->X,Where->Z);OutTitle=Where->Title;return true;
 }
 int32 FS47TripCamera::Reading(ECatch Got,int32 Seed,int32 Night)
 {
@@ -509,10 +723,14 @@ void FS47TripCamera::Watch()
  TOptional<FVector> Body,Light;
  const double Reach=F.InventoryCount(TEXT("wire"))>0?WireBodyReach:BodyReach;
  if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(Flat(I.Pos)<Reach&&Sees(Lens,I.Eye)){Body=I.Eye;break;}
+ // N1110 (T16-20): a figure the night sent to the station's fences is a body near the lens as well.
+ if(!Body&&F.Director)for(const TCHAR* Fig:{TEXT("observer"),TEXT("service_presence"),TEXT("feeder_presence"),TEXT("array_presence")})if(F.Director->ActiveEvent()==Fig&&Flat(F.Director->EventAnchor())<Reach&&Sees(Lens,F.Director->EventAnchor()+FVector(0,1.6,0))){Body=F.Director->EventAnchor()+FVector(0,1.6,0);break;}
  if(!Body&&F.FarmSite)if(const TOptional<FVector> Eye=F.FarmSite->VisitBodyEye();Eye&&Flat(*Eye)<Reach&&Sees(Lens,*Eye))Body=*Eye;
  if(!Body)
  {
   if(F.Taken&&F.Taken->Stage()==FS47Taken::EStage::Flood&&Flat(F.Taken->LightFrom())<LightReach)Light=F.Taken->LightFrom();
+  // N1110 (T16-20): a landing that came down within reach leaves its ring on the ground in front of the lens, lit or not.
+  if(!Light&&F.Director&&F.Director->ActiveEvent()==TEXT("landing_trace")&&Flat(F.Director->EventAnchor())<LightReach)Light=F.Director->EventAnchor();
   static const TCHAR* const Lights[]={TEXT("farm_lights"),TEXT("town_lights"),TEXT("dusk_orb"),TEXT("response_lights"),TEXT("flyover"),TEXT("close_pass")};
   if(!Light&&F.Director)for(const TCHAR* L:Lights)if(F.Director->ActiveEvent()==L&&Flat(F.Director->EventAnchor())<LightReach&&Sees(Lens,F.Director->EventAnchor())){Light=F.Director->EventAnchor();break;}
  }
@@ -572,6 +790,12 @@ bool FS47TripCamera::SelfTest(TArray<FString>& Lines)
  FS47TripCamera B(nullptr);B.Begin(S47J::Read(S47J::Write(O)));Check(B.Out()&&S47J::Num(B.Save(),TEXT("clock"))==90000.,TEXT("one left out stays out after a Continue"));
  S47J::Set(O,TEXT("caught"),2);S47J::Set(O,TEXT("caughtClock"),97000.);S47J::Set(O,TEXT("photo"),TEXT("trip4@97000"));
  FS47TripCamera Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(O)));Check(Kept.CaughtTonight()==ECatch::Body&&S47J::Str(Kept.Save(),TEXT("photo"))==TEXT("trip4@97000"),TEXT("what it caught, and its frame, survive a Continue"));
+ // D46-20261110 (D46-10): the way it faces is in the record; a save from before it has none and reads as it always stood
+ Check(Kept.Yaw==0&&!Kept.Save()->Values.Contains(TEXT("yaw")),TEXT("an older record without a yaw stands as before, and writes none"));
+ S47J::Set(O,TEXT("yaw"),-2.25);
+ FS47TripCamera Faced(nullptr);Faced.Begin(S47J::Read(S47J::Write(O)));Check(FMath::IsNearlyEqual(Faced.Yaw,-2.25)&&FMath::IsNearlyEqual(S47J::Num(Faced.Save(),TEXT("yaw")),-2.25)&&Faced.Out(),TEXT("the way it faces survives a Continue"));
+ S47J::Set(O,TEXT("yaw"),1e30);
+ FS47TripCamera Wild(nullptr);Wild.Begin(S47J::Read(S47J::Write(O)));Check(Wild.Out()&&FMath::Abs(Wild.Yaw)<=UE_DOUBLE_TWO_PI,TEXT("a yaw out of all bounds is held to a turn, and the camera is still out"));
  return OK;
 }
 
@@ -658,7 +882,7 @@ void FS47DayRound::WriteLog(int32 Day)
  if(!M||!M->Story||!M->Freeform)return;
  auto& F=*M->Freeform;
  int32 Filed=0,Paid=0;
- for(const auto& J:F.Jobs())if(J.Day==Day&&J.Stage==FS47FreeformSession::EJobStage::Filed&&J.CaseTest<0){++Filed;Paid+=J.bDocked?10:20;}
+ for(const auto& J:F.Jobs())if(J.Day==Day&&J.Stage==FS47FreeformSession::EJobStage::Filed&&J.CaseTest<0){++Filed;Paid+=J.PaidAmount>=0?J.PaidAmount:J.bPaid?(J.bDocked?10:20):0;} // N1110 (T16-20): what was credited, not a flat guess (a save from before has none: the old figure for a paid card)
  const FString Trouble=F.PowerFault()?TEXT("feeder fault"):F.Field&&F.Field->HasArrayFault()?TEXT("antenna fault"):FString();
  FS47Doc D;D.Id=FString::Printf(TEXT("shiftlog-%d"),Day);D.Title=FString::Printf(TEXT("Shift log, day %d"),Day);D.Kind=TEXT("typed");D.Stamp=FString::Printf(TEXT("SARO / DAY %d"),Day);
  D.Page=LogPage(Day,Filed,Paid,DoneDay==Day||F.HasFinding(FString::Printf(TEXT("round-d%d"),Day)),F.RecordsOnDay(Day),Trouble);D.Transcript=D.Page;
@@ -674,6 +898,7 @@ bool FS47DayRound::SelfTest(TArray<FString>& Lines)
  Check(bThree&&bStable&&bDiffers,TEXT("three different stops a day, the same all day, not the same every day"));
  const FString P=LogPage(4,2,40,true,3,TEXT("feeder fault"));
  Check(P.Contains(TEXT("DAY 4"))&&P.Contains(TEXT("FILED 2"))&&P.Contains(TEXT("$40"))&&P.Contains(TEXT("feeder fault")),TEXT("the log says what the record says"));
+ Check(LogPage(5,1,17,false,0,FString()).Contains(TEXT("CREDITED $17")),TEXT("N1110: the log shows the amount that was credited, not a flat rate"));
  FS47DayRound R(nullptr);R.Begin(nullptr);Check(R.Save()->Values.Num()==0&&R.StopsDone()==0,TEXT("an older save has no round behind it"));
  return OK;
 }

@@ -815,8 +815,8 @@ void US47Chapter4::UsePhone()
 
 void US47Chapter4::NoraToast(const FString& Text, float Seconds)
 {
+	// (VOICE-OUT-3, Tom 9 November 2026: her toasts are text only; ui.speakNora's bacall voice is gone)
 	Toast(Text, Seconds);
-	if (M && M->UI && M->UI->NpcDialogue) M->UI->NpcDialogue->SpeakNora(Text);
 }
 
 void US47Chapter4::OpenTalk()
@@ -847,7 +847,7 @@ void US47Chapter4::OpenTalk()
 	TWeakObjectPtr<US47Chapter4> W = this;
 	S47Panels::FTalk O;
 	O.Title = TEXT("ROOM 6 / N. VEGA");
-	O.Character = TEXT("bacall");
+	// (no O.Character: N. Vega's voice was the bacall clone, gone with VOICE-OUT-3; her talk is text)
 	O.View = [W] { return W.IsValid() ? W->View() : S47Panels::FTalkView(); };
 	O.OnChip = [W](const FString& Id) { if (W.IsValid()) W->ToggleChip(Id); };
 	O.OnTable = [W] { if (W.IsValid()) W->ShowEvidence(); };
@@ -1162,16 +1162,17 @@ void US47Chapter4::TopicLine()
 	};
 	S.bLine = true;
 	Mode = TEXT("menu");
-	// Character mode plays Nora and the recorded Price line through the panel's single actor-aware
-	// queue. The legacy whole-exchange phone voice remains optional.
+	// VOICE-OUT-3 (Tom 9 November 2026): Nora's and the line's voices (the bacall and price clones) are
+	// gone, so the panel no longer voices this exchange. The handset plays a recorded call only if every
+	// line has one; otherwise its carrier and the line's murmur under the captions, character voices on or off.
 	TOptional<FS47CallTimeline> Spoken;
-	if (A && !A->bCharacterVoices)
+	if (A)
 	{
 		TArray<FS47PhoneCue> Cues;
 		for (const FLine& L : Lines) if (!L.Who.IsEmpty()) { FS47PhoneCue C; C.By = L.Who; C.Text = L.Text; Cues.Add(C); }
 		Spoken = A->PhoneCall(Cues);
 	}
-	if (A && !A->bCharacterVoices && !Spoken && At)
+	if (A && !Spoken && At)
 	{
 		A->Sfx(TEXT("click"), Snd(0.5f, 1.f, *At));
 		A->Radio(*At, 0.08f);
@@ -1662,8 +1663,11 @@ bool US47Chapter4::SelfTest(TArray<FString>& Out)
 	// the talk panel's helpers
 	FString Quote;
 	Check(FS47NpcDialogue::NoraQuote(TEXT("N. VEGA: \"Leave it. The quiet is worse.\""), Quote) && Quote == TEXT("Leave it. The quiet is worse.") && !FS47NpcDialogue::NoraQuote(TEXT("Snow on every channel."), Quote), TEXT("speakNora takes her quotes only"));
-	const TArray<FS47DialogueLine> Spoken = FS47NpcDialogue::CharacterLines(TEXT("bacall"), { { TEXT("YOU"), TEXT("a") }, { TEXT("N. VEGA"), TEXT("b") }, { TEXT(""), TEXT("c") }, { TEXT("THE LINE"), TEXT("d") } });
-	Check(Spoken.Num() == 2 && Spoken[1].Who == TEXT("THE LINE"), TEXT("characterLines: hers and the line's"));
+	// VOICE-OUT-3: no voice role speaks her lines or the line's any more (the bacall and price clones are gone)
+	const TArray<FS47DialogueLine> Room6 = { { TEXT("YOU"), TEXT("a") }, { TEXT("N. VEGA"), TEXT("b") }, { TEXT(""), TEXT("c") }, { TEXT("THE LINE"), TEXT("d") } };
+	bool bUnvoiced = true;
+	for (const auto& Pair : FS47NpcDialogue::CharacterSpeakers()) bUnvoiced &= FS47NpcDialogue::CharacterLines(Pair.Key, Room6).IsEmpty();
+	Check(bUnvoiced, TEXT("characterLines: N. Vega and the line are text only"));
 	Check(S47Panels::PortraitOf(TEXT(" n. vega ")) == TEXT("portrait_nora") && S47Panels::PortraitOf(TEXT("THE LINE")).IsEmpty() && S47Panels::PortraitOf(TEXT("EARL")) == TEXT("portrait_host"), TEXT("portraits by the speaker's name"));
 	TArray<FColor> Snow;
 	int32 K = 0;

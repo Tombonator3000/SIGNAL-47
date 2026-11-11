@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "id": "animals_warn_birds",
+  "name": "A covey goes up all at once",
+  "notes": "N1110 (ANIMALS-20261108). Played by FS47AnimalWarn (S47AnimalWarn.cpp) as FS47Animals puts a covey of quail up out of the brush all at once, about seven seconds before one of the night's events out in the open (a figure, lights over the dishes). The code decides if and when: this file's hours and odds are its gates (the same each time that night is asked), and the animals it asks for are the game's own. Hint tier: it can be wind, a fox, anything. N1110 (pace): from the third night (N1110 pace, critic 3: day 3 was thin; the stray rule stays), odds one in four; on one night in three the warning comes alone, with no event after it. At most one warning a night, from either this or animals_warn_coyote.",
+  "enabled": true,
+  "gates": { "hours": ["18:00", "05:30"], "tier": "hint", "from_day": 3, "odds": 0.25 },
+  "beats": [
+    { "at": 1.5, "do": "thought", "text": "Every bird in that patch went up at the same instant.", "secs": 4.5 },
+    { "at": 2, "do": "evidence", "key": "animals_warn_birds_d{day}", "text": "At {clock} a whole covey of quail went up out of the brush at the same instant, all one way. I was the only thing within a hundred yards of them, and I was standing still." }
+  ]
+}

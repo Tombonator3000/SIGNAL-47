@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "id": "roof_steps_yard",
+  "name": "Out in the yard, the steps above go on",
+  "notes": "N1110. Played by S47FreeformDirector once, when the player has gone out into the yard under the roof while the steps are still going. Point: roof (where they are). No view is taken from the player. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 5, "level": 0.04 },
+    { "at": 0.4, "do": "sound", "sound": "stepConcrete0", "point": "roof", "gain": 0.4, "lp": 1800 },
+    { "at": 1.2, "do": "light", "kind": "gear", "strength": 0.3, "secs": 2.5 },
+    { "at": 1.6, "do": "sound", "sound": "stepConcrete0", "point": "roof", "gain": 0.35, "lp": 1800 },
+    { "at": 2.9, "do": "sound", "sound": "stepConcrete0", "point": "roof", "gain": 0.3, "lp": 1800 },
+    { "at": 3.8, "do": "thought", "text": "Somebody is walking up there. I do not see anybody.", "secs": 4, "if": ["outdoors"] }
+  ]
+}

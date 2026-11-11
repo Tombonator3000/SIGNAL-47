@@ -11,6 +11,10 @@
 #include "Rendering/SlateRenderer.h"
 #include "S47GameStyle.h"
 #include "S47Freeform.h"
+#include "S47FreeformCases.h"
+#include "S47Script.h"
+#include "S47StationFiles.h"
+#include "S47Marginalia.h"
 #include "S47Image.h"
 #include "S47Kit.h"
 #include "S47Main.h"
@@ -246,6 +250,8 @@ namespace
 			}
 			// (the second choice and the case board have rows of their own here; the web's table has neither)
 			Foot.Rows.Add({ KeysSaid(TEXT("alt")), TEXT("The takeout bag: set it down, stow it, take it out or throw it away. At a prompt, the other choice.") });
+			// M7-HUD-20261109: loose things in the hand, and the stones (PHYSICS-20261108, STONE-POCKET-20261109)
+			Foot.Rows.Add({ KeysSaid(TEXT("throw")), TEXT("Hold to throw what you carry; tap to set it down, or to pocket a stone (three fit). Empty-handed: a stone from the pocket, or outdoors, one off bare ground.") });
 			Foot.Rows.Add({ KeysSaid(TEXT("notebook")), FString::Printf(TEXT("The notebook. %s: its map. %s: the kit. %s: these controls."), *KeySaid(TEXT("map")), *KeySaid(TEXT("kit")), *KeySaid(TEXT("controls"))) });
 			Foot.Rows.Add({ KeysSaid(TEXT("board")), TEXT("The case board, once there is one.") });
 			Foot.Rows.Add({ KeysSaid(TEXT("pause")), TEXT("Pause: settings, save and load.") });
@@ -259,7 +265,10 @@ namespace
 			FCtlGroup Low = { TEXT("Walkie and keeping low"), {
 				{ KeysSaid(TEXT("crouch")), TEXT("Keep low, or stand up again: slower and quieter, a little harder to see and hear.") },
 				{ KeysSaid(TEXT("walkie")), TEXT("The walkie, once you carry it: call Dale, or answer him when he calls.") },
-				{ KeysSaid(TEXT("channel")), TEXT("The walkie's channel: 1 is Dale's, 2 the service band, 3 nobody's.") } } };
+				{ KeysSaid(TEXT("channel")), TEXT("The walkie's channel: 1 is Dale's, 2 the service band, 3 nobody's.") },
+				// M7-HUD-20261109: the field recorder and the counter, carried as the walkie is (TAPE-20261108, GEIGER-20261108)
+				{ KeysSaid(TEXT("tape")), TEXT("The field recorder, once you carry it: start or stop recording.") },
+				{ KeysSaid(TEXT("counter")), TEXT("The Geiger counter, once you have built it: hold it up, or put it away.") } } };
 			return { TEXT("Keyboard and mouse"), { Foot, Truck, Low } };
 		}
 		static const FCtlPage Phone = { TEXT("Phone and tablet"), {
@@ -384,6 +393,112 @@ namespace
 		return T;
 	}
 
+
+	// ---------- PT-NOTEBOOK-20261109: Freeform's papers as the notebook shows them (the saved ones are not changed) ----------
+	// what a paper is, as its card says it ("Field note", "Telex"), and the same in capitals on the open page
+	FString KindWord(const FS47Doc& D, bool bFreeform = true)
+	{
+		// (Story's book as it was: its own four, the rest a print)
+		if (!bFreeform && D.Kind != TEXT("hand") && D.Kind != TEXT("printout") && D.Kind != TEXT("typed") && D.Kind != TEXT("map")) return TEXT("Print");
+		static const TMap<FString, FString> Words = { { TEXT("hand"), TEXT("Handwritten") }, { TEXT("printout"), TEXT("Printout") }, { TEXT("typed"), TEXT("Typed") }, { TEXT("map"), TEXT("Map") },
+			{ TEXT("fieldnote"), TEXT("Field note") }, { TEXT("telex"), TEXT("Telex") }, { TEXT("comparison"), TEXT("Comparison") }, { TEXT("photo"), TEXT("Photograph") } };
+		const FString* W = Words.Find(D.Kind);
+		return W ? *W : FString(TEXT("Print"));
+	}
+	// a field record's title without the "Field record: " every one of them starts with
+	FString ShownTitle(const FS47Doc& D, bool bFreeform)
+	{
+		static const FString Lead = TEXT("Field record: ");
+		return bFreeform && D.Title.StartsWith(Lead, ESearchCase::CaseSensitive) ? D.Title.Mid(Lead.Len()) : D.Title;
+	}
+	// a field record's own words: no stamp and OBSERVATION before them, and no standing sentences after (FS47FreeformSession::RecordEvidence)
+	const TCHAR* const FieldTail = TEXT("Interpretation remains separate from the retained observation. Compare independent sources before assigning an origin.");
+	FString ShownPage(const FS47Doc& D, bool bFreeform)
+	{
+		if (!bFreeform) return D.Page;
+		FString T = D.Page;
+		const FString HeadLine = D.Stamp + TEXT("\n\nOBSERVATION\n");
+		if (D.Kind == TEXT("fieldnote") && !D.Stamp.IsEmpty() && T.StartsWith(HeadLine, ESearchCase::CaseSensitive)) T.RightChopInline(HeadLine.Len());
+		T.ReplaceInline(FieldTail, TEXT(""), ESearchCase::CaseSensitive);
+		return T.TrimStartAndEnd();
+	}
+	// the night a paper belongs to by what is stamped on it: "DAY 2", a job's "FF-D0002", a log's "nightlog-2"; 0: it does not say
+	int32 NightSaid(const FS47Doc& D)
+	{
+		const FString Stamp = D.Stamp.ToUpper(), Both = D.Id + TEXT(" ") + D.Stamp;
+		static const FRegexPattern DayN(TEXT("DAY (\\d+)")), Job(TEXT("FF-D(\\d{4})")), Log(TEXT("^(?:nightlog|shiftlog)-(\\d+)$"));
+		{ FRegexMatcher Mt(DayN, Stamp); if (Mt.FindNext()) return FCString::Atoi(*Mt.GetCaptureGroup(1)); }
+		{ FRegexMatcher Mt(Job, Both); if (Mt.FindNext()) return FCString::Atoi(*Mt.GetCaptureGroup(1)); }
+		{ FRegexMatcher Mt(Log, D.Id); if (Mt.FindNext()) return FCString::Atoi(*Mt.GetCaptureGroup(1)); }
+		return 0;
+	}
+	// the next step's red arrow on NOW (the fonts have none)
+	class SNextArrow : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SNextArrow) {}
+		SLATE_END_ARGS()
+		void Construct(const FArguments&) {}
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(P(24), P(24)); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+		{
+			const FLinearColor Col = S47Game::StampRed();
+			const float Wd = FMath::Max(1.f, P(2.2f));
+			FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(P(2), P(13)), FVector2f(P(20), P(13)) }, ESlateDrawEffect::None, Col, true, Wd);
+			FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(P(13), P(6)), FVector2f(P(21), P(13)), FVector2f(P(13), P(20)) }, ESlateDrawEffect::None, Col, true, Wd);
+			return Layer + 1;
+		}
+	};
+
+	// MARGINALIA-20261109: WHO & WHAT's squared paper, faint blue lines under the pencil
+	class SGraphPaper : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SGraphPaper) {}
+		SLATE_END_ARGS()
+		void Construct(const FArguments&) {}
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(8, 8); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+		{
+			const FVector2f Sz = FVector2f(G.GetLocalSize());
+			const float Step = FMath::Max(6.f, P(24.f));
+			const FLinearColor Col = C(0x233a7a, 0.09f);
+			for (float X = Step; X < Sz.X; X += Step) FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(X, 0), FVector2f(X, Sz.Y) }, ESlateDrawEffect::None, Col, false, 1.f);
+			for (float Y = Step; Y < Sz.Y; Y += Step) FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(0, Y), FVector2f(Sz.X, Y) }, ESlateDrawEffect::None, Col, false, 1.f);
+			return Layer + 1;
+		}
+	};
+	// MARGINALIA-20261109: a line through struck text. Slate draws a text block's strike only when its brush names a resource (the
+	// plain-text marshaller tests GetResourceName), and the colour brush "WhiteBrush" names none: an image brush, the engine's white.
+	FSlateBrush StrikeBrush(const FLinearColor& Ink)
+	{
+		FSlateBrush Strike = *FCoreStyle::Get().GetBrush("GenericWhiteBox");
+		Strike.TintColor = Ink;
+		return Strike;
+	}
+	// A scribble's pencil: soft grey lead, and a line through it when the guess was proved wrong.
+	FTextBlockStyle PencilStyle(float Px, bool bStruck)
+	{
+		const FLinearColor Lead = bStruck ? C(0x3a3a40, 0.55f) : C(0x3a3a40);
+		FTextBlockStyle St = FTextBlockStyle().SetFont(S47Game::Hand(Px)).SetColorAndOpacity(Lead);
+		if (bStruck) St.SetStrikeBrush(StrikeBrush(Lead));
+		return St;
+	}
+	// One scribble: the pencil, struck through when proved wrong, and in red pencil where it points on to ([MAP], [BOARD]).
+	TSharedRef<SWidget> ScribbleLine(const FS47NbScribble& S, float Px, TFunction<void()> OnFollow)
+	{
+		using namespace S47Game;
+		const FTextBlockStyle St = PencilStyle(Px, S.bStruck);
+		TSharedRef<SVerticalBox> L = SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(S.Text)).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Px), 30))];
+		if (!S.FollowText.IsEmpty())
+		{
+			const FString Tag = S.Follow == TEXT("map") ? TEXT("  [MAP]") : TEXT("");
+			const TSharedRef<SWidget> F = SNew(STextBlock).Text(FText::FromString(TEXT("-> ") + S.FollowText + Tag)).Font(Hand(Px - 2.f)).ColorAndOpacity(StampRed()).AutoWrapText(true);
+			L->AddSlot().AutoHeight().Padding(P(18), 0, 0, 0)[OnFollow ? StaticCastSharedRef<SWidget>(Click(F, OnFollow)) : F];
+		}
+		return L;
+	}
 }
 
 FString SS47Notebook::Excerpt(const FS47Doc& D)
@@ -424,17 +539,60 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	Tasks = InArgs._Tasks;
 	Notes = InArgs._Notes;
 	X = InArgs._Extras;
+	if (X.bFreeform) OnBoard = nullptr; // D46-20261110: no pinboard in Freeform: no B key, tab or action for it
 	Album = X.Album;
 	static const FRegexPattern Pnn(TEXT("^p\\d\\d$"));
 	auto IsFinding = [](const FS47Doc& D) { FRegexMatcher M(Pnn, D.Id); return D.Kind == TEXT("fieldnote") || D.Kind == TEXT("comparison") || M.FindNext() || D.Id == TEXT("finding") || (D.Id == TEXT("anomaly:n01") || D.Id == TEXT("anomaly:n02") || D.Id == TEXT("anomaly:a02") || D.Id == TEXT("anomaly:p01")); };
 	for (const FS47Doc& D : InArgs._Docs) if (D.Kind == TEXT("photo") && !D.Image.IsEmpty()) Photos.Add(D);
-	for (const FS47Doc& D : InArgs._Docs) if (IsFinding(D)) Findings.Add(D);
-	for (const FS47Doc& D : InArgs._Docs) if (!(D.Kind == TEXT("photo") && !D.Image.IsEmpty())) Papers.Add(D);
+	if (!X.bFreeform)
+	{
+		for (const FS47Doc& D : InArgs._Docs) if (IsFinding(D)) Findings.Add(D);
+		for (const FS47Doc& D : InArgs._Docs) if (!(D.Kind == TEXT("photo") && !D.Image.IsEmpty())) Papers.Add(D);
+	}
+	else
+	{
+		// PT-NOTEBOOK-20261109 (Tom, 9 November: knowledge and documents hard to find things in). Only how it is shown: the field records
+		// under Knowledge and only there, DOCUMENTS the papers as the pinboard's tray has them (FS47PinBoard::Papers), the photographs in
+		// the ALBUM only; each thing once (a Reyes tag's or a monitor printout's field record is its paper's twin); an older save's case
+		// records hidden as the case file now keeps them (FS47FreeformCases::IsCaseRecord); newest first, by the night stamped on each.
+		int32 Carry = 1;
+		for (const FS47Doc& D : InArgs._Docs) { const int32 N = NightSaid(D); Carry = N > 0 ? N : Carry; DocNight.Add(D.Id, Carry); }
+		TSet<FString> Ids, Answers;
+		for (const FS47Doc& D : InArgs._Docs)
+		{
+			Ids.Add(D.Id);
+			if (D.Id.StartsWith(TEXT("answer-printout-"))) Answers.Add(FString::FromInt(FCString::Atoi(*D.Id.Mid(16)) % 100000));
+		}
+		const auto OldCase = [](const FS47Doc& D) { return D.Id.StartsWith(TEXT("freeform-")) && D.Kind == TEXT("fieldnote") && FS47FreeformCases::IsCaseRecord(D.Id.Mid(9)); };
+		const auto Twin = [&Ids, &Answers](const FS47Doc& D)
+		{
+			if (!D.Id.StartsWith(TEXT("freeform-"))) return false;
+			const FString Base = D.Id.Mid(9);
+			FString Left, Num;
+			return Ids.Contains(Base) || (Base.StartsWith(TEXT("answer_d")) && Base.Split(TEXT("_"), &Left, &Num, ESearchCase::CaseSensitive, ESearchDir::FromEnd) && Answers.Contains(Num));
+		};
+		for (const FS47Doc& D : InArgs._Docs) if (IsFinding(D) && !OldCase(D) && !Twin(D)) Findings.Add(D);
+		TSet<FString> Shown;
+		for (const FS47Doc& D : X.Papers ? *X.Papers : InArgs._Docs)
+		{
+			if (D.Kind == TEXT("photo") || IsFinding(D) || OldCase(D) || Shown.Contains(D.Id)) continue;
+			Shown.Add(D.Id);
+			if (!DocNight.Contains(D.Id)) DocNight.Add(D.Id, NightSaid(D) > 0 ? NightSaid(D) : Carry);
+			Papers.Add(D);
+		}
+		const auto NewestFirst = [this](TArray<FS47Doc>& A)
+		{
+			for (int32 I = 0, J = A.Num() - 1; I < J; ++I, --J) A.Swap(I, J);
+			A.StableSort([this](const FS47Doc& L, const FS47Doc& R) { return DocNight.FindRef(L.Id) > DocNight.FindRef(R.Id); });
+		};
+		NewestFirst(Findings); NewestFirst(Papers);
+	}
 
 	Order = { TEXT("tasks"), TEXT("findings"), TEXT("papers"), TEXT("photos"), TEXT("kit"), TEXT("map"), TEXT("guide") };
-	for (int32 I = 0; I < Tasks.Num(); ++I)
+	// PT-NOTEBOOK-20261109: Freeform's NOW has the list's lines (X.Now, S47TonightNote::Gather); otherwise every task not among the
+	// work items is a line of its own (no longer skipped once there is structured work: the post, Reyes and the truck were lost)
+	if (!X.bNow) for (int32 I = 0; I < Tasks.Num(); ++I)
 	{
-		if (!X.WorkItems.IsEmpty() && X.OnFollow) break; // Freeform has authoritative structured work.
 		if (X.WorkItems.ContainsByPredicate([&](const FS47NbWorkItem& W) { return W.Title == Tasks[I].Text; })) continue;
 		FS47NbWorkItem W; W.Title = Tasks[I].Text; W.bDone = Tasks[I].bDone;
 		W.Status = W.bDone ? TEXT("Complete") : TEXT("Open"); W.NextAction = W.bDone ? TEXT("Already completed.") : Tasks[I].Text;
@@ -457,6 +615,7 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 	TSharedRef<SHorizontalBox> Keys = SNew(SHorizontalBox);
 	Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Keycap(TEXT("Q E")), TEXT("TAB / , SECTIONS"), nullptr)];
 	Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Arrows, TEXT("CHOOSE"), nullptr)];
+	// D46-20261110: Freeform has no pinboard, so OnBoard is empty there and no B hint shows
 	if (OnBoard) Keys->AddSlot().AutoWidth().Padding(0, 0, P(28), 0)[Bar(Keycap(S47Keys::Label(TEXT("board")).ToUpper()), TEXT("CASE BOARD"), [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); })];
 	Keys->AddSlot().AutoWidth()[Bar(Keycap(S47Keys::Label(TEXT("notebook")).ToUpper()), TEXT("CLOSE"), [this] { Close(); })];
 
@@ -533,13 +692,34 @@ void SS47Notebook::Construct(const FArguments& InArgs)
 		// .al-view: one free print big, over the notebook
 		+ SOverlay::Slot()[SAssignNew(BigSlot, SBox).Visibility_Lambda([this] { return Big != INDEX_NONE ? EVisibility::Visible : EVisibility::Collapsed; })]
 	];
-	// show(): the tab used last, if this notebook has it
-	Show(UI.IsValid() && (Order.Contains(UI->NbTab) || UI->NbTab == TEXT("notes") || UI->NbTab == TEXT("people") || UI->NbTab == TEXT("photos") || UI->NbTab == TEXT("controls")) ? UI->NbTab : FString(TEXT("tasks")));
+	// show(): the tab used last, if this notebook has it; D45-20261110: opened with its own key (not at a page asked for), NOW when
+	// something new is on it
+	const FString Last = UI.IsValid() && (Order.Contains(UI->NbTab) || (UI->NbTab == TEXT("events") && X.bEvents) || UI->NbTab == TEXT("notes") || UI->NbTab == TEXT("people") || UI->NbTab == TEXT("photos") || UI->NbTab == TEXT("controls")) ? UI->NbTab : FString(TEXT("tasks"));
+	const bool bPlain = S47TonightNote::Seen().bPlain; S47TonightNote::Seen().bPlain = false;
+	Show(bPlain ? OpenOn(X, Last) : Last);
 }
+
+FString SS47Notebook::OpenOn(const FS47NbExtras& Ex, const FString& Last)
+{
+	return Ex.bFreeform && Ex.bNow && Ex.Now.ContainsByPredicate([](const FS47NbNowLine& N) { return N.bNew && !N.bDone; }) ? FString(TEXT("tasks")) : Last;
+}
+
+FString SS47Notebook::NowHead(const FString& Group)
+{
+	// D45-20261110: by importance (S47TonightNote::RankOf); the older groups' words for a list made the old way
+	static const TMap<FString, FString> Heads = { { TEXT("first"), TEXT("DO FIRST") }, { TEXT("tonight"), TEXT("TONIGHT") }, { TEXT("later"), TEXT("WHEN YOU CAN") }, { TEXT("done"), TEXT("DONE TONIGHT") },
+		{ TEXT("clock"), TEXT("BY THE CLOCK") }, { TEXT("todo"), TEXT("TO DO") }, { TEXT("also"), TEXT("ALSO OPEN") } };
+	const FString* Hd = Heads.Find(Group);
+	return Hd ? *Hd : FString();
+}
+
+namespace { uint32 NotebooksShut = 0; }
+uint32 SS47Notebook::Shut() { return NotebooksShut; }
 
 SS47Notebook::~SS47Notebook()
 {
 	if (Reading.IsValid() && Reading->bActive) Reading->Stop();
+	if (UI.IsValid()) ++NotebooksShut;
 }
 
 TSharedRef<SWidget> SS47Notebook::TabStack()
@@ -634,7 +814,7 @@ TSharedRef<SWidget> SS47Notebook::Entry(int32 I, const TSharedRef<SWidget>& Cont
 		+ SOverlay::Slot()[SNew(SBorder).BorderImage(Box(C(0xffb052, bCard ? 0.22f : 0.16f))).Visibility_Lambda([this, I] { return Chosen() == I ? EVisibility::HitTestInvisible : EVisibility::Hidden; })]
 		+ SOverlay::Slot()[Content]
 		+ SOverlay::Slot()[SNew(SS47GameDash).Color(C(0x8a3b2c, 0.55f)).Inset(bCard ? 2.f : 4.f).Visibility_Lambda([this, I] { return Chosen() == I ? EVisibility::HitTestInvisible : EVisibility::Hidden; })],
-		[this, I] { if (Chosen() == I) Activate(); else Choose(I); });
+		[this, I] { if (Chosen() == I || Tab == TEXT("events")) { Sel.FindOrAdd(Tab) = I; Activate(); } else Choose(I); }); // D48-20261110: on the EVENTS page one click picks
 	Entries.Add(W);
 	return W;
 }
@@ -677,19 +857,20 @@ TSharedRef<SWidget> SS47Notebook::UseRow(const TArray<TTuple<FString, FString, T
 
 int32 SS47Notebook::Count() const
 {
-	if (Tab == TEXT("tasks")) return X.WorkItems.Num();
+	if (Tab == TEXT("tasks")) return X.bNow ? NowRows.Num() : X.WorkItems.Num();
 	if (Tab == TEXT("guide")) return X.GuideEntries.Num();
 	if (Tab == TEXT("findings")) return Findings.Num();
 	if (Tab == TEXT("papers")) return Papers.Num();
 	if (Tab == TEXT("photos")) return Photos.Num() + (Album ? Album->Shots.Num() : 0);
 	if (Tab == TEXT("kit")) return X.Kit ? X.Kit->Num() : 0;
 	if (Tab == TEXT("people")) return X.People ? X.People->Num() : 0;
+	if (Tab == TEXT("events")) return X.bEvents ? X.EventKinds.Num() + X.EventPhrases.Num() + 1 : 0; // D48-20261110: the kinds, the notes, and the line that writes it down
 	return 0;
 }
 
 int32 SS47Notebook::Columns() const
 {
-	if (Tab == TEXT("kit") || Tab == TEXT("people")) return 3;
+	if (Tab == TEXT("kit") || (Tab == TEXT("people") && !X.bFreeform)) return 3;
 	if (Tab == TEXT("papers") || Tab == TEXT("photos")) return 2;
 	return 1;
 }
@@ -714,10 +895,13 @@ void SS47Notebook::Build()
 		auto InlineLabel = [&](const TCHAR* Label) { auto Text = Typed(Label, 13); Text->SetAutoWrapText(false); return Text; };
 		auto Link = [&](const TCHAR* Id, const TCHAR* Label) { Links->AddSlot().AutoWidth().Padding(0, 0, P(12), 0)[Click(InlineLabel(Label), [this, Id] { Show(Id); })]; };
 		if (MainTab() == TEXT("tasks")) Links->AddSlot().AutoWidth()[Click(InlineLabel(bShowHistory ? TEXT("Hide history [, / LT]") : TEXT("Show history [, / LT]")), [this] { Section(1); })];
-		if (MainTab() == TEXT("findings")) { Link(TEXT("findings"), TEXT("Evidence")); Link(TEXT("notes"), TEXT("Notes")); Link(TEXT("people"), TEXT("People")); }
+		// PT-NOTEBOOK-20261109: Freeform's Knowledge is the evidence and WHO & WHAT (Notes only while there are any); its photographs are
+		// the ALBUM's alone
+		if (MainTab() == TEXT("findings") && X.bFreeform) { Link(TEXT("findings"), TEXT("Evidence")); Link(TEXT("people"), TEXT("Who & what")); if (X.bEvents) Link(TEXT("events"), TEXT("Events")); if (Notes.Num()) Link(TEXT("notes"), TEXT("Notes")); }
+		else if (MainTab() == TEXT("findings")) { Link(TEXT("findings"), TEXT("Evidence")); Link(TEXT("notes"), TEXT("Notes")); Link(TEXT("people"), TEXT("People")); }
 		if (MainTab() == TEXT("papers"))
 		{
-			Link(TEXT("papers"), TEXT("Originals")); Link(TEXT("photos"), TEXT("Photos"));
+			Link(TEXT("papers"), TEXT("Originals")); if (!X.bFreeform) Link(TEXT("photos"), TEXT("Photos"));
 			if (Tab == TEXT("papers")) Links->AddSlot().FillWidth(1.f)[SNew(SEditableTextBox).Text(FText::FromString(PaperQuery)).HintText(FText::FromString(TEXT("Job / day / type; Enter"))).Font(Type(12))
 				.OnTextCommitted_Lambda([this](const FText& Text, ETextCommit::Type Commit) { if (Commit == ETextCommit::OnEnter) { FilterDocuments(Text.ToString()); Build(); FSlateApplication::Get().SetKeyboardFocus(SharedThis(this)); } })];
 		}
@@ -750,12 +934,7 @@ void SS47Notebook::Build()
 			// li.done: struck through, the ink paler
 			const FLinearColor Ink = bDone ? C(0x6d7895) : InkBlue();
 			FTextBlockStyle St = FTextBlockStyle().SetFont(Hand(Li)).SetColorAndOpacity(Ink);
-			if (bDone)
-			{
-				FSlateBrush Strike = *FCoreStyle::Get().GetBrush("WhiteBrush");
-				Strike.TintColor = Ink;
-				St.SetStrikeBrush(Strike);
-			}
+			if (bDone) St.SetStrikeBrush(StrikeBrush(Ink)); // (MARGINALIA-20261109: a brush Slate draws the strike with)
 			TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
 			if (bTasks) Row->AddSlot().AutoWidth()[SNew(SBox).WidthOverride(P(28))[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : TEXT("-"))).Font(Hand(Li)).ColorAndOpacity(Ink)]];
 			Row->AddSlot().FillWidth(1.f)[SNew(STextBlock).Text(FText::FromString(Items[I])).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Li), 34))];
@@ -764,7 +943,64 @@ void SS47Notebook::Build()
 		return L;
 	};
 
-	if (Tab == TEXT("tasks") || Tab == TEXT("guide"))
+	// PT-NOTEBOOK-20261109 (Freeform): a heading over each night's papers, newest night first
+	auto NightHead = [&](int32 Night, bool bFirst) -> TSharedRef<SWidget>
+	{
+		return SNew(SBox).Padding(FMargin(0, P(bFirst ? 0 : 10), 0, P(4)))[SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("DAY %d"), Night))).Font(Term(20, 2)).ColorAndOpacity(Ph2Red())];
+	};
+	if (IsNow())
+	{
+		// PT-NOTEBOOK-20261109: NOW as the pause menu's note at full length, in its words: the next step with the red arrow, then
+		// (D45-20261110) DO FIRST, TONIGHT, WHEN YOU CAN (the job cards on one line that opens), DONE TONIGHT struck through; NEW in red
+		// before a line not shown before
+		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+		FString Group;
+		const float Px = bLarge ? 30.f : 27.f;
+		// N1110 (N1110-9): the three goals over the list, tonight, this week, the question (S47GoalLine.h; Freeform fills X.Goals)
+		for (const FString& Goal : X.Goals)
+		{
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(4))[SNew(STextBlock).Text(FText::FromString(Goal)).Font(Hand(Px - 2.f)).ColorAndOpacity(InkBlue()).AutoWrapText(true)];
+			Read.Add(Goal);
+		}
+		for (int32 I = 0; I < NowRows.Num(); ++I)
+		{
+			const FNowRow& R = NowRows[I];
+			if (R.Line == INDEX_NONE)
+			{
+				if (!AllWorkItems.IsValidIndex(R.Item)) continue;
+				const FS47NbWorkItem& W = AllWorkItems[R.Item];
+				L->AddSlot().AutoHeight().Padding(P(40), 0, 0, P(6))[Entry(I, SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight()[Inked(W.Title, Px - 3.f, W.bDone ? C(0x6d7895) : InkBlue())]
+					+ SVerticalBox::Slot().AutoHeight()[Typed(W.Status, bLarge ? 16.f : 13.f)])];
+				continue;
+			}
+			const FS47NbNowLine& N = X.Now[R.Line];
+			if (N.Group != Group)
+			{
+				Group = N.Group;
+				if (const FString Hd = NowHead(Group); !Hd.IsEmpty()) L->AddSlot().AutoHeight().Padding(0, P(I ? 12 : 2), 0, P(2))[SNew(STextBlock).Text(FText::FromString(Hd)).Font(Term(19, 2)).ColorAndOpacity(Ph2Red())];
+			}
+			const bool bDone = N.bDone, bNext = N.Group == TEXT("next");
+			const FLinearColor Ink = bDone ? C(0x6d7895) : InkBlue();
+			FTextBlockStyle St = FTextBlockStyle().SetFont(Hand(bNext ? Px + 3.f : Px)).SetColorAndOpacity(Ink);
+			if (bDone) St.SetStrikeBrush(StrikeBrush(Ink)); // (MARGINALIA-20261109: a brush Slate draws the strike with)
+			TSharedRef<SWidget> Mark = SNullWidget::NullWidget;
+			if (bNext) Mark = SNew(SNextArrow);
+			else if (N.Group == TEXT("also") || N.bSummary) Mark = SNew(STextBlock).Text(FText::FromString(N.Fold.IsEmpty() ? TEXT("-") : OpenFolds.Contains(N.Fold) ? TEXT("v") : TEXT(">"))).Font(Term(22)).ColorAndOpacity(Ink);
+			else Mark = SNew(SBox).WidthOverride(P(16)).HeightOverride(P(16))[SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, Ink, 1.5f)).HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0)
+				[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : N.Group == TEXT("first") ? TEXT("!") : TEXT(" "))).Font(Term(16)).ColorAndOpacity(bDone ? Ink : N.Group == TEXT("first") ? Ph2Red() : Ink)]];
+			const bool bFresh = N.bNew && !bDone;
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(6))[Entry(I, SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(8), P(10), 0)[SNew(SBox).WidthOverride(P(26))[Mark]]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(9), bFresh ? P(8) : 0.f, 0)[SNew(STextBlock).Visibility(bFresh ? EVisibility::Visible : EVisibility::Collapsed).Text(FText::FromString(TEXT("NEW"))).Font(Term(16, 2)).ColorAndOpacity(Ph2Red())]
+				+ SHorizontalBox::Slot().FillWidth(1.f)[SNew(STextBlock).Text(FText::FromString(N.Text)).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Px), 32))])];
+			Read.Add(bFresh ? TEXT("New. ") + N.Text : N.Text);
+		}
+		// D45-20261110: what has been shown is no longer new the next time the notebook opens
+		if (X.bFreeform) for (const FS47NbNowLine& N : X.Now) if (N.bNew && !N.Key.IsEmpty()) S47TonightNote::Seen().Keys.Add(N.Key);
+		LeftSlot->SetContent(Lay(Head(TEXT("Now"), Heading), NowRows.Num() || X.Goals.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(TEXT("Nothing on tonight's list. The clock and OPS will bring the next thing.")), LeftScroll));
+	}
+	else if (Tab == TEXT("tasks") || Tab == TEXT("guide"))
 	{
 		const bool Work = Tab == TEXT("tasks");
 		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
@@ -778,6 +1014,49 @@ void SS47Notebook::Build()
 		}
 		LeftSlot->SetContent(Lay(Head(Work ? TEXT("Now") : TEXT("Field guide"), Work ? Heading : TEXT("PROCEDURES · CONTROLS IN SECTION ABOVE")), Count() ? StaticCastSharedRef<SWidget>(L) : Empty(TEXT("No open work recorded.")), LeftScroll));
 	}
+	else if (Tab == TEXT("events") && X.bEvents)
+	{
+		// D48-20261110 (D46-19): EVENTS. On the left what has happened, newest first: the note in the hand and under it the date, the time,
+		// the place and the kind word. On the right "Log something you saw": the kind, one short note, and the line that writes it down.
+		const int32 NK = X.EventKinds.Num(), NP = X.EventPhrases.Num();
+		const int32 Shown = FMath::Min(X.Events.Num(), 40);
+		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+		for (int32 I = 0; I < Shown; ++I)
+		{
+			const FS47NbEvent& E = X.Events[I];
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(10))
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight()[Inked(E.Text, bLarge ? 30.f : 26.f)]
+				+ SVerticalBox::Slot().AutoHeight()[Typed(E.When + TEXT(" / ") + E.Place + TEXT(" / ") + E.Kind.ToUpper() + (E.bOwn ? TEXT(" / YOURS") : TEXT("")), bLarge ? 16.f : 13.f)]
+			];
+			Read.Add(E.When + TEXT(". ") + E.Place + TEXT(". ") + E.Kind + TEXT(". ") + E.Text);
+		}
+		if (X.Events.Num() > Shown) L->AddSlot().AutoHeight()[Typed(FString::Printf(TEXT("And %d older."), X.Events.Num() - Shown), 14.f, C(0x7d7563))];
+		const FString NoEvents = TEXT("Nothing written down yet. What you see and hear out here goes on this page, and you can add your own.");
+		if (X.Events.IsEmpty()) Read.Add(NoEvents);
+		LeftSlot->SetContent(Lay(Head(TEXT("Events"), X.Events.Num() ? FString::Printf(TEXT("NEWEST FIRST · %d"), X.Events.Num()) : FString(TEXT("NEWEST FIRST"))), X.Events.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(NoEvents), LeftScroll));
+		const float Px = bLarge ? 24.f : 22.f;
+		const auto Option = [&](int32 I, const FString& Label, bool bOn) -> TSharedRef<SWidget>
+		{
+			return Entry(I, SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(P(4), 0, P(8), 0)[SNew(STextBlock).Text(FText::FromString(bOn ? TEXT("[x]") : TEXT("[ ]"))).Font(Term(17)).ColorAndOpacity(bOn ? Ph2Red() : InkBlue())]
+				+ SHorizontalBox::Slot().FillWidth(1.f)[Inked(Label, Px)]);
+		};
+		TSharedRef<SUniformGridPanel> Kinds = SNew(SUniformGridPanel).SlotPadding(FMargin(0, P(1)));
+		for (int32 I = 0; I < NK; ++I) Kinds->AddSlot(I % 2, I / 2)[Option(I, X.EventKinds[I], EvKind == I)];
+		TSharedRef<SVerticalBox> R = SNew(SVerticalBox);
+		R->AddSlot().AutoHeight()[Typed(TEXT("WHAT WAS IT"), 13.f, Ph2Red())];
+		R->AddSlot().AutoHeight().Padding(0, 0, 0, P(6))[Kinds];
+		R->AddSlot().AutoHeight()[Typed(TEXT("A NOTE"), 13.f, Ph2Red())];
+		for (int32 I = 0; I < NP; ++I) R->AddSlot().AutoHeight()[Option(NK + I, X.EventPhrases[I], EvPhrase == I)];
+		const bool bReady = EvKind != INDEX_NONE && EvPhrase != INDEX_NONE;
+		R->AddSlot().AutoHeight().Padding(0, P(8), 0, 0)[Entry(NK + NP, Inked(bReady ? TEXT("-> Write it down") : TEXT("-> Write it down (pick both)"), Px + 2.f, bReady ? Ph2Red() : C(0x6d7895)))];
+		if (!EvDone.IsEmpty()) R->AddSlot().AutoHeight().Padding(0, P(6), 0, 0)[Typed(EvDone, 15.f)];
+		bRightIsEntries = true;
+		RightSlot->SetContent(Lay(Head(TEXT("Log something you saw"), X.EventPlace.ToUpper() + TEXT(" · ") + X.EventNow), R, RightScroll, 146.f, true));
+		Read.Add(TEXT("Log something you saw. Pick what it was and a note. The place is where you stand and the time is now."));
+	}
 	else if (Tab == TEXT("notes"))
 	{
 		TArray<FString> TaskText;
@@ -789,16 +1068,16 @@ void SS47Notebook::Build()
 			// tonight's tasks on the left, the observations so far on the right
 			const FString Line = !Tasks.Num() ? FString(TEXT("TASKS")) : Open ? FString::Printf(TEXT("TASKS · %d OPEN"), Open) : FString(TEXT("TASKS · ALL DONE"));
 			LeftSlot->SetContent(Lay(Head(Heading, Line), Tasks.Num() ? Lines(TaskText, 0, TaskText.Num(), true) : Empty(TEXT("Nothing yet. Dale left the shift log on the desk.")), LeftScroll));
-			RightSlot->SetContent(Lay(Head(TEXT("Observations"), NoteLine), Notes.Num() ? Lines(Notes, 0, Notes.Num(), false) : Empty(TEXT("Nothing worth writing down. Yet.")), RightScroll, 146.f, true));
+			RightSlot->SetContent(Lay(Head(TEXT("Observations"), NoteLine), Notes.Num() ? Lines(Notes, 0, Notes.Num(), false) : Empty(TEXT("Nothing worth writing down so far.")), RightScroll, 146.f, true)); // D45-20261110: no one-word sentence
 			if (Tasks.Num()) Read = TaskText; else Read.Add(TEXT("Nothing yet. Dale left the shift log on the desk."));
 		}
 		else
 		{
 			// the observations across the spread: the first half on the left, the rest on the right
 			const int32 Half = (Notes.Num() + 1) / 2;
-			LeftSlot->SetContent(Lay(Head(TEXT("Observations"), NoteLine), Notes.Num() ? Lines(Notes, 0, Half, false) : Empty(TEXT("Nothing worth writing down. Yet.")), LeftScroll));
+			LeftSlot->SetContent(Lay(Head(TEXT("Observations"), NoteLine), Notes.Num() ? Lines(Notes, 0, Half, false) : Empty(TEXT("Nothing worth writing down so far.")), LeftScroll));
 			if (Notes.Num() > Half) RightSlot->SetContent(Lay(SNullWidget::NullWidget, Lines(Notes, Half, Notes.Num(), false), RightScroll, 146.f, true));
-			if (Notes.Num()) Read = Notes; else Read.Add(TEXT("Nothing worth writing down. Yet."));
+			if (Notes.Num()) Read = Notes; else Read.Add(TEXT("Nothing worth writing down so far."));
 		}
 	}
 	else if (Tab == TEXT("findings"))
@@ -811,19 +1090,34 @@ void SS47Notebook::Build()
 			TArray<FString> Parts = S47Text::Split(D.Title, TEXT(" / "));
 			FString Rest = Parts.Num() > 1 ? FString::Join(TArray<FString>(Parts.GetData() + 1, Parts.Num() - 1), TEXT(" / ")) : FString();
 			if (Rest.IsEmpty()) Rest = D.Title;
+			FString Label = !D.Stamp.IsEmpty() && D.Stamp.Len() <= 6 ? D.Stamp : Parts.Num() ? Parts[0] : D.Title;
+			FString Under = (D.Kind == TEXT("fieldnote") ? FString(TEXT("Observation / retained source\n")) : FString(TEXT("Interpretation / retained comparison\n"))) + Excerpt(D);
+			if (X.bFreeform)
+			{
+				// PT-NOTEBOOK-20261109: the card says where (the stamp's place), what in the record's own first words, and the rest of it under
+				// them; no "Field record:", no stamp and no standing sentences
+				const int32 Night = DocNight.FindRef(D.Id);
+				if (I == 0 || DocNight.FindRef(Findings[I - 1].Id) != Night) L->AddSlot().AutoHeight()[NightHead(Night, I == 0)];
+				Rest = ShownTitle(D, true);
+				Label = D.Stamp.StartsWith(TEXT("IN THE FIELD")) ? FString(TEXT("FIELD")) : D.Stamp.Contains(TEXT("TELEX")) ? FString(TEXT("TELEX")) : FString(TEXT("SARO"));
+				FString Body = ShownPage(D, true);
+				FString Head = Rest; Head.RemoveFromEnd(TEXT("..."));
+				if (!Head.IsEmpty() && Body.StartsWith(Head)) { Body.RightChopInline(Head.Len()); Body.TrimStartInline(); Body.RemoveFromStart(TEXT(".")); Body.TrimStartInline(); }
+				FS47Doc Short; Short.Id = D.Id; Short.Transcript = Body;
+				Under = KindWord(D) + (Body.IsEmpty() ? FString() : TEXT("\n") + Excerpt(Short));
+			}
 			if (X.EntryRead && !X.EntryRead(D.Id)) Rest = TEXT("NEW / ") + Rest;
-			const FString Label = !D.Stamp.IsEmpty() && D.Stamp.Len() <= 6 ? D.Stamp : Parts.Num() ? Parts[0] : D.Title;
 			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(10))
 			[
 				Entry(I, Shadowed(SNew(SBorder).BorderImage(Box(C(0xf6f1e3))).Padding(FMargin(P(12), P(8)))
 					[
 						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(SBox).WidthOverride(P(100))[SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(26)).ColorAndOpacity(C(0x2f6a3c)).AutoWrapText(true)]]
+						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(SBox).WidthOverride(P(X.bFreeform ? 72 : 100))[SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(X.bFreeform ? 22 : 26)).ColorAndOpacity(C(0x2f6a3c)).AutoWrapText(true)]]
 						+ SHorizontalBox::Slot().FillWidth(1.f).Padding(P(10), 0, 0, 0)
 						[
 							SNew(SVerticalBox)
 							+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Rest)).Font(Type(16)).ColorAndOpacity(Ink()).AutoWrapText(true)]
-							+ SVerticalBox::Slot().AutoHeight().Padding(0, P(3), 0, 0)[SNew(STextBlock).Text(FText::FromString((D.Kind == TEXT("fieldnote") ? FString(TEXT("Observation / retained source\n")) : FString(TEXT("Interpretation / retained comparison\n"))) + Excerpt(D))).Font(Type(13)).ColorAndOpacity(C(0x6d6656)).AutoWrapText(true)]
+							+ SVerticalBox::Slot().AutoHeight().Padding(0, P(3), 0, 0)[SNew(STextBlock).Text(FText::FromString(Under)).Font(Type(13)).ColorAndOpacity(C(0x6d6656)).AutoWrapText(true)]
 						]
 					], 6.f, FVector2D(0, 2), 0.18f), true)
 			];
@@ -849,32 +1143,46 @@ void SS47Notebook::Build()
 	}
 	else if (Tab == TEXT("papers"))
 	{
-		// the papers as index cards, two to a row
+		// the papers as index cards, two to a row; in Freeform a heading over each night's, newest first (PT-NOTEBOOK-20261109)
 		TSharedRef<SUniformGridPanel> Grid = SNew(SUniformGridPanel).SlotPadding(FMargin(P(5), P(6)));
-		auto KindName = [](const FS47Doc& D) { return D.Kind == TEXT("hand") ? TEXT("Handwritten") : D.Kind == TEXT("printout") ? TEXT("Printout") : D.Kind == TEXT("typed") ? TEXT("Typed") : D.Kind == TEXT("map") ? TEXT("Map") : TEXT("Print"); };
-		for (int32 I = 0; I < Papers.Num(); ++I)
+		TSharedRef<SVerticalBox> Nights = SNew(SVerticalBox);
+		TSharedPtr<SUniformGridPanel> NightGrid;
+		int32 InNight = 0;
+		auto Card = [&](int32 I) -> TSharedRef<SWidget>
 		{
 			const FS47Doc& D = Papers[I];
 			const bool bHand = D.Kind == TEXT("hand");
-			Grid->AddSlot(I % 2, I / 2)
-			[
-				Entry(I, Shadowed(SNew(SBorder).BorderImage(Box(D.Kind == TEXT("printout") ? C(0xeef2e6) : C(0xf6f1e3))).Padding(FMargin(P(12), P(9)))
+			return Entry(I, Shadowed(SNew(SBorder).BorderImage(Box(D.Kind == TEXT("printout") ? C(0xeef2e6) : C(0xf6f1e3))).Padding(FMargin(P(12), P(9)))
 					[
 						SNew(SBox).MinDesiredHeight(P(58)).VAlign(VAlign_Top)
 						[
 							SNew(SVerticalBox)
-							+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString((X.EntryRead && !X.EntryRead(D.Id) ? TEXT("NEW / ") : TEXT("")) + D.Title)).Font(bHand ? Hand(25) : Type(15)).ColorAndOpacity(bHand ? InkBlue() : Ink()).AutoWrapText(true)]
+							+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString((X.EntryRead && !X.EntryRead(D.Id) ? TEXT("NEW / ") : TEXT("")) + ShownTitle(D, X.bFreeform))).Font(bHand ? Hand(25) : Type(15)).ColorAndOpacity(bHand ? InkBlue() : Ink()).AutoWrapText(true)]
 							+ SVerticalBox::Slot().AutoHeight().Padding(0, P(4), 0, 0)
 							[
-								SNew(STextBlock).Text(FText::FromString(FString(KindName(D)) + (D.Stamp.IsEmpty() ? FString() : TEXT(" / ") + D.Stamp))).Font(Term(17)).ColorAndOpacity(C(0x8a8270)).AutoWrapText(true)
+								SNew(STextBlock).Text(FText::FromString(KindWord(D, X.bFreeform) + (D.Stamp.IsEmpty() ? FString() : TEXT(" / ") + D.Stamp))).Font(Term(17)).ColorAndOpacity(C(0x8a8270)).AutoWrapText(true)
 							]
 						]
-					], 6.f, FVector2D(0, 2), 0.18f), true)
-			];
+					], 6.f, FVector2D(0, 2), 0.18f), true);
+		};
+		for (int32 I = 0; I < Papers.Num(); ++I)
+		{
+			if (!X.bFreeform) { Grid->AddSlot(I % 2, I / 2)[Card(I)]; continue; }
+			const int32 Night = DocNight.FindRef(Papers[I].Id);
+			if (I == 0 || DocNight.FindRef(Papers[I - 1].Id) != Night)
+			{
+				if (NightGrid.IsValid() && InNight == 1) NightGrid->AddSlot(1, 0)[SNew(SSpacer)];
+				Nights->AddSlot().AutoHeight()[NightHead(Night, I == 0)];
+				Nights->AddSlot().AutoHeight()[SAssignNew(NightGrid, SUniformGridPanel).SlotPadding(FMargin(P(5), P(6)))];
+				InNight = 0;
+			}
+			NightGrid->AddSlot(InNight % 2, InNight / 2)[Card(I)];
+			++InNight;
 		}
-		if (Papers.Num() == 1) Grid->AddSlot(1, 0)[SNew(SSpacer)];
+		if (NightGrid.IsValid() && InNight == 1) NightGrid->AddSlot(1, 0)[SNew(SSpacer)];
+		if (Papers.Num() == 1 && !X.bFreeform) Grid->AddSlot(1, 0)[SNew(SSpacer)];
 		const FString Line = Papers.Num() ? FString::Printf(TEXT("PAPERS · %d"), Papers.Num()) : FString(TEXT("PAPERS"));
-		LeftSlot->SetContent(Lay(Head(TEXT("Documents"), Line), Papers.Num() ? StaticCastSharedRef<SWidget>(Grid) : Empty(PaperQuery.IsEmpty() ? TEXT("None collected.") : TEXT("No owned document matches. Clear the search and press Enter.")), LeftScroll));
+		LeftSlot->SetContent(Lay(Head(TEXT("Documents"), Line), Papers.Num() ? (X.bFreeform ? StaticCastSharedRef<SWidget>(Nights) : StaticCastSharedRef<SWidget>(Grid)) : Empty(PaperQuery.IsEmpty() ? TEXT("None collected.") : TEXT("No owned document matches. Clear the search and press Enter.")), LeftScroll));
 		if (!Papers.Num()) Read.Add(TEXT("None collected."));
 	}
 	else if (Tab == TEXT("photos"))
@@ -998,6 +1306,56 @@ void SS47Notebook::Build()
 		for (int32 I = X.Kit->Num(); I < 3; ++I) Grid->AddSlot(I, 0)[SNew(SSpacer)];
 		LeftSlot->SetContent(Lay(Head(TEXT("Equipment and supplies"), FString::Printf(TEXT("KIT · %d %s"), X.Kit->Num(), X.Kit->Num() == 1 ? TEXT("THING") : TEXT("THINGS"))), Grid, LeftScroll));
 	}
+	else if (Tab == TEXT("people") && X.People && X.bFreeform)
+	{
+		// PT-NOTEBOOK-20261109: WHO & WHAT, the minimal one: a pencilled box for each of Caliche's regulars the player has met or missed,
+		// who they are and one plain line from what they have told (FS47Townsfolk::Cards). MARGINALIA-20261109: on squared paper, with
+		// the player's own scribbles under each (X.Scribbles' PEOPLE), and a box for each one met only there (Dale, Earl, Baca, Ward).
+		const auto Follow = [this](const FS47NbScribble& S) -> TFunction<void()>
+		{
+			if (S.Follow == TEXT("map") || S.Follow == TEXT("board")) return [this] { Show(TEXT("map")); }; // D46-20261110: what pointed at the pinboard points at the map
+			return nullptr;
+		};
+		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+		TSet<FString> Boxed;
+		const auto Pencil = [&](const TSharedRef<SVerticalBox>& Bx, const FString& Name)
+		{
+			Boxed.Add(Name);
+			for (const FS47NbScribble& S : X.Scribbles)
+				if (S.Side == TEXT("people") && S.Box == Name) { Bx->AddSlot().AutoHeight().Padding(0, P(4), 0, 0)[ScribbleLine(S, 24.f, Follow(S))]; Read.Add(S.Text); }
+		};
+		const auto Framed = [&](const TSharedRef<SVerticalBox>& Bx) { return SNew(SBorder).BorderImage(Box(C(0xf7f3e6, 0.55f), C(0x3a3a40, 0.55f), 1.5f, 2.f)).Padding(FMargin(P(14), P(8)))[Bx]; };
+		const auto Named = [&](const FString& Name, const FString& Role) -> TSharedRef<SVerticalBox>
+		{
+			return SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Name)).Font(Hand(32)).ColorAndOpacity(InkBlue())]
+				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Role.ToUpper())).Font(Term(17, 1)).ColorAndOpacity(Ph2Red()).AutoWrapText(true)];
+		};
+		for (int32 I = 0; I < X.People->Num(); ++I)
+		{
+			const FS47PersonCard& Pc = (*X.People)[I];
+			TSharedRef<SVerticalBox> Bx = Named(Pc.Name, Pc.Role);
+			if (!Pc.Note.IsEmpty()) Bx->AddSlot().AutoHeight().Padding(0, P(4), 0, 0)[Inked(Pc.Note, 26.f, C(0x3a3a40))];
+			Read.Add(Pc.Name + TEXT(". ") + Pc.Role + TEXT(". ") + Pc.Note);
+			Pencil(Bx, Pc.Name);
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[Entry(I, Framed(Bx))];
+		}
+		int32 Extra = 0;
+		for (const FS47NbScribble& S : X.Scribbles)
+		{
+			if (S.Side != TEXT("people") || Boxed.Contains(S.Box)) continue;
+			TSharedRef<SVerticalBox> Bx = Named(S.Box, S.Role);
+			Read.Add(S.Box + TEXT(". ") + S.Role + TEXT("."));
+			Pencil(Bx, S.Box);
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[Framed(Bx)];
+			++Extra;
+		}
+		const FString None = TEXT("Nobody in town has said much to me yet. The gas station and the Mesa are open late.");
+		const int32 N = X.People->Num() + Extra;
+		LeftSlot->SetContent(SNew(SOverlay) + SOverlay::Slot()[SNew(SGraphPaper)]
+			+ SOverlay::Slot()[Lay(Head(TEXT("Who & what"), FString::Printf(TEXT("PEOPLE · %d"), N)), N ? StaticCastSharedRef<SWidget>(L) : Empty(None), LeftScroll)]);
+		if (!N) Read.Add(None);
+	}
 	else if (Tab == TEXT("people") && X.People)
 	{
 		// the faces as photographs clipped to the page, the name under each
@@ -1062,7 +1420,58 @@ void SS47Notebook::BuildRight()
 		T.RemoveAll([](const FString& S) { return S.TrimStartAndEnd().IsEmpty(); });
 		if (T.Num() && UI.IsValid()) Reading = UI->ReadingAction(T, TEXT("notebook-description"));
 	};
-	if ((Tab == TEXT("tasks") && X.WorkItems.IsValidIndex(I)) || (Tab == TEXT("guide") && X.GuideEntries.IsValidIndex(I)))
+	if (IsNow() && NowRows.IsValidIndex(I))
+	{
+		// PT-NOTEBOOK-20261109: the chosen line: WHAT, WHERE (and the map), WHY in the list's own words, the work item's details and hints,
+		// and what the clock allows in red pencil
+		const FNowRow& R = NowRows[I];
+		const FS47NbNowLine* N = X.Now.IsValidIndex(R.Line) ? &X.Now[R.Line] : nullptr;
+		const FS47NbWorkItem* W = ChosenWork();
+		const FString Title = N ? N->What : W ? W->Title : FString();
+		TSharedRef<SVerticalBox> Pg = SNew(SVerticalBox);
+		TArray<FString> Said = { Title };
+		auto Row = [&](const TCHAR* Word, const FString& Text, TFunction<void()> Link = nullptr, const TCHAR* LinkWord = nullptr)
+		{
+			if (Text.TrimStartAndEnd().IsEmpty()) return;
+			TSharedRef<SHorizontalBox> H = SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().AutoWidth().Padding(0, P(2), P(10), 0)[SNew(SBox).WidthOverride(P(74))[SNew(STextBlock).Text(FText::FromString(Word)).Font(Term(20, 2)).ColorAndOpacity(StampRed())]]
+				+ SHorizontalBox::Slot().FillWidth(1.f)[Typed(Text, bLarge ? 21.f : 18.f)];
+			if (Link) H->AddSlot().AutoWidth().Padding(P(8), P(2), 0, 0)[Click(SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("[%s]"), LinkWord))).Font(Term(20, 2)).ColorAndOpacity(InkBlue()), Link)];
+			Pg->AddSlot().AutoHeight().Padding(0, P(10), 0, 0)[H];
+			Said.Add(FString(Word) + TEXT(". ") + Text);
+		};
+		Pg->AddSlot().AutoHeight()[Inked(Title, bLarge ? 34.f : 30.f)];
+		if (N && !N->When.IsEmpty()) Row(TEXT("WHEN"), N->When);
+		FString Where = N ? N->Where : FString();
+		if (W && !W->Location.IsEmpty()) Where = Where.IsEmpty() ? W->Location : Where + TEXT(" / ") + W->Location;
+		Row(TEXT("WHERE"), Where, X.Map ? TFunction<void()>([this] { Show(TEXT("map")); }) : TFunction<void()>(), TEXT("MAP"));
+		FString Why = N ? N->Why : FString();
+		if (W) Why = (Why.IsEmpty() || Why == Title ? FString() : Why + TEXT("\n\n")) + W->Status + TEXT("\nNEXT / ") + W->NextAction;
+		if (N && !N->Fold.IsEmpty())
+		{
+			// CRIT9: the key as the player has it (the pad's A with a gamepad; the notebook's Enter on the keyboard), never a fixed one.
+			const FString Opens = S47Gamepad::UsingGamepad() && !S47Gamepad::Label(TEXT("use")).IsEmpty() ? S47Gamepad::Label(TEXT("use")) : FString(TEXT("Enter"));
+			Why = N->Why + TEXT("\n\n") + (OpenFolds.Contains(N->Fold) ? FString::Printf(TEXT("Open below. %s folds them away again."), *Opens) : (Opens + (N->Fold == TEXT("cards") ? TEXT(" opens the job cards.") : TEXT(" opens the cases."))));
+		}
+		Row(TEXT("WHY"), Why);
+		if (W)
+		{
+			const int32 Level = X.HintLevel ? X.HintLevel(W->Id) : 0;
+			for (int32 Hn = 0; Hn < FMath::Min(Level, W->Hints.Num()); ++Hn) Row(TEXT("HINT"), W->Hints[Hn]);
+			if (!W->bDone && !W->Hints.IsEmpty() && X.RevealHint && Level < W->Hints.Num()) Acts.Add(MakeTuple(FString(TEXT("F1 / RT")), FString(TEXT("REVEAL HINT")), TFunction<void()>([this] { RevealHint(); })));
+			if (!W->bDone && W->bCanFollow && X.OnFollow && !W->Id.IsEmpty()) Acts.Add(MakeTuple(FString(TEXT("ENTER")), FString(TEXT("FOLLOW")), TFunction<void()>([this] { Activate(); })));
+			if (OnBoard && (W->Id.StartsWith(TEXT("case/")) || W->Id.StartsWith(TEXT("field-plan/")))) Acts.Add(MakeTuple(S47Keys::Label(TEXT("board")), FString(TEXT("BOARD")), TFunction<void()>([this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); })));
+		}
+		if (N && !N->Fold.IsEmpty()) Acts.Add(MakeTuple(FString(TEXT("ENTER")), FString(OpenFolds.Contains(N->Fold) ? TEXT("FOLD AWAY") : TEXT("OPEN")), TFunction<void()>([this] { Activate(); })));
+		if (!X.NowClock.IsEmpty())
+		{
+			Pg->AddSlot().AutoHeight().Padding(0, P(26), 0, 0)[Turned(Inked(X.NowClock, bLarge ? 30.f : 27.f, StampRed()), -1.2f)];
+			Said.Add(X.NowClock);
+		}
+		RightSlot->SetContent(SNew(SBox).Padding(FMargin(P(60), P(48), P(30), P(95)))[SAssignNew(RightScroll, SScrollBox) + SScrollBox::Slot()[Pg]]);
+		Readings(Said);
+	}
+	else if ((Tab == TEXT("tasks") && X.WorkItems.IsValidIndex(I)) || (Tab == TEXT("guide") && X.GuideEntries.IsValidIndex(I)))
 	{
 		const bool Work = Tab == TEXT("tasks");
 		const FString Id = Work ? X.WorkItems[I].Id : X.GuideEntries[I].Id;
@@ -1117,6 +1526,40 @@ void SS47Notebook::BuildRight()
 		if (K.Art == TEXT("flashlight")) Acts.Add({ S47Keys::Label(TEXT("light")), K.State == TEXT("On") ? TEXT("SWITCH OFF") : TEXT("SWITCH ON"), [this] { Press(S47Keys::Key(TEXT("light"), 0)); } });
 		if (K.Art == TEXT("papers")) Acts.Add({ TEXT("ENTER"), TEXT("PAPERS"), [this] { Show(TEXT("papers")); } });
 	}
+	else if (Tab == TEXT("people") && X.bFreeform)
+	{
+		// MARGINALIA-20261109: THEM, on the facing page of squared paper: a box for each thing out there the player has a name for (only
+		// their own names, never what it is), the scribbles under it as they grew, the wrong guesses struck through.
+		const auto Follow = [this](const FS47NbScribble& S) -> TFunction<void()>
+		{
+			if (S.Follow == TEXT("map") || S.Follow == TEXT("board")) return [this] { Show(TEXT("map")); }; // D46-20261110: what pointed at the pinboard points at the map
+			return nullptr;
+		};
+		TArray<FString> Boxes, Said;
+		for (const FS47NbScribble& S : X.Scribbles) if (S.Side == TEXT("them")) Boxes.AddUnique(S.Box);
+		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+		for (const FString& Name : Boxes)
+		{
+			TSharedRef<SVerticalBox> Bx = SNew(SVerticalBox) + SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Name)).Font(Hand(30)).ColorAndOpacity(InkBlue()).AutoWrapText(true)];
+			Said.Add(Name);
+			for (const FS47NbScribble& S : X.Scribbles)
+				if (S.Side == TEXT("them") && S.Box == Name) { Bx->AddSlot().AutoHeight().Padding(0, P(4), 0, 0)[ScribbleLine(S, 24.f, Follow(S))]; Said.Add(S.Text); }
+			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, C(0x3a3a40, 0.45f), 1.2f, 2.f)).Padding(FMargin(P(12), P(6)))[Bx]];
+		}
+		const FString None = TEXT("Nothing out there I could put a name to so far."); // D45-20261110: no one-word sentence
+		RightSlot->SetContent(SNew(SOverlay) + SOverlay::Slot()[SNew(SGraphPaper)]
+			+ SOverlay::Slot()
+			[
+				SNew(SCanvas)
+				+ SCanvas::Slot().Position(P2(60, 40)).Size(P2(506, 100))[Head(TEXT("Them"), FString::Printf(TEXT("THEM · %d"), Boxes.Num()))]
+				+ SCanvas::Slot().Position(P2(46, 146)).Size(P2(536, 734 - 146 - 92))
+				[
+					SAssignNew(RightScroll, SScrollBox).Style(S47Game::QuietScroll()).ScrollBarStyle(S47Game::QuietBar(C(0x233a7a, 0.22f))).ScrollBarThickness(FVector2D(P(3), P(3)))
+					+ SScrollBox::Slot().Padding(FMargin(P(14), 0, P(16), P(10)))[Boxes.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(None)]
+				]
+			]);
+		Readings(Boxes.Num() ? Said : TArray<FString>{ None });
+	}
 	else if (Tab == TEXT("people") && X.People && X.People->IsValidIndex(I))
 	{
 		// the face large, clipped to the page; the name, the role, and the note in the hand on the lines
@@ -1148,12 +1591,12 @@ void SS47Notebook::BuildRight()
 		const bool bFinding = Tab == TEXT("findings");
 		const FS47Doc& D = bFinding ? Findings[I] : Papers[I];
 		const bool bHand = D.Kind == TEXT("hand"), bPrint = D.Kind == TEXT("printout");
-		const FString Kind = D.Kind == TEXT("hand") ? TEXT("HANDWRITTEN") : bPrint ? TEXT("PRINTOUT") : D.Kind == TEXT("typed") ? TEXT("TYPED") : D.Kind == TEXT("map") ? TEXT("MAP") : TEXT("PRINT");
+		const FString Kind = KindWord(D, X.bFreeform).ToUpper();
 		const FString Line = (bFinding ? (D.Kind == TEXT("fieldnote") ? FString(TEXT("OBSERVATION · ")) : FString(TEXT("INTERPRETATION · "))) : FString()) + Kind + (D.Stamp.IsEmpty() ? FString() : TEXT(" · ") + D.Stamp);
 		UTexture2D* Image = Picture(D.Image);
 		TSharedRef<SVerticalBox> Lines = SNew(SVerticalBox);
 		TArray<FString> PageLines;
-		D.Page.ParseIntoArray(PageLines, TEXT("\n"), false);
+		ShownPage(D, X.bFreeform).ParseIntoArray(PageLines, TEXT("\n"), false);
 		const FSlateFontInfo Font = bHand ? Hand(26) : bPrint ? Term(18) : Type(14);
 		for (const FString& L : PageLines)
 		{
@@ -1164,7 +1607,7 @@ void SS47Notebook::BuildRight()
 				.ColorAndOpacity(bPencil ? C(0x4a4a52) : bHand ? InkBlue() : Ink()).AutoWrapText(true)
 			];
 		}
-		if (bFinding) { Lines->AddSlot().AutoHeight().Padding(0, P(12), 0, 0)[Typed((D.Id.StartsWith(TEXT("freeform-")) ? FString() : TEXT("SOURCE / ") + D.Id + TEXT("\n")) + (D.Kind == TEXT("fieldnote") ? TEXT("OPEN QUESTION / What does an independent record support or contradict?") : TEXT("INTERPRETATION / This is the retained comparison, not a new notebook conclusion.")), 13)]; }
+		if (bFinding && !X.bFreeform) { Lines->AddSlot().AutoHeight().Padding(0, P(12), 0, 0)[Typed((D.Id.StartsWith(TEXT("freeform-")) ? FString() : TEXT("SOURCE / ") + D.Id + TEXT("\n")) + (D.Kind == TEXT("fieldnote") ? TEXT("OPEN QUESTION / What does an independent record support or contradict?") : TEXT("INTERPRETATION / This is the retained comparison, not a new notebook conclusion.")), 13)]; }
 		if (Image && D.Kind == TEXT("map")) { Lines->ClearChildren(); Lines->AddSlot().AutoHeight()[SNew(SBox).HeightOverride(P(300))[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SImage).Image(Picture(Image))]]]; }
 		const TSharedRef<SWidget> Sheet = SNew(SOverlay)
 			+ SOverlay::Slot()[SNew(SS47GameSheet).Color(bPrint ? C(0xeef0e4) : C(0xf3ecdb)).bTorn(bHand)]
@@ -1174,12 +1617,13 @@ void SS47Notebook::BuildRight()
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Line)).Font(Term(20, 2)).ColorAndOpacity(StampRed())]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, P(6), 0, 0)[SNew(STextBlock).Text(FText::FromString(D.Title)).Font(bHand ? Hand(40) : Type(26)).ColorAndOpacity(bHand ? InkBlue() : Ink()).AutoWrapText(true)]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, P(6), 0, 0)[SNew(STextBlock).Text(FText::FromString(ShownTitle(D, X.bFreeform))).Font(bHand ? Hand(40) : Type(26)).ColorAndOpacity(bHand ? InkBlue() : Ink()).AutoWrapText(true)]
 			]
 			+ SCanvas::Slot().Position(P2(70, 196)).Size(P2(470, 440))[Turned(Shadowed(Sheet, 18.f, FVector2D(0, 10), 0.35f), bFinding ? 0.8f : -1.f)]);
 		Acts.Add({ TEXT("ENTER"), X.EntryRead && X.EntryRead(D.Id) ? TEXT("OPEN ORIGINAL") : TEXT("READ ORIGINAL"), [this] { Activate(); } });
 		if (bFinding && OnBoard) Acts.Add({ S47Keys::Label(TEXT("board")), TEXT("LAY IT ALL OUT ON THE BOARD"), [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); } });
 	}
+	else if (Tab == TEXT("events") && X.bEvents) Acts.Add({ TEXT("ENTER"), I >= X.EventKinds.Num() + X.EventPhrases.Num() ? TEXT("WRITE IT DOWN") : TEXT("CHOOSE"), [this] { Activate(); } });
 	else if (Tab == TEXT("photos") && Count()) Acts.Add({ TEXT("ENTER"), TEXT("LOOK CLOSER"), [this] { Activate(); } });
 	else if (Tab == TEXT("findings") && OnBoard) Acts.Add({ S47Keys::Label(TEXT("board")), TEXT("LAY IT ALL OUT ON THE BOARD"), [this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); } });
 	UseSlot->SetContent(UseRow(Acts));
@@ -1196,7 +1640,7 @@ void SS47Notebook::Choose(int32 I)
 	Sel.FindOrAdd(Tab) = I;
 	if (Entries.IsValidIndex(I) && Entries[I].IsValid())
 	{
-		const bool bRight = bRightIsEntries && I >= Photos.Num();
+		const bool bRight = bRightIsEntries && I >= (Tab == TEXT("events") ? 0 : Photos.Num());
 		const TSharedPtr<SScrollBox> S = bRight ? RightScroll : LeftScroll;
 		if (S.IsValid()) S->ScrollDescendantIntoView(Entries[I], true, EDescendantScrollDestination::IntoView);
 	}
@@ -1206,8 +1650,41 @@ void SS47Notebook::Choose(int32 I)
 void SS47Notebook::Activate()
 {
 	const int32 I = Chosen();
+	if (IsNow())
+	{
+		// NOW: a fold opens or closes; a line with a work item follows it, as the work item does
+		if (!NowRows.IsValidIndex(I)) return;
+		const FNowRow R = NowRows[I];
+		if (X.Now.IsValidIndex(R.Line) && !X.Now[R.Line].Fold.IsEmpty())
+		{
+			const FString Fold = X.Now[R.Line].Fold;
+			if (OpenFolds.Contains(Fold)) OpenFolds.Remove(Fold); else OpenFolds.Add(Fold);
+			FilterNow(); Sel.FindOrAdd(TEXT("tasks")) = I; Build(); return;
+		}
+		const FS47NbWorkItem* W = ChosenWork();
+		if (W && X.OnFollow && W->bCanFollow && !W->bDone) { auto Fn = X.OnFollow; const FString Id = W->Id; Close(); Fn(Id); }
+		return;
+	}
+	if (Tab == TEXT("events") && X.bEvents)
+	{
+		// D48-20261110 (D46-19): a kind, a note, then the line that writes it down (place: where the player stands, time: now)
+		const int32 NK = X.EventKinds.Num(), NP = X.EventPhrases.Num();
+		if (I < NK) { EvKind = I; EvDone.Empty(); }
+		else if (I < NK + NP) { EvPhrase = I - NK; EvDone.Empty(); }
+		else if (EvKind == INDEX_NONE || EvPhrase == INDEX_NONE) EvDone = TEXT("Pick what it was and a note first.");
+		else if (X.OnLogEvent && X.OnLogEvent(EvKind, EvPhrase)) { EvDone = TEXT("Written down."); EvKind = EvPhrase = INDEX_NONE; if (X.GetEvents) X.Events = X.GetEvents(); }
+		else EvDone = TEXT("That is already on the page.");
+		Build();
+		return;
+	}
 	if (Tab == TEXT("tasks") && X.WorkItems.IsValidIndex(I)) { if (X.OnFollow && X.WorkItems[I].bCanFollow && !X.WorkItems[I].bDone) { auto Fn = X.OnFollow; const FString Id = X.WorkItems[I].Id; Close(); Fn(Id); } return; }
-	if (Tab == TEXT("guide") && X.GuideEntries.IsValidIndex(I)) { if (X.MarkRead) X.MarkRead(X.GuideEntries[I].Id); Build(); return; }
+	if (Tab == TEXT("guide") && X.GuideEntries.IsValidIndex(I))
+	{
+		if (X.MarkRead) X.MarkRead(X.GuideEntries[I].Id);
+		// D45-20261110: the field guide's first entry is tonight's list; Enter turns to it on NOW
+		if (X.GuideEntries[I].Id == TEXT("guide:tonight") && X.bNow) { Show(TEXT("tasks")); return; }
+		Build(); return;
+	}
 
 	if ((Tab == TEXT("findings") && Findings.IsValidIndex(I)) || (Tab == TEXT("papers") && Papers.IsValidIndex(I)))
 	{
@@ -1234,7 +1711,7 @@ void SS47Notebook::Activate()
 
 FString SS47Notebook::MainTab() const
 {
-	if (Tab == TEXT("notes") || Tab == TEXT("people")) return TEXT("findings");
+	if (Tab == TEXT("notes") || Tab == TEXT("people") || Tab == TEXT("events")) return TEXT("findings");
 	if (Tab == TEXT("controls")) return TEXT("guide");
 	return Tab;
 }
@@ -1257,22 +1734,54 @@ void SS47Notebook::FilterWork()
 	X.WorkItems.Reset();
 	for (const FS47NbWorkItem& W : AllWorkItems) if (bShowHistory || W.bFollowed || (!W.bDone && !W.bEarlier)) X.WorkItems.Add(W);
 	Sel.FindOrAdd(TEXT("tasks")) = 0;
+	if (X.bNow) FilterNow();
+}
+
+void SS47Notebook::FilterNow()
+{
+	// PT-NOTEBOOK-20261109: every line of the note, and under an open fold its work items (with history: the filed cards too)
+	NowRows.Reset();
+	for (int32 L = 0; L < X.Now.Num(); ++L)
+	{
+		NowRows.Add({ L, INDEX_NONE });
+		const FString& Fold = X.Now[L].Fold;
+		if (Fold.IsEmpty() || !OpenFolds.Contains(Fold)) continue;
+		for (int32 W = 0; W < AllWorkItems.Num(); ++W)
+		{
+			const FS47NbWorkItem& It = AllWorkItems[W];
+			const bool bIn = Fold == TEXT("cards") ? It.bCard : It.Id.StartsWith(TEXT("case/")) && !X.Now.ContainsByPredicate([&It](const FS47NbNowLine& N) { return N.Item == It.Id; });
+			if (bIn && (bShowHistory || It.bFollowed || (!It.bDone && !It.bEarlier))) NowRows.Add({ INDEX_NONE, W });
+		}
+	}
+}
+
+const FS47NbWorkItem* SS47Notebook::ChosenWork() const
+{
+	const int32 I = Chosen();
+	if (!NowRows.IsValidIndex(I)) return nullptr;
+	const FNowRow& R = NowRows[I];
+	if (AllWorkItems.IsValidIndex(R.Item)) return &AllWorkItems[R.Item];
+	if (!X.Now.IsValidIndex(R.Line) || X.Now[R.Line].Item.IsEmpty()) return nullptr;
+	const FString& Id = X.Now[R.Line].Item;
+	return AllWorkItems.FindByPredicate([&Id](const FS47NbWorkItem& W) { return W.Id == Id; });
 }
 
 void SS47Notebook::Section(int32 Dir)
 {
 	if (MainTab() == TEXT("tasks")) { bShowHistory = !bShowHistory; FilterWork(); Build(); return; }
 	TArray<FString> Tabs;
-	if (MainTab() == TEXT("findings")) Tabs = { TEXT("findings"), TEXT("notes"), TEXT("people") };
-	if (MainTab() == TEXT("papers")) Tabs = { TEXT("papers"), TEXT("photos") };
+	if (MainTab() == TEXT("findings")) Tabs = !X.bFreeform ? TArray<FString>{ TEXT("findings"), TEXT("notes"), TEXT("people") } : Notes.Num() ? TArray<FString>{ TEXT("findings"), TEXT("people"), TEXT("notes") } : TArray<FString>{ TEXT("findings"), TEXT("people") };
+	if (MainTab() == TEXT("papers") && !X.bFreeform) Tabs = { TEXT("papers"), TEXT("photos") };
 	if (MainTab() == TEXT("guide")) Tabs = { TEXT("guide"), TEXT("controls") };
 	if (!Tabs.IsEmpty()) Show(Tabs[(FMath::Max(0, Tabs.IndexOfByKey(Tab)) + Dir + Tabs.Num()) % Tabs.Num()]);
 }
 
 void SS47Notebook::RevealHint()
 {
-	if (Tab != TEXT("tasks") || !X.WorkItems.IsValidIndex(Chosen()) || !X.RevealHint) return;
-	const FS47NbWorkItem& W = X.WorkItems[Chosen()];
+	if (Tab != TEXT("tasks") || !X.RevealHint) return;
+	const FS47NbWorkItem* Work = IsNow() ? ChosenWork() : X.WorkItems.IsValidIndex(Chosen()) ? &X.WorkItems[Chosen()] : nullptr;
+	if (!Work) return;
+	const FS47NbWorkItem& W = *Work;
 	if (!W.bDone && !W.Hints.IsEmpty()) { X.RevealHint(W.Id); BuildRight(); }
 }
 
@@ -1588,6 +2097,107 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 		Test->Show(TEXT("guide")); Test->Section(1); Check(TEXT("controls remain in Field Guide"), Test->Tab == TEXT("controls") && Test->MainTab() == TEXT("guide"));
 		Check(TEXT("browsing never reveals another hint"), Reveals == 1);
 	}
+	// PT-NOTEBOOK-20261109: Freeform's book: the field records only under Knowledge, each thing once, newest night first, the kinds
+	// named, no "Field record:" and no standing sentences shown; NOW the note's lines, every one of them, the job cards on one line.
+	{
+		auto Doc = [](const TCHAR* Id, const TCHAR* Kind, const TCHAR* Title, const TCHAR* Stamp, const FString& Page = FString())
+		{
+			FS47Doc D; D.Id = Id; D.Kind = Kind; D.Title = Title; D.Stamp = Stamp; D.Page = Page.IsEmpty() ? FString(Stamp) + TEXT("\n\nOBSERVATION\nA corrugated stock tank, a third full. Tracks round it.\n\n") + FieldTail : Page; D.Transcript = D.Page; return D;
+		};
+		const FS47Doc Letter = Doc(TEXT("reyes_letter"), TEXT("typed"), TEXT("Letter from Dr. Ward"), TEXT("SARO / DUTY OFFICER"), TEXT("Dear"));
+		const FS47Doc Tank = Doc(TEXT("freeform-place_tank"), TEXT("fieldnote"), TEXT("Field record: A corrugated stock tank, a third full"), TEXT("IN THE FIELD / DAY 1"));
+		const FS47Doc OldCase = Doc(TEXT("freeform-case1-test1"), TEXT("fieldnote"), TEXT("Field record: CASE / THE REPEATED INTERVAL"), TEXT("SARO / DAY 1"));
+		const FS47Doc TagNote = Doc(TEXT("freeform-reyes_tag_tank"), TEXT("fieldnote"), TEXT("Field record: Reyes at the tank, March 27"), TEXT("IN THE FIELD / DAY 2"));
+		const FS47Doc Tag = Doc(TEXT("reyes_tag_tank"), TEXT("hand"), TEXT("Survey tag at the water tank"), TEXT("SARO RFI / 2"), TEXT("R."));
+		const FS47Doc Telex = Doc(TEXT("freeform-case1-records"), TEXT("telex"), TEXT("Records reply: the repeated interval"), TEXT("SARO TELEX / DAY 2"), TEXT("REPLY"));
+		const FS47Doc Print = Doc(TEXT("answer-printout-187654"), TEXT("printout"), TEXT("Printout, monitor channel, unscheduled"), TEXT("MONITOR"), TEXT("PULSES"));
+		const FS47Doc Answer = Doc(TEXT("freeform-answer_d2_87654"), TEXT("fieldnote"), TEXT("Field record: An unscheduled printout from the monitor channel"), TEXT("SARO / DAY 2"));
+		FS47Doc Photo = Doc(TEXT("frame1"), TEXT("photo"), TEXT("The orb"), TEXT("DAY 2"), TEXT("-")); Photo.Image = TEXT("art");
+		const TArray<FS47Doc> All = { Letter, Tank, OldCase, TagNote, Tag, Telex, Print, Answer, Photo };
+		FS47NbExtras Fx; Fx.bFreeform = true;
+		Fx.Papers = TArray<FS47Doc>{ Letter, OldCase, Tag, Telex, Print, Photo }; // as FS47PinBoard::Papers leaves them: no field records but an old case's
+		Fx.People = TArray<FS47PersonCard>{ { TEXT("THE DEPUTY"), TEXT("Deputy at the substation"), TEXT("Window dark 3 nights. Nobody asks."), FString() } };
+		Fx.bNow = true; Fx.NowClock = TEXT("Too early: the window opens at 02:20. Do a job or rest until then.");
+		auto Line = [](const TCHAR* Group, const TCHAR* Text, bool bDone = false, const TCHAR* Fold = TEXT(""), const TCHAR* Item = TEXT("")) { FS47NbNowLine N; N.Group = Group; N.Text = N.What = N.Why = Text; N.bDone = bDone; N.Fold = Fold; N.Item = Item; return N; };
+		Fx.Now = { Line(TEXT("next"), TEXT("Remote feeder: lights reported. Go look.")), Line(TEXT("clock"), TEXT("02:20-02:40  Array window opens")), Line(TEXT("todo"), TEXT("PHOTO LAB: Film waiting.")),
+			Line(TEXT("also"), TEXT("Job cards: 2 open at OPS."), false, TEXT("cards")), Line(TEXT("done"), TEXT("WORTH A LOOK: The remote feeder on the county road."), true) };
+		for (int32 I = 0; I < 3; ++I) { FS47NbWorkItem W; W.Id = FString::Printf(TEXT("FF-D0002-J%d/0"), I); W.Title = W.Id; W.bCard = true; W.bCanFollow = true; W.bDone = I == 2; Fx.WorkItems.Add(W); }
+		TArray<FS47Task> Ft; Ft.Add({ TEXT("MAILBOX / One paper you took out of the box is not read yet."), false });
+		const auto Free = SNew(SS47Notebook).Tasks(Ft).Docs(All).Extras(Fx);
+		// D46-20261110: Freeform has no pinboard: Y and B open nothing there even when a host passes OnBoard (Story's book still does, above)
+		{
+			int32 FreeBoards = 0;
+			const auto FreeNb = SNew(SS47Notebook).Tasks(Ft).Docs(All).OnBoard([&FreeBoards] { ++FreeBoards; }).Extras(Fx);
+			FreeNb->OnKeyDown(FGeometry(), FKeyEvent(EKeys::Gamepad_FaceButton_Top, FModifierKeysState(), 0, false, 0, 0));
+			FreeNb->OnKeyDown(FGeometry(), FKeyEvent(EKeys::B, FModifierKeysState(), 0, false, 0, 0));
+			Check(TEXT("Freeform: no pinboard, Y and B open no board"), FreeBoards == 0);
+		}
+		bool bNoNotes = true, bOnce = true, bNoOld = true, bNoPhoto = true;
+		TSet<FString> Seen;
+		for (const FS47Doc& D : Free->Papers) { bNoNotes &= D.Kind != TEXT("fieldnote"); bNoOld &= D.Id != OldCase.Id; bNoPhoto &= D.Kind != TEXT("photo"); }
+		for (const TArray<FS47Doc>* List : { &Free->Findings, &Free->Papers }) for (const FS47Doc& D : *List) { bOnce &= !Seen.Contains(D.Id); Seen.Add(D.Id); }
+		for (const FS47Doc& D : Free->Findings) bNoOld &= D.Id != OldCase.Id;
+		Check(TEXT("Freeform: no field record among the documents, and no photograph"), bNoNotes && bNoPhoto && Free->Papers.Num() == 4, FString::FromInt(Free->Papers.Num()));
+		Check(TEXT("Freeform: a paper's field-record twin and an old save's case record are not shown again"), bOnce && bNoOld && Free->Findings.Num() == 1 && Free->Findings[0].Id == Tank.Id, FString::FromInt(Free->Findings.Num()));
+		Check(TEXT("Freeform: newest night first, by the DAY stamped on it or the paper before it"), Free->Papers.Num() == 4 && Free->DocNight.FindRef(Free->Papers[0].Id) == 2 && Free->DocNight.FindRef(Free->Papers.Last().Id) == 1 && Free->Papers.Last().Id == Letter.Id && Free->DocNight.FindRef(Tag.Id) == 2);
+		Check(TEXT("Freeform: the kinds named, the field record's own words without its standing sentences"), KindWord(Tank) == TEXT("Field note") && KindWord(Telex) == TEXT("Telex") && KindWord(Telex, false) == TEXT("Print")
+			&& ShownTitle(Tank, true) == TEXT("A corrugated stock tank, a third full") && ShownTitle(Tank, false) == Tank.Title && ShownPage(Tank, true) == TEXT("A corrugated stock tank, a third full. Tracks round it.") && !ShownPage(Tank, true).Contains(TEXT("Interpretation remains")));
+		Free->Show(TEXT("papers")); Free->Section(1);
+		Check(TEXT("Freeform: the photographs are the album's alone, not a section of the documents"), Free->Tab == TEXT("papers"), Free->Tab);
+		Free->Show(TEXT("findings")); Free->Section(1);
+		Check(TEXT("Freeform: WHO & WHAT in Knowledge, one box a person"), Free->Tab == TEXT("people") && Free->Count() == 1 && Free->Columns() == 1, Free->Tab);
+		// MARGINALIA-20261109: the scribbles (S47Marginalia's own checks: nothing before it happened, the tiers, the limits, no word for
+		// what they are), a struck guess with a line Slate really draws, and the scribbles changing nothing of what can be chosen
+		{
+			TArray<FString> Marg;
+			const bool bMarg = S47Marginalia::SelfTest(Marg);
+			Lines.Append(Marg);
+			Check(TEXT("Freeform WHO & WHAT: the scribbles keep to what happened, the tiers and the spoiler limits (S47Marginalia)"), bMarg);
+			Check(TEXT("Freeform station files: SARO's own history keeps to the spoiler limits and names nobody real (S47StationFiles)"), S47StationFiles::Lint().IsEmpty(), S47StationFiles::Lint());
+			Check(TEXT("Freeform WHO & WHAT: a struck guess has a line through it that Slate draws, a standing one none"),
+				!PencilStyle(24.f, true).StrikeBrush.GetResourceName().IsNone() && PencilStyle(24.f, false).StrikeBrush.GetResourceName().IsNone() && !StrikeBrush(S47Game::InkBlue()).GetResourceName().IsNone());
+			FS47NbExtras Mx = Fx;
+			const auto Scrib = [](const TCHAR* Side, const TCHAR* Box, const TCHAR* Text, bool bStruck) { FS47NbScribble S; S.Side = Side; S.Box = Box; S.Text = Text; S.bStruck = bStruck; return S; };
+			Mx.Scribbles = { Scrib(TEXT("people"), TEXT("THE DEPUTY"), TEXT("Writes everything down."), false), Scrib(TEXT("people"), TEXT("DALE"), TEXT("Never seen him."), false),
+				Scrib(TEXT("them"), TEXT("THE LOW ONE"), TEXT("Coyote. A big one."), true) };
+			const auto Pencilled = SNew(SS47Notebook).Docs(All).Extras(Mx);
+			Pencilled->Show(TEXT("findings")); Pencilled->Section(1);
+			Check(TEXT("Freeform WHO & WHAT: PEOPLE and THEM on the two pages, and the scribbles change nothing of what can be chosen"),
+				Pencilled->Tab == TEXT("people") && Pencilled->Count() == 1 && Pencilled->RightSlot->GetChildren()->GetChildAt(0) != SNullWidget::NullWidget, Pencilled->Tab);
+		}
+		Free->Show(TEXT("tasks"));
+		Check(TEXT("Freeform NOW: every line of the note is on it (so the note's \"+N more\" are all here), the job cards folded on one line"), Free->Count() == Fx.Now.Num(), FString::FromInt(Free->Count()));
+		Free->Choose(3); Free->Activate();
+		Check(TEXT("Freeform NOW: the job cards' line opens them under it (the filed one waits for the history)"), Free->Count() == Fx.Now.Num() + 2 && Free->NowRows[4].Item == 0, FString::FromInt(Free->Count()));
+		Free->Section(1);
+		Check(TEXT("Freeform NOW: with the history, the filed card too"), Free->Count() == Fx.Now.Num() + 3, FString::FromInt(Free->Count()));
+		Free->Choose(0);
+		Check(TEXT("Freeform NOW: the next step first, the night's done lines last, struck"), Free->X.Now[Free->NowRows[0].Line].Group == TEXT("next") && Free->X.Now[Free->NowRows.Last().Line].bDone);
+		// D45-20261110 (Tom: a plain to-do list by importance): the heads in order, NOW first when something new is on it (also when the
+		// field guide was the page used last), and the field guide's first entry, tonight's list, turns to NOW.
+		Check(TEXT("Freeform NOW: the heads are DO FIRST, TONIGHT, WHEN YOU CAN and DONE TONIGHT"), NowHead(TEXT("first")) == TEXT("DO FIRST") && NowHead(TEXT("tonight")) == TEXT("TONIGHT")
+			&& NowHead(TEXT("later")) == TEXT("WHEN YOU CAN") && NowHead(TEXT("done")) == TEXT("DONE TONIGHT") && NowHead(TEXT("next")).IsEmpty());
+		{
+			FS47NbExtras Nx = Fx;
+			Nx.Now = { Line(TEXT("first"), TEXT("FEEDER: Power is out.")), Line(TEXT("tonight"), TEXT("BEARING SLIP: New circle on your map.")), Line(TEXT("later"), TEXT("STATION GOAL: Array 19 of 27.")),
+				Line(TEXT("done"), TEXT("OPS: One job card registered and filed."), true) };
+			Nx.Now[1].bNew = true; Nx.Now[1].Key = TEXT("d45-selftest:slip");
+			Nx.GuideEntries = { { TEXT("guide:tonight"), TEXT("Tonight's list"), TEXT("TONIGHT\n- BEARING SLIP: New circle on your map.") }, { TEXT("guide:records"), TEXT("Records"), TEXT("Keep originals.") } };
+			FS47NbExtras Looked = Nx; Looked.Now[1].bNew = false;
+			Check(TEXT("Freeform: the notebook opens on NOW when something new is on it, even after the field guide; otherwise where it was left"),
+				OpenOn(Nx, TEXT("guide")) == TEXT("tasks") && OpenOn(Looked, TEXT("guide")) == TEXT("guide") && OpenOn(FS47NbExtras(), TEXT("map")) == TEXT("map"));
+			const auto Ranked = SNew(SS47Notebook).Docs(All).Extras(Nx);
+			Ranked->Show(TEXT("guide")); Ranked->Choose(0); Ranked->Activate();
+			Check(TEXT("Freeform field guide: its first entry is tonight's list, and it turns to NOW"), Ranked->Tab == TEXT("tasks") && Ranked->Count() == Nx.Now.Num(), Ranked->Tab);
+		}
+		bool bLint = true;
+		for (const FS47NbNowLine& N : Fx.Now) bLint &= S47Script::LintText(N.Text).IsEmpty();
+		for (const FS47PersonCard& Pc : *Fx.People) bLint &= S47Script::LintText(Pc.Name + TEXT(" ") + Pc.Role + TEXT(" ") + Pc.Note).IsEmpty();
+		for (const FS47Doc& D : Free->Findings) bLint &= S47Script::LintText(ShownTitle(D, true) + TEXT(" ") + ShownPage(D, true)).IsEmpty();
+		Check(TEXT("Freeform: the lines NOW, WHO & WHAT and the field records show keep to the spoiler limits"), bLint);
+		const auto Story = SNew(SS47Notebook).Docs(All).Extras(FS47NbExtras());
+		Check(TEXT("Story's book is as it was: every paper, field records among them"), Story->Papers.Num() == All.Num() - 1 && Story->Findings.Num() == 4, FString::FromInt(Story->Papers.Num()));
+	}
 	Nb->Show(TEXT("kit")); Nb->Show(TEXT("map"));
 	Check(TEXT("map clears the previous left page"), Nb->LeftSlot->GetChildren()->GetChildAt(0) == SNullWidget::NullWidget);
 	// Xbox uses the same selected entries, tab state and callbacks as the keyboard.
@@ -1619,6 +2229,11 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 		Check(TEXT("controls: the walk keys as the web has them"), Row(Desk, 0, 0) == TEXT("W A S D, arrows | Walk. Shift: run."), Row(Desk, 0, 0));
 		Check(TEXT("controls: the notebook's keys as the web has them"), Has(Desk, TEXT("Tab, N | The notebook. M: its map. I: the kit. H: these controls.")));
 		Check(TEXT("controls: Space both jump and shutter"), Has(Desk, TEXT("Space | Jump. With the camera raised: the shutter.")));
+		// M7-HUD-20261109: X throws (and the stones), U the field recorder, Z the counter, as S47Keys binds them
+		auto KeyOf = [](const FCtlPage& Pg, const TCHAR* Starts) { for (const FCtlGroup& Gr : Pg.Groups) for (const TPair<FString, FString>& R : Gr.Rows) if (R.Value.StartsWith(Starts)) return R.Key; return FString(); };
+		Check(TEXT("controls: throw, the stones and the pocket"), KeyOf(Desk, TEXT("Hold to throw")).StartsWith(TEXT("X")) && KeyOf(Desk, TEXT("Hold to throw")).Contains(TEXT("Mouse")), KeyOf(Desk, TEXT("Hold to throw")));
+		Check(TEXT("controls: the field recorder"), KeyOf(Desk, TEXT("The field recorder")) == TEXT("U") && S47Keys::Is(TEXT("tape"), EKeys::U), KeyOf(Desk, TEXT("The field recorder")));
+		Check(TEXT("controls: the counter"), KeyOf(Desk, TEXT("The Geiger counter")) == TEXT("Z") && S47Keys::Is(TEXT("counter"), EKeys::Z), KeyOf(Desk, TEXT("The Geiger counter")));
 		Nb->Show(TEXT("controls"));
 		S47Keys::Bind(TEXT("forward"), 0, EKeys::I);
 		S47Keys::Bind(TEXT("map"), 0, EKeys::K);

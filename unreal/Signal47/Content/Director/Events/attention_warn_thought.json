@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "attention_warn_thought",
+  "name": "The feeling of being watched",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) a warning, anywhere: the last of the turn, when no other fits.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 0,
+      "do": "thought",
+      "text": "Ever since I started watching those lights, I keep feeling watched back."
+    }
+  ]
+}

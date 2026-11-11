@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "id": "roof_steps_end",
+  "name": "The roof goes quiet",
+  "notes": "N1110. Played by S47FreeformDirector when the steps stop, only if the player was outside or close enough to have heard them. The finding is the code's own (key roof_steps, unchanged). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0.5, "do": "light", "kind": "gear", "strength": 0.15, "secs": 1.5 },
+    { "at": 2, "do": "thought", "text": "Nothing is walking up there now.", "secs": 4 }
+  ]
+}

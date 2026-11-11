@@ -1,10 +1,232 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 7. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 11. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 9. november kl. 01:33, nattskift: M1–M3, kritikk 2, HUD D, lagring på SARO
+## Installert 11. november kl. 06:19 (d57): versjon 0.9.57, `168af36f` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4756 kontroller). Tilbakerulling: d56 (`e12603e5`). Disk etterpå: 122 GB (d53-, d54- og d55-pakkene og generert `Saved/StagedBuilds` + `Saved/Cooked` ryddet; neste pakking koker derfor fra start). Ikke spilt av Tom.
+
+Nytt siden d56 (kritikk av dørsløyfen, 6,5/10): under jakt blir du tatt hvis du går ut døra du hørte noen rasle i (steg 3 sier «Not that one.» når bygget har to dører); taket og gulvet (steg 4–5) har egne tanker og skritt over deg, og gulvtonen har en 92 Hz-deltone som høres på små høyttalere; lysfarger, sted i taket og tanker varierer fra natt til natt; kort toning mot svart før kuttet; strobens laveste nivå hevet (mindre lysforskjell, fortsatt høyst 2,5 blink i sekundet).
+
+Kontroll: regresjon PASS 251; first og sky PASS.
+
+**Etter d57 på grenen (testet i editor, ikke installert):** oppmerksomhet som forklarer seg selv (Dale: interessen går over etter noen dager; tanke når besøket gir opp; hver sabotasje peker på lysrør i par ved butikkdisken i Caliche), sabotasjetypen trekkes per natt uten gjentakelse og med to tekstvarianter, og en sluppet pakke blir ikke lenger hengende i lufta ved pumpen (faller og dunker). Selvtest OK 4764, regresjon PASS 251, mail PASS 38. Hele testrekka er nå grønn: `-S47FreeformJourneyTest` PASS 59 etter pakkerettingen og to testrettinger ved S-03-skapet (ett trykk åpner luka, ett setter reléet).
+
+## Tidligere: installert 11. november kl. 05:25 (d56): versjon 0.9.56, `e12603e5` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4754 kontroller). Tilbakerulling: d55. Disk etterpå: 127 GB (d52-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d55 (tredje kritikk av første uke, 7/10): dyrevarsler fra dag 3, Dales hint på dag 3 kommer også om det aldri blir stille, én stor ting per natt gjelder nå dørsløyfe, jakt, besøk og landing, tvungen landing tidligst natt 5, roen etter fare har tre varianter (også Dales linje), svakt hundebjeff langt borte etter oppmerksomhetstegnet, og hulens port svarer med lyd når ingenting skjer.
+
+Kontroll: regresjon PASS 251; files, menu, tv, service, wear, dusk, ictl, ictlearly, mail, spine, capacity PASS på d55-koden; in-world (77) og evidence (114) PASS kjørt alene etter testrettinger. Kjent: `-S47FreeformJourneyTest` stopper på pakkefysikk (steg 4).
+
+## Tidligere: installert 11. november kl. 04:21 (d55): versjon 0.9.55, `05a54edb` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4749 kontroller; ingen materialadvarsler). Tilbakerulling: d54. Disk etterpå: 127 GB (d51-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d54: nattens spillertekster gjennomgått (Dale uten sammentrekninger, tydeligere dørsløyfe-tanker), skritt på taket og S-03-feilen i trinnvise manus, OPS-navigasjonstesten grønn igjen.
+
+Kontroll: regresjon PASS 251; first, opsnav, casefield, sky PASS. Kjent: `-S47FreeformJourneyTest` stopper på pakkefysikk (steg 4), som før i dag.
+
+## Tidligere: installert 11. november kl. 03:27 (d54): versjon 0.9.54, `1b347bcd` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4725 kontroller; ingen materialadvarsler). Tilbakerulling: d53 (`f2e9f55d`). Disk etterpå: 127 GB (d50-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d53 (andre spillkritikk av første uke, 6,5/10): jakt og dørsløyfe først fra natt 4, Dales hint bare i stille øyeblikk og med nøytral ordlyd på dag 3, dyrevarsel fra dag 4 med avstand til falske alarmer, én stor ting per natt, tre varianter av banke-tanken (bare nær døra), lærte regler betaler som feltnotat.
+
+Kontroll: regresjon PASS 251; first, dusk, service PASS.
+
+## Tidligere: installert 11. november kl. 02:54 (d53): versjon 0.9.53, `f2e9f55d` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4714 kontroller; ingen materialadvarsler). Tilbakerulling: d52 (`8b0750c0`). Disk etterpå: 127 GB (d49-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d52 (etter en spillkritikk av første uke, 5/10): nye ting slippes gradvis inn (falske alarmer dag 2, dyrevarsel dag 3, dørsløyfe dag 4), flere falske alarmer inne og kjøleskapet høyst én gang i uka, stillhet som ikke kuttes av en kortere, sjeldnere dyrevarsel og iblant uten noe etter, lettelse som varierer etter hvor man er, Dales regler tidlig i uka, advarsler tidligere, rykter om hulen, første jakt hver uke ender i dørsløyfen, vitnebonus $8.
+
+Kontroll: regresjon PASS 251; first, dusk, casefield PASS.
+
+## Tidligere: installert 11. november kl. 02:03 (d52): versjon 0.9.52, `8b0750c0` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4697 kontroller; ingen materialadvarsler). Tilbakerulling: d51 (`cefe6d8f`). Disk etterpå: 127 GB (d48-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d51: rommets skjermer viser siste side og framdrift; trip camera fanger landinger og skikkelser og bildene har overvåkningspreg (D46-13); skiftloggen viser faktisk beløp; sporbok på CASE BOARD; veggvakt for WORLD-04 med F10 «SARO wall check»; kantstein bare mot asfalt.
+
+Kontroll: regresjon PASS 251; service, casefield, ictl, first PASS.
+
+## Tidligere: installert 11. november kl. 01:11 (d51): versjon 0.9.51, `cefe6d8f` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4688 kontroller; ingen materialadvarsler). Tilbakerulling: d50 (`030f3b66`). Disk etterpå: 127 GB (d47-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d50: gjemme seg under pulten i kontrollrommet og arkivbordet, vitneutsagn i notatboka som betaler med eget bilde, folkas dagsvaner i Caliche, rettinger etter kritikken (falske alarmer med avstand, lettelse bare om natta, regelbruddet tydeligere, hulen høres kortere, seks slags dagsspor).
+
+Kontroll: regresjon PASS 251; first, sky, dusk, casefield PASS.
+
+## Tidligere: installert 11. november kl. 00:12 (d50): versjon 0.9.50 på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4671 kontroller; ingen materialadvarsler). Tilbakerulling: d49 (`9f8ed0ba`). Disk etterpå: 127 GB (kandidatpakkene d45 og d46 ryddet for plass). Ikke spilt av Tom.
+
+Nytt siden d49: falske alarmer, lettelse etter fare, ett uforklart spor om dagen, mål på tre nivåer i notatboka, regelen som læres og brytes én gang (Pale), PHOTO-02/GAMEPLAY-04, hulen the Breather i Caliche.
+
+Kontroll: regresjon PASS 251; first, sky, files, casefield, dusk PASS.
+
+## Tidligere: installert 10. november kl. 23:05 (d49): `9f8ed0ba` på `claude/day-20261109`
+
+Versjon 0.9.49. Pakket, røyktestet og installert (selvtest OK, 4607 kontroller; ingen materialadvarsler). Tilbakerulling: d48 (`d6b9679a`). Disk etterpå: 124 GB. Ikke spilt av Tom.
+
+Nytt siden d48: dørsløyfen på SARO (N1110-6), dørsløyfen under jakt med flomlys, strobe (maks tre blink i sekundet) og farger på SARO, i gårdshuset og i rom i byen (N1110-7), fire hendelser i trinnvise manus (horizon_figure, figure_near, landing, car_light), rettinger etter kritikken.
+
+Kontroll: regresjon PASS 251; first, sky, service, mail, dusk, casefield PASS.
+
+## Tidligere: installert 10. november kl. 22:00 (d48): `d6b9679a` på `claude/day-20261109`
+
+Versjon 0.9.48. Pakket, røyktestet og installert (selvtest OK, 4532 kontroller; ingen materialadvarsler). Tilbakerulling: d47 (`d44bc8b3`). Disk etterpå: 129 GB. Ikke spilt av Tom.
+
+Nytt siden d47 (nattskift, TODO «Nattskift 10.–11. november»): oppmerksomhet og sabotasje (stirrer man for lenge eller plager dem, kommer advarsler, sabotasje og til slutt besøk på SARO), kameramomenter (øyne i vinduet, skikkelse i lyktestrålen, lys over antennene), stillhet før og flimmer under, dyr som varsler, lysrør som går to og to ved sabotasje med nye rør å kjøpe, batteribytte i lykta, Caliches historie i spillet (avis, skilt, dineren, hulebrosjyre, nattradio, stasjonsfil 09), rettinger etter skrekk-kritikken.
+
+Kontroll: regresjon PASS 251; first, sky, files, dusk PASS.
+
+## Tidligere: installert 10. november kl. 20:31 (d47): `d44bc8b3` på `claude/day-20261109`
+
+Versjon 0.9.47. Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4422 kontroller; ingen materialadvarsler). Tilbakerulling: d46 (`ebe038ad`). Disk etterpå: 134 GB. Ikke spilt av Tom.
+
+Nytt siden d46 (TODO «Toms ønsker etter d46», D46-1..28): avisbilde fra verdenen, pinboard bort i Freeform, første døgn med flere hendelser og cliffhanger kl. 00:41, mer vær, tanker på skjermen, kaffe og søvn, hendelsesmanus i JSON, ny jeep med frontrute og trip camera-modell (Fable), versjon på startskjermen uten sted og dato; romvesentyper med egne signaler, receiver-fanene og referanser som teller, vindmølla på dag 1, hendelseslogg i notatboka, nytt CASE BOARD og PHOTOGRAPHS, skjermene fyller mer av glasset, mykere UFO-lys med datostempel på bildene, bildeutbetaling for alt rart, ballongen med modell, blinker og belønning, trip camera på kartet, musepekeren holdt i vinduet.
+
+Kontroll: regresjon PASS 251; trinnprøvene ictlearly, mail, first, service, wear, dusk, sky, files, ictl, spine PASS. `-S47OpsNavigationTest` stopper på at ORIGINALS-fanen ikke er unik (testoppsett). Lyd og nye effekter er ikke hørt eller sett av Tom.
+
+## Tidligere: installert 10. november kl. 16:47 (d46): `ebe038ad` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4297 kontroller; ingen materialadvarsler). Tilbakerulling: d45 (`d99bd64f`). Ledig disk etterpå: 124 GB. Ikke spilt av Tom.
+
+Nytt siden d45: Toms 29 funn fra testingen av d45 (TODO «Toms testfunn i d45», D45-1..29): roligere CRT, sikte og tikk på tracking, kontrollopptak rett etter opptaket og ny reel-front, vedlikehold med valgfri rekkefølge og røde lamper, peilelapp med ring på kartet og NOW-liste etter viktighet, naturlige tekster, aggregatlyd og skurring i stedet for «wah wah», sterkere gatelys, mørkerom med rødlys, butikkliste i bånd, levende array-tall, lader på kommoden, Bodycam 1986, Tall One og musikk som går over i skrekk, Caliche Ledger som ekte avis med klikkbare steder, mer på natt 1, geigerklikk, glør og røyk ved brente ringer, alien-bobblehead på dashbordet, Cosmos-gjerdet og Cosmos-fotsteg. Private filer (gjerde, bobblehead, røyk, fotsteg) er utenfor Git.
+
+Kontroll: regresjon PASS 251; trinnprøvene first, sky, files, tv, service, wear, dusk, ictl, ictlearly, mail, casefield, spine, capacity PASS. Kjente testproblemer står i TODO. Nivåer på lyd er målt, ikke hørt.
+
+## Tidligere: installert 10. november kl. 12:40 (d45): `d99bd64f` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4159 kontroller). Tilbakerulling: d43 (`7d1ae9ec`). Ledig disk etterpå: 130 GB. Ikke spilt av Tom. Kandidaten d44 (`f4e86536`) ble stoppet av leveringstesten: kommoden i gangen fikk grått standardmateriale i pakket spill, fordi modellens materiale bygger på motorens glTF-standard, som ikke er merket for Nanite. En slik prop tegnes nå uten Nanite (`d99bd64f`).
+
+Nytt siden d43 (Toms retteliste FIX10, se TODO):
+- CRT-skjermene og spolebåndet har fått liv og lyd, OPS har PHOTOGRAPHS, og array-PC-en har en drivprøve (FIX10-1).
+- Nødaggregatet tar over når nettet faller, og åtte stasjonsfiler ligger under OPS / RECORDS (FIX10-2, 3).
+- Første start ved postkassen: velkomstbrevet åpnes med en gang, nøklene ligger der, stasjonen er låst og mørk, og walkie-talkien og opptakeren ligger på kommoden i gangen (FIX10-4, 8).
+- TV-ene: én kanal, bryter, sendeslutt med flagg og nasjonalsang, forstyrrelser ved møter (FIX10-5).
+- F10-menyen i to felt med søk og «Used last» (FIX10-6).
+- Uhyggelag under møter fra det kjøpte lydbiblioteket (FIX10-7), med lavere nivå etter kritikerrunden.
+
+Kontroll på `f4e86536`: regresjon PASS 251, trinnprøvene first, sky, files, menu og tv PASS. På `d99bd64f`: selvtest 4159 OK og first PASS.
+
+Kjente svakheter: se FIX10-10 i TODO; i tillegg gjelder svakhetene under d43.
+
+## Tidligere: installert 10. november kl. 06:40 (d43): `7d1ae9ec` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4116 kontroller). Tilbakerulling: d42 (`84510b26`). Ledig disk etterpå: 142 GB. Ikke spilt av Tom.
+
+Nytt siden d42: under den store natta høres Dales replikker også fra walkien som ligger igjen på pulten, når spilleren er i SARO-bygget og ikke har tatt den med. Før falt alle replikkene bort, også «Get outside and look south of the station» (testspilling inne, natt 2). Replikkene for runde 2 og 3 og de nye linjene er tekst med apparatets lyd; Dales stemme er ikke spilt inn for dem.
+
+Kontroll av d42 gjelder fortsatt koden under: månedsprøvene routine og cases PASS på `84510b26`. På `7d1ae9ec` (d43): månedsprøvene investigator (431 kontroller) og taken (424) PASS, og testspilling med spiller ute natt 15–24 uten feil (27 hendelser startet, 22 merket, stor natt runde 3 sett natt 18).
+
+Kjente svakheter: en landing som holdes igjen av en annen, mister ventetiden ved lasting midt i natta; meldingen om en sett landing kan komme to ganger; relieftabellen har et sprang på 53 m i ytterkanten (TERRAIN-01, ikke rørt); en spiller som blir inne, har lite å merke natt 1 og 3; feltbesøk kommer omtrent annenhver natt for en spiller som står ved gården.
+
+## Tidligere: installert 10. november kl. 05:39 (d42): `84510b26` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4116 kontroller). Tilbakerulling: d41 (`f2ca5e72`). Ledig disk etterpå: 147 GB. Ikke spilt av Tom.
+
+Nytt siden d41, funnet i automatisk testspilling med en spiller som står ute fra kl. 21 (natt 5–14):
+- En utpekt landing kommer nå aldri før midnatt. I d40 og d41 kunne den komme om kvelden når den var trukket for kvelden (sett kl. 22:34 natt 6).
+- Feltbesøket på jordet venter på netter som eies av den store natta, og kommer etter nattens utpekte landing. Før tok det plassen til begge (natt 10 og natt 13).
+- Samme spilling: 22 hendelser startet og 18 merket på ti netter, første merket mellom 22:15 og 00:16, utpekte landinger sett natt 6, 9 og 13, stor natt sett natt 10. Feltbesøk fem av ti netter for en spiller som står ved gården.
+
+## Tidligere: installert 10. november kl. 04:11 (d41): `f2ca5e72` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4116 kontroller). Tilbakerulling: d40 (`7c26148b`). Ledig disk etterpå: 152 GB. Månedsprøvene routine og cases besto på `219a46c5`, ikke på endelig commit. Ikke spilt av Tom.
+
+Nytt siden d40:
+- Dale har egne replikker i runde 2 og 3 av den store natta (16 nye, uten opptak, vises som tekst). Runde 3 («stigningen», natt 18) er kjørt i automatisk testspilling.
+- En utpekt landing som står på bakken, tar ikke lenger trekkvinduet fra andre hendelser, og flyttes langs peilelinja når spilleren står for nær.
+- Mateledningen faller ikke ut på netter med ledetråd eller stor natt. Sett i testspilling natt 15–25: to feil, begge på netter uten ledetråd.
+- Skriverens linje om natta følger kveldskartet (tidligst kl. 19). Før kom den nesten aldri, fordi kartet tas før kl. 20.
+- Lappen om i kveld og saksprøvene sier det samme som reglene (takprøve: ett minutt i kontrollrommet i vind som referansen; hoppet tid teller ikke).
+
+Kjente svakheter: lagring og lasting mens en utpekt landing står, nullstiller tiden andre hendelser ble holdt tilbake. Kortspilleren i testene går aldri ut, så «sett» og feltpenger er ikke målt.
+
+## Tidligere: installert 10. november kl. 02:38 (d40): `7c26148b` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4112 kontroller). Tilbakerulling: d39 (`17e11f59`). Ledig disk etterpå: 157 GB. Månedsprøvene routine og cases besto på `148151bb` pluss tekstpatchen, ikke på endelig commit. Ikke spilt av Tom.
+
+Nytt siden d39 (nattskift 9.–10. november):
+- [Sammenfletting](../Research/Gameplay/SAMMENFLETTING_2026-11-09.md) trinn 2–5: nattark med tre linjer (penger, åpnet, Ward), funn åpner varer, Ward krever én sak med noe hentet ute, sakene velges før prøven vises og ett spor stemmer alltid, store netter også i uke 2 og 3 (ubrukte varianter, nye steder), regelrettingene, glimt fra SARO-vinduene og Earl/CB som nevner natta.
+- Utpekt landing står tent på bakken 180–360 s, letter når spilleren nærmer seg (300/200/120 m etter tidsnivå), kan ses fra vinduene. Den kunne likevel komme før midnatt når den var trukket for kvelden; rettet i d42. Sett i automatisk testspilling natt 6 og 9; kortspilleren ser ikke ut, så «sett» er ikke målt.
+- Stor natt i uke 2 kjørt i testspilling (natt 9, «fallet» ved den tørre bekken, 1625 m). Dales replikker er de samme som i uke 1; egne replikker ligger som patch.
+- UFO-lys større med fargeblink og størrelsesblink; dempes av innstillingen for rolige blink.
+- Feltpengene heter «field allowance» overalt; ukearket viser taket.
+- Småpunkter: PT-MAIL, MOON-DARK, PT-TONIGHT-NOTE, WARD-PHONE, tørt aggregat ødelegger prøve, kort som ikke tas faller ut kl. 08.
+
+Kjente svakheter: en landing som står, holder andre bakkehendelser tilbake (opptil 1,5 spilltime); mateledningen faller ofte ut (natt 5, 8, 10, 12 i testspilling) og stopper peilingen til den er reparert.
+
+## Tidligere: installert 9. november kl. 22:15 (d39): `17e11f59` på `claude/day-20261109`
+
+Editor BUILD 0, pakket, røyktestet og installert (selvtest OK, 4073 kontroller). Tilbakerulling: d38 (`53cfda05`). Ledig disk etterpå: 127 GB. Kandidatpakkene d30–d35 er overflødige og kan ryddes ved neste samlede kjøring.
+
+Nytt siden d38 (ikke spilt, bare selvtest):
+- [Sammenfletting](../Research/Gameplay/SAMMENFLETTING_2026-11-09.md) trinn 1: nattens hendelse (landing, kadaver, savnet, bobil, sjåfør) får stedet sitt trukket på forhånd, pulsarkortet viser avvik den natta, og peilelappen peker på det stedet.
+- Saksprøver: planlagt mottakerprøve kan avbrytes fra saksbrettet, ødelagt prøve står som TEST SPOILED på raden, saksjobben blir stående i lista på senere dager, tydeligere meldinger.
+
+## Tidligere: installert 9. november kl. 20:30 (d38): alt etter d37, `53cfda05` på `claude/day-20261109` (PR #510 mot `main`)
+
+Bygget og selvtestet kl. 19:03 på `d9c7309e` (editor BUILD 0, selvtest 4055/4059; de fire feilene er rettet i `2010d8e8`, men ikke bygget). Syntakssjekk av alle endrede C++-filer er ren. d38 pakket, røyktestet og installert 20:30 etter Toms beskjed (`53cfda05`). For å nå diskreserven ble pakkene fra tre mislykkede kandidater slettet (d34-failed-mem, d34-failed-2 og d38-failed-2); bevisfilene er beholdt. Tilbakerulling: d37 (`2c88bf9f`).
+
+Nytt siden d37 (ikke spilt):
+- Nattradio på 1420 fra 20 til 04, og CB bare i bilen.
+- Spilløkka trinn 3–4: samme minutt på telexen, og magnetometerets historie.
+- Ukesak uke 1, patch 1–3: eier, krok, døra, lyset, lydene, bilen, tanker og Dale.
+- Meldte steder gir alltid et funn, og den store natta eier natta.
+- Porten ved gården.
+- Bilene ved SARO er fjernet, og S-03 er dekket.
+- Én melding om gangen, og bilhintet kommer én gang.
+- Notatboka: NOW som TONIGHT, dokumenter uten dubletter, og WHO & WHAT med skriblerier.
+- Den store natta er myk og kan ikke overses.
+- Generatoren startes ute, og rampa på SARO er rettet.
+- Jevn vignett, og ingen pust i loop etter bortføring.
+- Krasj etter lang pause er rettet (lydhendelser).
+- Nordic og Cosmic i F10.
+- Tastehint følger kontrolleren.
+- Kritikk 9 er rettet.
+- Støvvirvelen, sheriffbilens lys og øyeglimtet er rettet.
+
+Krever editoren før neste pakke: `Tools/sarofixes/prepare_cpu.py` (g55 og g60 for hylla), Blender og import av døra til fôrskjulet (`Tools/farmbuildings/README.md`), og staging av skjullydene (`prepare.py --stage`).
+
+## Tidligere installert 9. november kl. 17:03, dagskift: Toms testfunn fra d36, by med dagsplan og nye hus, saker og telex, spilløkka trinn 1–2, Dales nye stemme
+
+`2c88bf9f` på `claude/day-20261109` (PR #510 mot `main`). Selvtest 3843 (editor), livsprøve 72, regresjon 251, postprøve 35, månedsprøver routine, investigator, taken og cases PASS. Pakken er testet og installert med røyktest. Bilderunder (F10): Town day 11/11, SARO fixes 28/28, World fixes 19/19, Tripo new 23/23, Farm lights 15/15, First big night 15/15, Looks 39/40 (lyktefot rettet etterpå). Tilbakerulling: `d36` (`5ed456ba`) og `d35`.
+
+Nytt: gatelys som lyser fra armaturet og synes på avstand (også STATION 01); lys i låven, på tunet og i gårdshuset; SARO-rampe, stier, gang, arkivrom, brytere og Dales lys; månen med NASA-tekstur; steiner snudd; fjernt fjellmateriale; telefonautomaten ved bensinstasjonen; nådeperiode i sanden, synlig bil etter tauing og Saucer Rock; hunden og bilene ikke grå; byen har dagsplan, fire nye hus og åtte figurer med egne animasjoner; lyktene på antennefeltet byttet; saksbrett med neste steg, resultatark og RULED OUT, første sak åpnes ved registrering, telex som rives av, TONIGHT-lappen; peilelapp fra avvik og sak 8 OUT ON THE LAND; Dale med oppdiktet stemme (139 replikker), Kinski, bacall, price og lynch fjernet; kritikk 6–8 rettet. Ikke spilt av menneske; lyd ikke hørt.
+
+## Tidligere installert 9. november kl. 10:15, dagskift: M7 Freeform 1.0 (vurdering, kurve, første økt, lagring, økonomi), øyeglimt, UFO-lys, byger, fjell og bakke
+
+`5ed456ba` på `claude/day-20261109` (PR stablet på #509). Selvtest 3524 i pakken og installert; regresjon 251, livsprøve 64, postprøve 35 (på `ea9e44a9`–`e48f987b`); F10: Eye glint 38/38, Sky lights 4/4, Weather and sleep 15/15. Tilbakerulling: `d35` (`d3a94124`) og `d34`.
+
+Nytt: Wards vurdering dag 30 krever en sak ført gjennom (gjetning gir 0), tredje bortføring får følge morgenen etter, KEPT OPEN har følge i verden og egen sluttside, utfallet skjult til brevet er lest, fylkesinspektøren dag 22; nettene bygger seg opp mot vurderingen (uke 4 og finalen tettest, første uke stille inne); lyd før tekst og færre lyskuler med spor etter foto; første økt peker mot Ward-brevet og walkien, HUD-kort høyst 70 tegn; rutinelagring bare inne på SARO, LOG NOT FILED; tom tank og tauing koster, pumpa fyller, lykta må lades, to dyre kjøp fra dag 15; øyeglimt på alle aliens; UFO-lys 1,5x med skimring; byge med myk sky, virga og våt bakke; fjell med lagdelt stein (Poly Haven CC0) og uten oransje skorpeflater ved gården; motellkontorets gamle fasade kuttet bort; lomme med tre steiner; 44 tekstrettinger. Kritikk 5 (6–8/10, 16 funn) rettes etter Toms test. Ikke spilt av menneske; lyd ikke hørt.
+
+## Tidligere installert 9. november kl. 08:06, nattskift: steinlokk, takstige, motorvei begge veier, motellets lykter
+
+`d3a94124` på `claude/m6-20261109` (PR #509). Selvtest 3413 i pakken og installert; regresjon 251 og livsprøve 64 (på `bd323eb3`); F10 «Physics (M5)» 11/11, «Reach and skies (T16)» 31/32 (den røde er prøvens egen, rettet i samme bygg). Tilbakerulling: `d34` (`34c9751f`) og `d33`.
+
+Nytt: steinen lokker en nysgjerrig liten bort; fast stige til takplaten på SARO (T16-11); UFO-møtet på motorveien går sør når det skal (T16-06); motellets lykter som cobra head; F10-gruppe som måler hvor langt man kommer fra gården (1–4 km til fjellfoten eller kanten i alle retninger, ingen usynlige vegger funnet). Ikke spilt av menneske; lyd ikke hørt.
+
+## Tidligere installert 9. november kl. 06:46, nattskift: M6 utseende første runde, Toms testfunn, kritikk 4
+
+`34c9751f` på `claude/m6-20261109` (lagt oppå `claude/m4-20261109`; ikke pushet da dette ble skrevet). Selvtest 3401 i pakken og installert; regresjon 251, livsprøve 64, postprøve 35 (på `0372c0c6`); F10 «Looks (M6)» 31/33. Tilbakerulling: `d33` (`da2b5ece`) og `d32`.
+
+Nytt: originale cobra head-gatelykter på motorveien, i Caliche, på SARO-gården og ved gården (motellets står som før i d34); Dales vindu synes utenfra; trafoen med piggtråd, transformator nr. 2 og kollider på gjerdet; grunnmur under svevende bygg i Caliche; motell-tv med eget testkort i Freeform; ingen oransje kuler eller glorier ved lyktene; 40 usynlige bokser fra bydressingen tatt ut; ting på SARO flyttet ut av veggene; garasjeporten følger lagringen; walkie-talkien knitrer i stedet for å skrike; modemlyden stopper utenfor kontrollrommet; kalenderen på veggen; litt mer dis i SARO. Kritikk 4 (6–7/10, 13 funn) rettet. To kandidater ble stoppet før installasjon fordi pakket spill gikk over 15 GB; årsak funnet og rettet (`S47SaroClip::Vertices`). Ikke spilt av menneske; lyd ikke hørt.
+
+## Tidligere installert 9. november kl. 04:34, nattskift: M4 folk og steder, M5 vær, tretthet og fysikk, kritikk 3
+
+`da2b5ece` på `claude/m4-20261109` (PR #508). Selvtest 3389 i pakken og installert; F10: Town 16/16, Townsfolk 7/7, Visitors 8/8, Motel 6/6, Weather 13/13, Physics 10/11.
+
+Nytt: midlertidige bokser for trailerpark, skole, Grange-hall og Baca; 1420 AM, Feed & Seed og suvenirsjappa med funksjon; fire byfolk som sladrer og kan forsvinne; Eloy Baca, Sky Watch og militæret (rydder synlig); motellnatt uten lagring; vær etter `S47Weather` (sandstorm, byge, dis) som stemmer med avisa; tretthet med kaffe og søvn; plukke, bære og kaste med støy som lokker; feltseng på SARO. Kritikk 3 (4–6,5/10, 35 funn) rettet. Kjent: steinlokket virker i selvtest, men ikke i F10-prøven; bygen er en første versjon. Ikke spilt av menneske; lyd ikke hørt.
+
+## Tidligere installert 9. november kl. 01:33, nattskift: M1–M3, kritikk 2, HUD D, lagring på SARO
 
 `16f33ecd` etter PR506. Selvtest 3275 i pakken, normalreisen, regresjon 251, livsprøve 64, postprøve 35; 154 uendrede Saved-filer. Tilbakerulling: `d31` (`ca0822e5`) og `d30`.
 

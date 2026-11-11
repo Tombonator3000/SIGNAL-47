@@ -5,6 +5,7 @@
 #include "S47Freeform.h"
 #include "S47Glimpses.h"
 #include "S47Happenings.h"
+#include "S47WeekCase.h"
 #include "S47HighwayUfo.h"
 #include "S47IndoorDread.h"
 #include "S47Main.h"
@@ -12,6 +13,7 @@
 #include "S47Night.h"
 #include "S47Office.h"
 #include "S47Rhythm.h"
+#include "S47ScriptPlayer.h"
 #include "S47Taken.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -50,6 +52,27 @@ FString S47SaroSave::StationOnly()
 	return TEXT("You can only file the log at the station. Get back inside SARO to save.");
 }
 
+FString S47SaroSave::StationBlock(bool bCase, bool bInside, const FString& Block)
+{
+	return bCase && !bInside ? StationOnly() : Block;
+}
+
+FString S47SaroSave::NotFiledLine()
+{
+	return TEXT("LOG NOT FILED");
+}
+
+FString S47SaroSave::QuitAwayText(const FString& Chapter, const FString& Place, const FString& Clock)
+{
+	return FString::Printf(TEXT("Continue returns to the log last filed: %s, %s (%s). Everything since you left SARO must be done again."), *Chapter, *Place, *Clock);
+}
+
+S47SaroSave::EFile S47SaroSave::FileNow(const FString& Danger, const FString& Block, bool bLastChance)
+{
+	if (Danger.IsEmpty() && Block.IsEmpty()) return EFile::Write;
+	return bLastChance ? EFile::NotFiled : EFile::Wait;
+}
+
 FString S47SaroSave::Unsaved(const US47Main* M)
 {
 	const FS47FreeformSession* F = M && M->IsFreeform() && M->Freeform ? M->Freeform.Get() : nullptr;
@@ -60,7 +83,7 @@ FString S47SaroSave::Unsaved(const US47Main* M)
 	const bool bVisit = F->FarmSite && F->FarmSite->VisitWantsGround();
 	const bool bAtDoor = F->IndoorDread && (F->IndoorDread->DoorActive() || F->IndoorDread->PeekActive());
 	const bool bVoice = F->Happenings && !F->Happenings->Ground().IsEmpty() && FS47Happenings::IsDanger(F->Happenings->Ground());
-	if (bVisit || bAtDoor || bVoice) return FString(TEXT("Not now. Something is out there."));
+	if (bVisit || bAtDoor || bVoice || FS47WeekCase::Holds(M)) return FString(TEXT("Not now. Something is out there."));
 	// MOTEL-SLEEP-20261108: a night at the motel is not filed until the player is back at SARO (S47MotelNight).
 	if (F->MotelNight && F->MotelNight->Unfiled()) return FString(TEXT("The log is filed at SARO. A night at the motel is not saved until you are back there."));
 	return FString();
@@ -75,6 +98,10 @@ FString S47SaroSave::Danger(const US47Main* M)
 	if (F->FarmSite && F->FarmSite->VisitWantsGround()) return TEXT("a visit on the ground");
 	if (F->IndoorDread && (F->IndoorDread->DoorActive() || F->IndoorDread->PeekActive())) return TEXT("something at a door or a window");
 	if (M->HighwayUfo && M->HighwayUfo->Busy()) return TEXT("the light over the road");
+	// CRIT6-20261109: a director script under way ("script" is not in director.json, so the rhythm's line below would not see it).
+	if (FS47ScriptPlayer::Busy(M)) return TEXT("a script under way");
+	// WEEKLY-CASE-20261109: the week's case on the ground (phases one to three): nothing is filed out there.
+	if (const FString Week = FS47WeekCase::DangerOf(M); !Week.IsEmpty()) return Week;
 	if (M->Night && M->Night->Glimpses && !M->Night->Glimpses->Individuals().IsEmpty()) return TEXT("bodies out");
 	// whatever holds the night's ground (director.json): a presence or a danger, never a light in the sky or a fault in the rack
 	if (M->Rhythm)
@@ -242,6 +269,52 @@ bool FS47SaroDeparture::SelfTest(TArray<FString>& Lines)
 		D.Look(At(true, 0, -1, .1)); D.Look(At(false, 7, 19, .1)); D.Filed(); D.Look(At(true, 0, -1, .1));
 		D.Arm();
 		Check(D.Armed() && D.Look(At(false, 7, 19, .1)) == EHow::Door, TEXT("F10's arm: out into the yard is a departure even within the minute"));
+	}
+	// M7-E (9 November): nothing but the departure is filed away from the building
+	{
+		using S47SaroSave::EFile;
+		Check(S47SaroSave::StationBlock(true, false, FString()) == S47SaroSave::StationOnly() && S47SaroSave::StationBlock(true, false, TEXT("Not now.")) == S47SaroSave::StationOnly()
+			&& S47SaroSave::StationBlock(true, true, FString()).IsEmpty() && S47SaroSave::StationBlock(true, true, TEXT("Not now.")) == TEXT("Not now.")
+			&& S47SaroSave::StationBlock(false, false, TEXT("Load the last save to resume this assignment.")) == TEXT("Load the last save to resume this assignment."),
+			TEXT("away from the building every save but the departure waits for the station; inside, and in a contact or a developer run, the old reasons stand"));
+		Check(S47SaroSave::FileNow(FString(), FString(), true) == EFile::Write && S47SaroSave::FileNow(TEXT("bodies out"), FString(), false) == EFile::Wait
+			&& S47SaroSave::FileNow(TEXT("bodies out"), FString(), true) == EFile::NotFiled && S47SaroSave::FileNow(FString(), TEXT("Not now."), true) == EFile::NotFiled,
+			TEXT("a departure is written when it is safe, waits while something is out there, and at its last chance is not filed"));
+		Check(S47SaroSave::NotFiledLine() == TEXT("LOG NOT FILED") && S47SaroSave::QuitAwayText(TEXT("FREEFORM / DAY 12"), TEXT("SARO yard"), TEXT("23:10")).Contains(TEXT("23:10"))
+			&& S47SaroSave::QuitAwayText(TEXT("FREEFORM / DAY 12"), TEXT("SARO yard"), TEXT("23:10")).Contains(TEXT("since you left SARO")),
+			TEXT("the stamp says LOG NOT FILED, and quitting out there says Continue goes back to the log filed on leaving"));
+
+		// A night on a disk of one line: the latest save is what Continue and Load last save open (FS47SaveStore::Latest).
+		FString Latest; bool bPending = false;
+		auto Routine = [&](bool bIn, const TCHAR* Where)
+		{
+			bPending = true; // US47Flow::RequestAutosave
+			if (S47SaroSave::StationBlock(true, bIn, FString()).IsEmpty()) { Latest = Where; bPending = false; } // FlushAutosave
+		};
+		auto Leave = [&](EHow H, const FString& Danger, bool bLastChance, const TCHAR* Where)
+		{
+			if (H == EHow::None) return EFile::Wait;
+			const EFile R = S47SaroSave::FileNow(Danger, FString(), bLastChance);
+			if (R == EFile::Write) { Latest = Where; bPending = false; }
+			return R;
+		};
+		FS47SaroDeparture D;
+		D.Look(At(true, 0, -1, .1)); Routine(true, TEXT("control room 23:00"));
+		Check(Latest == TEXT("control room 23:00") && !bPending, TEXT("inside, the routine autosave is filed"));
+		const EFile Out = Leave(D.Look(At(false, -7, 5.6, .1)), FString(), false, TEXT("yard 23:10"));
+		if (Out == EFile::Write) D.Filed();
+		Check(Out == EFile::Write && Latest == TEXT("yard 23:10"), TEXT("out of the door the departure is filed: the station's rule never stops it"));
+		for (int32 I = 0; I < 12; ++I) { D.Look(At(false, 84, 510, 30)); Routine(false, TEXT("farm")); }
+		Check(Latest == TEXT("yard 23:10") && bPending, TEXT("out at the farm the routine autosave every 30 s is not written, only still asked for: a contact there loads the log filed on leaving"));
+		D.Look(At(true, 0, -1, 600));
+		if (bPending) Routine(true, TEXT("control room 02:15"));
+		Check(Latest == TEXT("control room 02:15") && !bPending, TEXT("back inside, the waiting autosave is written"));
+		// a dangerous night: bodies out by the door, the player sets off in the truck
+		D.Look(At(true, 0, -1, 90));
+		const EFile Wheel = Leave(D.Drive(At(true, 0, -1, 0)), TEXT("bodies out"), true, TEXT("yard 02:40"));
+		if (Wheel == EFile::NotFiled) D.Drop();
+		for (int32 I = 0; I < 6; ++I) { D.Look(At(false, 400, 300, 30, TEXT("road"), true)); Routine(false, TEXT("road")); }
+		Check(Wheel == EFile::NotFiled && Latest == TEXT("control room 02:15") && !D.Pending(), TEXT("a departure with bodies out is LOG NOT FILED, and no save out there takes its place"));
 	}
 	return bOk;
 }

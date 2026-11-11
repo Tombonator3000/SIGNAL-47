@@ -98,6 +98,9 @@ struct FS47AlbumDeps
 	TFunction<TArray<FS47Subject>()> Subjects;
 	TFunction<FString()> Place;
 	TFunction<double()> Clock;
+	/** D48-20261110 (D46-27): the calendar date at a clock, for the camera's data back (US47FieldCamera::DataBack): month, day
+	 *  and year burned into the lower right of the frame. Unset: no data back (the tests, an old camera). */
+	TFunction<FDateTime(double)> Date;
 	/** Freeform exposures use physical processing; existing Story prints keep instant development. */
 	TFunction<bool()> RequiresLab;
 	/** Exposures on the roll that were not the player's. */
@@ -164,6 +167,9 @@ public:
 	const FS47AlbumShot* PendingLabPhoto() const;
 	/** Advance exactly one physical bench action; stale UI actions cannot advance twice. */
 	bool AdvanceLabPhoto(const FString& Id, int32 ExpectedStage);
+	/** D45-20261110 (D45-17): light reached a print in the developer (stage 1). Back to exposed film from the same negative, so a new
+	 *  print can be made; its id, image, time, pose and targets are kept. Only from stage 1. */
+	bool FogLabPhoto(const FString& Id);
 	/** What a frame taken now would name, without taking it (the tests). */
 	TPair<TArray<FString>, TArray<FString>> Peek();
 	/** A save opened, or a new night. */

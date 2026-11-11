@@ -26,7 +26,13 @@ public:
 	void OpsRows(TArray<TSharedRef<SWidget>>& Rows);
 	void Open(int32 Week);
 	bool Send(int32 Week);
+	// TELEX-20261109: her office's reply ("telex-wardreport-W") and her query about a report come back on the telex in the control
+	// room; torn off there (FS47FreeformSession::TearOffTelex), the reply goes on the report in the notebook too.
+	void Received(int32 Week);
 	int32 Trust() const { return TrustNow; }
+	// M7: what the assessment counts. A report sent whole that her office has not read yet counts as read (the week 4 report
+	// comes due on day 29 and is often telexed after office hours, the evening before she assesses).
+	int32 TrustAtReview() const;
 	int32 SentCount() const;
 	int32 CaughtCount() const;
 
@@ -43,6 +49,7 @@ public:
 	};
 	struct FLie { int32 Week = 0; ECat Cat = ECat::Time; double CatchAt = -1; bool bCaught = false; FString Proof; };
 	const TArray<FReport>& Reports() const { return Kept; }
+	static int32 TrustAtReview(int32 TrustThen, const TArray<FReport>& Reports);
 
 	// ---------- the pure rules (tested) ----------
 	static const TCHAR* CatTitle(ECat C);

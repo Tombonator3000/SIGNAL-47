@@ -135,6 +135,13 @@ namespace
   return bHave;
  }
 
+ TArray<FBox2D> Footprints()
+ {
+  return { FBox2D(MillAt - FVector2D(FootHalf + .05), MillAt + FVector2D(FootHalf + .05)) };
+ }
+
+ FVector3d TankRound() { return FVector3d(TankAt.X, TankAt.Y, TankR + .05); }
+
  bool Retired(const FVector& P)
  {
   // The four rods (feet 1.1 m round 456,214), the wheel (1.3 m at 213.6) and the tail (to 215.6); the tank, 3 m round 462,200.

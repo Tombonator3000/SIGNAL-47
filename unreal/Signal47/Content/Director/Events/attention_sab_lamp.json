@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "attention_sab_lamp",
+  "name": "Warm cells",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the flashlight's cell drained: a dry cell or the charger at SARO. Two more ceiling tubes go out in the control room (tube beat, next 2).",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 0,
+      "do": "light",
+      "kind": "lamp",
+      "strength": 0.8,
+      "secs": 2
+    },
+    {
+      "at": 2,
+      "do": "thought",
+      "text": "The flashlight's nearly dead. The cell is warm, like it ran all night."
+    },
+    {
+      "at": 2.5,
+      "do": "tube",
+      "next": 2
+    },
+    {
+      "at": 3,
+      "do": "evidence",
+      "key": "attention_lamp_d{day}",
+      "text": "At {clock} the flashlight went weak all at once. The cells were warm in my hand."
+    },
+    {
+      "at": 12,
+      "do": "thought",
+      "text": "Two more ceiling tubes went out with it. The Caliche shop counter sells them in pairs.",
+      "if": [
+        "in_saro"
+      ]
+    }
+  ]
+}

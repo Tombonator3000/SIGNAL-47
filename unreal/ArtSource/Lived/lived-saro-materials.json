@@ -1,0 +1,147 @@
+[
+ {
+  "name": "M_Lived_BlockWing",
+  "textures": {
+   "base_color": "textures/T_Lived_Block_BC.png",
+   "roughness": "textures/T_Lived_Block_R.png",
+   "normal": "textures/T_Lived_Block_N.png"
+  },
+  "texture_tint_linear": [
+   0.74,
+   0.71,
+   0.65
+  ],
+  "roughness": 0.85,
+  "metallic": 0,
+  "specular": 0.3,
+  "normal_strength": 0.9,
+  "normal_convention": "DirectX",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_BlockSaro",
+  "textures": {
+   "base_color": "textures/T_Lived_Block_BC.png",
+   "roughness": "textures/T_Lived_Block_R.png",
+   "normal": "textures/T_Lived_Block_N.png"
+  },
+  "texture_tint_linear": [
+   0.8,
+   0.74,
+   0.62
+  ],
+  "roughness": 0.85,
+  "metallic": 0,
+  "specular": 0.3,
+  "normal_strength": 0.9,
+  "normal_convention": "DirectX",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_OutGrime",
+  "textures": {
+   "base_color": "textures/T_Lived_OutGrime_BC.png"
+  },
+  "texture_tint_linear": [
+   1,
+   1,
+   1
+  ],
+  "roughness": 0.9,
+  "metallic": 0,
+  "specular": 0.2,
+  "opacity_from_base_color": true,
+  "alpha_mode": "dithered_masked",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_Coping",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.3,
+   0.3,
+   0.28
+  ],
+  "metallic": 0.7,
+  "specular": 0.5,
+  "roughness": 0.55,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_Downspout",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.4,
+   0.4,
+   0.38
+  ],
+  "metallic": 0.75,
+  "specular": 0.5,
+  "roughness": 0.55,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_RustSteel",
+  "textures": {
+   "base_color": "textures/T_Lived_Enamel_BC.png",
+   "roughness": "textures/T_Lived_Enamel_R.png"
+  },
+  "texture_tint_linear": [
+   0.26,
+   0.115,
+   0.05
+  ],
+  "metallic": 0.1,
+  "specular": 0.35,
+  "roughness": 0.85,
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ {
+  "name": "M_Lived_CableBlack",
+  "reuse": "/Game/Lived/Control/Materials/M_Lived_CableBlack"
+ },
+ {
+  "name": "M_Lived_CableGrey",
+  "reuse": "/Game/Lived/Control/Materials/M_Lived_CableGrey"
+ },
+ {
+  "name": "M_Lived_BlackPlastic",
+  "reuse": "/Game/Lived/Control/Materials/M_Lived_BlackPlastic"
+ }
+]

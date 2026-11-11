@@ -165,13 +165,11 @@ namespace
 TSharedPtr<FS47ReadAloud> US47UI::DescriptionReader() const
 {
 	if (Narrator.IsValid() && Narrator->Enabled()) return Narrator;
-	if (ReadAloud.IsValid() && ReadAloud->Enabled()) return ReadAloud;
 	return nullptr;
 }
 
 void US47UI::StopSpeech()
 {
-	if (ReadAloud.IsValid()) ReadAloud->Stop();
 	if (Narrator.IsValid()) Narrator->Stop();
 	if (EarlDialogue.IsValid()) EarlDialogue->Stop();
 	if (NpcDialogue.IsValid()) NpcDialogue->Stop();
@@ -180,7 +178,8 @@ void US47UI::StopSpeech()
 TSharedRef<SWidget> US47UI::ReadingControls(const TArray<FString>& Texts, const FString& Label, const FString& Kind)
 {
 	if (!FS47ReadAloud::bOfferInGame) return SNullWidget::NullWidget;
-	const TSharedPtr<FS47ReadAloud> Reader = Kind == TEXT("document") || Kind == TEXT("conversation") ? ReadAloud : DescriptionReader();
+	// (KINSKI-READ-OUT: papers and conversations had Kinski's reader; they are text only now)
+	const TSharedPtr<FS47ReadAloud> Reader = Kind == TEXT("document") || Kind == TEXT("conversation") ? TSharedPtr<FS47ReadAloud>() : DescriptionReader();
 	if (!Reader.IsValid() || !Reader->Enabled()) return SNullWidget::NullWidget;
 	return MakeReadingBox(this, Reader.ToSharedRef(), Texts, Label).Key;
 }
@@ -232,9 +231,9 @@ FString FS47ReadingAction::Status() const
 TSharedPtr<FS47ReadingAction> US47UI::ReadingAction(const TArray<FString>& Texts, const FString& Kind)
 {
 	if (!FS47ReadAloud::bOfferInGame) return nullptr;
-	// the reader readingControls would give the box: Kinski for a paper and a conversation, else the
-	// description reader
-	const TSharedPtr<FS47ReadAloud> R = Kind == TEXT("document") || Kind == TEXT("conversation") ? ReadAloud : DescriptionReader();
+	// the reader readingControls would give the box: none for a paper and a conversation (KINSKI-READ-OUT),
+	// else the description reader
+	const TSharedPtr<FS47ReadAloud> R = Kind == TEXT("document") || Kind == TEXT("conversation") ? TSharedPtr<FS47ReadAloud>() : DescriptionReader();
 	if (!R.IsValid() || !R->Enabled() || !Texts.Num()) return nullptr;
 	const TSharedRef<FS47ReadingAction> A = MakeShared<FS47ReadingAction>();
 	A->Reader = R;
@@ -303,6 +302,17 @@ void US47UI::ReadLastDescription()
 void US47UI::Toast(const FString& Text, float Secs, TFunction<double()> Clock)
 {
 	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Toast(Text, Secs, MoveTemp(Clock));
+}
+
+void US47UI::Alert(const FString& Text, float Secs)
+{
+	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Toast(Text, Secs, {}, int32(FS47MessageQueue::EPri::Danger));
+}
+
+void US47UI::Thought(const FString& Text, float Secs)
+{
+	if (Text.TrimStartAndEnd().IsEmpty()) return;
+	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Toast(S47Thought::Line(Text), Secs, {}, int32(FS47MessageQueue::EPri::Radio));
 }
 
 void US47UI::ClearToasts()

@@ -781,7 +781,7 @@ void US47Chapter2::UseRecPhone()
 		Cap(9.6, TEXT("N. VEGA: \"Don't send me copies. Go out to the station first and look at the cable, where it was cut. Then bring me the originals.\""), 4.4f);
 		Host->After(13.8, Finish);
 	};
-	if (!Audio || Audio->bKinskiCalls || Audio->bCharacterVoices) Host->After(Answered, BeginCall);
+	if (!Audio || Audio->bCharacterVoices) Host->After(Answered, BeginCall);
 	else
 	{
 		const double Talk = 13.6;

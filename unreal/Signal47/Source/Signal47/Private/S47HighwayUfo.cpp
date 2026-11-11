@@ -1,4 +1,5 @@
 #include "S47HighwayUfo.h"
+#include "S47CarPaint.h"
 #include "S47Rhythm.h"
 #include "S47FarmSite.h"
 
@@ -27,6 +28,8 @@
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/PackageName.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47HighwayUfo,Log,All);
 
@@ -64,6 +67,23 @@ namespace
  bool Live(const UObject* O){return IsValid(O)&&!O->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed);}
  UStaticMesh* Asset(const TCHAR* Path)
  {return FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(FString(Path)))?LoadObject<UStaticMesh>(nullptr,Path):nullptr;}
+ // SHERIFF-CAR-BAR (Tom 9 November, "lysene på politibilen er langt over bilen": two orange ovals hanging over the sheriff's roof).
+ // The roof lamps were the Tripo car's, two red spheres 1.74 m up, left over when the Fairheaven came back in the sheriff's role:
+ // its bar is a quarter of a metre lower. Now each half of the bar has its lens and its light inside the glass of the car it sits
+ // on, in the body mesh's own terms (three's metres): red on the driver's side, blue on the other, as S47Props does in town.
+ // The Fairheaven's glass is Config/Props/town.json's patrolCar beacon.bar [x0, x1, y0, y1, z0, z1] (x forward, z to its right;
+ // the body is turned a quarter about y here, so its z is the road's x); the Tripo car's is where RetargetPatrolCar puts its lenses.
+ constexpr double FairBar[6]={-0.342,-0.181,1.385,1.495,-0.531,0.532};
+ constexpr double LensProud=.003; // (a hair over the glass, so the lens and the bar's own glass do not fight for the same face)
+ FBox BarGlass(bool bTripo,int32 Half)
+ {
+  if(bTripo)return Half==0?FBox(FVector(-.68,1.62,.07),FVector(-.24,1.72,.35)):FBox(FVector(.24,1.62,.07),FVector(.68,1.72,.35));
+  return Half==0?FBox(FVector(FairBar[0],FairBar[2],FairBar[4]),FVector(FairBar[1],FairBar[3],-.03)):FBox(FVector(FairBar[0],FairBar[2],.03),FVector(FairBar[1],FairBar[3],FairBar[5]));
+ }
+ FBox LensBox(bool bTripo,int32 Half){return BarGlass(bTripo,Half).ExpandBy(LensProud);}
+ FVector LampAt(bool bTripo,int32 Half){return BarGlass(bTripo,Half).GetCenter();}
+ // The half's side of the road, as the driver sits: below zero is the driver's (left) side, the car heading down three's -z.
+ double RoadSide(bool bTripo,const FVector& P){return bTripo?P.X:P.Z;}
 }
 
 struct FS47HighwayUfo::FVisual
@@ -101,7 +121,8 @@ struct FS47HighwayUfo::FVisual
   if(!Ufo->Prepare())return false;if(!bCar)return true;if(bReady)return true;
   auto* Car=Asset(TEXT("/Game/Licensed/TripoFleet/police_car/SM_TripoFleet_PoliceCar.SM_TripoFleet_PoliceCar"));
   auto* Door=Asset(TEXT("/Game/Licensed/TripoFleet/police_car/SM_TripoFleet_PoliceCarDoor.SM_TripoFleet_PoliceCarDoor"));
-  bTripo=Car&&Door;
+  // SHERIFF-CAR: the county's tan and white Fairheaven; the Tripo STATE POLICE car only with -S47TripoPatrol.
+  bTripo=Car&&Door&&S47CarPaint::TripoPatrol();
   if(!bTripo)
   {
    Car=Asset(TEXT("/Game/Free/Vehicles/fairheaven_lt80_cop/StaticMeshes/fairheaven_lt80_cop.fairheaven_lt80_cop"));
@@ -119,21 +140,40 @@ struct FS47HighwayUfo::FVisual
   auto* Box=NewObject<UBoxComponent>(Web.Get());Box->SetupAttachment(R);Box->SetMobility(EComponentMobility::Movable);Box->SetBoxExtent(FVector(CarHalfW*100,CarHalfL*100,85));Box->SetRelativeLocation(S47Three::ToUE(0,.85,0));
   Box->SetCollisionEnabled(ECollisionEnabled::NoCollision);Box->SetCollisionResponseToAllChannels(ECR_Ignore);Box->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);Box->SetHiddenInGame(true);Box->RegisterComponent();HitBox=Box;Components.Add(Box);
   auto* Sphere=Asset(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+  auto* Cube=Asset(TEXT("/Engine/BasicShapes/Cube.Cube"));
   auto* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+  UStaticMeshComponent* CarBody=Body.Get();if(!CarBody)return false;
   for(int32 I=0;I<2;++I)
   {
-   const FVector Lamp(I==0?-.46:.46,1.74,.21);
+   // SHERIFF-CAR-BAR: the lens and the light hang under the body (its own terms, its own quarter turn), inside its bar's glass.
+   const FBox Lens=LensBox(bTripo,I);const FVector Lamp=LampAt(bTripo,I);
+   if(Cube&&Base)
+   {
+    auto* C=NewObject<UStaticMeshComponent>(Web.Get());C->SetupAttachment(CarBody);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(false);
+    C->SetRelativeLocation(S47Three::ToUE(Lens.GetCenter()));C->SetRelativeScale3D(S47Three::ToUE(Lens.GetSize()).GetAbs()/100.0);C->RegisterComponent();Components.Add(C);
+    auto* Mid=UMaterialInstanceDynamic::Create(Base,Web.Get());Mid->SetVectorParameterValue(TEXT("Color"),I==0?S47Three::Hex(0xff2414):S47Three::Hex(0x2a4cff));Mid->SetScalarParameterValue(TEXT("EmissivePower"),0);C->SetMaterial(0,Mid);BeaconMids.Add(Mid);
+   }
    if(Sphere&&Base)
    {
-    auto* Lens=Part(Sphere,Lamp,0);Lens->SetRelativeScale3D(FVector(.35,.24,.12));Lens->SetCastShadow(false);
-    auto* Mid=UMaterialInstanceDynamic::Create(Base,Web.Get());Mid->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(0xff3020));Mid->SetScalarParameterValue(TEXT("EmissivePower"),4);Lens->SetMaterial(0,Mid);BeaconMids.Add(Mid);
     auto* Tail=Part(Sphere,FVector(I==0?-.78:.78,.62,2.25),0);Tail->SetRelativeScale3D(FVector(.18,.04,.14));Tail->SetCastShadow(false);
     auto* TailMid=UMaterialInstanceDynamic::Create(Base,Web.Get());TailMid->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(0xc8170b));TailMid->SetScalarParameterValue(TEXT("EmissivePower"),3);Tail->SetMaterial(0,TailMid);
    }
-   auto* B=NewObject<UPointLightComponent>(Web.Get());B->SetupAttachment(R);B->SetMobility(EComponentMobility::Movable);B->SetRelativeLocation(S47Three::ToUE(Lamp));B->SetLightColor(FLinearColor(1,.025,.01));B->SetAttenuationRadius(1300);B->SetIntensity(0);B->SetCastShadows(false);B->SetVolumetricScatteringIntensity(0);B->RegisterComponent();Components.Add(B);Beacons.Add(B);
+   auto* B=NewObject<UPointLightComponent>(Web.Get());B->SetupAttachment(CarBody);B->SetMobility(EComponentMobility::Movable);B->SetRelativeLocation(S47Three::ToUE(Lamp));
+   B->SetLightColor(I==0?FLinearColor(1,.025,.01):FLinearColor(.12,.28,1));B->SetAttenuationRadius(1300);B->SetIntensity(0);B->SetCastShadows(false);B->SetVolumetricScatteringIntensity(0);B->RegisterComponent();Components.Add(B);Beacons.Add(B);
    auto* H=NewObject<USpotLightComponent>(Web.Get());H->SetupAttachment(R);H->SetMobility(EComponentMobility::Movable);H->SetRelativeLocation(S47Three::ToUE(I==0?-.78:.78,.72,-2.15));H->SetRelativeRotation(FVector(0,-1,-.035).Rotation());H->SetLightColor(FLinearColor(1,.8,.52));H->SetInnerConeAngle(12);H->SetOuterConeAngle(28);H->SetAttenuationRadius(7000);H->SetIntensity(0);H->SetCastShadows(false);H->SetVolumetricScatteringIntensity(0);H->RegisterComponent();Components.Add(H);Headlights.Add(H);
   }
   bReady=true;ShowCar(false,FVector::ZeroVector,1,0,false);return true;
+ }
+ // SHERIFF-CAR-BAR, in the running game: each roof light under the body, where the bar's glass is (Readback's patrolLampsInBar).
+ bool LampsInBar()const
+ {
+  if(!bReady||Beacons.Num()!=2)return false;
+  for(int32 I=0;I<2;++I)
+  {
+   const UPointLightComponent* L=Beacons[I].Get();if(!L||L->GetAttachParent()!=Body.Get())return false;
+   const FVector U=L->GetRelativeLocation();if(!BarGlass(bTripo,I).IsInside(FVector(U.X,U.Z,U.Y)/100.0))return false;
+  }
+  return true;
  }
  void ReleaseCollision()
  {
@@ -423,7 +463,7 @@ S47J::FObj FS47HighwayUfo::Save()const
 }
 S47J::FObj FS47HighwayUfo::Readback()const
 {
- auto O=Save();S47J::Set(O,TEXT("phase"),StageName());S47J::Set(O,TEXT("busy"),Busy());S47J::Set(O,TEXT("roadVisible"),RoadVisible());S47J::Set(O,TEXT("carShown"),Visual&&Visual->bCarShown);S47J::Set(O,TEXT("tripoCar"),Visual&&Visual->bTripo);S47J::Set(O,TEXT("playerEngine"),M&&M->World&&M->World->CabDrive()?M->World->CabDrive()->bEngine:false);
+ auto O=Save();S47J::Set(O,TEXT("phase"),StageName());S47J::Set(O,TEXT("busy"),Busy());S47J::Set(O,TEXT("roadVisible"),RoadVisible());S47J::Set(O,TEXT("carShown"),Visual&&Visual->bCarShown);S47J::Set(O,TEXT("tripoCar"),Visual&&Visual->bTripo);S47J::Set(O,TEXT("patrolLampsInBar"),Visual&&Visual->LampsInBar());S47J::Set(O,TEXT("playerEngine"),M&&M->World&&M->World->CabDrive()?M->World->CabDrive()->bEngine:false);
  S47J::Set(O,TEXT("ufoSightBlocker"),UfoSightBlocker);S47J::Set(O,TEXT("patrolSightBlocker"),CarSightBlocker);S47J::Set(O,TEXT("followSightBlocker"),FollowSightBlocker);S47J::Set(O,TEXT("photoSightBlocker"),PhotoSightBlocker);
  if(Visual&&Visual->Ufo)S47J::Set(O,TEXT("presentation"),Visual->Ufo->Readback());return O;
 }
@@ -449,5 +489,32 @@ bool FS47HighwayUfo::SelfTest(TArray<FString>& Lines)
  const FVector NorthFrom=H.CarAt;H.Advance(.25);H.Advance(.25);
  Check(H.CarAt.Z<NorthFrom.Z&&H.UfoAt.Z<H.CarAt.Z&&H.CarAt.X>RoadOrigin().X,TEXT("north-bound the patrol runs north in its own lane, behind the light"));
  S47J::Set(S,TEXT("direction"),-1.);S47J::Set(S,TEXT("car"),Vector(Ground(8001.8,1100)));H.Begin(S);Check(S47J::Num(H.Save(),TEXT("direction"))==-1.,TEXT("the direction survives Continue"));
+ // SHERIFF-CAR-BAR: each roof lamp, its lens and its light, inside the light bar of the car it sits on, red on the driver's side and
+ // blue on the other; and the Fairheaven's bar here is the one the town's patrol car lights (Config/Props/town.json).
+ {
+  bool In=true,Sides=true,Low=true;
+  for(const bool bTripo:{false,true})for(int32 Half=0;Half<2;++Half)
+  {
+   const FBox Glass=BarGlass(bTripo,Half),Lens=LensBox(bTripo,Half);const FVector Lamp=LampAt(bTripo,Half);
+   In&=Glass.ExpandBy(.005).IsInside(Lens)&&Glass.IsInside(Lamp);
+   Sides&=Half==0?RoadSide(bTripo,Lamp)<-.1:RoadSide(bTripo,Lamp)>.1;
+   Low&=Lens.Max.Y<=Glass.Max.Y+.005;
+  }
+  Low&=BarGlass(false,0).Max.Y<1.6;
+  Check(In&&Low,TEXT("the patrol's roof lamps (lens and light) lie inside the bar's glass, none over it"));
+  Check(Sides,TEXT("the red half on the driver's side, the blue on the other, on both cars"));
+  FString Text;bool Same=false;
+  if(FFileHelper::LoadFileToString(Text,*(FPaths::ProjectConfigDir()/TEXT("Props/town.json"))))
+  {
+   for(const auto& V:S47J::Arr(S47J::Read(Text),TEXT("props")))
+   {
+    const TSharedPtr<FJsonObject>* O=nullptr;if(!V.IsValid()||!V->TryGetObject(O)||!O||S47J::Str(*O,TEXT("id"))!=TEXT("patrolCar"))continue;
+    const auto Bar=S47J::Nums(S47J::Obj(*O,TEXT("beacon")),TEXT("bar"));Same=Bar.Num()==6;
+    for(int32 K=0;K<Bar.Num()&&Same;++K)Same&=FMath::IsNearlyEqual(Bar[K],FairBar[K],1e-6);
+   }
+   Check(Same,TEXT("the highway patrol's bar is the town patrol car's (Config/Props/town.json beacon.bar)"));
+  }
+  else Lines.Add(TEXT("SKIP highway UFO: Config/Props/town.json not here; the bar's numbers not compared"));
+ }
  H.Stop();Check(!H.Busy(),TEXT("leave-play releases both active encounter and quiet reservation"));return Ok;
 }

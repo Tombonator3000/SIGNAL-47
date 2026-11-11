@@ -1,5 +1,7 @@
 #include "S47Main.h"
+#include "S47CarPaint.h"
 #include "S47TripoCreature.h"
+#include "S47EyeGlint.h"
 #include "S47Sky.h"
 #include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
@@ -38,19 +40,26 @@
 #include "S47Chapter6.h"
 #include "SS47Widgets.h"
 #include "S47TownLayer.h"
+#include "S47MotelTv.h"
+#include "S47Seen.h"
+#include "S47Web.h"
+#include "Misc/Parse.h"
 #include "S47TripoNpcs.h"
 #include "S47Lived.h"
+#include "S47FarmLights.h"
 #include "S47SaroRooms.h"
 #include "S47SaroLegacyCleanup.h"
 #include "S47Rx3Detail.h"
 #include "S47SaroPeriodProps.h"
 #include "S47PeriodFixtures.h"
+#include "S47SaroFixes.h"
 #include "S47Lookdev.h"
 #include "S47FinalePreview.h"
 #include "S47FinaleMovie.h"
 
 #include "S47Flow.h"
 #include "S47Radio.h"
+#include "S47NightLine.h"
 #include "S47TripRadio.h"
 #include "S47Score.h"
 #include "S47Three.h"
@@ -153,7 +162,30 @@ void US47Main::Step(double Dt)
 	}
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
+	// TV-SCHEDULE-20261109 (Tom): the late programme on the motel office's set in both modes, by the station's hours; the test card
+	// the rest of the day (and at every hour without the local frame pack). -S47MotelTvFilm or -S47TvOnAir: the film at any hour.
+	// TV-CHANNEL-20261110 (Tom: every set on the one channel): the station's day goes on here, once a frame. Freeform: on the air
+	// from six until two, then the sign-off in front of whoever is watching, the card and snow (FS47TvProgramme::Advance); the
+	// story keeps the late station's hours. Dale's set (S47OfficeTv) and the motel office's read it.
+	const double TvClock = bFree && Freeform ? Freeform->Clock() : Story ? Story->Clock() : 0;
+	FS47TvProgramme::ChannelStep(TvClock, Mode == EMode::Play ? Dt : 0.0, bFree && Freeform);
+	if (TownLayer && TownLayer->MotelTv)
+	{
+		FS47MotelTv& Set = *TownLayer->MotelTv;
+		Set.bChannel = bFree && Freeform; Set.Air = FS47TvProgramme::Air();
+		Set.bCardOnly = Set.bChannel ? Set.Air != FS47TvProgramme::EAir::Programme && Set.Air != FS47TvProgramme::EAir::SignOff
+			: !(FS47TvProgramme::ForcedOnAir() || FS47TvProgramme::OnAir(TvClock));
+	}
 	if (!bFree && Mode == EMode::Play && TownLayer) TownLayer->WorldStep(Dt);
+	// MOTEL-REAL-20261108: in Freeform the town layer's world step does not run, so the motel office's set never got past the
+	// first frame it was painted with. Its picture (the late programme, or the test card and its snow) and its sound go on here;
+	// none of the story's television event (bOk false). -S47MotelTvFrozen: as before, for a picture before and after.
+	if (bFree && Mode == EMode::Play && TownLayer && TownLayer->MotelTv && Web && !FParse::Param(FCommandLine::Get(), TEXT("S47MotelTvFrozen")))
+	{
+		FS47MotelTvIn Tv; Tv.bSaro = Web->Area() == TEXT("saro"); Tv.Cam = FS47Cam::Of(Player, 5000); Tv.Clock = Freeform ? Freeform->Clock() : 0;
+		Tv.Jam = FMath::Max(Freeform ? double(Freeform->ScreenInterference()) : 0.0, FS47TvProgramme::JamAsked());
+		TownLayer->MotelTv->Update(Dt, Tv);
+	}
 	if (!bFree && AnomalyWorld) AnomalyWorld->DreadStep(Dt);
 	// main.ts: the closer look, the lens narrowing while right mouse is held (S47Phones.cpp)
 	if (Phones) Phones->LookStep(Dt);
@@ -179,14 +211,30 @@ void US47Main::Step(double Dt)
 	// main.ts: the music by cue (core/score.ts)
 	if (Mode == EMode::Play && Score && !bOpening)
 	{
-		const double Danger = FieldRadio ? FieldRadio->ObservedThreat() : 0;
-		Score->RequestMood(Danger >= 1 ? TEXT("action") : Danger > 0 ? TEXT("tension") : FString(), Danger);
+		// D45-20261110 (Tom, d45: the town's piece played on while the tall one came at the feed store): in Freeform the set's own
+		// reading of what is near picks the cue (FS47FieldRadio::MusicMood: heard, eerie; seen or close, tension; coming, action).
+		// Story keeps the music it had: only a body in view asks for anything.
+		if (bFree && FieldRadio)
+		{
+			double MoodUrgency = 0;
+			const FString MoodCue = FieldRadio->MusicMood(MoodUrgency);
+			Score->RequestMood(MoodCue, MoodUrgency);
+		}
+		else
+		{
+			const double Danger = FieldRadio ? FieldRadio->ObservedThreat() : 0;
+			Score->RequestMood(Danger >= 1 ? TEXT("action") : Danger > 0 ? TEXT("tension") : FString(), Danger);
+		}
 		Score->Update(bPausedByMenu ? 0 : Dt, Score->MusicWant(), Score->MusicHeld());
-		Score->SetDuck(Score->MusicDuck());
+		// Critics, 10 Nov: the bought ground under a meeting is the music then (Tom's idea); the score stands back to a third.
+		// D45-20261110: in Freeform a place's own piece (town, dawn, the motel, the drive) goes all but under it, and already as
+		// something is heard coming, until the cue for it has crossed in.
+		Score->SetDuck(Score->MusicDuck() * FS47Score::DreadDuck(bFree && Score->PlacePieceSounding(), FieldRadio ? FieldRadio->DreadNow() : 0.,
+			bFree && FieldRadio ? FieldRadio->Approach() : 0.));
 	}
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
 	if (Night && !bOpening) Night->Step(Dt);
-	if (Player) FS47TripoCreature::StepEyeGlints(Player->EyeUE(), Life && Life->Sky.IsValid() ? Life->Sky->Daylight() : 0.);
+	if (Player) S47EyeGlint::Step(Player->EyeUE(), Life && Life->Sky.IsValid() ? Life->Sky->Daylight() : 0.);
 	// main.ts: every frame, the dishes' lamps, the sky light, the reel's own timer (S47SaroNight.cpp)
 	if (!bFree && SaroNight && !bOpening) SaroNight->Frame(Dt);
 	// main.ts: html.at-line during THE EVENT (game.ch6.stage === 'event'): the prompt sits lower
@@ -234,12 +282,19 @@ void US47Main::Step(double Dt)
 	{
 		if (!TripoNpcs) TripoNpcs = MakeShared<FS47TripoNpcs>(this);
 		TripoNpcs->Step();
+		// SHERIFF-CAR (Tom 9 November: the cars in town drawn as grey clay): every car in the town's own materials (S47CarPaint.h).
+		S47CarPaint::Step(Web.Get(), Dt);
 		FS47SaroRooms::Update(this, Dt);
 		S47Lived::Update(this, Dt);
+		// FARM-LIGHTS (Tom, 9 November): the barn's swinging bulb, the yard's dusk-to-dawn lamp, the old house's lit room. Freeform only.
+		S47FarmLights::Update(this, Dt);
 		if (Web && Web->IsLoaded()) S47SaroLegacyCleanup::Build(Web.Get());
 		FS47Rx3Detail::Update(this, Dt);
 		FS47SaroPeriodProps::Update(this, Dt);
 		S47PeriodFixtures::Update(this, Dt);
+		// Tom's test of d36 at SARO (PT-RAMP, PT-PATHS, PT-STOP, PT-HALL, PT-DALE-LIGHT, PT-SWITCH; PT-RECORDS in its own file).
+		S47SaroFixes::Update(this, Dt);
+		S47RecordsDressing::Update(this, Dt);
 		S47Lookdev::Update(this, Dt);
 	}
 	if (!bFree && SkyVisitors) SkyVisitors->Step(Dt);
@@ -317,6 +372,8 @@ void US47Main::RadioStep(double Dt)
 	DinerRadio->Pos = bDinerOn ? TOptional<FVector>(CounterAt) : TOptional<FVector>();
 	// A test receiver uses the same graph, positioned by the camera, without starting a trip.
 	if (!RadioTest.IsEmpty()) { CarRadio->Set(true, RadioTest); CarRadio->Pos = S47Three::ToThree(Player->EyeUE()); CarRadio->Power = 1; CarRadio->Muffle = 0; bCarNear = true; }
+	// NIGHT-RADIO-20261109: in Freeform 1420 is Earl's Night Line from eight to four, made for the night (S47NightLine).
+	if (IsFreeform() != bool(Radio->NightLineIn)) Radio->NightLineIn = IsFreeform() ? TFunction<bool(FS47NightLineIn&)>([this](FS47NightLineIn& In) { return S47NightLine::Fill(this, In); }) : TFunction<bool(FS47NightLineIn&)>();
 	Radio->Update(Dt, Story ? Story->Clock() : 0);
 	if (TripRadio) TripRadio->Update({World->TripNow(), Story ? Story->ChapterKey : FString(), Story ? Story->Clock() : 0, World->bDriving && CarRadio->Live() && !(Story && Story->IsCinematic()) ? CarRadio->Station : FString()});
 	bRadioHeard = (CarRadio->Live() && bCarNear) || (DinerRadio->Live() && !World->bDriving && FVector::Distance(Player->Pos, CounterAt) < 12);

@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "S47CowLift.h"
 #include "S47Json.h"
 class US47Main;
 
@@ -9,11 +10,12 @@ class US47Main;
 //
 // The workstation's clock stands at the last time the player is sure of, until they have been on OPS a few seconds or a
 // day has gone. A cow is gone from the pasture from the next morning, for a few days. A line sits in the player's own
-// notes that they did not write: no slip, no sound, and no word about it ever.
+// notes that they did not write: no slip, no sound, and no word about it ever. PHOTO-02: if the player stands out at the pasture
+// the night she is to go, after 02:00, she can be seen to go (S47CowLift); otherwise it stays as quiet as it was.
 class FS47Aftermath
 {
 public:
- explicit FS47Aftermath(US47Main* Main):M(Main){}
+ explicit FS47Aftermath(US47Main* Main):M(Main),Lift(Main){}
  void Begin(const S47J::FObj& Saved);
  void Stop();
  void Step(double Dt);
@@ -28,6 +30,8 @@ public:
  bool CowPlanned() const{return CowFrom>0;}
  FString CowFindingId() const;
  const FString& LastLine() const{return Line;}
+ // PHOTO-02 (N1110): the cow lifted before the player's eyes (S47CowLift); the photo desk asks whether it is really up there to be seen.
+ const FS47CowLift& CowLifting() const{return Lift;}
 
  // What is decided, apart from the game. Have: the notes as they stand; a line already there is not written twice.
  static FString NoteFor(int32 Kind,double SafeClock,float Roll,const TArray<FString>& Have);
@@ -45,10 +49,12 @@ private:
  double PcAt=-1,PcUntil=0,LogOn=0;
  double CowFrom=0,CowUntil=0;
  bool bCowOut=false,bCowNoted=false;
+ FS47CowLift Lift;
  int32 Cows=0;
  FString Line;
  float TestNote=-1,TestCow=-1;
  float Roll(float Test) const;
  void StepCow(double Clock);
+ void StepLift(double Dt,double Clock);
  bool CowWatched() const;
 };

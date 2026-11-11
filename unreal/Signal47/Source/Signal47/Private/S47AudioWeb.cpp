@@ -500,7 +500,7 @@ void US47Audio::CallLine(float Secs)
 TOptional<FS47CallTimeline> US47Audio::PhoneCall(const TArray<FS47PhoneCue>& Lines, float Lead, float Gap)
 {
 	StopPhoneCalls();
-	if ((!bKinskiCalls && !bCharacterVoices) || !Ctx.IsValid() || Ctx->State() == TEXT("closed") || !Noise.IsValid() || !Lines.Num()
+	if (!bCharacterVoices || !Ctx.IsValid() || Ctx->State() == TEXT("closed") || !Noise.IsValid() || !Lines.Num()
 		|| !Lines.ContainsByPredicate([](const FS47PhoneCue& L) { return !L.bAside; })) return {};
 	FBatch Batch(*Ctx);
 	TArray<TSharedPtr<FS47AudioBuffer>> Buffers;
@@ -553,19 +553,15 @@ TOptional<FS47CallTimeline> US47Audio::PhoneCall(const TArray<FS47PhoneCue>& Lin
 	return TL;
 }
 
-/** The recording phoneCall() plays: Ward uses only her own cast slot; the other legacy
- *  lines retain their existing fallback. An unrecorded call uses its captions. */
+/** The recording phoneCall() plays: each speaker's own character voice only. (KINSKI-READ-OUT, Tom
+ *  9 November 2026: the old fallback to the Kinski telephone bank is gone. VOICE-OUT-3, the same day: so
+ *  are N. Vega's and THE LINE's, the bacall and price clones.) An unrecorded call uses its captions. */
 TSharedPtr<FS47AudioBuffer> US47Audio::LineBuffer(const FString& By, const FString& Text) const
 {
 	// Ward has her own unrecorded cast slot (HorrorStory/pack.json): captions until
 	// the agreed final voice session. Never substitute Dale's general telephone bank.
 	if (By == TEXT("WARD")) return CharacterBuffer(TEXT("ward"), Text);
-	const TSharedPtr<FS47AudioBuffer> Actor = By == TEXT("N. VEGA") ? CharacterBuffer(TEXT("bacall"), Text)
-		: By == TEXT("THE LINE") ? CharacterBuffer(TEXT("price"), Text) : nullptr;
-	if (Actor.IsValid()) return Actor;
-	if (!bKinskiCalls) return nullptr;
-	const FString* Key = PhoneKeys.Find(NormalizeReadingText(Text));
-	return Key ? Buf.FindRef(*Key) : nullptr;
+	return nullptr;
 }
 
 /** A hang-up, replacement, new night, save load or title: future sources stop too. */
@@ -1024,11 +1020,18 @@ US47Audio::FStepPick US47Audio::StepPick(const FString& Surface) const
 void US47Audio::Step(const FString& Surface)
 {
 	const FSteps& S = STEPS(Surface);
-	const int32 Len = S.Names.Num();
-	FString Name = S.Names[FMath::Min(Len - 1, int32(FMath::FRand() * Len))];
-	if (Name == LastStep) Name = S.Names[(S.Names.IndexOfByKey(Name) + 1 + int32(FMath::FRand() * (Len - 1))) % Len];
+	// D45-20261110: Tom's Cosmos footsteps (eight walk takes per surface, levelled to the old set's peak) when they are
+	// in this build; tile has no take of its own and uses concrete a little brighter, as before.
+	const FString Kind = Surface == TEXT("tile") ? TEXT("concrete") : Surface;
+	TArray<FString> Bought;
+	for (int32 I = 0; I < 8; ++I) { const FString Take = FString::Printf(TEXT("lic:step_%s_%d"), *Kind, I); if (Buf.Contains(Take)) Bought.Add(Take); }
+	const bool bBought = Bought.Num() > 1;
+	const TArray<FString>& Names = bBought ? Bought : S.Names;
+	const int32 Len = Names.Num();
+	FString Name = Names[FMath::Min(Len - 1, int32(FMath::FRand() * Len))];
+	if (Name == LastStep) Name = Names[(Names.IndexOfByKey(Name) + 1 + int32(FMath::FRand() * (Len - 1))) % Len];
 	LastStep = Name;
-	FS47Sound O; O.Gain = S.Gain * (0.8f + FMath::FRand() * 0.3f) * FMath::Clamp(StepScale, 0.f, 1.f); O.Rate = S.Rate * (0.95f + FMath::FRand() * 0.1f); O.Lp = S.Lp;
+	FS47Sound O; O.Gain = S.Gain * (0.8f + FMath::FRand() * 0.3f) * FMath::Clamp(StepScale, 0.f, 1.f); O.Rate = (bBought ? (Surface == TEXT("tile") ? 1.08f : 1.f) : S.Rate) * (0.95f + FMath::FRand() * 0.1f); O.Lp = S.Lp;
 	Sfx(Name, O);
 }
 

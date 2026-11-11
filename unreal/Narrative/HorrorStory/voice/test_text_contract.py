@@ -55,6 +55,8 @@ class RecordingEvidence(unittest.TestCase):
             for target, name, value in ((module, 'HERE', self.root), (module.generate, 'cues', lambda: self.cues),
                                         (module.generate, 'SCENARIO', 'SC01')):
                 mock = patch.object(target, name, value);mock.start();self.addCleanup(mock.stop)
+        # Dales takes kommer fra DaleVoice (egen kontroll i catalog.dale_clips); her prøves bare dispatch.
+        mock = patch.object(CATALOG, 'pack_dale_cues', lambda: []);mock.start();self.addCleanup(mock.stop)
         # Målingene er stubbet for å isolere tekstporten. Dette er ikke lyd-QA.
         metrics = {'peak_dbfs': -3, 'samples_at_or_above_full_scale': 0, 'nonsilent_rms_dbfs': -20,
                    'first_2ms_peak': 0, 'last_2ms_peak': 0, 'speech_start_seconds': .08, 'speech_end_seconds': .3}

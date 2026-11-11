@@ -1,5 +1,6 @@
 #include "S47Enlarger.h"
 #include "S47Album.h"
+#include "S47Darkroom.h"
 #include "S47FieldCamera.h"
 #include "S47Freeform.h"
 #include "S47Image.h"
@@ -103,10 +104,12 @@ FString FS47Enlarger::Caption(const FS47AlbumShot& Sh, int32 Part, int32 Power) 
 bool FS47Enlarger::DarkroomReady(bool bSay) const
 {
 	if (!M || !M->Freeform) return false;
-	const TCHAR* Why = !M->Freeform->HasPowerForReactiveLight() ? TEXT("PHOTO LAB: No power for the enlarger's lamp.")
-		: M->Web && M->Web->IsDoorOpen(TEXT("labDoor")) ? TEXT("PHOTO LAB: Shut the darkroom door before you print.") : nullptr;
-	if (Why && bSay && M->UI) M->UI->Toast(Why, 3.5f);
-	return !Why;
+	// D45-20261110 (D45-17): the wet bench's rule (FS47Darkroom): the door shut and the safelight on before the paper is out.
+	const FString Why = !M->Freeform->HasPowerForReactiveLight() ? FString(TEXT("PHOTO LAB: No power for the enlarger's lamp."))
+		: M->Freeform->Darkroom ? M->Freeform->Darkroom->Block()
+		: M->Web && M->Web->IsDoorOpen(TEXT("labDoor")) ? FString(TEXT("PHOTO LAB: Close the door first.")) : FString();
+	if (!Why.IsEmpty() && bSay && M->UI) M->UI->Toast(Why, 4.f);
+	return Why.IsEmpty();
 }
 
 FString FS47Enlarger::Print(const FS47AlbumShot& Sh, int32 Part, int32 Power)
@@ -120,7 +123,7 @@ FString FS47Enlarger::Print(const FS47AlbumShot& Sh, int32 Part, int32 Power)
 	UE_LOG(LogS47Enlarger, Display, TEXT("S47: enlarger: %s, part %d at %dx from the %s, printed as %s"), *From.Id, Part, Power, bNeg ? TEXT("negative") : TEXT("print"), *Id);
 	if (!Id.IsEmpty())
 	{
-		if (M->UI) M->UI->Toast(TEXT("PHOTO LAB: The enlargement is in your album. It goes up on the board with the first print."), 4.5f);
+		if (M->UI) M->UI->Toast(TEXT("PHOTO LAB: The enlargement is in your album, beside the first print."), 4.5f);
 		M->RequestAutosave();
 	}
 	return Id;

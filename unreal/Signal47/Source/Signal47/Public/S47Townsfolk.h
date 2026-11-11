@@ -10,7 +10,7 @@ class SWidget;
 // (S47EventPlaces), one new thing a day each, and the town notices when one of them is gone.
 //
 // Gone: the night's events take someone through Vanish() (an API for FS47Happenings and the F10 menu; Happenings itself is not
-// changed here), and Step takes one of them of its own accord after a night's event at the place they work, now and then. While
+// changed here), and Step takes one of them of its own accord after a night's event at the place they are that night, now and then. While
 // someone is gone their place is empty (the deputy's car and lit window, and the souvenir man on his stoop: FS47Town's own switches,
 // which nothing else moves in Freeform),
 // the others talk of nothing else, callers on 1420 ask after them (FS47RadioTips' "town:" lines), and asking about it keeps a field
@@ -32,6 +32,10 @@ public:
 	static FString Speaker(const FString& Who); // "THE ATTENDANT"
 	// The place on the catalogue each one works at (S47EventPlaces): "gas", "diner", "sheriff", "souvenir".
 	static FString WorksAt(const FString& Who);
+	// Where each one is in the hours a night's events come (S47TownDay's day: from dusk on): the deputy and the souvenir man at home
+	// ("h02", "h03"), the attendant (the night man) at the gas station, the waitress at the diner's counter. With -S47TownDayOff:
+	// WorksAt, as before.
+	static FString NightPlaceOf(const FString& Who);
 
 	// One thing this person says today, as "THE DEPUTY: ...": the newest that has not been said by them, else the last one again.
 	// Empty: they have nothing to say (or are gone).
@@ -59,13 +63,22 @@ public:
 	static bool TakenBy(int32 Seed, int32 Night, const FString& Who);
 	static int32 DaysAway(int32 Seed, const FString& Who, int32 Day);
 	static constexpr int32 RestDays = 7; // at least this many days between one going and the next
-	// Who a night's events took (empty: nobody): the first of the four whose place was used that night and whose roll says so.
+	// Who a night's events took (empty: nobody): the first of the four whose place that night (NightPlaceOf) was used that night and
+	// whose roll says so.
 	// LastNightOf: the night a catalogue place was last used (FS47EventPlaces::LastNight).
 	static FString TakenAfter(int32 Seed, int32 Night, TFunctionRef<int32(const FString&)> LastNightOf);
 	// What the town makes of a night's event by its kind (FS47EventPlaces::LastKind), for talk: "lights" (seen from far off),
 	// "doors" (somebody at a door or a window), "figure" (somebody out walking), "stock" (cattle). Empty: nothing anybody talks of.
 	static FString Talk(const FString& Kind);
 
+	// PT-NOTEBOOK-20261109: the notebook's WHO & WHAT, one box for each of them the player has talked to or found gone: who they are,
+	// and one plain line in the player's pencil from what they have told (Told), or how long their place has been empty. It says that
+	// someone is gone and nothing of why.
+	struct FCard { FString Who, Name, Role, Line; bool bGone = false; };
+	TArray<FCard> Cards() const;
+	// The line, from what Who has told (Told's keys without "who:"), the day, and the day they went (0: here). TitleOf names a place.
+	static FString CardLine(const FString& Who, const TArray<FString>& Keys, int32 Today, int32 GoneDay, TFunctionRef<FString(const FString&)> TitleOf);
+	static FString RoleOf(const FString& Who); const TSet<FString>& ToldKeys() const { return Told; } // MARGINALIA-20261109: what they have told, "who:key" (S47Marginalia::FactsOf)
 	// Where someone gone was last seen, pencilled on the survey sheet (US47Flow::MapView).
 	void FillMap(struct FS47MapView& V) const;
 	// F10

@@ -25,6 +25,8 @@ struct FS47StressIn
 	/** Being taken now; and seconds since the last time (a large number: not lately). */
 	bool bTaken = false;
 	double SinceTaken = 1e9;
+	/** Taken and gone: the picture and the sound are away (FS47Taken::EStage::Away), so no breath is heard. */
+	bool bAway = false;
 	/** Indoors at SARO: the stress falls faster here. */
 	bool bSafe = false;
 	/** The night has gone quiet round the player (FS47Soundscape: something is coming): a small unease of its own. */
@@ -70,6 +72,8 @@ public:
 	/** Seconds between breaths (0: none at this level) and the breath's strength. */
 	static double BreathGap(double Strain);
 	static double BreathStrength(double Strain);
+	/** AFTER-TAKEN-20261109: where the strain is when the player comes to after being taken: dazed, a faint edge, no hard breathing. */
+	static double OnWaking(double Strain);
 
 	static bool SelfTest(TArray<FString>& Lines);
 

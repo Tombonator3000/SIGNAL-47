@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "id": "attention_warn_tv",
+  "name": "The set goes to snow",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) a warning at SARO. The screens break up for a while (a sign for the gear, FS47Omen).",
+  "enabled": true,
+  "gates": {
+    "hours": [
+      "18:00",
+      "05:30"
+    ],
+    "tier": "hint",
+    "areas": [
+      "saro"
+    ]
+  },
+  "beats": [
+    {
+      "at": 0,
+      "do": "tv",
+      "strength": 0.45,
+      "secs": 8
+    },
+    {
+      "at": 0.5,
+      "do": "light",
+      "kind": "gear",
+      "strength": 0.25,
+      "secs": 6
+    },
+    {
+      "at": 3,
+      "do": "thought",
+      "text": "Snow on the set. Like something big is parked right outside."
+    },
+    {
+      "at": 4,
+      "do": "evidence",
+      "key": "attention_tv_d{day}",
+      "text": "At {clock} the TV and the screens went to snow for a few seconds, with a whine under it. No wind, nothing on the road."
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47Witness.h"
 class US47Main;
 
 // Freeform only: what comes over the air in the truck. The CB under the dash, and callers on 1420. Mostly nothing; a few of them
@@ -9,6 +10,8 @@ class US47Main;
 class FS47RadioTips
 {
 public:
+ // M7 (Tom, 9 November): what 1420 pays for a tip it reads (capped with the rest of the week's side money).
+ static constexpr int32 TipPay=5;
  explicit FS47RadioTips(US47Main* Main):M(Main){}
  struct FLine{const TCHAR* Id;const TCHAR* Text;const TCHAR* Place;const TCHAR* Needs;int32 Trust;};
  // Two speakers at most: a caller and Earl. Empty answer: he lets it go.
@@ -43,7 +46,13 @@ public:
  FString CallBack(const FGiven& G,FString& OutPlace,FString& OutAnswer,FString* OutVoice=nullptr) const;
  // F10: the next waiting tip read now, or its call-back now, whatever the hour and the radio. What was said; empty: nothing waiting.
  FString DevNext();
+ // N1110 PHOTO-03: what callers and the CB said they saw, kept for the notebook and paid against the player's own photograph (S47Witness.h).
+ FS47Witness& Witness(){return Wit;}
+ const FS47Witness& Witness() const{return Wit;}
 private:
+ FS47Witness Wit;
+ // Keeps one statement: who said it, the place it names, the words as said.
+ void KeepStatement(const FString& Id,const FString& Who,const FString& Place,const FString& Text);
  US47Main* M=nullptr;
  TSet<FString> Used;
  TArray<FGiven> Tipped;

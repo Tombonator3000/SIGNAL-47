@@ -1,4 +1,5 @@
 #include "S47NightLife.h"
+#include "S47StreetLamps.h"
 
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/SpotLightComponent.h"
@@ -77,7 +78,8 @@ namespace
 	/** Tape keeps its 480-line footprint. Film and Clean use the viewport's full resolution. */
 	double LinesNow(const US47Main* M)
 	{
-		const bool bTape = M && M->Flow && S47Picture::Mode(M->Flow->Picture) == 1 && M->Flow->PictureStrength > 0.f;
+		// D45-20261110 (D45-19): Bodycam 1986 is on the same tape
+		const bool bTape = M && M->Flow && S47Picture::IsTape(S47Picture::Mode(M->Flow->Picture)) && M->Flow->PictureStrength > 0.f;
 		FVector2D Size(1600, 900);
 		if (GEngine && GEngine->GameViewport) GEngine->GameViewport->GetViewportSize(Size);
 		return bTape ? FMath::Min(FMath::Max(1.0, Size.Y), 480.0) : FMath::Max(1.0, Size.Y);
@@ -177,6 +179,26 @@ void FS47NightLife::Build(US47Main* InM)
 				C.Reach += Lp.W;
 				if (Lp.bBig) Ar.LampsW.Add(Lp.W);
 			}
+			// M6, critic round 4: the ragged orange cloud a metre beside each new street lamp's head at night was these moths, still
+			// circling where the old head hung (the web's lamp, at the arm's end of the old pole). Each lamp of the cloud with a cobra
+			// head of S47StreetLamps within 3.5 m moves to just under that head's bowl, and its moths with it.
+			TArray<FVector> Shift; Shift.Init(FVector::ZeroVector, C.Lamps.Num());
+			{
+				const TMap<FName, S47ExteriorFixtures::FFixture> Heads = S47StreetLamps::Fixtures(W);
+				const FTransform Tn = W->NodeWorldThree(C.Node);
+				for (int32 i = 0; i < C.Lamps.Num(); ++i)
+				{
+					double Best = 3.5;
+					for (const auto& KV : Heads)
+					{
+						const double D = FVector::Dist(KV.Value.Aperture, C.Lamps[i].W);
+						if (D < Best) { Best = D; Shift[i] = Tn.InverseTransformPosition(KV.Value.Aperture - FVector(0, .15, 0)) - C.Lamps[i].P; }
+					}
+					if (!Shift[i].IsNearlyZero()) { C.Lamps[i].P += Shift[i]; C.Lamps[i].W = Pts.LocalToWorld(C.Lamps[i].P); C.Reach += C.Lamps[i].W; }
+				}
+				int32 Moved = 0; for (const FVector& V : Shift) Moved += !V.IsNearlyZero();
+				UE_LOG(LogS47Life2, Display, TEXT("S47: the moths of %s: %d of %d lamps moved to a cobra head (%d heads built)"), *FString(Id), Moved, C.Lamps.Num(), Heads.Num());
+			}
 			// round all the lamps in world terms, 60 m out: farther off nothing of them shows
 			C.Reach = C.Reach.ExpandBy(60);
 			const TArray<float> Pos = Floats(Mo, TEXT("pos")), Sd = Floats(Mo, TEXT("seed")), Li = Floats(Mo, TEXT("lamp")), Ki = Floats(Mo, TEXT("kind")), Co = Floats(Mo, TEXT("col")), Wa = Floats(Mo, TEXT("wall"));
@@ -189,7 +211,9 @@ void FS47NightLife::Build(US47Main* InM)
 				TArray<float> Cd;
 				for (int32 k = 0; k < Count; ++k)
 				{
-					Tf.Add(FTransform(FQuat::Identity, S47Three::ToUE(Pos[k * 3], Pos[k * 3 + 1], Pos[k * 3 + 2]), FVector(0.001)));
+					const int32 Lk = Li.IsValidIndex(k) ? int32(Li[k]) : -1;
+					const FVector Off = Shift.IsValidIndex(Lk) ? Shift[Lk] : FVector::ZeroVector;
+					Tf.Add(FTransform(FQuat::Identity, S47Three::ToUE(Pos[k * 3] + Off.X, Pos[k * 3 + 1] + Off.Y, Pos[k * 3 + 2] + Off.Z), FVector(0.001)));
 					Cd.Append({ Sd[k * 4], Sd[k * 4 + 1], Sd[k * 4 + 2], Sd[k * 4 + 3], Li[k], Ki[k], Co[k * 3], Co[k * 3 + 1], Co[k * 3 + 2], Wa[k * 4], Wa[k * 4 + 1], Wa[k * 4 + 2], Wa[k * 4 + 3],
 						// what Low leaves out: the moths after its two thirds (the bats Low leaves out by the material's Low)
 						k >= C.Low && k < C.Moths ? 1.f : 0.f });

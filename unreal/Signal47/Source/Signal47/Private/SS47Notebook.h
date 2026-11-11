@@ -47,6 +47,14 @@ public:
 	static FString Excerpt(const FS47Doc& D);
 	// the keys on a notebook made of sample pages (Q and E, the arrows, Enter)
 	static bool SelfTest(TArray<FString>& Lines);
+	// M7-HUD-20261109: how many notebooks opened in the game have closed since it started, so that the HUD can bring the task's card in
+	// again (SS47Hud). A notebook made for a test has no UI and is not counted.
+	static uint32 Shut();
+	// D45-20261110 (Tom: open on a plain to-do list): the page a notebook opens on: NOW when Freeform's NOW has a line not shown before
+	// (FS47NbNowLine::bNew), otherwise Last (the page used last, if this notebook has it). And the head over a group of NOW's lines:
+	// DO FIRST, TONIGHT, WHEN YOU CAN, DONE TONIGHT (empty for the next step, which has the red arrow).
+	static FString OpenOn(const FS47NbExtras& Ex, const FString& Last);
+	static FString NowHead(const FString& Group);
 
 private:
 	TWeakObjectPtr<US47UI> UI;
@@ -60,9 +68,20 @@ private:
 	TArray<FS47Doc> Photos, Findings, Papers, AllPapers;
 	TArray<FS47NbWorkItem> AllWorkItems;
 	FString PaperQuery;
+	int32 EvKind = INDEX_NONE, EvPhrase = INDEX_NONE; // D48-20261110 (D46-19): the entry being made on the EVENTS page
+	FString EvDone;
 	bool bShowHistory = false;
 	void FilterDocuments(const FString& Query);
 	void FilterWork();
+	// PT-NOTEBOOK-20261109 (Freeform): NOW's rows, each a line of the note (X.Now) or, under an open fold, one of the work items (the job
+	// cards, the cases waiting); the night each paper belongs to (its "DAY n" stamp, or the one before it), newest night first.
+	struct FNowRow { int32 Line = INDEX_NONE, Item = INDEX_NONE; };
+	TArray<FNowRow> NowRows;
+	TSet<FString> OpenFolds;
+	TMap<FString, int32> DocNight;
+	void FilterNow();
+	bool IsNow() const { return X.bNow && Tab == TEXT("tasks"); }
+	const FS47NbWorkItem* ChosenWork() const; // NOW: the work item of the chosen row, if it has one
 	FS47NbExtras X;
 	TMap<FString, int32> Sel;    // the chosen entry on each tab
 	uint32 KeysShown = 0;        // S47Keys::Changes() when the CONTROLS page was built

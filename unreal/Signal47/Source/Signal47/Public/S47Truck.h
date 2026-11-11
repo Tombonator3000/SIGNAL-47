@@ -4,6 +4,7 @@
 #include "S47Obj.h"
 #include "S47Fleet.h"
 #include "S47Mirrors.h"
+#include "S47Bobblehead.h"
 
 class US47Main;
 class AS47Web;
@@ -130,6 +131,8 @@ struct SIGNAL47_API FS47Truck
 	UTextureRenderTarget2D* DashTarget() const { return DashRT.Get(); }
 	/** The Jeep's live mirrors (S47Mirrors), null on any other vehicle; US47World::Frame steps them. */
 	FS47Mirrors* Mirrors() const { return MirrorSet.Get(); }
+	/** D45-20261110 (D45-29): the alien bobblehead on the Jeep's dash (S47Bobblehead), null when not imported or not the Jeep's cab. */
+	FS47Bobblehead* Bobblehead() const { return Bobble.Get(); }
 
 private:
 	US47Main* M = nullptr;
@@ -137,6 +140,7 @@ private:
 	FS47Obj Wheels, Needles, Keys, WheelSpin, CompassCard, GlowPoints;
 	TUniquePtr<FS47Fleet> Fleet;
 	TUniquePtr<FS47Mirrors> MirrorSet;
+	TUniquePtr<FS47Bobblehead> Bobble;
 	FS47Obj Lamps[4];
 	FS47Mat MHead, MPark, MTail, MGauge, MNeedle, MCompass;
 	TArray<TWeakObjectPtr<class UMaterialInstanceDynamic>> Glows; // the glow points' sprites, in their order

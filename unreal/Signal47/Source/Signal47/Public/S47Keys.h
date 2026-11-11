@@ -44,6 +44,9 @@ namespace S47Keys
 	SIGNAL47_API FString Name(const FKey& K);
 	SIGNAL47_API FString Label(FName Action);   // Short of its key, "" when it has none
 	SIGNAL47_API FString Said(FName Action);    // Name of its key, for a hint
+	// KEYS-HINT-20261109: the key that opens the notebook at its map, for "on your map (...)" in a toast or a paper (the pad's button
+	// with a controller, a rebound key); the notebook's own key when the map has none.
+	SIGNAL47_API FString MapSaid();
 
 	// Two actions that may have the same key, as they are never asked at once (the shutter only with
 	// the camera raised, a jump only with it lowered: Space is both by default).

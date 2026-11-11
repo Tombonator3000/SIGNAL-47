@@ -1,5 +1,5 @@
 #pragma once
-
+#include "S47TonightNote.h" // (TONIGHT-NOTE-20261109; on the blank line, so that the generated header's lines stay)
 #include "CoreMinimal.h"
 #include "Containers/Ticker.h"
 #include "S47Docs.h"
@@ -40,8 +40,8 @@ struct FS47PauseOpts
 	TFunction<void()> OnResume, OnTitle;
 	float Volume = 0.8f, Sens = 1.f, Music = 0.7f, Radio = 1.f;
 	TFunction<void(float)> OnVolume, OnSens, OnMusic, OnRadio;
-	bool bCharacters = true, bSerling = true, bKinski = false, bArtBell = true, bRadioCast = true;
-	TFunction<void(bool)> OnCharacters, OnSerling, OnKinski, OnArtBell, OnRadioCast;
+	bool bCharacters = true, bSerling = true, bArtBell = true, bRadioCast = true;
+	TFunction<void(bool)> OnCharacters, OnSerling, OnArtBell, OnRadioCast;
 	TFunction<void()> OnSave, OnLoad;     // unset: not offered
 	FString Quality = TEXT("high");       // 'ultra' | 'high' | 'low'
 	TFunction<void(const FString&)> OnQuality;
@@ -61,7 +61,7 @@ struct FS47PauseOpts
 	bool bLargeText = false; TFunction<void(bool)> OnLargeText;
 	bool bCalmFlash = false; TFunction<void(bool)> OnCalmFlash;
 	bool bStillShots = false; TFunction<void(bool)> OnStillShots;
-	bool bHeadMotion = true; TFunction<void(bool)> OnHeadMotion;
+	bool bHeadMotion = true; TFunction<void(bool)> OnHeadMotion; bool bCameraMoments = true; TFunction<void(bool)> OnCameraMoments; // N1110: the short snaps of the view in events (FS47CameraMoment)
 	bool bVehicleMirrors = true; TFunction<void(bool)> OnVehicleMirrors; // Graphics: the Jeep's live mirrors (S47Mirrors)
 	bool bAbduct = true; TFunction<void(bool)> OnAbduct; // unset: not offered
 	// the Unreal version's own: the brightness before the tone curve (0..1, .5 as made), and the keys
@@ -78,23 +78,23 @@ struct FS47PauseOpts
 	FString CaseLine;                     // "CASE 1 · SAVED 2 MIN AGO"
 	FString Objective;                    // the current objective, "CONTROL ROOM // THE SUPERVISOR LINE IS RINGING"
 	TArray<FString> OpenTasks;            // tonight's tasks not done yet
-	FString LastNote;                     // the latest note in the notebook
+	FString LastNote; S47TonightNote::FNote Note; // the latest note in the notebook; TONIGHT-NOTE-20261109: tonight's plan (S47TonightNote)
 };
 // UI.chapterCard
 struct FS47ChapterCardOpts { FString Closed, Recap, Next, Title, Clock; };
 // the notebook's map (ui/areaMap.ts MapView), kit (KitItem) and people (PersonCard)
 struct FS47MapAt { FString Spot; double T = 0, M = 0, Mi = 0; bool bT = false, bM = false, bMi = false; };
 struct FS47MapMark { FString Kind; double Clock = 0; FString Line; TOptional<FS47MapAt> At; };
-// Freeform: a place found or heard of, and a bearing from SARO. East of the highway and south of SARO, in metres.
-struct FS47MapPin { double East = 0, South = 0; FString Label; bool bHeard = false; };
-struct FS47MapSector { double Az = 0, Spread = 0; FString Label; };
+// Freeform: a place found or heard of, and a bearing from SARO. East of the highway and south of SARO, in metres. LOOP-1-20261109: a pin inside a live bearing's sector is marked (bInSector); a sector from elsewhere than SARO (bFrom: the truck's direction finder) starts at From, road-local x and z; Fade 1 fresh to 0 cold.
+struct FS47MapPin { double East = 0, South = 0; FString Label; bool bHeard = false, bInSector = false; };
+struct FS47MapSector { double Az = 0, Spread = 0; FString Label; bool bFrom = false; double FromX = 0, FromZ = 0; float Fade = 1.f; };
 // Freeform's survey sheet (SS47FieldMap, MAP-20261108): a pencil mark of the player's own, road-local metres (x east, z south).
 struct FS47MapNote { double X = 0, Z = 0; int32 N = 0; };
 // Freeform's sheet: work the player has now, written in by the place in ink ("S-05 drive fault", "fix the feeder"), road-local.
 struct FS47MapJob { double X = 0, Z = 0; FString Text; };
 struct FS47MapView
 {
-	TOptional<FS47MapAt> At; bool bStation = false, bOldRoad = false; TArray<FS47MapMark> Marks; bool bLineC = false; TArray<FS47MapPin> Pins; TArray<FS47MapSector> Sectors;
+	TOptional<FS47MapAt> At; bool bStation = false, bOldRoad = false; TArray<FS47MapMark> Marks; bool bLineC = false; TArray<FS47MapPin> Pins; TArray<FS47MapSector> Sectors; TArray<FVector2D> Crossings; // LOOP-1-20261109: Crossings, where two live bearings from different places cross, road-local (FS47Places::Cross)
 	// Freeform: the survey sheet instead of the sketch. Where the player is and which way they face (degrees from north,
 	// clockwise), and where the truck stands, all road-local, whatever area each is in (S47FieldMap::Me).
 	bool bField = false, bMe = false, bTruck = false, bDriving = false;
@@ -104,7 +104,7 @@ struct FS47MapView
 	TArray<FS47MapJob> Jobs;
 };
 struct FS47KitItem { FString Name, Note, State, Art, Tag; }; // Art: a kit drawing (ui/kitArt.ts), empty for none
-struct FS47PersonCard { FString Name, Role, Note, Portrait; }; // Portrait: a picture's art name, empty while there is none
+struct FS47PersonCard { FString Name, Role, Note, Portrait; }; struct FS47NbScribble { FString Side, Box, Role, Text, Follow, FollowText; bool bStruck = false; }; // Portrait: a picture's art name, empty while there is none. MARGINALIA-20261109: a scribble in WHO & WHAT (S47Marginalia): Side "people" or "them", the box it is in, the line, where it points (Follow "map" or "board"), struck when proved wrong
 // the album as the notebook shows it (core/album.ts AlbumView): the roll, and each free print as far
 // as it has come up (Dev, 0..1); Look is told each time a print is opened big
 struct FS47AlbumView
@@ -121,9 +121,9 @@ struct FS47NbWorkItem
 {
 	FString Id, Title, Status, NextAction, Location;
 	TArray<FString> Hints;
-	bool bDone = false, bCanFollow = false, bEarlier = false, bFollowed = false;
+	bool bDone = false, bCanFollow = false, bEarlier = false, bFollowed = false; bool bCard = false; // bCard: a job card, folded under one line on NOW (PT-NOTEBOOK-20261109)
 };
-struct FS47NbGuideEntry { FString Id, Title, Text; };
+struct FS47NbGuideEntry { FString Id, Title, Text; }; struct FS47NbEvent { FString When, Place, Kind, Text; bool bOwn = false; }; // D48-20261110: one line of the EVENTS page (D46-19)
 struct FS47NbExtras
 {
 	bool bFreeform = false;
@@ -140,7 +140,7 @@ struct FS47NbExtras
 	TOptional<TArray<FS47KitItem>> Kit;
 	TOptional<TArray<FS47PersonCard>> People;
 	bool bTouch = false;                 // a phone: its controls first
-	TOptional<FS47AlbumView> Album;      // the free frames (core/album.ts)
+	TOptional<FS47AlbumView> Album;      /* the free frames (core/album.ts) */ bool bNow = false; TArray<FS47NbNowLine> Now; FString NowClock; TArray<FString> Goals; TOptional<TArray<FS47Doc>> Papers; TArray<FS47NbScribble> Scribbles; bool bEvents = false; TArray<FS47NbEvent> Events; TArray<FString> EventKinds, EventPhrases; FString EventNow, EventPlace; TFunction<bool(int32, int32)> OnLogEvent; TFunction<TArray<FS47NbEvent>()> GetEvents; // D48-20261110 (D46-19): the EVENTS page, Freeform only. MARGINALIA-20261109: WHO & WHAT's pencil (Freeform). PT-NOTEBOOK-20261109 (Freeform): NOW as the note's lines (FS47NbNowLine), the clock's advice in red pencil, DOCUMENTS as the pinboard's tray (FS47PinBoard::Papers); unset: as before (Story)
 };
 
 // UI.viewfinder's options
@@ -182,7 +182,9 @@ class SIGNAL47_API US47UI : public UObject
 public:
 	void Init(AS47HUD* InHud) { Hud = InHud; }
 
-	void Toast(const FString& Text, float Secs = 3.2f, TFunction<double()> Clock = {});
+	void Toast(const FString& Text, float Secs = 3.2f, TFunction<double()> Clock = {}); void Alert(const FString& Text, float Secs = 4.f); // Alert, MSG-ONE-20261109: a line of danger, first in the one queue (FS47MessageQueue)
+	// WEEKLY-CASE-20261109: the player's own thought (S47Thought, at the end of this file): through the queue, one at a time. Empty does nothing.
+	void Thought(const FString& Text, float Secs = 4.5f);
 	void ClearToasts();
 	FString LastDescription() const;                 // the last toast that was not a caption (V)
 	void Objective(const FString& Text);             // empty hides it
@@ -234,16 +236,16 @@ public:
 	TFunction<void(const FString&)> OnNotebookTab; // a page of the notebook has been turned to
 	bool bLargeText = false;                       // html.text-large
 	// ui.npcDialogue: the night's character voices, one queue (core/npcDialogue.ts; set by main.ts's
-	// wiring, null until then). ui.speakNora is its SpeakNora.
+	// wiring, null until then). (ui.speakNora is gone with N. Vega's voice: VOICE-OUT-3.)
 	TSharedPtr<class FS47NpcDialogue> NpcDialogue;
 
 	// ---------- the readers (core/readAloud.ts) ----------
-	// ui.readAloud: Kinski reading papers and conversations ('kinskiReadAloud'); ui.narrator: the same
-	// player with the Serling bank ('serlingNarrator'); ui.earlDialogue: Earl's voice (Caliche's). Set by
-	// main.ts's wiring (S47Flow, S47Caliche), null until then.
-	TSharedPtr<class FS47ReadAloud> ReadAloud, Narrator;
+	// ui.narrator: the reader with the Serling bank ('serlingNarrator'); ui.earlDialogue: Earl's voice
+	// (Caliche's). Set by main.ts's wiring (S47Flow, S47Caliche), null until then. (KINSKI-READ-OUT, Tom
+	// 9 November 2026: ui.readAloud, the Kinski reader for papers and conversations, is gone.)
+	TSharedPtr<class FS47ReadAloud> Narrator;
 	TSharedPtr<class FS47EarlDialogue> EarlDialogue;
-	/** get descriptionReader(): the narrator when it is on, else Kinski when he is on, else none. */
+	/** get descriptionReader(): the narrator when it is on, else none. */
 	TSharedPtr<class FS47ReadAloud> DescriptionReader() const;
 	/** stopSpeech(): every reader and voice. */
 	void StopSpeech();
@@ -253,7 +255,7 @@ public:
 	TFunction<bool()> CanDescribe;
 	/** readingControls(parent, texts, label, kind): explicit playback only, the Read button and its status
 	 *  (.read-aloud) as a widget to put where the box goes; nothing when the reader is off. 'document' and
-	 *  'conversation' are Kinski's, the rest the description reader's. */
+	 *  'conversation' have no reader (text only, KINSKI-READ-OUT), the rest the description reader's. */
 	TSharedRef<SWidget> ReadingControls(const TArray<FString>& Texts, const FString& Label = TEXT("Read aloud"), const FString& Kind = TEXT("conversation"));
 	/** descriptionReadings(parent, selector, kind, extra): read the descriptions currently visible in Parent
 	 *  (the texts S47Kit marks readable: .lp-text, .lp-small, .lp-q, .lp-paper p, .lp-steps span, .lp-card
@@ -286,3 +288,14 @@ private:
 	void UpdateDescriptionButton();
 	void PlayDescription(const FString& Text, bool bAutomatic = false);
 };
+
+// WEEKLY-CASE-20261109, patch 3: the player's own thoughts. A line that starts with Mark goes through the one queue (FS47MessageQueue)
+// in its speech lane, below Dale and danger (EPri::Radio), so that it is one at a time with every voice and never over one; the HUD
+// draws it as a thought, not a caption: no speaker, no box, the hand in pencil, slanted, at the foot. "~ " is the papers' pencil mark.
+namespace S47Thought
+{
+	inline const TCHAR* Mark() { return TEXT("~ "); }
+	inline bool Is(const FString& Line) { return Line.StartsWith(Mark()); }
+	inline FString Line(const FString& Text) { return FString(Mark()) + Text.TrimStartAndEnd(); }
+	inline FString Words(const FString& Line) { return Is(Line) ? Line.Mid(FCString::Strlen(Mark())) : Line; }
+}

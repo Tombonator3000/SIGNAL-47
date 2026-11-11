@@ -4,7 +4,7 @@
 class US47Main;
 class FS47MailBoxModel;
 class FS47MailCarModel;
-namespace S47Ledger{struct FIssue;struct FFact;}
+namespace S47Ledger{struct FIssue;struct FFact;struct FLeadRef;}
 
 // MAILBOX-20261108 (Tom: «Inkluder post funksjon til SARO og lag postboks utenfor SARO»). Freeform only. A rural box on a post where
 // the service road meets the highway (S47MailBox.cpp), and the post that comes to it: the carrier once a day, Monday to Saturday,
@@ -17,8 +17,10 @@ namespace S47Ledger{struct FIssue;struct FFact;}
 // E at the box takes it out. What comes:
 //   ward      Dr. Ward's letter, her Monday sheets, her warning about the lost hours and the assessment (FS47Predecessor::Send).
 //             Taken out, they go to the OPS tray as before, where the review and its tests look for them.
+// What is taken out stays on the box's list as NOT READ YET until it is read (PT-MAIL-20261109, Tom: the letters he took out with
+// the catalog and the parcel were never seen again), and the list of things to do and the parcel's note say where it is.
 //   ledger    THE CALICHE LEDGER on Thursdays (S47Ledger): what the station registered in the nights, at its place, on the front page,
-//             coupons, places to look.
+//             coupons, places to look (D45-24: the reader clicks a story to pencil its place onto the map).
 //   catalog   Western Surplus & Radio Supply's catalog, in the box on the first day: parts and gear by mail, cheaper than Caliche,
 //             ordered with a money order left in the box with the flag up; the carrier takes it, and the parcel comes one to three
 //             rounds later, on top of the box. Lifted down, a parcel is in both hands, for GARAGE RECEIVING like any other.
@@ -50,6 +52,13 @@ public:
  // The statement of a weekly review (its finding, FS47FreeformSession::StepWeeklyReview), and the county's bill for a tow.
  void PostWeekStatement(int32 Week);
  void PostTowBill(int32 Fee,bool bPaidInCash);
+ // D48-20261110: something of the station's left in the box for the carrier that is no order: the balloon's instrument box in its
+ // mailing bag (FS47Balloon::Mail). Id: once in a game. What: the line the box's panel and the task list say of it. Rounds: the
+ // carrier's rounds after it is taken until Reply comes back to the box. A reply of kind "letter" has its title in Ref and, with
+ // "dollars" in its Goods, a check in it, cashed to the budget when it is taken out. The flag goes up for it as for an order.
+ // False: posted before, or no reply to come.
+ bool PostOut(const FString& Id,const FString& What,int32 InRounds,const FPiece& Reply);
+ bool OutWaiting(const FString& Id) const;
  bool Holds(const FString& Id) const;
  bool Coming(const FString& Id) const;
  bool Ever(const FString& Id) const{return Posted.Contains(Id);}
@@ -59,6 +68,9 @@ public:
  // Anything in the box (what the flag never says).
  bool MailIn() const{return !Box.IsEmpty();}
  bool ParcelOnBox() const;
+ // Taken out of the box and not read yet, oldest first, the catalog last; and a line that says where they are (empty: none).
+ TArray<FPiece> UnreadPieces() const;
+ FString UnreadNote() const;
  int32 RoundsMade() const{return Rounds;}
  int32 IssuesPrinted() const{return Issues.Num();}
  // The carrier's car on the road past SARO now, and standing at the box.
@@ -75,7 +87,16 @@ public:
  // The box: E on it.
  void OpenBox();
  void OpenCatalog();
- void OpenLedger(int32 No);
+ // Sheet: 0 the front page, 1 inside ("Turn the page" goes between them).
+ void OpenLedger(int32 No,int32 Sheet=0);
+ // D45-24-20261110 (Tom: «trykke på en artikkel med merkelig info og få stedet på kartet»): the reader circles an article and its
+ // lead goes on the map as a place heard of (FS47Places::Hear; the wagon by FS47Predecessor::HearOf), with a word to say so.
+ // Reading a paper marks nothing by itself any more. True: it was not on the map before. No: the issue (0 for F10's paper).
+ bool MarkLead(int32 No,const FString& Lead,const FString& Head);
+ // Whether a lead is on the map already, heard of or found: what the page rings in pencil. Nothing of its own is saved.
+ bool LeadMarked(const FString& Lead) const;
+ // The articles of a printed paper that point somewhere, with their sheets (the tests read them).
+ TArray<S47Ledger::FLeadRef> IssueLeads(int32 No) const;
  // What the Caliche counter charges for a supply with this week's coupon clipped (Base without one), and the motel's room.
  int32 CounterPrice(const FString& Item,int32 Base) const;
  int32 MotelPrice(int32 Base) const;
@@ -132,14 +153,20 @@ private:
  bool bTest=false,bFlag=false,bCatalog=false,bBound=false,bPrimed=false;
  TArray<FPiece> Box,Pending,Fetched;
  TSet<FString> Posted,ReadIssues;
+ // Taken out of the box and not yet read (ids of Fetched): Dr. Ward's is read once it has left the OPS tray.
+ TSet<FString> Unread;
  // An order: written and left in the box (Picked 0), or picked up by the carrier on that day and due at the round on or after Due.
  struct FOrder{int32 Serial=0,Paid=0,Picked=0,Due=0;TMap<FString,int32> Goods;};
  TArray<FOrder> Orders;
  struct FClip{FString Id,What;int32 Price=0,Until=0;};
+ // D48-20261110: left in the box for the carrier (PostOut): taken on the next round, its reply then pending for its due day.
+ struct FOut{FString Id,What;int32 Rounds=1;FPiece Reply;};
+ TArray<FOut> Outbound;
  TArray<FClip> Coupons;
  // A printed paper: its front page as printed and the templates it used, the sheriff's lines from the week's findings, and whether
- // the trucker's thanks was in it.
- struct FKept{int32 No=0,Day=0;bool bThanks=false;TArray<FString> Heads,Bodies,Leads,Keys,Log;TArray<int32> LogAgo;};
+ // the trucker's thanks was in it. Photo (D46-1-20261110): the front page's picture of the lead's place from the world, a small grey
+ // JPEG data URL; empty until the world could be photographed by day (then the drawn picture is printed).
+ struct FKept{int32 No=0,Day=0;bool bThanks=false;TArray<FString> Heads,Bodies,Leads,Keys,Log;TArray<int32> LogAgo;FString Photo;};
  TArray<FKept> Issues;
  TArray<FSeen> Seen;
  int32 SeenCount=-1;
@@ -157,8 +184,19 @@ private:
  void NoteFindings();
  bool PlaceOf(const FString& Id,const FString& Text,bool bHere,FString& OutPlace,FString& OutId) const;
  void PrintLedger(int32 OnDay);
+ // D46-1-20261110: photograph the lead story's place for the front page: by day, from a few tens of metres, with nothing film-only
+ // shown. False (and nothing kept) when it cannot be done now; PhotoTries counts the attempts that rendered and failed.
+ bool TakePhoto(FKept& K);
+ double PhotoWait=0;
+ TMap<int32,int32> PhotoTries;
  bool IssueOf(int32 No,S47Ledger::FIssue& Out) const;
+ // The paper's panel: a sheet of the issue, the lead buttons for keyboard and pad, the coupons inside, and the page turn.
+ void ShowLedger(const S47Ledger::FIssue& Issue,int32 Sheet,const FString& Title,int32 No);
  int32 NobodyDay(int32 Which) const;
+ // Everything but a parcel out of the box onto the desk, not read yet (the pure part of TakeOut): letters first, the catalog last.
+ TArray<FPiece> Unbox();
+ bool IsUnread(const FPiece& Piece) const;
+ void MarkRead(const FString& Id);
  TArray<FPiece> TakeOut();
  void ReadPiece(const FPiece& Piece);
  void FileDoc(const FPiece& Piece);

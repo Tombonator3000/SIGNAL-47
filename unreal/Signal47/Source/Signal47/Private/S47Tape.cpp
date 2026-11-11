@@ -164,6 +164,9 @@ bool FS47Tape::Hook()
 	if (!M || !M->Web || !M->Inter) return false;
 	const int32 Node = AS47Props::PlacedNode(S47TapeLocal::DeskProp);
 	if (Node < 0) return false;
+	// FIX-20261110: on the hall dresser; without the dresser's model the recorder goes back where it was, on the desk.
+	bHall = AS47Props::PlacedMesh(TEXT("hallDresser")) != nullptr;
+	if (!bHall) if (UStaticMeshComponent* Mesh = AS47Props::PlacedMesh(S47TapeLocal::DeskProp)) { Mesh->SetWorldLocation(S47Three::ToUE(FVector(-3.12, .78, -3.82))); UE_LOG(LogS47Tape, Display, TEXT("S47: tape: no hall dresser in this build, the recorder is on the control room desk")); }
 	FS47Interactable I;
 	I.Id = S47TapeLocal::DeskUse;
 	I.Object = M->Web->ObjAt(Node);
@@ -172,7 +175,7 @@ bool FS47Tape::Hook()
 	I.Label = [this, Guard]() -> FString
 	{
 		if (!Guard.IsValid() || !M || !M->IsFreeform()) return FString();
-		if (bCarried) return TEXT("Put the field recorder back on the desk");
+		if (bCarried) return FString::Printf(TEXT("Put the field recorder back on the %s"), Top());
 		if (Playing()) return TEXT("Stop the tape");
 		return Kept.IsEmpty() ? FString(TEXT("Field recorder / take it with you")) : FString(TEXT("Field recorder / play a cassette, or take it with you"));
 	};
@@ -180,7 +183,7 @@ bool FS47Tape::Hook()
 	I.Examine = [this, Guard]() -> FString
 	{
 		if (!Guard.IsValid()) return FString();
-		return bCarried ? FString(TEXT("The recorder's place on the desk, a clean square in the dust.")) : FString(TEXT("A portable cassette recorder, the kind radio people carry: a meter, a microphone socket, a C-60 in it."));
+		return bCarried ? FString::Printf(TEXT("The recorder's place on the %s, a clean square in the dust."), Top()) : FString(TEXT("A portable cassette recorder, the kind radio people carry: a meter, a microphone socket, a C-60 in it."));
 	};
 	M->Inter->Add(I);
 	M->Web->MarkUsable(Node, I.Id);
@@ -221,7 +224,7 @@ void FS47Tape::UseDesk()
 		if (bRec) Finish();
 		bCarried = false; Show();
 		if (M->Audio) M->Audio->Play(TEXT("click"), .5f, Desk());
-		if (M->UI) M->UI->Toast(Kept.IsEmpty() ? TEXT("Recorder back on the desk.") : TEXT("Recorder back on the desk. Use it to play a cassette."), 4);
+		if (M->UI) M->UI->Toast(Kept.IsEmpty() ? FString::Printf(TEXT("Recorder back on the %s."), Top()) : FString::Printf(TEXT("Recorder back on the %s. Use it to play a cassette."), Top()), 4);
 		M->RequestAutosave();
 		return;
 	}
@@ -263,7 +266,7 @@ bool FS47Tape::ToggleRecord()
 	if (bRec) { Finish(); return true; }
 	if (!bCarried)
 	{
-		if (M->UI) M->UI->Toast(TEXT("The field recorder is on the desk by the array's PC."), 3.5f);
+		if (M->UI) M->UI->Toast(FString::Printf(TEXT("The field recorder is %s."), Where()), 3.5f);
 		return true;
 	}
 	if (!IsValid(M->Audio)) return false;
@@ -289,7 +292,9 @@ void FS47Tape::Heard(const FString& Name, const FS47Sound& O)
 	// The score is not in the room; the radio and the walkie are.
 	if (O.Dest == TEXT("music")) return;
 	float G = O.Gain;
-	if (O.At.IsSet()) G *= GainAt(FVector::Distance(*O.At, Ear()));
+	// M7 (Tom, 9 November): the better field recorder's gun microphone (FS47Openings "field_recorder") hears twice as far
+	const bool bGun = M && M->Freeform && M->Freeform->HasKit(TEXT("field_recorder"));
+	if (O.At.IsSet()) G *= GainAt(FVector::Distance(*O.At, Ear()) * (bGun ? 0.5 : 1.0));
 	else G *= O.Dest == TEXT("radio") || O.Dest == TEXT("radioBus") ? .6f : .5f;
 	if (G < .01f) return;
 	FSound Clip; Clip.At = float(RecT + O.When); Clip.Name = Name; Clip.Gain = G; Clip.Rate = O.Rate; Clip.Lp = O.Lp;
@@ -309,7 +314,7 @@ void FS47Tape::Finish()
 	{
 		Kept.Add(Rec); ++Next;
 		while (Kept.Num() > MostTakes) Kept.RemoveAt(0); // taped over
-		if (M && M->UI) M->UI->Toast(FString::Printf(TEXT("Tape %d stopped at %s. Play it back on the desk at SARO."), Rec.N, *S47TapeLocal::Counter(Rec.Seconds)), 4);
+		if (M && M->UI) M->UI->Toast(FString::Printf(TEXT("Tape %d stopped at %s. Play it back on the %s at SARO."), Rec.N, *S47TapeLocal::Counter(Rec.Seconds), Top()), 4);
 		UE_LOG(LogS47Tape, Display, TEXT("S47: tape %d stopped: %.0f s, %d sounds, %s"), Rec.N, Rec.Seconds, Rec.Sounds.Num(), Rec.Odd.IsEmpty() ? TEXT("nothing else") : *FString::Printf(TEXT("%s at %.1f s (sense %.2f, %s)"), *Rec.Odd, Rec.OddAt, BestSense, *BestSource));
 		if (M) M->RequestAutosave();
 	}
@@ -353,7 +358,7 @@ void FS47Tape::Step(double Dt)
 		{
 			SenseTry = .25;
 			FVector From = FVector::ZeroVector; bool bComing = false;
-			const double Sense = M->Omen->SenseAt(Ear(), 2.4, &From, &bComing);
+			const double Sense = M->Omen->SenseAt(Ear(), M->Freeform && M->Freeform->HasKit(TEXT("field_recorder")) ? 3.6 : 2.4, &From, &bComing);
 			if (Unheard(Sense, M->Omen->Level()) && Sense > BestSense)
 			{
 				BestSense = Sense; Rec.OddAt = float(RecT);
@@ -389,7 +394,7 @@ void FS47Tape::Step(double Dt)
 		if (bOddPlayed && !Tk.bOddHeard && PlayT >= Tk.OddAt + 4)
 		{
 			Tk.bOddHeard = true;
-			M->Freeform->RecordEvidence(FString::Printf(TEXT("tape_%d"), Tk.N), FString::Printf(TEXT("Cassette %d, recorded %s, day %d, %s. Played back on the desk at SARO: at %s on the counter there is %s. I did not hear it out there. It is on the tape."),
+			M->Freeform->RecordEvidence(FString::Printf(TEXT("tape_%d"), Tk.N), FString::Printf(TEXT("Cassette %d, recorded %s, day %d, %s. Played back at SARO: at %s on the counter there is %s. I did not hear it out there. It is on the tape."),
 				Tk.N, *Tk.Where, Tk.Day, *S47TapeLocal::ClockText(Tk.Clock), *S47TapeLocal::Counter(Tk.OddAt), *OddWords(Tk.Odd)));
 			M->RequestAutosave();
 		}

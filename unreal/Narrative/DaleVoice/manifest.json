@@ -1,0 +1,2329 @@
+{
+ "version": 1,
+ "note_nb": "Alle replikker Dale sier i spillet, samlet av build_manifest.py fra kildene (ikke håndført). status voice: én take per linje; alias: samme ord som en tidligere linje eller pakkens recording_alias; template: tekst med kjøretidsdeler, genereres ikke; disabled: skrevet, men slått av. Spillteksten er engelsk og uendret.",
+ "sources": {
+  "story": [
+   "unreal/Narrative/EveningShift/generated/recording_manifest.json",
+   "unreal/Narrative/HorrorStory/generated/recording_manifest.json"
+  ],
+  "freeform_cpp": [
+   "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp",
+   "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp",
+   "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp",
+   "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp",
+   "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp",
+   "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp"
+  ],
+  "director": [
+   "unreal/Signal47/Content/Director/director.json",
+   "unreal/Signal47/Content/Director/scripted/*.json"
+  ],
+  "searched_without_dale_lines": [
+   "S47FieldRadio.cpp (only the player's own key-up lines and self-test strings)",
+   "S47Mail*.cpp",
+   "S47Phone*.cpp",
+   "S47Walkie.cpp",
+   "S47Freeform*.cpp",
+   "S47PredecessorLate.cpp",
+   "Content/Director/director.json"
+  ]
+ },
+ "excluded_nb": "Papir og tekst som ikke er tale: Dales clipboard-liste og lapper (S47PredecessorText Docs, S47BigNight Slip), utskrift av barks på lappen ved telefonen, Wards svar om Dale, spillerens egne walkie-linjer («SARO night to Dale. Come in.», «Go ahead, Dale.»), selvtest-strenger i S47FieldRadio.cpp/S47GearFlicker.cpp og dev-rapporten i S47DevFreeform.cpp.",
+ "statistics": {
+  "by_source": {
+   "evening/story_cue": {
+    "voice": 56,
+    "total": 57,
+    "alias": 1
+   },
+   "horror/story_cue": {
+    "voice": 9,
+    "total": 10,
+    "alias": 1
+   },
+   "freeform/service_line": {
+    "voice": 23,
+    "total": 23
+   },
+   "freeform/bark": {
+    "voice": 28,
+    "total": 28
+   },
+   "freeform/walkie_line": {
+    "voice": 19,
+    "total": 19
+   },
+   "freeform/big_night": {
+    "template": 9,
+    "total": 14,
+    "voice": 5
+   },
+   "freeform/relay": {
+    "template": 16,
+    "total": 16
+   },
+   "freeform/week_case": {
+    "voice": 20,
+    "total": 20
+   },
+   "freeform/director_script": {
+    "disabled": 1,
+    "total": 1
+   }
+  },
+  "by_status": {
+   "voice": 160,
+   "alias": 2,
+   "template": 25,
+   "disabled": 1
+  },
+  "voice_by_channel": {
+   "phone": 78,
+   "walkie": 82
+  },
+  "voice_words": 2795
+ },
+ "template_domains": {
+  "place": {
+   "count": 36,
+   "values": [
+    "the Alderete place",
+    "the old house on the Alderete place",
+    "the Alderete barn",
+    "the SARO building",
+    "the SARO yard",
+    "the array at SARO",
+    "the Sierra Motor Court",
+    "the gas station",
+    "the sheriff's substation",
+    "the laundromat",
+    "the Plaza cinema",
+    "the feed store",
+    "the church",
+    "the souvenir shop",
+    "the 1420 AM studio",
+    "the empty house across from the laundromat",
+    "the deputy's house across from the Plaza",
+    "the souvenir man's house on the east side",
+    "the cook's house at the south end of town",
+    "the waitress's house across from the substation",
+    "the night DJ's house at the south end of the east side",
+    "the radio woman's house south of the feed store",
+    "the trailer past the cook's house",
+    "the Mesa Diner",
+    "the windmill on the Baca lease",
+    "the water tank on the old grade",
+    "the old mine on the west side",
+    "the open ground east of the highway",
+    "the fence past the turnoff",
+    "the line shack",
+    "the cairn on the rise",
+    "the survey stake off the track",
+    "the salt lick and trough",
+    "the flat-top rock west of town",
+    "the remote feeder on the county road",
+    "the lot"
+   ],
+   "source": "unreal/Signal47/Source/Signal47/Private/S47EventPlaces.cpp"
+  },
+  "caller": {
+   "count": 5,
+   "values": [
+    "The night clerk at the Sierra Motor Court",
+    "Somebody in town",
+    "A trucker on the highway",
+    "A caller on the county road",
+    "A rancher on the county road"
+   ],
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp"
+  },
+  "az": {
+   "count": 360,
+   "values": "000-359 (degrees, three digits)",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp"
+  },
+  "el": {
+   "count": 90,
+   "values": "0-89 (degrees)",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp"
+  },
+  "azwords": {
+   "count": 360,
+   "values": "the bearing digit by digit: zero-zero-zero to three-five-nine",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp"
+  },
+  "way": {
+   "count": 8,
+   "values": [
+    "north",
+    "north-east",
+    "east",
+    "south-east",
+    "south",
+    "south-west",
+    "west",
+    "north-west"
+   ],
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp"
+  },
+  "miles": {
+   "count": 9,
+   "values": [
+    "under a mile",
+    "about a mile",
+    "a mile and a half",
+    "about two miles",
+    "about three miles",
+    "about four miles",
+    "about five miles",
+    "about six miles",
+    "a good way"
+   ],
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp"
+  }
+ },
+ "lines": [
+  {
+   "id": "D01_HANDOVER_001",
+   "text": "Reyes? Dale. The logbook should be in front of you.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:52",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_HANDOVER_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Vanlig telefonstemme, rolig og litt tørr. Ingen truende pause."
+  },
+  {
+   "id": "D01_HANDOVER_002",
+   "text": "I headed out early. The service folder is on the desk, under the work order.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:58",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_HANDOVER_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_HANDOVER_003",
+   "text": "The first survey is routine. Check calibration before you let it run.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:64",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_HANDOVER_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_HANDOVER_004",
+   "text": "Did you get something to eat?",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:70",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_HANDOVER_004.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_FOOD_001",
+   "text": "Good. Better than trying to live on the coffee here.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:127",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_FOOD_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_FOOD_002",
+   "text": "I tried that once. Wouldn't recommend it.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:133",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_FOOD_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_NOFOOD_001",
+   "text": "There are crackers in the bottom drawer. Still in the wrapper.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:173",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_NOFOOD_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_NOFOOD_002",
+   "text": "No promises about the coffee. It was here when I came in.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:179",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_NOFOOD_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_BRIEF_001",
+   "text": "Start with the log. I've marked what's done and what's left for you.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:219",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_BRIEF_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_BRIEF_002",
+   "text": "Bank Three has two amber indicators. Amber is normal. Write it down if that changes.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:225",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_BRIEF_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_BRIEF_003",
+   "text": "Your folder lists the local service records and the radio schedule. Get the dated copies. We need something to check our clocks against.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:231",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_BRIEF_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_BRIEF_004",
+   "text": "Operations office is locked. The papers for tonight are already on your desk.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:237",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_BRIEF_004.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_BRIEF_005",
+   "text": "Ward is on call for the morning run. She wants observations she can sign, not our best guess.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:243",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_BRIEF_005.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_BRIEF_006",
+   "text": "You can reach me on the service line. If something doesn't fit the log, call before you throw anything away.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:249",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_BRIEF_006.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D01_BRIEF_007",
+   "text": "All right. Have a good shift.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:255",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D01_BRIEF_007.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Vennlig avslutning med naturlig engelsk prosodi, uten uhyggelig undertone."
+  },
+  {
+   "id": "D11_POWER_PHONE_001",
+   "text": "Dale. You have the service sheet?",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:293",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D11_POWER_PHONE_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D11_POWER_PHONE_002",
+   "text": "Then start with the feeder marked on that sheet. A receiver warning and a supply fault are two different things.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:299",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D11_POWER_PHONE_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D11_POWER_PHONE_003",
+   "text": "The junction station is down the short gravel turnoff. Leave the truck outside the service gate.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:305",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D11_POWER_PHONE_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D11_POWER_PHONE_004",
+   "text": "Use the service check on the cabinet. Note what the affected light does, not just what the indicator says.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:311",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D11_POWER_PHONE_004.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D11_POWER_PHONE_005",
+   "text": "There should be one clear result. If the result is not clear, leave it unresolved and call me.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:317",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D11_POWER_PHONE_005.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D12_POWER_WALKIE_001",
+   "text": "I hear you. Check the cabinet label against the service sheet.",
+   "channel": "walkie",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:350",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D12_POWER_WALKIE_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D12_POWER_WALKIE_002",
+   "text": "If they match, run the check and watch the light at the far end.",
+   "channel": "walkie",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:356",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D12_POWER_WALKIE_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D12_POWER_WALKIE_003",
+   "text": "Write down the result and the time. Keep that for the next check.",
+   "channel": "walkie",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:362",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D12_POWER_WALKIE_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D21_SIGNAL_PHONE_001",
+   "text": "Dale. What did it actually print?",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:395",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_SIGNAL_PHONE_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D21_SIGNAL_PHONE_002",
+   "text": "Minus thirty-nine. On the paper?",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:401",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_SIGNAL_PHONE_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Kort naturlig tenkepause, uten dramatisk gisp."
+  },
+  {
+   "id": "D21_SIGNAL_PHONE_003",
+   "text": "Keep the original. Put the clock reading beside it before you do anything else.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:407",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_SIGNAL_PHONE_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D21_SIGNAL_PHONE_004",
+   "text": "Do not correct the number just because it looks wrong.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:413",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_SIGNAL_PHONE_004.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D21_BEFORE_001",
+   "text": "I've seen numbers that shouldn't have come out of that solver.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:479",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_BEFORE_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D21_BEFORE_002",
+   "text": "I haven't worked out why. I kept the records.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:485",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_BEFORE_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D21_BEFORE_003",
+   "text": "Keep yours too. We can argue about the explanation later.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:491",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_BEFORE_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D21_POWER_001",
+   "text": "Check your inspection card. Put the test time beside the new printout.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:531",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_POWER_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D21_POWER_002",
+   "text": "If you've cleared the supply fault, compare that time with this one.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:537",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_POWER_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D21_END_001",
+   "text": "All right. Put the paper somewhere safe.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:577",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_END_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D21_END_002",
+   "text": "Call me if the next observation disagrees with the first one.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:583",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D21_END_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_OFFICE_PHONE_001",
+   "text": "You found a spare.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:616",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_OFFICE_PHONE_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Tilbakeholden, men menneskelig. Han vet dette fordi spilleren nettopp har fortalt at kontoret er åpnet."
+  },
+  {
+   "id": "D31_OFFICE_PHONE_002",
+   "text": "I should have told you there was more than a service folder.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:622",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_OFFICE_PHONE_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_OFFICE_PHONE_003",
+   "text": "What are you looking at?",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:628",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_OFFICE_PHONE_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_WARD_001",
+   "text": "Ward wants a result somebody else can repeat. She's right to.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:709",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_WARD_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_WARD_002",
+   "text": "I had clippings, bad frames and people who remembered different nights.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:715",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_WARD_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_WARD_003",
+   "text": "I kept the lot until I could put two observations on the same page.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:721",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_WARD_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_TAPE_001",
+   "text": "Watch the pole, not the patch.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:761",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_TAPE_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_TAPE_002",
+   "text": "The patch could be a recording fault. The pole gives you a fixed reference.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:767",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_TAPE_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_TAPE_003",
+   "text": "Use the field sheet. I marked the camera position.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:773",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_TAPE_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_RECORD_001",
+   "text": "I haven't worked through those survey files.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:813",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_RECORD_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_RECORD_002",
+   "text": "The folder in my office is my own. I haven't changed an old report.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:819",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_RECORD_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_RECORD_003",
+   "text": "Keep the originals together. Check whose name is on the signed copy.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:825",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_RECORD_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_END_001",
+   "text": "Start with one thing you can check. Take a photograph from the same place.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:865",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_END_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D31_END_002",
+   "text": "And don't take my word for something just because I wrote it down.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:871",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D31_END_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D41_FIELD_WALKIE_001",
+   "text": "Say that again. The service result and the light disagree?",
+   "channel": "walkie",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:903",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D41_FIELD_WALKIE_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D41_FIELD_WALKIE_002",
+   "text": "You checked the ordinary supply, the backup and the indicator?",
+   "channel": "walkie",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:909",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D41_FIELD_WALKIE_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D41_FIELD_WALKIE_003",
+   "text": "Good. Write down every check you made. Keep that separate from what you think caused it.",
+   "channel": "walkie",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:915",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D41_FIELD_WALKIE_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D41_FIELD_WALKIE_004",
+   "text": "Bring the record back to SARO. Ward will need to read it.",
+   "channel": "walkie",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:921",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D41_FIELD_WALKIE_004.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D51_LAST_PHONE_001",
+   "text": "Reyes? I'm here.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:954",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D51_LAST_PHONE_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D51_LAST_PHONE_002",
+   "text": "If you've got witness statements, keep their exact words with the record.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:960",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D51_LAST_PHONE_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D51_LAST_PHONE_003",
+   "text": "Give Ward what you've actually checked. Leave the rest marked uncertain.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:966",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D51_LAST_PHONE_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøkternt og konkret; ikke en skrekkforteller."
+  },
+  {
+   "id": "D51_LAST_PHONE_004",
+   "text": "Call me when you get back in.",
+   "channel": "phone",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:972",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/D51_LAST_PHONE_004.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Helt vanlig avslutning, uten kunnskap om den kommende slutten."
+  },
+  {
+   "id": "D61_FIXED_FRAGMENT_001",
+   "text": "Reyes? Dale. The logbook should be in front of you.",
+   "channel": "radio",
+   "pack": "evening",
+   "source": "unreal/Narrative/EveningShift/modules/dale.json:1006",
+   "kind": "story_cue",
+   "status": "alias",
+   "alias_of": "D01_HANDOVER_001",
+   "current_take": "DaleVoice/D01_HANDOVER_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Nøyaktig samme opptak som første overleveringsreplikk. Ingen nye ord eller improvisasjon."
+  },
+  {
+   "id": "H01_BRIEF_001",
+   "text": "Check the survey reference before the unattended run. Write down anything you have to change, even if it fixes itself.",
+   "channel": "phone",
+   "pack": "horror",
+   "source": "unreal/Narrative/HorrorStory/modules/ordinary_evening.json:117",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/H01_BRIEF_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+  },
+  {
+   "id": "H01_BRIEF_002",
+   "text": "The camera is beside the east door. Take a reference before you touch the fault.",
+   "channel": "phone",
+   "pack": "horror",
+   "source": "unreal/Narrative/HorrorStory/modules/ordinary_evening.json:123",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/H01_BRIEF_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+  },
+  {
+   "id": "H01_BRIEF_003",
+   "text": "And try your way out while the lights are good. A door on a plan is no use if you have never opened it.",
+   "channel": "phone",
+   "pack": "horror",
+   "source": "unreal/Narrative/HorrorStory/modules/ordinary_evening.json:129",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/H01_BRIEF_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+  },
+  {
+   "id": "H02_BRIEF_001",
+   "text": "The complaint is about the inspection lamp. Just that lamp.",
+   "channel": "walkie",
+   "pack": "horror",
+   "source": "unreal/Narrative/HorrorStory/modules/ordinary_evening.json:230",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/H02_BRIEF_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+  },
+  {
+   "id": "H02_BRIEF_002",
+   "text": "Use the marked service control outside the fence. Leave the locked equipment alone.",
+   "channel": "walkie",
+   "pack": "horror",
+   "source": "unreal/Narrative/HorrorStory/modules/ordinary_evening.json:236",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/H02_BRIEF_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+  },
+  {
+   "id": "H02_BRIEF_003",
+   "text": "Watch the lamp and the indicator separately. Tell me whether they agree.",
+   "channel": "walkie",
+   "pack": "horror",
+   "source": "unreal/Narrative/HorrorStory/modules/ordinary_evening.json:242",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/H02_BRIEF_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+  },
+  {
+   "id": "H04_BRIEF_001",
+   "text": "The service drawer has a spare. Brass tag, OFFICE. I should have put it in the handover.",
+   "channel": "phone",
+   "pack": "horror",
+   "source": "unreal/Narrative/HorrorStory/modules/ordinary_evening.json:450",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/H04_BRIEF_001.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+  },
+  {
+   "id": "H04_BRIEF_002",
+   "text": "Take the field folder. I wrote down where I stood so somebody else could try it.",
+   "channel": "phone",
+   "pack": "horror",
+   "source": "unreal/Narrative/HorrorStory/modules/ordinary_evening.json:456",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/H04_BRIEF_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+  },
+  {
+   "id": "H04_BRIEF_003",
+   "text": "I saw the same shape from two places. I do not know whether it was looking at me.",
+   "channel": "phone",
+   "pack": "horror",
+   "source": "unreal/Narrative/HorrorStory/modules/ordinary_evening.json:462",
+   "kind": "story_cue",
+   "status": "voice",
+   "alias_of": null,
+   "current_take": "DaleVoice/H04_BRIEF_003.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+  },
+  {
+   "id": "SC04_ANNEX_IMPRINT_001",
+   "text": "The camera is beside the east door. Take a reference before you touch the fault.",
+   "channel": "radio",
+   "pack": "horror",
+   "source": "unreal/Narrative/HorrorStory/modules/unified_scenarios.json:877",
+   "kind": "story_cue",
+   "status": "alias",
+   "alias_of": "H01_BRIEF_002",
+   "current_take": "DaleVoice/H01_BRIEF_002.wav",
+   "current_profile": "dale",
+   "delivery_nb": "Fiktiv kollega. Tørr, erfaren, menneskelig. Kun fjernstemme; ingen fysisk Dale eller VHS-forteller."
+  },
+  {
+   "id": "FF_PHONE_first_1",
+   "text": "What. No, wait. The station line. So you are the new one. You have four minutes. I have a soldering iron in my hand and I am not putting it down for you.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:193",
+   "kind": "service_line",
+   "topic": "first",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_work_1",
+   "text": "What is on the card! It is printed! Somebody typed it so that I would not have to say it to you on the telephone!",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:196",
+   "kind": "service_line",
+   "topic": "work",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_work_2",
+   "text": "Point, tune, record, register, file. Amber is normal. If the amber changes you write it down. You do not have a feeling about it. Nobody has ever fixed a receiver with a feeling.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:196",
+   "kind": "service_line",
+   "topic": "work",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_array_1",
+   "text": "Half! You went and counted, or you are guessing? No. Do not tell me. Count them. Then the outer branches, in the order on the sheet, not in the order you like.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:198",
+   "kind": "service_line",
+   "topic": "array",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_array_2",
+   "text": "And when you finish you put my tools back where they were. Himmel. Where they were. I will know.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:198",
+   "kind": "service_line",
+   "topic": "array",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_reyes_1",
+   "text": "No.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:200",
+   "kind": "service_line",
+   "topic": "reyes",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_reyes_2",
+   "text": "I said no. Is this the service line? Then you ask me about service.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:200",
+   "kind": "service_line",
+   "topic": "reyes",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_list_1",
+   "text": "It is a list! I sent somebody to look for a pump in somebody's fence! That is what that was. A pump.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:202",
+   "kind": "service_line",
+   "topic": "list",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_list_2",
+   "text": "Then you leave them wired where they are. They are good tags. Dated, initialed, one to a stop. Do you know how rare that is, in this county? Do you?",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:202",
+   "kind": "service_line",
+   "topic": "list",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_list_3",
+   "text": "Leave them.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:202",
+   "kind": "service_line",
+   "topic": "list",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_wagon_1",
+   "text": "Alone. In that truck, with those brakes, and at what hour? Verdammt. Did you touch it?",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:204",
+   "kind": "service_line",
+   "topic": "wagon",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_wagon_2",
+   "text": "Then you have learned nothing, and it cost you a tank of gas. Stay off that flat. I do not need another form to fill in.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:204",
+   "kind": "service_line",
+   "topic": "wagon",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_message_1",
+   "text": "Every night. About the coffee. About a lamp. Reyes would read me the same number twice because it was funny, and it was not funny.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:206",
+   "kind": "service_line",
+   "topic": "message",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_message_2",
+   "text": "There is a message on my machine. I have played it one time.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:206",
+   "kind": "service_line",
+   "topic": "message",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_message_3",
+   "text": "It said what it said. You are not going to hear it. Go and point your antennas.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:206",
+   "kind": "service_line",
+   "topic": "message",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_hours_1",
+   "text": "You wrote down when it starts? When it stops? Then you have two numbers, which is two more than you had. Nein. I do not want to hear what you think it was.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:208",
+   "kind": "service_line",
+   "topic": "hours",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_hours_2",
+   "text": "Sleep in the building tonight. Door shut. That is not an order. Nobody here can give you an order, apparently.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:208",
+   "kind": "service_line",
+   "topic": "hours",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_eat_1",
+   "text": "Because the telephone rings! What kind of question is that? Somebody at that station calls, at night, and somebody picks up. That is how it is supposed to work.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:210",
+   "kind": "service_line",
+   "topic": "eat",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_eat_2",
+   "text": "Have you eaten? There are crackers in the bottom drawer. Still in the wrapper. You did not hear it from me.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:210",
+   "kind": "service_line",
+   "topic": "eat",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_quit_1",
+   "text": "So hang them! Go! Everybody goes! I have worked with people who could not find their own feet with both hands and they all had somewhere better to be!",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:212",
+   "kind": "service_line",
+   "topic": "quit",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_quit_2",
+   "text": "Not on hook one. Any other hook. Hook one you leave.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:212",
+   "kind": "service_line",
+   "topic": "quit",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_gap_1",
+   "text": "You call the service line about paper? I sign for parts. Ward signs for paper. Ask Ward.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:214",
+   "kind": "service_line",
+   "topic": "gap",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_PHONE_gap_2",
+   "text": "Then the answer is the same, only louder. Not in my drawer. Not on my bench. Ask Ward.",
+   "channel": "phone",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:214",
+   "kind": "service_line",
+   "topic": "gap",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_hello",
+   "text": "Dale, field maintenance. You are the new one. Amber is NORMAL. Do not touch Bank Three. I do not care who you are. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:232",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_filed1",
+   "text": "One job filed. I will alert the newspapers. Now the next one.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:233",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_locker",
+   "text": "Who told you to go in that locker? Nobody. That is who. Leave the mug where it is.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:234",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_tag",
+   "text": "You are out on my survey now? Nobody asked you. You read the tags, you do not add to them. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:235",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_late",
+   "text": "It is after two. Are you in the building? Do not tell me about the sky. Be in the building.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:236",
+   "kind": "bark",
+   "from_day": 3,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_branch",
+   "text": "You mended a branch. I looked at the line from here. It is a clean joint. Genau. That is the first thing anyone has done right out there since April. Do not get used to me saying it.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:237",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_filed10",
+   "text": "Ten jobs. Ward told me, I did not ask her to. It is almost competent. Keep going.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:238",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_hole",
+   "text": "Your log has a hole in it. You put a time on each end of it, in ink, and then you call me. Not before, Mensch.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:239",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_twice",
+   "text": "Twice now. Ward told me. One more and they give your nights to somebody else. After dark you stay in the building. Verstanden?",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:240",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_near",
+   "text": "Three days to Ward's assessment. She reads numbers. I have seen your numbers. Stop looking out the window and file something.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:241",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_wagon",
+   "text": "The deputy called my bench. Somebody has been out at wagon 23, he says, and he has an idea who. Leave that one to the county.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:242",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_mine",
+   "text": "Somebody saw you out at the mine on the west side. That is as far as you go. Not in. Not for a list, not for anybody. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:243",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_pool",
+   "text": "You are still on nights. They had a pool on you at the district. I said three days. Now I owe a man in Socorro five dollars.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:244",
+   "kind": "bark",
+   "from_day": 8,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_kept",
+   "text": "So she kept us. I ran the whole array up and down from my bench, to see if it still moves. It moves. Do not get used to it. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:245",
+   "kind": "bark",
+   "from_day": 1,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_minute",
+   "text": "Your chart has a burst on it at ten to one. Ten to one! Who keeps appointments in this county? You run the control, then you file. Not the other way.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:248",
+   "kind": "bark",
+   "from_day": 12,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_post",
+   "text": "You are asking around Caliche after somebody who is not at their post? The county rang my bench. You are the station, not the county. Write what you saw.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:249",
+   "kind": "bark",
+   "from_day": 12,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_raked",
+   "text": "You walked out on their raked ground? Do not tell me. Write down how wide the circle was and the time, and do not go back. Verstanden?",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:250",
+   "kind": "bark",
+   "from_day": 12,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_away",
+   "text": "Somebody in Caliche is not at their post, the county says. People go to Belen. People come back. You do your card, and you lock the door. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:251",
+   "kind": "bark",
+   "from_day": 9,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_wiped",
+   "text": "The deputy drove past wagon 23. Somebody has been in it since April, he says, and wiped the dash. Not him, not the district. You stay off that flat. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:252",
+   "kind": "bark",
+   "from_day": 15,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_week4",
+   "text": "A week to Ward's numbers. I have shut the pool at the district: nobody would take the other side of it. Do not make me open it again. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:253",
+   "kind": "bark",
+   "from_day": 23,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_van",
+   "text": "Their van is out there with the door open, the deputy says. You do not go and close it. You write down where, and you stay in the building.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:254",
+   "kind": "bark",
+   "from_day": 5,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_copter",
+   "text": "Helicopter low over the land this morning, and two cars that are not the county's. You did not see them. No. You write down that you did, with the time.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:255",
+   "kind": "bark",
+   "from_day": 8,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_thermos",
+   "text": "The attendant says you have the thermos from unit 23. Tag it and put it in the outgoing tray; the district runs it to Socorro. Do not drink from it, Mensch.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:256",
+   "kind": "bark",
+   "from_day": 15,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_trip",
+   "text": "You were out at wagon 23 again, reading the dash? The deputy read it in April. He wrote down the number and not one word of what he thought. Do the same.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:257",
+   "kind": "bark",
+   "from_day": 15,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_inspector",
+   "text": "The county inspector wrote to you? He wrote to my bench too. He wants to know whether the array moves. I said ask the operator. So make it move.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:258",
+   "kind": "bark",
+   "from_day": 22,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_skywatch",
+   "text": "You let the people with the van into my station? They read my logbooks. I know, because the logbooks are in order now, and they never are.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:259",
+   "kind": "bark",
+   "from_day": 5,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_filed",
+   "text": "You filed an assessment. Now the county reads it and rings my bench to ask what it means, and I say ask the operator. Do not make me a liar.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:260",
+   "kind": "bark",
+   "from_day": 8,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BARK_halfway",
+   "text": "Two weeks, and half my array is still lying on its back. Ward reads that line first, the county second, and I read it every morning. Mend something.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:261",
+   "kind": "bark",
+   "from_day": 14,
+   "note": "Also printed (upper case) on the slip by the phone when the walkie is not carried; that copy is paper.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_hail",
+   "text": "SARO night, this is Dale. Come in.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:269",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_hail_again",
+   "text": "Night operator! I know you have the set. Come in!",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:270",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_hail_gone",
+   "text": "Nothing? Fine. Then it goes on a slip by the phone. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:271",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_finally",
+   "text": "Finally. Next time you answer the first time.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:272",
+   "kind": "walkie_line",
+   "note": "Said before a bark when an earlier hail was missed (S47Predecessor.cpp SayBark): two clips in a row.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_again",
+   "text": "Again? What. Nothing? Then take your thumb off the button. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:274",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_enough",
+   "text": "That is four times today. Four! I am turning my set to the wall. Call the service line in the morning. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:275",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_missed",
+   "text": "Now you call! I called you before, on channel one. You keep it on one, and when I call, you answer. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:276",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_driving",
+   "text": "You are driving and talking on my channel? Both hands on the wheel. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:277",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_hours",
+   "text": "You sound wrong. Both times are in the log? Good. Tonight you stay in the building. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:278",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_late_in",
+   "text": "At this hour? You are inside? Good. Stay in. You do not open the door to look at anything. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:279",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_late_out",
+   "text": "After two and you are outside? Nein. I do not want to know why. Go in. Now. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:280",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_midnight",
+   "text": "Do you know what time it is? I know what time it is. Is something on fire? No? Then write it in the log. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:281",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_day",
+   "text": "I am up a pole in the sun with a meter in my teeth. Call the service line like a person. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:282",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_station",
+   "text": "You are standing next to a telephone. A telephone! Use the card, use the telephone, and leave my channel alone.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:283",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_array",
+   "text": "Antennas down, and you call me? The sheet has the order. Read the sheet, then mend them. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:284",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_far",
+   "text": "Where are you, out there with my truck? You bring it back with four tires and gas in it. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:285",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_evening",
+   "text": "What. Is it the amber lamps? The amber is normal. Do the card. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:286",
+   "kind": "walkie_line",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_relay_pre",
+   "text": "The county put a call through to my bench, so now it is your problem.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:288",
+   "kind": "walkie_line",
+   "note": "Frames a stranger's report (S47Predecessor.cpp RelayLine): relay_pre + report + relay_post.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WALKIE_relay_post",
+   "text": "I am not driving out there. Dale out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47PredecessorText.cpp:289",
+   "kind": "walkie_line",
+   "note": "Frames a stranger's report (S47Predecessor.cpp RelayLine): relay_pre + report + relay_post.",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BIG_DaleFirst",
+   "text": "Herrgott. Every dish on remote is looking at {az} this morning, {el} degrees up, like dogs at a door. Not on my log. Not on yours? Good. Then nobody did it.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:147",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "az",
+    "el"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_DaleSlept",
+   "text": "Herrgott. You slept through it? Good for you. Every dish on remote is looking at {az} this morning, {el} degrees up, and the yard lamps are full of dead moths. Not on my log.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:148",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "az",
+    "el"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_DaleLast",
+   "text": "Leave the array where it is until I have read the encoders myself. And if you go out there, you go by daylight, and you take the walkie. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:149",
+   "kind": "big_night",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BIG_HailFirst",
+   "text": "SARO, Dale. Pick up.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:151",
+   "kind": "big_night",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BIG_HailAgain",
+   "text": "SARO! The walkie. Now.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:152",
+   "kind": "big_night",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BIG_HailGiveUp",
+   "text": "Fine. I leave it on the slip by the phone.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:153",
+   "kind": "big_night",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BIG_DaleSee",
+   "text": "Are you seeing this? Bearing {azwords} from the station, low on the horizon, out past {place}. Every dish on remote just swung round to it by itself. Look that way.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:175",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "azwords",
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_DaleNudge",
+   "text": "Get outside and look {way} of the station, over {place}. The sky there is lit like a ballpark. Go and look, before it stops.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:176",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "place",
+    "way"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_DaleArray",
+   "text": "Herrgott. The printer ran by itself: all channels over range, nine seconds of it, every one on {azwords}. And the array is still looking there. I did not tell it to.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:177",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "azwords"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_DaleGo",
+   "text": "Out past {place}, {miles} from the station. Put it on your map. Not tonight: by daylight, with the walkie, and you look at the ground before you walk on it.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:178",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "miles",
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_DaleWard",
+   "text": "And write it in the night log while you still have it: the hour, the bearing, what you saw with your own eyes. Ward wants a case carried through, with times in it. Not stories.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:179",
+   "kind": "big_night",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_BIG_column_dale",
+   "text": "And a boy at the trailer park says a light stood up out past {place} like a fence post a mile high, and the yard lamps went out with it. Boys say things. The lamps I can see.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:114",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_big_column",
+   "text": "A trucker says his lights went out last night by {place}, and the radio sang one note.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:118",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on (Happenings::Tip Passed): between relay_pre and relay_post, unless a CB is at hand.",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_furrow_dale",
+   "text": "The county had three calls before four about something coming down out past {place}. And a boom that woke every dog in Caliche. A boom. Not a plane. I asked them.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:124",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_big_furrow",
+   "text": "A trucker says something came down by {place} last night, with a boom, and lit his mirror up.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:128",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on (Happenings::Tip Passed): between relay_pre and relay_post, unless a CB is at hand.",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_BIG_stones_dale",
+   "text": "And the ranch out past {place} says the cattle went through two fences before the lights went up. Before! Something told them first.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:134",
+   "kind": "big_night",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_big_stones",
+   "text": "A trucker says he saw a string of lights go up slow out by {place} last night.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47BigNight.cpp:138",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on (Happenings::Tip Passed): between relay_pre and relay_post, unless a CB is at hand.",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_WEEK_HookLines_1",
+   "text": "One more thing. Since the dishes went over by themselves, something on the bearing past the Alderete place is chewing my signal.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:52",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HookLines_2",
+   "text": "Every night, a little after two, for a few minutes. Where and when I can tell you. What, I cannot. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:53",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_NightCall",
+   "text": "It's there again. Same bearing.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:55",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningA_1",
+   "text": "Good morning. The Alderete feed shed. The door is lying in the yard in pieces, and it broke outward. From the inside.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:59",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningA_2",
+   "text": "The padlock is still on its chain, still locked. And the floor in there has gone hard and shiny, like a pot out of the kiln.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:60",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningA_3",
+   "text": "But you were busy, I am sure. Nobody pays for a door we did not look at. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:61",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HailFirst",
+   "text": "SARO night. You are at the Alderete place, yes? Answer me.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:65",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HailAgain",
+   "text": "SARO night. Pick up. My needle is doing it again.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:66",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HailGiveUp",
+   "text": "Fine. Do not answer. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:67",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HelpLines_1",
+   "text": "Listen. It is the small shed past the house, the one with the chain. My needle goes to it and stays there.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:69",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HelpLines_2",
+   "text": "If anything comes out of it, you are not standing in the open. The hay in the barn, under the tractor, behind the water tank, the ditch. Low, and no lamp.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:70",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_HelpLines_3",
+   "text": "And the truck: one turn of the key, then you wait. Do not flood the engine. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:71",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningB_1",
+   "text": "The Alderete feed shed. You were there, and you drove off before it broke. Smart, maybe.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:74",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningB_2",
+   "text": "On my side a burst, a few minutes after you left. So now we have a sound, a log and a door lying in the yard. Somebody out there will write to us about it, you will see. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:75",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningC_1",
+   "text": "You stayed. You hid, and you drove when it let you. I did not think you had it in you.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:77",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningC_2",
+   "text": "On the array the same minute as at that shed. Write down every minute of it, now, before you sleep. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:78",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningD_1",
+   "text": "Your truck is standing in the Alderete yard, and you walked home? At night? Out there?",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:80",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningD_2",
+   "text": "Fetch it in daylight. It costs you the morning, and while you are there, you look at that shed. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:81",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningE_1",
+   "text": "Where were you? Hours, and nothing on the set. Your things are lying in the Alderete yard.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:83",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_WEEK_MorningE_2",
+   "text": "No. Do not tell me. Not over the radio. Fetch them in daylight, and then we talk. Out.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47WeekCase.cpp:84",
+   "kind": "week_case",
+   "pack": "freeform",
+   "status": "voice"
+  },
+  {
+   "id": "FF_RELAY_lights_w1",
+   "text": "{caller} reports lights low over {place}.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:155",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "caller",
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_lights_w2",
+   "text": "{caller} says there are lights over {place} again, low and slow, for a few minutes now.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:156",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "caller",
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_lights_w3",
+   "text": "{caller} calls about lights over {place}, and says somebody else on the road saw them too.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:157",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "caller",
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_lights_w4",
+   "text": "{caller} is on the line about {place}. Lights, low, and closer to the road than before.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:158",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "caller",
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_landing",
+   "text": "A rancher says something came down near {place} a while ago, a flash and no sound. He would rather not go and look.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:872",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_second_1",
+   "text": "A second call about {place}. The caller says the lights have not gone, and won't go out to look.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:132",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_second_2",
+   "text": "Another call about {place}. Same man. He says they are lower now.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:133",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_second_3",
+   "text": "Somebody else called about {place}. She wants to know who is working out there at this hour.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:134",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_second_4",
+   "text": "A call about {place}. Could be nothing. The man had been drinking and said so.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47FarmSite.cpp:135",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_hap_1",
+   "text": "A driver says he saw lights come down out past {place} last night. Nobody went to look.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:2120",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_hap_2",
+   "text": "A rancher lost a heifer out by {place}. The vet looked at her and would not say.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:2126",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_hap_3",
+   "text": "A rancher has a cow down out by {place} and wants a vet. He does not like the look of her.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:3172",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_RELAY_hap_4",
+   "text": "The county is looking for a man from Magdalena who did not come home: a blue half-ton pickup, last seen headed toward {place}.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Source/Signal47/Private/S47Happenings.cpp:3404",
+   "kind": "relay",
+   "note": "A stranger's report as Dale passes it on: between relay_pre and relay_post, unless a CB is at hand (S47FieldRadio::Report).",
+   "pack": "freeform",
+   "variables": [
+    "place"
+   ],
+   "status": "template"
+  },
+  {
+   "id": "FF_SCRIPT_example_lights_over_playa_21",
+   "text": "You see those lights over the playa? Write the time down. Now, not later. Over.",
+   "channel": "walkie",
+   "source": "unreal/Signal47/Content/Director/scripted/example_lights_over_playa.json:21",
+   "kind": "director_script",
+   "status": "disabled",
+   "pack": "freeform"
+  }
+ ]
+}

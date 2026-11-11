@@ -36,7 +36,7 @@ namespace
  struct FOriginal {FString Id,Page,Stamp;};
  struct FRun
  {
-  bool Started=false,Done=false,Walking=false,HaveFoot=false,Quarantined=false,TrackShot=false,RxShot=false;bool PrinterAimed=false;
+  bool Started=false,Done=false,Walking=false,HaveFoot=false,Quarantined=false,TrackShot=false,RxShot=false;bool PrinterAimed=false,Aimed=false;
   int32 Stage=0,Job=0,Cursor=0,Cross=0,Knob=0,Checks=0,InitialCash=0,InitialDebt=0,Restores=0;
   double Began=0,At=0,Delay=.25,ProgressAt=0,WalkMetres=0,SampleAt=0,PhotoAt=0,BaseAz=0,BaseEl=0;
   FString Root,Ids[2],PendingPhoto,PickFailure;
@@ -311,7 +311,9 @@ namespace S47FreeformEvidenceTest
    const auto* P=F.ConsoleProfile();if(!Check(M,P&&F.TerminalWindowRendered(),TEXT("actual tracking terminal/card is ready")))return;
    if(!S.TrackShot){S.TrackShot=true;Photo(S.Job==0?TEXT("ui-03-tracking"):TEXT("ui-03b-tracking-pulsar"));Go(8,1.2);return;}S.TrackShot=false;
    S.BaseAz=(P->Az[0]+P->Az[1])*.5;S.BaseEl=J->bGenerated?J->Card.El:FS47Observing::Runs()[J->Source].El;
-   F.AimAtSource();if(!Click(M,TEXT("POINT ARRAY")))return;Close(M);WalkTo(M,{{2.16,-2.15},{0,-2.15}},9);return;
+   // N1110: a Slate button's enabled state follows on the next frame (bound attributes are read at paint), so aim, then click a moment later
+   if(!S.Aimed){F.AimAtSource();S.Aimed=true;Go(8,.25);return;}S.Aimed=false;
+   if(!Click(M,TEXT("POINT ARRAY")))return;Close(M);WalkTo(M,{{2.16,-2.15},{0,-2.15}},9);return;
   }
   if(S.Stage==9){Aim(M,Target(M,TEXT("crtCenter")));Go(10);return;}
   if(S.Stage==10){if(!Use(M,TEXT("crtCenter")))return;S.Knob=0;Go(11,.6);return;}
@@ -377,7 +379,9 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==290)
   {if(F.AudioPlaying())return;if(!Check(M,J->ControlCovered==8&&!J->bAudioReviewed,TEXT("independent negative control is actually heard for8s before interpretation")))return;Aim(M,Target(M,TEXT("ff:audio:retain")));Go(291);return;}
   if(S.Stage==291)
-  {if(!Use(M,TEXT("ff:audio:retain"))||!Check(M,J->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.Budget()==S.InitialCash+20,TEXT("physical RETAIN secures comparison without payment or origin claim")))return;Photo(TEXT("03-physical-original-control"));Go(292);return;}
+  {if(!Use(M,TEXT("ff:audio:retain"))||!Check(M,J->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.Budget()==S.InitialCash+20,TEXT("physical RETAIN secures comparison without payment or origin claim")))return;
+   // Tom, 9 November: RETAIN opens no case; it says the next step, the registration at OPS.
+   if(!Check(M,!(F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen)&&F.FeedbackText().Contains(TEXT("Register comparison: source unresolved"))&&!F.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("RETAIN opens no case and says only the next step: register at OPS")))return;Photo(TEXT("03-physical-original-control"));Go(292);return;}
   if(S.Stage==292){WalkTo(M,{{.42,1.2},{-4.2,1.2},{-4.2,2.49}},30);return;}
   if(S.Stage==30){Aim(M,Target(M,TEXT("opsTerminal")));Go(31);return;}
   if(S.Stage==31){if(!Use(M,TEXT("opsTerminal")))return;Go(32,.6);return;}
@@ -391,17 +395,23 @@ namespace S47FreeformEvidenceTest
    if(!Check(M,!F.RegisterComparison(TEXT("sky"))&&J->Stage==EJob::Recorded&&F.Budget()==S.InitialCash+20,TEXT("unsupported sky-origin interpretation remains refused without a misleading menu choice, credit or stage advance")))return;Go(33);return;
   }
   if(S.Stage==33)
-  {if(!Click(M,TEXT("Source unresolved; retain both measurements"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;Go(330,.6);return;}
+  {
+   if(!Click(M,TEXT("Register comparison: source unresolved"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;
+   // Tom, 9 November: the registration is what opens the case, and says so.
+   if(!Check(M,F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen&&F.FeedbackText().StartsWith(TEXT("CASE OPENED: THE REPEATED INTERVAL")),TEXT("registering the comparison opens THE REPEATED INTERVAL: CASE OPENED")))return;
+   Go(330,.6);return;
+  }
   if(S.Stage==330)
   {
    const auto* C=F.CaseFile().Get(0);
    if(!Click(M,TEXT("CASE BOARD")))return;
-   if(!Check(M,C&&C->bOpen&&!C->bConcluded&&C->Planned<0,TEXT("the reviewed extra-pulse original opens the interval case")))return;Go(331,.8);return;
+   if(!Check(M,C&&C->bOpen&&!C->bConcluded&&C->Planned<0,TEXT("the registered extra-pulse comparison has opened the interval case")))return;Go(331,.8);return;
   }
   if(S.Stage==331)
   {
-   bool Board=false;for(const auto& Root:Roots(M))Board|=Text(Root,TEXT("THE REPEATED INTERVAL"),false)&&Text(Root,TEXT("STILL POSSIBLE"),false)&&Text(Root,TEXT("PREDICTION"),false);
-   if(!Check(M,Board,TEXT("actual case board shows the question, three open explanations and test predictions")))return;Photo(TEXT("03b-case-board"));Go(332,1.2);return;
+   // CHAIN-3-20261109: with no working hunch noted, the board names each test but holds back what it predicts.
+   bool Board=false;for(const auto& Root:Roots(M))Board|=Text(Root,TEXT("THE REPEATED INTERVAL"),false)&&Text(Root,TEXT("STILL POSSIBLE"),false)&&Text(Root,TEXT("NOTE YOUR WORKING HUNCH FIRST"),false)&&!Text(Root,TEXT("ticks vanish"),false);
+   if(!Check(M,Board,TEXT("actual case board shows the question, three open explanations, and no test prediction before a hunch")))return;Photo(TEXT("03b-case-board"));Go(332,1.2);return;
   }
   if(S.Stage==332)
   {

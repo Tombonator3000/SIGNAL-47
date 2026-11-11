@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "id": "attention_hint_visit",
+  "name": "Dale: keep the lights on and stay inside",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the first sabotage ever. What to do if they come to the station. N1110 (attfix): a second line says how to lower it: leave them alone for a day or two.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 6,
+      "do": "line",
+      "who": "dale",
+      "text": "Is your gear acting up since you went out looking at them? That is how it starts. If they ever come right up to the station, keep the lights on and stay inside. The generator is out back of the control room. Over."
+    },
+    {
+      "at": 6,
+      "do": "evidence",
+      "key": "attention_rule_station",
+      "text": "Dale, on the walkie: if they come right up to the station, keep the lights on and stay inside. The standby generator is behind the control room. Leave the lights alone for a day or two and they lose interest."
+    },
+    {
+      "at": 24,
+      "do": "line",
+      "who": "dale",
+      "text": "And leave them be for a few days. Stay away from those lights and they lose interest. Over."
+    }
+  ]
+}

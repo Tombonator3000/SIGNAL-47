@@ -32,5 +32,16 @@ namespace S47FarmWorld
  bool TruckHits(const TArray<FS47Obstacle>& Obstacles,double X,double Z,double Heading,double HalfWidth,double HalfLength,double Shrink=0);
  // Nearest clear spot, same heading, by rings of .5 m up to 30 m. False: none. Out equals In when it is already clear.
  bool NearestClearTruckSpot(const TArray<FS47Obstacle>& Obstacles,double X,double Z,double Heading,double HalfWidth,double HalfLength,double& OutX,double& OutZ);
+ // FARM-GATE-20261109 (S47FarmGate.cpp). The obstacles the farm's mode retires or adds (US47World::ReconcileFarm): slot by index
+ // (Added: -index-1), each with its own value. Each finds its own obstacle again, as it is or retired 1e6 off, at its slot or the
+ // nearest that holds it and is not another entry's, before it is written; one gone from the list is left alone. The slots follow.
+ int32 ControlledSlot(const TArray<FS47Obstacle>& Obstacles,int32 Hint,const FS47Obstacle& Own,const TSet<int32>& Taken);
+ void ApplyControlled(TArray<FS47Obstacle>& Obstacles,TArray<TPair<int32,FS47Obstacle>>& Controlled,bool bFreeform);
+ // The truck's footprint (as FS47DriveController::Hit has it) along the ranch road from road x 10 to 34 through the gate, in a leg
+ // whose frame is Origin (RoadToArea's). False with Why (the first obstacle that holds it, and where) when it does not get through.
+ bool GateSweep(const TArray<FS47Obstacle>& Obstacles,const FVector& Origin,double HalfWidth,double HalfLength,bool bEast,FString& Why);
+ // The live lists, both legs, the truck both ways and (in the area the player is in) the walker both ways. A line each.
+ bool GateLive(US47Main* Main,TArray<FString>& Lines);
+ bool GateSelfTest(TArray<FString>& Lines);
  bool SelfTest(TArray<FString>& Lines);
 }

@@ -1,5 +1,6 @@
 #include "S47Aftermath.h"
 #include "S47Audio.h"
+#include "S47FreeformDirector.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
 #include "S47Herd.h"
@@ -58,6 +59,8 @@ void FS47Aftermath::Begin(const S47J::FObj& Saved)
  if(!FMath::IsFinite(CowFrom)||!FMath::IsFinite(CowUntil)||CowFrom<=0||CowUntil<=CowFrom)CowFrom=CowUntil=0;
  bCowOut=CowFrom>0&&S47J::Bool(Saved,TEXT("cowOut"));bCowNoted=S47J::Bool(Saved,TEXT("cowNoted"));
  Cows=FMath::Max(0,S47J::Int(Saved,TEXT("cows")));
+ // Only a lift that goes with a cow still planned: a lift under way without her plan is nothing.
+ Lift.Begin(CowFrom>0&&!bCowOut?S47J::Obj(Saved,TEXT("lift")):S47J::FObj());
 }
 
 void FS47Aftermath::Stop()
@@ -65,6 +68,7 @@ void FS47Aftermath::Stop()
  // Story's cattle stand where Story left them. Not while the owner or the scene is going away.
  const bool bLive=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->TownLayer.Get());
  if(bLive)for(const auto& H:M->TownLayer->Herds)if(H)H->SetAway(-1);
+ Lift.Stop();
 }
 
 S47J::FObj FS47Aftermath::Save() const
@@ -73,6 +77,7 @@ S47J::FObj FS47Aftermath::Save() const
  if(PcAt>=0){S47J::Set(O,TEXT("pcAt"),PcAt);S47J::Set(O,TEXT("pcUntil"),PcUntil);}
  if(CowFrom>0){S47J::Set(O,TEXT("cowFrom"),CowFrom);S47J::Set(O,TEXT("cowUntil"),CowUntil);if(bCowOut)S47J::Set(O,TEXT("cowOut"),true);if(bCowNoted)S47J::Set(O,TEXT("cowNoted"),true);}
  if(Cows>0)S47J::Set(O,TEXT("cows"),Cows);
+ {const auto L=Lift.Save();if(L->Values.Num()>0)S47J::Set(O,TEXT("lift"),L);}
  return O;
 }
 
@@ -112,6 +117,7 @@ void FS47Aftermath::Step(double Dt)
    UE_LOG(LogTemp,Display,TEXT("S47: aftermath: the workstation clock is right again"));
   }
  }
+ StepLift(Dt,Clock);
  StepCow(Clock);
 }
 
@@ -121,6 +127,34 @@ bool FS47Aftermath::CowWatched() const
  const FString Here=M->Web->Area()==TEXT("diner")?FString(TEXT("road")):M->Web->Area();
  for(const auto& H:M->TownLayer->Herds)if(H&&H->Area==Here&&FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(H->Middle().X,H->Middle().Z))<CowOutOfSight)return true;
  return false;
+}
+
+void FS47Aftermath::StepLift(double Dt,double Clock)
+{
+ if(!M||!M->TownLayer||!M->Web||!M->Player||!M->Freeform)return;
+ // Standing at the pasture: the herd is in the area the player is in, and the player is where the light can be seen from.
+ const FString Here=M->Web->Area()==TEXT("diner")?FString(TEXT("road")):M->Web->Area();
+ double Distance=1e9;
+ for(const auto& H:M->TownLayer->Herds)if(H&&H->Area==Here)Distance=FMath::Min(Distance,FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(H->Middle().X,H->Middle().Z)));
+ const bool bAway=M->bPausedByMenu||M->ModalOpen();
+ const bool bWatching=!bAway&&Distance<=FS47CowLift::MaxDistance+10;
+ const bool bPlanned=CowFrom>0&&!bCowOut&&Clock<CowFrom;
+ const double Hour=FMath::Fmod(Clock,AftermathDay)/3600.;
+ const bool bBusy=M->Freeform->InTutorial()||(M->Freeform->Director.IsValid()&&!M->Freeform->Director->ActiveEvent().IsEmpty());
+ const bool bMay=FS47CowLift::MayBegin(Hour,CowFrom-Clock,Distance,bPlanned,bBusy);
+ if(bAway&&!Lift.Active())return;
+ switch(Lift.Step(bAway?0.:Dt,bMay,bWatching))
+ {
+ case FS47CowLift::EStep::Done:
+  // Seen to go: from now on she is simply not there, as for the silent track, and the finding says what was seen instead of a count.
+  CowFrom=Clock;CowUntil=Clock+FMath::FRandRange(2.5f,4.5f)*AftermathDay;bCowOut=true;bCowNoted=true;
+  if(M->Freeform)M->Freeform->RecordEvidence(CowFindingId(),TEXT("The Alderete pasture, after two in the morning. A pale light over the cattle, a beam down on one cow. She went up turning, slowly, and did not come down. Tag 25. The light went up after her."));
+  M->RequestAutosave();
+  UE_LOG(LogTemp,Display,TEXT("S47: aftermath: the ninth cow was lifted before the player, until clock %.0f"),CowUntil);
+  break;
+ case FS47CowLift::EStep::LetDown:M->RequestAutosave();break;
+ default:break;
+ }
 }
 
 void FS47Aftermath::StepCow(double Clock)
@@ -192,6 +226,17 @@ bool FS47Aftermath::SelfTest(TArray<FString>& Lines)
   const auto Bad=S47J::New();S47J::Set(Bad,TEXT("pcAt"),-5.);S47J::Set(Bad,TEXT("cowFrom"),9.);S47J::Set(Bad,TEXT("cowUntil"),2.);S47J::Set(Bad,TEXT("cowOut"),true);
   FS47Aftermath Broken(nullptr);Broken.Begin(Bad);
   Check(!Broken.PcStuck()&&!Broken.CowOut()&&!Broken.CowPlanned(),TEXT("nonsense in a save means nothing is wrong"));
+ }
+ {
+  // PHOTO-02: a lift under way is saved with her plan, and only with her plan.
+  const auto Planned=S47J::New();S47J::Set(Planned,TEXT("cowFrom"),93600.);S47J::Set(Planned,TEXT("cowUntil"),300000.);S47J::Set(Planned,TEXT("cows"),1);
+  const auto Up=S47J::New();S47J::Set(Up,TEXT("cow"),4);S47J::Set(Up,TEXT("t"),20.);S47J::Set(Planned,TEXT("lift"),Up);
+  FS47Aftermath Mid(nullptr);Mid.Begin(S47J::Read(S47J::Write(Planned)));
+  Check(Mid.CowLifting().Active()&&S47J::Write(Mid.Save())==S47J::Write(Planned),TEXT("a Continue in the middle of the lift brings the same cow back at the same height"));
+  const auto NoPlan=S47J::New();S47J::Set(NoPlan,TEXT("lift"),Up);
+  FS47Aftermath Stray(nullptr);Stray.Begin(S47J::Read(S47J::Write(NoPlan)));
+  Check(!Stray.CowLifting().Active()&&Stray.Save()->Values.Num()==0,TEXT("a lift without her plan is nothing"));
+  Check(FS47CowLift::SelfTest(Lines),TEXT("the lift rules (see the lines above)"));
  }
  return OK;
 }

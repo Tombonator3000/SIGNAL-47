@@ -12,6 +12,7 @@
 #include "S47UI.h"
 #include "S47Wind.h"
 #include "S47Three.h"
+#include "S47SaroClip.h"
 #include "Components/PrimitiveComponent.h"
 #include "CoreGlobals.h"
 #include "Engine/World.h"
@@ -19,7 +20,32 @@
 
 namespace
 {
- const FVector LadderAt(5.25,0,-5.12),RoofAnchor(-1.5,3.5,-1),GateAt(-1.0,0,-20.0);
+ // T16-11 (Tom: "there is no ladder to climb up on the roof with"): a fixed steel ladder on the control room's north wall, there at
+ // SARO all along in Freeform, not only once the roof control is planned (before, it was hidden until then). It stands on the ground
+ // measured under its feet (the old one began at the floor slab's height, 0, and hung in the air wherever the yard is lower; the walk's
+ // fallback for the yard is -0.6; Build logs what it measured), its rails go a metre past the
+ // roof's edge, its rung line is 18 cm off the wall's face (the north slab's outer face, z -4.8 in S47SaroClip's table) on four
+ // standoffs that end on that face, and it is east of the north window band (x -5.4..5.4) and short of the corner (6.3): the old one
+ // stood in front of the window. The plate lies on the roof's edge by its top, where the hands reach from the ladder.
+ constexpr double WallFace=-4.8,WindowEnd=5.4,CornerX=6.3,RoofY=3.6;
+ const FVector LadderAt(5.85,0,-4.98),PlateAt(5.5,3.62,-4.6),RoofAnchor(-1.5,3.5,-1),GateAt(-1.0,0,-20.0);
+ constexpr uint32 LadderColour=0xa3a6a0; // galvanised steel, lighter than the wall so it reads at dusk
+ struct FLadderPart{FString Name;FVector At,Size;};
+ // The ladder's boxes (three metres, centres and sizes) for its feet on the ground at Ground.
+ TArray<FLadderPart> LadderShape(double Ground)
+ {
+  TArray<FLadderPart> Out;
+  const double Top=RoofY+1.0,Length=Top-Ground;
+  for(const double Side:{-1.,1.})Out.Add({Side<0?TEXT("CaseLadderL"):TEXT("CaseLadderR"),FVector(LadderAt.X+Side*.22,Ground+Length*.5,LadderAt.Z),FVector(.06,Length,.06)});
+  int32 Rung=0;
+  for(double Y=Ground+.3;Y<RoofY+.2;Y+=.3)Out.Add({FString::Printf(TEXT("CaseLadderRung%d"),Rung++),FVector(LadderAt.X,Y,LadderAt.Z),FVector(.44,.035,.035)});
+  // from the rails' backs to the wall's face, low and high
+  const double Back=LadderAt.Z+.03,Depth=WallFace-Back;
+  int32 Stay=0;
+  for(const double Side:{-1.,1.})for(const double Y:{Ground+.7,RoofY-.35})
+   Out.Add({FString::Printf(TEXT("CaseLadderStandoff%d"),Stay++),FVector(LadderAt.X+Side*.22,Y,Back+Depth*.5),FVector(.05,.05,Depth)});
+  return Out;
+ }
  // The second logger's field post, out on the east array edge; on whatever the ground is there.
  FVector PostPoint(const US47Main* Main){return FVector(30,Main?US47Night::SaroFloorAt(Main->Web.Get(),30,-26):0.,-26);}
  constexpr double ListenNeed=60;
@@ -27,8 +53,13 @@ namespace
  constexpr double ClimbToFoot=.7,ClimbUp=2.1,ClimbWork=1.5,ClimbDown=1.7,ClimbBack=.6;
  constexpr double ClimbWorkAt=ClimbToFoot+ClimbUp+.6; // the plate is fastened mid-work
  constexpr double ClimbEnd=ClimbToFoot+ClimbUp+ClimbWork+ClimbDown+ClimbBack;
- constexpr double ClimbTop=3.75;                        // the eye at the top: over the plate (3.62), the ladder is 3.3 tall
+ constexpr double ClimbTop=RoofY+.5;                    // the eye at the top: half a metre over the roof's edge and the plate
  double Smooth(double X){X=FMath::Clamp(X,0.,1.);return X*X*(3-2*X);}
+ // CASETEST-20261109: how much of the window is watched, and of the twenty minutes that may go unwatched, how much has.
+ FString Watch(double Coverage,double Gaps,double Span)
+ {
+  return FString::Printf(TEXT("WATCHED %.0f OF %.0f MIN; UNWATCHED %.0f OF %.0f MIN ALLOWED"),FMath::Min(Coverage,Span)/60.,Span/60.,Gaps/60.,FS47FreeformCases::UnwatchedAllowance/60.);
+ }
  FString When(double Clock)
  {
   const int32 Day=FMath::Max(1,int32(FMath::FloorToDouble((Clock-8*3600)/86400.))+1);
@@ -70,7 +101,6 @@ bool FS47CaseFieldTests::ClimbFrame(double Dt,FS47View& Out)
  const double RoofSide=LadderAt.Z-.42,Rail=LadderAt.X;
  const FVector Foot(Rail,ClimbFrom.Y,RoofSide);
  const FVector Top(Rail,ClimbTop,RoofSide);
- const FVector PlateAt(4.7,3.62,-4.6);
  const double FacingYaw=PI; // towards +z, the wall
  const double UpPitch=.38,PlatePitch=FMath::Atan2(PlateAt.Y-Top.Y,FVector2D(PlateAt.X-Top.X,PlateAt.Z-Top.Z).Size());
  const double PlateYaw=FMath::Atan2(-(PlateAt.X-Top.X),-(PlateAt.Z-Top.Z));
@@ -159,16 +189,18 @@ FString FS47CaseFieldTests::Objective()const
  {
   if(!Prepared())return TEXT("FIELD POST, EAST ARRAY EDGE: SET THE CONTACT PICKUPS. If set now: ")+Times+TEXT(". They need two hours before the window; set later, it moves to the following night.");
   const double At=M->Freeform->Clock();
-  if(At<R.End)return TEXT("FIELD POST SET / ")+Times+TEXT(". Do other work; a window slept through records nothing.");
-  return R.Gaps>0?FString(TEXT("FIELD POST: COLLECT THE PICKUPS. Part of the window went by unattended, so this records no comparison.")):FString(TEXT("FIELD POST, EAST ARRAY EDGE: COLLECT THE PICKUPS AND READ THEM."));
+  if(At<R.End)return TEXT("FIELD POST SET / ")+Times+(At<R.Start?FString(TEXT(". Do other work; up to 20 minutes of the window may go unwatched, a window slept through records nothing.")):TEXT(" / ")+Watch(R.Coverage,R.Gaps,R.End-R.Start)+(R.Gaps>FS47FreeformCases::UnwatchedAllowance?TEXT(". Too much has gone unwatched: this run is incomplete and records nothing; read the post after the window to take it again."):TEXT(".")));
+  return !FS47FreeformCases::WindowKept(R.End-R.Start,R.Coverage,R.Gaps)?FString::Printf(TEXT("FIELD POST: COLLECT THE PICKUPS. Incomplete: %.0f minutes of the window went by unwatched (20 allowed), so this records no comparison; the test stays planned to take again."),R.Gaps/60.):FString(TEXT("FIELD POST, EAST ARRAY EDGE: COLLECT THE PICKUPS AND READ THEM."));
  }
  if(!Prepared())return (Test==0?FString(TEXT("SARO NORTH FACADE: CLIMB THE LADDER BY THE CONTROL ROOM WALL AND FASTEN THE ROOF PLATE. ")):FString(TEXT("ARRAY SERVICE GATE: SEAL THE LATCH AND LAY THE TRACKING STRIPS. ")))
   +TEXT("If prepared now: ")+Times+TEXT(". Preparation needs two hours before the window; late preparation moves it to the following night.");
  if(Test==1&&R.bGateTampered)return TEXT("GATE CONTROL DISTURBED / The numbered seal or strips were disturbed after preparation. Closing the gate does not reseal it. OPS / CASE BOARD: cancel this plan and prepare a new control, or inspect after the window to retain the incomplete result.");
  const double Now=M->Freeform->Clock();
- if(Now<R.Start)return FString(Test==0?TEXT("CONTROL ROOM: RETURN TO LISTEN UNDER THE FASTENED ROOF. "):TEXT("SERVICE GATE CONTROL IS SET; INSPECT AFTER THE WINDOW. "))+Times+TEXT(". A time jump through the window supplies no observation.");
- if(Test==1)return Now<R.End?TEXT("SEALED SERVICE GATE: CONTROL WINDOW RUNNING / ")+Times+TEXT(". Leave tape and strips undisturbed; do other work without sleeping through the window.")
-  :TEXT("ARRAY SERVICE GATE: INSPECT THE TAPE AND TRACKING STRIPS. ")+(R.Gaps>0||R.bGateTampered?FString(TEXT("Control incomplete: unobserved time or operator disturbance; inspection records no negative result.")):FString(TEXT("The active window is complete.")));
+ // TONIGHT-NOTE-20261109: said plainly; resting or waiting past the window records nothing (Valid needs it all observed)
+ if(Now<R.Start)return FString(Test==0?TEXT("CONTROL ROOM: RETURN TO LISTEN UNDER THE FASTENED ROOF. "):TEXT("SERVICE GATE CONTROL IS SET; INSPECT AFTER THE WINDOW. "))+Times
+  +(Test==0?TEXT(". One minute of it must be heard from the control room, in wind like the ribbon's; skipped time is not heard.") /* LEAD-FIX-20261110: the roof needs a minute in the room (Step), no allowance */:TEXT(". Stay up through it: up to 20 minutes of it may go unwatched, more counts for nothing."));
+ if(Test==1)return Now<R.End?TEXT("SEALED SERVICE GATE: CONTROL WINDOW RUNNING / ")+Times+TEXT(" / ")+Watch(R.Coverage,R.Gaps,R.End-R.Start)+(R.Gaps>FS47FreeformCases::UnwatchedAllowance?TEXT(". Too much has gone unwatched: this run is incomplete; inspect after the window to take it again."):TEXT(". Leave tape and strips undisturbed; do other work without sleeping through the window."))
+  :TEXT("ARRAY SERVICE GATE: INSPECT THE TAPE AND TRACKING STRIPS. ")+(R.bGateTampered?FString(TEXT("Control incomplete: the seal or strips were disturbed; inspection records no negative result, and the test stays planned to take again.")):!FS47FreeformCases::WindowKept(R.End-R.Start,R.Coverage,R.Gaps)?FString::Printf(TEXT("Control incomplete: %.0f minutes of the window went by unwatched (20 allowed); inspection records no negative result, and the test stays planned to take again."),R.Gaps/60.):FString(TEXT("The active window is complete.")));
  if(Now>=R.End)return TEXT("ROOF CONTROL INCOMPLETE: THE LISTENING WINDOW ENDED. Plan the roof test again; no silence or cause is inferred from missed time.");
  const auto& Wind=S47Wind::Wind();
  return FString::Printf(TEXT("CONTROL ROOM: LISTEN / %.0f OF 60 SECONDS. %s Window ends %s."),R.Listened,
@@ -195,9 +227,9 @@ bool FS47CaseFieldTests::Prepare(int32 Test)
 bool FS47CaseFieldTests::ReadPost()
 {
  if(!Prepared()||R.Test!=2||M->Freeform->Clock()<R.End||!Near(PostPoint(M),2.6))return false;
- const bool Valid=R.Coverage>=R.End-R.Start-.01&&R.Gaps<.001;
+ const bool Valid=FS47FreeformCases::WindowKept(R.End-R.Start,R.Coverage,R.Gaps); // CASETEST-20261109: twenty minutes may go unwatched
  const bool bBoth=M->Freeform->FieldTestExpectsPresent(Line,2);
- const FString Evidence=!Valid?TEXT("Part of the window went by unattended. The pickups' roll is not continuous, so this establishes nothing; repeat the control."):
+ const FString Evidence=!Valid?FString::Printf(TEXT("%.0f minutes of the window went by unwatched, more than the 20 allowed. The pickups' roll is not continuous enough, so this establishes nothing."),R.Gaps/60.):
   bBoth?TEXT("Both pickups' rolls for the full window: the roof and the field post moved at the same minute, three times, a hundred and forty yards apart. Nothing on the road or the wind record accounts for that minute."):
   TEXT("Both pickups' rolls for the full window: the roof moved and the field post did not, at any minute. This excludes a simultaneous disturbance in this window only.");
  const bool Result=M->Freeform->ReportFieldTest(Line,2,Valid,bBoth,Evidence);if(Result)Changed();return Result;
@@ -206,8 +238,8 @@ bool FS47CaseFieldTests::InspectGate()
 {
  if(!Prepared()||R.Test!=1||M->Freeform->Clock()<R.End||!Near(GateAt,2.6))return false;
  MonitorGateIntegrity();
- const bool Valid=R.Coverage>=R.End-R.Start-.01&&R.Gaps<.001&&!R.bGateTampered;
- const FString Evidence=!Valid?TEXT("The sealed-gate control lacks a complete observed world window, or its seal/strips were disturbed between preparation and inspection. No negative result is established; repeat the control."):
+ const bool Valid=FS47FreeformCases::WindowKept(R.End-R.Start,R.Coverage,R.Gaps)&&!R.bGateTampered; // CASETEST-20261109: twenty minutes may go unwatched
+ const FString Evidence=R.bGateTampered?FString(TEXT("The numbered seal or strips were disturbed between preparation and inspection. No negative result is established.")):!Valid?FString::Printf(TEXT("%.0f minutes of the sealed-gate window went by unwatched, more than the 20 allowed. No negative result is established."),R.Gaps/60.):
   R.bGateCrossed?TEXT("After a fully sampled control window: numbered seal torn at the latch and a series of dark crossing marks disturbs the strips on both sides of the gate. The physical disturbance occurred during the active window."):
   TEXT("After a fully sampled control window: numbered seal intact and both strips undisturbed. This excludes a crossing through this controlled gate in this window only.");
  const bool Result=M->Freeform->ReportFieldTest(Line,1,Valid,R.bGateCrossed,Evidence);if(Result)Changed();return Result;
@@ -235,11 +267,26 @@ bool FS47CaseFieldTests::Build()
  const int32 Parent=M->Web->Handle(TEXT("ext.group"));if(Parent<0)return false;
  auto Box=[&](const TCHAR* Name,const FVector& At,const FVector& Size,uint32 Colour)
  {FS47Obj O=M->Freeform->Field->StageBox(Name,At,Size,Colour,Parent);if(O){Objects.Add(O);if(const auto* N=M->Web->Node(O.I))Components.Add(O.I,N->Comp);}return O;};
- Ladder=Box(TEXT("CaseLadderL"),LadderAt+FVector(-.22,1.6,0),FVector(.05,3.3,.05),0x8a8d86);
- LadderParts.Add(Box(TEXT("CaseLadderR"),LadderAt+FVector(.22,1.6,0),FVector(.05,3.3,.05),0x8a8d86));
- for(int32 I=0;I<10;++I)LadderParts.Add(Box(*FString::Printf(TEXT("CaseLadderRung%d"),I),LadderAt+FVector(0,.25+I*.32,0),FVector(.44,.03,.04),0x8a8d86));
- Plate=Box(TEXT("CaseRoofPlate"),FVector(4.7,3.62,-4.6),FVector(.9,.012,.6),0x9a9c97);
- Ribbon=Box(TEXT("CaseWindReferenceRibbon"),LadderAt+FVector(.3,2.4,0),FVector(.03,.05,.45),0xd9b950);
+ {
+  // the ground under both feet, as it is drawn: the walk's floor, then a ray down onto whatever is visibly there
+  auto Ground=[&](double X,double Z)
+  {
+   double Y=M->Player&&M->Player->Floor?M->Player->Floor(X,Z):US47Night::SaroFloorAt(M->Web.Get(),X,Z);if(!FMath::IsFinite(Y))Y=-.6;
+   FCollisionQueryParams Query(SCENE_QUERY_STAT(S47CaseLadderFoot),true,M->Player);
+   FHitResult Hit;
+   if(M->Web->GetWorld()&&M->Web->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(X,Y+1.2,Z),S47Three::ToUE(X,Y-1.2,Z),ECC_Visibility,Query))Y=Hit.ImpactPoint.Z/100.;
+   return Y;
+  };
+  const double Foot=FMath::Max(Ground(LadderAt.X-.22,LadderAt.Z),Ground(LadderAt.X+.22,LadderAt.Z));
+  UE_LOG(LogTemp,Display,TEXT("S47: roof ladder: feet on the ground at %.2f, rails to %.2f, at x %.2f z %.2f"),Foot,RoofY+1.,LadderAt.X,LadderAt.Z);
+  for(const FLadderPart& Part:LadderShape(Foot))
+  {
+   const FS47Obj O=Box(*Part.Name,Part.At,Part.Size,LadderColour);
+   if(!Ladder)Ladder=O;else LadderParts.Add(O);
+  }
+ }
+ Plate=Box(TEXT("CaseRoofPlate"),PlateAt,FVector(.9,.012,.6),0x9a9c97);
+ Ribbon=Box(TEXT("CaseWindReferenceRibbon"),LadderAt+FVector(.265,2.4,-.2),FVector(.03,.05,.45),0xd9b950); // tied to the east rail, out from the wall
  Seal=Box(TEXT("CaseGateSeal"),GateAt+FVector(0,1.05,.02),FVector(1.4,.07,.02),0xe0c23a);
  SealBroken=Box(TEXT("CaseGateSealBroken"),GateAt+FVector(.45,.55,0),FVector(.4,.05,.015),0xd9c23a);
  // Measure the visible native walkway, not just the authored terrain floor.
@@ -295,7 +342,8 @@ void FS47CaseFieldTests::Present()
  {if(!O)return;O.SetVisible(Yes);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))if(IsValid(C))C->SetCollisionEnabled(Yes?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);};
  const bool Here=bActive&&M->IsFreeform()&&M->Web->Area()==TEXT("saro");
  const bool Roof=Here&&PlannedTest()==0,Gate=Here&&PlannedTest()==1;
- Show(Ladder,Roof);Show(Plate,Roof);Show(Ribbon,Roof);for(auto O:LadderParts)Show(O,Roof);
+ // the ladder is the building's, there whatever is planned; the plate and the ribbon belong to the roof control
+ Show(Ladder,Here);Show(Plate,Roof);Show(Ribbon,Roof);for(auto O:LadderParts)Show(O,Here);
  if(Roof&&Plate)Plate.SetRotZ(Prepared()&&!(ClimbT>=0&&ClimbT<ClimbWorkAt)?0:.055); // the plate lies flat when the hands are on it
  if(Roof&&Ribbon){const auto& W=S47Wind::Wind();Ribbon.SetRotY(FMath::Atan2(W.Dir.X,W.Dir.Y));Ribbon.SetRotX(-.5+W.Strength*6+FMath::Sin(W.Time*3)*W.Strength);}
  Show(Strip,Gate);Show(StripBack,Gate);Show(Seal,Gate&&Prepared()&&!R.bGateCrossed&&!R.bGateTampered);Show(SealBroken,Gate&&Prepared()&&(R.bGateCrossed||R.bGateTampered));
@@ -307,6 +355,9 @@ void FS47CaseFieldTests::AdvanceUnobservedTo(double Clock)
 {
  if(!Prepared()||!FMath::IsFinite(Clock)||Clock<=R.LastClock)return;
  MonitorGateIntegrity();
+ // CASETEST-20261109: a crossing in unwatched time tears the seal all the same, so the allowance never turns it into a negative.
+ const double EventAt=R.Start+(R.End-R.Start)*.5;
+ if(R.Test==1&&R.LastClock<EventAt&&Clock>=EventAt&&M&&M->Freeform&&M->Freeform->FieldTestExpectsPresent(Line,1))R.bGateCrossed=true;
  R.Gaps+=Overlap(R.LastClock,Clock,R.Start,R.End);R.LastClock=Clock;R.bHavePlayer=false;
 }
 void FS47CaseFieldTests::MonitorGateIntegrity()
@@ -396,5 +447,32 @@ bool FS47CaseFieldTests::SelfTest(TArray<FString>& Lines)
  FS47CaseFieldTests A(nullptr);A.R.Job=TEXT("field-case3");A.R.Test=0;A.R.Prepared=22*3600.;PeakAfter(A.R.Prepared,A.R.Start,A.R.End);A.R.LastClock=A.R.Start+100;A.R.Listened=23.5;A.R.Impacts=1;A.R.WindReference=.065;A.R.WindDirection=FVector2D(.8,.6);A.R.Gaps=30;
  FS47CaseFieldTests B(nullptr);B.Load(S47J::Read(S47J::Write(A.Save())));
  C(B.R.Job==A.R.Job&&B.R.Test==0&&B.R.Prepared==A.R.Prepared&&B.R.Start==A.R.Start&&B.R.Listened==23.5&&B.R.Impacts==1&&B.R.Gaps==30&&B.R.WindDirection.Equals(A.R.WindDirection,.0001),TEXT("JSON Continue retains physical preparation, wind reference, listening, emitted impacts and gaps"));
- B.ResetPlan();C(B.R.Prepared<0&&B.R.Listened==0,TEXT("new or cancelled plan cannot borrow an earlier control"));return OK;
+ B.ResetPlan();C(B.R.Prepared<0&&B.R.Listened==0,TEXT("new or cancelled plan cannot borrow an earlier control"));
+ // T16-11: the roof ladder against SARO's wall table (S47SaroClip), on the yard's ground and on the slab's
+ TArray<TPair<FString,FBox>> Walls;S47SaroClip::Walls(Walls);
+ for(const double Ground:{-.6,0.})
+ {
+  const TArray<FLadderPart> Parts=LadderShape(Ground);
+  FString Into;int32 Rails=0,Stays=0;double Lowest=1e9,Highest=-1e9,West=1e9,East=-1e9,Gap=0,LastRung=-1e9,WallMost=-1e9;
+  for(const FLadderPart& P:Parts)
+  {
+   const FBox Box(P.At-P.Size*.5,P.At+P.Size*.5);
+   for(const auto& W:Walls)
+   {
+    const FVector Lo=Box.Min.ComponentMax(W.Value.Min),Hi=Box.Max.ComponentMin(W.Value.Max);
+    if(Hi.X-Lo.X>.005&&Hi.Y-Lo.Y>.005&&Hi.Z-Lo.Z>.005)Into=P.Name+TEXT(" in ")+W.Key;
+   }
+   West=FMath::Min(West,Box.Min.X);East=FMath::Max(East,Box.Max.X);
+   if(P.Name.StartsWith(TEXT("CaseLadderRung"))){if(LastRung>-1e8)Gap=FMath::Max(Gap,P.At.Y-LastRung);LastRung=P.At.Y;}
+   else if(P.Name.StartsWith(TEXT("CaseLadderStandoff"))){++Stays;WallMost=FMath::Max(WallMost,Box.Max.Z);}
+   else{++Rails;Lowest=FMath::Min(Lowest,Box.Min.Y);Highest=FMath::Max(Highest,Box.Max.Y);}
+  }
+  C(Into.IsEmpty(),*FString::Printf(TEXT("roof ladder (ground %.1f): no part of it in a wall%s%s"),Ground,Into.IsEmpty()?TEXT(""):TEXT(": "),*Into));
+  C(Rails==2&&FMath::Abs(Lowest-Ground)<.01&&Highest>=RoofY+.9,*FString::Printf(TEXT("roof ladder (ground %.1f): both rails stand on the ground and go %.2f m past the roof's edge"),Ground,Highest-RoofY));
+  C(Stays==4&&FMath::Abs(WallMost-WallFace)<.01,TEXT("roof ladder: its four standoffs end on the north wall's face, so it is fixed to the wall and not hanging off it"));
+  C(West>WindowEnd&&East<CornerX&&Gap>0&&Gap<=.31&&LastRung>RoofY-.35,TEXT("roof ladder: east of the window band and short of the corner, a rung every 30 cm up to the roof"));
+ }
+ const FVector TopEye(LadderAt.X,ClimbTop,LadderAt.Z-.42);
+ C(FVector2D(PlateAt.X-TopEye.X,PlateAt.Z-TopEye.Z).Size()<1.&&ClimbTop>PlateAt.Y&&ClimbTop<RoofY+1.,TEXT("roof ladder: from its top the eye is over the roof's edge and the plate is within reach"));
+ return OK;
 }

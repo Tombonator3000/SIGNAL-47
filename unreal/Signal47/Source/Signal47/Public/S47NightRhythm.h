@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "S47NightTiers.h"
 
 // Freeform only (Tom, 7 November): the evening is work, the small hours are theirs. When they come is its own thing each
 // night: drawn from the game's seed, so a Continue never rerolls it, and growing with the nights played. Pure: no world,
@@ -15,10 +16,11 @@ struct SIGNAL47_API FS47NightRhythm
  // Fully calm: no bodies, no lights, no second calls that lead anywhere. Never two running, none before the third night.
  static bool Quiet(int32 Seed,int32 Night){return RawQuiet(Seed,Night)&&!RawQuiet(Seed,Night-1);}
  // Hours past midnight when bodies can start: late at first, earlier as the nights go on, and earlier for someone already taken.
+ // Never before the night's full tier (S47NightTiers, Tom 9 November): two in the morning, one in the fourth week.
  static double StartHour(int32 Seed,int32 Night,int32 TimesTaken=0)
  {
   const double Base=FMath::Lerp(3.,1.25,Growth(Night))+(Roll(Seed,Night,0x53544152u)-.5)*1.;
-  return FMath::Clamp(Base-FMath::Min(1.,.25*FMath::Max(0,TimesTaken)),EarliestHour,LatestHour);
+  return FMath::Clamp(Base-FMath::Min(1.,.25*FMath::Max(0,TimesTaken)),FMath::Max(EarliestHour,S47NightTiers::FullClockHour(Night)),LatestHour);
  }
  static bool BodyHours(int32 Seed,int32 Night,double HourOfDay,int32 TimesTaken=0)
  {return !Quiet(Seed,Night)&&HourOfDay>=StartHour(Seed,Night,TimesTaken)&&HourOfDay<EndHour;}

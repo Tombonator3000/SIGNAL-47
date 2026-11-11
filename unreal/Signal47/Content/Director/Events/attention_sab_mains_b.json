@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "attention_sab_mains_b",
+  "name": "Burnt dust in the service bay",
+  "notes": "N1110: the second wording of attention_sab_mains, chosen per night by FS47Attention::SabScript (same beats and timing, other thoughts and trace text).",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 28,
+      "do": "light",
+      "kind": "gear",
+      "strength": 0.5,
+      "secs": 3
+    },
+    {
+      "at": 28,
+      "do": "thought",
+      "text": "Something hot ran through that panel. It smells like burnt dust."
+    },
+    {
+      "at": 30,
+      "do": "evidence",
+      "key": "attention_mains_d{day}",
+      "text": "At {clock} the lights sagged and the mains went, with no storm and nothing wrong on the feeder. Afterward the transfer panel smelled of burnt dust. Two of the ceiling tubes in the control room stayed dark for good."
+    },
+    {
+      "at": 171,
+      "do": "tube",
+      "next": 2
+    },
+    {
+      "at": 174,
+      "do": "thought",
+      "text": "Two tubes in here stayed dark. They sell them in pairs at the Caliche shop counter.",
+      "if": [
+        "in_saro"
+      ]
+    }
+  ]
+}

@@ -19,17 +19,23 @@
 #include "S47Audio.h"
 #include "S47FarmHouse.h"
 #include "S47FarmWorld.h"
+#include "S47Drive.h"
+#include "S47World.h"
 #include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47Walker.h"
 #include "S47Web.h"
+#include "S47StreetLamps.h"
+#include "Engine/World.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/UObjectIterator.h"
 #include "Engine/StaticMesh.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
 namespace
@@ -62,7 +68,10 @@ bool FS47FarmNight::Build()
  auto Beam=[&](FLamp& L,const FString& Name,float Cone,float Reach)
  {
   auto* S=NewObject<USpotLightComponent>(M->Web,*Name);S->SetupAttachment(M->Web->GetRootComponent());S->SetMobility(EComponentMobility::Movable);
-  S->SetIntensityUnits(ELightUnits::Candelas);S->SetIntensity(0);S->SetInnerConeAngle(Cone*.6f);S->SetOuterConeAngle(Cone);S->SetAttenuationRadius(Reach*100);S->SetCastShadows(false);S->SetVisibility(false);S->RegisterComponent();
+  S->SetIntensityUnits(ELightUnits::Candelas);S->SetIntensity(0);S->SetInnerConeAngle(Cone*.6f);S->SetOuterConeAngle(Cone);S->SetAttenuationRadius(Reach*100);S->SetCastShadows(false);S->SetVisibility(false);
+  // STREETLAMPS-20261108: the road lamps are high-pressure sodium like every other street lamp (they were white); the sign's gooseneck stays an ordinary bulb
+  if(!Name.Contains(TEXT("SignLamp")))S->SetLightColor(S47StreetLamps::Sodium());
+  S->RegisterComponent();
   L.Light=S;
  };
  const FLinearColor Steel(.09,.09,.085);
@@ -79,8 +88,42 @@ bool FS47FarmNight::Build()
   }
  }
  UE_LOG(LogTemp,Display,TEXT("S47: farm lamps use pole mesh %s, head at %.1f m"),*GetNameSafe(PoleMesh),PoleTop);
+ // M6 part 2: on a wooden pole the lamp is the street lamps' own wood-pole arm (bolted to the pole's side) and cobra head, as the
+ // highway's and Caliche's are (S47StreetLamps, unreal/ArtSource/StreetLamps). Without the models, or -S47FarmLampsOld, the old boxes.
+ UStaticMesh* WoodArm=FParse::Param(FCommandLine::Get(),TEXT("S47FarmLampsOld"))?nullptr:LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Signal47/Art/StreetLamps/SM_StreetLamp_WoodArm.SM_StreetLamp_WoodArm"));
+ UStaticMesh* CobraHead=WoodArm?LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Signal47/Art/StreetLamps/SM_StreetLamp_Head.SM_StreetLamp_Head")):nullptr;
+ auto MeshPart=[&](FLamp& L,const FString& Name,UStaticMesh* Mesh,const FVector& At,const FQuat& Q)
+ {
+  auto* C=NewObject<UStaticMeshComponent>(M->Web,*Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(Mesh);
+  C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
+  S47StreetLamps::MatchLodSlots(C); // STREETLAMP-GLOW: the LOD1/2 slots held WorldGridMaterial (grey from a few metres on)
+  double Mx[16];S47Three::Compose(At,Q,FVector::OneVector,Mx);C->SetWorldTransform(S47Three::MatToUE(Mx));
+  L.Parts.Add(C);L.Offsets.Add(At);return C;
+ };
+ auto WoodLampOn=[&](FLamp& L,const FString& Tag,const FVector& Foot,const FVector& Out,float Candela)
+ {
+  // Out: level, the way the arm reaches. The arm's pivot is the contact point on the pole's side (the pole taken as 13 cm in radius,
+  // as the model is made for), the head on the arm's end (1.2 m), the light 8 mm under the bowl (model_contract.json).
+  const FQuat Q(FVector(0,1,0),FMath::Atan2(-Out.Z,Out.X));
+  const FVector Pivot=Foot+FVector(0,PoleTop,0)+Out*.13,Head=Pivot+Out*1.2;
+  MeshPart(L,TEXT("S47")+Tag+TEXT("WoodArm"),WoodArm,Pivot,Q);
+  UStaticMeshComponent* H=MeshPart(L,TEXT("S47")+Tag+TEXT("Cobra"),CobraHead,Head,Q);
+  // STREETLAMP-GLOW: the lens on every LOD (it was on LOD0's slot alone, so from a few metres on the head was dark) and a halo
+  L.Glow=S47StreetLamps::Dress(M->Web,H);
+  // the light in the head, 3 cm under the bowl, as the highway's (S47ExteriorLighting)
+  L.At=Head+Q.RotateVector(S47StreetLamps::SpotLocal());L.Aim=FVector(Head.X,Foot.Y,Head.Z)+Out*3;L.Candela=Candela;
+  Beam(L,TEXT("S47")+Tag+TEXT("Light"),66,36);
+  UE_LOG(LogTemp,Display,TEXT("S47: %s: wood arm and cobra head at %s, reaching %s"),*Tag,*Head.ToString(),*Out.ToString());
+ };
  auto LampOn=[&](FLamp& L,const FString& Tag,const FVector& Foot,const FVector& Toward,float Candela)
  {
+  if(WoodArm&&CobraHead)
+  {
+   FVector Out=Toward-Foot;Out.Y=0;
+   // (the turn-off's pole stands on the ranch road's line: then the arm reaches over the highway's side of it)
+   if(!Out.Normalize(.25))Out=FVector(-1,0,0);
+   WoodLampOn(L,Tag,Foot,Out,Candela);return;
+  }
   // An arm from the pole's top toward the road, its sodium head at the end.
   const FVector Dir=(Toward-Foot).GetSafeNormal2D();const FVector Top=Foot+FVector(0,PoleTop,0);
   const FVector ArmAt=Top+FVector(Dir.X,0,Dir.Z)*1.2,HeadAt=Top+FVector(Dir.X,-.1,Dir.Z)*2.4;
@@ -96,12 +139,39 @@ bool FS47FarmNight::Build()
  }
  { // Where the service track to the substation leaves the highway: no pole stands on that side, so one of the same kind does.
   FLamp L;
-  LampOn(L,TEXT("TrafoLamp"),TrafoLampWorld(),FVector(7997,0,520),1100);
+  // STREETLAMPS-20261108: its foot on the ground measured under it (it was set at y -1 by hand): the first thing straight down.
+  FVector Foot=TrafoLampWorld();
+  {
+   FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47TrafoLampFoot),true);
+   if(UWorld* World=M->Web->GetWorld();World&&World->LineTraceSingleByChannel(Hit,S47Three::ToUE(Foot.X,Foot.Y+12,Foot.Z),S47Three::ToUE(Foot.X,Foot.Y-12,Foot.Z),ECC_Visibility,Q))
+   {
+    const double Y=S47Three::ToThree(Hit.ImpactPoint).Y;
+    UE_LOG(LogTemp,Display,TEXT("S47: the trafo lamp's pole stands on %s at y %.3f (was %.3f by hand)"),*GetNameSafe(Hit.GetComponent()),Y,Foot.Y);
+    Foot.Y=Y-.05; // set a little into it, as a pole is
+   }
+  }
+  // Tom 9 November: from the highway this lamp stayed dark until one was at the turn-off. It was drawn and lit in the road's area
+  // alone, and the drive south from SARO is in SARO's terms up to z 800 there (the turn-off is SARO's z 812): only once the area
+  // changed at the turn-off did it come on. Now it is road-local, as the farm's lamp is: drawn in SARO's terms too.
+  L.bRoadLocal=true;
+  const FVector FootRoad=Foot-FVector(8000,0,0);
+  LampOn(L,TEXT("TrafoLamp"),FootRoad,FVector(-3,0,520),1100);
+  // Critic round 4: one walked and drove through this pole. A 40 cm square for the walk, a circle for the truck; in SARO's terms too
+  // now that it stands there as well (STREETLAMP-GLOW).
+  for(const TCHAR* Where:{TEXT("road"),TEXT("saro")})
+  {
+   const FVector P=S47FarmWorld::RoadToArea(Where,FootRoad);
+   TArray<FS47Rect>& Walk=M->Web->CollidersMutable(Where);
+   if(!Walk.ContainsByPredicate([](const FS47Rect& R){return R.Id==TEXT("farmNight:trafoLampPole");}))
+   {FS47Rect R;R.MinX=P.X-.2;R.MaxX=P.X+.2;R.MinZ=P.Z-.2;R.MaxZ=P.Z+.2;R.Id=TEXT("farmNight:trafoLampPole");Walk.Add(R);}
+   if(M->World)if(IS47DriveArea* Leg=M->World->LegArea(Where))
+    if(!Leg->Obstacles.ContainsByPredicate([&](const FS47Obstacle& O){return O.bCircle&&FMath::Abs(O.X-P.X)<.01&&FMath::Abs(O.Z-P.Z)<.01;}))Leg->Obstacles.Add(FS47Obstacle::Circle(P.X,P.Z,.3));
+  }
   if(PoleMesh)
   {
    auto* C=NewObject<UStaticMeshComponent>(M->Web,TEXT("S47TrafoLampPole"));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());C->SetStaticMesh(PoleMesh);
    C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetWorldScale3D(PoleScale);C->RegisterComponent();
-   L.Parts.Add(C);L.Offsets.Add(TrafoLampWorld());
+   L.Parts.Add(C);L.Offsets.Add(FootRoad);
   }
   Lamps.Add(L);
  }
@@ -109,6 +179,15 @@ bool FS47FarmNight::Build()
   FLamp L;L.At=SignLampWorld();L.Aim=SignWorld();L.Candela=38;
   Part(L,TEXT("S47SignLampArm"),Substation(0,-7.85,4.45),Size(.05,.05,1.3),Steel);
   L.Head=Part(L,TEXT("S47SignLampHead"),Substation(0,-8.5,4.45),Size(.42,.09,.26),Steel);
+  { // Critic round 4: the gooseneck and its head hung in the air over the sign with no post. A 6 cm steel post now stands from the
+   // measured ground up to the arm's back end, just behind the panel, as such a sign lamp is mounted.
+   const FVector Back=Substation(0,-7.2,4.45);double Ground=Back.Y-4.5;
+   FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SignLampPost),true);
+   if(UWorld* World=M->Web->GetWorld();World&&World->LineTraceSingleByChannel(Hit,S47Three::ToUE(Back.X,Back.Y-.3,Back.Z),S47Three::ToUE(Back.X,Back.Y-8,Back.Z),ECC_Visibility,Q))Ground=S47Three::ToThree(Hit.ImpactPoint).Y;
+   const double Height=Back.Y+.05-Ground;
+   Part(L,TEXT("S47SignLampPost"),FVector(Back.X,Ground+Height/2,Back.Z),Size(.06,Height,.06),Steel);
+   UE_LOG(LogTemp,Display,TEXT("S47: the sign lamp's post stands on %s at y %.3f, %.2f m up to its arm"),*GetNameSafe(Hit.GetComponent()),Ground,Height);
+  }
   Beam(L,TEXT("S47SignLampLight"),58,12);Lamps.Add(L);
  }
  bBuilt=true;return true;
@@ -137,7 +216,14 @@ void FS47FarmNight::SetOn(bool bNow,const FString& Area)
  {
   const bool bShown=L.bRoadLocal?(bRoadSide||Area==TEXT("saro")):bRoadSide;
   if(auto* S=L.Light.Get()){S->SetIntensity(bNow&&bShown?L.Candela:0);S->SetVisibility(bNow&&bShown);}
-  if(auto* Mat=L.Head.Get()){Mat->SetVectorParameterValue(TEXT("Emissive"),bNow?FLinearColor(1,.68,.34)*40.f:FLinearColor::Black);Mat->SetScalarParameterValue(TEXT("EmissivePower"),bNow?1.f:0.f);}
+  // a cobra head: its lens on every LOD and its halo, as bright as the highway's (S47ExteriorLighting: six times the feed)
+  if(L.Glow)S47StreetLamps::Shine(L.Glow,bNow&&bShown?S47StreetLamps::Sodium()*6.f:FLinearColor::Black);
+  if(auto* Mat=L.Head.Get())
+  {
+   Mat->SetVectorParameterValue(TEXT("Emissive"),bNow?FLinearColor(1,.68,.34)*40.f:FLinearColor::Black);Mat->SetScalarParameterValue(TEXT("EmissivePower"),bNow?1.f:0.f);
+   // a cobra head's bowl (M_StreetLamp_Lens), as bright as the highway's (S47ExteriorLighting: six times the feed)
+   Mat->SetVectorParameterValue(TEXT("EmissiveFactor"),bNow&&bShown?S47StreetLamps::Sodium()*6.f:FLinearColor::Black);
+  }
  }
 }
 
@@ -149,6 +235,7 @@ void FS47FarmNight::Stop()
  {
   for(const auto& C:L.Parts)if(C.IsValid()){C->SetVisibility(false);C->SetHiddenInGame(true);}
   if(auto* S=L.Light.Get()){S->SetIntensity(0);S->SetVisibility(false);}
+  if(L.Glow)S47StreetLamps::Shine(L.Glow,FLinearColor::Black);
  }
  LastArea.Empty();bOn=false;
  HazeNear(false);HazeGlow=0;
@@ -167,6 +254,8 @@ void FS47FarmNight::Step(double Dt)
  const bool bAreaChanged=Area!=LastArea;
  if(bAreaChanged){Place(Area);LastArea=Area;}
  if(bAreaChanged||bNight!=bOn)SetOn(bNight,Area);
+ // STREETLAMP-GLOW: the halo keeps its width and brightness for the eye's distance (the lens's value is not set again)
+ for(FLamp& L:Lamps)if(L.Glow)S47StreetLamps::Shine(L.Glow,L.Glow.Emissive);
  BuildHaze();
  StepHaze(Dt,bNight);
  // A menu or a panel holds them: nothing starts in a paused sound context, to all come at once on the way out.
@@ -266,8 +355,9 @@ void FS47FarmNight::StepCattle(double Dt,const FString& Area)
  PlayMoo(M->Audio,Near,bAfraid);++Moos;
 }
 
-static TAutoConsoleVariable<float> CvHazeGlow(TEXT("s47.haze.Glow"),.03f,TEXT("SARO's rooms at night: the air's own glow, seen from outside. 0: none."));
-static TAutoConsoleVariable<float> CvHazeExtra(TEXT("s47.haze.Extra"),.12f,TEXT("SARO's rooms at night: extinction per metre on top of the day's."));
+// T16-13, second round: a little more (Tom 9 Nov), half as much again of both.
+static TAutoConsoleVariable<float> CvHazeGlow(TEXT("s47.haze.Glow"),.045f,TEXT("SARO's rooms at night: the air's own glow, seen from outside. 0: none."));
+static TAutoConsoleVariable<float> CvHazeExtra(TEXT("s47.haze.Extra"),.18f,TEXT("SARO's rooms at night: extinction per metre on top of the day's."));
 static TAutoConsoleVariable<float> CvHazeStart(TEXT("s47.haze.Start"),150.f,TEXT("r.LocalFogVolume.GlobalStartDistance in cm for someone out in the yard at night."));
 static TAutoConsoleVariable<float> CvHazeIndoors(TEXT("s47.haze.Indoors"),.2f,TEXT("SARO's rooms at night: how much of the glow is left for someone inside."));
 

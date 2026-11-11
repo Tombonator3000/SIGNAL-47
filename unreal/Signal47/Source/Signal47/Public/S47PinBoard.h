@@ -14,6 +14,10 @@ struct FS47Doc;
 // and the board never says whether one holds. The ordinary papers (mail, the Ledger, telexes, the night logs, Dr. Ward's letters)
 // lie in one tray by the board, a card that opens it; one that names a place on the land can be pinned up from there as a
 // clipping. Freeform only; saved under "pinBoard".
+// D46-20261110 (Tom: "pinboard: ta bort"): there is no pinboard screen in Freeform any more. B opens nothing there, the book is not
+// listed, nothing is put up and no toast is made. What stays: Papers() (the notebook's DOCUMENTS), AtSaro(), PlaceNamed() for the
+// papers' map marks, the rules and their self-test, and the old "pinBoard" save key, read and written back as it was. The "same
+// minute" question is asked from the session's Step at SARO (FS47FreeformSession::AskWhatCameBack).
 class FS47PinBoard
 {
 public:
@@ -21,12 +25,9 @@ public:
 	~FS47PinBoard();
 	void Begin(const S47J::FObj& Saved);
 	void Stop();
-	void Step(double Dt);
 	S47J::FObj Save() const;
 	// RecordEvidence: where and when a field record was kept (road-local metres, the session's clock). A cassette's is where it ran.
 	void Kept(const FString& FindingId);
-	// The tray by the board: the ordinary papers, to read, and to pin up one that names a place.
-	void OpenTray();
 	int32 UpCount() const { return Up.Num(); }
 	int32 ThreadCount() const { return Links.Num(); }
 	int32 ClipCount() const { return Clips.Num(); }
@@ -37,8 +38,6 @@ public:
 	// The papers in the tray: every document that is not field material on the board.
 	TArray<FS47Doc> Papers() const;
 	bool AtSaro() const;
-	// F10: pin a paper as if chosen from the tray; true if it names a place.
-	bool DevClip(const FString& DocId);
 
 	// ---------- the pure rules (tested) ----------
 	struct FItem
@@ -68,10 +67,8 @@ private:
 	TSet<FString> Up;            // card ids on the board
 	TArray<FString> Clips;       // document ids chosen from the tray, in order
 	TArray<FString> Links;       // the player's own threads ('a|b', sorted)
-	double Look = 0;
 	TSharedPtr<uint8> Life;
 	void List(bool bOn);
-	void PinWhatCameBack(bool bQuiet);
 	bool SaroAt(double& OutX, double& OutZ) const;
 	TArray<FItem> Items() const;
 };

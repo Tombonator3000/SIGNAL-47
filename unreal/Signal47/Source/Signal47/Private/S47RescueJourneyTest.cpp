@@ -90,7 +90,8 @@ void FS47FreeformTest::StepRescueJourney(double Dt)
   if(!Check(W.InventoryCount(TEXT("fuse"))==0&&W.InventoryCount(TEXT("relay"))==0&&W.InventoryCount(TEXT("fuel"))==0,TEXT("SARO stock holds no fuse, relay or fuel can")))return;
   if(!Check(Garage()==0.&&!W.ShopOpen(),TEXT("garage still shut, and the shop is closed at this hour")))return;
   if(!Check(!F.Spend(5,true)&&F.Budget()==0&&F.Debt()==10,TEXT("standing debt refuses ordinary emergency credit without changing the balance")))return;
-  const FVector Selector=W.InteractionPoint(TEXT("ff:generator"));M->Player->Place(Selector.X-1.2,Selector.Z,0);W.Use(TEXT("ff:generator"));
+  // SARO-GEN-RAMP-20261109: the control box on the standby generator outside; stand on the ground east of its housing.
+  const FVector Selector=W.InteractionPoint(TEXT("ff:generator"));M->Player->Place(Selector.X+1.0,Selector.Z,0);W.Use(TEXT("ff:generator"));
   if(!Check(!W.GeneratorRunning(),TEXT("backup generator cannot start without a fuel can")))return;
   F.Use(TEXT("opsTerminal"));
   if(!Check(!M->UI->Modal(),TEXT("unpowered OPS opens no work, so no money can be earned yet")))return;
@@ -221,7 +222,9 @@ void FS47FreeformTest::StepRescueJourney(double Dt)
   RescueClock=F.Clock();
   if(!Click(TEXT("Request roadside return")))return;
   if(!Check(M->Web->Area()==TEXT("saro")&&!Wd->bDriving&&FMath::IsNearlyEqual(W.VehicleFuel(),2.)&&W.ParcelStage()==3&&W.ParcelContents().FindRef(TEXT("fuse"))==1,TEXT("roadside brings truck and loaded fuse to SARO with a two-unit reserve")))return;
-  if(!Check(F.Budget()==0&&F.Debt()==15&&F.Clock()>=RescueClock+900&&F.HasFinding(TEXT("roadside")),TEXT("roadside costs fifteen minutes and no money, and is on record")))return;
+  if(!Check(F.Budget()==0&&F.Debt()==15&&F.Clock()>=RescueClock+900&&F.HasFinding(TEXT("roadside"))&&F.Arrears()==20,TEXT("roadside on an empty account goes on the weekly sheet, takes time, and is on record")))return;
+  // TOW-SHOW-20261109 (Tom): towed home, the truck stands on its pad and is drawn, not just its handle and the parcel on its rack.
+  if(!Check(Wd->TruckAt==TEXT("saro")&&Wd->SaroTruck()&&Wd->SaroTruck()->Group.Shown()&&Wd->TruckHere()==Wd->SaroTruck()&&!(Wd->CabTruck()),TEXT("towed home, the truck is on its pad at SARO and can be seen")))return;
   Go(19,.8);return;
  }
 
@@ -277,7 +280,7 @@ void FS47FreeformTest::StepRescueJourney(double Dt)
  {
   const auto* Current=F.CurrentJob();if(!Current||Current->Stage!=EJ::Chart||F.PrinterProgress()<1)return;
   if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==EJ::Recorded&&!F.CurrentJob()->bAnomaly,TEXT("timed recording and printer retain a routine original")))return;
-  if(!Check(F.RegisterComparison(TEXT("normal"))&&F.Debt()==0&&F.Budget()==5,TEXT("registered work pays $20: the $15 debt first, then $5 cash")))return;
+  if(!Check(F.RegisterComparison(TEXT("normal"))&&F.Debt()==0&&F.Budget()==0&&F.Arrears()==15,TEXT("registered work pays $20: the $15 debt first, then $5 off the weekly sheet")))return;
   RestorePatch=[](const S47J::FObj& State)
   {
    const auto Session=S47J::Obj(State,TEXT("freeform"));const auto Supply=S47J::Obj(Session,TEXT("field"));

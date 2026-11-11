@@ -78,6 +78,11 @@ double S47HudGauges::Wave(double X, double Phase, double Strength)
 	return FMath::Clamp((Clean * (0.25 + 0.75 * K) + Torn * (1 - K) * 0.6) * Ends * (0.2 + 0.8 * K), -1.0, 1.0);
 }
 
+bool S47HudGauges::FiledRefused(const FString& Stamp)
+{
+	return Stamp.Contains(TEXT("NOT FILED"));
+}
+
 FString S47HudGauges::FiledLine(const FString& Clock)
 {
 	const FString C = Clock.TrimStartAndEnd();
@@ -182,6 +187,14 @@ double S47HudGauges::NoteAlpha(double T)
 	return 0;
 }
 
+// D45-20261110: a count going up inside the task (a recording's percent, a printer's feed) leaves the task as it was
+bool S47HudGauges::SameTask(const FString& A, const FString& B)
+{
+	auto Shape = [](const FString& S) { FString O; O.Reserve(S.Len()); for (const TCHAR C : S.TrimStartAndEnd()) if (!FChar::IsDigit(C) && C != TEXT('.') && C != TEXT('%')) O.AppendChar(C); return O; };
+	const FString Words = Shape(A);
+	return !Words.TrimStartAndEnd().IsEmpty() && Words == Shape(B);
+}
+
 FString S47HudGauges::Handwritten(const FString& Text, bool bTitle)
 {
 	int32 Upper = 0, Lower = 0;
@@ -197,6 +210,8 @@ FString S47HudGauges::Handwritten(const FString& Text, bool bTitle)
 		{ TEXT("NORA"), TEXT("Nora") }, { TEXT("VEGA"), TEXT("Vega") }, { TEXT("CALICHE"), TEXT("Caliche") }, { TEXT("ROSWELL"), TEXT("Roswell") },
 		{ TEXT("SOCORRO"), TEXT("Socorro") }, { TEXT("MAGDALENA"), TEXT("Magdalena") }, { TEXT("ALBUQUERQUE"), TEXT("Albuquerque") }, { TEXT("DATIL"), TEXT("Datil") },
 		{ TEXT("MEXICO"), TEXT("Mexico") }, { TEXT("APRIL"), TEXT("April") },
+		// M7-HUD-20261109: the room's own capitals, and the doctor's title
+		{ TEXT("OPS"), TEXT("OPS") }, { TEXT("PC"), TEXT("PC") }, { TEXT("DR"), TEXT("Dr") },
 	};
 	static const TCHAR* Small[] = { TEXT("a"), TEXT("an"), TEXT("and"), TEXT("the"), TEXT("of"), TEXT("to"), TEXT("in"), TEXT("on"), TEXT("at"), TEXT("by"), TEXT("for"), TEXT("or") };
 	FString Out;
@@ -219,7 +234,9 @@ FString S47HudGauges::Handwritten(const FString& Text, bool bTitle)
 		const FString Word = Text.Mid(I, J - I);
 		const bool bAfterApostrophe = I > 0 && Text[I - 1] == TEXT('\'');
 		FString Written;
-		if (bFigure) Written = Word;
+		// (an antenna's or a tape's name, "S-13", "C-60": its letters stay as they are)
+		const bool bLabel = Word.Len() <= 2 && J + 1 < Text.Len() && Text[J] == TEXT('-') && FChar::IsDigit(Text[J + 1]);
+		if (bFigure || bLabel) Written = Word;
 		else
 		{
 			const FString Up = Word.ToUpper();
@@ -241,10 +258,210 @@ FString S47HudGauges::Handwritten(const FString& Text, bool bTitle)
 	return Out;
 }
 
+FString S47HudGauges::CardLine(const FString& Task, int32 Most)
+{
+	FString T = Task.TrimStartAndEnd();
+	if (T.IsEmpty()) return T;
+	Most = FMath::Max(Most, 12);
+	// the screens and tables as the room's labels have them, without the way to them
+	static const TCHAR* Shorter[][2] = {
+		{ TEXT("TRACKING (right-hand PC)"), TEXT("TRACKING PC") }, { TEXT("RECEIVER (centre PC)"), TEXT("RECEIVER PC") },
+		{ TEXT("OPS (corner PC)"), TEXT("OPS") }, { TEXT("REEL DECK (wall table)"), TEXT("REEL DECK") },
+		{ TEXT("ARRAY STATUS (left-hand PC)"), TEXT("ARRAY STATUS") }, { TEXT(" (corner PC)"), TEXT("") }, { TEXT(" (right-hand PC)"), TEXT("") },
+		{ TEXT(" (centre PC)"), TEXT("") }, { TEXT(" (left-hand PC)"), TEXT("") }, { TEXT(" (wall table)"), TEXT("") },
+	};
+	for (const auto& S : Shorter) T.ReplaceInline(S[0], S[1], ESearchCase::CaseSensitive);
+	while (T.ReplaceInline(TEXT("  "), TEXT(" ")) > 0) {}
+	FString Head, Body;
+	if (!T.Split(TEXT(" // "), &Head, &Body))
+	{
+		// the place: what comes before the first " / " or ": ", if it comes early enough to be one
+		const int32 Slash = T.Find(TEXT(" / ")), Colon = T.Find(TEXT(": "));
+		int32 Cut = INDEX_NONE, Skip = 0;
+		if (Slash >= 0 && (Colon < 0 || Slash < Colon)) { Cut = Slash; Skip = 3; }
+		else if (Colon >= 0) { Cut = Colon; Skip = 2; }
+		if (Cut > 0 && Cut <= 28) { Head = T.Left(Cut).TrimStartAndEnd(); Body = T.Mid(Cut + Skip).TrimStartAndEnd(); }
+		else Body = T;
+	}
+	Head.TrimStartAndEndInline();
+	Body.TrimStartAndEndInline();
+	if (Head.Len() > 28) { Body = Head + TEXT(": ") + Body; Head.Reset(); }
+	// a step of something ("FIRST SHIFT 2/5") with a place of its own under it: the place takes the head, with the step's count,
+	// when the whole would not fit ("OPS 1/5 // OPEN DAILY WORK ...")
+	if (!Head.IsEmpty() && Head.Len() + 4 + Body.Len() > Most)
+	{
+		int32 Space = INDEX_NONE;
+		const FString Count = Head.FindLastChar(TEXT(' '), Space) ? Head.Mid(Space + 1) : FString();
+		const int32 Colon = Body.Find(TEXT(": "));
+		if (Count.Contains(TEXT("/")) && Count.Len() <= 5 && FChar::IsDigit(Count[0]) && Colon > 0 && Colon <= 20 && !Body.Left(Colon).Contains(TEXT(".")))
+		{
+			Head = Body.Left(Colon) + TEXT(" ") + Count;
+			Body = Body.Mid(Colon + 2).TrimStartAndEnd();
+		}
+	}
+	const FString Joint = Head.IsEmpty() ? FString() : Head + TEXT(" // ");
+	const int32 Room = Most - Joint.Len();
+	// the task's sentences (and its clauses after a semicolon), a doctor's "DR." not counted as an end
+	TArray<FString> Said;
+	{
+		FString Piece;
+		for (int32 I = 0; I < Body.Len(); ++I)
+		{
+			const TCHAR Ch = Body[I];
+			Piece.AppendChar(Ch);
+			const bool bEnd = (Ch == TEXT('.') || Ch == TEXT(';') || Ch == TEXT('!') || Ch == TEXT('?')) && (I + 1 == Body.Len() || Body[I + 1] == TEXT(' '));
+			const FString Lower = Piece.ToLower();
+			const bool bTitle = Ch == TEXT('.') && (Lower.EndsWith(TEXT(" dr.")) || Lower == TEXT("dr.") || Lower.EndsWith(TEXT(" mr.")) || Lower.EndsWith(TEXT(" st.")));
+			if (bEnd && !bTitle)
+			{
+				FString Done = Piece.TrimStartAndEnd();
+				if (Done.EndsWith(TEXT(";"))) { Done.LeftChopInline(1); Done += TEXT("."); }
+				if (!Done.IsEmpty()) Said.Add(Done);
+				Piece.Reset();
+			}
+		}
+		Piece.TrimStartAndEndInline();
+		if (!Piece.IsEmpty()) Said.Add(Piece);
+	}
+	// a sentence cut at a word to fit In characters, and saying so
+	auto Cut = [](const FString& S, int32 In)
+	{
+		FString C = S.Left(FMath::Max(0, In - 3));
+		int32 Space = INDEX_NONE;
+		if (C.Len() < S.Len() && C.FindLastChar(TEXT(' '), Space) && Space > 0) C.LeftInline(Space);
+		while (!C.IsEmpty() && (C.EndsWith(TEXT(",")) || C.EndsWith(TEXT(":")) || C.EndsWith(TEXT(";")) || C.EndsWith(TEXT(" ")))) C.LeftChopInline(1);
+		return C + TEXT("...");
+	};
+	FString Out;
+	for (const FString& S : Said)
+	{
+		const FString Try = Out.IsEmpty() ? S : Out + TEXT(" ") + S;
+		if (Try.Len() <= Room) { Out = Try; continue; }
+		// one sentence too long on its own; or, with room left, the start of the next (the thing to do after "TANK EMPTY.")
+		if (Out.IsEmpty()) Out = Cut(S, Room);
+		else if (Room - Out.Len() - 1 >= 20) Out += TEXT(" ") + Cut(S, Room - Out.Len() - 1);
+		break;
+	}
+	if (Out.IsEmpty()) return Head.Left(Most);
+	return Joint + Out;
+}
+
+FString S47HudGauges::CardWith(const FString& Line, std::initializer_list<FString> Tails, int32 Most)
+{
+	FString Out = CardLine(Line, Most);
+	for (const FString& Tail : Tails)
+	{
+		if (Tail.IsEmpty()) continue;
+		if (Out.Len() + Tail.Len() <= Most) Out += Tail;
+	}
+	return Out;
+}
+
 double S47HudGauges::BackingStrength(double Daylight)
 {
 	const double Lit = FMath::IsFinite(Daylight) ? FMath::Clamp(Daylight, 0.0, 1.0) : 0.0;
 	return 0.15 + 0.85 * FMath::SmoothStep(0.05, 0.6, Lit);
+}
+
+// ---------- the dark edge (VIGNETTE-STEPS-20261109) ----------
+
+namespace
+{
+	// how far the rim's corners are rounded: 2 a circle, larger nearer the old square corner
+	constexpr double RimCornerPower = 3.0;
+	// vertices across each side's reach: at 1920 pixels and the widest reach, one every 18 pixels or so
+	constexpr int32 RimSteps = 40, LidSteps = 40;
+	constexpr double RimMost = 0.95;
+
+	bool Usable(double X) { return FMath::IsFinite(X); }
+
+	// The axis' stops: the edge, through the reach, and the same from the far side. Sorted, without doubles.
+	void Stops(double Reach, int32 Steps, TArray<double>& Out)
+	{
+		Out.Reset();
+		const double R = FMath::Clamp(Reach, 0.0, 0.5);
+		for (int32 I = 0; I <= Steps; ++I) { Out.Add(R * I / Steps); Out.Add(1.0 - R * I / Steps); }
+		Out.Sort();
+		TArray<double> Kept;
+		for (const double S : Out) if (Kept.IsEmpty() || S - Kept.Last() > 1e-6) Kept.Add(S);
+		Out = MoveTemp(Kept);
+	}
+
+	// Two triangles over a cell, split along the diagonal whose ends are most alike, so the split follows the shade.
+	void Cell(S47HudGauges::FShadeMesh& M, uint32 A, uint32 B, uint32 C, uint32 D)
+	{
+		// A B
+		// C D
+		constexpr float Seen = 0.5f / 255.f;
+		if (M.Alpha[A] < Seen && M.Alpha[B] < Seen && M.Alpha[C] < Seen && M.Alpha[D] < Seen) return;
+		if (FMath::Abs(M.Alpha[A] - M.Alpha[D]) <= FMath::Abs(M.Alpha[B] - M.Alpha[C])) M.Index.Append({ A, B, D, A, D, C });
+		else M.Index.Append({ A, B, C, B, D, C });
+	}
+}
+
+double S47HudGauges::RimShade(double U, double V, double Reach, double Alpha)
+{
+	if (!Usable(U) || !Usable(V) || !Usable(Reach) || !Usable(Alpha) || Reach <= 0.0 || Alpha <= 0.0) return 0.0;
+	const double A = FMath::Min(Alpha, RimMost);
+	// nearness to each edge, 1 at the edge and 0 at the reach, in each side's own share as the old frames were
+	const double Wx = FMath::Clamp(1.0 - FMath::Min(U, 1.0 - U) / Reach, 0.0, 1.0);
+	const double Wy = FMath::Clamp(1.0 - FMath::Min(V, 1.0 - V) / Reach, 0.0, 1.0);
+	const double C = FMath::Min(1.0, FMath::Pow(FMath::Pow(Wx, RimCornerPower) + FMath::Pow(Wy, RimCornerPower), 1.0 / RimCornerPower));
+	// in softly from the inner end, still rising at the edge
+	const double E = C * C * (2.0 - C);
+	// the old frames laid N shades of 1-(1-A)^(1/N) over each other: 1-(1-A)^(share of the frames a point was inside), here without steps
+	return 1.0 - FMath::Pow(1.0 - A, E);
+}
+
+double S47HudGauges::LidShade(double Y, double Deep, double Edge)
+{
+	if (!Usable(Y) || !Usable(Deep) || !Usable(Edge) || Deep <= 0.0 || Edge <= 0.0) return 0.0;
+	const double C = FMath::Clamp(1.0 - Y / Deep, 0.0, 1.0);
+	return 1.0 - FMath::Pow(1.0 - FMath::Min(Edge, 0.999), C);
+}
+
+void S47HudGauges::RimMesh(const FVector2f& Size, double Reach, double Alpha, FShadeMesh& Out)
+{
+	Out.Reset();
+	if (Size.X <= 0.f || Size.Y <= 0.f || !Usable(Reach) || !Usable(Alpha) || Reach <= 0.0 || Alpha <= 0.0) return;
+	TArray<double> Su, Sv;
+	Stops(Reach, RimSteps, Su);
+	Stops(Reach, RimSteps, Sv);
+	const int32 Nu = Su.Num(), Nv = Sv.Num();
+	Out.At.Reserve(Nu * Nv); Out.Alpha.Reserve(Nu * Nv);
+	for (int32 J = 0; J < Nv; ++J)
+		for (int32 I = 0; I < Nu; ++I)
+		{
+			Out.At.Add(FVector2f(float(Su[I] * Size.X), float(Sv[J] * Size.Y)));
+			Out.Alpha.Add(float(RimShade(Su[I], Sv[J], Reach, Alpha)));
+		}
+	for (int32 J = 0; J + 1 < Nv; ++J)
+		for (int32 I = 0; I + 1 < Nu; ++I)
+			Cell(Out, uint32(J * Nu + I), uint32(J * Nu + I + 1), uint32((J + 1) * Nu + I), uint32((J + 1) * Nu + I + 1));
+}
+
+void S47HudGauges::LidMesh(const FVector2f& Size, double Deep, double Edge, FShadeMesh& Out)
+{
+	Out.Reset();
+	if (Size.X <= 0.f || Size.Y <= 0.f || !Usable(Deep) || !Usable(Edge) || Deep <= 0.0 || Edge <= 0.0) return;
+	const double D = FMath::Min(Deep, double(Size.Y));
+	// one strip from each edge: a row of two vertices at each step, the shade the same all along it
+	for (const bool bTop : { true, false })
+	{
+		const uint32 First = uint32(Out.At.Num());
+		for (int32 K = 0; K <= LidSteps; ++K)
+		{
+			const double Y = D * K / LidSteps;
+			const float At = float(bTop ? Y : Size.Y - Y), A = float(LidShade(Y, D, Edge));
+			Out.At.Add(FVector2f(0.f, At)); Out.Alpha.Add(A);
+			Out.At.Add(FVector2f(Size.X, At)); Out.Alpha.Add(A);
+		}
+		for (int32 K = 0; K < LidSteps; ++K)
+		{
+			const uint32 R = First + uint32(2 * K);
+			Cell(Out, R, R + 1, R + 2, R + 3);
+		}
+	}
 }
 
 bool S47HudGauges::SelfTest(TArray<FString>& Lines)
@@ -296,6 +513,7 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	auto Swing = [](double K) { double M = 0; for (int32 P = 0; P < 40; ++P) for (int32 I = 0; I <= 48; ++I) M = FMath::Max(M, FMath::Abs(Wave(I / 48.0, P * 0.3, K))); return M; };
 	Check(Swing(1.0) > Swing(0.5) && Swing(0.5) > Swing(0.1) && Swing(1.0) > 0.9, TEXT("a stronger signal swings wider"));
 	Check(FiledLine(TEXT("08:27")) == TEXT("LOG FILED  08:27") && FiledLine(FString()) == TEXT("LOG FILED"), TEXT("the departure stamp says LOG FILED and the save's clock"));
+	Check(FiledRefused(TEXT("LOG NOT FILED")) && !FiledRefused(FiledLine(TEXT("08:27"))) && !FiledRefused(FiledLine(FString())), TEXT("a departure that was not filed has a stamp of its own colour, LOG FILED does not"));
 	Check(FiledAlpha(-1) == 0 && FiledAlpha(0) == 0 && FMath::IsNearlyEqual(FiledAlpha(0.125), 0.5, 1e-9) && FiledAlpha(1) == 1 && FMath::IsNearlyEqual(FiledAlpha(FiledFor - 0.4), 0.5, 1e-9) && FiledAlpha(FiledFor) == 0
 		&& FiledAlpha(std::numeric_limits<double>::quiet_NaN()) == 0, TEXT("the stamp comes in, holds and is gone after a few seconds"));
 
@@ -363,14 +581,150 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	Check(NoteAlpha(0) == 0 && NoteAlpha(-1) == 0 && NoteAlpha(NoteIn * 0.5) > 0 && bHold && FMath::IsNearlyEqual(NoteAlpha(NoteHold + NoteFade * 0.5), 0.5, 1e-9)
 		&& NoteAlpha(NoteHold + NoteFade) == 0 && NoteAlpha(60) == 0 && NoteAlpha(std::numeric_limits<double>::quiet_NaN()) == 0 && bFalls,
 		TEXT("the task's card stands six seconds after the task changes and fades out over one"));
+	// D45-20261110: the recording's count going up is the same task (the card stood still), another place is a new one
+	Check(SameTask(TEXT("RECEIVER PC // Recording 37% at 100% measurement rate (27/27 antennas)."), TEXT("RECEIVER PC // Recording 38% at 100% measurement rate (27/27 antennas)."))
+		&& SameTask(TEXT("RECEIVER PC // Recording 9%"), TEXT("RECEIVER PC // Recording 10%")) && SameTask(TEXT("PRINTER // Feeding paper (40%)"), TEXT("PRINTER // Feeding paper (41%)"))
+		&& !SameTask(TEXT("RECEIVER PC // Recording 37%"), TEXT("PRINTER // Feeding paper (37%)")) && !SameTask(TEXT("TRACKING PC // POINT THE ARRAY"), TEXT("RECEIVER PC // KEEP IT TUNED"))
+		&& !SameTask(FString(), TEXT("OPS // OPEN DAILY WORK")) && !SameTask(TEXT("OPS // OPEN DAILY WORK"), FString()) && !SameTask(TEXT("12"), TEXT("13")),
+		TEXT("a task whose figures change is the same task, so the card does not flicker with a count; a new place or task brings it in"));
 	Check(Handwritten(TEXT("CALICHE JUNCTION"), true) == TEXT("Caliche Junction") && Handwritten(TEXT("CONTROL ROOM"), true) == TEXT("Control Room")
 		&& Handwritten(TEXT("SARO"), true) == TEXT("SARO") && Handwritten(TEXT("KEEP THE COMPLETED FEEDER RECORD. RETURN TO THE SERVICE TRUCK"), false) == TEXT("Keep the completed feeder record. Return to the service truck")
 		&& Handwritten(TEXT("TRACK THE UNLOGGED RESIDUAL NEAR 1420.4 MHz"), false) == TEXT("Track the unlogged residual near 1420.4 MHz")
 		&& Handwritten(TEXT("back to the truck - on foot"), false) == TEXT("back to the truck - on foot") && Handwritten(TEXT("CALL DALE'S DESK"), false) == TEXT("Call Dale's desk")
 		&& Handwritten(TEXT("ROAD TO THE MESA"), true) == TEXT("Road to the Mesa"),
 		TEXT("the task is written by hand: the place in title case, the task as a sentence, the station's capitals and the figures kept"));
+	// M7-HUD-20261109: OPS and PC as the room has them, an antenna's name as it is painted, the doctor's title
+	Check(Handwritten(TEXT("OPS"), true) == TEXT("OPS") && Handwritten(TEXT("TRACKING PC"), true) == TEXT("Tracking PC")
+		&& Handwritten(TEXT("REPAIR THE WEST BRANCH AT ANTENNA S-13"), false) == TEXT("Repair the west branch at antenna S-13")
+		&& Handwritten(TEXT("A LETTER FROM DR. WARD'S OFFICE"), false) == TEXT("A letter from Dr. Ward's office") && Handwritten(TEXT("DALE'S DESK"), true) == TEXT("Dale's Desk"),
+		TEXT("OPS and PC stay in capitals on the card, S-13 keeps its letter, Dr. Ward his title"));
+	{
+		const FString Long = TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF 2 UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK. STATION GOAL: ARRAY 12 OF 27.");
+		const TCHAR* Tasks[] = {
+			TEXT("TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
+			TEXT("RECEIVER (centre PC): KEEP IT TUNED; COLLECT THE ORIGINAL AT THE PRINTER"),
+			TEXT("FIRST SHIFT 2/5 / TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
+			TEXT("SERVICE TRUCK: TANK EMPTY. GET OUT AND USE THE TRUCK TO CALL ROADSIDE RETURN"),
+			TEXT("S-03 CABLE JUNCTION / LOCAL BOX: INSPECT, ISOLATE AND OPEN THE RELAY HATCH"),
+			TEXT("EAST-WING GARAGE: THE ROLL-UP DOOR IS DOWN. PRESS THE GREEN UP BUTTON BY THE DOOR (OR USE THE HAND CHAIN), THEN TAKE THE PARCEL TO THE RECEIVING TABLE"),
+			TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road."),
+			TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT"),
+			TEXT("ANOTHERVERYLONGWORDWITHOUTANYSPACEATALLTHATGOESONANDONANDONFORMORETHANSEVENTYCHARACTERSINALL"),
+		};
+		bool bFits = CardLine(Long).Len() <= CardMost;
+		for (const TCHAR* Task : Tasks) bFits &= CardLine(Task).Len() <= CardMost && !CardLine(Task).IsEmpty();
+		Check(bFits && CardLine(FString()).IsEmpty(), TEXT("every task fits the card in seventy characters, however long it is"));
+		Check(CardLine(Tasks[0]) == TEXT("TRACKING PC // POINT THE ARRAY TO THE SELECTED SOURCE") && CardLine(Tasks[1]) == TEXT("RECEIVER PC // KEEP IT TUNED. COLLECT THE ORIGINAL AT THE PRINTER")
+			&& CardLine(Tasks[3]).StartsWith(TEXT("SERVICE TRUCK // TANK EMPTY. GET OUT AND USE THE TRUCK")) && CardLine(Tasks[3]).EndsWith(TEXT("..."))
+			&& CardLine(Tasks[6]) == TEXT("MAILBOX // A letter from Dr. Ward's office is in the box at the road.")
+			&& CardLine(TEXT("FRAME 01 // INSPECT THE PRINT")) == TEXT("FRAME 01 // INSPECT THE PRINT"),
+			TEXT("the card names the place and then the task in whole sentences; a doctor's title is no end of one"));
+		Check(CardLine(Tasks[2]) == TEXT("FIRST SHIFT 2/5 // TRACKING PC: POINT THE ARRAY TO THE SELECTED SOURCE")
+			&& CardLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB")) == TEXT("FIRST SHIFT 1/5 // OPS: OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB")
+			&& CardLine(TEXT("FIRST SHIFT 3/5 / RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING")) == TEXT("RECEIVER PC 3/5 // TUNE THE CARD AND PRESS START RECORDING") && CardLine(Tasks[5]) == TEXT("EAST-WING GARAGE // THE ROLL-UP DOOR IS DOWN. PRESS THE GREEN UP...")
+			&& CardLine(Tasks[8]).EndsWith(TEXT("...")), TEXT("a sentence too long for the card is cut at a word and says so; the rest waits in the notebook and the pause menu"));
+		{
+			// Critic round 5: the first shift's card is never cut off. Its steps as FS47FreeformSession says them (TutorialObjective,
+			// JobNextAction), and the printer stays on it.
+			const TCHAR* Shift[] = {
+				TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB"),
+				TEXT("FIRST SHIFT 2/5 / TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
+				TEXT("FIRST SHIFT 3/5 / RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING"),
+				TEXT("FIRST SHIFT 3/5 / TRACKING (right-hand PC): WAIT FOR ENCODER AGREEMENT, THEN USE RECEIVER (centre PC)"),
+				TEXT("FIRST SHIFT 4/5 / RECEIVER (centre PC): KEEP IT TUNED; COLLECT THE ORIGINAL AT THE PRINTER"),
+				TEXT("FIRST SHIFT 4/5 / PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"),
+				TEXT("FIRST SHIFT 5/5 / OPS (corner PC): REGISTER THE ROUTINE RESULT"),
+				TEXT("FIRST SHIFT 6/6 / PRINTER: COLLECT THE LABELLED REGISTERED PACKET"),
+				TEXT("FIRST SHIFT 6/6 / RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER"),
+			};
+			bool bWhole = true;
+			FString Cut;
+			for (const TCHAR* Step : Shift) { const FString Shown = CardLine(Step); if (Shown.EndsWith(TEXT("...")) || Shown.Len() > CardMost) { bWhole = false; Cut = Shown; } }
+			Check(bWhole && CardLine(Shift[4]).EndsWith(TEXT("AT THE PRINTER")), *(FString(TEXT("the first shift's card says each step whole, the printer too ")) + Cut));
+		}
+		Check(CardWith(TEXT("OPS // 2 OBSERVATIONS WAITING."), { FString(TEXT(" WALKIE: ON THE DESK.")), FString(TEXT(" ARRAY 12 OF 27.")) }) == TEXT("OPS // 2 OBSERVATIONS WAITING. WALKIE: ON THE DESK. ARRAY 12 OF 27.")
+			&& CardWith(TEXT("ANTENNA S-13 // REPAIR IT."), { FString(TEXT(" THIS ONE IS FAR TOO LONG TO FIT ON THE CARD AT ALL, REALLY NOT.")), FString(TEXT(" ARRAY 12/27.")) }) == TEXT("ANTENNA S-13 // REPAIR IT. ARRAY 12/27."),
+			TEXT("more is said after the task only while the card has room, a tail too long left out"));
+	}
 	Check(BackingStrength(0) <= 0.15 && BackingStrength(0.05) <= 0.15 && BackingStrength(1) == 1.0 && BackingStrength(0.6) == 1.0 && BackingStrength(0.3) > BackingStrength(0.1)
 		&& BackingStrength(std::numeric_limits<double>::quiet_NaN()) <= 0.15 && BackingStrength(-2) <= 0.15 && BackingStrength(5) == 1.0,
 		TEXT("the dark rim under the clock and the battery is faint at night and full against a bright day sky"));
+	// VIGNETTE-STEPS-20261109: the strain's rim and the lids are smooth shades, not frames on frames. A step is a change of more
+	// than 8 of 255 from one pixel to the next on a 1920 x 1080 view; the old 14 frames at 0.7 jumped 21 of 255 at each edge.
+	{
+		constexpr double Step = 8.0 / 255.0;
+		constexpr double W = 1920.0, H = 1080.0;
+		bool bRimSmooth = true, bRimRising = true, bRimEnds = true;
+		FString Worst;
+		for (const double Reach : { 0.1, 0.22, 0.38 })
+			for (const double A : { 0.3, 0.7, 0.95 })
+			{
+				// along the middle of the left side, the edge to the reach and on into the clear middle
+				double Was = RimShade(0.0, 0.5, Reach, A), Most = 0;
+				bRimEnds &= FMath::IsNearlyEqual(Was, FMath::Min(A, 0.95), 1e-6) && RimShade(Reach, 0.5, Reach, A) < 1e-9 && RimShade(0.5, 0.5, Reach, A) == 0.0;
+				for (int32 X = 1; X <= int32(W / 2); ++X)
+				{
+					const double S = RimShade(X / W, 0.5, Reach, A);
+					bRimRising &= S <= Was + 1e-12;
+					Most = FMath::Max(Most, FMath::Abs(Was - S));
+					Was = S;
+				}
+				// and down from a corner, where the old frames met in a hard diagonal
+				Was = RimShade(0.0, 0.0, Reach, A);
+				for (int32 K = 1; K <= int32(H / 2); ++K)
+				{
+					const double S = RimShade(K / W, K / H, Reach, A);
+					bRimRising &= S <= Was + 1e-12;
+					Most = FMath::Max(Most, FMath::Abs(Was - S));
+					Was = S;
+				}
+				if (Most > Step) { bRimSmooth = false; Worst = FString::Printf(TEXT(" (reach %.2f, alpha %.2f: %.1f of 255)"), Reach, A, Most * 255); }
+			}
+		Check(bRimSmooth && bRimRising && bRimEnds, *(FString(TEXT("the strain's rim darkens smoothly toward the edge, as dark there as before and clear past its reach")) + Worst));
+		// the old frames, for the measure: the same test finds their steps
+		{
+			constexpr int32 Bands = 14;
+			const double A = 0.7, Reach = 0.3, Each = 1.0 - FMath::Pow(1.0 - A, 1.0 / Bands);
+			auto Old = [&](double U) { int32 K = 0; for (int32 I = 1; I <= Bands; ++I) K += U < Reach * I / Bands ? 1 : 0; return 1.0 - FMath::Pow(1.0 - Each, K); };
+			double Most = 0;
+			for (int32 X = 1; X <= int32(W / 2); ++X) Most = FMath::Max(Most, FMath::Abs(Old((X - 1) / W) - Old(X / W)));
+			Check(Most > Step, TEXT("the measure catches the old nested frames' steps"));
+		}
+		// the mesh: one element, its vertices on the shade, fine enough that the blend between them hides them
+		FShadeMesh Mesh;
+		RimMesh(FVector2f(float(W), float(H)), 0.38, 0.95, Mesh);
+		bool bMesh = Mesh.At.Num() == Mesh.Alpha.Num() && Mesh.Index.Num() > 0 && Mesh.Index.Num() % 3 == 0 && Mesh.At.Num() < 65536;
+		for (const uint32 I : Mesh.Index) bMesh &= I < uint32(Mesh.At.Num());
+		bool bOn = true, bFine = true;
+		double Gap = 0;
+		for (int32 I = 0; I < Mesh.At.Num(); ++I)
+		{
+			bOn &= FMath::IsNearlyEqual(double(Mesh.Alpha[I]), RimShade(Mesh.At[I].X / W, Mesh.At[I].Y / H, 0.38, 0.95), 1e-5);
+			// the next vertex along the row, if there is one: how big a change the card blends over how many pixels
+			if (I + 1 < Mesh.At.Num() && Mesh.At[I + 1].Y == Mesh.At[I].Y && Mesh.At[I + 1].X > Mesh.At[I].X)
+			{
+				const double Dx = Mesh.At[I + 1].X - Mesh.At[I].X, Da = FMath::Abs(Mesh.Alpha[I + 1] - Mesh.Alpha[I]);
+				Gap = FMath::Max(Gap, Da);
+				bFine &= Da / Dx <= Step;
+			}
+		}
+		Check(bMesh && bOn && bFine && Gap < 0.12, *FString::Printf(TEXT("the rim is one mesh of %d vertices, drawn as one element, %.1f of 255 at most between neighbours"), Mesh.At.Num(), Gap * 255));
+		RimMesh(FVector2f(float(W), float(H)), 0.0, 0.7, Mesh);
+		const bool bNoReach = Mesh.Index.IsEmpty();
+		RimMesh(FVector2f(float(W), float(H)), 0.3, 0.0, Mesh);
+		Check(bNoReach && Mesh.Index.IsEmpty() && RimShade(0, 0, std::numeric_limits<double>::quiet_NaN(), 0.7) == 0.0, TEXT("no rim, no mesh: nothing is drawn while calm"));
+		// the lids: darkest at the screen's edge, smooth to their reach, the same as the old 12 bands at the edge
+		bool bLids = true;
+		for (const double Lids : { 0.3, 0.6, 1.0 })
+		{
+			const double Edge = FMath::Lerp(0.8, 0.985, Lids), Deep = H * 0.5 * FMath::Min(1.0, Lids * 1.08);
+			double Was = LidShade(0, Deep, Edge);
+			bLids &= FMath::IsNearlyEqual(Was, Edge, 1e-6) && LidShade(Deep, Deep, Edge) < 1e-9;
+			for (int32 Y = 1; Y <= int32(Deep); ++Y) { const double S = LidShade(Y, Deep, Edge); bLids &= S <= Was + 1e-12 && Was - S <= Step; Was = S; }
+		}
+		LidMesh(FVector2f(float(W), float(H)), H * 0.5, 0.985, Mesh);
+		bLids &= Mesh.At.Num() == 2 * 2 * (LidSteps + 1) && Mesh.Index.Num() > 0 && Mesh.Index.Num() % 3 == 0;
+		Check(bLids, TEXT("the heavy lids are one smooth shade each from the top and the bottom, as dark at the edge as before"));
+	}
 	return bOk;
 }

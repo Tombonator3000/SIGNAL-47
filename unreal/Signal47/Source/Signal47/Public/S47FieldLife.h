@@ -64,6 +64,27 @@ public:
  static double FlatChance(double Mps,ES47SurfaceKind Kind);
  // How far the wheels have dug in now (0 to 1: stuck at 1), for the sound and the tests.
  double Bogging() const{return Bog;}
+ // STUCK-GRACE-20261109 (Tom: at least 10 to 15 seconds of driving before it sinks again; it sank again the moment it was dug
+ // out). Out by the spade or the come-along, the brush is under the wheels: it cannot sink before it has been driven GraceSeconds
+ // in the cab AND GraceMetres, the later of the two, so standing in the sand with the wheels spinning never runs it out. The way to
+ // firm ground is measured at the dig and the metres are stretched to reach it. After that, still in soft sand, the wheels dig in
+ // slowly at first and harder over ReturnSeconds, and it says so first: never stuck sooner than WarnLead seconds after the warning.
+ // Saved while it runs (the dig's autosave would otherwise lose it).
+ static constexpr double GraceSeconds=12,GraceMetres=40,ReturnSeconds=8,WarnLead=2.5,FirmReach=80;
+ enum class ESand:uint8{None,Warn,Stuck};
+ // One step of the sand on the wheels, with the grace and its warning (pure: no world; the tests run it). DigScale: the tires'
+ // own rate of digging in (FS47Outfit), on the digging only.
+ ESand SandStep(double Dt,double Soft,double Load,double Mps,bool bReverse,double DigScale=1);
+ // Out of the sand by the player's own hand: the grace starts. FirmMetres: how far firm ground lies (<0: not measured).
+ void Rescued(double FirmMetres=-1);
+ bool InGrace() const{return bGrace;}
+ bool AfterRescue() const{return bAfterRescue;}
+ double GraceSecondsLeft() const{return bGrace?FMath::Max(0.,GraceSeconds-GraceT):0.;}
+ double GraceMetresLeft() const{return bGrace?FMath::Max(0.,GraceNeed-GraceM):0.;}
+ // The nearest firm ground (sand under .15) round a road-local point within FirmReach, by rings outward: false when none.
+ static bool FirmNear(double RoadX,double RoadZ,double& OutX,double& OutZ);
+ // "north-east": which way B lies from A, road-local (x east, z south).
+ static FString WayTo(double FromX,double FromZ,double ToX,double ToZ);
  // Where the dash's temperature needle should stand, 0.5 normal to 1 in the red, as the radiator runs low (for the truck's dash).
  double TempNeedle() const{return .5+.5*(1.-FMath::SmoothStep(0.,.3,WaterLeft));}
  void TestStick(){bStuck=true;}
@@ -79,6 +100,10 @@ private:
  // the sand and the wheel as they are driven (not saved: a Continue starts on firm ground)
  double Bog=0,SpinIn=0,ThumpIn=0,PingIn=20,TugT=0,PullSide=1,GustT=0; // GustT: a strong wind's push on the truck (WEATHER-20261108)
  bool bSandHeld=false,bSandHinted=false,bHissed=false;
+ // the grace after a dig (saved while bAfterRescue), and the last firm ground the truck was driven on (road-local; not saved)
+ bool bGrace=false,bAfterRescue=false,bReWarned=false;
+ double GraceT=0,GraceM=0,GraceNeed=GraceMetres,ReturnT=0,WarnT=0;
+ FVector2D LastFirm=FVector2D(1e9,1e9);
  void Hold();
  void StepGround(double Dt,FS47DriveController& D,double RoadX,double RoadZ);
  // the pale sand where it lies, near the player
@@ -103,6 +128,10 @@ public:
  bool Out() const{return bOut;}
  bool CanSet() const;
  bool SetHere(const FString& Title,bool bAtMarks);
+ // D48-20261110 (D46-24): for the field map. Where it stands (the area's own terms) while it is out; and, while it can be set out for the
+ // land test OPS planned, the place to set it: where the last record was kept (the marks standing now, else the place most lately used).
+ bool StandsAt(FString& OutArea,FVector& OutAt) const{if(!bOut)return false;OutArea=Area;OutAt=At;return true;}
+ bool SetOutPlace(FVector2D& OutRoad,FString& OutTitle) const;
  // What it caught, strongest first: a body near it, a light over its ground, nothing.
  enum class ECatch:uint8{None,Light,Body};
  static constexpr double BodyReach=18,LightReach=60;
@@ -116,10 +145,12 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
- bool bOut=false,bAtMarksThen=false,bBuilt=false;
+ // D46-20261110 (Tom, D46-10): bModel while the imported model stands for it (Tools/tripcam, /Game/Licensed: never in Git); without it the
+ // plain box as before. Yaw (three's, radians) is the way the player faced when it was set: the lens looks at the likely way in.
+ bool bOut=false,bAtMarksThen=false,bBuilt=false,bModel=false;
  FString Area,Title,PhotoId;
  FVector At=FVector::ZeroVector;
- double SetClock=0,CaughtClock=-1,LookIn=0;
+ double SetClock=0,CaughtClock=-1,LookIn=0,Yaw=0;
  ECatch Caught=ECatch::None;
  TWeakObjectPtr<UStaticMeshComponent> PropSaro,PropRoad;
  // What is in front of it now, looked for a few times a second while it is out and the world it stands in is the loaded one.

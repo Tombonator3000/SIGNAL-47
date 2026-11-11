@@ -15,7 +15,7 @@ namespace S47HudGauges
 	/** The mark shows only while the lamp is on or the battery is low, and only where the lamp has a battery (Freeform). */
 	SIGNAL47_API bool BatteryShown(bool bDrains, bool bHave, bool bOn, double Level, double Low);
 
-	/** What the radio line says. The CB under the truck's dash and at SARO's base set: CB 19. The carried walkie (CB-WALKIE-20261108:
+	/** What the radio line says. The CB under the truck's dash, heard only sitting in the truck (CB-TRUCK-20261109): CB 19. The carried walkie (CB-WALKIE-20261108:
 	 *  Dale's): its channel and who is sending, "WALKIE 1 · DALE". The two are told apart by these words; both are drawn in the
 	 *  palette's one radio colour (HUD-D-20261109). */
 	SIGNAL47_API FString CbLine();
@@ -39,6 +39,8 @@ namespace S47HudGauges
 	/** SAVE-SARO-20261108: the small stamp over the gauges when the autosave on leaving SARO is written. LOG FILED and the clock the
 	 *  save's card has (S47SaroSave.h). */
 	SIGNAL47_API FString FiledLine(const FString& Clock);
+	/** Critic round 5: LOG NOT FILED (S47SaroSave::NotFiledLine), which the HUD stamps in a dull red rather than the amber of LOG FILED. */
+	SIGNAL47_API bool FiledRefused(const FString& Stamp);
 	/** How long the stamp shows, and its strength T seconds after the save: in over a quarter second, held, out over the last 0.8. */
 	constexpr double FiledFor = 4.5;
 	SIGNAL47_API double FiledAlpha(double T);
@@ -84,14 +86,49 @@ namespace S47HudGauges
 	 *  strength T seconds after the change. */
 	constexpr double NoteIn = 0.25, NoteHold = 6.0, NoteFade = 1.0;
 	SIGNAL47_API double NoteAlpha(double T);
+	/** D45-20261110: two task lines that differ only in their figures ("Recording 37%" and "Recording 38%") are the same task, and the
+	 *  card does not come in again for them. Never true for an empty line. */
+	SIGNAL47_API bool SameTask(const FString& A, const FString& B);
 	/** A task in capitals as the player's hand writes it on the card: Title for the place ("Caliche Junction"), sentence case for
 	 *  the task ("Back to the truck. Keep the record"). Figures and the station's capitals (SARO, CB, MHz) stay as they are; words
 	 *  already written in small letters are left alone. */
 	SIGNAL47_API FString Handwritten(const FString& Text, bool bTitle);
+	/** M7-HUD-20261109: what the card has room for. A task as the game words it ("TRACKING (right-hand PC): POINT THE ARRAY ...")
+	 *  made into the place and the next thing to do, "TRACKING PC // POINT THE ARRAY ...", at most CardMost characters: the place is
+	 *  what comes before the first " / " or ": " when it comes early, the screens' own long names shortened, then whole sentences of
+	 *  the task while they fit, and only a sentence that is too long on its own cut short. The whole task stays in the pause menu and
+	 *  the notebook. */
+	constexpr int32 CardMost = 70;
+	SIGNAL47_API FString CardLine(const FString& Task, int32 Most = CardMost);
+	/** CardLine with more said after it (" ARRAY 12 OF 27."), in that order, each only if the line still has room for it. */
+	SIGNAL47_API FString CardWith(const FString& Line, std::initializer_list<FString> Tails, int32 Most = CardMost);
 	/** HUD-D2-20261109: how strong the dark rim under the clock, the day and the battery is, 0 to 1, from the sky's daylight (0 night,
 	 *  1 full day). Faint at night, where the dark sky is backing enough and the HUD looks as Tom chose it; full against a bright sky,
 	 *  where the teal would wash out. */
 	SIGNAL47_API double BackingStrength(double Daylight);
+
+	// ---------- the dark edge of strain and fatigue (VIGNETTE-STEPS-20261109) ----------
+
+	/** Tom, 9 November: the strain's rim and the heavy eyelids showed as nested rectangles, each a step darker (14 and 12 boxes on
+	 *  top of each other). Now each is one shade: a mesh of vertices whose darkness is worked out here and blended smoothly
+	 *  between them on the card, drawn as a single element. Same colours, same strength at the screen's edge, same reach.
+	 *  The rim: U and V from 0 to 1 across the view, Reach the share of each side it covers, Alpha its darkness at the edge (capped
+	 *  at 0.95 as before). The corners are rounded (no hard diagonal) and come in softly at the inner end. */
+	SIGNAL47_API double RimShade(double U, double V, double Reach, double Alpha);
+	/** A lid: Y pixels from its own edge of the screen, Deep how far it reaches, Edge its darkness at the screen's edge. */
+	SIGNAL47_API double LidShade(double Y, double Deep, double Edge);
+	/** Vertices in pixels, their darkness 0 to 1, and triangles over them: one draw. */
+	struct FShadeMesh
+	{
+		TArray<FVector2f> At;
+		TArray<float> Alpha;
+		TArray<uint32> Index;
+		void Reset() { At.Reset(); Alpha.Reset(); Index.Reset(); }
+	};
+	/** The rim over a view of Size pixels, fine enough that the step from one vertex to the next is never seen. */
+	SIGNAL47_API void RimMesh(const FVector2f& Size, double Reach, double Alpha, FShadeMesh& Out);
+	/** Both lids, from the top and the bottom, Deep pixels each. */
+	SIGNAL47_API void LidMesh(const FVector2f& Size, double Deep, double Edge, FShadeMesh& Out);
 
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }

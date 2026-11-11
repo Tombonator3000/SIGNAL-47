@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47NightLog.h"
 #include "S47RoomDecor.h"
 #include "S47EastWing.h"
 #include "SS47FreeformStart.h"
@@ -6,12 +7,16 @@
 #include "UnrealClient.h"
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
+#include "S47Handling.h"
+#include "S47Breather.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
 #include "S47Visitors.h"
 #include "S47Rhythm.h"
 #include "S47FreeformWorld.h"
 #include "S47FreeformDirector.h"
+#include "S47Mail.h"
+#include "S47MailBox.h"
 #include "S47HighwayUfo.h"
 #include "S47FarmWorld.h"
 #include "S47Horror.h"
@@ -62,6 +67,11 @@
 #include "S47FieldCamera.h"
 #include "S47HUD.h"
 #include "S47HudGauges.h"
+#include "S47Script.h"
+#include "S47Marginalia.h"
+#include "S47PinBoard.h"
+#include "S47TonightNote.h"
+#include "S47GoalLine.h"
 #include "S47Image.h"
 #include "S47Keys.h"
 #include "S47Mirrors.h"
@@ -78,6 +88,7 @@
 #include "S47World.h"
 #include "S47Phones.h"
 #include "S47Picture.h"
+#include "S47Bodycam.h"
 #include "S47SaroNight.h"
 #include "S47ArrayBack.h"
 #include "S47Away.h"
@@ -173,6 +184,23 @@ namespace
 	}
 	bool SmokeTest() { return FParse::Param(FCommandLine::Get(), TEXT("S47SmokeTest")); }
 
+	// SAVE-SARO-20261108 / M7-E: a Freeform case that could be saved at all (not a developer run, not a contact, whose own words come
+	// first) and the player not inside SARO: nothing but the departure is filed (S47SaroSave::StationBlock)
+	bool CaseInPlay(const US47Main* M, int32 CaseId, bool bDevRun)
+	{
+		return M && M->IsFreeform() && M->Mode == EMode::Play && CaseId && !bDevRun && !(M->Freeform && M->Freeform->Dead());
+	}
+	bool AwayFromSaro(const US47Main* M, int32 CaseId, bool bDevRun) { return CaseInPlay(M, CaseId, bDevRun) && !S47SaroSave::InStation(M); }
+
+	// a departure that could not be filed: the stamp of LOG FILED in red (SS47Hud, S47HudGauges::FiledRefused), and a dull dry thud
+	// of a stamp that did not take. Critic round 5: Sfx goes by the buffer's name, "thudSoft"; "thud_soft" is its file and played nothing.
+	void NotFiled(US47Main* M)
+	{
+		if (!M) return;
+		if (M->UI) M->UI->Filed(S47SaroSave::NotFiledLine());
+		if (M->Audio) M->Audio->Sfx(TEXT("thudSoft"), FS47Sound{ .Gain = .4f, .Rate = 1.35f, .Lp = 1600.f });
+	}
+
 	// the chapter in play counts as Prologue.at('chN'): ch1 < ch2 < ... < ch6
 	int32 ChapterNo(const AS47Story* S)
 	{
@@ -238,22 +266,20 @@ void US47Flow::Init(US47Main* InM)
 	FString QualityOverride;
 	if (FParse::Value(FCommandLine::Get(), TEXT("S47Quality="), QualityOverride)) Graphics = FS47GraphicsSettings::ForPreset(QualityOverride);
 	Quality = Graphics.LegacyQuality();
-	bKinski = S47J::Bool(Store, TEXT("kinskiReadAloud"), false);
 	bArtBell = S47J::Bool(Store, TEXT("artBellRadioHost"), true);
 	bSerling = S47J::Bool(Store, TEXT("serlingNarrator"), true);
 	bCharacters = S47J::Bool(Store, TEXT("characterVoices"), true);
-	if (M->Audio) { M->Audio->bCharacterVoices = bCharacters; M->Audio->bKinskiCalls = bKinski; }
-	// main.ts: the readers (core/readAloud.ts): Kinski's for papers and conversations, opt-in, and the
-	// narrator, Serling's, on unless switched off; ui.readAloud and ui.narrator
-	M->UI->ReadAloud = MakeShared<FS47ReadAloud>(M->Audio);
-	M->UI->ReadAloud->SetEnabled(bKinski);
+	if (M->Audio) M->Audio->bCharacterVoices = bCharacters;
+	// main.ts: the reader (core/readAloud.ts): the narrator, Serling's, on unless switched off; ui.narrator.
+	// (KINSKI-READ-OUT, Tom 9 November 2026: no Kinski reader for papers and conversations, and the old
+	// 'kinskiReadAloud' setting is ignored)
 	M->UI->Narrator = MakeShared<FS47ReadAloud>(M->Audio, S47Reading::SerlingBank());
 	M->UI->Narrator->SetEnabled(bSerling);
 	// stopNarration(except): every voice but the one about to speak; onReadingStart, and the phone's call
 	// (the character voices' and Earl's starts are wired with them: Chapter4's, TownLayer's)
 	M->UI->OnReadingStart = [this](FS47ReadAloud* Reader)
 	{
-		StopNarration(Reader ? Reader : M->UI->ReadAloud.Get());
+		StopNarration(Reader);
 		if (M->Audio) M->Audio->StopPhoneCalls();
 		if (M->CB.IsValid()) M->CB->Stop();
 	};
@@ -292,6 +318,7 @@ void US47Flow::Init(US47Main* InM)
 	bCalmFlash = S47J::Bool(Store, TEXT("calmFlash"), false);
 	bStillShots = S47J::Bool(Store, TEXT("stillShots"), false);
 	bHeadMotion = S47J::Bool(Store, TEXT("headMotion"), true);
+	bCameraMoments = S47J::Bool(Store, TEXT("cameraMoments"), true); // N1110
 	bVehicleMirrors = S47J::Bool(Store, TEXT("vehicleMirrors"), true);
 	{
 		bool bRun = bVehicleMirrors;
@@ -376,6 +403,7 @@ void US47Flow::Init(US47Main* InM)
 			if (M->Story && !M->Story->IsCinematic())
 			{
 				if (Tab) M->UI->NotebookAt(Tab);
+				S47TonightNote::Seen().bPlain = !Tab; // D45-20261110: the plain notebook key may open on NOW when something is new there
 				OpenNotebook();
 			}
 			return true;
@@ -780,7 +808,7 @@ void US47Flow::ShowTitle()
 	O.OnQuit = [this] { UKismetSystemLibrary::QuitGame(M->Hud, M->Hud ? M->Hud->GetOwningPlayerController() : nullptr, EQuitPreference::Quit, false); };
 	FString Version;
 	if (!GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni)) GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GEngineIni);
-	O.Version = FString::Printf(TEXT("UNREAL %s \u00B7 TAPE B"), Version.IsEmpty() ? TEXT("0.0") : *Version);
+	O.Version = FString::Printf(TEXT("VERSION %s"), Version.IsEmpty() ? TEXT("0.0") : *Version); // D46: Tom wants the version on the start screen
 	O.OnContinue = [this] { const TOptional<FS47SaveMeta> C = Saves.ContinueSave(); if (C) OpenSave(*C); };
 	O.OnFreeform = [this] { RequestNewFreeform(); };
 	O.OnStart = [this]
@@ -1035,14 +1063,43 @@ void US47Flow::StartGame(const FStart& O)
   if (M->Night && M->Night->Flashlight) M->Night->Flashlight->bHave=true;
   // A new operator arrives on foot at the visitor entrance, the station shut and the Jeep in its garage.
   // Tom 5 Nov. Saves and tests written for the old start keep theirs; the normal journey drives from the pad.
-  if(!O.State.IsValid()&&!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney"))&&(!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))))
+  if(!O.State.IsValid()&&!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney"))&&(!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))))
   {
    auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("saro"));S47J::Set(Pose,TEXT("x"),35.4);S47J::Set(Pose,TEXT("y"),0.);S47J::Set(Pose,TEXT("z"),-.4);S47J::Set(Pose,TEXT("h"),UE_DOUBLE_PI);
    if(M->World)M->World->PlaceTruck(TEXT("saro"),Pose);
    auto Shut=S47J::New();S47J::Set(Shut,TEXT("personnel"),false);S47J::Set(Shut,TEXT("service"),false);S47J::Set(Shut,TEXT("garage"),0.);S47J::Set(Shut,TEXT("garageUp"),false);
    if(M->EastWing)M->EastWing->Begin(Shut);
    if(M->Web)for(const auto& Door:M->Web->DoorStates())M->Web->SetDoorById(Door.Key,false,true);
-   if(M->Player)M->Player->Place(-9.5,5.7,-UE_DOUBLE_PI/2);
+   // SPAWN-MAILBOX-20261109 (Tom): a new operator's first sight is the box at the road with Dr. Ward's letter in it, SARO behind it.
+   // On the highway's shoulder, a step south-west of the box: its side with SARO / BOX 19 and its door in view, the station on the
+   // same line beyond it. The letter is in the box from the first second (as FS47Predecessor posts it at the shift's start), and the
+   // HUD's card asks for it before the first shift's OPS (FS47FreeformSession::Objective). Tests written for the visitor ramp
+   // (-S47GarageStartTest, -S47RescueJourneyTest and other developer runs) keep that start; -S47MailboxStart asks for this one.
+   const bool bAtBox=!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47MailboxStart"))||FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"));
+   const double BoxX=FS47MailBoxModel::PostX,BoxZ=FS47MailBoxModel::PostZ,StandX=BoxX-.95,StandZ=BoxZ+1.35;
+   if(M->Player&&bAtBox&&(M->Player->Walkable(StandX,StandZ)||!M->Player->Walkable(-9.5,5.7)))
+   {
+    // Facing the box's middle (1.17 m up), the eyes a little down to it and the station on the horizon past it.
+    M->Player->Place(StandX,StandZ,FMath::Atan2(-(BoxX-StandX),-(BoxZ-StandZ)));M->Player->Pitch=-.12;
+    M->Freeform->bMailboxStart=true;
+    if(FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))){M->Freeform->TestLiveRules();if(M->Freeform->Mail)M->Freeform->Mail->TestOn();} // the real game's rules in a developer run
+    if(M->Freeform->Mail&&M->Freeform->Mail->Live()&&!M->Freeform->Mail->Ever(TEXT("ward:letter")))M->Freeform->Mail->PostWard(TEXT("letter"),true);
+    // FIX-20261110 (Tom, points 4 and 8): the station is shut up and dark. The keys are in the envelope with the letter (the
+    // doors stay locked until it is out of the box, FS47FreeformSession::RefuseLocked), and every room's light is off at its
+    // switch for the operator to put on. -S47StationOpen keeps a developer's mailbox start unlocked and lit.
+    if(!FParse::Param(FCommandLine::Get(),TEXT("S47StationOpen")))
+    {
+     M->Freeform->LockStation();
+     if(M->RoomLights)
+     {
+      auto Dark=S47J::New();S47J::Set(Dark,TEXT("v"),1);
+      for(const TCHAR* Room:{TEXT("control"),TEXT("corridor"),TEXT("records"),TEXT("office")})S47J::Set(Dark,Room,false);
+      M->RoomLights->Begin(Dark);
+     }
+    }
+    UE_LOG(LogS47Flow,Display,TEXT("S47: new Freeform operator at the mailbox (%.2f %.2f), letter %s, station %s"),StandX,StandZ,M->Freeform->Mail&&M->Freeform->Mail->Holds(TEXT("ward:letter"))?TEXT("in the box"):TEXT("not posted"),M->Freeform->bStationLocked?TEXT("locked and dark"):TEXT("open"));
+   }
+   else if(M->Player)M->Player->Place(-9.5,5.7,-UE_DOUBLE_PI/2);
   }
  }
  // New Freeform operators collect the camera physically. Every legacy Freeform
@@ -1056,6 +1113,8 @@ void US47Flow::StartGame(const FStart& O)
  // Before SC01: its normal round counts the evening schedule as part of the work.
  if (!bFreeform && M->Observing) M->Observing->Begin(S47J::Obj(O.State,TEXT("observing")),!O.State.IsValid() && O.Jump.IsEmpty());
  if (!bFreeform && M->Spine) M->Spine->Begin(S47J::Obj(O.State,TEXT("spine")),!O.State.IsValid() && (O.Jump.IsEmpty()),O.State.IsValid() && O.State->HasField(TEXT("spine")));
+ // D45-20261110: a Story night earlier in the same run left the spine on: its posts came back and Freeform saves carried "spine".
+ else if (bFreeform && M->Spine) M->Spine->Begin(nullptr,false,false);
  if (!bFreeform && M->Horror) M->Horror->Begin(S47J::Obj(O.State,TEXT("horror")),!O.State.IsValid() && O.Jump.IsEmpty());
  if (!bFreeform && M->Spine && !(O.State.IsValid() && O.State->HasField(TEXT("spine")))) M->Spine->ResumeAfterSC03();
 
@@ -1267,9 +1326,8 @@ void US47Flow::Finale()
 
 void US47Flow::StopNarration(const void* Except)
 {
-	// main.ts stopNarration: for (const player of [readAloud, narrator, earlDialogue, npcDialogue]) if (player !== except) player.stop()
+	// main.ts stopNarration: for (const player of [narrator, earlDialogue, npcDialogue]) if (player !== except) player.stop()
 	US47UI* UI = M->UI;
-	if (UI->ReadAloud.IsValid() && UI->ReadAloud.Get() != Except) UI->ReadAloud->Stop();
 	if (UI->Narrator.IsValid() && UI->Narrator.Get() != Except) UI->Narrator->Stop();
 	if (UI->EarlDialogue.IsValid() && static_cast<const void*>(UI->EarlDialogue.Get()) != Except) UI->EarlDialogue->Stop();
 	if (UI->NpcDialogue.IsValid() && static_cast<const void*>(UI->NpcDialogue.Get()) != Except) UI->NpcDialogue->Stop();
@@ -1295,6 +1353,7 @@ void US47Flow::OpenPause()
 		UGameplayStatics::SetGamePaused(Self->M->Hud, false);
 	};
 	FS47PauseOpts O = PauseStatus(Settings());
+	UE_LOG(LogS47Flow, Display, TEXT("S47: tonight's note: %s"), *S47TonightNote::Plain(O.Note).Replace(TEXT("\n"), TEXT(" | ")));
 	O.OnResume = Resume;
 	O.OnTitle = [this, Resume] { RequestTitle(Resume); };
 	// the case menus sit on top of the pause menu and go back to it
@@ -1325,11 +1384,15 @@ void US47Flow::OpenPause()
 void US47Flow::RequestTitle(TFunction<void()> Resume)
 {
 	FString Reason;
-	if (AutosaveNow(&Reason)) { if (Resume) Resume(); ToTitle(); return; }
+	// M7-E: away from SARO nothing is filed on quitting either; the warning says Continue goes back to the log filed on leaving
+	const bool bAway = AwayFromSaro(M, CaseId, bDevRun);
+	if (bAway) Reason = S47SaroSave::StationOnly();
+	else if (AutosaveNow(&Reason)) { if (Resume) Resume(); ToTitle(); return; }
 	// Unreal: leaving an unsafe story state or a failed disk write requires an informed choice.
 	const TOptional<FS47SaveMeta> Last = CaseId ? Saves.Latest(CaseId) : TOptional<FS47SaveMeta>();
 	FString ReturnTo = Last
-		? FString::Printf(TEXT("Continue returns to %s, %s (%s). Progress since that save must be repeated."), *Last->Chapter, *Last->Place, *Last->Clock)
+		? (bAway ? S47SaroSave::QuitAwayText(Last->Chapter, Last->Place, Last->Clock)
+			: FString::Printf(TEXT("Continue returns to %s, %s (%s). Progress since that save must be repeated."), *Last->Chapter, *Last->Place, *Last->Clock))
 		: FString(TEXT("This night has no saved checkpoint. Leaving now loses this night's progress."));
 	if (M->Story && M->Story->ChapterKey == TEXT("ch6")) ReturnTo += TEXT(" The last drive and the ending must be played again from the diner.");
 	UE_LOG(LogS47Flow, Display, TEXT("S47: quit warning: %s / %s"), *Reason, *ReturnTo);
@@ -1349,6 +1412,58 @@ void US47Flow::RequestTitle(TFunction<void()> Resume)
 		Self->M->bPausedByMenu = false;
 		Self->OpenPause();
 	});
+}
+
+namespace S47FlowNotebook
+{
+	// PT-NOTEBOOK-20261109: the night's plan as the pause menu's note and the notebook's NOW both read it (S47TonightNote::Gather): the
+	// task list, the HUD's objective card and the case windows; in Freeform with what is remembered done tonight.
+	S47TonightNote::FIn TonightIn(US47Main* M, const TArray<FS47Task>& Tasks, const FString& Objective, double Clock)
+	{
+		S47TonightNote::FIn In;
+		for (const FS47Task& T : Tasks) In.Tasks.Add({ T.Text, T.bDone });
+		In.Next = Objective;
+		In.Clock = Clock;
+		if (M->IsFreeform() && M->Freeform)
+		{
+			const FS47FreeformSession& F = *M->Freeform;
+			In.bFreeform = true;
+			In.Clock = F.Clock();
+			In.Next = F.HudObjective();
+			// what there is to do besides the objective's step: the film waiting in the lab (AvailableActivities says it only when
+			// nothing comes before it), and with a case's field test in focus the day's work as the HUD would have it unfocused (not
+			// "follow the plan": the plan's own step is on the note with its window)
+			if (M->Night && M->Night->Album && M->Night->Album->PendingLabPhoto() && !In.Next.Contains(TEXT("WET BENCH"))
+				&& !Tasks.ContainsByPredicate([](const FS47Task& T) { return T.Text.Contains(TEXT("WET BENCH")); }))
+				In.Tasks.Insert({ TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."), false }, 0);
+			// N1110 (pace): after the Breather's first record, the town's word of it stays on NOW until the week's hush has been heard
+			if (F.HasFinding(S47Breather::Finding) && F.TownUse && !F.TownUse->Seen(S47Breather::WeekFlag(S47Breather::WeekOf(FS47FreeformSession::NightOf(F.Clock())))))
+				In.Tasks.Add({ TEXT("WORTH A LOOK / The Breather: they say it goes quiet around two."), false });
+			FString Card;
+			if (F.FocusedFieldCase() >= 0) F.AvailableActivities(&Card);
+			if (!Card.IsEmpty() && Card != In.Next && !Card.Contains(TEXT("FOLLOW THE PLAN")) && !Card.Contains(TEXT("WET BENCH"))) In.Tasks.Insert({ Card, false }, 0);
+			// CASES-OPS-20261109: the cases as FS47FreeformSession::CaseStep has them: waiting on evidence while a test is to be chosen; a
+			// conclusion or a filing is a line of its own (from Tasks); a planned test brings its window
+			for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
+			{
+				using EStep = FS47FreeformSession::ECaseStep;
+				const FS47FreeformSession::FCaseStep Step = F.CaseStep(Line);
+				if (Step.Step == EStep::ChooseTest) { In.WaitingCases.Add(FS47FreeformCases::Def(Line).Title); continue; }
+				if (Step.Step != EStep::RunPlan && Step.Step != EStep::WaitWindow) continue;
+				double Start = 0, End = 0;
+				// (a field test not yet prepared has only a preview of its window: the step is to prepare it now)
+				if (!F.CaseTestWindow(Line, Start, End) || F.CaseWindowText(Line).Contains(TEXT("PREVIEW ONLY"))) continue;
+				// the step in the words FS47FreeformSession::Tasks gives it, so that the window lands on that line
+				In.Windows.Add({ Step.Task, Start, End });
+			}
+			double Up = 0;
+			if (F.NextEveningCard(Up)) In.EveningUp = Up;
+			In.bAntennasWait = FS47FreeformSession::GoalWaits(F.Clock()) && !F.StationGoalLine().IsEmpty();
+			In.Done = &S47TonightNote::Tonight();
+			In.Game = (uint64(uint32(M->Flow ? M->Flow->CaseId : 0)) << 32) | uint32(F.Seed());
+		}
+		return In;
+	}
 }
 
 FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
@@ -1372,8 +1487,15 @@ FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
 	{
 		if (const US47Chapter* C = S->Chapter(S->ChapterKey); C && C->bActive) O.Objective = C->Objective();
 		if (M->IsFreeform() && M->Freeform) O.Objective=M->Freeform->Objective();
-		for (const FS47Task& T : S->Tasks()) if (!T.bDone) O.OpenTasks.Add(T.Text);
+		const TArray<FS47Task> Tasks = S->Tasks();
+		for (const FS47Task& T : Tasks) if (!T.bDone) O.OpenTasks.Add(T.Text);
 		if (S->Notes().Num()) O.LastNote = S->Notes().Last();
+		// TONIGHT-NOTE-20261109: the card as the night's plan, from the same list, the HUD's objective card and the case windows;
+		// PT-NOTEBOOK-20261109: built as the notebook's NOW builds it (S47FlowNotebook::TonightIn, S47TonightNote::Gather)
+		const S47TonightNote::FIn In = S47FlowNotebook::TonightIn(M, Tasks, O.Objective, O.Clock);
+		// the handwritten note keeps to Freeform's limits as the plan does
+		if (In.bFreeform && !S47Script::LintText(O.LastNote).IsEmpty()) O.LastNote.Reset();
+		O.Note = S47TonightNote::Gather(In);
 	}
 	return O;
 }
@@ -1385,8 +1507,6 @@ FS47PauseOpts US47Flow::Settings()
 	O.OnCharacters = [this](bool V) { bCharacters = V; if (M->TownLayer && M->TownLayer->Caliche->NpcDialogue) M->TownLayer->Caliche->NpcDialogue->SetEnabled(V); if (M->Observing) M->Observing->SetCharacterVoicesEnabled(V); if (M->Audio) { M->Audio->bCharacterVoices = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("characterVoices"), V); };
 	O.bSerling = bSerling;
 	O.OnSerling = [this](bool V) { bSerling = V; if (M->UI->Narrator.IsValid()) M->UI->Narrator->SetEnabled(V); StoreSet(TEXT("serlingNarrator"), V); };
-	O.bKinski = bKinski;
-	O.OnKinski = [this](bool V) { bKinski = V; if (M->UI->ReadAloud.IsValid()) M->UI->ReadAloud->SetEnabled(V); if (M->Audio) { M->Audio->bKinskiCalls = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("kinskiReadAloud"), V); };
 	O.bArtBell = bArtBell;
 	O.OnArtBell = [this](bool V) { bArtBell = V; if (M->TownLayer && M->TownLayer->Caliche->EarlDialogue) M->TownLayer->Caliche->EarlDialogue->SetEnabled(V); if (M->Radio) M->Radio->SetHostVoice(V); StoreSet(TEXT("artBellRadioHost"), V); };
 	O.bRadioCast = bRadioCast;
@@ -1423,6 +1543,8 @@ FS47PauseOpts US47Flow::Settings()
 	O.OnStillShots = [this](bool V) { bStillShots = V; ApplyPicture(Picture, false); StoreSet(TEXT("stillShots"), V); };
 	O.bHeadMotion = bHeadMotion;
 	O.OnHeadMotion = [this](bool V) { bHeadMotion = V; ApplyLook(); StoreSet(TEXT("headMotion"), V); };
+	O.bCameraMoments = bCameraMoments; // N1110: read by FS47CameraMoment::Start as a moment is asked for
+	O.OnCameraMoments = [this](bool V) { bCameraMoments = V; StoreSet(TEXT("cameraMoments"), V); };
 	O.bVehicleMirrors = bVehicleMirrors;
 	O.OnVehicleMirrors = [this](bool V) { bVehicleMirrors = V; S47Mirrors::SetEnabled(V); StoreSet(TEXT("vehicleMirrors"), V); };
 	O.bAbduct = bAbductOn;
@@ -1468,7 +1590,15 @@ void US47Flow::ApplyPicture(const FString& P, bool bChosen)
 	{
 		const int32 Mode = S47Picture::Mode(Picture);
 		const float Strength = S47Picture::Strength(PictureStrength);
-		I->SetScalarParameterValue(TEXT("PictureMode"), float(Mode));
+		// D45-20261110 (D45-19): Bodycam 1986 needs the rebuilt M_WebTone (MPC_Body); older content keeps the VHS look.
+		const bool bBodyShader = FS47Bodycam::HasShader();
+		static bool bToldBody = false;
+		if (S47Picture::IsBody(Mode) && !bBodyShader && !bToldBody)
+		{
+			bToldBody = true;
+			UE_LOG(LogS47Flow, Warning, TEXT("S47: picture bodycam needs MPC_Body (import_web.py S47_ONLY=picture); showing the VHS tape look"));
+		}
+		I->SetScalarParameterValue(TEXT("PictureMode"), float(S47Picture::ShaderMode(Mode, bBodyShader)));
 		I->SetScalarParameterValue(TEXT("Vhs"), Mode == 0 ? 0.f : Strength);
 		I->SetScalarParameterValue(TEXT("PictureStrength"), Strength);
 		I->SetScalarParameterValue(TEXT("PictureCalm"), S47Picture::Strength(Calm));
@@ -1521,7 +1651,8 @@ void US47Flow::Activation(bool bActive)
 	// main.ts: the tab put away (a phone may close it in the background) or the pointer lock lost:
 	// save, and pause. (Not in the automated runs, where the window may never have the focus.)
 	if (bActive || !M || M->Mode != EMode::Play || SmokeTest()) return;
-	AutosaveNow();
+	// M7-E: away from SARO it only pauses; the routine autosave waits until the player is back inside
+	if (!AwayFromSaro(M, CaseId, bDevRun)) AutosaveNow();
 	if (!M->bPausedByMenu) OpenPause();
 }
 
@@ -1551,9 +1682,10 @@ FString US47Flow::FreeformSaveBlock() const
 
 FString US47Flow::ManualSaveBlock() const
 {
-	// Freeform files the log at the station: anywhere else the menu says so (a developer run's, a dead session's own words first)
-	if (M->IsFreeform() && M->Mode == EMode::Play && CaseId && !bDevRun && !(M->Freeform && M->Freeform->Dead()) && !S47SaroSave::InStation(M)) return S47SaroSave::StationOnly();
-	return SaveBlock();
+	// Freeform files the log at the station: anywhere else the menu says so (a developer run's, a dead session's own words first).
+	// M7-E: the routine autosave, the one on losing the focus and the one on quitting keep the same rule (FlushAutosave, Activation,
+	// RequestTitle); only the departure is filed outside (FileDeparture asks SaveBlock).
+	return S47SaroSave::StationBlock(CaseInPlay(M, CaseId, bDevRun), S47SaroSave::InStation(M), SaveBlock());
 }
 
 // ---------- the departure from SARO (SAVE-SARO-20261108) ----------
@@ -1599,7 +1731,8 @@ void US47Flow::StepDeparture(double Dt)
 	{
 		UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure not filed: no safe moment (%s)"), DepartureWaitSaid.IsEmpty() ? TEXT("gone on") : *DepartureWaitSaid);
 		DepartureText = TEXT("not filed: ") + (DepartureWaitSaid.IsEmpty() ? FString(TEXT("the player went on")) : DepartureWaitSaid);
-		Departure.Drop(); DepartureWaitSaid.Empty();
+		Departure.Drop(); DepartureWaitSaid.Empty(); bDepartureShow = false;
+		NotFiled(M);
 		return;
 	}
 	FileDeparture(false);
@@ -1634,15 +1767,18 @@ bool US47Flow::FileDeparture(bool bLastChance)
 		bDepartureShow = false; Departure.Drop(); DepartureWaitSaid.Empty();
 		return false;
 	}
-	FString Why = S47SaroSave::Danger(M);
-	if (Why.IsEmpty()) Why = SaveBlock();
-	if (!Why.IsEmpty())
+	// the departure asks SaveBlock, not the station's rule (ManualSaveBlock): leaving is the one save written outside the building
+	const FString Danger = S47SaroSave::Danger(M), Block = Danger.IsEmpty() ? SaveBlock() : FString();
+	const S47SaroSave::EFile Now = S47SaroSave::FileNow(Danger, Block, bLastChance);
+	const FString Why = Danger.IsEmpty() ? Block : Danger;
+	if (Now != S47SaroSave::EFile::Write)
 	{
-		if (bLastChance)
+		if (Now == S47SaroSave::EFile::NotFiled)
 		{
 			UE_LOG(LogS47Flow, Display, TEXT("S47: SARO departure (%s) not filed: %s"), *How, *Why);
 			DepartureText = TEXT("not filed: ") + Why;
 			Departure.Drop(); DepartureWaitSaid.Empty(); bDepartureShow = false;
+			NotFiled(M);
 			return false;
 		}
 		if (DepartureWaitSaid != Why)
@@ -1665,6 +1801,7 @@ bool US47Flow::FileDeparture(bool bLastChance)
 		DepartureText = TEXT("not filed: ") + Err;
 		if (M->UI) M->UI->Toast(TEXT("Autosave failed: ") + Err, 5);
 		Departure.Drop();
+		NotFiled(M);
 		return false;
 	}
 	Saves.NewGeneration(CaseId);
@@ -1704,7 +1841,8 @@ void US47Flow::RequestAutosave(bool bMilestone)
 
 void US47Flow::FlushAutosave()
 {
-	if (!bPendingAuto || !SaveBlock().IsEmpty()) return;
+	// M7-E: in Freeform away from SARO it is not written, and stays asked for until the player is back inside
+	if (!bPendingAuto || !ManualSaveBlock().IsEmpty()) return;
 	bPendingAuto = false;
 	// Rendering a save's picture stops the game for about 60 ms, and Freeform autosaves at least every
 	// 30 seconds. Routine autosaves share a recent picture; milestones and every other save take a new one.
@@ -2029,7 +2167,7 @@ void US47Flow::OpenNotebook()
   }
   if (UI.IsValid()) UI->Document(Doc, [] {});
  },
-		M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("SARO / Day %d"), M->Freeform->Day()) : S->ChapterTitle(), OnBoard, NotebookExtras());
+		M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("SARO / Day %d / %s"), M->Freeform->Day(), *S47TonightNote::HourMinute(M->Freeform->Clock())) : S->ChapterTitle(), OnBoard, NotebookExtras());
 }
 
 FS47NbExtras US47Flow::NotebookExtras() const
@@ -2054,7 +2192,40 @@ FS47NbExtras US47Flow::NotebookExtras() const
 	}
 	if (!Free && S47AreaMap::LinesMeet(V)) X.MapNote = MEET_NOTE;
 	X.Kit = KitItems();
-	X.People = Free ? TArray<FS47PersonCard>() : PeopleItems();
+	if (Free)
+	{
+		// PT-NOTEBOOK-20261109: WHO & WHAT in place of the empty People: Caliche's regulars as the player has met them, one plain line
+		// each from what they have told (FS47Townsfolk::Cards), and only that someone is gone, never why. Freeform's spoiler limits.
+		TArray<FS47PersonCard> Folk;
+		if (M->Freeform->Townsfolk)
+			for (const FS47Townsfolk::FCard& Cd : M->Freeform->Townsfolk->Cards())
+			{
+				FS47PersonCard P; P.Name = Cd.Name; P.Role = Cd.Role; P.Note = S47Script::LintText(Cd.Line).IsEmpty() ? Cd.Line : FString();
+				if (S47Script::LintText(P.Name + TEXT(" / ") + P.Role).IsEmpty()) Folk.Add(P);
+			}
+		X.People = Folk;
+		// MARGINALIA-20261109: WHO & WHAT's pencil, PEOPLE and THEM, from what has really happened (S47Marginalia; nothing new is saved)
+		if (M->Story) S47Marginalia::Fill(S47Marginalia::FactsOf(*M->Freeform, M->Story->Docs()), X.Scribbles);
+		// PT-NOTEBOOK-20261109: DOCUMENTS is the papers only, as the tray by the pinboard has them: the field records are Knowledge's
+		if (M->Freeform->PinBoard) X.Papers = M->Freeform->PinBoard->Papers();
+		// D48-20261110 (D46-19): the EVENTS page: what the player has met, by date, time, place and kind, and a way to log one by hand
+		if (M->Freeform->NightLog)
+		{
+			TWeakObjectPtr<US47Main> Mw = M;
+			const auto Gather = [Mw]() -> TArray<FS47NbEvent>
+			{
+				TArray<FS47NbEvent> Got;
+				if (!Mw.IsValid() || !Mw->Freeform || !Mw->Freeform->NightLog) return Got;
+				for (const FS47NightLog::FEvent& E : Mw->Freeform->NightLog->Events()) { FS47NbEvent N; N.When = E.When; N.Place = E.Place; N.Kind = E.Kind; N.Text = E.Text; N.bOwn = E.bOwn; Got.Add(N); }
+				return Got;
+			};
+			X.bEvents = true; X.Events = Gather(); X.GetEvents = Gather;
+			X.EventKinds = FS47NightLog::EventKinds(); X.EventPhrases = FS47NightLog::EventPhrases();
+			X.EventPlace = M->Freeform->NightLog->PlaceNow(); X.EventNow = S47TonightNote::HourMinute(M->Freeform->Clock());
+			X.OnLogEvent = [Mw](int32 Kind, int32 Phrase) { return Mw.IsValid() && Mw->Freeform && Mw->Freeform->NightLog && Mw->Freeform->NightLog->LogOwn(Kind, Phrase); };
+		}
+	}
+	else X.People = PeopleItems();
 	US47Flow* Self = const_cast<US47Flow*>(this);
 	X.HintLevel = [Self](const FString& Id) { return Self->JournalHintLevel(Id); };
 	X.RevealHint = [Self](const FString& Id) { return Self->RevealJournalHint(Id); };
@@ -2070,6 +2241,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			const auto& J = F->Jobs()[I];
 			FS47NbWorkItem W;
 			W.Id = J.Id + TEXT("/") + FString::FromInt(int32(J.Stage));
+			W.bCard = true; // PT-NOTEBOOK-20261109: folded under NOW's one line for the job cards
 			W.Title = J.Id + TEXT(" / ") + FS47Observing::Runs()[FMath::Clamp(J.Source, 0, 3)].Source; W.bCanFollow = true; W.bEarlier = J.Day < F->Day() || J.Stage == FS47FreeformSession::EJobStage::Filed; W.bFollowed = I == F->SelectedJob() && !F->ServiceGuideFocused();
 			W.Status = FString(W.bFollowed ? TEXT("Following / ") : TEXT("")) + Stages[FMath::Clamp(int32(J.Stage), 0, 7)];
 			W.NextAction = W.bFollowed ? F->NextAction() : F->JobNextAction(J); W.Location = F->JobLocation(J);
@@ -2102,7 +2274,22 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		}
 		for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
 		{
-			const int32 Test = F->PlannedFieldTest(Line); if (Test < 0 && F->FocusedFieldCase() != Line) continue;
+			const int32 Test = F->PlannedFieldTest(Line);
+			// CASES-OPS-20261109: every open case has its own entry on Now, its step from FS47FreeformSession::CaseStep
+			if (Test < 0 && F->FocusedFieldCase() != Line)
+			{
+				const FS47FreeformSession::FCaseStep Step = F->CaseStep(Line);
+				if (Step.Step == FS47FreeformSession::ECaseStep::Closed) continue;
+				static const TCHAR* StepNames[] = { TEXT("Closed"), TEXT("Choose a test"), TEXT("Test planned"), TEXT("Test waits for its window"), TEXT("Conclude"), TEXT("File an assessment"), TEXT("Reply due") };
+				FS47NbWorkItem W; W.Id = FString::Printf(TEXT("case/%d/%d"), Line, int32(Step.Step));
+				W.Title = FString(TEXT("Case / ")) + FS47FreeformCases::Def(Line).Title;
+				W.Status = FString::Printf(TEXT("%s / %d of 3 explanations left"), StepNames[FMath::Clamp(int32(Step.Step), 0, 6)], F->CaseFile().Remaining(Line));
+				// TELEX-20261109: a reply, due or in, is the telex's in the control room
+				W.NextAction = Step.Next; W.Location = Step.Step == FS47FreeformSession::ECaseStep::RunPlan ? TEXT("OPS / DAILY WORK") : Step.Next.StartsWith(TEXT("TELEX")) ? TEXT("CONTROL ROOM / TELEX") : TEXT("OPS / CASE BOARD");
+				W.Hints = { TEXT("A case is closed by your own retained tests or by an assessment you file. The case board shows what each test predicts."), W.NextAction };
+				X.WorkItems.Add(W);
+				continue;
+			}
 			FS47NbWorkItem W; W.Id = FString::Printf(TEXT("field-plan/%d"), Line);
 			W.Title = Test >= 0 ? FString(TEXT("Field test / ")) + FS47FreeformCases::Def(Line).Tests[Test].Name : FString(TEXT("Review / ")) + FS47FreeformCases::Def(Line).Title; W.bCanFollow = true; W.bFollowed = F->FocusedFieldCase() == Line;
 			W.Status = W.bFollowed ? TEXT("Following / field plan retained") : TEXT("Field plan retained");
@@ -2113,11 +2300,13 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		if (F->Field && F->Field->ArrayWear().bActive)
 			if (const auto* Next = F->Field->ArrayWear().NextBranch())
 			{
-				const int32 Up = 27 - F->Field->ArrayWear().DownCount();
+				// D45-20261110: the live count (ArrayUpCount), the branches mended, what this one brings back, and its junction inked on the map
+				const int32 Up = F->ArrayUpCount();
 				const FString Missing = F->Field->BranchNeeds(*Next);
-				FS47NbWorkItem W; W.Id = TEXT("array/") + FString(Next->Id); W.Title = FString::Printf(TEXT("Restore the array / %d of 27"), Up); W.Status = TEXT("Station goal");
-				W.NextAction = FString::Printf(TEXT("%s: %s %s"), Next->Title, Next->Fault, Missing.IsEmpty() ? TEXT("You have what it needs.") : *(TEXT("Needs ") + Missing + TEXT(".")));
-				W.Location = FString::Printf(TEXT("%s junction, beside antenna %s"), Next->Title, Next->Junction);
+				FS47NbWorkItem W; W.Id = TEXT("array/") + FString(Next->Id); W.Title = FString::Printf(TEXT("Restore the array / %d of 27, branches %d of %d"), Up, F->Field->ArrayWear().Restored.Num(), FS47ArrayWear::Branches().Num()); W.Status = TEXT("Station goal");
+				W.NextAction = FString::Printf(TEXT("%s (+%d antennas): %s %s"), Next->Title, Next->Dishes.Num(), Next->Fault, Missing.IsEmpty() ? TEXT("You have what it needs.") : *(TEXT("Needs ") + Missing + TEXT(".")));
+				W.Location = FString::Printf(TEXT("%s junction, beside antenna %s. Marked on your map."), Next->Title, Next->Junction);
+				W.Hints = { FString::Printf(TEXT("The junction beside %s is inked on your map, and its fault lamp is lit out there."), Next->Junction), W.NextAction };
 				X.WorkItems.Add(W);
 			}
 		if (F->ActiveServiceGuide() > 0)
@@ -2140,13 +2329,13 @@ FS47NbExtras US47Flow::NotebookExtras() const
 				const bool Selected = !W.bDone && F->Director->PhotoControlFocusId() == Claim.Id;
 				W.bCanFollow = !W.bDone && Available && F->CanRegisterPhotoEvidence();
 				W.Status = W.bDone ? TEXT("Comparison retained / no further payment") : !Available ? TEXT("Reference unavailable / plan retained") : Selected ? TEXT("Camera return guide / selected") : TEXT("Camera return plan retained");
-				W.NextAction = W.bDone ? TEXT("Both originals and the comparison remain in OPS / SUPPLIES.") : F->Director->PhotoControlHint(Claim.Id);
-				W.Location = W.bDone || !Available ? TEXT("OPS / corner PC / SUPPLIES") : TEXT("SARO / original viewpoint; directions from S-03 above");
+				W.NextAction = W.bDone ? TEXT("Both originals and the comparison remain in OPS / PHOTOGRAPHS.") : F->Director->PhotoControlHint(Claim.Id);
+				W.Location = W.bDone || !Available ? TEXT("OPS / corner PC / PHOTOGRAPHS") : TEXT("SARO / original viewpoint; directions from S-03 above");
 				if (!W.bDone && Available && M->Night && M->Night->Album)
 				{
 					bool Exposed=false,Developed=false;
 					for (const auto& P : M->Night->Album->Shots()) if (!P.bUnavailable && !P.Url.IsEmpty() && P.Targets.ContainsByPredicate([&](const auto& T){return T.Key == TEXT("freeform-control:") + Claim.Id;})) { Exposed=true; Developed |= P.IsDeveloped(); }
-					if (Developed) { W.NextAction=TEXT("OPS / SUPPLIES: compare the two developed originals and retain the comparison; no extra payment."); W.Location=TEXT("OPS / corner PC"); }
+					if (Developed) { W.NextAction=TEXT("OPS / PHOTOGRAPHS: compare the two developed originals and retain the comparison; no extra payment."); W.Location=TEXT("OPS / corner PC"); }
 					else if (Exposed) { W.NextAction=TEXT("PHOTO LAB: develop, fix and collect the separate return photograph, then compare at OPS."); W.Location=TEXT("PHOTO LAB / wet bench"); }
 					else if (Selected) { bool Ready=false; W.NextAction=F->Director->PhotoControlFieldHint(Ready)+TEXT("\n")+W.NextAction; }
 				}
@@ -2158,8 +2347,121 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			const FS47AlbumShot* Photo = M->Night && M->Night->Album ? M->Night->Album->Shots().FindByPredicate([&Claim](const FS47AlbumShot& P) { return P.Id == Claim.PhotoId; }) : nullptr;
 			const bool Developed = Photo && Photo->IsDeveloped();
 			W.Status = Developed ? TEXT("Developed original / awaiting registration") : TEXT("Exposed original / needs developing");
-			W.NextAction = Developed ? FString::Printf(TEXT("OPS: Register the developed original for $%d documentation credit. The image remains in the Album."), Claim.Reward) : TEXT("PHOTO LAB: Develop, fix and collect the original at the wet bench before registering it at OPS.");
+			W.NextAction = Developed ? FString::Printf(TEXT("OPS: Register the developed original for $%d field allowance. The image remains in the Album."), Claim.Reward) : TEXT("PHOTO LAB: Develop, fix and collect the original at the wet bench before registering it at OPS.");
 			W.Location = Developed ? TEXT("OPS / corner PC") : TEXT("PHOTO LAB / wet bench"); X.WorkItems.Add(W);
+		}
+		// PT-NOTEBOOK-20261109: NOW is the pause menu's note at full length (S47TonightNote::Gather with no limit), in the same words:
+		// the next step, by the clock, to do, also open, done tonight. The work items stay for a line's details, hints and FOLLOW; the
+		// job cards fold under one line, and work with no line of its own on the note is a line under ALSO OPEN.
+		if (M->Story)
+		{
+			const S47TonightNote::FNote Note = S47TonightNote::Gather(S47FlowNotebook::TonightIn(M, M->Story->Tasks(), FString(), -1), true);
+			const auto FindItem = [&X](const FString& Prefix)
+			{
+				const FS47NbWorkItem* W = X.WorkItems.FindByPredicate([&Prefix](const FS47NbWorkItem& I) { return I.Id.StartsWith(Prefix); });
+				return W ? W->Id : FString();
+			};
+			const FString Objective = F->HudObjective();
+			const auto ItemFor = [&](const FString& Source) -> FString
+			{
+				if (Source.IsEmpty()) return FString();
+				for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
+					if (const FString Step = F->CaseStep(Line).Task; !Step.IsEmpty() && Step == Source)
+					{
+						const FString Plan = FindItem(FString::Printf(TEXT("field-plan/%d"), Line));
+						return Plan.IsEmpty() ? FindItem(FString::Printf(TEXT("case/%d/"), Line)) : Plan;
+					}
+				if (Source == F->StationGoalLine()) return FindItem(TEXT("array/"));
+				if (F->ActiveServiceGuide() > 0 && Source == F->ServiceObjective()) return FindItem(TEXT("service/"));
+				if (F->Director) { bool bReady = false; if (Source == F->Director->PhotoControlFieldHint(bReady)) return FindItem(TEXT("photo-return/") + F->Director->PhotoControlFocusId()); }
+				if (Source == Objective) { const FS47NbWorkItem* W = X.WorkItems.FindByPredicate([](const FS47NbWorkItem& I) { return I.bFollowed; }); return W ? W->Id : FString(); }
+				return FString();
+			};
+			using S47TonightNote::EMark;
+			TSet<FString> Used;
+			const auto Add = [&](const TCHAR* Group, const S47TonightNote::FLine& L)
+			{
+				FS47NbNowLine N; N.Group = Group; N.Rank = L.Rank; N.Text = S47TonightNote::LineText(L); N.When = L.When; N.Where = L.Where; N.What = L.What; N.Key = L.Key;
+				N.Why = S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What; N.Item = ItemFor(L.Source); N.bDone = L.Mark == EMark::Done; // (the list's whole words, within the spoiler limits as the line is)
+				if (!N.Item.IsEmpty()) Used.Add(N.Item);
+				X.Now.Add(N);
+			};
+			// D45-20261110 (Tom: the field guide as a plain to-do list, by importance): the next step (the red arrow), then DO FIRST,
+			// TONIGHT and WHEN YOU CAN (S47TonightNote::RankOf), each with its windows first, then DONE TONIGHT. The job cards' line is
+			// tonight's; the cases waiting, the post and work with no line of its own are for when you can.
+			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Next) Add(TEXT("next"), L);
+			static const TCHAR* const Ranks[] = { TEXT("first"), TEXT("tonight"), TEXT("later") };
+			bool bCases = false;
+			for (uint8 R = 0; R < 3; ++R)
+			{
+				for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && L.Rank == R && !L.When.IsEmpty()) Add(Ranks[R], L);
+				for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && L.Rank == R && L.When.IsEmpty()) Add(Ranks[R], L);
+				for (int32 I = 0; I < Note.Also.Num(); ++I)
+				{
+					const FString AlsoKey = Note.AlsoKeys.IsValidIndex(I) ? Note.AlsoKeys[I] : FString();
+					if ((AlsoKey == TEXT("cards") ? 1 : 2) != R) continue;
+					FS47NbNowLine N; N.Group = Ranks[R]; N.Rank = R; N.bSummary = true; N.Text = N.What = N.Why = Note.Also[I]; N.Key = AlsoKey;
+					if (N.Key == TEXT("cards") || N.Key == TEXT("cases")) N.Fold = N.Key;
+					bCases |= N.Key == TEXT("cases");
+					X.Now.Add(N);
+				}
+				if (R != 2) continue;
+				for (const FS47NbWorkItem& W : X.WorkItems)
+				{
+					if (W.bCard || W.bDone || W.bEarlier || Used.Contains(W.Id) || (bCases && W.Id.StartsWith(TEXT("case/")))) continue;
+					if (!S47Script::LintText(W.Title).IsEmpty()) continue;
+					FS47NbNowLine N; N.Group = Ranks[R]; N.Rank = R; N.Text = N.What = W.Title; N.Why = W.NextAction; N.Item = N.Key = W.Id; X.Now.Add(N);
+				}
+			}
+			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Done) Add(TEXT("done"), L);
+			X.NowClock = Note.Clock;
+			X.bNow = true;
+			// N1110 (N1110-9): the three goals over the list: tonight (the note's next step, else the first thing open), this week (the
+			// weekly sheet) and the bigger question (the open case), from what NOW already has (S47GoalLine.h)
+			{
+				S47GoalLine::FIn Goal;
+				const S47TonightNote::FLine* Step = Note.Lines.FindByPredicate([](const S47TonightNote::FLine& L) { return L.Mark == EMark::Next; });
+				if (!Step) Step = Note.Lines.FindByPredicate([](const S47TonightNote::FLine& L) { return L.Mark == EMark::Open; });
+				if (Step) Goal.Next = S47TonightNote::LineText(*Step);
+				if (F->RulesLive())
+				{
+					Goal.ReviewDay = F->NextReviewDay();
+					Goal.SheetSoFar = F->ReviewPowerNow() + FS47FreeformSession::ReviewFuel + F->WeekCosts((F->NextReviewDay() - 1) / 7).Total() + F->Arrears();
+					Goal.AllowanceLeft = F->SideLeftThisWeek();
+				}
+				int32 Open = F->UrgentCase();
+				for (int32 C = 0; Open < 0 && C < FS47FreeformCases::CaseCount; ++C)
+					if (const FS47FreeformCases::FCase* K = F->CaseFile().Get(C); K && K->bOpen && !K->bConcluded) Open = C;
+				if (Open >= 0) { Goal.CaseTitle = FS47FreeformCases::Def(Open).Title; Goal.CaseQuestion = F->CaseFile().QuestionText(Open); }
+				X.Goals = S47GoalLine::Make(Goal).Lines();
+			}
+			// D45-20261110: a line NOW has not shown before is NEW, and the notebook opens on NOW for it (SS47Notebook, which counts it
+			// seen once shown). A game just begun or loaded counts what it has at first as seen, so that only what comes after is new.
+			{
+				S47TonightNote::FSeen& Shown = S47TonightNote::Seen();
+				const uint64 GameId = (uint64(uint32(CaseId)) << 32) | uint32(F->Seed());
+				const bool bFresh = !Shown.bBegun || Shown.Game != GameId;
+				if (bFresh) { Shown.Keys.Reset(); Shown.Game = GameId; Shown.bBegun = true; }
+				for (FS47NbNowLine& N : X.Now)
+				{
+					if (N.Key.IsEmpty() || N.bDone) continue;
+					if (bFresh) Shown.Keys.Add(N.Key); else N.bNew = !Shown.Keys.Contains(N.Key);
+				}
+			}
+			// D45-20261110: the field guide starts with tonight's list (Enter turns to NOW), whatever Tom calls the book
+			{
+				static const TCHAR* const Heads[] = { TEXT("DO FIRST"), TEXT("TONIGHT"), TEXT("WHEN YOU CAN") };
+				TArray<FString> Plan;
+				for (const FS47NbNowLine& N : X.Now) if (N.Group == TEXT("next")) Plan.Add(TEXT("NEXT: ") + N.Text);
+				for (uint8 R = 0; R < 3; ++R)
+				{
+					TArray<FString> Rows;
+					for (const FS47NbNowLine& N : X.Now) if (N.Group == Ranks[R] && !N.bDone) Rows.Add(TEXT("- ") + N.Text);
+					if (Rows.Num()) Plan.Add(FString(Heads[R]) + TEXT("\n") + FString::Join(Rows, TEXT("\n")));
+				}
+				if (!Note.Clock.IsEmpty()) Plan.Add(Note.Clock);
+				X.GuideEntries.Insert(FS47NbGuideEntry{ TEXT("guide:tonight"), TEXT("Tonight's list"), (Plan.Num() ? FString::Join(Plan, TEXT("\n\n")) : FString(TEXT("Nothing on tonight's list. The clock and OPS will bring the next thing."))) + TEXT("\n\nEnter or A: turn to NOW, the same list with its details.") }, 0);
+			}
 		}
 		X.OnFollow = [Self](const FString& Id)
 		{
@@ -2171,7 +2473,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			Self->OpenNotebook();
 		};
 		X.GuideEntries.Add({ TEXT("guide:observation"), TEXT("An observing shift"), TEXT("OPS assigns work and registers retained results. The tracking PC points the array; requested coordinates and actual encoders must agree. The receiver tunes frequency, gain and bandwidth and records the signal. Wait for the recording to finish, then collect its original at the printer.\n\nRoutine results return to OPS for payment. If the work order asks for comparison, retain the original and complete the requested control or measurement first. The audio desk compares recorded material; a live signal alone is not a completed review. Register the reviewed packet at OPS, collect it from the printer and file it in the archive binder.") });
-		if (HaveCamera && HaveCamera()) X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Field photography"), FString::Printf(TEXT("%s raises the physical field camera; %s takes a photograph while it is raised. Frame a visible subject clearly and keep the original image in Documents / Photos. The camera remains listed in Kit.\n\nDevelop exposed photographs physically at the PHOTO LAB wet bench: load the tank, transfer to fixer, then collect the print. A qualifying developed incident photograph earns $20 documentation credit when registered at the physical OPS terminal. Now lists pending claims. Each incident pays once; duplicate photographs earn no extra credit. Unclear photographs do not qualify."), *S47Keys::Label(TEXT("camera")), *S47Keys::Label(TEXT("shutter"))) });
+		if (HaveCamera && HaveCamera()) X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Field photography"), FString::Printf(TEXT("%s raises the physical field camera; %s takes a photograph while it is raised. Frame a visible subject clearly and keep the original image in Documents / Photos. The camera remains listed in Kit.\n\nDevelop exposed photographs physically at the PHOTO LAB wet bench. First close the lab door and switch on the safelight (the switch is by the door, inside); white light ruins a print until it is fixed. Then load the tank, transfer to fixer, and collect the print. A qualifying developed incident photograph earns $20 field allowance when registered at the physical OPS terminal. Now lists pending claims. Each incident pays once; duplicate photographs earn no extra credit. Unclear photographs do not qualify."), *S47Keys::Label(TEXT("camera")), *S47Keys::Label(TEXT("shutter"))) });
 		else X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Collect the field camera"), TEXT("The SARO field camera is on the dry archive bench in the PHOTO LAB, in the service yard east of the control room. Follow the PHOTOGRAPHIC LAB sign, enter the lab and look at the south end of the bench along its east wall. Approach the camera and use Collect field camera. It then appears in Kit.\n\nExpose a photograph with the camera, process it at the wet bench in this same lab, then take a qualifying developed incident photograph to the physical OPS terminal for registration.") });
 		X.GuideEntries.Add({ TEXT("guide:transport"), TEXT("Supplies and physical cargo"), TEXT("The service truck starts on its pad outside the SERVICE YARD exit. Check Kit for its current area before setting out. Caliche and its supply counter inside the gas station are south of SARO; the map shows the route and opening hours. Take the truck for the supply trip.\n\nBuy several items at the counter without leaving the shop menu. Paid items are packed together in one parcel beside the counter; collect it when your order is ready. A parcel at the shop, in your hands, in the truck or set down outside is not delivered stock. Carry it to the truck and secure it in the cargo rack. Back at SARO, unload and deliver it at GARAGE RECEIVING. Kit shows the current parcel separately from usable stock. Fuel in the vehicle and generator is separate from spare cans.") });
 		X.GuideEntries.Add({ TEXT("guide:service"), TEXT("Power and array service"), TEXT("Read the status and physical service labels before replacing anything. Backup power can keep the station operating while the feeder is repaired. Repairs require the relevant physical panel, parts and tests. The service bay lists retained supplies and workbench progress. If a feeder fault leaves you without a fuse or purchasing power, check the emergency fuse requisition at Caliche's indoor supply counter.") });
@@ -2311,11 +2613,25 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	}
 	if (M->Night && M->Night->Flashlight && M->Night->Flashlight->bHave)
 	{
-		Kit.Add({ TEXT("Flashlight"), FString::Printf(TEXT("From the passenger seat of the truck. %s switches it."), *S47Keys::Said(TEXT("light"))), M->Night->Flashlight->bOn ? TEXT("On") : TEXT("Off"), TEXT("flashlight"), FString() });
+		// D45-20261110 (Tom: where is the charger?): in Freeform its battery, whether it is charging, the dry cells, and where it charges
+		const FS47Flashlight& Lamp = *M->Night->Flashlight;
+		const TSharedPtr<FS47FreeformWorld> Field = M->IsFreeform() && M->Freeform ? M->Freeform->Field : nullptr;
+		if (Field.IsValid())
+		{
+			const int32 Cells = Field->InventoryCount(TEXT("cell"));
+			const FString Help = FString::Printf(TEXT("From the passenger seat of the truck. %s switches it. It runs about half a night lit. Battery %d%%. Dry cells: %d. %s"),
+				*S47Keys::Said(TEXT("light")), FMath::RoundToInt32(100 * Lamp.BatteryLevel()), Cells, *Field->FlashlightHelp());
+			const FString State = Lamp.bOn ? FString::Printf(TEXT("On / %d%%"), FMath::RoundToInt32(100 * Lamp.BatteryLevel())) : Field->LampCharging() ? FString::Printf(TEXT("Charging / %d%%"), FMath::RoundToInt32(100 * Lamp.BatteryLevel()))
+				: FString::Printf(TEXT("Off / %d%%"), FMath::RoundToInt32(100 * Lamp.BatteryLevel()));
+			Kit.Add({ TEXT("Flashlight"), Help, State, TEXT("flashlight"), FString() });
+		}
+		else Kit.Add({ TEXT("Flashlight"), FString::Printf(TEXT("From the passenger seat of the truck. %s switches it."), *S47Keys::Said(TEXT("light"))), M->Night->Flashlight->bOn ? TEXT("On") : TEXT("Off"), TEXT("flashlight"), FString() });
 	}
 	if (bCh1) Kit.Add({ TEXT("Truck keys"), M->IsFreeform() ? TEXT("The service truck starts on the pad outside the SERVICE YARD exit. The keys stay in it. Its current area is recorded below.") : TEXT("The service truck. The keys stay in it."), TruckAt, TEXT("keys"), TEXT("SERVICE") });
 	if (Papers) Kit.Add({ TEXT("Papers"), TEXT("Folded into the notebook. Documents keeps the originals; Knowledge links retained evidence."), FString::FromInt(Papers), TEXT("papers"), FString() });
-	if (Town.Contains(TEXT("nickel"))) Kit.Add({ TEXT("A nickel"), TEXT("From the coin return of the payphone in Caliche. Bright as the day it was struck."), TEXT("1947"), TEXT("nickel"), FString() });
+	// PT-NOTEBOOK-20261109: Freeform's town calls never ring the payphone (its events wait for Story's chapters), but a key kept over from
+	// a Story run in the same session would bring the nickel along: there it shows no year, and not the drawing with the date on it.
+	if (Town.Contains(TEXT("nickel"))) Kit.Add({ TEXT("A nickel"), TEXT("From the coin return of the payphone in Caliche. Bright as the day it was struck."), M->IsFreeform() ? FString() : FString(TEXT("1947")), M->IsFreeform() ? FString() : FString(TEXT("nickel")), FString() });
 	// (story/archivePhone.ts: from the fire drawer behind the STATION 01 box)
 	if (Town.Contains(TEXT("arc:reel")))
 	{
@@ -2323,16 +2639,22 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 			Town.Contains(TEXT("arc:heard")) ? TEXT("Heard") : TEXT("10-AUG-79"), FString(), FString() });
 	}
 	// WALKIE-USE-20261108: the set in the player's own hand, and its channel
-	if (M->FieldRadio && M->FieldRadio->Owned()) Kit.Add({ TEXT("Field radio"), FString::Printf(TEXT("Portable SARO field set. Channel 1 is Dale's. %s talks on it or answers him, %s turns the channel. A sound alone is not a filed observation."), *S47Keys::Label(TEXT("walkie")), *S47Keys::Label(TEXT("channel"))), FString::Printf(TEXT("Carried / channel %d"), M->FieldRadio->Channel()), FString(), FString() });
+	if (M->FieldRadio && M->FieldRadio->Owned()) Kit.Add({ TEXT("Field radio"), FString::Printf(TEXT("Portable SARO field set. Channel 1 is Dale's. %s talks on it or answers him, %s turns the channel. Something you only heard on it doesn't count as a filed observation."), *S47Keys::Label(TEXT("walkie")), *S47Keys::Label(TEXT("channel"))), FString::Printf(TEXT("Carried / channel %d"), M->FieldRadio->Channel()), FString(), FString() });
 	// TAPE-20261108: the field recorder, while it is carried; its cassettes either way, once there are any.
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Tape && (M->Freeform->Tape->Carried() || M->Freeform->Tape->Takes().Num()))
 	{
 		const FS47Tape& Tp = *M->Freeform->Tape;
 		Kit.Add({ TEXT("Field recorder"), Tp.Carried()
-			? FString::Printf(TEXT("Sony TC-D5 from the desk by the array's PC, a C-60 in it. %s starts and stops it. Play the cassettes back on that desk."), *S47Keys::Said(TEXT("tape")))
-			: FString(TEXT("On the desk by the array's PC. Its cassettes play back there.")),
-			Tp.Recording() ? FString(TEXT("Recording")) : Tp.Carried() ? FString::Printf(TEXT("Carried / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")) : FString::Printf(TEXT("On the desk / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")),
+			? FString::Printf(TEXT("A portable cassette recorder, SARO's field set, a C-60 in it. %s starts and stops it. Its place is %s; play the cassettes back there."), *S47Keys::Said(TEXT("tape")), Tp.Where())
+			: FString::Printf(TEXT("It is %s. Its cassettes play back there."), Tp.Where()),
+			Tp.Recording() ? FString(TEXT("Recording")) : Tp.Carried() ? FString::Printf(TEXT("Carried / %d %s"), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")) : FString::Printf(TEXT("On the %s / %d %s"), Tp.Top(), Tp.Takes().Num(), Tp.Takes().Num() == 1 ? TEXT("tape") : TEXT("tapes")),
 			FString(), FString() });
+	}
+	// STONE-POCKET-20261109: the stones in the jacket pocket, said in words, not as a number
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Handling && M->Freeform->Handling->PocketCount() > 0)
+	{
+		Kit.Add({ TEXT("Stones"), FS47Handling::PocketLine(M->Freeform->Handling->PocketCount()) + FString::Printf(TEXT(" Off bare ground, each about the size of a fist. %s with an empty hand brings one out; a tap with a stone in your hand puts it in. Three fit. They knock together when you run."), *S47Keys::Said(TEXT("throw"))),
+			TEXT("Jacket pocket"), FString(), FString() });
 	}
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Predecessor && M->Freeform->Predecessor->Live()) Kit.Add({ TEXT("Station keys"), TEXT("Your set, on a plain ring. The board by the lockers in the east wing takes them, if you are done here."), FString(), TEXT("keys"), TEXT("SARO") });
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Field)
@@ -2340,11 +2662,12 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 		const auto F = M->Freeform->Field;
 		Kit.Add({ TEXT("Operating budget"), TEXT("Available funds and outstanding station advance. Register completed work and eligible photographs at OPS; repayments are deducted from earnings."), FString::Printf(TEXT("$%d available / $%d advance"), M->Freeform->Budget(), M->Freeform->Debt()), FString(), FString() });
 		for (const auto& Item : TArray<TPair<FString, FString>>{ {TEXT("fuse"), TEXT("Control fuses")}, {TEXT("relay"), TEXT("Compatible relays")}, {TEXT("donor"), TEXT("Donor controllers")}, {TEXT("fuel"), TEXT("Fuel cans")}, {TEXT("film"), TEXT("Film stock")}, {TEXT("recorder_donor"), TEXT("Used field recorders")}, {TEXT("cell"), TEXT("Dry cells")}, {TEXT("foil"), TEXT("Shielding foil")} })
-			if (F->InventoryCount(Item.Key) > 0 || (Item.Key != TEXT("recorder_donor") && Item.Key != TEXT("cell") && Item.Key != TEXT("foil")))
+			if (F->InventoryCount(Item.Key) > 0 || (Item.Key != TEXT("recorder_donor") && Item.Key != TEXT("cell") && Item.Key != TEXT("foil"))
+				|| (Item.Key == TEXT("cell") && M->Night && M->Night->Flashlight && M->Night->Flashlight->bHave)) // D45-20261110: the lamp's cells, always while it is carried
 			Kit.Add({ Item.Value, TEXT("Usable delivered stock. Parcels still in transit are listed separately."), FString::FromInt(F->InventoryCount(Item.Key)), FString(), FString() });
 		if (F->InventoryCount(TEXT("fragment")) > 0) Kit.Add({ TEXT("Field samples"), TEXT("Retained samples for physical workbench comparison."), FString::FromInt(F->InventoryCount(TEXT("fragment"))), FString(), FString() });
 		if (F->InventoryCount(TEXT("archived_fragment")) > 0) Kit.Add({ TEXT("Archived samples"), TEXT("Sealed material retained after comparison."), FString::FromInt(F->InventoryCount(TEXT("archived_fragment"))), FString(), FString() });
-		Kit.Add({ TEXT("Vehicle fuel"), TEXT("Fuel already in the truck tank; spare cans are separate."), FString::Printf(TEXT("%.1f / 4"), F->VehicleFuel()), FString(), FString() });
+		Kit.Add({ TEXT("Vehicle fuel"), TEXT("Fuel already in the truck tank; spare cans are separate."), FString::Printf(TEXT("%.1f / %.0f"), F->VehicleFuel(), F->TankCap()), FString(), FString() });
 		Kit.Add({ TEXT("Backup generator"), TEXT("Fuel already in the generator; spare cans are separate."), FString::Printf(TEXT("%s / %.1f hours"), F->GeneratorRunning() ? TEXT("Running") : TEXT("Stopped"), F->GeneratorHours()), FString(), FString() });
 		if (F->ParcelStage() > 0)
 		{
@@ -2386,7 +2709,7 @@ bool US47Flow::OpenTestView(const FString& View)
 	if (View == TEXT("continue")) { const TOptional<FS47SaveMeta> C = Saves.ContinueSave(); if (C) OpenSave(*C); return true; }
 	// New night and Begin night on the opening card; the pause menu's Quit to title
 	if (View == TEXT("newnight")) { RequestNewNight(FMath::Max(1, Saves.FreeCase())); Opening->Begin(); return true; }
-	if (View == TEXT("totitle")) { AutosaveNow(); ToTitle(); return true; }
+	if (View == TEXT("totitle")) { if (!AwayFromSaro(M, CaseId, bDevRun)) AutosaveNow(); ToTitle(); return true; }
 	// the settings, or the settings at a tab (settings:picture)
 	if (View == TEXT("settings") || View.StartsWith(TEXT("settings:")))
 	{
@@ -2422,6 +2745,7 @@ bool US47Flow::OpenTestView(const FString& View)
 bool US47Flow::SelfTest(TArray<FString>& Out)
 {
 	bool bOk = S47Picture::SelfTest(Out);
+	bOk &= FS47Bodycam::SelfTest(Out); // D45-20261110 (D45-19)
 	bOk &= FS47Rhythm::SelfTest(Out);
 	auto Check = [&](const TCHAR* Name, bool bPass, const FString& Got = FString())
 	{

@@ -10,6 +10,7 @@
 #include "S47Flow.h"
 #include "S47Night.h"
 #include "S47Album.h"
+#include "S47Darkroom.h"
 #include "S47FieldCamera.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -202,7 +203,8 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  {
   if(!Check(!F.Director->PlanLocalNoiseCheck(PhotoClaimId)&&!F.Director->PlanLocalNoiseCheck(TEXT("missing-photo-incident")),TEXT("optional noise idea rejects undeveloped photo and absent incident")))return;
   if(!Check(F.CanRegisterPhotoEvidence()&&Original()&&Original()->LabStage==0&&!F.Director->PlanPhotoControl(PhotoClaimId)&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget,TEXT("physical OPS rejects control plan and payment while real orb original is undeveloped")))return;
-  M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);const auto* Bench=M->Inter->Get(TEXT("wetBench"));
+  M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);if(F.Darkroom)F.Darkroom->SetSafelight(true,true); // D45-20261110: the declared darkroom fixture
+  const auto* Bench=M->Inter->Get(TEXT("wetBench"));
   if(!Check(Bench&&bool(Bench->Object),TEXT("orb print uses actual wet-bench world object")))return;
   const FVector P=Bench->Object.WorldPosition();M->Player->Place(P.X,P.Z+1,0);Go(9504,.3);return;
  }
@@ -251,13 +253,14 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==95060)
  {
-  if(!F.TerminalWindowRendered())return;const auto Buttons=NativeButtons(TEXT("SUPPLIES"));
+  if(!F.TerminalWindowRendered())return;const auto Buttons=NativeButtons(TEXT("PHOTOGRAPHS"));
   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("native supplies opens optional noise idea")))return;
 #if !UE_BUILD_SHIPPING
   Buttons[0]->SimulateClick();
 #endif
-  Go(95061,.5);return;
+  Go(950605,.5);return;
  }
+ if(Stage==950605){Shot(TEXT("orb-photographs-desk"));Go(95061,.4);return;} // FIX-20261110: the film record with a developed frame on it
  if(Stage==95061)
  {
   if(!F.TerminalWindowRendered())return;const auto Buttons=NativeButtons(TEXT("Keep a local-noise check for later / no payment"));
@@ -362,12 +365,13 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  if(Stage==9601)
  {
   if(!Check(!F.Director->RegisterPhotoControl(PhotoClaimId,S47J::Str(Snapshot,TEXT("baselineId")))&&!F.Director->RegisterPhotoControl(PhotoClaimId,RetainedPhotoId)&&F.Budget()==PhotoBudget,TEXT("OPS rejects reuse of original and an undeveloped control without payment")))return;
-  JobIndex=1;M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);const auto* Bench=M->Inter->Get(TEXT("wetBench"));if(!Check(Bench&&bool(Bench->Object),TEXT("return control uses same physical photo lab")))return;
+  JobIndex=1;M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);if(F.Darkroom)F.Darkroom->SetSafelight(true,true); // D45-20261110
+  const auto* Bench=M->Inter->Get(TEXT("wetBench"));if(!Check(Bench&&bool(Bench->Object),TEXT("return control uses same physical photo lab")))return;
   const auto P=Bench->Object.WorldPosition();M->Player->Place(P.X,P.Z+1,0);Go(9504,.3);return;
  }
  if(Stage==9604)
  {
-  const auto Buttons=NativeButtons(TEXT("SUPPLIES"));
+  const auto Buttons=NativeButtons(TEXT("PHOTOGRAPHS"));
   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("native OPS supplies navigation is available for paired originals")))return;
 #if !UE_BUILD_SHIPPING
   Buttons[0]->SimulateClick();
@@ -376,7 +380,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==96041)
  {
-  if(!Check(F.OperationsSection()==5,TEXT("OPS displays developed photographic comparison in supplies")))return;
+  if(!Check(F.OperationsSection()==6,TEXT("OPS displays developed photographic comparison in supplies")))return;
   if(!F.TerminalWindowRendered())return;
   const auto Buttons=NativeButtons(TEXT("Retain comparison / no payment"));
   if(!Check(Buttons.Num()==1,TEXT("paired originals have one comparison action to scroll into view")))return;
@@ -491,7 +495,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  if(Stage==9611)
  {
   if(!F.TerminalWindowRendered())return;
-  const auto Buttons=NativeButtons(TEXT("SUPPLIES"));
+  const auto Buttons=NativeButtons(TEXT("PHOTOGRAPHS"));
   if(!FocusCheck(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("native supplies navigation available for focus fixture")))return;
 #if !UE_BUILD_SHIPPING
   Buttons[0]->SimulateClick();
@@ -504,7 +508,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  {
   if(!F.TerminalWindowRendered())return;
   const auto Follow=NativeButtons(TEXT("Follow this return plan"));
-  if(!FocusCheck(Original()&&!Original()->IsDeveloped()&&Follow.Num()==1&&Follow[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 documentation credit")).IsEmpty(),TEXT("newer undeveloped claim-photo fixture leaves frozen plan Follow available, without payment action")))return;
+  if(!FocusCheck(Original()&&!Original()->IsDeveloped()&&Follow.Num()==1&&Follow[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 field allowance")).IsEmpty(),TEXT("newer undeveloped claim-photo fixture leaves frozen plan Follow available, without payment action")))return;
   // Second case: current claim image is unavailable, frozen original is intact.
   M->Night->Album->Restore(S47J::Clone(S47J::Obj(Snapshot,TEXT("nativeFocusRealAlbum"))));
   auto MissingClaim=F.Director->Save();auto Plans=S47J::Arr(MissingClaim,TEXT("photoClaims"));
@@ -516,7 +520,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  {
   if(!F.TerminalWindowRendered())return;
   const auto Buttons=NativeButtons(TEXT("Follow this return plan"));
-  if(!FocusCheck(F.OperationsSection()==5&&Buttons.Num()==1&&Buttons[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 documentation credit")).IsEmpty(),TEXT("unavailable current claim image does not hide second frozen-plan Follow or offer payment")))return;
+  if(!FocusCheck(F.OperationsSection()==6&&Buttons.Num()==1&&Buttons[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 field allowance")).IsEmpty(),TEXT("unavailable current claim image does not hide second frozen-plan Follow or offer payment")))return;
   TSharedPtr<SWidget> W=Buttons[0];while(W.IsValid())
   {
    if(W->GetTypeAsString()==TEXT("SScrollBox")){StaticCastSharedPtr<SScrollBox>(W)->ScrollDescendantIntoView(Buttons[0],false);break;}
@@ -746,6 +750,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  if(Stage==9708)
  {
   M->UI->Close(true);
+  {const FVector ArrayPc=S47Three::ToThree(M->Web->PropLocation(TEXT("crtLeft")));M->Player->Place(ArrayPc.X,ArrayPc.Z+1.1,0);} // D45-20261110: work orders are issued at the array PC
   if(!NotebookCheck(F.Field->TriggerServiceFault(false,TEXT("S-07"))&&F.StartServiceGuide(false)&&F.Field->ServiceDishId()==TEXT("S-07"),TEXT("explicit real S-07 service-fault fixture and production work-order acceptance; no simulated completed repair")))return;
   M->Flow->OpenNotebook();Go(9709,.5);return;
  }

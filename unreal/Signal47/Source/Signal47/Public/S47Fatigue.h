@@ -31,6 +31,9 @@ public:
 	void Slept(double Seconds, EBed Where);
 	/** Time lost while taken (FS47FreeformSession::TakenAway, after the clock moved): awake, every hour of it. */
 	void Lost(double Seconds);
+	/** M7 (Tom, 9 November): screen work tires more than the clock alone: a card registered at OPS (FS47FreeformSession::DeskWork) adds
+	 *  these hours awake on top of the time it took. Felt in a developer run only when F10 set the fatigue. */
+	void Desk(double Hours);
 	/** The coffee machine and the mug in the control room ("coffeePot", "mug"). */
 	bool Use(const FString& Id);
 	FString Label(const FString& Id) const;
@@ -52,14 +55,19 @@ public:
 	double HeardWithin() const { return HeardFor > 0 ? HeardReach : 0.0; }
 	/** F10: this many hours awake now, felt in a developer run too (negative: as the game has it again). */
 	void DevSet(double Hours);
+	/** D46-20261110: the notebook's one short line ("Tired", "Wide awake, coffee 2 cups"), empty when there is nothing to say. */
+	FString KitLine() const;
+	/** Cups drunk since six this morning (a half-full mug counts half). */
+	double CupsToday() const { return Cups; }
 	FString Describe() const;
 
 	// ---------- the pure rules (tested) ----------
 	/** Tiredness from the hours awake, the coffee in you and the hour (the small hours are the worst). */
 	static double LevelOf(double AwakeHours, double Caffeine, double ClockOfDay);
 	/** The hours awake left after SleptHours in this bed: sleep pays off a share of them, the first hours most; under half an hour is
-	 *  no sleep, and a doze under a couple of hours counts for less. The motel bed best, the cot least. */
-	static double AfterSleep(double AwakeHours, double SleptHours, EBed Where);
+	 *  no sleep, and a doze under a couple of hours counts for less. The motel bed best, the cot least. M7 (C): lying down with more
+	 *  than WiredCaffeine in you (three cups close together) is a thin sleep: it pays off less of them. */
+	static double AfterSleep(double AwakeHours, double SleptHours, EBed Where, double CaffeineAtBed = 0);
 	/** How much of the run is left (AS47Walker: the run is 1 + 0.6 times this as fast as the walk), by how tired and how much wind is
 	 *  left (1 fresh, 0 winded). Never under RunFloor: a tired run is still a run, heard as one, faster than a figure hunting. */
 	static double RunScaleOf(double Tired, double Wind = 1);
@@ -74,7 +82,13 @@ public:
 	static double LidsOf(double Tired, double Spell, double Droop, double Waking);
 	/** Seconds from one heavy spell to the next (U a draw 0 to 1): never under MinSpellGap, rarer when only a little tired. */
 	static double SpellGapOf(double Tired, double U);
-	static constexpr double CupCaffeine = 0.6, MostCaffeine = 1.5, CaffeineHalfLife = 3 * 3600.0, RestedAfterArrival = 2;
+	/** D46-20261110: the next cup of the day (CupsBefore drunk already) gives less: each takes 0.7 of the one before, never under a fifth. */
+	static double CupStrengthOf(double CupsBefore);
+	/** A tired walk: up to 12 percent slower, nothing until properly tired. */
+	static double WalkScaleOf(double Tired);
+	static FString KitLineOf(double Tired, double CupsToday, double Caffeine);
+	static int32 CoffeeDayOf(double Clock) { return int32(FMath::FloorToDouble((Clock - 6 * 3600.0) / 86400.0)); }
+	static constexpr double CupCaffeine = 0.6, MostCaffeine = 1.5, CaffeineHalfLife = 3 * 3600.0, RestedAfterArrival = 2, WiredCaffeine = 1.0;
 	static constexpr double RunFloor = 0.9, MinSpellGap = 20, WakeSeconds = 22;
 	static bool SelfTest(TArray<FString>& Lines);
 
@@ -91,6 +105,11 @@ private:
 	double Wind = 1, BreathIn = 0, HeardFor = 0, HeardReach = 0, SinceRun = 1e9;
 	FVector LastFeet = FVector::ZeroVector;
 	bool bHaveFeet = false;
+	// D46-20261110: cups today (the day turns at six), the day they were counted on, and when the last tired thought was given
+	double Cups = 0, ThoughtAt = -1e9;
+	int32 CupDay = -100000, ThoughtNo = 0;
+	void RollDay();
+	void TiredThought();
 	double DinerAt = -1e9; // the clock when the Mesa's cup was last drunk
 	int32 Mug = 0; // the mug: 0 empty, 1 full, 2 half
 	bool bDev = false;

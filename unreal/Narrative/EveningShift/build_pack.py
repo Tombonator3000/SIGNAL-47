@@ -5,6 +5,8 @@ JSON modules are the source. Run normally to export, or --check to require
 byte-identical generated files without writing. Python standard library only.
 Finished voice takes are read from voice/takes.json (written by voice/verify.py from
 the real WAV files); their durations and speech timings fill the manifest/subtitles.
+Dale's takes (voice_profile dale, Tom 9 November) come from ../DaleVoice/takes.json instead,
+bound to his line by id and exact text in ../DaleVoice/manifest.json (DALE-STORY-SWAP).
 """
 from __future__ import annotations
 
@@ -17,6 +19,8 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parent
+# Dale's own fictional voice (DaleVoice, profile dale_de_design), not the retired kinski clone.
+DALE_PROFILE = "dale"
 PHASES = ["commute", "handover", "early_shift", "signal", "archive", "field", "all_night"]
 CHANNELS = ["physical", "phone", "walkie", "radio", "ui"]
 
@@ -121,8 +125,8 @@ def validate():
         fail("DESCRIPTION", "must be declared with record=false")
     if "DALE" not in actors or set(actors["DALE"]["allowed_channels"]) - {"phone", "walkie", "radio"}:
         fail("DALE", "may only use phone, walkie or radio")
-    if actors["DALE"]["voice_profile"] != "kinski":
-        fail("DALE", "requires kinski voice_profile")
+    if actors["DALE"]["voice_profile"] != DALE_PROFILE:
+        fail("DALE", f"requires {DALE_PROFILE} voice_profile (the kinski clone is retired, Tom 9 November)")
 
     internal, external = {}, {}
 
@@ -332,11 +336,45 @@ def validate_takes(pack, line_records, actors, aliases):
             duration, start, end = (number(take[k], where) for k in ("duration_seconds", "speech_start_seconds", "speech_end_seconds"))
             if not 0 <= start < end <= duration:
                 fail(where, "need 0 <= speech start < speech end <= duration")
+            if actors[line_records[lid]["speaker"]]["voice_profile"] == DALE_PROFILE:
+                fail(where, "Dale's takes come from DaleVoice/takes.json, not this pack's voice/")
             takes[lid] = take
+    takes.update(dale_takes(line_records, actors, required))
     complete = bool(required) and all(lid in takes for lid in required)
     if (pack["production"]["audio_status"] == "voice_takes_recorded") != complete:
         fail("production.audio_status", "voice_takes_recorded exactly when voice/takes.json covers every required cue")
     return takes
+
+
+def dale_takes(line_records, actors, required):
+    """Dale's measured takes from DaleVoice (one take per line id, shared by both Story packs).
+
+    A take counts only when DaleVoice/manifest.json has the same id with the exact same text, so a
+    rewritten line falls back to pending instead of playing the old words."""
+    dale = [lid for lid in required if actors[line_records[lid]["speaker"]]["voice_profile"] == DALE_PROFILE]
+    folder = ROOT.parent / "DaleVoice"
+    if not dale or not (folder / "takes.json").exists():
+        return {}
+    data = read_json(folder / "takes.json")
+    lines = {row["id"]: row for row in read_json(folder / "manifest.json")["lines"]}
+    out = {}
+    for lid in dale:
+        where = f"DaleVoice/takes.json:{lid}"
+        take = mapping(data["takes"], "DaleVoice/takes.json.takes").get(lid)
+        if take is None:
+            continue
+        row = lines.get(lid)
+        if not row or row["status"] != "voice" or row["text"] != line_records[lid]["text"]:
+            fail(where, "DaleVoice/manifest.json differs from this line; run DaleVoice/build_manifest.py and record it again")
+        obj(take, where, ["file", "sha256", "duration_seconds", "speech_start_seconds", "speech_end_seconds"])
+        if take["file"] != f"DaleVoice/{lid}.wav":
+            fail(where, "expected DaleVoice/<line id>.wav")
+        string(take["sha256"], where)
+        duration, start, end = (number(take[k], where) for k in ("duration_seconds", "speech_start_seconds", "speech_end_seconds"))
+        if not 0 <= start < end <= duration:
+            fail(where, "need 0 <= speech start < speech end <= duration")
+        out[lid] = take
+    return out
 
 
 def json_bytes(value):

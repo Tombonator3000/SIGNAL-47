@@ -31,7 +31,7 @@ BLEND_DIR = ROOT / 'blend'
 for d in (RENDER_DIR, FBX_DIR, BLEND_DIR):
     d.mkdir(parents=True, exist_ok=True)
 
-NAMES = {'barn': 'SM_FarmBarn', 'house': 'SM_FarmHouse', 'shed_a': 'SM_FarmShedA', 'shed_b': 'SM_FarmShedB'}
+NAMES = {'barn': 'SM_FarmBarn', 'house': 'SM_FarmHouse', 'shed_a': 'SM_FarmShedA', 'shed_b': 'SM_FarmShedB', 'shed_door': 'SM_FarmShedDoor'}
 CAMS = {
     'barn': {'hero': ((-19, -21, 1.6), (0, 0, 3.0), 30), 'rear': ((20, 19, 1.6), (0, 0, 3.0), 30),
              'front': ((1.5, -27, 1.6), (0, 0, 3.4), 35), 'door': ((1.0, -11.5, 1.6), (0, -5.5, 2.1), 30),
@@ -43,6 +43,7 @@ CAMS = {
                'front': ((.5, -14, 1.6), (0, 0, 1.7), 32), 'roof': ((-11, -13, 8), (0, 0, 1), 32)},
     'shed_b': {'hero': ((-6, -8, 1.6), (0, 0, 1.4), 30), 'rear': ((6.5, 7.5, 1.6), (0, 0, 1.4), 30),
                'door': ((-.8, -4.8, 1.6), (-.4, -1.6, 1.2), 26), 'roof': ((-7, -8, 6), (0, 0, 1), 32)},
+    'shed_door': {'hero': ((-1.1, -3.4, 1.6), (.48, 0, 1.0), 30), 'back': ((1.7, 2.9, 1.6), (.48, 0, 1.0), 30)},
 }
 
 

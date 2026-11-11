@@ -16,11 +16,14 @@
 #include "S47FloodProbe.h"
 #include "S47Flow.h"
 #include "S47Freeform.h"
+#include "S47Story.h"
+#include "S47FreeformAudioDesk.h"
 #include "S47FreeformCases.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Glimpses.h"
 #include "S47Happenings.h"
+#include "S47WeekCase.h"
 #include "S47HighwayUfo.h"
 #include "S47IndoorDread.h"
 #include "S47Inter.h"
@@ -67,6 +70,12 @@ namespace
  const TCHAR* const PlaceIds[]={TEXT("cinema"),TEXT("feed"),TEXT("church"),TEXT("gas")};
  const TCHAR* const PlaceNames[]={TEXT("the Plaza cinema"),TEXT("the feed store"),TEXT("the church"),TEXT("the gas station")};
  const TCHAR* const TakerNames[3]={TEXT("small Roswell"),TEXT("crab"),TEXT("tall one")};
+ // D45-20261110: where something is from where the player faces (Yaw as S47Walker turns: plus is to the left).
+ const TCHAR* WhichWay(double Turn)
+ {
+  const double A=FMath::UnwindRadians(Turn);
+  return FMath::Abs(A)<PI/4?TEXT("ahead of you"):FMath::Abs(A)>PI*.75?TEXT("behind you"):A>0?TEXT("off to your left"):TEXT("off to your right");
+ }
  const TCHAR* const SpeedLabels[]={TEXT("x1"),TEXT("x5"),TEXT("x15"),TEXT("x30"),TEXT("x60")};
  const double SpeedValues[]={1,5,15,30,60};
  FString ClockText(double Clock)
@@ -149,6 +158,7 @@ void FS47DevFreeform::ClearRunning()
  auto* F=Session();if(!F)return;
  Waiting.Reset();
  if(M->World){M->World->TestInput=nullptr;M->World->Autopilot.Reset();}
+ if(M->Player)M->Player->TestMove.Reset(); // (a line's walk, FARM-GATE's, stops with it)
  if(F->Director&&DevRun()&&F->Director->Busy())F->Director->CancelForTest();
  if(F->IndoorDread)F->IndoorDread->DevCancel();
  if(F->Taken&&F->Taken->Busy()){F->Taken->Stop();if(M->UI)M->UI->Fade(false);} // Reached by a crab goes dark at once: Stop leaves that to whoever asked.
@@ -161,8 +171,13 @@ void FS47DevFreeform::ClearRunning()
  if(M->HighwayUfo&&M->HighwayUfo->Busy()){M->HighwayUfo->CancelForTest();if(DevRun())M->HighwayUfo->Begin(nullptr);}
  if(M->SkyVisitors)M->SkyVisitors->DevFormationStop();
  if(M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
+ if(EyeGlintClear)EyeGlintClear();
+ if(TripoNewClear)TripoNewClear();
+ if(WorldFixesClear)WorldFixesClear();
  S47FloodProbe::StopLive(M);
  if(F->Happenings)F->Happenings->DevClear(false);
+ // WEEKLY-CASE-20261109: the week's case on the ground is over, cleaned up, as it was before F10.
+ if(F->WeekCase&&F->WeekCase->HoldsGround())F->WeekCase->DevStop();
  // M2's made-up presences and silences (S47OmenDev.cpp)
  if(M->Omen)M->Omen->DevClear();
  if(M->Soundscape)M->Soundscape->DevHush(0);
@@ -263,6 +278,14 @@ void FS47DevFreeform::AddDirector(FS47DevEvents& E)
   FStage Stage;Stage.From=L.From;Stage.To=L.To;Stage.Area=TEXT("saro");const int32 S=L.Spot;Stage.Where=[Spot,S]{return Spot(S);};Stage.Yaw=UE_DOUBLE_PI;
   const FString Id=L.Id,Say=L.Say;const bool bAim=L.bAim;
   E.AddFreeform(L.Group,L.Label,L.Note,[this,Id,Stage,bAim,Say]{StartDirector(Id,Stage,bAim,Say);});
+ }
+ {
+  // FIX-20261110: as in play, where a passage over SARO takes the mains first (the fixtures above keep their immediate life).
+  FStage Stage;Stage.From=EveningFrom;Stage.To=EveningTo;Stage.Area=TEXT("saro");Stage.Where=[]{return ControlRoom();};Stage.Yaw=UE_DOUBLE_PI;
+  E.AddFreeform(Small,TEXT("Flyover that takes the mains"),TEXT("22:00, control room; 45 s of dips, then dark"),[this,Stage]
+  {
+   StartDirector(TEXT("flyover"),Stage,false,TEXT("The lamps dip for 45 seconds, then the mains go and a light crosses overhead. The generator is outside behind the control room; the mains come back by themselves."),[this]{if(auto* F=Session())if(F->Director)F->Director->SkyCutNext();});
+  });
  }
  // Where the Director's own rule puts them: at the cabinet they belong to.
  for(const bool bFeeder:{true,false})
@@ -508,13 +531,26 @@ void FS47DevFreeform::AddSites(FS47DevEvents& E)
    ToMarks(Id,[this,Name]{auto* F=Session();if(F&&F->FarmSite)F->FarmSite->TestRollWho(-1.f);Tell(true,FString::Printf(TEXT("Nine marks, a low haze and an occasional sound at %s. Until noon. E on them keeps a record."),*Name));});
   });
   for(int32 Who=0;Who<3;++Who)
-   E.AddFreeform(G,FString::Printf(TEXT("Visit at %s: %s"),*Name,TakerNames[Who]),TEXT("03:12, at the marks, it comes now and can take you"),[this,ToMarks,Id,Name,Who]
+   E.AddFreeform(G,FString::Printf(TEXT("Visit at %s: %s"),*Name,TakerNames[Who]),
+    Who==2?TEXT("03:12, at the marks, it comes now and can take you; it stands this time. Stay in the open: under a roof the light comes for you once it is near")
+     :TEXT("03:12, at the marks, it comes now and can take you"),[this,ToMarks,Id,Name,Who]
    {
     ToMarks(Id,[this,Name,Who]
     {
      auto* F=Session();if(!F||!F->FarmSite)return;
+     // D45-20261110 (Tom, d45: "the tall one did not show up"): it sat 58 m behind him in the dark. Here it stands, and once it is
+     // out the line says where to look. The game's own visits keep the dice.
+     if(Who==2)F->FarmSite->TestSitRoll(1.f);
      F->FarmSite->TestVisit(Who);
      Tell(true,FString::Printf(TEXT("The warning, then the %s comes at %s. The truck will not start. Lamp and noise change what it does."),TakerNames[Who],*Name),8);
+     if(Who==2)WaitFor([this]{auto* S=Session();return S&&S->FarmSite&&S->FarmSite->VisitBodyEye().IsSet();},30,[this]
+     {
+      auto* S=Session();if(!S||!S->FarmSite||!M->Player)return;
+      const TOptional<FVector> Eye=S->FarmSite->VisitBodyEye();if(!Eye)return;
+      const FVector D=*Eye-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+      Tell(true,FString::Printf(TEXT("The tall one stands about %.0f m off, %s. Stay in the open: under a roof the light comes for you once it is near."),
+       FVector2D(D.X,D.Z).Size(),WhichWay(FMath::Atan2(-D.X,-D.Z)-M->Player->Yaw)),9);
+     },[this]{Tell(false,TEXT("no ground in sight for the tall one here"));});
     });
    });
   E.AddFreeform(G,FString::Printf(TEXT("Visit at %s by the night's own dice"),*Name),TEXT("03:12, at the marks; 12 seconds, it picks who comes"),[this,ToMarks,Id,Name]
@@ -567,6 +603,9 @@ void FS47DevFreeform::StartHighway(bool bNorth,bool bFollow)
  auto* F=Session();
  if(!F||!M->HighwayUfo||!M->World){Tell(false,TEXT("Freeform only"));return;}
  ClearRunning();
+ // StartTrip does nothing while a truck is driven: south after north kept the north-bound trip, and its encounter went north
+ // (sweep of 9 November). Out of the cab first, as Go does.
+ if(M->World->bDriving)M->World->StopDriving();
  ToHour(SmallFrom,SmallTo);
  // Clears its rest, which the encounter asks for: the save it holds is only this test run's.
  M->HighwayUfo->Begin(nullptr);
@@ -591,7 +630,7 @@ void FS47DevFreeform::AddHighway(FS47DevEvents& E)
  E.AddFreeform(G,TEXT("On the road, the night's own rule"),TEXT("03:12, north-bound; it comes on the open stretch unless it has had its three nights"),[this]
  {
   auto* F=Session();if(!F||!M->World){Tell(false,TEXT("Freeform only"));return;}
-  ClearRunning();ToHour(SmallFrom,SmallTo);M->HighwayUfo->Begin(nullptr);
+  ClearRunning();if(M->World->bDriving)M->World->StopDriving();ToHour(SmallFrom,SmallTo);M->HighwayUfo->Begin(nullptr);
   const double StartX=1.8,StartZ=1700.;
   FS47TripOpts O;O.AtPos=FVector(8000+StartX,S47RoadTerrain::SurfaceY(StartX,StartZ),StartZ);O.AtHeading=0.;O.Leg=TEXT("road");
   M->World->StartTrip(TEXT("road"),TEXT("diner"),O);
@@ -657,7 +696,9 @@ void FS47DevFreeform::StartFieldTest(int32 Test)
   F->Begin(State,false);
  }
  FStage Stage;Stage.From=20;Stage.To=23;Stage.Area=TEXT("saro");
- Stage.Where=[Test]{return Test==0?FVector2D(5.25,-5.12):FVector2D(-1.,-20.);};
+ // T16-11: a step out from the roof ladder (S47CaseFieldTests: x 5.85, its rungs at z -4.98), facing it and the wall; no longer in it
+ Stage.Where=[Test]{return Test==0?FVector2D(5.85,-6.1):FVector2D(-1.,-20.);};
+ if(Test==0){Stage.Yaw=PI;Stage.Pitch=.25;}
  Go(Stage,[this,Test]
  {
   auto* S=Session();if(!S||!S->CaseField)return;
@@ -806,7 +847,9 @@ void FS47DevFreeform::StepStand()
  if(StandPlace.IsEmpty()||StandPlace==TEXT("tour")||!F||!M->Player||!M->Web||!M->World||M->World->bDriving||M->World->bBusy||M->Web->Area()!=TEXT("saro")||!HoldFor().IsEmpty())return;
  const double Hour=FMath::Fmod(F->Clock(),86400.)/3600.;
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
- if(Hour<21||StandNight==Night)return;
+ // NIGHT-20261110: out there already tonight, they look at what is on the ground while it lasts, as someone standing out would.
+ if(StandNight==Night){FVector Live;if(F->Happenings&&F->Happenings->LiveAt(Live))AimAt(Live);return;}
+ if(Hour<21)return;
  StandNight=Night;
  const FVector House=S47FarmHouse::Point(6,4.4)+FVector(-24,0,300);
  if(StandPlace==TEXT("house")){M->Player->Place(House.X,House.Z,0);M->Player->Pitch=0;}
@@ -823,6 +866,107 @@ void FS47DevFreeform::StepStand()
   if(!bPut)M->Player->Place(House.X+50,House.Z+20,0);
  }
  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural night %d: standing at %s, %.0f %.0f, %s"),Night,*StandPlace,M->Player->Pos.X,M->Player->Pos.Z,*ClockText(F->Clock()));
+}
+
+void FS47DevFreeform::StepCards()
+{
+ auto* F=Session();
+ if(!bCards||!F||!M->Player||!M->Web||!M->World||!M->Story||M->World->bBusy||M->World->bDriving||M->Web->Area()!=TEXT("saro"))return;
+ if(F->Taken&&F->Taken->Busy())return;
+ using J=FS47FreeformSession::EJobStage;
+ const double H0=FMath::Fmod(F->Clock(),86400.)/3600.,H=H0<12?H0+24:H0;
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ const auto Say=[&](const TCHAR* What){UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: %s [%s]"),Night,*ClockText(F->Clock()),What,*F->FeedbackText().Left(160));};
+ if(CardsNight!=Night){if(H<19.5||H>=23.)return;CardsNight=Night;CardsStage=0;CardsJob=-1;}
+ if(CardsStage<0)return;
+ if(H>=27.&&CardsStage<90){Say(TEXT("GAVE UP, the card was not through by 03:00"));CardsStage=-1;return;}
+ const auto& Jobs=F->Jobs();
+ if(CardsStage==0)
+ {
+  CardsJob=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Day==F->Day()&&X.Slot==1&&X.CaseTest<0&&X.Stage==J::New;});
+  if(CardsJob<0){Say(TEXT("no new slot-1 card today"));CardsStage=-1;return;}
+   if(F->EveningGated(Jobs[CardsJob]))return; // the card is not up yet; a player would wait too
+  const bool bOut=F->OutThereTonight();
+  FString Event,Title;double X=0,Z=0;bool bAhead=false;const bool bAny=F->Happenings&&F->Happenings->OutTonight(Night,Event,Title,X,Z,bAhead);
+  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: before the card: out there tonight %d (lead %s at %s%s), director anomaly %d"),Night,*ClockText(F->Clock()),bOut?1:0,bAny?*Event:TEXT("none"),bAny?*Title:TEXT("-"),bAhead?TEXT(", still to come"):TEXT(""),F->Anomaly()?1:0);
+  if(F->PowerFault()){F->SetPowerFault(false);UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d: the feeder was out; restored here as a player would have done at the substation"),Night);}
+  if(M->UI)M->UI->Close(true);
+  if(!F->SelectJob(CardsJob)){Say(TEXT("could not select the card"));CardsStage=-1;return;}
+  const auto* P=F->ConsoleProfile();if(!P){Say(TEXT("no receiver profile"));CardsStage=-1;return;}
+  auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
+  if(!F->PointSelected()){const auto* CJ=F->CurrentJob();UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards: pointing refused: job %d stage %d, web %d, power %d"),CJ?1:0,CJ?int32(CJ->Stage):-1,M->Web?1:0,F->HasPowerForReactiveLight()?1:0);Say(TEXT("the array would not take the pointing command"));CardsStage=-1;return;}
+   F->OpenTracking();CardsStage=1;return;
+ }
+ if(!Jobs.IsValidIndex(CardsJob)){CardsStage=-1;return;}
+ const auto& Card=Jobs[CardsJob];
+ if(CardsStage==1)
+ {
+  if(M->UI)M->UI->Close(true);
+  if(!F->StartAcquisition())return;
+  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: recording %s, discrepancy %d, phenomenon '%s'"),Night,*ClockText(F->Clock()),*Card.Id,Card.bAnomaly?1:0,*Card.Phenomenon);
+  CardsStage=2;return;
+ }
+ if(CardsStage==2)
+ {
+  if(Card.Stage!=J::Chart||F->PrinterProgress()<1)
+  {
+   // A recording that never reaches the printer is the finding: said every half hour of the clock, and left after ninety minutes.
+   static double StallSaid=0,StallFrom=0;static int32 StallNight=0;
+   if(StallNight!=Night){StallNight=Night;StallFrom=F->Clock();StallSaid=F->Clock();}
+   if(F->Clock()-StallSaid>=1800){StallSaid=F->Clock();UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: still no chart: stage %d, printer %.2f, power %d [%s]"),Night,*ClockText(F->Clock()),int32(Card.Stage),F->PrinterProgress(),F->HasPowerForReactiveLight()?1:0,*F->NextAction().Left(200));}
+   if(F->Clock()-StallFrom>=5400){Say(TEXT("GAVE UP, the recording never reached the printer"));CardsStage=-1;}
+   return;
+  }
+  if(!F->CollectChart()){Say(TEXT("could not collect the chart"));CardsStage=-1;return;}
+  if(M->UI)M->UI->Close(true);
+  // The printer hands over the oldest waiting sheet first (last night's packet): a player takes the next one, so this does too.
+  static int32 Older=0;
+  if(Card.Stage==J::Chart&&++Older<6){UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d: the printer gave an older sheet first; taking the next"),Night);F->SelectJob(CardsJob);return;}
+  Older=0;
+  if(!Card.bAnomaly){CardsStage=9;return;}
+  F->SelectJob(CardsJob);
+  CardsStage=25;return;
+ }
+ if(CardsStage==25)
+ {
+  // The array settles for a second first; a player presses again, so this does too (it gives up at 03:00 with the rest).
+  if(F->StartControl()){CardsStage=3;return;}
+  static double TriedFrom=0;static int32 TriedNight=0;
+  if(TriedNight!=Night){TriedNight=Night;TriedFrom=F->Clock();}
+  if(F->Clock()-TriedFrom>=600)
+  {
+   const auto* CJ=F->CurrentJob();
+   UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: control never started: job %s (card %s) stage %d, discrepancy %d, control %d, power %d [%s]"),Night,*ClockText(F->Clock()),CJ?*CJ->Id:TEXT("-"),*Card.Id,CJ?int32(CJ->Stage):-1,CJ&&CJ->bAnomaly?1:0,CJ&&CJ->bControl?1:0,F->HasPowerForReactiveLight()?1:0,*F->NextAction().Left(200));
+   Say(TEXT("GAVE UP, the control would not start"));CardsStage=-1;
+  }
+  return;
+ }
+ if(CardsStage==3)
+ {
+  if(Card.ControlAt<8)return;
+  if(F->AudioDesk){const FVector P=F->AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(P.X,P.Z-1.2,0);}
+  F->OpenAudio();F->AudioAction(TEXT("original"));F->AudioAction(TEXT("play"));CardsStage=4;return;
+ }
+ if(CardsStage==4){if(F->AudioPlaying())return;F->AudioAction(TEXT("control"));F->AudioAction(TEXT("play"));CardsStage=5;return;}
+ if(CardsStage==5)
+ {
+  if(F->AudioPlaying())return;
+  F->AudioAction(TEXT("original"));F->SeekAudio(9.1);F->AudioAction(TEXT("mark_start"));F->SeekAudio(13.0);F->AudioAction(TEXT("mark_end"));
+  const bool bOk=F->AudioAction(TEXT("confirm"));
+  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: both reels heard (original %.0f s, control %.0f s), interval confirmed %d [%s]"),Night,*ClockText(F->Clock()),Card.OriginalCovered,Card.ControlCovered,bOk?1:0,*F->FeedbackText().Left(160));
+  if(M->UI)M->UI->Close(true);
+  if(!bOk){CardsStage=-1;return;}
+  CardsStage=9;return;
+ }
+ if(CardsStage==9)
+ {
+  const int32 Before=F->Places?F->Places->Bearings().Num():0;
+  const bool bOk=F->RegisterComparison(Card.bAnomaly?TEXT("unresolved"):TEXT("normal"));
+  const auto* B=F->Places&&F->Places->Bearings().Num()>Before?&F->Places->Bearings().Last():nullptr;
+  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: registered %d, discrepancy %d, bearing slip %s%s [%s]"),Night,*ClockText(F->Clock()),bOk?1:0,Card.bAnomaly?1:0,B?TEXT("toward "):TEXT("NONE"),B?*B->Target:TEXT(""),*F->FeedbackText().Left(160));
+  if(M->UI)M->UI->Close(true);
+  CardsStage=90;return;
+ }
 }
 
 void FS47DevFreeform::StepTour()
@@ -891,6 +1035,7 @@ void FS47DevFreeform::StepNatural(double Dt)
   Holding=Why;
  }
  double Use=Why.IsEmpty()?Speed:1;
+  if(bCards&&CardsStage>=1&&CardsStage<90)Use=1; // the card is worked at the pace a player works it
  // A formation is worth seeing, but it should not cost a night.
  if(M->SkyVisitors&&M->SkyVisitors->FormationData().bActive&&Use>5)Use=5;
  SpeedUsed=Use;
@@ -1087,6 +1232,17 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
    });
   });
  }
+ // PT-SAUCER-ROCK-20261109: Saucer Rock by day and after midnight, from 14 m off, looking at it. E on it says what the hour shows.
+ for(const bool bNight:{false,true})
+  E.AddFreeform(G,bNight?TEXT("Saucer Rock by night (01:00)"):TEXT("Saucer Rock by day (11:00)"),bNight?TEXT("on foot, 14 m off, after midnight: E on it, then look past it to the west"):TEXT("on foot, 14 m off, late morning: E on it finds it and marks the map"),[this,bNight]
+  {
+   ToLandPlace(TEXT("saucer_rock"),14,bNight?1.:11.,bNight?1.75:12.,[this,bNight](double X,double Z)
+   {
+    AimAt(FVector(X,M->Player->FloorY+2.2,Z));
+    auto* F=Session();double Rx=0,Rz=0;const bool bSpot=F&&F->Places&&F->Places->Spot(TEXT("saucer_rock"),Rx,Rz);
+    Tell(bSpot,FString::Printf(TEXT("At Saucer Rock (road %.0f, %.0f), %s. E on it: %s"),Rx,Rz,bNight?TEXT("01:00"):TEXT("11:00"),bNight?TEXT("the light past it, kept as a record."):TEXT("the find, and the map marked.")),7);
+   });
+  });
  static const TCHAR* const K=TEXT("What the shops have, and the radio");
  E.AddFreeform(K,TEXT("Give me everything on offer"),TEXT("spotlight, cot, magnetometer, second logger, film, alarm; this test run only"),[this]
  {
@@ -1109,7 +1265,7 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
  E.AddFreeform(K,TEXT("CB: the next line"),TEXT("the next that fits; each once in a game, and most mean nothing"),[this]
  {
   auto* F=Session();const bool bSaid=F&&F->Tips&&F->Tips->DevCb();
-  if(!bSaid)Tell(false,TEXT("no CB here (the truck or the SARO building), the CB is busy with another call, or no line is left that fits this game"));else{bLastOk=true;LastText=TEXT("a CB line");}
+  if(!bSaid)Tell(false,TEXT("no CB here (only sitting in the truck), the CB is busy with another call, or no line is left that fits this game"));else{bLastOk=true;LastText=TEXT("a CB line");}
  });
  // WALKIE-USE-20261108, CB-WALKIE-20261108 and SNEAK-20261108: the walkie in your own hand, the CB apart from it, keeping low.
  E.AddFreeform(K,TEXT("Walkie: Dale calls you"),TEXT("gives you the set on channel 1; T answers within 18 s, or he gives up and it goes on the slip by the phone"),[this]
@@ -1132,12 +1288,12 @@ void FS47DevFreeform::AddLand(FS47DevEvents& E)
   M->FieldRadio->NextChannel();
   Tell(true,FString::Printf(TEXT("The walkie is on channel %d."),M->FieldRadio->Channel()),4);
  });
- E.AddFreeform(K,TEXT("A stranger's report: CB or walkie"),TEXT("in the truck or the SARO building it comes over the CB; elsewhere Dale passes it on over the walkie"),[this]
+ E.AddFreeform(K,TEXT("A stranger's report: CB or walkie"),TEXT("in the truck it comes over the CB; elsewhere Dale passes it on over the walkie"),[this]
  {
   if(!M){return;}
   const bool bCb=FS47FieldRadio::CbAtHand(M);
   FS47FieldRadio::Report(M,TEXT("A rancher on the county road reports lights low over the Baca lease. He says he will not go and look."));
-  Tell(true,bCb?TEXT("Over the CB: amber, channel 19."):TEXT("Dale passes it on over the walkie if you carry it on channel 1 (green, WALKIE 1); otherwise it waits for the truck or the SARO building."),6);
+  Tell(true,bCb?TEXT("Over the CB: amber, channel 19."):TEXT("Dale passes it on over the walkie if you carry it on channel 1 (green, WALKIE 1); otherwise it waits for the truck."),6);
  });
  E.AddFreeform(K,TEXT("Keep low, as Ctrl does"),TEXT("crouched or up again: half pace, softer steps, the eye 60 cm lower; seen and heard a little less"),[this]
  {
@@ -1372,18 +1528,35 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddAnywhere(E);
  AddReyes(E);
  AddMail(E);
+ AddLateCases(E);
  AddHappenings(E);
  AddOmens(E);
  AddMapLog(E);
  AddTown(E);
  AddWeather(E);
  AddPhysics(E);
+ AddLooks(E);
+ AddEconomy(E);
+ AddEyeGlint(E);
+ AddTripoNew(E);
+ AddReach(E);
+ AddWorldFixes(E);
+ AddSaroFixes(E);
+ AddFarmLights(E);
+ AddFarmGate(E);
+ AddDread(E);
+ AddTv(E);
+ AddTownDay(E);
+ AddWeekCase(E);
 }
 
 void FS47DevFreeform::Stop()
 {
  // A new game or the title: the session these were set on has gone.
  Waiting.Reset();bNatural=false;Speed=SpeedUsed=1;Holding.Empty();bFlagRead=false;
+ if(EyeGlintClear)EyeGlintClear();
+ if(TripoNewClear)TripoNewClear();
+ if(WorldFixesClear)WorldFixesClear();
  if(Menu)
  {
   Menu->Relabel(TEXT("Natural rhythm: ON"),TEXT("Natural rhythm: off"));
@@ -1416,6 +1589,12 @@ void FS47DevFreeform::Step(double Dt)
    else Waiting.Add(MoveTemp(W));
   }
  }
+ // NIGHT-20261110: a sheet the night puts in front of the player (the note on the desk) holds the night until it is read; the card player reads it and puts it down.
+ {
+  static double ModalHeld=0;
+  if(bNatural&&M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&M->ModalOpen()&&M->UI){ModalHeld+=FApp::GetDeltaTime();if(ModalHeld>6){ModalHeld=0;UE_LOG(LogS47DevFreeform,Display,TEXT("S47: natural night: a sheet lay open 6 s with nobody at it; put down"));M->UI->Close();}}
+  else ModalHeld=0;
+ }
  if(!Session())return;
  if(!bFlagRead)
  {
@@ -1435,6 +1614,9 @@ void FS47DevFreeform::Step(double Dt)
     UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 natural night from day %d %s"),F0->Day(),*ClockText(F0->Clock()));
    }
    FParse::Value(FCommandLine::Get(),TEXT("S47NaturalStand="),StandPlace);
+   {int32 CardsFlag=0;bCards=FParse::Value(FCommandLine::Get(),TEXT("S47NaturalCards="),CardsFlag)&&CardsFlag>0;}
+   // -S47NaturalBig=1: the big nights of a real game in this run too (a run begun after night 3 gets the week 2 and 3 rounds).
+   {int32 BigFlag=0;if(FParse::Value(FCommandLine::Get(),TEXT("S47NaturalBig="),BigFlag)&&BigFlag>0&&M->Freeform&&M->Freeform->Happenings){M->Freeform->Happenings->DevBigNatural();UE_LOG(LogS47DevFreeform,Display,TEXT("S47: natural night: big nights on for this run"));}}
    // -S47NaturalHold=0: nothing drops the speed to x1, for a run over many nights where what matters is what comes and where.
    int32 HoldFlag=1;
    if(FParse::Value(FCommandLine::Get(),TEXT("S47NaturalHold="),HoldFlag)&&HoldFlag==0)
@@ -1444,7 +1626,7 @@ void FS47DevFreeform::Step(double Dt)
    }
   }
  }
- if(bNatural){StepNatural(Dt);StepStand();StepTour();}
+ if(bNatural){StepNatural(Dt);StepStand();StepTour();StepCards();}
  StepSweep(Dt);
 }
 
@@ -1462,6 +1644,9 @@ void FS47DevFreeform::StepSweep(double Dt)
  TArray<const FS47DevEvents::FEvent*> Lines;
  for(const auto& Ev:Menu->Events())if(Ev.bFreeform&&Ev.Group!=TEXT("Run the night")&&Ev.Group!=TEXT("Time and place")&&!Ev.Group.StartsWith(TEXT("No line"))&&(SweepOnly.IsEmpty()||Ev.Group==SweepOnly))Lines.Add(&Ev);
  SweepWait-=Dt;
+ // The menu's lines may not be there yet in the first frames of a game: a sweep that found none ended at once with "0 of 0"
+ // (9 November, Reach and skies). Wait up to a minute for them before saying so.
+ if(Lines.IsEmpty()&&SweepIndex==0&&SweepWait>-60)return;
  if(bSweepPending)
  {
   // The line's own work, then a moment for it to show.

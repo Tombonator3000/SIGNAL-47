@@ -9,6 +9,9 @@
 #include "Widgets/SWindow.h"
 #include "Dom/JsonValue.h"
 #include "GameFramework/PlayerController.h"
+#include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 namespace S47KeysLocal
 {
@@ -59,9 +62,10 @@ namespace S47KeysLocal
 			// GEIGER-20261108: the counter in the player's own hand once it is built, as the walkie is
 			A(TEXT("counter"), TEXT("Counter"), Low, TEXT("Hold the Geiger counter up, or put it away, once you have built it. Put away, it stays down even where it climbs."), EKeys::Z),
 			// TAPE-20261108: the field recorder off the desk by the array's PC, as the counter is
-			A(TEXT("tape"), TEXT("Field recorder"), Low, TEXT("Start or stop the field recorder once you carry it. A side runs about half an hour of the night; play it back on the desk by the array's PC."), EKeys::U),
-			// PHYSICS-20261108: loose things in the hand (S47Handling): hold to throw, tap to set down, and empty-handed a stone off the ground
-			A(TEXT("throw"), TEXT("Throw / pick up a stone"), Foot, TEXT("Hold to throw what you carry, harder the longer you hold; tap to set it down. Empty-handed outdoors, looking at bare ground: pick up a stone. Use picks up loose things."), EKeys::X, EKeys::MiddleMouseButton),
+			A(TEXT("tape"), TEXT("Field recorder"), Low, TEXT("Start or stop the field recorder once you carry it. A side runs about half an hour of the night; play it back where the recorder is kept at SARO."), EKeys::U),
+			// PHYSICS-20261108: loose things in the hand (S47Handling): hold to throw, tap to set down, and empty-handed a stone off the ground.
+			// STONE-POCKET-20261109: a tap puts a stone in the pocket (three fit); empty-handed, the key takes one out first.
+			A(TEXT("throw"), TEXT("Throw / set down"), Foot, TEXT("Hold to throw what you carry, harder the longer you hold. Tap to set it down; a stone goes in your pocket instead while there is room (three fit), and looking at bare ground you pick up the next. Empty-handed: a stone out of your pocket, or outdoors, looking at bare ground, one off it. The Use key picks up loose things."), EKeys::X, EKeys::MiddleMouseButton),
 		};
 	}
 
@@ -73,6 +77,10 @@ namespace S47KeysLocal
 		FState() { for (const S47Keys::FAction& A : Actions) { TStaticArray<FKey, 2> K; K[0] = A.Default[0]; K[1] = A.Default[1]; Map.Add(A.Id, K); } }
 	};
 	FState& St() { static FState S; return S; }
+
+	// the self-test's hand on the device (-1: as the pad says, 0: the keyboard, 1: a controller), for the hints
+	int32 ForcePad = -1;
+	bool UsingPad() { return ForcePad >= 0 ? ForcePad == 1 : S47Gamepad::UsingGamepad(); }
 
 	TStaticArray<FKey, 2>* Slots(FName Action) { return St().Map.Find(Action); }
 
@@ -179,7 +187,7 @@ FString S47Keys::Name(const FKey& K)
 
 FString S47Keys::Label(FName Action)
 {
-	if (S47Gamepad::UsingGamepad()) { const FString Pad = S47Gamepad::Label(Action); if (!Pad.IsEmpty()) return Pad; }
+	if (S47KeysLocal::UsingPad()) { const FString Pad = S47Gamepad::Label(Action); if (!Pad.IsEmpty()) return Pad; }
 	// KeysOf also contains fixed controller aliases; keyboard hints use only the saved slots.
 	for (int32 Slot = 0; Slot < 2; ++Slot)
 	{
@@ -191,13 +199,19 @@ FString S47Keys::Label(FName Action)
 
 FString S47Keys::Said(FName Action)
 {
-	if (S47Gamepad::UsingGamepad()) { const FString Pad = S47Gamepad::Label(Action); if (!Pad.IsEmpty()) return Pad; }
+	if (S47KeysLocal::UsingPad()) { const FString Pad = S47Gamepad::Label(Action); if (!Pad.IsEmpty()) return Pad; }
 	for (int32 Slot = 0; Slot < 2; ++Slot)
 	{
 		const FKey K = Key(Action, Slot);
 		if (K.IsValid()) return Name(K);
 	}
 	return FString();
+}
+
+FString S47Keys::MapSaid()
+{
+	const FString Map = Said(TEXT("map"));
+	return Map.IsEmpty() ? Said(TEXT("notebook")) : Map;
 }
 
 bool S47Keys::Bindable(const FKey& K)
@@ -408,6 +422,48 @@ bool S47Keys::SelfTest(TArray<FString>& Out)
 	Check(Label(TEXT("camera")).IsEmpty() && Said(TEXT("camera")).IsEmpty(), TEXT("fully unbound keyboard hints stay empty rather than showing an Xbox alias"));
 	Check(Is(TEXT("camera"), EKeys::Gamepad_FaceButton_Left) && KeysOf(TEXT("camera")).Contains(EKeys::Gamepad_FaceButton_Left) && S47Gamepad::Label(TEXT("camera")) == TEXT("X"), TEXT("clearing keyboard slots preserves the fixed Xbox camera binding and label"));
 	Check(Bind(TEXT("camera"), 1, EKeys::K) == EBind::Done && Label(TEXT("camera")) == TEXT("K") && Said(TEXT("camera")) == TEXT("K"), TEXT("keyboard hints fall through an empty first slot to the second saved key"));
+	// KEYS-HINT-20261109 (Tom plays with an Xbox controller): a hint in a sentence names the pad's button with a controller and the
+	// key with the keyboard, and no player's text has a fixed key in it.
+	ResetAll();
+	{
+		TGuardValue<int32> Pad(S47KeysLocal::ForcePad, 1);
+		Check(Said(TEXT("map")) == TEXT("DPAD LEFT") && Said(TEXT("notebook")) == TEXT("VIEW / LB") && Said(TEXT("use")) == TEXT("A") && Said(TEXT("board")) == TEXT("RB") && MapSaid() == TEXT("DPAD LEFT"),
+			TEXT("with a controller a hint names the pad's button"));
+		S47KeysLocal::ForcePad = 0;
+		Check(Said(TEXT("map")) == TEXT("M") && Said(TEXT("notebook")) == TEXT("Tab") && Said(TEXT("use")) == TEXT("E") && Said(TEXT("board")) == TEXT("B") && MapSaid() == TEXT("M"),
+			TEXT("with the keyboard a hint names the key"));
+		Clear(TEXT("map"), 0);
+		Check(MapSaid() == TEXT("Tab"), TEXT("the map's hint is the notebook's key when the map has none"));
+		ResetAll();
+	}
+	{
+		// (the needle in two pieces, so that this file does not find itself)
+		const FString Tab = FString(TEXT("(TA")) + TEXT("B)");
+		FString Hit;
+		for (int32 Pad = 0; Pad < 2; ++Pad)
+		{
+			TGuardValue<int32> Device(S47KeysLocal::ForcePad, Pad);
+			// (the hints as the toasts and papers put them: "on your map (...)", "in your field records (...)")
+			for (const FString& T : { FString::Printf(TEXT("It is on your map (%s)."), *MapSaid()), FString::Printf(TEXT("Noted in your field records (%s)."), *Said(TEXT("notebook"))),
+				FString::Printf(TEXT("PENCILED IN ON THE MAP (%s)."), *MapSaid().ToUpper()) })
+				if (Hit.IsEmpty() && T.Contains(Tab, ESearchCase::CaseSensitive)) Hit = T;
+		}
+		// and the game's source, where it is at hand (a development checkout): no text for the screen with it, logs aside
+		int32 Files = 0;
+		const FString Dir = FPaths::Combine(FPaths::GameSourceDir(), TEXT("Signal47"), TEXT("Private"));
+		TArray<FString> Names;
+		IFileManager::Get().FindFiles(Names, *FPaths::Combine(Dir, TEXT("*.cpp")), true, false);
+		for (const FString& N : Names)
+		{
+			TArray<FString> Rows;
+			if (!FFileHelper::LoadFileToStringArray(Rows, *FPaths::Combine(Dir, N))) continue;
+			++Files;
+			for (int32 i = 0; i < Rows.Num() && Hit.IsEmpty(); ++i)
+				if (Rows[i].Contains(Tab, ESearchCase::CaseSensitive) && !Rows[i].Contains(TEXT("UE_LOG")) && !Rows[i].TrimStart().StartsWith(TEXT("//"))) Hit = FString::Printf(TEXT("%s:%d"), *N, i + 1);
+		}
+		Out.Add(FString::Printf(TEXT("     keys: %d source files read for a fixed key in the player's texts"), Files));
+		Check(Hit.IsEmpty(), *FString::Printf(TEXT("no known player's text says %s%s%s"), *Tab, Hit.IsEmpty() ? TEXT("") : TEXT(": "), *Hit));
+	}
 	Load(Before);
 	return bOk;
 }

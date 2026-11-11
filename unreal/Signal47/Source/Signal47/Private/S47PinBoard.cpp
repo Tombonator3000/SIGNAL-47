@@ -187,7 +187,7 @@ void FS47PinBoard::Begin(const S47J::FObj& Saved)
 		for (const FString& Id : S47J::Strs(Saved, TEXT("clips"))) if (Clips.Num() < MostClips && !Id.IsEmpty()) Clips.AddUnique(Id.Left(120));
 		for (const FString& K : S47J::Strs(Saved, TEXT("links"))) if (Links.Num() < MostLinks && K.Contains(TEXT("|"))) Links.AddUnique(K.Left(250));
 	}
-	List(true);
+	// D46-20261110: the board is gone from Freeform: the book is not listed (B opens nothing); the old save key is read and kept, not shown.
 	UE_LOG(LogS47PinBoard, Display, TEXT("S47: pin board: %d on the board, %d placed, %d clippings, %d threads of your own"), Up.Num(), Where.Num(), Clips.Num(), Links.Num());
 }
 
@@ -196,7 +196,6 @@ void FS47PinBoard::Stop()
 	List(false);
 	Life.Reset();
 	Where.Reset(); Up.Reset(); Clips.Reset(); Links.Reset();
-	Look = 0;
 }
 
 S47J::FObj FS47PinBoard::Save() const
@@ -247,36 +246,6 @@ void FS47PinBoard::Kept(const FString& FindingId)
 	}
 	if (!bPlaced) return;
 	Where.Add(FindingId, Wh);
-	if (AtSaro()) Up.Add(S47PinBoardLocal::FindingCard(FindingId)); // kept here: straight up on the board
-}
-
-void FS47PinBoard::Step(double Dt)
-{
-	if (!M || !M->Freeform || !M->Freeform->Active()) return;
-	Look += Dt;
-	if (Look < 1.0) return;
-	Look = 0;
-	if (AtSaro()) PinWhatCameBack(false);
-}
-
-void FS47PinBoard::PinWhatCameBack(bool bQuiet)
-{
-	using namespace S47PinBoardLocal;
-	if (!M || !M->Freeform) return;
-	int32 Pinned = 0;
-	for (const FString& Id : M->Freeform->FindingIdsFrom(0))
-	{
-		const FString Card = FindingCard(Id);
-		if (!Up.Contains(Card)) { Up.Add(Card); ++Pinned; }
-	}
-	for (const FString& DocId : Clips)
-	{
-		const FString Card = ClipCard(DocId);
-		if (!Up.Contains(Card)) { Up.Add(Card); ++Pinned; }
-	}
-	if (Pinned <= 0) return;
-	UE_LOG(LogS47PinBoard, Display, TEXT("S47: pin board: %d put up on the board at SARO"), Pinned);
-	if (!bQuiet && M->UI) M->UI->Toast(FString::Printf(TEXT("You pin what you brought back on the board (%s): %d new."), *S47Keys::Said(TEXT("board")), Pinned), 4.5f);
 }
 
 TArray<FS47PinBoard::FItem> FS47PinBoard::Items() const
@@ -286,9 +255,10 @@ TArray<FS47PinBoard::FItem> FS47PinBoard::Items() const
 	if (!M || !M->Freeform) return Out;
 	const FS47FreeformSession& Fs = *M->Freeform;
 	TMap<int32, const FS47Places::FBearing*> FixOfDay;
-	if (Fs.Places) for (const FS47Places::FBearing& B : Fs.Places->Bearings()) FixOfDay.Add(B.Day, &B);
+	if (Fs.Places) for (const FS47Places::FBearing& B : Fs.Places->Bearings()) if (!B.bCar) FixOfDay.Add(B.Day, &B); // LOOP-1-20261109: SARO's own, not the truck's
 	for (const FString& Id : Fs.FindingIdsFrom(0))
 	{
+		if (FS47FreeformCases::IsCaseRecord(Id)) continue; // CASES-OPS-20261109: an older save's case cards come down
 		const FString Card = FindingCard(Id);
 		if (!Up.Contains(Card)) continue;
 		FItem It; It.Id = Card; It.Line = FS47FreeformCases::LineForFinding(Id);
@@ -349,7 +319,8 @@ TArray<FS47Doc> FS47PinBoard::Papers() const
 	for (const FS47Doc& D : M->Story->Docs())
 	{
 		const FString Finding = D.Id.StartsWith(TEXT("freeform-")) ? D.Id.RightChop(9) : FString();
-		if (!Finding.IsEmpty() && M->Freeform && M->Freeform->HasFinding(Finding)) continue; // field records are on the board
+		// field records are on the board; a case's telex is a paper like any other (CASES-OPS-20261109)
+		if (!Finding.IsEmpty() && M->Freeform && M->Freeform->HasFinding(Finding) && !FS47FreeformCases::IsCaseRecord(Finding)) continue;
 		Out.Add(D);
 	}
 	return Out;
@@ -361,9 +332,10 @@ TArray<FS47BoardCard> FS47PinBoard::Cards() const
 	TArray<FS47BoardCard> Out;
 	if (!M || !M->Freeform) return Out;
 	const FS47FreeformSession& Fs = *M->Freeform;
-	const FString Still = TEXT("It is in your notebook. It goes up on the board when you are back at SARO.");
+	const FString Still = TEXT("It is in your notebook.");
 	// The field records, newest last; only the latest MostCards stay up, the rest are taken down into the tray's back.
 	TArray<FString> Order = Fs.FindingIdsFrom(0);
+	Order.RemoveAll([](const FString& Id) { return FS47FreeformCases::IsCaseRecord(Id); }); // CASES-OPS-20261109: the case file's own
 	Order.StableSort([this, &Fs](const FString& A, const FString& B)
 	{
 		const FWhere* Wa = Where.Find(A); const FWhere* Wb = Where.Find(B);
@@ -372,7 +344,7 @@ TArray<FS47BoardCard> FS47PinBoard::Cards() const
 	});
 	if (Order.Num() > MostCards) Order.RemoveAt(0, Order.Num() - MostCards);
 	TMap<int32, const FS47Places::FBearing*> FixOfDay;
-	if (Fs.Places) for (const FS47Places::FBearing& B : Fs.Places->Bearings()) FixOfDay.Add(B.Day, &B);
+	if (Fs.Places) for (const FS47Places::FBearing& B : Fs.Places->Bearings()) if (!B.bCar) FixOfDay.Add(B.Day, &B); // LOOP-1-20261109: SARO's own, not the truck's
 	for (const FString& Id : Order)
 	{
 		const FString Text = Fs.FindingText(Id);
@@ -385,8 +357,11 @@ TArray<FS47BoardCard> FS47PinBoard::Cards() const
 		if (Id.StartsWith(TEXT("bearing_d")))
 			if (const FS47Places::FBearing* const* B = FixOfDay.Find(FCString::Atoi(*Id.RightChop(9))))
 			{
+				// D45-20261110: in plain words, as the slip has it now, and where its circle is
 				Cd.Title = FString::Printf(TEXT("BEARING %03.0f FROM SARO"), (*B)->Az);
-				Cd.Text = FString::Printf(TEXT("Give or take %.0f degrees. Which way, not how far."), (*B)->Spread);
+				FString Way = S47FieldMap::Compass((*B)->Az); if (!Way.IsEmpty()) Way[0] = FChar::ToUpper(Way[0]);
+				const FString Circled = (*B)->bRing ? TEXT(" Circled on the map, ") + FS47Places::SlipWhere(**B) + TEXT(".") : FString();
+				Cd.Text = FString::Printf(TEXT("%s, give or take %.0f degrees. A direction only: it doesn't say how far.%s"), *Way, (*B)->Spread, *Circled);
 			}
 		if (Cd.Text.IsEmpty())
 		{
@@ -441,79 +416,7 @@ TArray<FS47BoardCard> FS47PinBoard::Cards() const
 			Cd.Where = Still;
 			Out.Add(MoveTemp(Cd));
 		}
-	// The tray.
-	{
-		const int32 InTray = Papers().Num();
-		FS47BoardCard Cd;
-		Cd.Id = PapersId; Cd.Region = TEXT("ns"); Cd.Kind = TEXT("paper"); Cd.bHave = true;
-		Cd.Stamp = TEXT("PAPERS"); Cd.Title = TEXT("THE TRAY");
-		Cd.Text = InTray > 1 ? FString::Printf(TEXT("%d papers: the mail, the Ledger, telexes, the night logs."), InTray) : InTray == 1 ? FString(TEXT("One paper.")) : FString(TEXT("Empty."));
-		Cd.Action = TEXT("OPEN");
-		const TWeakPtr<uint8> Guard = Life;
-		FS47PinBoard* Self = const_cast<FS47PinBoard*>(this);
-		// After this click: the board's own button must not be torn down under it.
-		Cd.OnAction = [Self, Guard]
-		{
-			FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Self, Guard](float) { if (Guard.IsValid()) Self->OpenTray(); return false; }), 0.f);
-		};
-		Out.Add(MoveTemp(Cd));
-	}
 	return Out;
-}
-
-bool FS47PinBoard::DevClip(const FString& DocId)
-{
-	if (!M || !M->Story) return false;
-	const FS47Doc* D = M->Story->Docs().FindByPredicate([&DocId](const FS47Doc& X) { return X.Id == DocId; });
-	if (!D || PlaceNamed(D->Page + TEXT("\n") + D->Title).IsEmpty()) return false;
-	Clips.AddUnique(DocId);
-	if (AtSaro()) Up.Add(S47PinBoardLocal::ClipCard(DocId));
-	return true;
-}
-
-void FS47PinBoard::OpenTray()
-{
-	using namespace S47PinBoardLocal;
-	if (!M || !M->UI) return;
-	const TWeakPtr<uint8> Guard = Life;
-	TArray<S47Kit::FW> TrayRows;
-	TrayRows.Add(S47Kit::Paper(TEXT("The tray by the board: the mail, the Ledger, telexes, the night logs and Dr. Ward's letters. A paper that names a place out on the land can go up on the board as a clipping.")));
-	TArray<FS47Doc> Pile = Papers();
-	int32 Shown = 0;
-	for (int32 I = Pile.Num() - 1; I >= 0 && Shown < 9; --I, ++Shown)
-	{
-		const FS47Doc D = Pile[I];
-		FString Sentence;
-		const FString Place = PlaceNamed(D.Page + TEXT("\n") + D.Title, &Sentence);
-		const FString Line = !Sentence.IsEmpty() ? Sentence : FirstWords(D.Page.IsEmpty() ? D.Transcript : D.Page, 110);
-		TrayRows.Add(S47Kit::Card(D.Title.IsEmpty() ? D.Stamp : D.Title, Line, [this, Guard, D]
-		{
-			if (!Guard.IsValid() || !M || !M->UI) return;
-			M->UI->Document(D, [this, Guard] { if (Guard.IsValid()) FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this, Guard](float) { if (Guard.IsValid()) OpenTray(); return false; }), 0.f); });
-		}));
-		if (Place.IsEmpty()) continue;
-		if (Clips.Contains(D.Id)) { TrayRows.Add(S47Kit::Small(Up.Contains(ClipCard(D.Id)) ? TEXT("On the board.") : TEXT("Goes up on the board when you are back at SARO."))); continue; }
-		if (Clips.Num() >= MostClips) continue;
-		const FS47Places::FDef* Def = FS47Places::Def(Place);
-		TrayRows.Add(S47Kit::Button(FString::Printf(TEXT("Pin it up: %s"), Def ? Def->Title : *Place), [this, Guard, Id = D.Id]
-		{
-			if (!Guard.IsValid() || !M) return;
-			Clips.AddUnique(Id);
-			if (AtSaro()) Up.Add(ClipCard(Id));
-			else if (M->UI) M->UI->Toast(TEXT("It goes up on the board when you are back at SARO."), 3.5f);
-			UE_LOG(LogS47PinBoard, Display, TEXT("S47: pin board: clipping %s chosen from the tray"), *Id);
-			M->RequestAutosave();
-			OpenTray();
-		}));
-	}
-	if (Pile.Num() > Shown) TrayRows.Add(S47Kit::Small(FString::Printf(TEXT("%d older papers under these, in the notebook."), Pile.Num() - Shown)));
-	TrayRows.Add(S47Kit::Button(TEXT("Back to the board"), [this, Guard]
-	{
-		if (!Guard.IsValid() || !M) return;
-		if (M->UI) M->UI->Close();
-		if (M->Board.Open) M->Board.Open(FString(), FString());
-	}, true));
-	M->UI->Open(S47Kit::Shell(M->UI, TEXT("PAPERS"), S47Kit::Col(TrayRows), 900));
 }
 
 // ---------- tests ----------
@@ -545,5 +448,15 @@ bool FS47PinBoard::SelfTest(TArray<FString>& Lines)
 	Check(Has(TEXT("w2"), TEXT("t1")) && !Has(TEXT("w1"), TEXT("t1")), TEXT("the same line of inquiry: each to the one before it"));
 	Check(Has(TEXT("b"), TEXT("t1")) && !Has(TEXT("b"), TEXT("w1")), TEXT("a bearing over the place where something was kept, and not elsewhere"));
 	Check(Tied.Num() == 4, TEXT("nothing tied twice and nothing tied from nothing"));
+	// D46-20261110: an older save with a board in it still loads and saves, and the book is never listed (B opens no board in Freeform).
+	{
+		FS47PinBoard Old(nullptr);
+		S47J::FObj Saved = S47J::New();
+		S47J::Set(Saved, TEXT("up"), TArray<FString>{ TEXT("ff:f:observer.day2") });
+		Old.Begin(Saved);
+		Check(Old.UpCount() == 1 && Old.Save()->Values.Num() == 1 && Old.Book() != nullptr, TEXT("an old save's board is read and kept, and nothing is put up any more"));
+		Old.Stop();
+		Check(Old.UpCount() == 0, TEXT("stopping clears it"));
+	}
 	return bOk;
 }

@@ -141,6 +141,15 @@ def import_mesh(path, dest):
     check(path.stem + ' imported', isinstance(mesh, unreal.StaticMesh))
     return mesh
 
+def import_lod_same_frame(mesh, lod, path, dest='/Game/SubstationField'):
+    """The LOD file through the same recipe as a temporary mesh, copied into the LOD slot (as Tools/fieldintegration/import_recipe.py)."""
+    temp = dest + '/_LodTemp'
+    source = import_mesh(path, temp)
+    got = S.set_lod_from_static_mesh(mesh, lod, source, 0, True)
+    E.delete_asset(temp + '/' + path.stem)
+    E.delete_directory(temp)
+    return got
+
 try:
  rows=json.loads((ROOT/'materials.json').read_text());mats={}
  for row in rows:
@@ -160,7 +169,8 @@ try:
   check(path.stem+' material binding',set(actual)==set(parts[path.stem]['materials']),{'expected':parts[path.stem]['materials'],'actual':actual})
   for lod in (1,2):
    src=path.with_stem(path.stem+'_LOD'+str(lod))
-   if src.exists():check(path.stem+' LOD'+str(lod),S.import_lod(mesh,lod,str(src))==lod)
+   # Not S.import_lod: it drops import_mesh's import_rotation, and ApronGrade's LOD1/2 came in turned 90 degrees (9 November).
+   if src.exists():check(path.stem+' LOD'+str(lod),import_lod_same_frame(mesh,lod,src)==lod)
   nanite=mesh.get_editor_property('nanite_settings');nanite.enabled=False;mesh.set_editor_property('nanite_settings',nanite)
   body=mesh.get_editor_property('body_setup')
   if body:

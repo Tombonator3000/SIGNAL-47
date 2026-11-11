@@ -84,5 +84,58 @@ class EveningImportTest(unittest.TestCase):
         self.assertEqual(len(list((raw / "voice/evening").glob("*.wav"))), 1)
 
 
+class DaleImportTest(EveningImportTest):
+    """DALE-STORY-SWAP: Dale's cues (profile dale) come from DaleVoice's folder and takes.json."""
+
+    def setUp(self):
+        super().setUp()
+        self.dale = self.root / "DaleVoice"
+        self.dale.mkdir()
+        (self.wavs / "D01_TEST_001.wav").rename(self.dale / "D01_TEST_001.wav")
+        for item in self.manifest["recordings"]:
+            item["voice_profile"] = "dale"
+            item["audio_file"] = "DaleVoice/D01_TEST_001.wav"
+        self.dale_takes = {"format": self.format, "takes": {"D01_TEST_001": dict(
+            self.takes["takes"]["D01_TEST_001"], file="DaleVoice/D01_TEST_001.wav")}}
+        self.takes["takes"] = {}
+
+    def entry(self):
+        return catalog.catalog(self.manifest, self.subtitles, self.wavs, self.takes, self.dale, self.dale_takes)
+
+    def test_reject_extra_or_missing_recording(self):
+        (self.wavs / "D01_TEST_001.wav").write_bytes((self.dale / "D01_TEST_001.wav").read_bytes())
+        with self.assertRaisesRegex(catalog.CatalogError, "WAV set mismatch"):
+            self.entry()  # a retired take left in the EveningShift folder stops the export
+        (self.wavs / "D01_TEST_001.wav").unlink()
+        (self.dale / "D01_TEST_001.wav").unlink()
+        with self.assertRaisesRegex(catalog.CatalogError, "Dale's takes missing"):
+            self.entry()
+
+    def test_reject_take_kept_in_pack_takes(self):
+        self.takes["takes"] = dict(self.dale_takes["takes"])
+        with self.assertRaisesRegex(catalog.CatalogError, "takes metadata"):
+            self.entry()
+
+    def test_reject_missing_dalevoice_take(self):
+        self.dale_takes["takes"] = {}
+        with self.assertRaisesRegex(catalog.CatalogError, "DaleVoice takes.json"):
+            self.entry()
+
+    def test_reject_changed_take(self):
+        self.dale_takes["takes"]["D01_TEST_001"]["sha256"] = "0" * 64
+        with self.assertRaisesRegex(catalog.CatalogError, "SHA-256"):
+            self.entry()
+
+    def test_preserve_other_banks_and_pcm(self):
+        raw = self.root / "Raw"
+        raw.mkdir()
+        (raw / "voices.json").write_text(json.dumps({"other": {"sentinel": 47}}))
+        catalog.import_bank(self.entry(), self.wavs, raw, dale_dir=self.dale)
+        result = catalog.read_json(raw / "voices.json")
+        self.assertEqual(result["other"], {"sentinel": 47})
+        self.assertEqual({c["voice"] for c in result["evening"]["catalog"]["clips"]}, {"dale"})
+        self.assertEqual((raw / "voice/evening/D01_TEST_001.wav").read_bytes(), (self.dale / "D01_TEST_001.wav").read_bytes())
+
+
 if __name__ == "__main__":
     unittest.main()

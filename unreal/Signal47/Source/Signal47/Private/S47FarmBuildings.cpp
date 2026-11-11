@@ -67,6 +67,7 @@ namespace
   const double C=FMath::Cos(S.Yaw),N=FMath::Sin(S.Yaw),Dx=RoadX-S.X,Dz=RoadZ-S.Z;
   return FVector2D(Dx*C-Dz*N,-Dx*N-Dz*C);
  }
+ bool bShedShut=false; // FS47FarmShedDoor's say
 }
 
 namespace S47FarmBuildings
@@ -141,8 +142,26 @@ namespace S47FarmBuildings
  bool Blocked(double RoadX,double RoadZ,double Radius)
  {
   for(const FBox2D& B:Obstacles())if(RoadX>B.Min.X-Radius&&RoadX<B.Max.X+Radius&&RoadZ>B.Min.Y-Radius&&RoadZ<B.Max.Y+Radius)return true;
+  if(bShedShut){const FBox2D B=ShedDoorway();if(RoadX>B.Min.X-Radius&&RoadX<B.Max.X+Radius&&RoadZ>B.Min.Y-Radius&&RoadZ<B.Max.Y+Radius)return true;}
   return false;
  }
+
+ FBox2D ShedDoorway()
+ {
+  // sheds.py: the door u 1.0 to 1.98 along the south wall from its west corner (x -2.5), the wall from y -2 to -1.95: the gap left
+  // between the rows {82.0,83.0} and {83.98,87.0} above.
+  const FSite& S=Sites()[3];
+  const FVector2D A=ToRoad(S,1.0-2.5,-2.),B=ToRoad(S,1.98-2.5,-1.95);
+  return FBox2D(FVector2D(FMath::Min(A.X,B.X),FMath::Min(A.Y,B.Y)),FVector2D(FMath::Max(A.X,B.X),FMath::Max(A.Y,B.Y)));
+ }
+ void SetShedDoorShut(bool bShut){bShedShut=bShut;}
+ bool InShed(double RoadX,double RoadZ,double Pad)
+ {
+  if(!Sites().IsValidIndex(3))return false;
+  const FVector2D L=ToLocal(Sites()[3],RoadX,RoadZ);
+  return FMath::Abs(L.X)<2.5+Pad&&FMath::Abs(L.Y)<2.+Pad;
+ }
+ bool ShedDoorShut(){return bShedShut;}
 
  const TArray<FBox2D>& Plots()
  {
@@ -211,6 +230,10 @@ namespace S47FarmBuildings
   }
   const bool bGood=bAisle&&bStops&&bWindow&&bRoad&&bFloors&&Obstacles().Num()==(S47FarmHouse::HasModel()?108:133);
   Lines.Add(FString(bGood?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm buildings: barn door and aisle clear, its back wall and the house stop the walker, the road stays open, the land stays under the floors"));
-  return bGood;
+  // CRIT9-20261109: inside the feed shed, and in its doorway with the walker's reach, is in; a few metres off is not.
+  const FSite& Sh=Sites()[3];const FVector2D Mid=ToRoad(Sh,0,0),Door=ToRoad(Sh,1.49-2.5,-2.1),Off=ToRoad(Sh,0,-4.5);
+  const bool bShed=InShed(Mid.X,Mid.Y,0)&&InShed(Door.X,Door.Y,WalkerRadius)&&!InShed(Off.X,Off.Y,WalkerRadius);
+  Lines.Add(FString(bShed?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm buildings: inside the feed shed or in its doorway counts as in it (the door waits to lock)"));
+  return bGood&&bShed;
  }
 }

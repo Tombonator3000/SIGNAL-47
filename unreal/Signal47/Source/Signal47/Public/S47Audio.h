@@ -69,7 +69,7 @@ struct FS47Pressure
 
 // The game's sounds: web/src/core/Audio.ts (AudioSys), ported onto the Web Audio of
 // S47WebAudio.h and played through one synth component. Recordings are decoded into the context
-// by their web names (phoneRing, thudSoft, stepConcrete0, lic:door_heavy, phone:<id> ...) from the
+// by their web names (phoneRing, thudSoft, stepConcrete0, lic:door_heavy, character:<id> ...) from the
 // WAVE files Scripts/import-audio.sh writes to Content/Audio/Raw and Content/Licensed/Raw (with
 // their index.json); the synthesised sounds are the same graphs as the web version's.
 //
@@ -118,7 +118,8 @@ public:
 	TMap<FString, TSharedPtr<FS47AudioBuffer>> Buf;
 	float Volume = 0.8f;
 	bool bReady = false;
-	bool bKinskiCalls = true, bCharacterVoices = true; // kinskiCalls, characterVoices (main.ts sets them from the settings)
+	bool bCharacterVoices = true; // characterVoices (main.ts sets it from the settings). (KINSKI-READ-OUT: no kinskiCalls; the
+	                              // old Kinski phone bank is retired, so a line without a character voice is a caption)
 	TFunction<void()> OnPhoneCall;
 
 	/** The bought sounds are in this build (the credits name them only then): BOUGHT_SFX. */
@@ -128,6 +129,8 @@ public:
 	TSharedPtr<FS47AudioBuffer> CharacterBuffer(const FString& Voice, const FString& Text) const;
 	bool PhonePlaying() const { return PhoneSession.IsValid(); }
 	void SetVolume(float V);
+	/** N1110 (dev, -S47ExportSounds): a shadow of Live for offline rendering: a fresh context at time zero with its own buses at Live's levels and Live's recordings. */
+	static US47Audio* MakeOffline(const US47Audio& Live);
 	float MusicLevel = 0.7f; // the music's own level (the pause menu), 0..1
 	void SetMusic(float V);
 	float RadioLevel = 1.f;  // the radios' own level (the pause menu), 0..1
@@ -226,6 +229,8 @@ public:
 	// Without a place it is the old room-less sound.
 	void PcTransfer(double Seconds = 2.2, TOptional<FVector> At = TOptional<FVector>());
 	void PcTransferAtOps(AS47Web* Web, double Seconds = 2.2);
+	// T16-09: the modem stays in its room (walls when the listener is out, and stopped once well out). Offline.
+	static bool TransferSelfTest(TArray<FString>& Lines);
 	static bool RenderSoundWorkshop(const FString& BankPath);
 	// Menu tape texture is independent of music and follows the SFX/menu level.
 	void TitleTexture(bool bOn);
@@ -280,7 +285,9 @@ private:
 	TSharedPtr<FS47GainNode> TransferWalls;        // quieter when the listener is not in the control room
 	TSharedPtr<FS47BiquadFilterNode> TransferLp;   // and duller
 	bool bTransferHere = false;
+	double TransferOutSince = -1;                  // T16-09: when the listener left the control room with the modem on
 	void StepTransferWalls(const FVector& Eye);
+	static bool InControlRoom(const FVector& EyeThree);
 	TWeakObjectPtr<UWorld> World;
 	UPROPERTY() TObjectPtr<US47Synth> Synth;
 	UPROPERTY() TObjectPtr<AActor> SynthHost;
@@ -292,7 +299,6 @@ private:
 
 	// the recordings' index (Content/Audio/Raw/index.json, Content/Licensed/Raw/index.json)
 	TMap<FString, FString> ByFile;           // file name (thud_soft) -> web name (thudSoft), the bought ones first
-	TMap<FString, FString> PhoneKeys;        // normalised text -> phone:<id>
 	TMap<FString, TMap<FString, FString>> CharacterKeys; // voice -> normalised text -> character:<id>
 	void DecodeAll();
 	void Unlock(bool bWithSynth, bool bDecode = true); // preload() and unlock(): the context, the buses, the noise, the recordings

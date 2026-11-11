@@ -3,6 +3,11 @@
 
 No synthesis, conversion, copying, content import, or existing-bank mutation. All
 required takes must exist. --check compares a previously generated entry byte for byte.
+
+Dale's cues (voice_profile dale, Tom 9 November) are his own fictional voice from
+Narrative/DaleVoice: the WAVs from --dale-wav-dir (Content/Audio/DaleVoice), hash and speech
+window from DaleVoice/takes.json. The EveningShift folder then holds only the other roles'
+takes; a retired kinski take left there is an unexpected WAV and stops the export.
 """
 from __future__ import annotations
 
@@ -20,6 +25,9 @@ import wave
 PROJECT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = PROJECT.parent / "Narrative/EveningShift/generated/recording_manifest.json"
 DEFAULT_TAKES = PROJECT.parent / "Narrative/EveningShift/voice/takes.json"
+DEFAULT_DALE_TAKES = PROJECT.parent / "Narrative/DaleVoice/takes.json"
+DEFAULT_DALE_DIR = PROJECT / "Content/Audio/DaleVoice"
+DALE_PROFILE = "dale"
 
 
 class CatalogError(ValueError):
@@ -65,7 +73,7 @@ def wav_info(path):
     return {"duration": frames / 48000, "frames": frames, "sha256": digest.hexdigest()}
 
 
-def catalog(manifest, subtitles, wav_dir, takes=None):
+def catalog(manifest, subtitles, wav_dir, takes=None, dale_dir=None, dale_takes=None):
     require(isinstance(manifest, dict) and manifest.get("pack_id") == "signal47_evening_shift",
             "expected EveningShift recording_manifest.json")
     require(manifest.get("planned_format") == {"sample_rate_hz": 48000,
@@ -109,15 +117,30 @@ def catalog(manifest, subtitles, wav_dir, takes=None):
             require(origin.get("reuse_of") is None and origin["actor"] == item["actor"]
                     and origin["voice_profile"] == item["voice_profile"]
                     and lines[source]["text"] == lines[cue]["text"], f"{cue}: alias identity/text mismatch")
+    dale = {cue for cue in required if by_id[cue]["voice_profile"] == DALE_PROFILE}
+    own = required - dale
     require(wav_dir.is_dir(), f"WAV directory does not exist: {wav_dir}")
-    expected = {cue + ".wav" for cue in required}
+    expected = {cue + ".wav" for cue in own}
     actual = {p.name for p in wav_dir.iterdir() if p.suffix.lower() == ".wav"}
     require(actual == expected, "WAV set mismatch; missing: " + ", ".join(sorted(expected - actual))
             + "; unexpected: " + ", ".join(sorted(actual - expected)))
-    measured = {cue: wav_info(wav_dir / (cue + ".wav")) for cue in sorted(required)}
+    folder = {cue: wav_dir for cue in own}
+    if dale:
+        require(dale_dir is not None and dale_dir.is_dir(), f"Dale's WAV directory does not exist: {dale_dir}")
+        missing = sorted(cue for cue in dale if not (dale_dir / (cue + ".wav")).is_file())
+        require(not missing, "Dale's takes missing: " + ", ".join(missing))
+        folder.update({cue: dale_dir for cue in dale})
+    measured = {cue: wav_info(folder[cue] / (cue + ".wav")) for cue in sorted(required)}
     if takes is not None:
         require(takes.get("format") == manifest["planned_format"], "takes PCM target differs from manifest")
-        require(set(takes.get("takes", {})) == required, "takes metadata does not match required recordings")
+        require(set(takes.get("takes", {})) == own, "takes metadata does not match required recordings")
+        takes = {"format": takes["format"], "takes": dict(takes["takes"])}
+        if dale:
+            require(dale_takes is not None and dale_takes.get("format") == manifest["planned_format"],
+                    "DaleVoice takes missing or PCM target differs from manifest")
+            missing = sorted(dale - set(dale_takes.get("takes", {})))
+            require(not missing, "DaleVoice takes.json has no take for: " + ", ".join(missing))
+            takes["takes"].update({cue: dale_takes["takes"][cue] for cue in dale})
     clips, lookup = [], {}
     for cue, item in by_id.items():
         source = item.get("reuse_of") or cue
@@ -127,8 +150,9 @@ def catalog(manifest, subtitles, wav_dir, takes=None):
         require(key not in lookup or lookup[key] == source,
                 f"{cue}: different takes collide in S47RadioVoice's role/text lookup")
         lookup[key] = source
+        home = "DaleVoice/" if source in dale else "EveningShift/"
         declared_file = item.get("audio_file")
-        require(declared_file is None or declared_file in (source + ".wav", "EveningShift/" + source + ".wav"),
+        require(declared_file is None or declared_file in (source + ".wav", home + source + ".wav"),
                 f"{cue}: supplied filename differs from manifest")
         declared_duration = item.get("duration_seconds")
         require(declared_duration is None or (type(declared_duration) in (int, float)
@@ -136,7 +160,7 @@ def catalog(manifest, subtitles, wav_dir, takes=None):
         timing = {}
         if takes is not None:
             take = takes["takes"][source]
-            require(take.get("file") == "EveningShift/" + source + ".wav", f"{cue}: takes filename mismatch")
+            require(take.get("file") == home + source + ".wav", f"{cue}: takes filename mismatch")
             require(take.get("sha256") == info["sha256"], f"{cue}: WAV SHA-256 differs from approved take")
             require(type(take.get("duration_seconds")) in (int, float)
                     and abs(take["duration_seconds"] - info["duration"]) <= 1 / 48000,
@@ -154,13 +178,15 @@ def catalog(manifest, subtitles, wav_dir, takes=None):
                       "frames": info["frames"], "sha256": info["sha256"], "reuse_of": item.get("reuse_of"), **timing})
     return {"evening": {"folder": "/Game/Audio/Voice/Evening", "catalog": {"clips": clips},
             "validation": {"pack_id": manifest["pack_id"], "cue_count": len(clips),
-                           "unique_recording_count": len(measured), "sample_rate_hz": 48000,
+                           "unique_recording_count": len(measured), "dale_recording_count": len(dale),
+                           "sample_rate_hz": 48000,
                            "sample_format": "PCM16", "channels": 1,
                            "scope": "File identity, PCM format, frame duration and aliases only; listening review required."}}}
 
 
-def import_bank(entry, wav_dir, raw_dir, voices=None):
-    """Copy validated PCM unchanged and publish its bank last; leave other banks intact."""
+def import_bank(entry, wav_dir, raw_dir, voices=None, dale_dir=None):
+    """Copy validated PCM unchanged and publish its bank last; leave other banks intact.
+    Dale's clips come from dale_dir (his own voice); every copy is checked against the catalog hash."""
     raw_dir.mkdir(parents=True, exist_ok=True)
     index = raw_dir / "voices.json"
     if voices is None:
@@ -171,7 +197,9 @@ def import_bank(entry, wav_dir, raw_dir, voices=None):
             continue
         destination = raw_dir / clip["raw"]
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(wav_dir / clip["file"], destination)
+        source = (dale_dir if clip["voice"] == DALE_PROFILE else wav_dir) / clip["file"]
+        shutil.copyfile(source, destination)
+        require(wav_info(destination)["sha256"] == clip["sha256"], f"{clip['id']}: imported copy differs from catalog")
     voices.update(entry)
     payload = json.dumps(voices, ensure_ascii=False, indent=1, allow_nan=False) + "\n"
     # Readers see either the old complete index or the new complete index.
@@ -188,20 +216,23 @@ def main():
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--subtitles", type=Path, help="defaults to subtitles.json beside the manifest")
     parser.add_argument("--takes", type=Path, default=DEFAULT_TAKES, help="approved take hashes and measured speech timings")
-    parser.add_argument("--wav-dir", type=Path, required=True, help="109 approved original cue-ID WAV files, without the alias")
+    parser.add_argument("--wav-dir", type=Path, required=True, help="the approved cue-ID WAV files of the other roles (no alias, no Dale)")
+    parser.add_argument("--dale-wav-dir", type=Path, default=DEFAULT_DALE_DIR, help="Dale's own takes (DaleVoice generate.py --sync)")
+    parser.add_argument("--dale-takes", type=Path, default=DEFAULT_DALE_TAKES, help="DaleVoice takes.json: his hashes and speech timings")
     parser.add_argument("--output", type=Path, required=True, help="isolated JSON entry for later merge into voices.json")
     parser.add_argument("--check", action="store_true", help="compare existing output; never write")
     args = parser.parse_args()
     try:
         output, wav_dir = args.output.resolve(), args.wav_dir.resolve()
         # A preparatory catalog command must not overwrite assets or an existing bank.
-        protected = [wav_dir, (PROJECT / "Content").resolve(), (PROJECT / "Content/Audio").resolve()]
+        dale_dir = args.dale_wav_dir.resolve()
+        protected = [wav_dir, dale_dir, (PROJECT / "Content").resolve(), (PROJECT / "Content/Audio").resolve()]
         require(not any(output.is_relative_to(root) for root in protected),
                 "output must be separate from supplied WAVs and current Content assets")
         require(not args.output.is_symlink(), "output must not be a symlink")
         entry = catalog(read_json(args.manifest),
                         read_json(args.subtitles or args.manifest.with_name("subtitles.json")), wav_dir,
-                        read_json(args.takes))
+                        read_json(args.takes), dale_dir, read_json(args.dale_takes))
         payload = (json.dumps(entry, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode("utf-8")
         if args.check:
             require(output.is_file() and output.read_bytes() == payload, "catalog missing or stale; regenerate the isolated entry")
@@ -209,7 +240,7 @@ def main():
             output.parent.mkdir(parents=True, exist_ok=True)
             output.write_bytes(payload)
         count = entry["evening"]["validation"]
-        print(f"PASS: {count['unique_recording_count']} supplied PCM WAVs, {count['cue_count']} cues; "
+        print(f"PASS: {count['unique_recording_count']} supplied PCM WAVs ({count['dale_recording_count']} Dale), {count['cue_count']} cues; "
               f"isolated entry {'byte-identical' if args.check else 'written'}. No import or listening approval performed.")
         return 0
     except (CatalogError, OSError, ValueError, KeyError, TypeError, wave.Error) as exc:

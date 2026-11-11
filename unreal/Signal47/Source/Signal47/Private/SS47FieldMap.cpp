@@ -77,7 +77,7 @@ namespace S47FieldMapLocal
 	int32 SectionNumber(int32 Row, int32 Col) { return Row % 2 == 0 ? Row * 6 + (6 - Col) : Row * 6 + Col + 1; }
 
 	// Where the sheet was left: the next one opens there, on the player when they have moved.
-	struct FViewMemory { FVector2D Middle = FVector2D(33, -300); double Scale = ScaleFirst; FVector2D LastMe = FVector2D(1e9, 1e9); };
+	struct FViewMemory { FVector2D Middle = FVector2D(33, -300); double Scale = ScaleFirst; FVector2D LastMe = FVector2D(1e9, 1e9); FString LastCircle; }; // LastCircle: D45-20261110
 	FViewMemory& Memory() { static FViewMemory Kept; return Kept; }
 
 	// ---------- the contours ----------
@@ -564,6 +564,17 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 	if (Fs.Field && Fs.Field->HasArrayFault() && M->Web)
 		for (int32 I = 0; I < M->Web->DishCount(); ++I)
 			if (M->Web->DishId(I) == Fs.Field->ServiceDishId()) { Write(TEXT("saro"), M->Web->DishX(I), M->Web->DishZ(I), Fs.Field->ServiceDishId() + TEXT(" drive fault")); break; }
+	// D45-20261110 (Tom: told to repair S-13, and it was not on the map): the station goal's junction, by its number. Only the next
+	// branch, so the sheet stays clean; the fault lamp on its box says the same out there.
+	if (Fs.Field && Fs.Field->ArrayWear().bActive && M->Web)
+		if (const FS47ArrayWear::FBranch* Goal = Fs.Field->ArrayWear().NextBranch())
+			for (int32 I = 0; I < M->Web->DishCount(); ++I)
+				if (M->Web->DishId(I) == Goal->Junction)
+				{
+					const FString Mend = FString::Printf(TEXT("%s: mend the %s%s"), Goal->Junction, *FString(Goal->Title).ToLower(), FS47FreeformSession::GoalWaits(Fs.Clock()) ? TEXT(", by daylight") : TEXT(""));
+					Write(TEXT("saro"), M->Web->DishX(I), M->Web->DishZ(I), Mend);
+					break;
+				}
 	// The feeder, when the station's power is off.
 	if (Fs.PowerFault() && Fs.EventPlaces)
 		if (const FS47EventPlace* Feeder = Fs.EventPlaces->Find(TEXT("feeder"))) { FS47MapJob Job; Job.X = Feeder->EntryX; Job.Z = Feeder->EntryZ; Job.Text = TEXT("fix the feeder"); V.Jobs.Add(Job); }
@@ -595,6 +606,14 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 		FString Area; double X = 0, Z = 0;
 		if (Fs.Mail->WorldSpot(Area, X, Z)) Write(Area, X, Z, TEXT("mail in the box"));
 	}
+	// D48-20261110 (Tom, D46-24: told to leave the trip camera where the last record was kept, and the sheet did not say where): the
+	// place to set it out while the land test is planned, then where it stands, until it is collected.
+	if (Fs.TripCamera)
+	{
+		FVector2D Road; FString Title, CamArea; FVector CamAt;
+		if (Fs.TripCamera->StandsAt(CamArea, CamAt)) Write(CamArea, CamAt.X, CamAt.Z, TEXT("Trip camera (set)"));
+		else if (Fs.TripCamera->SetOutPlace(Road, Title)) { FS47MapJob Job; Job.X = Road.X; Job.Z = Road.Y; Job.Text = TEXT("Trip camera: set it out here"); V.Jobs.Add(Job); }
+	}
 	// The truck, when it is in trouble where it stands.
 	if (Fs.Care && Fs.Care->NeedsRescue())
 	{
@@ -610,6 +629,38 @@ FString S47FieldMap::Compass(double Deg)
 		TEXT("south"), TEXT("south-southwest"), TEXT("southwest"), TEXT("west-southwest"), TEXT("west"), TEXT("west-northwest"), TEXT("northwest"), TEXT("north-northwest") };
 	const double D = FMath::Fmod(FMath::Fmod(Deg, 360.0) + 360.0, 360.0);
 	return Points[int32(FMath::RoundToDouble(D / 22.5)) % 16];
+}
+
+// D45-20261110: the slip's circle in the view's marks (S47UI.h stays as it is): Kind, the label, the centre and radius, checked, the words.
+void S47FieldMap::AddSlipCircle(FS47MapView& V, const FSlipCircle& C)
+{
+	if (!FMath::IsFinite(C.X) || !FMath::IsFinite(C.Z) || !(C.R > 0)) return;
+	FS47MapMark Mk; Mk.Kind = TEXT("slip_circle"); Mk.Line = C.Label; Mk.Clock = C.Fade;
+	FS47MapAt At; At.Spot = C.Where; At.T = C.X; At.M = C.Z; At.Mi = C.R; At.bT = C.bChecked; Mk.At = At;
+	V.Marks.Add(Mk);
+}
+
+TArray<S47FieldMap::FSlipCircle> S47FieldMap::SlipCircles(const FS47MapView& V)
+{
+	TArray<FSlipCircle> Found;
+	for (const FS47MapMark& Mk : V.Marks)
+	{
+		if (Mk.Kind != TEXT("slip_circle") || !Mk.At.IsSet()) continue;
+		FSlipCircle C; C.X = Mk.At->T; C.Z = Mk.At->M; C.R = Mk.At->Mi; C.bChecked = Mk.At->bT; C.Where = Mk.At->Spot; C.Label = Mk.Line; C.Fade = float(Mk.Clock);
+		Found.Add(C);
+	}
+	return Found;
+}
+
+double S47FieldMap::RimReach(const FVector2D& O, double Deg)
+{
+	// D45-20261110: a slab clip on the rim's box, z running south; a ray from outside it gets nothing.
+	if (!S47OpenLand::InRim(O.X, O.Y)) return 0;
+	const double A = FMath::DegreesToRadians(Deg), Dx = FMath::Sin(A), Dz = -FMath::Cos(A);
+	double Far = 1e7;
+	if (Dx > 1e-9) Far = FMath::Min(Far, (S47OpenLand::RimX1 - O.X) / Dx); else if (Dx < -1e-9) Far = FMath::Min(Far, (S47OpenLand::RimX0 - O.X) / Dx);
+	if (Dz > 1e-9) Far = FMath::Min(Far, (S47OpenLand::RimZ1 - O.Y) / Dz); else if (Dz < -1e-9) Far = FMath::Min(Far, (S47OpenLand::RimZ0 - O.Y) / Dz);
+	return FMath::Max(0., Far);
 }
 
 double S47FieldMap::LandHeight(double X, double Z)
@@ -661,11 +712,15 @@ TArray<FString> S47FieldMap::Description(const FS47MapView& V)
 		Said.Add(D < 15 ? FString(TEXT("The truck is right here.")) : FString::Printf(TEXT("The truck is %s %s of you."), *S47FieldMapLocal::YardsOrMiles(D), *Compass(FS47Places::AzimuthOf(V.MeX, V.MeZ, V.TruckX, V.TruckZ))));
 	}
 	TArray<FString> Pins;
-	for (const FS47MapPin& Pin : V.Pins) Pins.Add(Pin.bHeard ? Pin.Label + TEXT(" (heard of)") : Pin.Label);
+	for (const FS47MapPin& Pin : V.Pins) Pins.Add((Pin.bHeard ? Pin.Label + TEXT(" (heard of)") : Pin.Label) + (Pin.bInSector ? TEXT(", inside a bearing") : TEXT("")));
 	if (Pins.Num()) Said.Add(TEXT("Pencilled in: ") + FString::Join(Pins, TEXT(", ")) + TEXT("."));
-	TArray<FString> Fixes;
-	for (const FS47MapSector& Sec : V.Sectors) Fixes.Add(FString::Printf(TEXT("%s about %03.0f degrees"), *Sec.Label, Sec.Az));
-	if (Fixes.Num()) Said.Add(TEXT("Bearings from SARO: ") + FString::Join(Fixes, TEXT(", ")) + TEXT("."));
+	TArray<FString> Fixes, FromTruck;
+	for (const FS47MapSector& Sec : V.Sectors) (Sec.bFrom ? FromTruck : Fixes).Add(FString::Printf(TEXT("%s about %03.0f degrees%s"), *Sec.Label, Sec.Az, Sec.Fade < .5f ? TEXT(", runs out at noon") : TEXT("")));
+	if (Fixes.Num()) Said.Add(TEXT("Bearings from SARO: ") + FString::Join(Fixes, TEXT("; ")) + TEXT("."));
+	// D45-20261110: each slip's circle said where it is, and whether it has been looked at
+	for (const FSlipCircle& Cc : SlipCircles(V)) Said.Add(FString::Printf(TEXT("A pencilled circle %s (%s), %s."), *Cc.Where, *Cc.Label, Cc.bChecked ? TEXT("looked at") : TEXT("not looked at yet")));
+	if (FromTruck.Num()) Said.Add(TEXT("Bearings from the truck: ") + FString::Join(FromTruck, TEXT(", ")) + TEXT("."));
+	if (V.Crossings.Num()) Said.Add(FString::Printf(TEXT("%d place%s where two bearings cross, ringed."), V.Crossings.Num(), V.Crossings.Num() == 1 ? TEXT("") : TEXT("s")));
 	TArray<FString> Work;
 	for (const FS47MapJob& Job : V.Jobs) Work.Add(Job.Text);
 	if (Work.Num()) Said.Add(TEXT("Written in by the places: ") + FString::Join(Work, TEXT("; ")) + TEXT("."));
@@ -687,6 +742,21 @@ void SS47FieldMap::Construct(const FArguments& InArgs)
 	if (View.bMe && FVector2D::Distance(Kept.LastMe, FVector2D(View.MeX, View.MeZ)) > 1.0) CentreOnMe();
 	Clamp();
 	SurveyWorld();
+	// D45-20261110 (Tom could not find the slip's mark): the first time the sheet opens after a new slip, it shows both the player (or
+	// SARO) and the slip's circle, so the circle is there to be seen; after that it opens as it always has.
+	{
+		const TArray<S47FieldMap::FSlipCircle> Circles = S47FieldMap::SlipCircles(View);
+		const S47FieldMap::FSlipCircle* Newest = Circles.Num() && !Circles.Last().bChecked ? &Circles.Last() : nullptr;
+		if (Newest && Newest->Label != Kept.LastCircle)
+		{
+			Kept.LastCircle = Newest->Label;
+			const FVector2D Here = View.bMe ? FVector2D(View.MeX, View.MeZ) : SaroAt, There(Newest->X, Newest->Z);
+			Mid = (Here + There) * .5;
+			const double Wide = FMath::Abs(There.X - Here.X) + 2 * Newest->R + 200, High = FMath::Abs(There.Y - Here.Y) + 2 * Newest->R + 200;
+			Sc = FMath::Min(Sc, FMath::Min((S47FieldMapLocal::FrameR - S47FieldMapLocal::FrameL) / Wide, (S47FieldMapLocal::FrameB - S47FieldMapLocal::FrameT) / High));
+			Clamp();
+		}
+	}
 	// Out at night the sheet is read by a flashlight; indoors at SARO, under its lamps.
 	if (const US47Main* Mn = US47Main::Get(nullptr); Mn && Mn->IsFreeform() && Mn->Freeform && Mn->Player && Mn->Web)
 	{
@@ -1228,13 +1298,61 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 
 	// ---- pencil: what the player has found, heard of and marked ----
 	const FLinearColor Lead = Graphite(.92f);
+	// D45-20261110: the slips' circles, by the label they share with their wedge
+	const TArray<S47FieldMap::FSlipCircle> Circles = S47FieldMap::SlipCircles(View);
 	for (const FS47MapSector& Sec : View.Sectors)
 	{
-		const auto Ray = [this](double Deg) { const double A = FMath::DegreesToRadians(Deg); return ToPage(SaroAt.X + FMath::Sin(A) * 9000, SaroAt.Y - FMath::Cos(A) * 9000); };
-		const FVector2D From = ToPage(SaroAt.X, SaroAt.Y);
-		for (const double D : { Sec.Az - Sec.Spread, Sec.Az + Sec.Spread }) Pen.Dashed({ F2(From), F2(Ray(D)) }, Lead, 1.2f, LPencil, { 7, 6 });
-		FVector2D A = From, B = Ray(Sec.Az);
-		if (ClipToFrame(A, B)) Pen.Text(Sec.Label, F2(FMath::Lerp(A, B, .8)), Pencil(24), Lead, LPencilWords, .5f, .5f, true);
+		// LOOP-1-20261109: from SARO, or from where the truck stood (the direction finder); the pencil pales as the bearing cools.
+		const FVector2D Origin = Sec.bFrom ? FVector2D(Sec.FromX, Sec.FromZ) : SaroAt;
+		const FLinearColor Line = Graphite(.92f * FMath::Clamp(Sec.Fade, .2f, 1.f));
+		const S47FieldMap::FSlipCircle* Ring = Sec.bFrom ? nullptr : Circles.FindByPredicate([&Sec](const S47FieldMap::FSlipCircle& Cc) { return Cc.Label == Sec.Label; });
+		// D45-20261110 (Tom's d45 map: "D1 12:28" in section 31, far south of the land): the lines end at the rim, or at the slip's circle,
+		// never 9 km out; dotted, so they are not read as the printed fence line (7, 4). The label goes by the circle, or on the land.
+		const auto Reach = [Origin, Ring](double Deg) { const double Rim = S47FieldMap::RimReach(Origin, Deg); return Ring ? FMath::Min(Rim, FVector2D::Distance(Origin, FVector2D(Ring->X, Ring->Z))) : Rim; };
+		const auto Ray = [this, Origin, &Reach](double Deg) { const double A = FMath::DegreesToRadians(Deg), Len = Reach(Deg); return ToPage(Origin.X + FMath::Sin(A) * Len, Origin.Y - FMath::Cos(A) * Len); };
+		const FVector2D From = ToPage(Origin.X, Origin.Y);
+		for (const double D : { Sec.Az - Sec.Spread, Sec.Az + Sec.Spread }) Pen.Dashed({ F2(From), F2(Ray(D)) }, Line, 1.2f, LPencil, { 2, 5 });
+		// The truck's line is a narrow one: its middle drawn too, so that two of them are seen to cross.
+		if (Sec.bFrom) Pen.Dashed({ F2(From), F2(Ray(Sec.Az)) }, Line, 1.f, LPencil, { 2, 4 });
+		if (Ring)
+		{
+			// The circle where to look: a question mark in it until it has been stood in, then a tick; the label just outside it.
+			const FVector2f Ctr = OnPage(Ring->X, Ring->Z);
+			const float Rp = FMath::Max(8.f, float(Ring->R * Sc));
+			Pen.Lines(Pen.Circle(Ctr, Rp, 48), Line, 1.7f, LPencil);
+			if (Ring->bChecked) Pen.Lines({ Ctr + FVector2f(-6, 0), Ctr + FVector2f(-2, 5), Ctr + FVector2f(8, -8) }, Line, 2.f, LPencil);
+			else Pen.Text(TEXT("?"), Ctr + FVector2f(0, 1), Pencil(Rp >= 14.f ? 26.f : 20.f), Line, LPencilWords, .5f, .5f);
+			const FVector2f Size = FPen::Measure(Sec.Label, Pencil(24));
+			const float Out45 = Rp * .72f + 6.f;
+			static const FVector2f Sides[] = { FVector2f(1, -1), FVector2f(-1, -1), FVector2f(1, 1), FVector2f(-1, 1) };
+			FVector2f Corner = Ctr + Sides[0] * Out45; float AlignX = 0.f, AlignY = 1.f;
+			for (const FVector2f& Sd : Sides)
+			{
+				const FVector2f Try = Ctr + Sd * Out45;
+				const FVector2f TopLeft = Try - FVector2f(Sd.X > 0 ? 0.f : Size.X, Sd.Y < 0 ? Size.Y : 0.f);
+				const FBox2f Want(TopLeft, TopLeft + Size);
+				if (!InFrame(FVector2D(TopLeft.X, TopLeft.Y)) || !InFrame(FVector2D(TopLeft.X + Size.X, TopLeft.Y + Size.Y))) continue;
+				if (Occupied.ContainsByPredicate([&Want](const FBox2f& Had) { return Had.Intersect(Want); })) continue;
+				Corner = Try; AlignX = Sd.X > 0 ? 0.f : 1.f; AlignY = Sd.Y < 0 ? 1.f : 0.f; break;
+			}
+			{
+				const FVector2f TopLeft = Corner - FVector2f(Size.X * AlignX, Size.Y * AlignY);
+				Occupied.Add(FBox2f(TopLeft, TopLeft + Size));
+			}
+			Pen.Text(Sec.Label, Corner, Pencil(24), Line, LPencilWords, AlignX, AlignY, true);
+			continue;
+		}
+		// No circle (an older save, the truck's, the land's own bearings): on the centre line, on the land, drawn only if on the sheet.
+		const FVector2D Tag = FMath::Lerp(From, Ray(Sec.Az), Sec.bFrom ? .35 : .6);
+		if (InFrame(Tag, 4)) Pen.Text(Sec.Label, F2(Tag), Pencil(24), Line, LPencilWords, .5f, .5f, true);
+	}
+	// Where two bearings from different places cross: a ring round it, the way one would pencil it.
+	for (const FVector2D& Cross : View.Crossings)
+	{
+		if (!Visible(Cross.X, Cross.Y, 40)) continue;
+		const FVector2f Ctr = OnPage(Cross.X, Cross.Y);
+		Pen.Lines(Pen.Circle(Ctr, 12, 24), Lead, 1.8f, LPencil);
+		Pen.Lines(Pen.Circle(Ctr, 3, 10), Lead, 1.6f, LPencil);
 	}
 	// What to look into (heard of on the CB or the radio, in the paper, from Dale or Ward, a bearing's end): a circle with a question
 	// mark and its word. Looked into: the word struck through and ticked. Far out on the sheet only the circles, not the words.
@@ -1253,9 +1371,11 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			Pen.Lines(Pen.Circle(Ctr, 6, 18), Lead, 1.5f, LPencil);
 			Pen.Lines({ Ctr + FVector2f(-4, 0), Ctr + FVector2f(-1, 4), Ctr + FVector2f(6, -6) }, Lead, 2.f, LPencil);
 		}
+		// LOOP-1-20261109: a place inside a live bearing's sector, ringed once more.
+		if (Pin.bInSector) Pen.Lines(Pen.Circle(Ctr, 15, 26), Lead, 1.2f, LPencil);
 		if (Sc < .15) continue;
-		const FVector2f Size = Pen.Text(Pin.Label, Ctr + FVector2f(13, 2), Pencil(24), Lead, LPencilWords, 0.f, .5f, true);
-		if (!Pin.bHeard) Pen.Lines({ Ctr + FVector2f(12, 3), Ctr + FVector2f(14 + Size.X, 1) }, Lead, 1.6f, LPencilWords + 2);
+		const FVector2f Size = Pen.Text(Pin.Label, Ctr + FVector2f(Pin.bInSector ? 19.f : 13.f, 2), Pencil(24), Lead, LPencilWords, 0.f, .5f, true);
+		if (!Pin.bHeard) { const float By = Pin.bInSector ? 6.f : 0.f; Pen.Lines({ Ctr + FVector2f(12 + By, 3), Ctr + FVector2f(14 + By + Size.X, 1) }, Lead, 1.6f, LPencilWords + 2); }
 	}
 	// The work the player has now, written in ink by its place, with a line to it: where the words fit, clear of each other.
 	{
@@ -1528,6 +1648,27 @@ bool S47FieldMap::SelfTest(TArray<FString>& Lines)
 		FS47MapView V; V.bField = V.bMe = true; V.MeX = 33; V.MeZ = -260; V.MeHeading = 180;
 		const TArray<FString> D = Description(V);
 		Check(D.Num() >= 2 && D[1].Contains(TEXT("facing south")), TEXT("the reading says where you are and which way you face"));
+	}
+	// D45-20261110 (Tom's d45 map: the slip's "D1 12:28" in section 31, far south of the land): a wedge's lines end at the rim, and the
+	// label of one with no circle sits on the land for any direction; Tom's own (205, give or take 40) too. A slip's circle rides in the
+	// view and is read out.
+	{
+		const FVector2D Saro(33, -300);
+		const auto EndOf = [](const FVector2D& O, double Deg) { const double A = FMath::DegreesToRadians(Deg), L = RimReach(O, Deg); return O + FVector2D(FMath::Sin(A), -FMath::Cos(A)) * L; };
+		const FVector2D Tom = EndOf(Saro, 205);
+		bool bOnLand = true;
+		for (int32 Deg = 0; Deg < 360; ++Deg) { const FVector2D Tag = FMath::Lerp(Saro, EndOf(Saro, Deg), .6); bOnLand &= S47OpenLand::InRim(Tag.X, Tag.Y) && S47OpenLand::InRim(EndOf(Saro, Deg).X, EndOf(Saro, Deg).Y, -1); }
+		for (const double Deg : { 165.0, 205.0, 245.0 }) { const FVector2D Tag = FMath::Lerp(Saro, EndOf(Saro, Deg), .6); bOnLand &= S47OpenLand::InRim(Tag.X, Tag.Y, 100); }
+		Check((FMath::IsNearlyEqual(Tom.Y, S47OpenLand::RimZ1, 1.0) || FMath::IsNearlyEqual(Tom.X, S47OpenLand::RimX0, 1.0)) && bOnLand && RimReach(FVector2D(99999, 0), 90) == 0,
+			TEXT("a bearing's lines stop at the rim, and its label is on the land in every direction (Tom's 205, give or take 40, too)"));
+		FS47MapView V; V.bField = true;
+		FSlipCircle C; C.X = -540; C.Z = 1310; C.R = 450; C.Label = TEXT("Day 1 slip, 12:28"); C.Where = TEXT("1.1 miles south-southwest of SARO");
+		AddSlipCircle(V, C);
+		const TArray<FSlipCircle> Back = SlipCircles(V);
+		const TArray<FString> D = Description(V);
+		Check(Back.Num() == 1 && Back[0].X == C.X && Back[0].Z == C.Z && Back[0].R == C.R && Back[0].Label == C.Label && !Back[0].bChecked && Back[0].Where == C.Where
+			&& D.ContainsByPredicate([](const FString& L) { return L.StartsWith(TEXT("A pencilled circle 1.1 miles south-southwest of SARO (Day 1 slip, 12:28), not looked at yet")); }),
+			TEXT("a slip's circle rides in the view with its label and is read out where it is"));
 	}
 	return bAll;
 }

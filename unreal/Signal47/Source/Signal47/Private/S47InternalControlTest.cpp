@@ -15,9 +15,12 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Framework/Application/SlateUser.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 
 // One unusual observation through the receiver's RECORD tab: explanation, real button, timed control, next hint.
+// D45-20261110: -S47InternalControlEarly takes Tom's new order instead: the control straight after the take on the receiver's own
+// ACQUIRE key (the chart left at the printer), the reel deck, then OPS naming the printer, then the chart.
 void FS47FreeformTest::StepInternalControl(double Dt)
 {
  using J=FS47FreeformSession::EJobStage;
@@ -50,6 +53,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   Found[0]->SimulateClick();return true;
  };
  auto Shows=[&](const FString& Text){TArray<TSharedRef<SButton>> Found;bool TextSeen=false;Scan(Text,Found,TextSeen);return TextSeen;};
+ const bool bEarly=FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlEarly"));
  if(Stage==0)
  {
   if(Age<3)return;M->UI->Close(true);F.Director->Stop();
@@ -62,6 +66,34 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   Go(1);return;
  }
  if(Stage==1){if(!F.StartAcquisition())return;Go(2);return;}
+ if(Stage==2&&bEarly)
+ {
+  if(F.CurrentJob()->Stage!=J::Chart)return;
+  if(!Check(F.CurrentJob()->bAnomaly&&!F.CurrentJob()->bPrinted&&!F.CurrentJob()->bControl&&F.CanRecordControl(),TEXT("D45: the unusual take is on tape with its chart still at the printer, and its control can be recorded")))return;
+  if(!Check(F.JobNextAction(*F.CurrentJob()).StartsWith(TEXT("RECEIVER"))&&F.JobLocation(*F.CurrentJob()).StartsWith(TEXT("Receiver")),TEXT("D45: hint and location name the receiver: ")+F.JobNextAction(*F.CurrentJob())))return;
+  M->Player->Place(0,-2.15,0);F.OpenReceiver();Go(20,1.);return;
+ }
+ if(Stage==20){if(!Click(TEXT("ACQUIRE")))return;Go(21,1.);return;}
+ if(Stage==21)
+ {
+  TArray<TSharedRef<SButton>> Keys;bool KeySeen=false;Scan(TEXT("RECORD CONTROL / 8 s"),Keys,KeySeen);
+  if(!Check(Keys.Num()==1&&Keys[0]->IsEnabled(),TEXT("D45: ACQUIRE offers RECORD CONTROL / 8 s right after the take")))return;
+  TSharedPtr<SWidget> Up=Keys[0];while(Up.IsValid()&&Up->GetTypeAsString()!=TEXT("SScrollBox"))Up=Up->GetParentWidget();
+  const float Over=Up.IsValid()?StaticCastSharedPtr<SScrollBox>(Up)->GetScrollOffsetOfEnd():-1.f;
+  UE_LOG(LogTemp,Display,TEXT("S47 D45 receiver ACQUIRE with the tape strip: %.1f units past the glass"),Over);
+  if(!Check(Up.IsValid()&&Over<1.f,FString::Printf(TEXT("D45: ACQUIRE with the tape strip fits the glass without scrolling (%.1f over)"),Over)))return;
+  if(!Check(Shows(TEXT("LOCKED")),TEXT("D45: the ARRAY line shows the lock")))return;
+  Shot(TEXT("acquire-after-take.png"));Keys[0]->SimulateClick();
+  if(!Check(F.CurrentJob()->bControl&&F.CurrentJob()->Stage==J::Chart,TEXT("D45: the receiver's own key starts the control before the chart is collected")))return;
+  Go(22,2.);return;
+ }
+ if(Stage==22){Shot(TEXT("acquire-control-running.png"));Go(23);return;}
+ if(Stage==23)
+ {
+  if(F.CurrentJob()->ControlAt<8)return;
+  if(!Check(F.CurrentJob()->Stage==J::Chart&&F.JobNextAction(*F.CurrentJob()).StartsWith(TEXT("REEL DECK")),TEXT("D45: after the control the reel deck is next, the chart still waiting: ")+F.JobNextAction(*F.CurrentJob())))return;
+  Go(70,1.);return;
+ }
  if(Stage==2)
  {
   if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
@@ -148,7 +180,14 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  }
  if(Stage==73)
  {
-  if(!Check(Shows(TEXT("WHAT TO DO HERE"))&&Shows(TEXT("LISTEN TO THE WHOLE ORIGINAL"))&&Shows(TEXT("HERE you compare")),TEXT("panel says what to do first")))return;
+  if(!Check(Shows(TEXT("LISTEN TO THE WHOLE ORIGINAL"))&&Shows(TEXT("MARK THE EXTRA TICKS"))&&Shows(TEXT("KNOWN SOUNDS TO COMPARE BY EAR")),TEXT("panel says what to do first")))return;
+  // D45-20261110: one faceplate, no scrolling: its last row stands above the way out
+  TArray<TSharedRef<SButton>> Last,Out;bool LastSeen=false,OutSeen=false;Scan(TEXT("NEXT REFERENCE"),Last,LastSeen);Scan(TEXT("ESC / RETURN TO ROOM"),Out,OutSeen);
+  if(!Check(Last.Num()==1&&Out.Num()==1,TEXT("D45: the deck has its references row and its way out")))return;
+  const FGeometry LastG=Last[0]->GetTickSpaceGeometry(),OutG=Out[0]->GetTickSpaceGeometry();
+  const FVector2D LastBottom=LastG.LocalToAbsolute(FVector2D(LastG.GetLocalSize())),OutTop=OutG.LocalToAbsolute(FVector2D(0,0));
+  UE_LOG(LogTemp,Display,TEXT("S47 D45 reel deck: last row ends at %.1f, the way out starts at %.1f"),LastBottom.Y,OutTop.Y);
+  if(!Check(LastG.GetLocalSize().Y>10&&LastBottom.Y<=OutTop.Y+.5,FString::Printf(TEXT("D45: the whole deck fits its faceplate (last row %.1f, way out %.1f)"),LastBottom.Y,OutTop.Y)))return;
   Shot(TEXT("deck-panel.png"));Go(74,.5);return;
  }
  if(Stage==74){if(!Click(TEXT("PLAY")))return;TapeFrom=F.AudioPosition();Go(75,3.);return;}
@@ -187,6 +226,18 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   App.ProcessKeyDownEvent(Esc);App.ProcessKeyUpEvent(Esc);
   if(!Check(!F.TapePanelOpen()&&!M->ModalOpen()&&!M->bPausedByMenu,TEXT("a real Escape press leaves the panel without opening the pause menu")))return;
   Go(8,.3);return;
+ }
+ if(Stage==8&&bEarly)
+ {
+  if(!Check(!F.RegisterComparison(TEXT("unresolved"))&&F.FeedbackText().Contains(TEXT("PRINTER"))&&F.CurrentJob()->Stage==J::Chart,TEXT("D45: OPS names the printer while the chart waits: ")+F.FeedbackText()))return;
+  Go(80);return;
+ }
+ if(Stage==80)
+ {
+  if(F.PrinterProgress()<1)return;
+  if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Recorded&&F.CurrentJob()->bPrinted&&F.CurrentJob()->bControl&&F.CurrentJob()->ControlAt>=8,TEXT("D45: the chart collected after the control keeps the control")))return;
+  if(!Check(F.JobNextAction(*F.CurrentJob()).StartsWith(TEXT("REEL DECK")),TEXT("D45: and the reel deck is still the next step: ")+F.JobNextAction(*F.CurrentJob())))return;
+  Finish(true,TEXT("D45: unusual take, control at the receiver straight after it, reel deck, OPS naming the printer, chart later."));return;
  }
  if(Stage==8)
  {

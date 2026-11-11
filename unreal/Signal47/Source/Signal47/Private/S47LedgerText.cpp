@@ -26,7 +26,7 @@ const TArray<S47LedgerText::FItemDef>& S47LedgerText::Locals()
   {TEXT("The high school rodeo club holds a jackpot roping at the county arena Saturday. Entry is $10; the concession stand will be open."),TEXT("rodeo"),0,524},
   {TEXT("Entries are open for the Memorial Day rodeo. Barrel racers sign up at the feed store. Bull riders, the arena manager says, sign up wherever they like."),TEXT("rodeo"),0,518},
   {TEXT("Volunteers are wanted Saturday to paint the bleachers at the county arena before the rodeo. Bring a brush; the paint is donated."),TEXT("rodeo"),0,512},
-  {TEXT("The Altar Society's spring bazaar is Saturday from 9 to 3 in the parish hall: quilts, enchiladas and the cake walk. Proceeds go to the church roof fund."),nullptr,0,531},
+  {TEXT("The Altar Society's spring bazaar is Saturday from 9 to 3 in the San Isidro parish hall: quilts, enchiladas and the cake walk. Proceeds go to the church roof fund."),nullptr,0,531},
   {TEXT("The Methodist women serve a chicken supper at the church Friday at 6. Adults $3.50, children $1.50."),nullptr,0,0},
   {TEXT("The volunteer fire department holds its pancake breakfast at the station Sunday. Firemen will test any smoke detector brought along."),nullptr,0,0},
   {TEXT("A public hearing on the proposed truck stop at the highway junction south of town is set for May 20 at the community center. The plans call for twelve diesel pumps and a cafe."),TEXT("truckstop"),0,519},
@@ -47,7 +47,7 @@ const TArray<S47LedgerText::FItemDef>& S47LedgerText::Locals()
   {TEXT("Died: Wendell Ashby, 81, who ran sheep on the west side for fifty years and the grange for thirty. Services Saturday at 10 at the Methodist church."),nullptr,0,0},
   {TEXT("Died: Ramona Quintana, 74, retired teacher, who taught most of Caliche to read. Rosary Friday at 7, Mass Saturday at 9."),nullptr,0,0},
   {TEXT("Died: Floyd Hensley, 68, rancher, at home on the east side. He leaves his wife, Norma, and two sons. Services Tuesday at 2 at the Methodist church."),nullptr,0,0},
-  {TEXT("Died: Esperanza Lucero, 92, the oldest member of the parish, who remembered when the highway was a wagon road. Rosary Thursday at 7, Mass Friday at 10."),nullptr,0,0},
+  {TEXT("Died: Esperanza Lucero, 92, the oldest member of San Isidro parish, who remembered when the highway was a wagon road. Rosary Thursday at 7, Mass Friday at 10."),nullptr,0,0},
   {TEXT("The Feed & Seed will stay open until 7 on Fridays through the summer, the owners say, for ranchers who cannot get in before dark."),nullptr,0,0},
   {TEXT("The post office is closed Memorial Day, and rural carriers will not run that day."),TEXT("memorial"),0,525},
   {TEXT("Rural patrons are reminded to keep the ground in front of their mailboxes clear, so the carrier can reach without leaving the vehicle."),nullptr,0,0},
@@ -56,10 +56,11 @@ const TArray<S47LedgerText::FItemDef>& S47LedgerText::Locals()
   {TEXT("The garden club meets Tuesday at the home of Iva Dean. The program is growing tomatoes in caliche, which members insist can be done."),nullptr,0,0},
   {TEXT("The garden club's plant sale is Saturday morning on the church steps. Tomato and chile starts, a dime apiece."),nullptr,0,0},
   {TEXT("The senior center serves lunch weekdays at 11:30 for a dollar. This week: green chile stew, meat loaf, and fish on Friday."),nullptr,0,0},
-  {TEXT("Bingo returns to the parish hall on Friday nights at 7. The jackpot is $100."),nullptr,0,0},
-  {TEXT("The parish holds First Communion for eleven children Sunday at the ten o'clock Mass."),nullptr,0,0},
+  {TEXT("Bingo returns to the San Isidro parish hall on Friday nights at 7. The jackpot is $100."),nullptr,0,0},
+  {TEXT("San Isidro parish holds First Communion for eleven children Sunday at the ten o'clock Mass."),nullptr,0,0},
   {TEXT("The fair board needs a superintendent for the poultry barn. The last one retired after the business with the rooster."),nullptr,0,0},
   {TEXT("The Rotary Club heard a talk Thursday on the history of the old mine on the west side. It never paid out, the speaker said, which surprised nobody at the table."),nullptr,0,0},
+  {TEXT("FROM OUR FILES, 1934: Old-timers on Main Street still say the Trujillo cave draws a long breath in and lets it out with the hours of the day, and that around two in the morning it holds that breath. The family says it is the weather."),nullptr,0,0}, // N1110 (pace)
   {TEXT("A dance at the community center Saturday benefits the ambulance fund. Music by the Rio Salado Ramblers. Admission $3."),nullptr,0,0},
   {TEXT("The ambulance crew is two short and asks for volunteers who can take calls at night. Training is free."),nullptr,0,0},
   {TEXT("The cattlemen's association meets at the Mesa Diner Tuesday at noon to talk about the brand inspection fee."),nullptr,0,0},
@@ -80,6 +81,14 @@ const TArray<S47LedgerText::FItemDef>& S47LedgerText::Locals()
   {TEXT("Members of the Caliche Homemakers will judge pies at the June fair and are taking applications from people who like pie."),nullptr,0,0},
   {TEXT("The Little League has two teams this year and one set of catcher's gear. Parents with a spare mask are asked to call the coach."),nullptr,0,0},
   {TEXT("The county fair board has set the dates for August and is looking for a new announcer. The old one says his voice has gone."),nullptr,0,0},
+  // N1110 (Caliche history, approved by Tom 10 November; Docs/Lore/CALICHE_HISTORIE.md section 4): the paper's column "From Our Files",
+  // one notice at a time out of the same pot as the rest. The years are the paper's own; nothing here is a spoiler.
+  {TEXT("FROM OUR FILES, 1926: Lights were seen again over the salt flat Tuesday night, four in a row. Mr. Baca says they were not his. The editor has no further theory and would welcome one."),nullptr,0,0},
+  {TEXT("FROM OUR FILES, 1931: The Trujillo cave under Main Street opens to visitors Sunday. Lanterns provided. Ladies are advised to bring a wrap, as the cave keeps its own weather."),nullptr,0,0},
+  {TEXT("FROM OUR FILES, 1946: The fire siren will be tested the first Monday of each month. The long tone means fire. The short tones mean go inside and stay there. Both mean do as you are told."),nullptr,0,0},
+  {TEXT("FROM OUR FILES, 1956: The county and the district have agreed to a listening station on the flat north of town. Postmaster Quintana says it will bring jobs and ask nothing of us but quiet."),nullptr,0,0},
+  {TEXT("FROM OUR FILES, 1953: Uranium hunters left the Esperanza mine on the west side Saturday with nothing to show. They pulled the boards off the adit. Somebody has stacked them neatly since."),nullptr,0,0},
+  {TEXT("FROM OUR FILES, 1968: The new interstate is open by way of Socorro. The Mesa Diner reports twelve fewer cars at lunch and says it will keep the pie the same size."),nullptr,0,0},
  };
  return Pot;
 }

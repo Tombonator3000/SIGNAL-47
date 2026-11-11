@@ -21,10 +21,16 @@
 #include "S47DevEvents.h"
 #include "S47Three.h"
 #include "S47CB.h"
+#include "S47HudGauges.h"
 #include "S47Keys.h"
 #include "S47Predecessor.h"
+#include "S47TripoNew.h"
+#include "S47Props.h"
+#include "S47DaleVoice.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Misc/Parse.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/CommandLine.h"
@@ -64,6 +70,31 @@ namespace S47FieldRadioSet
   Audio->Beep(1750.f,.05f,.04f,float(After),TEXT("sine"));Audio->Beep(1320.f,.06f,.04f,float(After+.06),TEXT("sine"));
  }
  void Click(US47Audio* Audio){if(Audio)Audio->Sfx(TEXT("click"),FS47Sound{.Gain=.3f});}
+ // M7-WALKIE-20261109: the same two-tone call from the set lying on the desk, placed there and muffled by its own small speaker
+ // face down on the wood, with a breath of squelch after it. Heard through the room's walls as anything placed is.
+ void DeskCall(US47Audio* Audio,const FVector& At)
+ {
+  if(!Audio||!Audio->Ctx.IsValid()||!Audio->SfxBus.IsValid())return;
+  const TSharedPtr<FS47AudioNode> Out=Audio->Spatial(At,1.5f);if(!Out.IsValid())return;
+  FS47AudioContext::FBatch Batch(*Audio->Ctx);
+  const double From=Audio->Ctx->CurrentTime()+.05;
+  auto Lp=Audio->Ctx->CreateBiquadFilter();Lp->SetType(TEXT("lowpass"));Lp->Frequency.SetValue(1700);Lp->Connect(Out);
+  for(const double ToneAt:{0.,.34})for(const double Hz:{1450.,1900.})
+  {
+   const double T=From+ToneAt+(Hz>1500?.1:0);
+   auto O=Audio->Ctx->CreateOscillator();O->SetType(TEXT("square"));O->Frequency.SetValue(Hz);
+   auto G=Audio->Ctx->CreateGain();G->Gain.SetValueAtTime(0,T);G->Gain.LinearRampToValueAtTime(.09,T+.005);G->Gain.SetValueAtTime(.09,T+.07);G->Gain.LinearRampToValueAtTime(0,T+.09);
+   O->Connect(G);G->Connect(Lp);O->Start(T);O->Stop(T+.12);
+  }
+  if(const TSharedPtr<FS47AudioBuffer> Hiss=Audio->NoiseBuffer();Hiss.IsValid())
+  {
+   const double T=From+.62;
+   auto Src=Audio->Ctx->CreateBufferSource();Src->Buffer=Hiss;
+   auto Hp=Audio->Ctx->CreateBiquadFilter();Hp->SetType(TEXT("highpass"));Hp->Frequency.SetValue(900);
+   auto G=Audio->Ctx->CreateGain();G->Gain.SetValueAtTime(0,T);G->Gain.LinearRampToValueAtTime(.05,T+.015);G->Gain.SetValueAtTime(.05,T+.25);G->Gain.LinearRampToValueAtTime(0,T+.45);
+   Src->Connect(Hp);Hp->Connect(G);G->Connect(Lp);Src->Start(T,FMath::FRand()*.5);Src->Stop(T+.5);
+  }
+ }
 }
 
 double FS47FieldRadio::ChannelMHz(int32 Channel){return 49.830+.015*(FMath::Clamp(Channel,1,Channels)-1);}
@@ -99,8 +130,9 @@ void FS47FieldRadio::Begin(const S47J::FObj& Saved)
 }
 void FS47FieldRadio::Stop()
 {
- Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=GearNoise=OrdHiss=OrdCrackle=RealNear=0; LastCue=-1; StrengthNow=StrengthWant=1; StrengthIn=0; SinceNoise=SinceCrackle=1e9; CrackleRun=0; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
+ Sound.Reset(); LastLevel=QuietFor=SeenFor=ThreatFor=LastRadio=CrackleIn=GearNoise=OrdHiss=OrdCrackle=RealNear=0; MusicNow=EMusicTier::Place; LastCue=-1; StrengthNow=StrengthWant=1; StrengthIn=0; SinceNoise=SinceCrackle=1e9; CrackleRun=0; bAvailable=false; LastSeen=LastHunt=false; SinceMessage=1e9;
  // Nothing half said carries over to another game or the title.
+ if(Voice)Voice->Stop(); bCaption=false;
  HailLeft=HailAgainIn=TxLeft=0; ThenIn=-1; HailCount=0; Then=nullptr; HailAnswer=nullptr; HailMissed=nullptr; SinceLoud=SinceTouch=1e9; HeldTips.Reset(); bBandPending=false;
  if(Root) Root.SetVisible(false);
  if(Hit.IsValid()) Hit->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -137,7 +169,28 @@ bool FS47FieldRadio::Build()
  W->AddInstanceComponent(Box); Box->RegisterComponent();
  Root=W->ObjAt(W->AdoptNode(Box,Room.I,TEXT("saro:fieldRadio"))); Hit=Box;
  Root.SetPosition(FVector(3.18,.840,2.70)); Root.SetRotation(FVector(0,.2,0));
- for(int32 I=0;I<Parts.Num();++I)
+ // TRIPO-NEW (Tom's walkie of 9 November): his own model on the desk when this build has it, standing on its foot with its face to
+ // the room (-Z); else the three web parts as before. -S47TripoNewOff keeps the old one, for a picture to compare.
+ // PT-WALKIE-20261109 (Tom): the one on the desk is his better walkie (S47TripoNew::DeskWalkie, SM_Tripo_Walkie), as it was first;
+ // "pakke tripo3d-1" is a Geiger counter (S47Happenings' "geiger"). Prepared standing .34 m with its face toward -Y in Blender (Three
+ // +Z): turned half round to face the room, at its own height from its bounds.
+ bTripoWalkie=false;
+ if(const S47TripoNew::FModel* Own=S47TripoNew::DeskWalkie();Own&&S47TripoNew::Exists(Own->Path)&&!FParse::Param(FCommandLine::Get(),TEXT("S47TripoNewOff")))
+  if(UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,Own->Path))
+  {
+   const double TallCm=Mesh->GetBounds().BoxExtent.Z*2.;
+   const double Scale=TallCm>1.?FMath::Clamp(S47TripoNew::DeskWalkieHeightM*100./TallCm,.2,2.):1.;
+   auto* C=NewObject<UStaticMeshComponent>(W,TEXT("SaroFieldRadioTripo"));
+   C->SetupAttachment(Box); C->SetMobility(EComponentMobility::Movable); C->SetStaticMesh(Mesh);
+   C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCollisionResponseToAllChannels(ECR_Ignore);
+   C->SetCanEverAffectNavigation(false); C->SetCastShadow(true);
+   W->AddInstanceComponent(C); C->RegisterComponent();
+   FS47Obj Copy=W->ObjAt(W->AdoptNode(C,Root.I,TEXT("saro:fieldRadio:tripo")));
+   Copy.SetPosition(FVector(0,-.06,0)); Copy.SetRotation(FVector(0,PI,0)); Copy.SetScale(FVector(Scale));
+   Copies.Add(C); bTripoWalkie=true;
+   UE_LOG(LogTemp,Display,TEXT("S47: field radio: Tom's Tripo walkie on the desk (%s, %.0f cm as made, scale %.2f)"),Own->Path,TallCm,Scale);
+  }
+ for(int32 I=0;I<Parts.Num()&&!bTripoWalkie;++I)
  {
   auto* C=NewObject<UStaticMeshComponent>(W,*FString::Printf(TEXT("SaroFieldRadioPart%d"),I));
   C->SetupAttachment(Box); C->SetMobility(EComponentMobility::Movable); C->SetStaticMesh(Parts[I]->GetStaticMesh());
@@ -160,27 +213,84 @@ bool FS47FieldRadio::Build()
  for(auto C:Copies) if(C.IsValid()) C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  return true;
 }
-bool FS47FieldRadio::Message(const FString& Text)
+// FIX-20261110 (Tom, point 8): where the set lies when nobody carries it. Looked for once a second (the props are placed after
+// the web, and a Story game after a Freeform one has it back on the desk); the place is the dresser's own top, from its bounds.
+void FS47FieldRadio::Rest(double Dt)
 {
- if(!bOwned||bLeftOut||!M)return false;
+ HallRetry-=Dt;if(!Root||HallRetry>0||!M)return;
+ HallRetry=1;
+ const UStaticMeshComponent* Dresser=M->IsFreeform()?AS47Props::PlacedMesh(TEXT("hallDresser")):nullptr;
+ const bool bWant=Dresser!=nullptr;
+ if(bWant==bHall)return;
+ bHall=bWant;
+ if(bHall)
+ {
+  const FBox B=Dresser->Bounds.GetBox();const FVector C=S47Three::ToThree(B.GetCenter());
+  Root.SetPosition(FVector(C.X+.34,B.Max.Z/100.+.06,C.Z-.03));Root.SetRotation(FVector(0,PI-.25,0)); // its face to the corridor (+Z)
+  UE_LOG(LogTemp,Display,TEXT("S47: field radio: on the hall dresser (%.2f %.2f %.2f)"),C.X+.34,B.Max.Z/100.+.06,C.Z-.03);
+ }
+ else{Root.SetPosition(FVector(3.18,.840,2.70));Root.SetRotation(FVector(0,.2,0));}
+}
+bool FS47FieldRadio::Message(const FString& Text,bool bDeskToo)
+{
+ // NIGHT-20261110: a set never taken off the SARO desk is still on, and is heard in the building (the big night's Dale, play n18).
+ if(!M||bLeftOut||(!bOwned&&!(bDeskToo&&OnDesk()&&InSaroBuilding(M))))return false;
  // CB-WALKIE-20261108: the walkie is Dale's. His come on channel 1 only, under the set's own caption head; a voice that is too
  // broken to make out comes on whatever channel it is on.
  FString Who,Said=Text;
- if(Text.StartsWith(TEXT("DALE: "))){if(Chan!=1)return false;Who=TEXT("DALE");Said=Text.Mid(6);}
+ if(Text.StartsWith(TEXT("DALE: "))){if(Chan!=1)return false;Who=TEXT("DALE");Said=Text.Mid(6);if(M->Freeform)LastDale=M->Freeform->Clock();}
  ++MessageCount; SinceMessage=0; SinceLoud=0;
+ // DALE-WIRE-20261109: what he said, whole, is what his takes are looked up by.
+ const FString Whole=Said;
  // GEAR-FLICKER-20261108: near something, words of his are lost in the noise, and the set crackles over them.
  if(!Who.IsEmpty()&&M->IsFreeform()&&M->Gear.IsValid())
  {
-  const FString Whole=Said;Said=M->Gear->Broken(Said,MessageCount);
+  Said=M->Gear->Broken(Said,MessageCount);
   if(Said!=Whole&&M->Audio&&Sound.Crackle(M->Audio,FMath::Max(.4,GearNoise)))++Crackled;
  }
- const bool bHeard=M->Audio&&Sound.Message(M->Audio);
- if(bHeard)S47FieldRadioSet::Roger(M->Audio,S47FieldRadioSet::MessageSeconds);
+ // DALE-WIRE-20261109: his own voice when the bank has a take for it (or for each of his parts of it, one after another; a part with
+ // a place or a bearing in it stays text). The set's synthetic chatter only when nothing of his is played. The crackle above lies
+ // over his words where they break up; the squelch opens and shuts round him and the roger beep comes after his last take.
+ bool bVoiced=false;
+ FS47DaleVoice::FPlan Plan;
+ if(!Who.IsEmpty()&&M->IsFreeform()&&M->Audio)
+ {
+  if(!Voice)Voice=MakeShared<FS47DaleVoice>(M->Audio,TEXT("walkie"));
+  // A caption of his still waiting for its first word is not lost under this one.
+  if(bCaption){Voice->Stop();StepCaption();}
+  Plan=Voice->PlanWalkie(Whole);
+  bVoiced=Plan.Voiced()>0&&Voice->Play(Plan);
+ }
+ const bool bHeard=bVoiced||(M->Audio&&Sound.Message(M->Audio));
+ if(bVoiced){S47FieldRadioSet::Squelch(M->Audio,0,.16,.08);S47FieldRadioSet::Squelch(M->Audio,Plan.Seconds+.02,.22,.1);}
+ if(bHeard)S47FieldRadioSet::Roger(M->Audio,bVoiced?Plan.Seconds+.05:S47FieldRadioSet::MessageSeconds);
  // Anything but Dale is the set itself breaking up: it is only heard (the broken voice and the squelch), never told in words.
  // A caption is for words somebody says.
- if(M->UI&&!Who.IsEmpty())M->UI->Toast(Head(Chan,Who)+TEXT(": ")+Said,FMath::Clamp(3.f+Said.Len()/18.f,6.f,11.f));
- UE_LOG(LogTemp,Display,TEXT("S47: walkie message on channel %d, sound %d: %s"),Chan,bHeard,*Text);
+ if(M->UI&&!Who.IsEmpty())
+ {
+  const FString Line=Head(Chan,Who)+TEXT(": ")+Said;
+  const float Reading=FMath::Clamp(3.f+Said.Len()/18.f,6.f,11.f);
+  // With his voice: up at his first word, down at his last (takes.json), on the sound's clock. Words of it that are only text
+  // (a report he passes on) keep the time to read them.
+  if(bVoiced){bCaption=true;bCaptionAll=Plan.All();CaptionLine=Line;CaptionStart=Plan.SpeechStart;CaptionEnd=Plan.SpeechEnd;CaptionReading=Reading;StepCaption();}
+  else{bCaption=false;M->UI->Toast(Line,Reading);}
+ }
+ UE_LOG(LogTemp,Display,TEXT("S47: walkie message on channel %d, sound %d, voice %d of %d: %s"),Chan,bHeard,bVoiced?Plan.Voiced():0,Plan.Parts.Num(),*Text);
  return true;
+}
+bool FS47FieldRadio::DaleSpeaking() const{return Voice&&Voice->Playing();}
+bool FS47FieldRadio::DaleOnAir(const US47Main* M){return M&&M->FieldRadio.IsValid()&&M->FieldRadio->DaleSpeaking();}
+void FS47FieldRadio::StepCaption()
+{
+ if(!bCaption)return;
+ if(!M||!M->UI){bCaption=false;return;}
+ const double At=Voice?Voice->Clock():-1.;
+ // Before his first word, wait for it; cut off before it (another line, the channel turned), it is shown now for its reading time.
+ if(At>=0&&At<CaptionStart)return;
+ bCaption=false;
+ const TFunction<double()> Clock=Voice&&At>=0?Voice->CaptionClock():TFunction<double()>();
+ const double For=!Clock?CaptionReading:FMath::Max(.01,FMath::Max(CaptionEnd-At,bCaptionAll?0.:CaptionReading-(At-CaptionStart)));
+ M->UI->Toast(CaptionLine,float(For),Clock);
 }
 
 // ---------- the player's own hand on it (WALKIE-USE-20261108) ----------
@@ -200,6 +310,8 @@ void FS47FieldRadio::NextChannel()
 {
  if(!bOwned||bLeftOut){if(M&&M->UI)M->UI->Toast(TEXT("No walkie on you to turn."),3);return;}
  Chan=Chan%Channels+1;SinceTouch=0;
+ // DALE-WIRE-20261109: his voice is on channel 1, and goes with the turn of the knob.
+ if(Voice)Voice->Stop();
  // A look at the service band still to come goes with the turn of the knob; an answer still to come does not.
  if(bBandPending){Then=nullptr;ThenIn=-1;bBandPending=false;}
  if(!M)return;
@@ -231,7 +343,7 @@ bool FS47FieldRadio::PressTalk()
  if(M->Story&&(M->Story->IsPaused()||M->Story->IsCinematic()))return false;
  if(!bOwned||bLeftOut)
  {
-  if(M->UI)M->UI->Toast(bLeftOut?TEXT("The walkie isn't on you. It's out there somewhere."):TEXT("No walkie on you. SARO's field set is on the desk in the control room."),4);
+  if(M->UI)M->UI->Toast(bLeftOut?TEXT("The walkie isn't on you. It's out there somewhere."):*FString::Printf(TEXT("No walkie on you. SARO's field set is %s."),Where()),4);
   return true;
  }
  if(HailLeft>0){Answer();return true;}
@@ -290,8 +402,10 @@ void FS47FieldRadio::Reply()
 }
 bool FS47FieldRadio::Hail(const FHail& Words,TFunction<void()> OnAnswer,TFunction<void()> OnMissed)
 {
+ if(!bOwned){DeskCall(Words);return false;}
  // Not while the player is on the air, or waiting for what comes back: that call gets its answer first.
- if(!M||!bOwned||bLeftOut||Chan!=1||HailLeft>0||TxLeft>0||ThenIn>=0||Words.First.IsEmpty())return false;
+ // (Nor over his own voice still on the set, DALE-WIRE-20261109: he finishes first.)
+ if(!M||!bOwned||bLeftOut||Chan!=1||HailLeft>0||TxLeft>0||ThenIn>=0||DaleSpeaking()||Words.First.IsEmpty())return false;
  HailWords=Words;HailAnswer=MoveTemp(OnAnswer);HailMissed=MoveTemp(OnMissed);
  HailLeft=S47FieldRadioSet::HailSeconds;HailAgainIn=S47FieldRadioSet::HailAgainSeconds;HailCount=1;SinceTouch=0;
  if(M->Audio)S47FieldRadioSet::Call(M->Audio);
@@ -300,6 +414,24 @@ bool FS47FieldRadio::Hail(const FHail& Words,TFunction<void()> OnAnswer,TFunctio
  if(HintsShown<3&&M->UI){++HintsShown;M->UI->Toast(FString::Printf(TEXT("%s answers the walkie."),*S47Keys::Label(TEXT("walkie"))),5);}
  UE_LOG(LogTemp,Display,TEXT("S47: walkie: Dale hails on channel 1"));
  return true;
+}
+void FS47FieldRadio::DeskCall(const FHail& Words)
+{
+ // Nothing on the desk to call from: the set is out where the player was taken, or there is no hail at all.
+ if(bLeftOut||Words.First.IsEmpty())return;
+ const int32 Day=M&&M->IsFreeform()&&M->Freeform?M->Freeform->Day():0;
+ if(DeskDay==Day)return;
+ if(M)
+ {
+  // Only where it can be heard: the set is built on the desk and the player is within earshot of it.
+  if(!Root||!M->Player)return;
+  const FVector At=Root.WorldPosition();
+  if(FVector::Distance(S47Three::ToThree(M->Player->EyeUE()),At)>DeskHearing)return;
+  if(M->Audio)S47FieldRadioSet::DeskCall(M->Audio,At);
+  if(DeskHints<3&&M->UI){++DeskHints;M->UI->Toast(bHall?TEXT("Something on the hall dresser gives two beeps and a hiss."):TEXT("Something on the control room desk gives two beeps and a hiss."),5);}
+ }
+ DeskDay=Day;++DeskCallCount;
+ UE_LOG(LogTemp,Display,TEXT("S47: walkie: Dale's hail heard from the desk, day %d"),Day);
 }
 void FS47FieldRadio::Answer()
 {
@@ -346,9 +478,12 @@ void FS47FieldRadio::StepHand(double Dt)
 // ---------- the CB and the walkie apart (CB-WALKIE-20261108) ----------
 bool FS47FieldRadio::CbAtHand(const US47Main* M)
 {
- if(!M)return false;
- if(M->World&&M->World->bDriving)return true;
- // The base set in the control room: anywhere in the SARO building.
+ // CB-TRUCK-20261109: under the dash, and only with the player in the seat.
+ return M&&CbHeardAt(M->World&&M->World->bDriving,false,false);
+}
+bool FS47FieldRadio::InSaroBuilding(const US47Main* M)
+{
+ if(!M||(M->World&&M->World->bDriving))return false;
  if(!M->Web||!M->Player||M->Web->Area()!=TEXT("saro"))return false;
  for(const TCHAR* ZoneName:{TEXT("room.bounds"),TEXT("annex.zone.southDoor"),TEXT("annex.zone.corridor"),TEXT("annex.zone.recordsDoor"),TEXT("annex.zone.records")})
   if(M->Web->Rect(ZoneName).Contains(M->Player->Pos))return true;
@@ -356,14 +491,16 @@ bool FS47FieldRadio::CbAtHand(const US47Main* M)
 }
 bool FS47FieldRadio::CbSay(US47Main* M,const TArray<FString>& Lines,const FString& Voice,TFunction<void()> OnBegun)
 {
- if(!M||Lines.IsEmpty())return false;
+ // CB-TRUCK-20261109: nothing is heard on a CB the player is not sitting at.
+ if(!M||Lines.IsEmpty()||!CbAtHand(M))return false;
  if(!M->CB.IsValid()&&IsValid(M->Audio))M->CB=MakeShared<FS47CB>(M->Audio);
  if(!M->CB.IsValid()||M->CB->bBusy)return false;
+ // MSG-ONE-20261109: not over Dale's voice on the walkie; the caller tries again (as when the CB is busy).
+ if(DaleOnAir(M))return false;
  TArray<FS47CBLine> Call;
  for(const FString& Said:Lines){FS47CBLine Each;Each.Text=Said;Each.Who=Voice;Each.By=TEXT("CB, a caller");Call.Add(Each);}
- // In the cab from the dash; at the base set, beside the player.
+ // In the cab, from the set under the dash (FS47CB::Call: unset is in the cab with the player).
  TOptional<FVector> From;
- if(!(M->World&&M->World->bDriving)&&M->Player)From=M->Player->Pos+FVector(.6,1.1,-.4);
  TWeakObjectPtr<US47Main> WeakMain=M;
  const TSharedRef<bool> bFirst=MakeShared<bool>(true);
  const double Took=M->CB->Call(Call,From,[WeakMain,OnBegun,bFirst](const FS47CBLine& Line,double Secs)
@@ -392,7 +529,8 @@ bool FS47FieldRadio::Deliver(const FString& Tip)
  // channel, it waits for him.
  FS47Predecessor* Dale=M->IsFreeform()&&M->Freeform?M->Freeform->Predecessor.Get():nullptr;
  const FString Relay=Dale?Dale->RelayLine(Tip):FString();
- if(Relay.IsEmpty()||HailLeft>0||!Message(Relay))return false;
+ // (Nor over his own voice still on the set: DALE-WIRE-20261109.)
+ if(Relay.IsEmpty()||HailLeft>0||DaleSpeaking()||!Message(Relay))return false;
  UE_LOG(LogTemp,Display,TEXT("S47: report passed on by Dale over the walkie: %s"),*Tip);
  return true;
 }
@@ -455,11 +593,14 @@ TArray<FS47FieldRadio::FPresence> FS47FieldRadio::Nearby() const
    Add(A.EyePosition(),A.State()==FS47HorrorThreat::EState::Chase || A.State()==FS47HorrorThreat::EState::Capture);
  }
  if(M->DevEvents) if(auto At=M->DevEvents->PalePresence()) Add(*At,false);
+ // D45-20261110: F10's look-only walks are heard as any body is (they never moved the music before).
+ if(M->DevEvents) for(const FVector& GaitHead:M->DevEvents->GaitPresence()) Add(GaitHead,false);
  if(M->IsFreeform()&&M->Freeform)
  {
   if(M->Freeform->FarmSite)
   {
-   if(auto At=M->Freeform->FarmSite->VisitBodyEye()) Add(*At,true);
+   // D45-20261110: hunting only while it walks at the player near by; standing off it was the chase's music at 34 m.
+   if(auto At=M->Freeform->FarmSite->VisitBodyEye()) Add(*At,M->Freeform->FarmSite->VisitBodyComing());
    // No body yet: it breaks up on the place itself. Heard, never seen.
    if(auto At=M->Freeform->FarmSite->VisitWarningAt()) Add(*At,false,false);
   }
@@ -480,11 +621,36 @@ double FS47FieldRadio::ObservedThreat() const
 {
  return M && M->Player?ObservedThreat(S47Three::ToThree(M->Player->EyeUE()),Nearby()):0;
 }
+FS47FieldRadio::EMusicTier FS47FieldRadio::MusicTierFor(double Heard,double Level,double Seen,bool bHunt,bool bWasNear)
+{
+ // D45-20261110: what the player can tell, in order: coming at them, in view or close, heard on the set, nothing.
+ if(Seen>=1 || bHunt) return EMusicTier::Action;
+ if(Seen>0 || Level>.04) return EMusicTier::Tension;
+ return Heard>=(bWasNear?ApproachOut:ApproachIn)?EMusicTier::Eerie:EMusicTier::Place;
+}
+const TCHAR* FS47FieldRadio::MoodOf(EMusicTier In)
+{
+ return In==EMusicTier::Action?TEXT("action"):In==EMusicTier::Tension?TEXT("tension"):In==EMusicTier::Eerie?TEXT("eerie"):TEXT("");
+}
+FString FS47FieldRadio::MusicMood(double& Severity) const
+{
+ // D45-20261110: steps on the roof and the lamp failing: the take owns the room, the place's piece goes in two seconds (urgent).
+ if(M && M->IsFreeform() && M->Freeform && M->Freeform->Taken && M->Freeform->Taken->Stage()==FS47Taken::EStage::Dread)
+ {Severity=1; return TEXT("tension");}
+ // Eerie stays under the Score's urgent .75: it crossfades in four seconds, never cuts.
+ Severity=MusicNow==EMusicTier::Action?1.:MusicNow==EMusicTier::Tension?.55:MusicNow==EMusicTier::Eerie?FMath::Clamp(RealNear,.1,.7):0.;
+ return MoodOf(MusicNow);
+}
+bool FS47FieldRadio::Scare(int32 Kind,double Strength,bool bAudition)
+{
+ return M && M->Audio && Kind>=0 && Kind<4 && Sound.Scare(M->Audio,FS47EncounterSound::EScare(Kind),Strength,bAudition);
+}
 void FS47FieldRadio::Step(double Dt)
 {
  if(!M) return;
  SinceMessage+=Dt;
- Build();
+ StepCaption();
+ Build();Rest(Dt);
  const bool Play=bAvailable && !bUnsupported && M->Mode==US47Main::EMode::Play;
  const bool Shown=Play && !bOwned && !bLeftOut && M->Web && M->Web->Area()==TEXT("saro");
  if(Root) Root.SetVisible(Shown);
@@ -497,7 +663,8 @@ void FS47FieldRadio::Step(double Dt)
  double Level=0,Heard=0; bool Visible=false,Hunting=false;
  // The cues and the music keep to the short range. In Freeform the set itself hears them from further off.
  const double Reach=M->IsFreeform()?FreeformReach:18.;
- for(const auto& A:Nearby())
+ const TArray<FPresence> Near=Nearby();
+ for(const auto& A:Near)
  {
   const double K=Proximity(Eye,A); Level=FMath::Max(Level,K);
   Heard=FMath::Max(Heard,Proximity(Eye,A,Reach));
@@ -515,6 +682,16 @@ void FS47FieldRadio::Step(double Dt)
  if(QuietFor>8) LastCue=-1;
  int32 Want=Hunting?2:SeenFor>.25?1:ThreatFor>1.1?0:-1;
  if(!M->ModalOpen() && Want>LastCue && Want>=0 && Sound.Cue(M->Audio,FS47EncounterSound::EKind(Want),{},FMath::Max(.3,Level))) LastCue=Want;
+ // DREAD-20261110: the ground under a meeting. Near (the cues' 18 m) it comes up with the nearness; one in view further off
+ // (35 m, as the music counts it) has it too. It sinks away by itself when they are gone.
+ {
+  const double Far=ObservedThreat(Eye,Near);
+  // D45-20261110: in Freeform the ground starts early, with what the set hears (to .45 of it), before the cues' 18 m.
+  double Low=0,High=0; FS47EncounterSound::DreadFor(Level,Visible||Far>0,Hunting||Far>=1,Low,High,M->IsFreeform()?RealNear:0.);
+  MusicNow=MusicTierFor(M->IsFreeform()?RealNear:0.,Level,Far,Hunting,MusicNow!=EMusicTier::Place);
+  if(AuditionFor>0){AuditionFor-=Dt;Low=FMath::Max(Low,AuditionLow);High=FMath::Max(High,AuditionHigh);}
+  Sound.Dread(M->Audio,Low,High);
+ }
  // One shared interference voice: carried set, active monitor or powered AM set.
  // The historical Room 6 radio and its authored 4/7 sequence are untouched.
  TOptional<FVector> Speaker;
@@ -566,11 +743,11 @@ void FS47FieldRadio::ControlTest(double Dt)
  auto Check=[&](bool B,const TCHAR* Text){UE_LOG(LogTemp,Display,TEXT("S47: field radio %s: %s"),B?TEXT("PASS"):TEXT("FAIL"),Text);if(!B){TestStage=-1;FPlatformMisc::RequestExitWithStatus(false,1);}return B;};
  if(TestStage==0)
  {
-  if(!Check(!Owned() && Copies.Num()==3 && Root.Shown(),TEXT("three source-mesh copies are on the SARO desk"))) return;
+  if(!Check(!Owned() && (Copies.Num()==3||(bTripoWalkie&&Copies.Num()==1)) && Root.Shown(),TEXT("three source-mesh copies, or Tom's Tripo walkie, are on the SARO desk"))) return;
   const auto* Old=M->Web->Node(M->Web->Obj(TEXT("world.room6.objs.walkie")).I);
   if(!Check(Old && Old->Children.Num()==3,TEXT("Room 6 original remains separate and complete")))return;
   if(!Check(LastLevel==0,TEXT("quiet room does not warn about dormant or future enemies")))return;
-  M->Player->Place(3.18,3.7,0); M->Player->Pitch=-.65;
+  {const FVector R=Root.WorldPosition();M->Player->Place(R.X,R.Z+1.,0);} M->Player->Pitch=-.65; // the desk, or the hall dresser (FIX-20261110)
   FString Shot;
   if(FParse::Value(FCommandLine::Get(),TEXT("S47FieldRadioShot="),Shot))
    FScreenshotRequest::RequestScreenshot(Shot,true,false);
@@ -636,6 +813,30 @@ bool FS47FieldRadio::SelfTest(TArray<FString>& Lines)
  C(ObservedThreat(FVector::ZeroVector,{A})==1,TEXT("observed nearby chase requests action music"));
  A.bHunting=false;
  C(ObservedThreat(FVector::ZeroVector,{A})==.55,TEXT("observed presence requests tension rather than action"));
+ {
+  // D45-20261110: the music's four tiers, from what the player can tell only.
+  FPresence T; T.bActive=true; T.At=FVector(0,0,40);
+  const double At40=Proximity(FVector::ZeroVector,T,FreeformReach); T.At.Z=58;
+  const double At58=Proximity(FVector::ZeroVector,T,FreeformReach); T.At.Z=40;
+  C(MusicTierFor(0,0,0,false,false)==EMusicTier::Place && MoodOf(EMusicTier::Place)[0]==0,TEXT("nothing near: the place's own music"));
+  C(At58==0 && MusicTierFor(At58,0,0,false,false)==EMusicTier::Place,TEXT("the tall one 58 m off, past the set's reach, changes nothing"));
+  C(MusicTierFor(At40,Proximity(FVector::ZeroVector,T),0,false,false)==EMusicTier::Eerie && FCString::Strcmp(MoodOf(EMusicTier::Eerie),TEXT("eerie"))==0,
+   TEXT("something heard on the set 40 m off takes the town's piece to eerie"));
+  C(MusicTierFor(.04,0,0,false,true)==EMusicTier::Eerie && MusicTierFor(.04,0,0,false,false)==EMusicTier::Place && MusicTierFor(.02,0,0,false,true)==EMusicTier::Place,
+   TEXT("in at .05, out only under .025: no chatter at the edge"));
+  T.bHunting=true;
+  C(ObservedThreat(FVector::ZeroVector,{T})==0 && MusicTierFor(At40,0,ObservedThreat(FVector::ZeroVector,{T}),false,false)==EMusicTier::Eerie,
+   TEXT("one hunting unseen 40 m off is only heard: eerie, never the chase"));
+  T.bHunting=false; T.bVisible=true; T.At.Z=34;
+  C(MusicTierFor(.3,0,ObservedThreat(FVector::ZeroVector,{T}),false,true)==EMusicTier::Tension && FCString::Strcmp(MoodOf(EMusicTier::Tension),TEXT("tension"))==0,
+   TEXT("one standing in view 34 m off is tension, not the chase"));
+  C(MusicTierFor(.6,.3,0,false,true)==EMusicTier::Tension,TEXT("close enough for the cues, unseen: tension"));
+  T.bHunting=true;
+  C(MusicTierFor(.3,0,ObservedThreat(FVector::ZeroVector,{T}),false,true)==EMusicTier::Action && MusicTierFor(.9,.5,0,true,true)==EMusicTier::Action
+   && FCString::Strcmp(MoodOf(EMusicTier::Action),TEXT("action"))==0,TEXT("one coming at them, seen or close by: action"));
+  FS47FieldRadio Q(nullptr); double Sev=-1;
+  C(Q.MusicMood(Sev).IsEmpty() && Sev==0 && Q.Approach()==0,TEXT("outside a game the set asks nothing of the music"));
+ }
  FS47FieldRadio R(nullptr); R.Begin(nullptr); C(!R.Owned(),TEXT("old and new cases leave pickup available"));
  auto S=R.Save();S47J::Set(S,TEXT("owned"),true);R.Begin(S);C(R.Owned(),TEXT("ownership survives serialize/restore"));
  S47J::Set(S,TEXT("v"),99); R.Begin(S); C(!R.Owned() && S47J::Write(R.Save())==S47J::Write(S),TEXT("unknown future version is preserved and inactive"));
@@ -662,8 +863,23 @@ bool FS47FieldRadio::SelfTest(TArray<FString>& Lines)
   W.NextChannel();W.NextChannel();C(W.Channel()==1&&!W.Save()->HasField(TEXT("ch")),TEXT("round to 1 again, and the save is as it was before channels"));
   C(!W.Message(TEXT("DALE: Dale out."))&&!W.Hail(FHail{TEXT("Come in."),TEXT(""),TEXT("")},nullptr,nullptr)&&!W.LoudNow()&&!W.Hailing(),TEXT("nothing to say it with outside a game: no hail, no message, no noise"));
   C(Head(1,TEXT("DALE"))==TEXT("WALKIE 1, DALE")&&Head(3)==TEXT("WALKIE 3")&&Head(9)==TEXT("WALKIE 3"),TEXT("the caption's head names the set, its channel and who speaks"));
+  {
+   // M7-WALKIE-20261109: no set in hand yet: the hail is heard from the desk once, and is still no hail
+   FS47FieldRadio D(nullptr);D.Begin(nullptr);
+   const FHail Words{TEXT("SARO, Dale. Pick up."),TEXT(""),TEXT("")};
+   const bool bFirst=D.Hail(Words,nullptr,nullptr);const bool bSecond=D.Hail(Words,nullptr,nullptr);
+   C(!bFirst&&!bSecond&&D.DeskCalls()==1&&!D.Hailing(),TEXT("a hail with the walkie still on the desk is heard from the desk once, and the line waits for the slip"));
+   FS47FieldRadio L(nullptr);L.Begin(nullptr);L.Lose();L.Hail(Words,nullptr,nullptr);
+   FS47FieldRadio H(nullptr);H.Begin(nullptr);H.TestOwn();H.Hail(Words,nullptr,nullptr);
+   C(L.DeskCalls()==0&&H.DeskCalls()==0,TEXT("nothing from the desk once the set is out in the field, or in the player's hand"));
+  }
   Report(nullptr,TEXT("A rancher reports lights."));
   C(!CbAtHand(nullptr)&&!CbSay(nullptr,{TEXT("Breaker.")},TEXT("man"))&&W.TipsWaiting()==0,TEXT("no game: no CB at hand, and nothing held for one"));
+  // CB-TRUCK-20261109 (Tom, 9 November): the CB is the truck's, under the dash: heard and used only sitting in it.
+  C(CbHeardAt(true,false,false)&&CbHeardAt(true,false,true)&&!CbHeardAt(false,true,false)&&!CbHeardAt(false,true,true)&&!CbHeardAt(false,false,true)&&!CbHeardAt(false,false,false),
+   TEXT("the CB works only in the truck: not in the SARO building, not on foot, not with the walkie in hand"));
+  C(S47HudGauges::RadioKind(true,CbHeardAt(false,true,false),false,false,false,0)!=1&&S47HudGauges::RadioKind(true,CbHeardAt(true,false,false),false,false,false,0)==1,
+   TEXT("the HUD's CB 19 line shows a call only in the truck"));
  }
  return Ok;
 }

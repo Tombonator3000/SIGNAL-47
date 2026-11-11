@@ -1,8 +1,10 @@
 #include "S47Radio.h"
 
 #include "S47Audio.h"
+#include "S47CB.h"
 #include "S47Timeline.h"
 #include "S47Media.h"
+#include "S47NightLine.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 #include "Internationalization/Regex.h"
@@ -13,16 +15,6 @@ namespace
 	double Day(double Clock) { return FMath::Fmod(FMath::Fmod(Clock, 86400.) + 86400., 86400.); }
 	FString Cap(FString S) { if (!S.IsEmpty()) S[0] = FChar::ToUpper(S[0]); return S; }
 	bool Caller(const FString& Who) { return Who == TEXT("woman") || Who == TEXT("man") || Who == TEXT("old") || Who == TEXT("boy") || Who == TEXT("news"); }
-	double Pitch(const FString& Who)
-	{
-		if (Who == TEXT("woman")) return 212;
-		if (Who == TEXT("man")) return 138;
-		if (Who == TEXT("roswell")) return 126;
-		if (Who == TEXT("boy")) return 262;
-		if (Who == TEXT("news")) return 150;
-		if (Who == TEXT("old")) return 104;
-		return 116;
-	}
 	TSharedPtr<FS47RadioSeg> Segment(const FString& Kind, double Len = 0)
 	{
 		auto S = MakeShared<FS47RadioSeg>(); S->Kind = Kind; S->Len = Len; return S;
@@ -43,7 +35,7 @@ namespace
 	double SegLen(const FS47RadioSeg& S, double Clock)
 	{
 		if (S.Kind == TEXT("talk")) return S.Duration.Get(TalkLen(S.Lines, Clock));
-		if (S.Kind == TEXT("music") || S.Kind == TEXT("carrier")) return S.Len;
+		if (S.Kind == TEXT("music") || S.Kind == TEXT("carrier") || S.Kind == TEXT("static")) return S.Len;
 		if (S.Kind == TEXT("anthem")) return S47Radio::ANTHEM_SECS;
 		return std::numeric_limits<double>::infinity();
 	}
@@ -300,7 +292,8 @@ FS47Station::~FS47Station() { Sleep(); }
 double FS47Station::Strength(double Clock, double Time) const
 {
 	if (!OnAir()) return 0;
-	if (Id == TEXT("caliche")) return 1;
+	// NIGHT-RADIO-20261109: a stretch of static on the Night Line is the station still there, faint under the hiss.
+	if (Id == TEXT("caliche")) return Seg().Kind == TEXT("static") ? 0.22 : 1;
 	if (Id == TEXT("roswell")) return 0.8;
 	const double Daylight = 1 - FMath::SmoothStep(S47Radio::SIGN_ON + 300, S47Radio::SIGN_ON + 1800, Day(Clock));
 	const double Fade = 0.5 + 0.3 * FMath::Sin(Time * 0.37) + 0.15 * FMath::Sin(Time * 1.13 + 1);
@@ -434,8 +427,40 @@ TArray<TSharedPtr<FS47RadioSeg>> FS47Station::Refill(double Clock)
  const int32 Count = Radio.bEveningTimeline && Id == TEXT("caliche") && !bEveningProgramme && D < 14 * 60 ? 4 : Cfg.Loop.Num();
  const auto S = Cfg.Loop[LoopAt % Count]; LoopAt++; return {S};
 }
+void FS47Station::FreeformFixed(double Clock)
+{
+	// NIGHT-RADIO-20261109: Freeform's 1420 is on from eight in the evening to the sign-off at four (S47NightLine::OnAir), each hour
+	// its own programme for the night. A jump in the clock (a load, a sleep, a wait) starts where the hour's running order is now.
+	const double D = Day(Clock);
+	const TOptional<double> Before = Prev; Prev = Clock;
+	const double Step = Before.IsSet() ? Day(Clock - *Before) : 1e9;
+	const bool bJump = !Before.IsSet() || (Step > 120 && Step < 86400 - 120);
+	if (!S47NightLine::OnAir(D))
+	{
+		BlockHour = -1;
+		// Just past four, the sign-off and the anthem as before; later in the day (or loaded into it), nothing.
+		if (After == TEXT("loop") || bJump) Cross(D - S47Radio::SIGN_OFF, Clock);
+		return;
+	}
+	const double NightH = D < 12 * 3600 ? D / 3600 + 24 : D / 3600;
+	const int32 Hour = FMath::Clamp(FMath::FloorToInt(NightH), 20, 27);
+	if (Hour == BlockHour && !bJump && After == TEXT("loop")) return;
+	FS47NightLineIn In;
+	if (Radio.NightLineIn) Radio.NightLineIn(In);
+	const int32 Key = In.Night * 100 + Hour;
+	if (Key != BlockKey || Cfg.Loop.IsEmpty()) { BlockKey = Key; Cfg.Loop = S47NightLine::Hour(In, Hour); LoopAt = 0; }
+	BlockHour = Hour;
+	if (After == TEXT("loop") && !bJump) return; // the hour turned: its call comes after what is on now
+	After = TEXT("loop");
+	double Into = (NightH - Hour) * 3600; int32 I = 0;
+	for (; I < Cfg.Loop.Num() - 1; ++I) { const double L = SegLen(*Cfg.Loop[I], Clock); if (Into < L) break; Into -= L; }
+	LoopAt = I; Start(Refill(Clock), Clock, FMath::Max(0., Into));
+}
 void FS47Station::Fixed(double Clock)
 {
+ if (Id == TEXT("caliche") && Radio.NightLineIn) { FreeformFixed(Clock); return; }
+ // Back from Freeform: Story's own Night Line again.
+ if (Id == TEXT("caliche") && BlockKey >= 0) { BlockKey = BlockHour = -1; Cfg.Loop = bEveningProgramme ? EVENING_LINE() : NIGHT_LINE(); Prev.Reset(); LoopAt = 0; }
  if (Id == TEXT("caliche"))
  {
   const bool Evening = Radio.bEveningTimeline && S47Timeline::Day(Clock) >= 18 * 3600;
@@ -522,15 +547,12 @@ void FS47Station::Wake()
 	auto X = MakeShared<FNodes>();
 	{
 	FS47AudioContext::FBatch Batch(*Ctx);
-	X->Horn = Ctx->CreateOscillator(); X->Horn->SetType(TEXT("sawtooth")); X->Horn->Frequency.SetValue(120);
-	X->Vib = Ctx->CreateOscillator(); X->Vib->Frequency.SetValue(5.3);
-	auto Vd = Ctx->CreateGain(); Vd->Gain.SetValue(2.2); X->Vib->Connect(Vd); Vd->Connect(X->Horn->Frequency);
-	X->Mute = Ctx->CreateBiquadFilter(); X->Mute->SetType(TEXT("lowpass")); X->Mute->Frequency.SetValue(400); X->Mute->Q.SetValue(6.5);
-	X->Voice = Ctx->CreateGain(); X->Voice->Gain.SetValue(0); X->Horn->Connect(X->Mute); X->Mute->Connect(X->Voice); X->Voice->Connect(B);
+	// D45-20261110: a line without a take is the station's static in the words' rhythm (S47CB::StaticLine, into Voice), no horn
+	X->Voice = Ctx->CreateGain(); X->Voice->Gain.SetValue(1); X->Voice->Connect(B);
 	X->Osc = Ctx->CreateOscillator(); X->Osc->Frequency.SetValue(760);
 	X->Car = Ctx->CreateGain(); X->Car->Gain.SetValue(0); X->Osc->Connect(X->Car); X->Car->Connect(B);
 	X->Mus = Ctx->CreateGain(); X->Mus->Gain.SetValue(1); X->Mus->Connect(B);
-	X->Horn->Start(); X->Vib->Start(); X->Osc->Start(); N = X;
+	X->Osc->Start(); N = X;
 	}
 	Sync(); AnnounceRecordedLine();
 }
@@ -538,7 +560,7 @@ void FS47Station::Sleep()
 {
 	const auto X = N; if (!X) return; N.Reset(); CancelArchive(); CancelHost();
 	if (X->Music) X->Music->Stop(); StopAnthem(*X); StopTrack(*X);
-	X->Horn->Stop(); X->Vib->Stop(); X->Osc->Stop(); X->Voice->Disconnect(); X->Car->Disconnect(); X->Mus->Disconnect();
+	X->Osc->Stop(); X->Voice->Disconnect(); X->Car->Disconnect(); X->Mus->Disconnect();
 }
 void FS47Station::Sync()
 {
@@ -559,11 +581,11 @@ void FS47Station::Sync()
 	{
 		FS47AudioContext::FBatch Batch(*Ctx); auto Src = Ctx->CreateBufferSource(); Src->Buffer = Tune; Src->bLoop = true; Src->Connect(X->Mus); Src->Start(Now, FMath::Fmod(At, Tune->Duration())); X->Music = Src;
 	}
-	{
-		FS47AudioContext::FBatch Batch(*Ctx);
-		X->Horn->Frequency.CancelScheduledValues(Now); X->Mute->Frequency.CancelScheduledValues(Now); X->Voice->Gain.CancelScheduledValues(Now); X->Voice->Gain.SetValueAtTime(0, Now);
-	}
 	if (S.Kind == TEXT("talk") && !bHostReady) { PrepareHost(); return; }
+	// D45-20261110: the static voice's bed and pops (the bought static and crackle when the build has them); its sources are
+	// host sources, so the StopHostSources above ends a line that was sounding
+	const S47CB::FStaticBed Bed = S.Kind == TEXT("talk") ? S47CB::StaticBed(Radio.Audio) : S47CB::FStaticBed();
+	const TSharedPtr<FS47AudioBuffer> Pop = Radio.Audio->Lic(TEXT("radio_crackle_short"));
 	{
 		FS47AudioContext::FBatch Batch(*Ctx);
 		if (S.Kind == TEXT("talk") && bHostReady)
@@ -587,14 +609,17 @@ void FS47Station::Sync()
 						PartAt += Buffer->Duration() + FRAGMENT_GAP;
 					}
 				}
-				else if (L.Line.Who != TEXT("evening") && L.Line.Who != TEXT("retimed") && L.At + L.Secs > At) for (const auto& Y : S47Radio::Syllables(L.Text, L.Secs))
+				else if (L.Line.Who != TEXT("evening") && L.Line.Who != TEXT("retimed") && L.At + L.Secs > At)
 				{
-					if (L.At + Y.At < At) continue;
-					const double Ts = Now + L.At + Y.At - At, F = Pitch(L.Line.Who) * Y.F;
-					auto& Fq = X->Horn->Frequency; auto& Mf = X->Mute->Frequency; auto& G = X->Voice->Gain;
-					Fq.SetValueAtTime(F, Ts); Fq.LinearRampToValueAtTime(F * 0.94, Ts + Y.D);
-					Mf.SetValueAtTime(330, Ts); Mf.LinearRampToValueAtTime(1350, Ts + Y.D * 0.3); Mf.LinearRampToValueAtTime(430, Ts + Y.D);
-					G.SetValueAtTime(0, Ts); G.LinearRampToValueAtTime(0.42, Ts + 0.025); G.SetValueAtTime(0.42, Ts + Y.D * 0.7); G.LinearRampToValueAtTime(0, Ts + Y.D);
+					// D45-20261110 (Tom: no "wah wah"): the rest of the line as static breaking up in its syllables, at the old voice's .42 of the CB's .5
+					TArray<TSharedPtr<FS47BufferSourceNode>> Made;
+					S47CB::StaticLine(Ctx.ToSharedRef(), X->Voice, Bed, Pop, L.Text, L.Secs, Now + L.At - At, FMath::Max(0., At - L.At), 0.85, Made);
+					for (const auto& Source : Made)
+					{
+						TWeakPtr<FS47Station> Weak = AsShared(); TWeakPtr<FS47BufferSourceNode> Ws = Source;
+						Source->OnEnded = [Weak, Ws] { if (auto St = Weak.Pin()) { if (auto Src = Ws.Pin()) { Src->Disconnect(); St->HostSources.Remove(Src); } } };
+						HostSources.Add(Source);
+					}
 				}
 			}
 		}
@@ -846,6 +871,24 @@ bool FS47Radio::SelfTest(TArray<FString>& Lines)
  R.Update(0, 0); Check(!C->bEveningProgramme && C->OnAir() && !R.bBoyCalled, TEXT("midnight switches from evening presenter to Night Line"));
  R.Reset(26 * 60); Check(R.bBoyCalled && C->Seg().Lines[0].Who == TEXT("boy"), TEXT("evening boy call moves to 00:26"));
  R.bEveningTimeline = false; R.Reset(3 * 3600); Check(!C->bEveningProgramme && C->OnAir(), TEXT("legacy reload restores the original night programme"));
+	// NIGHT-RADIO-20261109: Freeform's Night Line, from eight in the evening to the sign-off at four, an hour's programme at a time.
+	R.NightLineIn = [](FS47NightLineIn& In) { In = FS47NightLineIn(); In.Night = 3; In.Seed = 1986; return true; };
+	R.Reset(19 * 3600 + 1800); const bool bDark = !C->OnAir();
+	R.Reset(20 * 3600 + 5); const bool bOn = C->OnAir() && C->Seg().Kind == TEXT("talk") && C->Seg().Lines[0].At(20 * 3600 + 5).StartsWith(TEXT("Good evening"));
+	Check(bDark && bOn, TEXT("Freeform's 1420 is silent before eight and signs on with Earl at eight"));
+	R.Reset(20 * 3600 + 3590); C->Update(25, 21 * 3600 + 15);
+	Check(C->BlockHour == 21 && C->OnAir(), TEXT("the hour turns to its own programme without a break"));
+	R.Reset(1 * 3600 + 900); Check(C->OnAir() && C->Cfg.Loop.Contains(C->Queue[0]) && C->BlockHour == 25, TEXT("a load at a quarter past one starts inside that hour's programme"));
+	R.Reset(S47Radio::SIGN_OFF + 5); Check(C->Seg().Kind == TEXT("talk") && C->Seg().Lines.Num() == 2 && C->Seg().Lines[1].At(0).Contains(TEXT("signing off")), TEXT("the sign-off at four is the same in Freeform"));
+	R.Reset(12 * 3600); Check(!C->OnAir(), TEXT("nothing on 1420 in the day"));
+	{
+		bool bStatic = false; double Faint = 1;
+		for (const auto& S : S47NightLine::Hour(FS47NightLineIn(), 24)) if (S->Kind == TEXT("static")) { C->Start({S}, 3600); bStatic = C->OnAir() && C->Len == S->Len; Faint = C->Strength(3600, 0); }
+		FS47NightLineIn Other; Other.Night = 2;
+		for (int32 H = 24; H <= 26 && !bStatic; ++H) for (const auto& S : S47NightLine::Hour(Other, H)) if (S->Kind == TEXT("static")) { C->Start({S}, 3600); bStatic = C->OnAir() && C->Len == S->Len; Faint = C->Strength(3600, 0); }
+		Check(bStatic && Faint < 0.35, TEXT("a stretch of static stays on the air, faint, for its own length"));
+	}
+	R.NightLineIn = nullptr; R.Reset(3 * 3600); Check(C->OnAir() && C->BlockKey < 0 && C->Cfg.Loop.Num() == NIGHT_LINE().Num(), TEXT("out of Freeform, Story's Night Line again"));
  A->Ctx = FS47AudioContext::Make(); C->Start({Talk({FS47RadioLine(TEXT("Hello, is this the radio?"))})},0); C->EnsureBus()->Connect(A->Ctx->Destination); C->Listen(true);
 	TArray<float> Samples; Samples.SetNumZeroed(48000 * 2); A->Ctx->Render(Samples.GetData(),48000); double Peak = 0; bool bFinite = true;
 	for (float V : Samples) { Peak = FMath::Max(Peak,double(FMath::Abs(V))); bFinite &= FMath::IsFinite(V); }

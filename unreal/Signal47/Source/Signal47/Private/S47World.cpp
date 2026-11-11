@@ -1,4 +1,5 @@
 #include "S47World.h"
+#include "S47FarmWindmill.h"
 #include "S47Relief.h"
 #include "S47FarmHouse.h"
 #include "S47FarmBuildings.h"
@@ -10,6 +11,7 @@
 #include "S47FieldLife.h"
 #include "S47Predecessor.h"
 #include "S47FreeformWorld.h"
+#include "S47MessageQueue.h"
 #include "S47Spine.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -124,7 +126,7 @@ namespace
   }
   void SyncWingObstacles()
   {
-   // Walls/door leaves appear after EnsureLegs; parked staff cars can move during native setup.
+   // Walls/door leaves appear after EnsureLegs; colliders can still change during native setup (no staff cars since D37-SARO-EMPTY).
    // Reuse our slots instead of removing entries owned by arrival, farm or other systems.
    int32 Used=0;
    if(ForecourtEnabled()||GarageEnabled())for(const FS47Rect& R:Owner->Web->CollidersMutable(TEXT("saro")))
@@ -725,7 +727,7 @@ void US47World::EnsureLegs()
 		// d.thud: audio.play('thudSoft', { gain, rate: 0.8 })
 		if (!M || !M->Audio) return;
 		FS47Sound S; S.Gain = float(FMath::Min(1.0, Speed / 8)); S.Rate = 0.8f;
-		M->Audio->Sfx(TEXT("thud_soft"), S);
+		M->Audio->Sfx(TEXT("thudSoft"), S); // the buffer's name, as the web's 'thudSoft' (critic round 5: the file's name played nothing)
 	};
 	// SARO's own ground (ensureSaroLeg): its colliders without the truck's own, and the posts of
 	// the road's stretch (the export's list has both)
@@ -864,17 +866,29 @@ void US47World::Enter(const FString& NewArea)
 	// a truck shows where it stands, or where it is being driven (AS47Web shows every truck with
 	// its area; World.enter's rules after it)
 	EnsureLegs();
+	// BLOCKERS-20261109: in Freeform the three thin walls the web export closes Caliche's ends with (roadProps.ts fences(): west of
+	// the town at TOWN.z1 and at DINER.z + 45, east of it at the old road's south edge) are taken out of the road's drive. Nothing
+	// is drawn along them (F10 "Looks (M6)": road#18, road#19, road#10, 29-94 % of the edge bare); the drawn fences and the town's
+	// own walls still hold the truck. Story keeps them: there the fences keep the truck on the highway until chapter six.
+	if (bLegsMade && M && M->IsFreeform())
+		if (IS47DriveArea* RoadLeg = LegArea(TEXT("road")))
+		{
+			static const FS47Box2 TownEnds[] = { { 7958, 7979, 2299.85, 2300.15 }, { 7958, 7979, 2044.8, 2045.1 }, { 8029.85, 8048, 2017.8, 2018.1 } };
+			// FARM-GATE-20261109: parked far off in its own slot, not removed: the farm, the east wing, the town's car and the UFO hold
+			// slots in this list by index, and a removal shifted them (the closed ranch gate stayed live in the open gate).
+			int32 Out = 0;
+			for (FS47Obstacle& O : RoadLeg->Obstacles)
+			{
+				if (O.bCircle) continue;
+				for (const FS47Box2& B : TownEnds)
+					if (FMath::Abs(O.MinX - B.MinX) < .01 && FMath::Abs(O.MaxX - B.MaxX) < .01 && FMath::Abs(O.MinZ - B.MinZ) < .01 && FMath::Abs(O.MaxZ - B.MaxZ) < .01) { O = FS47Obstacle::Box(1e9, 1e9, 1e9, 1e9); ++Out; break; }
+			}
+			if (Out) UE_LOG(LogS47World, Display, TEXT("S47: Freeform: %d invisible walls at Caliche's ends taken out of the road's drive (BLOCKERS-20261109)"), Out);
+		}
 	if (bLegsMade)
 	{
 		for (FS47Truck* T : {SaroTruckP.Get(), TruckP.Get(), ParkedP.Get()}) if (T) T->SetPersonalVehicle(bCommuteVehicle);
-		auto Here = [this](const TCHAR* Id) { return Area == Id && (TruckAt == Id || Leg == Id); };
-		// (on the motel's lot it is SARO's truck too, in SARO's area)
-		SaroTruckP->Group.SetVisible(Here(TEXT("saro")) || (Area == TEXT("saro") && TruckAt == TEXT("motel")));
-		const bool bOnRoad = Area == TEXT("road") || Area == TEXT("diner");
-		TruckP->Group.SetVisible(bOnRoad && (Leg == TEXT("road") || TruckAt == TEXT("diner")));
-		ParkedP->Group.SetVisible(Here(TEXT("station01")));
-		OldTruckP->Group.SetVisible(Area == TEXT("roswell"));
-		if (bCommuteVehicle) {SaroTruckP->Group.SetVisible(false);TruckP->Group.SetVisible(false);ParkedP->Group.SetVisible(false);}
+		ShowTrucks();
 	}
 	S47FarmWorld::Reconcile(M);
 	if (OnEnter) OnEnter(NewArea);
@@ -987,9 +1001,25 @@ void US47World::Roam(const FString& From)
 		TArray<FString> Say;
 		if (FirstTime(TEXT("drive"))) Say.Add(FString::Printf(TEXT("%s, %s, %s and %s: drive. %s: radio. Stop and press %s to get out."), *S47Keys::Said(TEXT("forward")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("left")), *S47Keys::Said(TEXT("right")), *S47Keys::Said(TEXT("radio")), *S47Keys::Said(TEXT("use"))));
 		const bool bFreeform = M && M->IsFreeform();
-		if (bFreeform) Say.Add(TEXT("CALICHE GAS STATION: south past the motel, west side of the highway, just past Mesa Diner. Parts 08:00-20:00, essentials after hours. GARAGE RECEIVING: unload at the labeled table in the SARO garage, east wing. Both are on the notebook map."));
-		else if (FirstTime(TEXT("roam"))) Say.Add(TEXT("On the highway, stop at the motel or the diner."));
-		if (Say.Num()) Toast(FString::Join(Say, TEXT(" ")), bFreeform ? 12.f : 5.5f);
+		// TRUCK-HINT-20261109: not every time in. The first time, and then once for each situation it is about that has come up since
+		// the last time in (the tank empty, a parcel on the rack, a fault waiting for a relay); otherwise it is in NOW/TONIGHT.
+		bool bTruckHint = false;
+		if (bFreeform)
+		{
+			TArray<FString> Now;
+			if (const FS47FreeformWorld* Fw = M->Freeform ? M->Freeform->Field.Get() : nullptr)
+			{
+				if (!Fw->HasVehicleFuel()) Now.Add(TEXT("tank"));
+				if (Fw->ParcelStage() == 3) Now.Add(TEXT("parcel"));
+				if (Fw->HasArrayFault() && Fw->InventoryCount(TEXT("relay")) == 0) Now.Add(TEXT("part:") + Fw->ServiceDishId());
+			}
+			S47TruckHint::FState Hint{ bTruckHintSaid, TruckHintFor };
+			bTruckHint = S47TruckHint::Due(Hint, Now);
+			bTruckHintSaid = Hint.bIntro; TruckHintFor = MoveTemp(Hint.Shown);
+		}
+		if (bTruckHint) Say.Add(TEXT("CALICHE GAS STATION: south past the motel, west side of the highway, just past Mesa Diner. Parts 08:00-20:00, essentials after hours. GARAGE RECEIVING: unload at the labeled table in the SARO garage, east wing. Both are on the notebook map."));
+		else if (!bFreeform && FirstTime(TEXT("roam"))) Say.Add(TEXT("On the highway, stop at the motel or the diner."));
+		if (Say.Num()) Toast(FString::Join(Say, TEXT(" ")), bTruckHint ? 12.f : 5.5f);
 	};
 	StartTrip(From, FString(), O);
 }
@@ -1581,6 +1611,8 @@ bool US47World::OnLand(double X, double Z, const FString& InArea)
 	{
 		for (const FS47Obstacle& O : G->Area->Obstacles)
 		{
+			// SARO-GEN-RAMP-20261109: the truck ramp's open sides hold the truck, not one on foot (S47OpenLand::TruckRampSide).
+			if (!O.bCircle && A == TEXT("saro") && S47OpenLand::TruckRampSide(O.MinX, O.MaxX, O.MinZ, O.MaxZ)) continue;
 			if (O.bCircle ? FMath::Square(X - O.X) + FMath::Square(Z - O.Z) < FMath::Square(O.R + R) : X > O.MinX - R && X < O.MaxX + R && Z > O.MinZ - R && Z < O.MaxZ + R) return false;
 		}
 	}
@@ -1880,8 +1912,24 @@ void US47World::PlaceTruck(const FString& At, const S47J::FObj& Pose)
 			T->SetParkPose(T->Position, T->Rotation.Y);
 	}
 	for (const TCHAR* P : TRUCKS) ParkAt(P);
+	// TOW-SHOW-20261109 (Tom: towed home to SARO, the truck was not there, only its "Drive" in the air): the county tow entered SARO's
+	// area while the truck still stood on the road and only then put it on its pad, and the trucks were shown only on entering.
+	ShowTrucks();
 	// (a save made on foot by the truck left somewhere with no walk of its own: the ground round it again)
 	SetGround(At);
+}
+
+void US47World::ShowTrucks()
+{
+	if (!SaroTruckP || !TruckP || !ParkedP || !OldTruckP) return;
+	auto Here = [this](const TCHAR* Id) { return Area == Id && (TruckAt == Id || Leg == Id); };
+	// (on the motel's lot it is SARO's truck too, in SARO's area)
+	SaroTruckP->Group.SetVisible(Here(TEXT("saro")) || (Area == TEXT("saro") && TruckAt == TEXT("motel")));
+	const bool bOnRoad = Area == TEXT("road") || Area == TEXT("diner");
+	TruckP->Group.SetVisible(bOnRoad && (Leg == TEXT("road") || TruckAt == TEXT("diner")));
+	ParkedP->Group.SetVisible(Here(TEXT("station01")));
+	OldTruckP->Group.SetVisible(Area == TEXT("roswell"));
+	if (bCommuteVehicle) { SaroTruckP->Group.SetVisible(false); TruckP->Group.SetVisible(false); ParkedP->Group.SetVisible(false); }
 }
 
 S47J::FObj US47World::OdoSave() const
@@ -2084,6 +2132,12 @@ IS47DriveArea* US47World::LegArea(const FString& Id) const
 	return L ? L->Area.Get() : nullptr;
 }
 
+const TArray<FS47Box2>* US47World::LandOut(const FString& InArea) const
+{
+	const FLand* L = Lands.Find(InArea);
+	return L ? &L->Out : nullptr;
+}
+
 // What OnLand would say no to here, by name, for the probe of how far one gets (S47ReliefProbe).
 FString US47World::WhyNotLand(double X, double Z)
 {
@@ -2104,6 +2158,7 @@ FString US47World::WhyNotLand(double X, double Z)
 	{
 		for (const FS47Obstacle& O : G->Area->Obstacles)
 		{
+			if (!O.bCircle && Area == TEXT("saro") && S47OpenLand::TruckRampSide(O.MinX, O.MaxX, O.MinZ, O.MaxZ)) continue; // (as OnLand)
 			if (O.bCircle ? FMath::Square(X - O.X) + FMath::Square(Z - O.Z) < FMath::Square(O.R + R) : X > O.MinX - R && X < O.MaxX + R && Z > O.MinZ - R && Z < O.MaxZ + R)
 				return O.bCircle ? FString::Printf(TEXT("post or rock r %.2f at %.1f %.1f"), O.R, O.X, O.Z) : FString::Printf(TEXT("obstacle box %.1f..%.1f, %.1f..%.1f"), O.MinX, O.MaxX, O.MinZ, O.MaxZ);
 		}
@@ -2168,7 +2223,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 		DashT = 0.1;
 		// (GEAR-FLICKER-20261108: close to something the dash clock jumps with the watch)
 		const FString DashSays = M->Story && !bCommuteVehicle ? FS47Happenings::DashClock(M, M->Story->ClockText(false)) : FString();
-		N->Truck->SetDash(D.Mph, D.Rpm, M->IsFreeform() && M->Gear.IsValid() ? M->Gear->ClockSays(DashSays) : DashSays, M->IsFreeform() && M->Freeform && M->Freeform->Field ? M->Freeform->Field->VehicleFuel()/4. : Id == TEXT("roswell") ? 0.55 : 0.62);
+		N->Truck->SetDash(D.Mph, D.Rpm, M->IsFreeform() && M->Gear.IsValid() ? M->Gear->ClockSays(DashSays) : DashSays, M->IsFreeform() && M->Freeform && M->Freeform->Field ? M->Freeform->Field->VehicleFuel()/M->Freeform->Field->TankCap() : Id == TEXT("roswell") ? 0.55 : 0.62);
 		// (M2: the temperature needle reads the radiator, FS47TruckCare)
 		if (M->IsFreeform() && M->Freeform && M->Freeform->Care && !bCommuteVehicle) N->Truck->SetTempNeedle(M->Freeform->Care->TempNeedle());
 		N->Truck->SetOdometer(Odometer());
@@ -2179,6 +2234,18 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	{
 		const FVector E = EulerYXZ(D.CamQuat);
 		Out.Eye = D.CamPos; Out.Pitch = E.X; Out.Yaw = E.Y; Out.Roll = E.Z;
+		// WEEKLY-CASE-20261109: rocked from outside, in shoves rather than a hum (three slow beats that only now and then line up)
+		if (CabShake > 0 && bDriving)
+		{
+			if (D.bCameraMotion)
+			{
+				const double T = M->T, K = FMath::Min(1.0, CabShake);
+				const double Shove = FMath::Max(0.0, FMath::Sin(T * 5.3) * FMath::Sin(T * 1.7 + 0.6) + 0.25 * FMath::Sin(T * 11.1));
+				Out.Eye += FVector(0.035 * FMath::Sin(T * 7.9), 0.045 * Shove, 0.02 * FMath::Sin(T * 6.1 + 1.3)) * K;
+				Out.Roll += 0.03 * K * Shove * FMath::Sin(T * 2.3);
+			}
+			CabShake = FMath::Max(0.0, CabShake - Dt * 0.9);
+		}
 	}
 	// a camera that has left the cab sees the whole truck in this very frame
 	N->Truck->ViewFrom(Out.Eye);
@@ -2482,7 +2549,15 @@ void US47World::ReconcileFarm(bool bEnabled)
    // The new buildings' real walls with the barn's door left open, or the two old boxes when their meshes are missing.
    if(S47FarmBuildings::Available())for(const FBox2D& Solid:S47FarmBuildings::Obstacles())Box(Solid.Min.X,Solid.Max.X,Solid.Min.Y,Solid.Max.Y);
    else{Box(101,115,187,197);Box(126,146,164,177);}
-   Box(148,156,196,204);Box(30,30,215,265);Box(80,80,215,265);Box(30,80,265,265);Box(30,66,215,215);Box(75,80,215,215);
+   // FENCES-INVISIBLE-20261108: the old stock tank's box (Story's, 3 m round road 152,200) held the truck where nothing stands in
+   // Freeform; the new tower and tank (S47FarmWindmill) are where they are drawn.
+   if(S47FarmWindmill::Available())
+   {
+    for(const FBox2D& Foot:S47FarmWindmill::Footprints())Box(Foot.Min.X,Foot.Max.X,Foot.Min.Y,Foot.Max.Y);
+    const FVector3d Tank=S47FarmWindmill::TankRound();Add(FS47Obstacle::Circle(Tank.X+O.X,Tank.Y+O.Z,Tank.Z));
+   }
+   else Box(148,156,196,204);
+   Box(30,30,215,265);Box(80,80,215,265);Box(30,80,265,265);Box(30,66,215,215);Box(75,80,215,215);
    // The truck has only ever been able to reach what stood by its roads, and its lists hold no more than that. Off them, all that holds a walker holds it too.
    if(!S47OpenLand::Off()&&M&&M->Web)
    {
@@ -2494,13 +2569,19 @@ void US47World::ReconcileFarm(bool bEnabled)
     for(const FS47Rect& C:M->Web->CollidersMutable(Id))
     {
      if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar")||C.Id.StartsWith(TEXT("door:"))||C.Id.StartsWith(TEXT("eastwing:"))||C.Id.StartsWith(TEXT("temp:"))||C.Id.StartsWith(TEXT("townuse:"))||S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))continue; // (temp:, townuse: M4's own, S47TownSites puts them in the truck's list itself)
+     // FENCES-INVISIBLE-20261108: a cow's walk box has its own circle in the truck's list, which goes with the cow (S47Herd); a copy
+     // made here stayed where the cow stood when the farm opened, and held the truck in the empty pasture.
+     const double CX=(C.MinX+C.MaxX)*.5,CZ=(C.MinZ+C.MaxZ)*.5,CR=(C.MaxX-C.MinX)*.5;
+     if(Obs.ContainsByPredicate([&](const FS47Obstacle& Have){return Have.bCircle&&FMath::Abs(Have.X-CX)<.01&&FMath::Abs(Have.Z-CZ)<.01&&FMath::Abs(Have.R-CR)<.02;}))continue;
      Solid(C.MinX,C.MaxX,C.MinZ,C.MaxZ);
     }
     if(Id==TEXT("saro"))
     {
      // MakeLands' walls with no collider of their own (the zones keep the walker from them), its slabs, the array's and the site's fences; the pad is reached by its ramp only.
+     // SARO-GEN-RAMP-20261109: the pad's sides and the ramp's sides are separate lines. The truck keeps to the ramp by all four; one on
+     // foot is held by the ramp's two in nothing (OnLand: S47OpenLand::TruckRampSide), they were the invisible wall Tom met at x 6.87.
      for(const FS47Box2& Wall:TArray<FS47Box2>{{-6.7,6.7,-5.9,5.9},{-6.6,2.6,5.8,11.1},{-7.75,-6.0,4.75,6.65},{12.6,19.2,-6.0,1.0},{6.3,11.0,-.6,3.4},{8.0,11.0,-19.6,-.6},{11.0,12.6,-13.4,-8.6},{11.0,12.6,-1.9,-.6},
-      {-80,-28.6,-20,-20},{-19.4,60,-20,-20},{-18.6,46.5,34.5,34.5},{46.5,46.5,-19.9,34.5},{6.6,6.6,3.4,16.6},{13,13,3.4,16.6},{6.6,13,3.4,3.4}})
+      {-80,-28.6,-20,-20},{-19.4,60,-20,-20},{-18.6,46.5,34.5,34.5},{46.5,46.5,-19.9,34.5},{6.6,6.6,3.4,12.4},{6.6,6.6,12.4,16.6},{13,13,3.4,12.4},{13,13,12.4,16.6},{6.6,13,3.4,3.4}})
       Solid(Wall.MinX,Wall.MaxX,Wall.MinZ,Wall.MaxZ);
     }
    }
@@ -2510,11 +2591,10 @@ void US47World::ReconcileFarm(bool bEnabled)
  const bool Changed=bFarmMode!=bEnabled;bFarmMode=bEnabled;
  // The road's walk has the same long fences as colliders of its own. Story needs them back.
  if(Changed&&!S47OpenLand::Off()&&M&&M->Web)for(FS47Rect& C:M->Web->CollidersMutable(TEXT("road")))if(S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))C.bEnabled=!bEnabled;
- for(const auto& Pair:FarmControlledObstacles)if(auto* L=Legs.Find(Pair.Key))for(const auto& Entry:Pair.Value)
- {
-  const bool Added=Entry.Key<0;const int32 I=Added?-Entry.Key-1:Entry.Key;if(!L->Area->Obstacles.IsValidIndex(I))continue;
-  auto B=Entry.Value;if((Added&&!bEnabled)||(!Added&&bEnabled)){B.MinX+=1000000;B.MaxX+=1000000;}L->Area->Obstacles[I]=B;
- }
+ // FARM-GATE-20261109: each entry finds its own obstacle again before it is written. The lists' indices moved when something took
+ // an obstacle out after they were read (SARO's stop sign, Caliche's ends), and the closed ranch gate stayed live in Freeform at the
+ // slot below its own while its retired copy went over a neighbour: an invisible wall in the open gate, on foot and at the wheel.
+ for(auto& Pair:FarmControlledObstacles)if(auto* L=Legs.Find(Pair.Key))S47FarmWorld::ApplyControlled(L->Area->Obstacles,Pair.Value,bEnabled); // (a circle by its middle: BLOCKERS-20261109's tank)
  if(Changed)Under.Reset();
 }
 
@@ -2600,7 +2680,8 @@ bool US47World::AuditEastWingDrive(TArray<FString>& Lines)
  Traverse(FVector(21.5,-.576,16.2),0,9.5,false,TEXT("western paved frontage reaches the personnel entrance approach"));
  FS47DriveController StaffStop(nullptr,DriveArea);StaffStop.Place(FVector(S47SaroForecourt::SedanX,-.576,17.5),0);
  for(int32 I=0;I<480;++I)StaffStop.Update(1./60.,{0,.4},FVector2D::ZeroVector);
- Check(StaffStop.Pos.Z>14.5&&StaffStop.Pos.Z<17.4,TEXT("parked staff car still stops the complete vehicle footprint"));
+ // D37-SARO-EMPTY-20261109: no staff cars any more; the truck drives on into the empty bay past where the sedan's nose stopped it.
+ Check(StaffStop.Pos.Z<14.5,TEXT("empty staff bay: no parked car stops the truck"));
  const FS47Box2 LotParking=FArrivalSaroDrive::ForecourtParking(0,1.05,2.75);
  Check(LotParking.Contains(21.5,10)&&!LotParking.Contains(20.5,10)&&!LotParking.Contains(35.4,17),TEXT("forecourt parking requires the full Jeep footprint on the apron"));
  if(!M||!M->IsFreeform())

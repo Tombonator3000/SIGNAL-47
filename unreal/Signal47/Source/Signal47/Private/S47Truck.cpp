@@ -292,6 +292,10 @@ void FS47Truck::Bind(US47Main* InM, const FString& InPath, int32 InCabSet, UObje
 	Fleet=FS47Fleet::Install(Web,*this);
 	ServiceDriverEye=DriverEye;
 	MirrorSet.Reset();if(Fleet&&Fleet->IsTripoJeep())MirrorSet=FS47Mirrors::Install(Web,*this,Fleet->Parts());
+	// D45-20261110 (D45-29): Tom's alien bobblehead on the dash, only on the Jeep's authored cab (whose pad it stands on);
+	// without the imported meshes nothing is added
+	Bobble.Reset();
+	if (bJeepCab) Bobble = FS47Bobblehead::Install(Web, Body, Path, DriverEye);
 	SetDriving(false);
 	Update(0, 0);
 	ApplyLights();
@@ -314,6 +318,8 @@ void FS47Truck::SetParkPose(const FVector& P, double Heading)
 	SetWheelDrops(Level);
 	SetPose(P, FVector(0, Heading, 0));
 	SetDriving(false);
+	// D45-20261110: parked, the bobblehead's head is found still (parked trucks do not run Update)
+	if (Bobble) Bobble->Settle();
 	Update(0, 0);
 }
 
@@ -360,6 +366,8 @@ void FS47Truck::SetDriving(bool bOn)
 	// from the driver's seat the lamps face away: their glows only poked over the hood
 	GlowPoints.SetVisible(!bOn && !Fleet);
 	if (bPersonalVehicle) Group.SetVisible(false);
+	// D45-20261110: the dashboard bobblehead is Freeform's (Story's cab as it was)
+	if (Bobble) Bobble->SetShown(M && M->IsFreeform());
 }
 
 void FS47Truck::SetPersonalVehicle(bool bOn)
@@ -386,6 +394,8 @@ void FS47Truck::CopyCab(const FS47Truck& O)
 	Compass.A = O.Compass.A; Compass.V = O.Compass.V; Compass.bSet = O.Compass.bSet;
 	CompassPull = O.CompassPull;
 	Keys.SetRotation(FVector(O.Swing.A * 0.4, 0, O.Swing.A));
+	// D45-20261110: the bobblehead's head goes on wobbling where it was (no kick from the jump to the other copy)
+	if (Bobble && O.Bobble) Bobble->Adopt(O.Bobble->Spring);
 	SetOdometer(O.Odometer() - S47_ODOMETER_OUT);
 	SetFrost(O.Frosted());
 	Update(0, 0, O.WheelAngle);   // the needles drawn where they are now, in this frame
@@ -632,6 +642,9 @@ void FS47Truck::Update(double Dt, double Speed, double InWheelAngle)
 		Sw.A = FMath::Clamp(Sw.A + Sw.V * Dt, -0.7, 0.7);
 		Keys.SetRotation(FVector(Sw.A * 0.4, 0, Sw.A));
 	}
+	// D45-20261110 (D45-29): the bobblehead's head on its spring, from the pose the drive has just set (its pulls, its
+	// brakes, its turns and the road's knocks); Dt 0 (placed, parked, copied) forgets the last frames instead
+	if (Bobble) Bobble->Update(Dt, Position, Quat());
 	FlushClock();
 	PlaceFloods();
 }
@@ -675,5 +688,9 @@ bool FS47Truck::AuditProductionArt(TArray<FString>& Lines)const
   Check(L&&L->GetComponentLocation().Equals(S47Three::ToUE(P),.10),TEXT("real spotlight follows the installed vehicle's sealed-beam anchor"));
   if(L)Check(L->IsVisible()==(Group.Shown()&&bHeadOn&&LightLevel>.01),TEXT("real spotlight visibility matches truck and headlight switch"));
  }
+ // D45-20261110 (D45-29): the dashboard bobblehead when it is imported (-S47ProductionCab: its head moved on the drive);
+ // absent, a note only: the truck is as it was
+ if(Bobble)Ok&=Bobble->Audit(Lines,bDriving,M&&M->IsFreeform());
+ else Lines.Add(bJeepCab?TEXT("NOTE truck bobblehead: not imported (Tools/alienbubblehead/import_assets.sh); cab as it was"):TEXT("NOTE truck bobblehead: not on this cab"));
  return Ok;
 }

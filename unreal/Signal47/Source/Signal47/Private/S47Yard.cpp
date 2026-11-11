@@ -2,6 +2,8 @@
 #include "S47Yard.h"
 
 #include "Components/MaterialBillboardComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Fonts/FontMeasure.h"
 #include "Framework/Application/SlateApplication.h"
@@ -107,7 +109,40 @@ void US47Yard::Init(US47Main* InM)
 			if (N && N->Mats.Contains(ScreenMat)) O.SetPosition(O.Position() + FVector(0, 0, 0.002));
 		});
 	}
+	CoverMotorBusName();
 	FindWorkLamp();
+}
+
+// D37-S03-PLATE-20261109 (Tom, d37 about 17:10: "the motor bus by the array that says S-03 on it should maybe not have S-03 on it?").
+// S-03 is the antenna at the end of the east walk; the cabinet is its motor bus, not the antenna, but its face (ServiceYard.ts:
+// T.cabinetFace('S-03', ['MOTOR BUS', 'SARO ARRAY'])) carries S-03 as its 64 px title, so it read as the antenna's name plate.
+// A blank steel plate is riveted over that title only; the face's own MOTOR BUS / SARO ARRAY, the readout (MOTOR BUS S-03, the
+// controller saying which drive it is) and the clipboard's ANTENNA LOG S-03 stay, as the story reads them. The face is the
+// exported canvas, so the stencil is covered, not repainted. Local to the cabinet: face plane at z 0.232, 0.82 x 1.62 m from the
+// ground, the title at canvas px 18..70 of 384 (y 1.33..1.54 m), the window from px 88 (y 1.25).
+void US47Yard::CoverMotorBusName()
+{
+	if (!M || !M->Web) return;
+	AS47Web* W = M->Web;
+	const FS47Obj Cabinet = Obj(TEXT("motorBus"));
+	const FS47WebNode* N = Cabinet ? W->Node(Cabinet.I) : nullptr;
+	if (!N || !N->Comp.IsValid()) { UE_LOG(LogS47Yard, Warning, TEXT("S47: motor bus not found; its face is left as exported")); return; }
+	for (const int32 C : N->Children) if (const FS47WebNode* K = W->Node(C)) if (K->Name == TEXT("yard:motorBusNamePlate")) return;
+	UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+	UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+	if (!Cube || !Base) return;
+	auto* Plate = NewObject<UStaticMeshComponent>(W, MakeUniqueObjectName(W, UStaticMeshComponent::StaticClass(), TEXT("S47MotorBusNamePlate")));
+	Plate->SetMobility(EComponentMobility::Movable); Plate->SetStaticMesh(Cube); Plate->SetupAttachment(N->Comp.Get());
+	UMaterialInstanceDynamic* Mat = UMaterialInstanceDynamic::Create(Base, W);
+	Mat->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(0x8b8d8a)); Mat->SetScalarParameterValue(TEXT("NativeLighting"), 1.f);
+	Mat->SetScalarParameterValue(TEXT("Roughness"), .6f); Mat->SetScalarParameterValue(TEXT("Metalness"), .3f); Mat->SetScalarParameterValue(TEXT("EmissivePower"), 0.f);
+	Plate->SetMaterial(0, Mat); Plate->SetCollisionEnabled(ECollisionEnabled::NoCollision); Plate->SetCastShadow(false);
+	Plate->RegisterComponent();
+	const int32 I = W->AdoptNode(Plate, Cabinet.I, TEXT("yard:motorBusNamePlate"));
+	if (I < 0) { Plate->DestroyComponent(); return; }
+	FS47Obj O = W->ObjAt(I);
+	O.SetPosition(FVector(0, 1.438, 0.236)); O.SetScale(FVector(.50, .26, .006));
+	UE_LOG(LogS47Yard, Display, TEXT("S47: motor bus face: the S-03 title is covered by a blank plate (D37-S03-PLATE); MOTOR BUS / SARO ARRAY and the readout kept"));
 }
 
 void US47Yard::BeginDestroy()

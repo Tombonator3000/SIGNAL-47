@@ -13,8 +13,8 @@
           "speaker": "DALE",
           "text": "Check the survey reference before the unattended run. Write down anything you have to change, even if it fixes itself.",
           "voiced": true,
-          "start_seconds": 0.08,
-          "end_seconds": 5.43,
+          "start_seconds": 0.09,
+          "end_seconds": 6.2,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -23,7 +23,7 @@
           "text": "The camera is beside the east door. Take a reference before you touch the fault.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 3.54,
+          "end_seconds": 3.89,
           "timing_status": "from_audio_clip_relative"
         },
         {
@@ -32,7 +32,7 @@
           "text": "And try your way out while the lights are good. A door on a plan is no use if you have never opened it.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 4.56,
+          "end_seconds": 4.97,
           "timing_status": "from_audio_clip_relative"
         }
       ]
@@ -85,27 +85,27 @@
           "speaker": "DALE",
           "text": "The complaint is about the inspection lamp. Just that lamp.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 2.87,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "H02_BRIEF_002",
           "speaker": "DALE",
           "text": "Use the marked service control outside the fence. Leave the locked equipment alone.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.23,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "H02_BRIEF_003",
           "speaker": "DALE",
           "text": "Watch the lamp and the indicator separately. Tell me whether they agree.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 3.73,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -220,27 +220,27 @@
           "speaker": "DALE",
           "text": "The service drawer has a spare. Brass tag, OFFICE. I should have put it in the handover.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.1,
+          "end_seconds": 4.43,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "H04_BRIEF_002",
           "speaker": "DALE",
           "text": "Take the field folder. I wrote down where I stood so somebody else could try it.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.21,
+          "timing_status": "from_audio_clip_relative"
         },
         {
           "line_id": "H04_BRIEF_003",
           "speaker": "DALE",
           "text": "I saw the same shape from two places. I do not know whether it was looking at me.",
           "voiced": true,
-          "start_seconds": null,
-          "end_seconds": null,
-          "timing_status": "pending_audio"
+          "start_seconds": 0.08,
+          "end_seconds": 4.02,
+          "timing_status": "from_audio_clip_relative"
         }
       ]
     },
@@ -1331,7 +1331,7 @@
           "text": "The camera is beside the east door. Take a reference before you touch the fault.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 3.54,
+          "end_seconds": 3.89,
           "timing_status": "from_audio_clip_relative"
         }
       ]

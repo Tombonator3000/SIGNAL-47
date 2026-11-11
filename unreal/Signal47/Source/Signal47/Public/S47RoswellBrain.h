@@ -99,6 +99,10 @@ private:
  FVector NoiseAt = FVector::ZeroVector;
  double NoiseAge = 1e6;
  bool bLurePending = false, bGoLook = false;
+ // STONE-LURE-20261109: which of GoLook's places (the spot, then a little short of it) is tried next. Kept across ticks, as
+ // ChoiceCursor is: the group grants one route a tick, so a spot with no route (a stone by a wall) has to give way to the next one
+ // on the following tick, not be asked for again each tick until the sound is too old.
+ int32 LookTry = 0;
 
  void Step(double Dt, const FInput& In, const FWorld& World);
  void Enter(EState NewState);

@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "note_nb": "Laget av create_profiles.py. Kandidatprofiler for Dales egen stemme; se casting.json profiles.dale.candidates.",
+  "profiles": {
+    "dale_de_design": {
+      "profile_id": "e19d9024",
+      "profile_name": "SIGNAL 47 Dale candidate dale_de_design (synthetic design)",
+      "kind": "design",
+      "reference_sha256": "00b8b1306c2bdff416ba3924a9cc6e7ad12c9b2125e296484638a233b5892961",
+      "reference_bytes": 514604,
+      "reference_text": "Nein. Nein, nein, nein. Wer hat schon wieder mein Werkzeug genommen? Ich stehe seit sechs Uhr in dieser Werkstatt, und keiner sagt mir etwas. Gut. Dann mache ich es eben selbst.",
+      "instruct": "male, middle-aged, low pitch",
+      "language": "German",
+      "created_utc": "2026-11-09T13:22:29.197835+00:00",
+      "human_listened": false
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "id": "figure_near_end",
+  "name": "What the walker kept of the figure",
+  "notes": "N1110-5. Played by S47Happenings when the figure is over, only if the player met it. The code builds the sentences (what was seen, in order, then how it ended); the script keeps them. Words: {place} {seen} {end} {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "evidence", "key": "figure_near_d{day}", "text": "At {clock}, out on {place}: {seen}{end}" }
+  ]
+}

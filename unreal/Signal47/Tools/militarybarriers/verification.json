@@ -1,0 +1,986 @@
+{
+  "checks": [
+    {
+      "detail": "/home/tom/scratch-models/fence58/Content/Licensed/MilitaryBarriers",
+      "name": "packages on disk under Content/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": [],
+      "name": "every package saved by UE5 (legacy file version -8 or lower)",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "nothing left at /Game/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": {},
+      "name": "every reference stays inside /Game/Licensed/MilitaryBarriers or the engine",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "MM_Basic_PBR used with instanced static meshes",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "MM_Basic_PBR instancing",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "MI_Barbed_RazorWires instancing",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "MI_Rusted_MetalWallParts instancing",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "MI_WiredFence instancing",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "MI_WiredFence_Diamond_Pattern instancing",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_Wire_a Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Rusted_MetalWallParts.MI_Rusted_MetalWallParts",
+          "slot": "MI_Rusted_MetalWallParts_001"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Barbed_RazorWires.MI_Barbed_RazorWires",
+          "slot": "MI_Barbed_RazorWires_001"
+        }
+      ],
+      "name": "SM_MilitaryBase_Wire_a materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_Wire_b Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Barbed_RazorWires.MI_Barbed_RazorWires",
+          "slot": "MI_Barbed_RazorWires"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Rusted_MetalWallParts.MI_Rusted_MetalWallParts",
+          "slot": "MI_Rusted_MetalWallParts"
+        }
+      ],
+      "name": "SM_MilitaryBase_Wire_b materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_a Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_a materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_b Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_b materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_Corner Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_Corner materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_EndCap_a Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_EndCap_a materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_EndCap_b Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_EndCap_b materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_EndCap_c Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_EndCap_c materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_Gate_Double Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_Gate_Double materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_Gate_L Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_Gate_L materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_Gate_Lock Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_Gate_Lock materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_Gate_R Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_Gate_R materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_T_Start_a Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_T_Start_a materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": null,
+      "name": "SM_MilitaryBase_WiredFence_T_Start_b Nanite off",
+      "pass": true
+    },
+    {
+      "detail": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "name": "SM_MilitaryBase_WiredFence_T_Start_b materials under /Game/Licensed/MilitaryBarriers",
+      "pass": true
+    },
+    {
+      "detail": [
+        "SM_MilitaryBase_Wire_a",
+        "SM_MilitaryBase_Wire_b",
+        "SM_MilitaryBase_WiredFence_Corner",
+        "SM_MilitaryBase_WiredFence_EndCap_a",
+        "SM_MilitaryBase_WiredFence_EndCap_b",
+        "SM_MilitaryBase_WiredFence_EndCap_c",
+        "SM_MilitaryBase_WiredFence_Gate_Double",
+        "SM_MilitaryBase_WiredFence_Gate_L",
+        "SM_MilitaryBase_WiredFence_Gate_Lock",
+        "SM_MilitaryBase_WiredFence_Gate_R",
+        "SM_MilitaryBase_WiredFence_T_Start_a",
+        "SM_MilitaryBase_WiredFence_T_Start_b",
+        "SM_MilitaryBase_WiredFence_a",
+        "SM_MilitaryBase_WiredFence_b"
+      ],
+      "name": "the meshes S47ArrayFence uses",
+      "pass": true
+    },
+    {
+      "detail": [
+        [
+          -3.95,
+          -19.2,
+          0.0
+        ],
+        [
+          3.95,
+          3.95,
+          280.34
+        ]
+      ],
+      "name": "post: centred on its pivot, on its foot, 2.8 m with its arm",
+      "pass": true
+    },
+    {
+      "detail": [
+        [
+          -3.95,
+          -19.2,
+          0.0
+        ],
+        [
+          250.0,
+          3.95,
+          280.34
+        ]
+      ],
+      "name": "panel: its post at the pivot, 1.5-4 m to the next post along +x, the arm to -y",
+      "pass": true
+    },
+    {
+      "detail": [
+        [
+          -4.11,
+          -4.1,
+          -0.0
+        ],
+        [
+          287.22,
+          4.11,
+          50.0
+        ]
+      ],
+      "name": "barbed strand: along +x, standing up, centred",
+      "pass": true
+    },
+    {
+      "detail": [
+        [
+          -240.87,
+          -19.2,
+          0.0
+        ],
+        [
+          2.52,
+          7.98,
+          280.34
+        ]
+      ],
+      "name": "SM_MilitaryBase_WiredFence_Gate_R: over 1.5 m wide, on its foot",
+      "pass": true
+    },
+    {
+      "detail": [
+        [
+          -2.52,
+          -19.2,
+          0.0
+        ],
+        [
+          240.87,
+          7.98,
+          280.34
+        ]
+      ],
+      "name": "SM_MilitaryBase_WiredFence_Gate_L: over 1.5 m wide, on its foot",
+      "pass": true
+    }
+  ],
+  "destination": "/Game/Licensed/MilitaryBarriers",
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "materials": {
+    "MI_Barbed_RazorWires": {
+      "instancing": true,
+      "parent": "/Game/Licensed/MilitaryBarriers/Materials/MasterMaterial/MM_Basic_PBR.MM_Basic_PBR",
+      "path": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Barbed_RazorWires.MI_Barbed_RazorWires"
+    },
+    "MI_Rusted_MetalWallParts": {
+      "instancing": true,
+      "parent": "/Game/Licensed/MilitaryBarriers/Materials/MasterMaterial/MM_Basic_PBR.MM_Basic_PBR",
+      "path": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Rusted_MetalWallParts.MI_Rusted_MetalWallParts"
+    },
+    "MI_WiredFence": {
+      "instancing": true,
+      "parent": "/Game/Licensed/MilitaryBarriers/Materials/MasterMaterial/MM_Basic_PBR.MM_Basic_PBR",
+      "path": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence"
+    },
+    "MI_WiredFence_Diamond_Pattern": {
+      "instancing": true,
+      "parent": "/Game/Licensed/MilitaryBarriers/Materials/MasterMaterial/MM_Basic_PBR.MM_Basic_PBR",
+      "path": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern"
+    },
+    "MM_Basic_PBR": {
+      "instancing": true,
+      "parent": null,
+      "path": "/Game/Licensed/MilitaryBarriers/Materials/MasterMaterial/MM_Basic_PBR.MM_Basic_PBR"
+    }
+  },
+  "meshes": {
+    "SM_MilitaryBase_Wire_a": {
+      "bounds_cm": [
+        [
+          -4.11,
+          -4.1,
+          0.0
+        ],
+        [
+          137.22,
+          4.11,
+          50.0
+        ]
+      ],
+      "lods": 1,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Rusted_MetalWallParts.MI_Rusted_MetalWallParts",
+          "slot": "MI_Rusted_MetalWallParts_001"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Barbed_RazorWires.MI_Barbed_RazorWires",
+          "slot": "MI_Barbed_RazorWires_001"
+        }
+      ],
+      "triangles_lod0": 1244
+    },
+    "SM_MilitaryBase_Wire_b": {
+      "bounds_cm": [
+        [
+          -4.11,
+          -4.1,
+          -0.0
+        ],
+        [
+          287.22,
+          4.11,
+          50.0
+        ]
+      ],
+      "lods": 1,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Barbed_RazorWires.MI_Barbed_RazorWires",
+          "slot": "MI_Barbed_RazorWires"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Rusted_MetalWallParts.MI_Rusted_MetalWallParts",
+          "slot": "MI_Rusted_MetalWallParts"
+        }
+      ],
+      "triangles_lod0": 1244
+    },
+    "SM_MilitaryBase_WiredFence_Corner": {
+      "bounds_cm": [
+        [
+          -3.95,
+          -19.2,
+          0.0
+        ],
+        [
+          268.89,
+          253.85,
+          280.34
+        ]
+      ],
+      "lods": 6,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "triangles_lod0": 6884
+    },
+    "SM_MilitaryBase_WiredFence_EndCap_a": {
+      "bounds_cm": [
+        [
+          -3.95,
+          -19.2,
+          0.0
+        ],
+        [
+          254.01,
+          11.52,
+          280.34
+        ]
+      ],
+      "lods": 5,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "triangles_lod0": 4942
+    },
+    "SM_MilitaryBase_WiredFence_EndCap_b": {
+      "bounds_cm": [
+        [
+          -3.95,
+          -19.2,
+          0.0
+        ],
+        [
+          253.95,
+          3.95,
+          280.34
+        ]
+      ],
+      "lods": 5,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "triangles_lod0": 4078
+    },
+    "SM_MilitaryBase_WiredFence_EndCap_c": {
+      "bounds_cm": [
+        [
+          -3.95,
+          -19.2,
+          0.0
+        ],
+        [
+          3.95,
+          3.95,
+          280.34
+        ]
+      ],
+      "lods": 4,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        }
+      ],
+      "triangles_lod0": 1328
+    },
+    "SM_MilitaryBase_WiredFence_Gate_Double": {
+      "bounds_cm": [
+        [
+          -4.19,
+          -19.2,
+          0.0
+        ],
+        [
+          504.19,
+          4.19,
+          280.34
+        ]
+      ],
+      "lods": 5,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        }
+      ],
+      "triangles_lod0": 3688
+    },
+    "SM_MilitaryBase_WiredFence_Gate_L": {
+      "bounds_cm": [
+        [
+          -2.52,
+          -19.2,
+          0.0
+        ],
+        [
+          240.87,
+          7.98,
+          280.34
+        ]
+      ],
+      "lods": 6,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "triangles_lod0": 7704
+    },
+    "SM_MilitaryBase_WiredFence_Gate_Lock": {
+      "bounds_cm": [
+        [
+          -50.42,
+          -1.25,
+          -15.25
+        ],
+        [
+          39.95,
+          1.25,
+          1.25
+        ]
+      ],
+      "lods": 2,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        }
+      ],
+      "triangles_lod0": 146
+    },
+    "SM_MilitaryBase_WiredFence_Gate_R": {
+      "bounds_cm": [
+        [
+          -240.87,
+          -19.2,
+          0.0
+        ],
+        [
+          2.52,
+          7.98,
+          280.34
+        ]
+      ],
+      "lods": 6,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "triangles_lod0": 6794
+    },
+    "SM_MilitaryBase_WiredFence_T_Start_a": {
+      "bounds_cm": [
+        [
+          5.94,
+          -19.2,
+          0.0
+        ],
+        [
+          250.0,
+          3.95,
+          280.34
+        ]
+      ],
+      "lods": 5,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "triangles_lod0": 2726
+    },
+    "SM_MilitaryBase_WiredFence_T_Start_b": {
+      "bounds_cm": [
+        [
+          -3.95,
+          -19.2,
+          0.0
+        ],
+        [
+          244.1,
+          3.95,
+          280.34
+        ]
+      ],
+      "lods": 5,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "triangles_lod0": 4150
+    },
+    "SM_MilitaryBase_WiredFence_a": {
+      "bounds_cm": [
+        [
+          -3.95,
+          -19.2,
+          0.0
+        ],
+        [
+          254.01,
+          11.41,
+          280.34
+        ]
+      ],
+      "lods": 5,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "triangles_lod0": 3494
+    },
+    "SM_MilitaryBase_WiredFence_b": {
+      "bounds_cm": [
+        [
+          -3.95,
+          -19.2,
+          0.0
+        ],
+        [
+          250.0,
+          3.95,
+          280.34
+        ]
+      ],
+      "lods": 5,
+      "nanite": false,
+      "slots": [
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.MI_WiredFence",
+          "slot": "Wired_Fence"
+        },
+        {
+          "material": "/Game/Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.MI_WiredFence_Diamond_Pattern",
+          "slot": "Wired_Fence_Diamond_Pattern"
+        }
+      ],
+      "triangles_lod0": 2638
+    }
+  },
+  "mode": "verify",
+  "packages": {
+    "Licensed/MilitaryBarriers/Materials/MasterMaterial/MF_Channel_Masks.uasset": {
+      "bytes": 16491,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Materials/MasterMaterial/MF_Channel_Masks_Emission.uasset": {
+      "bytes": 12165,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Materials/MasterMaterial/MF_RemapValues.uasset": {
+      "bytes": 9662,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Materials/MasterMaterial/MF_Secondary_Material.uasset": {
+      "bytes": 14584,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Materials/MasterMaterial/MF_UVs.uasset": {
+      "bytes": 7642,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Materials/MasterMaterial/MM_Basic_PBR.uasset": {
+      "bytes": 63037,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Barbed_RazorWires.uasset": {
+      "bytes": 10220,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_Rusted_MetalWallParts.uasset": {
+      "bytes": 10597,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence.uasset": {
+      "bytes": 10444,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Materials/MaterialInstances/MI_WiredFence_Diamond_Pattern.uasset": {
+      "bytes": 11084,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_Wire_a.uasset": {
+      "bytes": 60560,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_Wire_b.uasset": {
+      "bytes": 61531,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_Corner.uasset": {
+      "bytes": 473794,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_EndCap_a.uasset": {
+      "bytes": 356125,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_EndCap_b.uasset": {
+      "bytes": 295853,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_EndCap_c.uasset": {
+      "bytes": 121909,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_Gate_Double.uasset": {
+      "bytes": 268203,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_Gate_L.uasset": {
+      "bytes": 483577,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_Gate_Lock.uasset": {
+      "bytes": 28019,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_Gate_R.uasset": {
+      "bytes": 420874,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_T_Start_a.uasset": {
+      "bytes": 215964,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_T_Start_b.uasset": {
+      "bytes": 303706,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_a.uasset": {
+      "bytes": 244301,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Meshes/SM_MilitaryBase_WiredFence_b.uasset": {
+      "bytes": 223003,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Barbed_Wire_2K_B.uasset": {
+      "bytes": 528049,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Barbed_Wire_2K_N.uasset": {
+      "bytes": 506180,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Barbed_Wire_2K_O.uasset": {
+      "bytes": 12360,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Barbed_Wire_2K_ORM.uasset": {
+      "bytes": 497301,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_BaseColor.uasset": {
+      "bytes": 9531,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Mask.uasset": {
+      "bytes": 9399,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Norm.uasset": {
+      "bytes": 4422,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_ORM.uasset": {
+      "bytes": 16821,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_RGB_Mask.uasset": {
+      "bytes": 14024,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Rusted_Metal_T_Wall_Parts_1K_B.uasset": {
+      "bytes": 2546875,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Rusted_Metal_T_Wall_Parts_1K_N.uasset": {
+      "bytes": 2597395,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Rusted_Metal_T_Wall_Parts_1K_ORM.uasset": {
+      "bytes": 1039814,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Wired_Fence_2K_B.uasset": {
+      "bytes": 6612353,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Wired_Fence_2K_N.uasset": {
+      "bytes": 5370788,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Wired_Fence_2K_O.uasset": {
+      "bytes": 20606,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Wired_Fence_2K_ORM.uasset": {
+      "bytes": 6941287,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Wired_Fence_Diamond_Pattern_2K_B.uasset": {
+      "bytes": 8018596,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Wired_Fence_Diamond_Pattern_2K_N.uasset": {
+      "bytes": 3802222,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Wired_Fence_Diamond_Pattern_2K_O.uasset": {
+      "bytes": 55111,
+      "legacy_file_version": -9
+    },
+    "Licensed/MilitaryBarriers/Textures/T_Wired_Fence_Diamond_Pattern_2K_ORM.uasset": {
+      "bytes": 7217674,
+      "legacy_file_version": -9
+    }
+  },
+  "panel_module_m": 2.5,
+  "status": "PASS"
+}

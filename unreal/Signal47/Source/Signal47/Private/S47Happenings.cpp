@@ -1,22 +1,31 @@
 #include "S47Happenings.h"
 #include "S47Album.h"
+#include "S47AnimalWarn.h"
 #include "S47Ambience.h"
+#include "S47ArrayShot.h"
 #include "S47Audio.h"
+#include "S47Calm.h"
 #include "S47CB.h"
 #include "S47Docs.h"
 #include "S47Drive.h"
+#include "S47EyeGlint.h"
 #include "S47EventPlaces.h"
+#include "S47EventScript.h"
 #include "S47Visitors.h"
+#include "S47FarmLights.h"
 #include "S47FarmSite.h"
 #include "S47FieldCamera.h"
 #include "S47FieldRadio.h"
+#include "S47Fx.h"
 #include "S47Flashlight.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
+#include "S47Flow.h"
 #include "S47FreeformWorld.h"
 #include "S47Glimpses.h"
 #include "S47Herd.h"
 #include "S47Inter.h"
+#include "S47Keys.h"
 #include "S47Kit.h"
 #include "S47Legs.h"
 #include "S47Main.h"
@@ -27,33 +36,44 @@
 #include "S47Places.h"
 #include "S47Radio.h"
 #include "S47Rhythm.h"
+#include "S47WeekCase.h"
+#include "S47RoadGlimpse.h"
 #include "S47RoadTerrain.h"
 #include "S47Seen.h"
+#include "S47SoundExport.h"
 #include "S47SkyVisitors.h"
 #include "S47Taken.h"
 #include "S47Three.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
+#include "S47TripoNew.h"
 #include "S47Truck.h"
 #include "S47UI.h"
+#include "S47Thoughts.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47Story.h"
 #include "S47Theme.h"
+#include "S47TvProgramme.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Text/STextBlock.h"
+#include "Components/LocalFogVolumeComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "CoreGlobals.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/CommandLine.h"
 #include "Misc/PackageName.h"
+#include "Misc/Parse.h"
 #include "UObject/GarbageCollection.h"
 #include "UObject/UObjectGlobals.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "NiagaraComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Happen,Log,All);
 
@@ -76,6 +96,8 @@ namespace S47Hap
  const TCHAR* const SingerModel=TEXT("/Game/Licensed/TripoNew/SM_Tripo_Singer.SM_Tripo_Singer");
  const TCHAR* const SingerStandIn=TEXT("/Game/Licensed/TripoNPC/SM_Tripo_souvenir_man.SM_Tripo_souvenir_man"); // in white
  const TCHAR* const HairyModel=TEXT("/Game/Licensed/TripoNew/SM_Tripo_Bigfoot.SM_Tripo_Bigfoot");
+ // N1110 (SOUNDSCAPE): the eyes and the figure wait this long after the night's sound stops (the script's silence beat), so the quiet comes first.
+ constexpr double SilenceLead=3.;
  const TCHAR* const HairyStandIn=TEXT("/Game/Licensed/TripoNPC/SM_Tripo_shadow_man.SM_Tripo_shadow_man"); // brown, a head taller
  const TCHAR* const ZetModel=TEXT("/Game/Licensed/TripoNew/SM_Tripo_Zet.SM_Tripo_Zet"); // stand-in: basic shapes (ZetParts)
  // Standing, in one muted tone in the headlights (the radio woman sits, so she would not do).
@@ -103,6 +125,32 @@ namespace S47Hap
  constexpr uint32 NeedNear=128;
  // Near enough to the player to count as near them, metres (the tally, and the reserve's "something near").
  constexpr double NearByM=400;
+ // LEAD-FELT-20261110: a pointed lead (a slip printed toward it) is there to be reached. A landing's own 36 s, and how long one a slip
+ // pointed at sits lit on the ground after it, by its distance from SARO: a minute and a half to get out to the truck, then ten metres
+ // a second across the land (night 6, 9 November: 36 s at the Alderete barn, 434 m off, and nobody saw it).
+ constexpr double LandingLen=36,LeadEarlyM=600;
+ double LeadSit(double SaroM){return FMath::Clamp(90.+FMath::Max(0.,SaroM)/10.,180.,360.);}
+ // Sitting, it goes as the player comes up to it: far off before midnight (a light out there, nothing more), nearer only later.
+ double LeadSitGone(ES47Allowed Tier){return Tier==ES47Allowed::Full?120.:Tier==ES47Allowed::Glimpse?200.:300.;}
+ // Out near its place (not sitting in the station), the player need not wait for its drawn hour: its own hours still hold (the rhythm).
+ bool LeadEarly(double AwayM,bool bInSaro,double HourOfNight){return !bInSaro&&HourOfNight>=19&&AwayM>=0&&AwayM<=LeadEarlyM;}
+ // Too near its place: put out along the line from the player through it, past the least distance its kind keeps. Still out by that
+ // place and never on top of the player, instead of drawn somewhere else (as it was: the slip then pointed at nothing).
+ FVector2D LeadOut(const FVector2D& Player,const FVector2D& Place,const FVector2D& Saro,double MinM,double Way=1.)
+ {
+  const FVector2D To=Place-Player;const double D=To.Size();
+  if(D>=MinM)return Place;
+  // LEAD-FIX-20261110: out along SARO's own line through the place, past it, to the first point the least distance and fifty metres
+  // from the player: the bearing the slip printed then still holds (moved sideways from the player it could fall outside the slip's
+  // ±N, and so could the ring's logged bearing). The slip says which way, not how far. Way -1: on the same line, back toward SARO.
+  const FVector2D Ray=(Place-Saro).GetSafeNormal();
+  if(!Ray.IsNearlyZero()){const double Along=FVector2D::DotProduct(To,Ray),R=MinM+50.;return Place+Ray*(-Along+Way*FMath::Sqrt(FMath::Max(0.,Along*Along-(D*D-R*R))));}
+  FVector2D Dir=D>1.?To/D:FVector2D(1,0);
+  return Player+Dir*(MinM+50.);
+ }
+ // LEAD-FIX-20261110: hours of the night since the clock last counted, while a pointed landing sits and holds a draw back (none at
+ // the first count; a minute of the night at most at once, so a skip or a sleep is not counted as held).
+ double SitHold(double LastClock,double ClockNow){return LastClock<0?0.:FMath::Clamp(ClockNow-LastClock,0.,60.)/3600.;}
  // What does not hold the ground: lasting things out on the land, the clock, a word on the radio.
  bool Background(const FString& Id)
  {
@@ -154,7 +202,9 @@ bool Resumable(const FString& Id,const FString& Variant)
 const TCHAR* const NightKeys[]={TEXT("cattle_ring_d"),TEXT("car_dies_d"),TEXT("clock_ahead_d"),TEXT("cb_echo_d"),TEXT("cb_empty_d"),TEXT("cb_wrong_d"),TEXT("landing_seen_d"),TEXT("landing_logged_d"),TEXT("hitcher_d"),TEXT("rv_d"),
  TEXT("carcass_d"),TEXT("house_lit_d"),TEXT("horizon_figure_d"),TEXT("cinema_film_d"),TEXT("room6_tv_d"),TEXT("blackout_d"),TEXT("array_burst_d"),TEXT("hood_warm_d"),TEXT("truck_tracks_d"),
  TEXT("animals_flee_d"),TEXT("car_light_d"),TEXT("dust_devil_d"),TEXT("missing_d"),TEXT("dogs_hush_d"),TEXT("phone_empty_d"),TEXT("geiger_landing_"),TEXT("geiger_trace_"),TEXT("geiger_sample_"),
- TEXT("figure_near_d")};
+ TEXT("figure_near_d"),TEXT("lights_trace_bignight_d"),TEXT("big_felt_d"),TEXT("road_glimpse_d"),TEXT("road_tracks_d"),
+ TEXT("eyes_window_d"),TEXT("beam_figure_d"),TEXT("dish_lights_d"), // N1110 (N1110-3): the camera moments' findings
+ TEXT("answer_d")}; // LOOP-3-20261109: the answer on the monitor channel (S47Answer) is a night record of OUT ON THE LAND too
 // What a line may not say (the text critic, 8 November): the answer for the player, and the motifs another system owns. One line.
 const TCHAR* const Concludes[]={TEXT("nobody in it"),TEXT("nobody lives there"),TEXT("nobody with it"),TEXT("it had it right"),TEXT("seemed embarrassed"),TEXT("nothing behind the station"),TEXT("looks like your handwriting"),TEXT("the way the lights came down"),TEXT("as if a film were running"),TEXT("does not seem to have heard"),TEXT("nothing out there for anyone")};
 bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TCHAR* W:Concludes)if(L.Contains(W))return true;return false;}
@@ -284,12 +334,138 @@ bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TC
   for(int32 I=0;I<12;++I){const double X=(I%4)*1.6-2.4+(I%3)*.4,Z=(I/4)*2.1-2.;Out.Add({Ball,FVector(X,.16,Z),FVector(.2,.22,.42),0,-.2,0,0x5d5040,0,false});Out.Add({Ball,FVector(X,.3,Z-.22),FVector(.12,.14,.14),0,0,0,0x5d5040,0,false});}
   return Out;
  }
- // Dust turning in a column: rings of it, wider and fainter going up.
- TArray<FPiece> DevilParts()
+ // Dust turning in a column, wider going up. D37-LAST-20261109 (Tom, d37 23:16, "jalla lys"): nine flat beige discs stacked one over
+ // another read at night as a tower of lit stripes over the horizon. No meshes now: the dust is the engine's own volumetric air (local
+ // fog volumes, DevilAir), soft-edged spheres that overlap into one funnel, lit only by what lights the land (moon, sky, a lamp) and
+ // dark against the stars. Each: three's metres from the foot (centre), its radius across and its half height.
+ struct FDevilPuff{FVector At;double R,H;};
+ constexpr int32 DevilPuffs=4;
+ FDevilPuff DevilPuff(int32 I,double Turn)
+ {
+  const double Y=1.6+I*2.9,R=1.1+I*.75;
+  return {FVector(FMath::Sin(Turn*.35+I*1.1)*(.25+.18*I),Y,FMath::Cos(Turn*.31+I*1.1)*(.25+.18*I)),R,2.2+.35*I};
+ }
+ TArray<FPiece> DevilParts(){return {};}
+ // D45-20261110 (Tom, d45: "scorched rings must look real: a little smoke, a little crackle, embers on the ground"). What a landing
+ // leaves burning at its ring's edge, where the brush stood (RingParts' dry clumps): coals in three nests and a few strays on the burnt
+ // band, thin smoke going up from the nests a while, a quiet crackle close to. All of it from the hour it came down (the site's Until
+ // is that hour and RingLastS), so a ring found at once smokes and one found next noon is cold.
+ constexpr double RingLastS=3*86400.;
+ constexpr int32 EmberNests=3,WispPuffs=3;
+ // The nests: three of RingParts' brush clumps (I = 0, 2, 4 there), at the foot of each, in three's metres from the ring's foot.
+ FVector EmberNest(int32 I)
+ {
+  const int32 K=FMath::Clamp(I,0,EmberNests-1)*2;const double A=K*1.05+.2,R=3.3+(K%2)*.4;
+  return FVector(FMath::Cos(A)*R,.02,FMath::Sin(A)*R);
+ }
+ // The coals: deep red, orange and a few bright ones (three materials, each glowing and fading on its own: FS47Happenings::StepEmbers).
+ const uint32 EmberDull=0x7a1a06,EmberWarm=0xc84a12,EmberBright=0xff8a2a;
+ TArray<FPiece> EmberParts()
  {
   TArray<FPiece> Out;
-  for(int32 I=0;I<9;++I){const double Y=.4+I*1.3,R=.9+I*.32;Out.Add({Cyl,FVector(FMath::Sin(I*.9)*.3,Y,FMath::Cos(I*.9)*.3),FVector(R,.5,R*.85),I*.7,.08*FMath::Sin(I*1.3),0,0x8a7a5e,0,false});}
+  for(int32 N=0;N<EmberNests;++N)for(int32 I=0;I<7;++I)
+  {
+   const double A=I*2.4+N*1.3,R=.12+.09*(I%4);
+   const uint32 Col=I%3==0?EmberBright:I%3==1?EmberWarm:EmberDull;
+   Out.Add({Ball,EmberNest(N)+FVector(FMath::Cos(A)*R,.012*(I%2),FMath::Sin(A)*R),FVector(.05+.02*(I%3),.022,.035+.025*((I+N)%3)),A,0,0,Col,I%3==0?9.f:I%3==1?5.f:2.5f,false});
+  }
+  // A few strays on the burnt band, dull, as brush that went out.
+  for(int32 I=0;I<6;++I){const double A=I*1.07+.75,R=3.55+.25*(I%3);Out.Add({Ball,FVector(FMath::Cos(A)*R,.015,FMath::Sin(A)*R),FVector(.04,.018,.03),A,0,0,I%2?EmberDull:EmberWarm,I%2?2.5f:5.f,false});}
   return Out;
+ }
+ // How hot the coals are, seconds after it came down: glowing the first twenty minutes, fading over the hours after, gone by seven.
+ double EmberHeat(double AfterS)
+ {
+  if(!FMath::IsFinite(AfterS)||AfterS<0)return 0;
+  const double H=AfterS/3600.;
+  if(H<1./3)return 1;
+  const double K=FMath::Exp(-(H-1./3)/1.8);
+  return H>=7?0.:FMath::Max(0.,K-.03*(H/7.));
+ }
+ // Smoke the first half hour, thinning to nothing by three hours.
+ double SmokeOf(double AfterS)
+ {
+  if(!FMath::IsFinite(AfterS)||AfterS<0)return 0;
+  const double H=AfterS/3600.;
+  return H<.5?1.:H>=3?0.:FMath::Square(1.-(H-.5)/2.5);
+ }
+ // One puff of a wisp from nest I at time T: it rises from the coals, widens, leans off with the night air and is gone at the top, so
+ // that a wisp is a thread of small soft puffs, never a column. Three's metres from the ring's foot; R across, H its half height (as
+ // the dust devil's air, a local fog volume five metres across at scale one); Ext its density, 0 at the bottom and the top.
+ struct FWisp{FVector At;double R,H;float Ext;};
+ FWisp Wisp(int32 I,int32 J,double T,double Smoke)
+ {
+  const double Period=5.5+.9*I;
+  const double Ph=FMath::Frac(T/Period+double(J)/WispPuffs+.37*I);
+  const double Lean=.9*Ph*Ph,Wob=.07*FMath::Sin(T*1.3+I*2.1+J);
+  const FVector At=EmberNest(I)+FVector(Lean+Wob,.25+2.4*Ph,.35*Lean-Wob*.5);
+  const double Ext=FMath::Clamp(Smoke,0.,1.)*2.2*FMath::Pow(FMath::Sin(UE_DOUBLE_PI*Ph),1.5)*(1.-.5*Ph);
+  return {At,.12+.32*Ph,.22+.35*Ph,float(Ext)};
+ }
+ // Tom's Cosmos smoke (his "VFX Smoke" pack, copied in at its own package paths by Tools/cosmossmoke as the Fab packs are, and kept out of
+ // Git): its chimney smoke, small, at each nest. Without it (or with -S47CosmosSmokeOff) the wisps are the engine's own volumetric air,
+ // as the dust devil is.
+ const TCHAR* const CosmosSmoke=TEXT("/Game/Rocket/NS1_Smoke/NS_NS1_Smoke_Chimney.NS_NS1_Smoke_Chimney");
+ constexpr double CosmosSmokeScale=.12;
+ // D45-20261110 (Tom, d45: "the Geiger counter needs a more real Geiger sound"). A Geiger-Muller counter: every count is one sharp
+ // tick, the tube's pulse of a few microseconds made into a click by the counter's little speaker, and the counts come when they come
+ // (a Poisson process: no beat, bunched and then gaps), the odd one at background, a rattle over burnt ground, a hiss where it pegs.
+ // Counts a second at a dose: under one at background, a few as the dial comes up, about two hundred pegged, more in the middle.
+ double GeigerCps(float Dose)
+ {
+  const double D=FMath::Max(0.,double(Dose));
+  return FMath::Min(450.,.35+20.*D+260.*D*D);
+ }
+ // How many counts fall in a step that expects Lambda of them (U: a uniform draw in [0,1)). Each count of a Poisson process, whatever
+ // the rate is, is as likely at any moment as at any other: so many in the step, each at a uniform time within it.
+ int32 PoissonCount(double Lambda,TFunctionRef<double()> U)
+ {
+  if(!(Lambda>0))return 0;
+  if(Lambda<30)
+  {
+   const double L=FMath::Exp(-Lambda);int32 K=0;double Pr=1;
+   do{++K;Pr*=U();}while(Pr>L&&K<200);
+   return K-1;
+  }
+  const double U1=FMath::Max(1e-12,U()),U2=U();
+  const double G=FMath::Sqrt(-2.*FMath::Loge(U1))*FMath::Cos(2.*UE_DOUBLE_PI*U2);
+  return FMath::Max(0,FMath::RoundToInt(Lambda+FMath::Sqrt(Lambda)*G));
+ }
+ // Above this many a second the counts are no longer played one by one: the rest is the loop of a dense train of them (gmroar).
+ constexpr double GmSingleTop=40,GmRoarCps=300,GmMeterTau=1.5;
+ const TCHAR* const GmRoarKey=TEXT("hapGeigerRoar");
+ // A count played on the effects bus as the old beep was (US47Audio::Beep), past the tape's microphone (US47Audio::Tap): two hundred
+ // a second would fill a tape's list of what it heard and leave no room for what it was there for.
+ void GmPlay(US47Audio* A,const FString& Key,float Gain,float Rate,double When)
+ {
+  if(!A||!A->Ctx.IsValid()||!A->SfxBus.IsValid())return;
+  const TSharedPtr<FS47AudioBuffer> B=A->Buf.FindRef(Key);
+  if(!B.IsValid())return;
+  FS47AudioContext::FBatch Batch(*A->Ctx);
+  const TSharedRef<FS47BufferSourceNode> Src=A->Ctx->CreateBufferSource();Src->Buffer=B;Src->PlaybackRate.SetValue(Rate);
+  const TSharedRef<FS47GainNode> G=A->Ctx->CreateGain();G->Gain.SetValue(Gain);
+  Src->Connect(G);G->Connect(A->SfxBus);Src->Start(A->Ctx->CurrentTime()+FMath::Max(0.,When));
+ }
+ // One count into S from sample From (wrapping round the end when bWrap, for a loop): the tube's pulse, a quarter of a millisecond,
+ // then the speaker's cone ringing high for a moment and the case under it a little lower. Thirty milliseconds, nearly all of it in
+ // the first two: a tick, not a tone.
+ void GmCount(TArray<float>& S,int32 From,float Hz,FRandomStream& Rng,double Amp,bool bWrap)
+ {
+  if(S.IsEmpty())return;
+  const double F1=Rng.FRandRange(3400.f,4600.f),F2=Rng.FRandRange(1300.f,1900.f),F3=FMath::Min(double(Rng.FRandRange(7000.f,8500.f)),.4*Hz);
+  const int32 Len=int32(Hz*.03);double Hp=0,Prev=0;
+  for(int32 I=0;I<Len;++I)
+  {
+   int32 Into=From+I;
+   if(Into>=S.Num()){if(!bWrap)break;Into%=S.Num();}
+   const double T=I/double(Hz);
+   const double Pulse=T<.00025?1.-T/.00025:0.;
+   const double V=Pulse*.9+FMath::Sin(2*UE_DOUBLE_PI*F1*T)*FMath::Exp(-T*1400.)*.55+FMath::Sin(2*UE_DOUBLE_PI*F2*T)*FMath::Exp(-T*450.)*.25
+    +FMath::Sin(2*UE_DOUBLE_PI*F3*T)*FMath::Exp(-T*3000.)*.2+Rng.FRandRange(-1.f,1.f)*FMath::Exp(-T*4000.)*.3;
+   // A speaker that small moves no air at DC: the pulse's own step is taken out.
+   Hp=.995*(Hp+V-Prev);Prev=V;
+   S[Into]+=float(Hp*Amp);
+  }
  }
  // Small bare prints in a ring round the truck, stopping.
  TArray<FPiece> TrackParts()
@@ -298,6 +474,17 @@ bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TC
   for(int32 I=0;I<22;++I){const double A=I*2.*UE_DOUBLE_PI/26.,R=3.7+(I%2)*.25;Out.Add({Ball,FVector(FMath::Cos(A)*R,.015,FMath::Sin(A)*R),FVector(.11,.02,.24),-A,0,0,0x2a241c,0,false});}
   return Out;
  }
+ // GLIMPSE-ROAD-20261109: what crossed the road far ahead leaves prints going off the far shoulder into the brush, along +z from the
+ // edge: the tall one's long and narrow, a long stride apart; the low one's small and round, in fours, close together.
+ TArray<FPiece> RoadTrackParts(bool bLow)
+ {
+  TArray<FPiece> Out;const uint32 Print=0x2a241c;
+  if(bLow){for(int32 I=0;I<7;++I)for(int32 K=0;K<4;++K)Out.Add({Ball,FVector((K%2)*.2-.1,.015,.2+I*.75+(K/2)*.28),FVector(.08,.02,.09),0,0,0,Print,0,false});}
+  else for(int32 I=0;I<6;++I)Out.Add({Ball,FVector((I%2)*.26-.13,.015,.3+I*1.15),FVector(.1,.02,.32),0,0,0,Print,0,false});
+  return Out;
+ }
+ // The figure on the rise or on foot: the shade as before, or Tom's Nordic or Cosmic (its Variant, S47RoadGlimpse::FigureFor).
+ FString ShadeKind(const FString& Body){return Body.IsEmpty()?FString(TEXT("shade")):TEXT("glimpse_")+Body;}
  const TCHAR* const PickupModel=TEXT("/Game/Free/Vehicles/pickup_c10_1966/StaticMeshes/pickup_c10_1966.pickup_c10_1966");
  const TCHAR* const DarkCarModel=TEXT("/Game/Free/Vehicles/fairheaven_lt80/StaticMeshes/fairheaven_lt80.fairheaven_lt80");
  struct FUneaseDef{const TCHAR* Id;const TCHAR* Title;};
@@ -313,6 +500,48 @@ bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TC
   {TEXT("roadkill"),TEXT("A dead animal on the road, then not")},{TEXT("lamps_out"),TEXT("Caliche's lamps go out one by one")},{TEXT("dark_car"),TEXT("A car without lights behind you")},
   {TEXT("birds"),TEXT("All the birds go up at once")},
  };
+ // M7, the big night (S47BigNight.cpp). A column of pale light some nine hundred metres high, a brighter core in it, and the ground
+ // lit white where it stands; the parts are placed from its foot so that it grows up off the land as its height is scaled.
+ TArray<FPiece> BigColumnParts()
+ {
+  return {{Cyl,FVector(0,450,0),FVector(44,900,44),0,0,0,0xcfdcf4,22.f,false},{Cyl,FVector(0,450,0),FVector(14,900,14),0,0,0,0xffffff,80.f,false},
+   {Cyl,FVector(0,.6,0),FVector(70,1.2,70),0,0,0,0xe6eeff,18.f,false}};
+ }
+ // A dozen small lights close together, at uneven heights, that rise as one.
+ TArray<FPiece> BigRiseParts()
+ {
+  TArray<FPiece> Out;
+  for(int32 I=0;I<12;++I){const double A=I*2.4+.3,R=22.+(I%4)*14.;Out.Add({Ball,FVector(FMath::Cos(A)*R,(I%3)*12.-12.,FMath::Sin(A)*R),FVector(16),0,0,0,0xfff2d8,80.f,false});}
+  return Out;
+ }
+ // What it leaves. Glassed ground: a dark disc gone to glass in a ring of pale ash, and small bare prints round it twice and off.
+ TArray<FPiece> BigMarkColumn()
+ {
+  const uint32 Ash=0x4e483e,Glass=0x08090a,Crack=0x2a2824,Print=0x2b251d;
+  TArray<FPiece> Out={{Cyl,FVector(0,.006,0),FVector(6.6,.01,6.6),0,0,0,Ash,0,true},{Cyl,FVector(0,.012,0),FVector(2.1,.012,2.1),0,0,0,Glass,0,true}};
+  for(int32 I=0;I<5;++I)Out.Add({Cube,FVector(0,.02,0),FVector(.025,.004,1.9-.2*I),I*.63,0,0,Crack,0,false});
+  for(int32 I=0;I<26;++I){const double A=I*2.*UE_DOUBLE_PI/13.,R=2.55+(I/13)*.32;Out.Add({Ball,FVector(FMath::Cos(A)*R,.02,FMath::Sin(A)*R),FVector(.1,.02,.22),-A,0,0,Print,0,false});}
+  for(int32 I=0;I<10;++I)Out.Add({Ball,FVector((I%2)*.28-.14,.02,-3.4-I*.8),FVector(.1,.02,.22),0,0,0,Print,0,false});
+  return Out;
+ }
+ // The furrow: burnt along its bottom, a lip of thrown caliche either side, deepest at its end with nothing there, the brush laid flat.
+ TArray<FPiece> BigMarkFall()
+ {
+  const uint32 Floor=0x16120e,Lip=0x4e4234,Pit=0x0c0a09,Brush=0x33291e;
+  TArray<FPiece> Out={{Cube,FVector(0,.008,9),FVector(1.2,.016,18),0,0,0,Floor,0,false},{Ball,FVector(.95,0,9),FVector(.7,.22,18.4),0,0,0,Lip,0,false},
+   {Ball,FVector(-.95,0,9),FVector(.7,.22,18.4),0,0,0,Lip,0,false},{Cyl,FVector(0,.01,0),FVector(2.6,.014,2.6),0,0,0,Pit,0,true}};
+  for(int32 I=0;I<12;++I){const double Side=I%2?1.:-1.,Z=1.5+I*1.4;Out.Add({Ball,FVector(Side*(2.4+(I%3)*.5),.01,Z),FVector(1.5,.06,.55),Side*.5,0,0,Brush,0,false});}
+  return Out;
+ }
+ // Stones turned over: a ring of them dark side up round a middle swept bare, and cattle tracks running out of it every way.
+ TArray<FPiece> BigMarkRise()
+ {
+  const uint32 Bare=0x5e5444,Stone=0x231e18,Track=0x2a241c;
+  TArray<FPiece> Out={{Cyl,FVector(0,.006,0),FVector(6.2,.008,6.2),0,0,0,Bare,0,true}};
+  for(int32 I=0;I<28;++I){const double A=I*.9+.2,R=3.3+(I%5)*.45;Out.Add({Ball,FVector(FMath::Cos(A)*R,.02,FMath::Sin(A)*R),FVector(.28,.08,.22),A,0,0,Stone,0,false});}
+  for(int32 D=0;D<8;++D)for(int32 I=0;I<5;++I){const double A=D*UE_DOUBLE_PI/4.+.2,R=5.8+I*.9;Out.Add({Ball,FVector(FMath::Cos(A)*R,.02,FMath::Sin(A)*R),FVector(.16,.02,.2),-A,0,0,Track,0,false});}
+  return Out;
+ }
  // The passing over the truck, and the lights that come down: lamps, each with its own point light.
  TArray<FPiece> GlowParts(double Size,int32 Count,double Spread,uint32 Colour,float Glow)
  {
@@ -330,11 +559,27 @@ bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TC
 struct FS47Happenings::FProp
 {
  FString Kind,Area,UseId;
- struct FPart{TWeakObjectPtr<UStaticMeshComponent> C;FVector At=FVector::ZeroVector,Size=FVector(1);double Yaw=0,Pitch=0,Roll=0;bool bHit=false;};
+ struct FPart{TWeakObjectPtr<UStaticMeshComponent> C;FVector At=FVector::ZeroVector,Size=FVector(1);double Yaw=0,Pitch=0,Roll=0;bool bHit=false;bool Glow=false;};
  TArray<FPart> Parts;
- struct FLamp{TWeakObjectPtr<UPointLightComponent> L;FVector At=FVector::ZeroVector;float Lumens=0;};
+ struct FLamp{TWeakObjectPtr<UPointLightComponent> L;FVector At=FVector::ZeroVector;float Lumens=0;FLinearColor Base=FLinearColor::White;};
  TArray<FLamp> Lamps;
+ double GlowK=1; // UFO-TWINKLE-20261110: the size factor now on the posed glow balls (PoseProp resets it with the pose)
+ // A road glimpse's body: the truck's lights at its distance, on lighting channel 1 that only the body is on (FS47Happenings::FarBeam).
+ TWeakObjectPtr<USpotLightComponent> FarBeam;
  TArray<FS47Obj> Hits;
+ // The dot in each big black eye, on a part whose mesh has its eyes measured (Zet, S47EyeGlint): children of that part, so that they
+ // move and hide with it (ShowProp sets its children too).
+ TArray<TWeakObjectPtr<UStaticMeshComponent>> Glints;
+ // PT-NORDIC-COSMIC-20261109: the Cosmic one's light on a part that is its body (S47TripoNew::AddCosmicGlow), stepped while shown.
+ TArray<S47TripoNew::FCosmicGlow> Cosmic;
+ // D37-LAST-20261109: the dust devil's air (S47Hap::DevilPuff), real volumetric fog in place of stacked discs; posed and shown with it.
+ TArray<TWeakObjectPtr<ULocalFogVolumeComponent>> Air;
+ // D45-20261110: a ring's coals ("embers"): their three materials, each with its own glow and flicker (StepEmbers), and the smoke over
+ // the nests, Tom's Cosmos smoke when this build has it (else Air holds the wisps' puffs, S47Hap::Wisp).
+ struct FCoal{TWeakObjectPtr<UMaterialInstanceDynamic> Mat;FLinearColor Col=FLinearColor::Black;float Glow=0;double Phase=0;};
+ TArray<FCoal> Coals;
+ TArray<TWeakObjectPtr<UNiagaraComponent>> Smoke;
+ FQuat Tilt=FQuat::Identity;
  FVector Foot=FVector::ZeroVector;double Yaw=0;bool bShown=false,bPosed=false;
 };
 
@@ -516,6 +761,69 @@ namespace S47Hap
    }
    Normalise(S,.5f);
   }
+  else if(Name==TEXT("lowtone"))
+  {
+   // M7, the big night: a low note up out of the ground, two tones three cycles apart that beat, and one an octave over. One
+   // second, whole cycles of each, to loop without a seam.
+   const int32 Count=int32(Hz);S.SetNumZeroed(Count);
+   for(int32 I=0;I<Count;++I)
+   {
+    const double T=I/double(Hz);
+    S[I]=float(FMath::Sin(2*UE_DOUBLE_PI*52.*T)*1.+FMath::Sin(2*UE_DOUBLE_PI*55.*T)*.8+FMath::Sin(2*UE_DOUBLE_PI*104.*T)*.3);
+   }
+   Normalise(S,.7f);
+  }
+  else if(Name.StartsWith(TEXT("gmclick")))
+  {
+   // D45-20261110: one Geiger count (gmclick0 to gmclick3, each its own seed, so that no two counts in a row are quite alike).
+   S.SetNumZeroed(int32(Hz*.032));GmCount(S,0,Hz,Rng,1.,false);
+   Normalise(S,.8f);
+  }
+  else if(Name==TEXT("gmroar"))
+  {
+   // D45-20261110: where it pegs, more counts than can be played one by one: two seconds of them at GmRoarCps, at random (exponential
+   // gaps), each wrapping into the start so that it loops with no seam. Heard as the counter's hiss far over its scale.
+   const int32 Count=int32(Hz*2.);S.SetNumZeroed(Count);
+   double At=Rng.FRand()*.004;
+   while(At<2.){GmCount(S,int32(At*Hz),Hz,Rng,Rng.FRandRange(.85f,1.15f),true);At+=-FMath::Loge(FMath::Max(1e-9,double(Rng.FRand())))/GmRoarCps;}
+   Normalise(S,.8f);
+  }
+  else if(Name==TEXT("crackle"))
+  {
+   // D45-20261110: coals at a ring's edge, close to. A faint hiss of smoulder, small pops at random (most of them tiny, some in pairs),
+   // now and then the snap of a twig going. Four seconds; the pops wrap into the start and the hiss is faded round, to loop.
+   const int32 Count=int32(Hz*4.),Fade=int32(Hz*.05);S.SetNumZeroed(Count);
+   TArray<float> Bed;Bed.SetNumZeroed(Count+Fade);
+   double Lo=0,Band=0,Prev=0;const double ALo=1-FMath::Exp(-2*UE_DOUBLE_PI*900./Hz);
+   for(int32 I=0;I<Bed.Num();++I){const double X=Noise();Lo+=ALo*(X-Lo);Band=.97*(Band+Lo-Prev);Prev=Lo;Bed[I]=float(Band*.06);}
+   for(int32 I=0;I<Count;++I)S[I]=I<Fade?Bed[I]*float(I)/Fade+Bed[Count+I]*(1.f-float(I)/Fade):Bed[I];
+   const auto Pop=[&S,&Rng,Hz,Count](double When,double Len,double Amp,double Body)
+   {
+    double Hi=0,Was=0;FReso Res;if(Body>0)Res.Set(Body,Body*.25,Hz);
+    const int32 Start=int32(When*Hz),Most=int32((Len+.01)*Hz);
+    for(int32 I=0;I<Most;++I)
+    {
+     const double T=I/double(Hz);
+     const double X=T<Len?Rng.FRandRange(-1.f,1.f)*FMath::Exp(-T/(Len*.35)):0.;
+     Hi=.6*(Hi+X-Was);Was=X;
+     S[(Start+I)%Count]+=float((Hi+(Body>0?Res.Step(X)*6.:0.))*Amp);
+    }
+   };
+   double At=Rng.FRand()*.1;
+   while(At<4.)
+   {
+    const float Roll=Rng.FRand();
+    if(Roll<.07f)Pop(At,Rng.FRandRange(.006f,.014f),Rng.FRandRange(.7f,1.f),Rng.FRandRange(550.f,900.f));
+    else
+    {
+     const double Amp=.12+.88*FMath::Pow(double(Rng.FRand()),4.);
+     Pop(At,Rng.FRandRange(.0004f,.003f),Amp,0);
+     if(Rng.FRand()<.25f)Pop(At+Rng.FRandRange(.005f,.03f),.0008,Amp*.6,0);
+    }
+    At+=-FMath::Loge(FMath::Max(1e-9,double(Rng.FRand())))/5.;
+   }
+   Normalise(S,.6f);
+  }
   return S;
  }
 }
@@ -535,8 +843,106 @@ FString FS47Happenings::Synth(const TCHAR* Name)
  UE_LOG(LogS47Happen,Display,TEXT("S47: happening sound %s made, %.2f s"),*Key,S.Num()/Hz);
  return Key;
 }
+// N1110 (dev, -S47ExportSounds): the Geiger counter and the coals' crackle as the game plays them, offline on a shadow of the audio. The counter's
+// loop is FS47Happenings' own (the same Poisson counts, the singles played one by one up to GmSingleTop a second, the rest as the roar loop).
+void S47SoundExport::HappeningClips(const US47Audio& Live,TArray<FClip>& Out)
+{
+ const auto Put=[](US47Audio* Au,const TCHAR* Name)
+ {
+  const float Hz=Au->Ctx->SampleRate;const TArray<float> S=S47Hap::Make(Name,Hz);
+  if(S.IsEmpty())return FString();
+  const FString Key=FString(TEXT("hap:"))+Name;
+  TSharedRef<FS47AudioBuffer> B=Au->Ctx->CreateBuffer(1,S.Num(),Hz);FMemory::Memcpy(B->GetChannelData(0),S.GetData(),S.Num()*sizeof(float));
+  Au->Buf.Add(Key,B);return Key;
+ };
+ const auto Geiger=[&](float Dose,double Secs,const TCHAR* File,const TCHAR* Where)
+ {
+  FRun R(Live);US47Audio* Au=R.Audio();
+  FString Ticks[4];for(int32 I=0;I<4;++I)Ticks[I]=Put(Au,*FString::Printf(TEXT("gmclick%d"),I));
+  const FString RoarSound=Put(Au,TEXT("gmroar"));
+  const double Cps=S47Hap::GeigerCps(Dose),Dt=1./60.,Keep=FMath::Min(1.,S47Hap::GmSingleTop/FMath::Max(1e-6,Cps));
+  const float Roar=float(FMath::Clamp((Cps-S47Hap::GmSingleTop)/S47Hap::GmRoarCps,0.,1.));
+  FRandomStream Rs(1110+int32(Dose*100.f));bool bRoar=false;
+  for(int32 F=0;F<int32(Secs/Dt+.5);++F)
+  {
+   const int32 Counts=S47Hap::PoissonCount(Cps*Dt,[&Rs]{return double(Rs.FRand());});
+   int32 Played=0;
+   for(int32 I=0;I<Counts&&Played<24;++I)if(Keep>=1.||Rs.FRand()<Keep)
+   {
+    ++Played;FS47Sound O;O.Gain=.16f*Rs.FRandRange(.8f,1.15f);O.Rate=Rs.FRandRange(.95f,1.05f);O.When=float(Rs.FRand()*Dt);
+    Au->Sfx(Ticks[Rs.RandRange(0,3)],O);
+   }
+   if(Roar>.01f)
+   {
+    if(!bRoar){FS47Sound O;O.Gain=0;O.bLoop=true;bRoar=Au->LoopSfx(S47Hap::GmRoarKey,RoarSound,O).IsValid();}
+    if(bRoar)Au->LoopLevel(S47Hap::GmRoarKey,.22f*Roar,1.f);
+   }
+   R.Go(Dt);
+  }
+  Out.Add({File,Where,MoveTemp(R.Pcm)});
+ };
+ Geiger(.1f,8.,TEXT("geiger_low"),TEXT("Geiger counter (the Freeform field kit) on near-background ground, dose 0.10: about 5 counts a second, every one played as its own tick."));
+ Geiger(.5f,8.,TEXT("geiger_high"),TEXT("Geiger counter over hot ground, dose 0.50: about 75 counts a second, 40 a second played as ticks and a quiet roar under them."));
+ {
+  FRun R(Live);US47Audio* Au=R.Audio();const FString Key=Put(Au,TEXT("crackle"));
+  if(!Key.IsEmpty())
+  {
+   FS47Sound O;O.Gain=.28f;O.bLoop=true;Au->LoopSfx(TEXT("n1110Crackle"),Key,O);R.Go(8.);
+   Out.Add({TEXT("scorch_crackle"),TEXT("A fresh scorched landing ring, close to (within 22 m): the coals' faint crackle at full heat (gain .28 unplaced; the panner's falloff takes it down with distance, and it dies away with the heat). One 4 s loop, played twice."),MoveTemp(R.Pcm)});
+  }
+ }
+ Geiger(.9f,6.,TEXT("geiger_pegged"),TEXT("Geiger counter pegged, dose 0.90: 229 counts a second, the ticks and the roar of the dense train at its loudest."));
+}
+
+// CRIT6-20261109: what a happening pays from the field (the pickup's reward, the geiger jar, the stuck rig) goes under the week's cap
+// (FS47FreeformSession::EarnSide), and what is said says what came of it: the same words as the photo credit, the souvenir copies,
+// 1420's tips and the sky-watch van.
+namespace S47HapPay
+{
+ // Empty when it was paid in full.
+ FString Short(int32 Paid,int32 Offered,const TCHAR* What)
+ {
+  if(Paid>=Offered)return FString();
+  return Paid>0?FString::Printf(TEXT("FIELD ALLOWANCE / $%d of the $%d for %s: with that, this week's field allowance is used up."),Paid,Offered,What)
+   :FString::Printf(TEXT("FIELD ALLOWANCE / Nothing for %s: this week's field allowance is used up."),What);
+ }
+ FString ReportCb(int32 Paid,const FString& Named)
+ {
+  return FString::Printf(TEXT("County copies, the blue half-ton by %s. I'll send a unit when I've got one. His family put up twenty dollars for word of that truck%s"),*Named,
+   Paid>0?TEXT("; it'll come through your station."):TEXT("."));
+ }
+ FString ReportFound(int32 Paid,const FString& Title)
+ {
+  const FString Head=FString::Printf(TEXT("Called in the missing man's pickup out by %s to the county. They are sending a unit. "),*Title);
+  return Head+(Paid>=20?FString(TEXT("His family's twenty dollars for word of it came through the station."))
+   :Paid>0?FString::Printf(TEXT("$%d of his family's twenty dollars came through the station; this week's field allowance took no more."),Paid)
+   :FString(TEXT("His family's twenty dollars stayed with them: this week's field allowance was used up.")));
+ }
+ FString JarFound(int32 Paid,const FString& Title)
+ {
+  return FString::Printf(TEXT("A jar of soil from the middle of the scorched ring out by %s, where the counter pegged. Sent to Dr. Ward; %s"),*Title,
+   *(Paid>0?FString::Printf(TEXT("$%d for it on the sheet."),Paid):FString(TEXT("this week's field allowance is used up: no payment."))));
+ }
+ FString JarToast(int32 Paid)
+ {
+  return Paid>0?FString::Printf(TEXT("COUNTER / Pegged. A jar of the soil goes in the kit: Dr. Ward pays $%d for it."),Paid)
+   :FString(TEXT("COUNTER / Pegged. A jar of the soil goes in the kit for Dr. Ward. This week's field allowance is used up: no payment."));
+ }
+ // The start of the stuck rig's page; the lead that follows starts "says ...".
+ FString RigPaid(int32 Paid)
+ {
+  return Paid>=15?FString(TEXT("He counts fifteen dollars into your hand, and "))
+   :Paid>0?FString::Printf(TEXT("He counts fifteen dollars into your hand. This week's field allowance has room for $%d of it, and you give him the rest back. He "),Paid)
+   :FString(TEXT("He holds out fifteen dollars. This week's field allowance is used up, so you wave it off. He "));
+ }
+ FString RigFound(int32 Paid,const FString& Title)
+ {
+  return FString::Printf(TEXT("Helped a driver dig his rig out of the sand by %s, after his call on the CB. %s"),*Title,
+   *(Paid>0?FString::Printf(TEXT("Paid $%d for the trouble."),Paid):FString(TEXT("Nothing paid: this week's field allowance was used up."))));
+ }
+}
 // The missing man's pickup, noted, is called in at the next CB or the station's phone: the county sends a unit, and his people's
-// twenty dollars for word of it comes through the station (FS47FreeformSession::SheriffTrust counts it).
+// twenty dollars for word of it comes through the station (FS47FreeformSession::SheriffTrust counts it), inside the week's cap.
 void FS47Happenings::StepReport()
 {
  if(!Now.Id.IsEmpty()||!M->Freeform||M->ModalOpen())return;
@@ -546,10 +952,11 @@ void FS47Happenings::StepReport()
  S->Variant=TEXT("reported");S->bDone=true;
  const FString Named=Spoken(S->Title);
  if(M->UI)M->UI->Toast(FString::Printf(TEXT("You call it in on channel nine: the blue pickup by %s."),*Named),5);
- Cb({FString::Printf(TEXT("County copies, the blue half-ton by %s. I'll send a unit when I've got one. His family put up twenty dollars for word of that truck; it'll come through your station."),*Named)},TEXT("woman"),false);
- F->Earn(20);
- F->RecordEvidence(FString::Printf(TEXT("missing_reported_d%d"),S->Night),FString::Printf(TEXT("Called in the missing man's pickup out by %s to the county. They are sending a unit. His family's twenty dollars for word of it came through the station."),*S->Title));
- UE_LOG(LogS47Happen,Display,TEXT("S47: happening missing_person: called in to the county, $20"));
+ const int32 Paid=F->EarnSide(20,TEXT("pickup reward"));
+ Cb({S47HapPay::ReportCb(Paid,Named)},TEXT("woman"),false);
+ if(M->UI){const FString Cap=S47HapPay::Short(Paid,20,TEXT("word of the pickup"));if(!Cap.IsEmpty())M->UI->Toast(Cap,5);}
+ F->RecordEvidence(FString::Printf(TEXT("missing_reported_d%d"),S->Night),S47HapPay::ReportFound(Paid,S->Title));
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happening missing_person: called in to the county, $%d"),Paid);
  M->RequestAutosave();
 }
 // The scene owns what was drawn, and may be gone already: nothing in the world is touched here.
@@ -562,23 +969,35 @@ const TArray<FString>& FS47Happenings::Ids()
   TEXT("dogs_hush"),TEXT("phone_empty"),TEXT("carcass"),TEXT("house_lit"),TEXT("horizon_figure"),TEXT("cinema_film"),TEXT("room6_tv"),TEXT("town_blackout"),
   TEXT("array_burst"),TEXT("am_caller"),TEXT("hood_warm"),TEXT("truck_tracks"),TEXT("animals_flee"),TEXT("car_light"),TEXT("dust_devil"),TEXT("missing_person"),
   // On foot, a danger (Tom's critics, 8 November: M1 had none for a player on foot).
-  TEXT("figure_near")};
+  TEXT("figure_near"),
+  // N1110 (N1110-3): the three camera moments (their scripts: eyes_window, beam_figure, dish_lights in Content/Director/Events).
+  TEXT("eyes_window"),TEXT("beam_figure"),TEXT("dish_lights"),
+  // GLIMPSE-ROAD-20261109: at the wheel, something crosses the road far ahead in the lights (S47RoadGlimpse).
+  TEXT("road_glimpse"),
+  // M7: the first big night, once in a game on night 2 or 3 (S47BigNight.cpp).
+  TEXT("big_night")};
  return L;
 }
+double FS47Happenings::LastFalseAlarmAt() const{return Calm.IsValid()?Calm->LastAlarmAt():-1e9;}
 bool FS47Happenings::IsDanger(const FString& Id){return Id==TEXT("cb_echo")||Id==TEXT("hitchhiker")||Id==TEXT("car_light")||Id==TEXT("figure_near");}
 
 // ---------------------------------------------------------------- saving
 void FS47Happenings::Begin(const S47J::FObj& Saved)
 {
  Stop();Life=MakeShared<uint8>(0);
- Now=FActive();Sites.Reset();LastDays.Reset();Deeds.Reset();Plan.Reset();Says.Reset();GeigerNoted.Reset();TryAt.Reset();LateTryClock=0;
+ Now=FActive();Sites.Reset();Past.Reset();LastDays.Reset();Deeds.Reset();Plan.Reset();Says.Reset();GeigerNoted.Reset();TryAt.Reset();LateTryClock=0;
+ SitHeld.Reset();SitHeldClock=-1; // LEAD-FIX-20261110
+ LeadNow=FLead();WordNight=0;WordTry=0; // CHAIN-5B-20261109
  HoodNight=0;Uneasy=FUneasy();UneaseOnce.Reset();UneaseDone.Reset();UneasePool.Reset();UneaseAt.Reset();UneaseNight=UneaseWant=DangerSeen=0;DangerClock=-1e9;UneaseTry=0;OutsideSince=TruckAwaySince=-1;bWasDriving=bWasIndoors=bChairUp=false;
  Serial=0;HumorNight=-100;EchoFrom=0;LateNight=0;PlanNight=0;AheadNight=0;AheadSeconds=0;bLate=false;bEchoArmed=false;HumorKind.Empty();LastArea.Empty();
  MetTotal=0;HumorSeen.Reset();GhostNight=0;UneaseLast.Reset();Cues.Reset();LateAt=24.5;bLateHush=false;ReturnedAt=-1e9;ReturnedAway=0;
- Paced=0;NearK=1;DangerAt=-1;Tally=FTally();NoticedSerials.Reset();RefusedSaid.Reset();LateDrawSaid.Reset();LoopsOn.Reset();SoundNext=0;HeldTips.Reset();FigureSeen.Reset();FigureSeenFor=0;SwapTry=0;RumorTry=0;
- DimLeft=0;bDimmed=false;Dose=0;Needle=0;TickDebt=0;GeigerUpFor=0;GeigerNoteIn=0;bGeigerUp=false;bGeigerHeld=false;bDevGeiger=false;bGeigerAway=false;
+ Glimpse=S47RoadGlimpse::FPlan();Paced=0;NearK=1;DangerAt=-1;Tally=FTally();NoticedSerials.Reset();RefusedSaid.Reset();LateDrawSaid.Reset();LoopsOn.Reset();SoundNext=0;HeldTips.Reset();FigureSeen.Reset();FigureSeenFor=0;SwapTry=0;RumorTry=0;
+ DimLeft=0;bDimmed=false;Dose=0;Needle=0;GmMeter=0;GeigerUpFor=0;GeigerNoteIn=0;bGeigerUp=false;bGeigerHeld=false;bDevGeiger=false;bGeigerAway=false;bGmRoar=false;
+ ResetBig();
+ FirstDay=FFirstDayNow();FirstDay.bLoaded=Saved.IsValid(); // D46-20261110 (D46-3)
  if(Saved.IsValid())
  {
+  LoadBig(S47J::Obj(Saved,TEXT("big")));
   const S47J::FObj Last=S47J::Obj(Saved,TEXT("last"));
   for(const FString& Id:Ids()){const int32 D=S47J::Int(Last,*Id,0);if(D>=1&&D<100000)LastDays.Add(Id,D);}
   Serial=FMath::Clamp(S47J::Int(Saved,TEXT("serial")),0,1000000);
@@ -596,6 +1015,19 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    if(U.IsValid())for(const auto& KV:U->Values){const int32 I=FCString::Atoi(*KV.Key);double N=0;if(I>=0&&I<UneaseCount()&&KV.Value.IsValid()&&KV.Value->TryGetNumber(N)&&N>0&&N<100000)UneaseLast.Add(I,int32(N));}
   }
   for(const double U:S47J::Nums(Saved,TEXT("uneaseDone")))if(U>=0&&U<UneaseCount()&&UneaseDone.Num()<4)UneaseDone.AddUnique(int32(U));
+  // CHAIN-1-20261109: tonight's lead as it was drawn, so that a Continue does not move it. An older save has none: drawn again.
+  {
+   const S47J::FObj L=S47J::Obj(Saved,TEXT("lead"));
+   if(L.IsValid())
+   {
+    FLead T;T.Night=S47J::Int(L,TEXT("night"));T.Kind=S47J::Str(L,TEXT("kind")).Left(32);T.Place=S47J::Str(L,TEXT("place")).Left(64);T.bPointed=S47J::Bool(L,TEXT("pointed"));
+    TMap<FString,double> One;One.Add(T.Kind,0.);
+    if(T.IsSet()&&T.Night<100000&&LeadKindOf(One)==T.Kind)LeadNow=T;
+   }
+  }
+  WordNight=FMath::Clamp(S47J::Int(Saved,TEXT("wordNight")),0,100000); // CHAIN-5B-20261109: an older save has none (0)
+  // LOOP-4-20261109: what stood out there and has gone, x, z and night in threes.
+  {const TArray<double> P=S47J::Nums(Saved,TEXT("past"));for(int32 I=0;I+2<P.Num()&&Past.Num()<MostPast;I+=3)if(FMath::IsFinite(P[I])&&FMath::IsFinite(P[I+1])&&FMath::Abs(P[I])<1e5&&FMath::Abs(P[I+1])<1e5&&P[I+2]>=1&&P[I+2]<100000)Past.Add({P[I],P[I+1],int32(P[I+2])});}
   for(const auto& V:S47J::Arr(Saved,TEXT("sites")))
   {
    if(!V.IsValid()||V->Type!=EJson::Object)continue;
@@ -606,7 +1038,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    S.bFound=S47J::Bool(O,TEXT("found"));S.bDone=S47J::Bool(O,TEXT("done"));S.bHeard=S47J::Bool(O,TEXT("heard"));
    // Before a landing's bearing was set as it came down, a bearing on it meant it was known.
    S.bKnown=O->HasField(TEXT("known"))?S47J::Bool(O,TEXT("known")):S.Az>=0;
-   const bool bKind=S.Kind==TEXT("landing")||S.Kind==TEXT("truck")||S.Kind==TEXT("rv")||S.Kind==TEXT("cattle")||S.Kind==TEXT("carcass")||S.Kind==TEXT("houselit")||S.Kind==TEXT("cinema")||S.Kind==TEXT("missing")||S.Kind==TEXT("tracks")||S.Kind==TEXT("burst");
+   const bool bKind=S.Kind==TEXT("landing")||S.Kind==TEXT("truck")||S.Kind==TEXT("rv")||S.Kind==TEXT("cattle")||S.Kind==TEXT("carcass")||S.Kind==TEXT("houselit")||S.Kind==TEXT("cinema")||S.Kind==TEXT("missing")||S.Kind==TEXT("tracks")||S.Kind==TEXT("burst")||S.Kind==TEXT("bigmark")||S.Kind==TEXT("roadtracks");
    if(bKind&&S.Night>0&&FMath::IsFinite(S.X)&&FMath::IsFinite(S.Z)&&FMath::Abs(S.X)<1e5&&FMath::Abs(S.Z)<1e5&&FMath::IsFinite(S.Until)&&Sites.Num()<16)Sites.Add(S);
   }
   // What was on when it was saved, if it can carry on (S47Hap::Resumable): otherwise it may be drawn again.
@@ -618,7 +1050,16 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    A.Age=S47J::Num(Was,TEXT("age"));A.Len=S47J::Num(Was,TEXT("len"));A.X=S47J::Num(Was,TEXT("x"));A.Z=S47J::Num(Was,TEXT("z"));A.Yaw=S47J::Num(Was,TEXT("yaw"));A.Clock=S47J::Num(Was,TEXT("clock"));
    A.At=FVector(S47J::Num(Was,TEXT("ax")),S47J::Num(Was,TEXT("ay")),S47J::Num(Was,TEXT("az")));A.bSeen=S47J::Bool(Was,TEXT("seen"));A.bMet=S47J::Bool(Was,TEXT("met"));A.bDanger=IsDanger(A.Id);
    const bool bFinite=FMath::IsFinite(A.Age)&&FMath::IsFinite(A.Len)&&FMath::IsFinite(A.X)&&FMath::IsFinite(A.Z)&&!A.At.ContainsNaN()&&A.Len>0&&A.Len<86400&&FMath::Abs(A.X)<1e5&&FMath::Abs(A.Z)<1e5;
-   if(Ids().Contains(A.Id)&&S47Hap::Resumable(A.Id,A.Variant)&&bFinite){A.Age=FMath::Clamp(A.Age,0.,A.Len);Now=A;}
+   // A figure on the rise saved with Tom's Nordic or Cosmic, loaded in a build without them (the private TripoNew models are kept
+   // out of Git): the shade stands there instead, as a new one would be drawn (FigureFor); without the shade's body either, it is
+   // not carried on at all, so that nothing unseen is seen (critic round 7).
+   bool bBody=true;
+   if(A.Id==TEXT("horizon_figure"))
+   {
+    if(!A.Variant.IsEmpty()){const TCHAR* P=S47RoadGlimpse::PathOf(A.Variant);if(!P||!S47Hap::Exists(P))A.Variant.Reset();}
+    bBody=S47Hap::Exists(S47Hap::HairyStandIn)||!A.Variant.IsEmpty();
+   }
+   if(Ids().Contains(A.Id)&&S47Hap::Resumable(A.Id,A.Variant)&&bFinite&&bBody){A.Age=FMath::Clamp(A.Age,0.,A.Len);Now=A;}
   }
  }
  if(M&&IsValid(M->Web.Get())&&Scene.Get()!=M->Web.Get()){Props.Reset();Scene=M->Web;}
@@ -649,6 +1090,10 @@ S47J::FObj FS47Happenings::Save() const
  if(MetTotal>0)S47J::Set(O,TEXT("met"),MetTotal);
  if(GhostNight>0)S47J::Set(O,TEXT("ghostNight"),GhostNight);
  if(!HumorSeen.IsEmpty())S47J::Set(O,TEXT("humorSeen"),HumorSeen);
+ if(const S47J::FObj Big=SaveBig())S47J::Set(O,TEXT("big"),Big);
+ if(LeadNow.IsSet()){auto L=S47J::New();S47J::Set(L,TEXT("night"),LeadNow.Night);S47J::Set(L,TEXT("kind"),LeadNow.Kind);S47J::Set(L,TEXT("place"),LeadNow.Place);if(LeadNow.bPointed)S47J::Set(L,TEXT("pointed"),true);S47J::Set(O,TEXT("lead"),L);} // CHAIN-1-20261109
+ if(WordNight>0)S47J::Set(O,TEXT("wordNight"),WordNight); // CHAIN-5B-20261109
+ if(!Past.IsEmpty()){TArray<double> P;for(const FStir& X:Past){P.Add(FMath::RoundToDouble(X.X*10)/10);P.Add(FMath::RoundToDouble(X.Z*10)/10);P.Add(X.Night);}S47J::Set(O,TEXT("past"),P);} // LOOP-4-20261109
  if(!Now.Id.IsEmpty()&&!Now.bForced&&S47Hap::Resumable(Now.Id,Now.Variant))
  {
   auto N=S47J::New();
@@ -679,9 +1124,11 @@ S47J::FObj FS47Happenings::Save() const
 void FS47Happenings::Stop()
 {
  Life.Reset();
+ // The big night's hold on SARO's power, the truck's lamps and the motors is let go first, whatever else is.
+ EndBigEffects();
  // At process exit the object array may already be gone: IsValid(M) itself faults there (seen in the Reyes and journey runs
  // after the test passed). Only plain state is reset then.
- if(IsEngineExitRequested()||GExitPurge){Uneasy=FUneasy();bChairUp=false;bDimmed=false;DimLeft=0;LoopsOn.Reset();Now=FActive();Says.Reset();return;}
+ if(IsEngineExitRequested()||GExitPurge){Uneasy=FUneasy();bChairUp=false;bDimmed=false;DimLeft=0;LoopsOn.Reset();bGmRoar=false;Now=FActive();Says.Reset();FirstDay.bMotors=false;FirstDay.Later.Reset();return;}
  if(bDimmed&&IsValid(M)&&IsValid(M->World)&&!IsEngineExitRequested()){M->World->Trouble.Dim=1;}
  if(!Now.Id.IsEmpty()&&IsValid(M)&&IsValid(M->Audio)&&!IsEngineExitRequested())M->Audio->Stop(TEXT("hapEngine"),.2f);
  if(Uneasy.I>=0&&IsValid(M)&&!IsEngineExitRequested()&&!IsGarbageCollecting())EndUneasy();
@@ -689,7 +1136,11 @@ void FS47Happenings::Stop()
  bDimmed=false;DimLeft=0;
  if(IsValid(M)&&IsValid(M->Audio)&&!IsEngineExitRequested())for(const FString& K:LoopsOn)M->Audio->Stop(K,.3f);
  LoopsOn.Reset();
+ // D45-20261110: the counter's hiss where it pegs is its own loop (StepGeiger), not one of a site's.
+ if(bGmRoar&&IsValid(M)&&IsValid(M->Audio)&&!IsEngineExitRequested())M->Audio->Stop(S47Hap::GmRoarKey,.1f);
+ bGmRoar=false;
  if(!Now.Id.IsEmpty()&&IsValid(M)&&!IsEngineExitRequested()&&!IsGarbageCollecting())PutAway(Now.Id);
+ EndFirstDay(); // D46-20261110: the first day's motors and what its beats had still to do
  Now=FActive();Says.Reset();
  if(!IsEngineExitRequested()&&!IsGarbageCollecting())HideAll();
 }
@@ -704,6 +1155,7 @@ bool FS47Happenings::Live(const FString& Id) const
  return false;
 }
 const FString& FS47Happenings::Ground() const{return Now.Id;}
+const FString& FS47Happenings::LiveVariant() const{return Now.Variant;}
 bool FS47Happenings::HumorTonight() const{return M&&M->Freeform&&HumorNight==FS47FreeformSession::NightOf(M->Freeform->Clock());}
 void FS47Happenings::FillRhythm(FS47RhythmNow& Out) const
 {
@@ -749,6 +1201,12 @@ void FS47Happenings::FillMap(FS47MapView& View) const
   else if((S.Kind==TEXT("truck")||S.Kind==TEXT("rv")||S.Kind==TEXT("carcass")||S.Kind==TEXT("missing"))&&(S.bHeard||S.bFound)&&!S.bDone)
   {
    FS47MapPin P;P.East=S.X;P.South=S.Z-SaroZ;P.Label=S.Kind==TEXT("truck")?TEXT("CB"):S.Kind==TEXT("rv")?TEXT("camper"):S.Kind==TEXT("carcass")?TEXT("cow"):TEXT("pickup");P.bHeard=!S.bFound;View.Pins.Add(P);
+  }
+  // The big night's mark: the array's bearing to it once known, and the place in pencil until it is found.
+  else if(S.Kind==TEXT("bigmark")&&(S.bKnown||S.bFound))
+  {
+   if(S.Az>=0){FS47MapSector Sec;Sec.Az=S.Az;Sec.Spread=S.Spread;Sec.Label=FString::Printf(TEXT("N%d"),S.Night);View.Sectors.Add(Sec);}
+   FS47MapPin P;P.East=S.X;P.South=S.Z-SaroZ;P.Label=TEXT("mark");P.bHeard=!S.bFound;View.Pins.Add(P);
   }
   else if(S.Kind==TEXT("burst")&&S.Az>=0)
   {
@@ -867,6 +1325,8 @@ FS47Happenings::FSpot FS47Happenings::Where(const FString& Kind,uint32 All,uint3
 {
  FSpot S;
  auto* F=M?M->Freeform.Get():nullptr;if(!F)return S;
+ // CHAIN-1-20261109: tonight's lead starts where it was drawn at dusk, when that still fits where the player is.
+ if(const FSpot L=LeadSpot(Kind,MinM,MaxM);L.bSet)return L;
  if(F->EventPlaces)
  {
   FS47PlaceNeed N;N.Kind=Kind;N.All=ES47PlaceTrait(All);N.Any=ES47PlaceTrait(Any);N.Not=ES47PlaceTrait(Not);N.MinM=MinM;N.MaxM=MaxM;N.FarShare=FarShare;N.bSameArea=bSameArea;
@@ -897,6 +1357,144 @@ FS47Happenings::FSpot FS47Happenings::Where(const FString& Kind,uint32 All,uint3
  UE_LOG(LogS47Happen,Verbose,TEXT("S47: happening %s: no catalogue answer, the land's own place %s"),*Kind,D->Id);
  return S;
 }
+// ---------------------------------------------------------------- CHAIN-1-20261109: tonight's lead
+FString FS47Happenings::LeadKindOf(const TMap<FString,double>& Drawn)
+{
+ for(const TCHAR* Id:{TEXT("landing"),TEXT("carcass"),TEXT("missing_person"),TEXT("stranded_rv"),TEXT("cb_stranded")})if(Drawn.Contains(Id))return FString(Id);
+ return FString();
+}
+bool FS47Happenings::LeadFits(double Away,double MinM,double MaxM,bool bPointed)
+{
+ if(Away<0)return true;
+ if(MinM>0&&Away<MinM)return false;
+ return bPointed||MaxM<=0||Away<=MaxM;
+}
+// Drawn once the night's plan is known (from 08:00, so long before the evening's cards): each kind's own need, as its Begin asks it,
+// measured from SARO, where the cards are run and the array looks from. No fitting place: no lead, and everything is as before.
+void FS47Happenings::DrawLead(int32 Night)
+{
+ auto* F=M?M->Freeform.Get():nullptr;
+ // Loaded with tonight's: kept as it was drawn (a slip may have pointed there already).
+ if(LeadNow.IsSet()&&LeadNow.Night==Night&&F&&F->EventPlaces&&F->EventPlaces->Find(LeadNow.Place)&&(LeadNow.bPointed||Plan.Contains(LeadNow.Kind)))return;
+ LeadNow=FLead();
+ // NIGHT-20261110: a kind still in its cooldown (or too early in the month) cannot start tonight, so it is no lead: 8 of 11 leads
+ // in the 17-night run pointed at something the rhythm then never let begin.
+ TMap<FString,double> Can=Plan;
+ if(M&&M->Rhythm&&F&&F->RulesLive())for(auto It=Can.CreateIterator();It;++It)
+ {
+  // Asked for the hour it is drawn for, with nothing on the ground and no rest: only what holds all night counts here.
+  FS47RhythmNow At=M->Rhythm->ReadNow();At.Day=Night;At.Clock=(Night-1)*86400.+It.Value()*3600.;At.Busy=NAME_None;At.RestLeft=0;At.SinceStart=1e9;
+  const FS47Verdict V=M->Rhythm->May(FName(*It.Key()),At);
+  if(!V.bMay&&(V.Why==TEXT("cooldown")||V.Why==TEXT("too_early_day")||V.Why==TEXT("off")||V.Why==TEXT("outside_hours")||V.Why==TEXT("tier"))){if(!LeadKindOf(TMap<FString,double>{{It.Key(),0.}}).IsEmpty())UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d: %s is no lead tonight (%s %s)"),Night,*It.Key(),*V.Why.ToString(),*V.Detail);It.RemoveCurrent();}
+ }
+ const FString Kind=LeadKindOf(Can);
+ if(Kind.IsEmpty()||!F||!F->EventPlaces||F->InTutorial())return;
+ using S47Hap::Bit;
+ FS47PlaceNeed N;N.Kind=Kind;
+ const uint32 Away=Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro);
+ if(Kind==TEXT("landing")){N.Any=ES47PlaceTrait(Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Wash));N.Not=ES47PlaceTrait(Away|Bit(ES47PlaceTrait::Indoors)|Bit(ES47PlaceTrait::Array)|Bit(ES47PlaceTrait::People));N.MinM=FMath::Max(180.,350.*NearK);N.MaxM=FMath::Max(900.,2800.*NearK);N.FarShare=.3f*float(NearK);}
+ else if(Kind==TEXT("carcass")){N.Any=ES47PlaceTrait(Bit(ES47PlaceTrait::Farm)|Bit(ES47PlaceTrait::Open));N.Not=ES47PlaceTrait(Away|Bit(ES47PlaceTrait::Indoors));N.MinM=FMath::Max(100.,250.*NearK);N.FarShare=.5f*float(NearK);}
+ else if(Kind==TEXT("missing_person")){N.All=ES47PlaceTrait::Far;N.Any=ES47PlaceTrait(Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Road)|Bit(ES47PlaceTrait::Wash));N.Not=ES47PlaceTrait(Away);N.MinM=FMath::Max(250.,500.*NearK);N.FarShare=1.f;}
+ else if(Kind==TEXT("stranded_rv")){N.All=ES47PlaceTrait::Far;N.Any=ES47PlaceTrait(Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Wash));N.Not=ES47PlaceTrait(Away|Bit(ES47PlaceTrait::People)|Bit(ES47PlaceTrait::Indoors));N.MinM=FMath::Max(250.,600.*NearK);N.FarShare=1.f;}
+ else{N.All=ES47PlaceTrait::Far;N.Any=ES47PlaceTrait(Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Road)|Bit(ES47PlaceTrait::Wash));N.Not=ES47PlaceTrait(Away|Bit(ES47PlaceTrait::Indoors));N.MinM=450;N.FarShare=1.f;}
+ double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
+ const FS47PlacePick P=F->EventPlaces->PickFor(N,F->Seed(),Night,FVector2D(SaroX,SaroZ),FVector2D::ZeroVector,0x4c454144u);
+ if(!P.IsSet()){UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead %s: no place fits from SARO, drawn when it starts as before"),Night,*Kind);return;}
+ LeadNow.Night=Night;LeadNow.Kind=Kind;LeadNow.Place=P.Id;
+ const double* At=Plan.Find(Kind);
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead: %s at %s, %.0f m from SARO, from %s"),Night,*Kind,*P.Id,P.DistanceM,At?*S47Hap::ClockText(FMath::Fmod(*At,24.)*3600.):TEXT("no hour"));
+}
+FS47Happenings::FSpot FS47Happenings::LeadSpot(const FString& Kind,double MinM,double MaxM) const
+{
+ FSpot S;
+ auto* F=M?M->Freeform.Get():nullptr;
+ // F10 asks with no least distance (a forced one, wanted where the player is): left as it was.
+ if(!F||!F->EventPlaces||MinM<=0||!LeadNow.IsSet()||LeadNow.Kind!=Kind||LeadNow.Night!=FS47FreeformSession::NightOf(F->Clock()))return S;
+ const FS47EventPlace* E=F->EventPlaces->Find(LeadNow.Place);if(!E)return S;
+ double Px=0,Pz=0;
+ const double Away=PlayerRoad(Px,Pz)?FVector2D::Distance(FVector2D(E->X,E->Z),FVector2D(Px,Pz)):-1.;
+ if(!LeadNow.bPointed&&!LeadFits(Away,MinM,MaxM,false)){UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: tonight's lead place %s does not fit from here (%.0f m), drawn as before"),*Kind,*E->Id,Away);return S;}
+ S.Place=E->Id;S.Title=E->Title;S.X=E->X;S.Z=E->Z;S.bSet=true;
+ // LEAD-FELT-20261110: pointed at, and the player stands too near it: out past them by that place (S47Hap::LeadOut), not elsewhere.
+ if(LeadNow.bPointed&&Away>=0&&Away<MinM){double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);FVector2D Out=S47Hap::LeadOut(FVector2D(Px,Pz),FVector2D(E->X,E->Z),FVector2D(SaroX,SaroZ),MinM);
+  // LEAD-FIX-20261110: past the place it would leave the land: on the same bearing back toward SARO instead, never past SARO.
+  if(!S47OpenLand::InRim(Out.X,Out.Y,50)){const FVector2D Back=S47Hap::LeadOut(FVector2D(Px,Pz),FVector2D(E->X,E->Z),FVector2D(SaroX,SaroZ),MinM,-1.);if(S47OpenLand::InRim(Back.X,Back.Y,50)&&FVector2D::DotProduct(Back-FVector2D(SaroX,SaroZ),FVector2D(E->X-SaroX,E->Z-SaroZ))>0)Out=Back;else Out=FVector2D(E->X,E->Z);}
+  S.X=Out.X;S.Z=Out.Y;}
+ // Asked on every try while the rhythm holds it back: said once for each night's place.
+ static FString SaidLead;const FString Key=FString::Printf(TEXT("%d/%s/%d"),LeadNow.Night,*E->Id,LeadNow.bPointed?1:0);
+ if(SaidLead!=Key){SaidLead=Key;UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s: at tonight's lead place %s (%s), %.0f m%s"),*Kind,*E->Id,*E->Title,Away,LeadNow.bPointed?TEXT(", a slip pointed there"):TEXT(""));}
+ return S;
+}
+bool FS47Happenings::OutTonight(int32 Night,FString& Event,FString& Title,double& X,double& Z,bool& bAhead) const
+{
+ bAhead=false;
+ auto* F=M?M->Freeform.Get():nullptr;
+ if(!F||Night<=0)return false;
+ // What has come already tonight and nobody has been out to: where it really stands (a landing seen or logged has its own bearing).
+ static const TCHAR* const Left[][2]={{TEXT("landing"),TEXT("landing")},{TEXT("carcass"),TEXT("carcass")},{TEXT("missing"),TEXT("missing_person")},{TEXT("rv"),TEXT("stranded_rv")},{TEXT("truck"),TEXT("cb_stranded")},{TEXT("cattle"),TEXT("cattle_ring")}};
+ for(const auto& K:Left)
+ {
+  const FSite* S=SiteOf(FString(K[0]));
+  if(!S||S->Night!=Night||S->bFound||S->bDone||S->bKnown)continue;
+  Event=K[1];Title=S->Title;X=S->X;Z=S->Z;return true;
+ }
+ // The one still to come, while it still can: its hour and a half, or the rest of the night once a slip has pointed there (Due).
+ if(!LeadNow.IsSet()||LeadNow.Night!=Night||PlanNight!=Night)return false;
+ const double* From=Plan.Find(LeadNow.Kind);if(!From)return false;
+ if(const int32* Last=LastDays.Find(LeadNow.Kind);Last&&*Last==F->Day())return false;
+ // It has come (and was found, or it would have been pointed at above): nothing more to say about it.
+ for(const auto& K:Left)if(LeadNow.Kind==K[1]){const FSite* S=SiteOf(FString(K[0]));if(S&&S->Night==Night)return false;}
+ if(HourOfNight(F->Clock())>=FMath::Min(30.,LeadNow.bPointed?DangerUntil:*From+DrawWindow))return false;
+ const FS47EventPlace* E=F->EventPlaces?F->EventPlaces->Find(LeadNow.Place):nullptr;if(!E)return false;
+ Event=LeadNow.Kind;Title=E->Title;X=E->X;Z=E->Z;bAhead=true;
+ return true;
+}
+void FS47Happenings::PointedTonight(int32 Night)
+{
+ if(!LeadNow.IsSet()||LeadNow.Night!=Night||LeadNow.bPointed)return;
+ LeadNow.bPointed=true;
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d lead %s at %s: a slip points there, held to its place until morning"),Night,*LeadNow.Kind,*LeadNow.Place);
+}
+// CHAIN-5B-20261109: the word of tonight (S47Happenings.h). What a voice can explain away: a thing seen, and roughly which way from SARO.
+FString FS47Happenings::WordLine(const FString& Who,const FString& Kind,const FString& Way,bool bAhead)
+{
+ const TCHAR* Thing=Kind==TEXT("landing")?TEXT("lights coming down slow"):Kind==TEXT("carcass")?TEXT("a cow down and the rest standing off from her")
+  :Kind==TEXT("cattle_ring")?TEXT("cattle bunched up in a ring and not grazing"):Kind==TEXT("missing_person")?TEXT("a blue pickup sitting with its door open")
+  :Kind==TEXT("stranded_rv")?TEXT("a camper with every light burning"):Kind==TEXT("cb_stranded")?TEXT("a rig on the shoulder with its flashers going"):nullptr;
+ if(!Thing)return FString();
+ const bool bWay=!Way.IsEmpty();
+ if(Who==TEXT("earl"))return bAhead
+  ?FString::Printf(TEXT("Then, still chewing: \"Third rancher tonight to call and say his dogs won't come out from under the porch%s. I tell them it's the weather. There isn't any weather.\""),bWay?*FString::Printf(TEXT(", every one of them out to the %s of you people"),*Way):TEXT(""))
+  :FString::Printf(TEXT("Then, still chewing: \"Had a woman call in just now about %s, %s. I told her it's the county. She said the county's in bed. She's not wrong.\""),Thing,bWay?*FString::Printf(TEXT("out to the %s of you people"),*Way):TEXT("out past your dishes somewhere"));
+ if(Who==TEXT("cb"))return bAhead
+  ?FString::Printf(TEXT("Breaker one-nine. Anybody else getting hash on this channel tonight%s? Like somebody keying up and not saying anything."),bWay?*FString::Printf(TEXT(", worst with my nose pointed %s"),*Way):TEXT(""))
+  :FString::Printf(TEXT("Breaker one-nine. Anybody else seeing %s, %s? Never mind. Probably the county."),Thing,bWay?*FString::Printf(TEXT("out %s of the dishes"),*Way):TEXT("out past the dishes"));
+ if(Who==TEXT("printer"))
+ {
+  const FString Aim=bWay?TEXT(", BEARING ROUGHLY ")+Way.ToUpper():FString();
+  return bAhead?FString::Printf(TEXT("PRINTER / A line by itself under the chart, from the array log: SIDELOBE HASH, LOW ON THE HORIZON%s. PROBABLY TRAFFIC."),*Aim)
+   :FString::Printf(TEXT("PRINTER / A line by itself under the chart, from the array log: LOW HORIZON NOISE, INTERMITTENT%s. LOGGED, NOT CLEARED."),*Aim);
+ }
+ return FString();
+}
+FString FS47Happenings::WordOfTonight(const FString& Who)
+{
+ auto* F=M?M->Freeform.Get():nullptr;
+ if(!F||!F->RulesLive()||F->InTutorial())return FString();
+ const int32 Night=FS47FreeformSession::NightOf(F->Clock());
+ const double H=HourOfNight(F->Clock());
+ if(Night<=0||WordNight==Night||H<(Who==TEXT("printer")?19.:20.)||H>=29.5)return FString(); // (NIGHT-20261110: the chart comes off before 20, and its line with it)
+ FString Event,Title;double X=0,Z=0;bool bAhead=false;
+ if(!OutTonight(Night,Event,Title,X,Z,bAhead))return FString();
+ // Which way only for what has come, or for what a slip has pointed at already: no word points anywhere the night has not.
+ FString Way;
+ if(!bAhead||(LeadNow.bPointed&&LeadNow.Night==Night)){double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);Way=S47Hap::Compass(FS47Places::AzimuthOf(SaroX,SaroZ,X,Z));}
+ const FString Said=WordLine(Who,Event,Way,bAhead);
+ if(Said.IsEmpty())return Said;
+ WordNight=Night;
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d: the word of tonight (%s) from the %s, %s%s"),Night,*Event,*Who,bAhead?TEXT("still to come"):TEXT("come already"),Way.IsEmpty()?TEXT(", no way said"):*FString::Printf(TEXT(", to the %s"),*Way));
+ return Said;
+}
 // MILITARY-20261108: the morning after, they got to a landing's ring first and went over the ground (S47Visitors::Cleared).
 static bool S47HapRakedSite(const US47Main* M,const FString& Place,int32 Night)
 {
@@ -926,6 +1524,8 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
  TArray<FPiece> Spec;TArray<FLampDef> Lamps;FString UseId;
  if(Kind==TEXT("cattle")){Spec=CattleParts();UseId=TEXT("ff:hap:cattle");}
  else if(Kind==TEXT("ring")){Spec=RingParts();UseId=TEXT("ff:hap:ring");}
+ // D45-20261110: the ring's coals, apart from the ring (they go out long before it weathers away), a dim warm light low over each nest.
+ else if(Kind==TEXT("embers")){Spec=S47Hap::EmberParts();for(int32 I=0;I<S47Hap::EmberNests;++I)Lamps.Add({S47Hap::EmberNest(I)+FVector(0,.3,0),0xff6a22,40.f,240.f});}
  else if(Kind==TEXT("rv"))
  {
   if(Exists(RvModel))Spec.Add({RvModel,FVector::ZeroVector,FVector(1),0,0,0,0,0,true});else Spec=RvParts();
@@ -941,8 +1541,8 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
  else if(Kind==TEXT("driver")){if(!Exists(DriverModel))return nullptr;Spec.Add({DriverModel,FVector::ZeroVector,FVector(1),0,0,0,0,0,true});UseId=TEXT("ff:hap:truck");}
  else if(Kind==TEXT("handset")){Spec=HandsetParts();UseId=TEXT("ff:hap:truck");}
  else if(Kind==TEXT("hitcher")){if(!Exists(HitcherModel))return nullptr;Spec.Add({HitcherModel,FVector::ZeroVector,FVector(1),0,0,0,0x6a6672u,0,true});UseId=TEXT("ff:hap:hitcher");}
- else if(Kind==TEXT("passer")){Spec=GlowParts(3.2,1,0,0xe8f4ea,40.f);Spec.Add({Cyl,FVector(0,-.4,0),FVector(9,.35,9),0,0,0,0x2a2d2e,0,false});Lamps.Add({FVector(0,-3,0),0xd9f2e4,1500000.f,16000.f});}
- else if(Kind==TEXT("lander")){Spec=GlowParts(7,3,7,0xfff1d6,60.f);Lamps.Add({FVector(0,-2,0),0xffe6c2,3000000.f,30000.f});}
+ else if(Kind==TEXT("passer")){Spec=GlowParts(3.2*FS47SkyGlint::DefaultSize,1,0,0xe8f4ea,40.f);Spec.Add({Cyl,FVector(0,-.4,0),FVector(9,.35,9),0,0,0,0x2a2d2e,0,false});Lamps.Add({FVector(0,-3,0),0xd9f2e4,1500000.f,16000.f});}
+ else if(Kind==TEXT("lander")){Spec=GlowParts(7*FS47SkyGlint::DefaultSize,3,7,0xfff1d6,60.f);Lamps.Add({FVector(0,-2,0),0xffe6c2,3000000.f,30000.f});}
  else if(Kind==TEXT("car"))
  {
   const TCHAR* Car=Either(ConvertibleModel,ConvertibleStandIn);if(!Car)return nullptr;
@@ -966,24 +1566,75 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
  else if(Kind==TEXT("dome"))Lamps.Add({FVector(0,0,0),0xffd9a0,900.f,260.f});
  else if(Kind==TEXT("strip")){Spec.Add({Cube,FVector(0,.008,0),FVector(.88,.016,.03),0,0,0,0xffe2b0,30.f,false});Lamps.Add({FVector(0,.05,.12),0xffd9a8,140.f,130.f});}
  else if(Kind==TEXT("shade")){if(!Exists(S47Hap::HairyStandIn))return nullptr;Spec.Add({S47Hap::HairyStandIn,FVector::ZeroVector,FVector(1),0,0,0,0x0c0c0eu,0,false});}
+ // N1110 (N1110-3): the eyes at the window (eyes_window): two big dark glossy eyes with a faint wet glint each, in the suggestion of a
+ // pale grey face, mostly dark. Local +z is the side turned to the player (PoseProp's yaw, as the figures'). The glints are faint
+ // emissive specks and no lamp, as S47EyeGlint's dots: no light on anything round them (Tom, 6 November).
+ else if(Kind==TEXT("eyes"))
+ {
+  Spec.Add({S47Hap::Ball,FVector(0,0,0),FVector(.36,.46,.17),0,0,0,0x1c1d20u,0,false});
+  for(const double Sx:{-1.,1.})
+  {
+   Spec.Add({S47Hap::Ball,FVector(Sx*.095,.03,.08),FVector(.15,.095,.075),0,0,0,0x030304u,0,false});
+   Spec.Add({S47Hap::Ball,FVector(Sx*.075,.055,.115),FVector(.014),0,0,0,0xffffffu,2.5f,false});
+  }
+ }
  else if(Kind==TEXT("rabbits"))Spec=S47Hap::RabbitParts();
  else if(Kind==TEXT("devil"))Spec=S47Hap::DevilParts();
  else if(Kind==TEXT("tracks"))Spec=S47Hap::TrackParts();
  else if(Kind==TEXT("pickup")){if(!Exists(S47Hap::PickupModel))return nullptr;Spec.Add({S47Hap::PickupModel,FVector::ZeroVector,FVector(1),0,0,0,0x2c4a7au,0,true});UseId=TEXT("ff:hap:missing");}
  else if(Kind==TEXT("chair"))Spec=S47Hap::ChairParts();
+ // M7, the big night (S47BigNight.cpp): what stands out there for a few seconds, and what it leaves.
+ else if(Kind==TEXT("bigglow_column")){Spec=S47Hap::BigColumnParts();Lamps.Add({FVector(0,40,0),0xdfe8ff,80000000.f,250000.f});}
+ else if(Kind==TEXT("bigglow_fall")){Spec=S47Hap::GlowParts(24*FS47SkyGlint::DefaultSize,1,0,0xf4fff2,90.f);Lamps.Add({FVector(0,0,0),0xe8f6ff,40000000.f,200000.f});}
+ else if(Kind==TEXT("bigglow_rise")){Spec=S47Hap::BigRiseParts();Lamps.Add({FVector(0,0,0),0xfff0d2,20000000.f,150000.f});}
+ else if(Kind==TEXT("bigflash"))Lamps.Add({FVector(0,0,0),0xeaf4ff,120000000.f,300000.f});
+ else if(Kind==TEXT("bigmark_column")){Spec=S47Hap::BigMarkColumn();UseId=TEXT("ff:hap:bigmark");}
+ else if(Kind==TEXT("bigmark_fall")){Spec=S47Hap::BigMarkFall();UseId=TEXT("ff:hap:bigmark");}
+ else if(Kind==TEXT("bigmark_rise")){Spec=S47Hap::BigMarkRise();UseId=TEXT("ff:hap:bigmark");}
  else if(Kind==TEXT("stare"))Spec=S47Hap::StareParts();
  else if(Kind==TEXT("carcass"))Spec=S47Hap::CarcassParts();
  else if(Kind==TEXT("window")){Spec=S47Hap::WindowParts();Lamps.Add({FVector(0,0,.6),0xffc27a,1800.f,700.f});}
  else if(Kind==TEXT("darkcar")){if(!Exists(S47Hap::DarkCarModel))return nullptr;Spec.Add({S47Hap::DarkCarModel,FVector::ZeroVector,FVector(1),0,0,0,0x17171au,0,false});}
+ // GLIMPSE-ROAD-20261109: the bodies a glimpse or a figure may have (S47RoadGlimpse::PathOf), each its own prop; the shade's stand-in
+ // in its near-black, the rest as they come. Tom's Nordic and Cosmic have no eye's dot (S47EyeGlint::ForStatic); the Cosmic one shines
+ // all over, with stars in it (S47TripoNew::AddCosmicGlow, below where the parts are made).
+ else if(Kind.StartsWith(TEXT("glimpse_")))
+ {
+  const TCHAR* Body=S47RoadGlimpse::PathOf(Kind.Mid(8));if(!Body||!Exists(Body))return nullptr;
+  Spec.Add({Body,FVector::ZeroVector,FVector(1),0,0,0,Kind==TEXT("glimpse_shadow")?0x0c0c0eu:0u,0,false});
+ }
+ else if(Kind==TEXT("roadtracks_low")||Kind==TEXT("roadtracks_tall"))Spec=S47Hap::RoadTrackParts(Kind==TEXT("roadtracks_low"));
  else if(Kind==TEXT("geiger"))
  {
-  // Local to the instrument: x right, y up, z toward the eye. The needle is last (PoseGeiger turns it).
+  // Local to the instrument: x right, y up, z toward the eye. The needle is last (PoseGeiger turns it about its At, its pivot).
   const uint32 Olive=0x3c4636,Face=0xe6dfc4,Red=0xa8322a,Black=0x101010,Probe=0x2a2a2a;
-  Spec={{Cube,FVector(0,0,0),FVector(.15,.09,.07),0,0,0,Olive,0,false},{Cube,FVector(0,.008,.0362),FVector(.112,.058,.003),0,0,0,Face,.6f,false},
-   {Cube,FVector(.036,.03,.0378),FVector(.026,.007,.002),0,0,-.7,Red,.4f,false},{Cyl,FVector(-.1,-.02,0),FVector(.026,.13,.026),0,0,UE_DOUBLE_PI/2,Probe,0,false}};
-  for(int32 I=0;I<5;++I){const double A=FMath::Lerp(1.05,-1.05,I/4.);Spec.Add({Cube,FVector(-FMath::Sin(A)*.043,-.018+FMath::Cos(A)*.043,.0378),FVector(.002,.007,.002),0,0,A,Black,0,false});}
-  Spec.Add({Cyl,FVector(0,-.018,.039),FVector(.008,.004,.008),0,UE_DOUBLE_PI/2,0,Black,0,false});
-  Spec.Add({Cube,FVector(0,0,.0392),FVector(.0025,.042,.002),0,0,0,Black,0,false});
+  // PT-WALKIE-20261109 (Tom): his prototype ("pakke tripo3d-1", S47TripoNew::Geiger) is the case when this build has it, standing up
+  // with its face to the eye and the dial on that face; else the drawn case with its probe, as before. -S47TripoNewOff: the drawn one.
+  const S47TripoNew::FModel* Own=S47TripoNew::Geiger();
+  UStaticMesh* Case=Own&&Exists(Own->Path)&&!FParse::Param(FCommandLine::Get(),TEXT("S47TripoNewOff"))?LoadObject<UStaticMesh>(nullptr,Own->Path,nullptr,LOAD_NoWarn|LOAD_Quiet):nullptr;
+  // The middle of the case's face, where the dial goes, and the dial's size against the drawn case's.
+  FVector Front(0,0,.035);double Dial=1;
+  if(Case)
+  {
+   // Its bounds in its own centimetres (x out of its back, y across, z up, the face toward -x), at a hand-held height and turned a
+   // quarter about up so that the face looks at the eye: the face's upper middle, where the dial goes, at the instrument's middle.
+   const FBox B=Case->GetBoundingBox();const FVector C=B.GetCenter(),E=B.GetExtent();
+   const double S=S47TripoNew::GeigerHeightM*100./FMath::Max(1.,E.Z*2.),K=S/100.,Up=E.Z*.22;
+   Spec.Add({Own->Path,FVector(-K*C.Y,-K*(C.Z+Up),K*C.X),FVector(S),UE_DOUBLE_PI/2,0,0,Olive,0,false});
+   Front=FVector(0,0,K*E.X);Dial=FMath::Clamp(K*E.Y*2.*.6/.112,.35,1.);
+  }
+  else
+  {
+   Spec.Add({Cube,FVector(0,0,0),FVector(.15,.09,.07),0,0,0,Olive,0,false});
+   Spec.Add({Cyl,FVector(-.1,-.02,0),FVector(.026,.13,.026),0,0,UE_DOUBLE_PI/2,Probe,0,false});
+  }
+  // The dial as the drawn case has it, Dial of its size: the cream face, its red end, five ticks, the pivot, and the needle last.
+  const auto On=[&Front,Dial](double X,double Y,double Z){return Front+FVector(X*Dial,Y*Dial,Z);};
+  Spec.Add({Cube,On(0,.008,.0012),FVector(.112*Dial,.058*Dial,.003),0,0,0,Face,.6f,false});
+  Spec.Add({Cube,On(.036,.03,.0028),FVector(.026*Dial,.007*Dial,.002),0,0,-.7,Red,.4f,false});
+  for(int32 I=0;I<5;++I){const double A=FMath::Lerp(1.05,-1.05,I/4.);Spec.Add({Cube,On(-FMath::Sin(A)*.043,-.018+FMath::Cos(A)*.043,.0028),FVector(.002,.007*Dial,.002),0,0,A,Black,0,false});}
+  Spec.Add({Cyl,On(0,-.018,.004),FVector(.008*Dial,.004,.008*Dial),0,UE_DOUBLE_PI/2,0,Black,0,false});
+  Spec.Add({Cube,On(0,-.018,.0042),FVector(.0025,.042*Dial,.002),0,0,0,Black,0,false});
  }
  else if(Kind==TEXT("zet"))
  {
@@ -1016,7 +1667,11 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
    for(int32 I=0;I<FMath::Max(1,C->GetNumMaterials());++I)C->SetMaterial(I,Mat);
   }
   C->SetVisibility(false);C->RegisterComponent();
-  FProp::FPart Part;Part.C=C;Part.At=Pc.At;Part.Size=Pc.Size;Part.Yaw=Pc.Yaw;Part.Pitch=Pc.Pitch;Part.Roll=Pc.Roll;Part.bHit=Pc.bHit&&!UseId.IsEmpty();
+  // Zet's dots (Tom, 9 November): any part whose mesh has its eyes measured gets them, hidden until the part is shown.
+  S47EyeGlint::AddStaticIfKnown(W,C,P.Glints);
+  // The Cosmic one's light and stars (PT-NORDIC-COSMIC-20261109), children of its body: hidden with it until it is shown.
+  if(S47TripoNew::IsCosmic(Mesh->GetName())){S47TripoNew::FCosmicGlow Glow;if(S47TripoNew::AddCosmicGlow(W,C,Glow))P.Cosmic.Add(Glow);}
+  FProp::FPart Part;Part.C=C;Part.At=Pc.At;Part.Size=Pc.Size;Part.Yaw=Pc.Yaw;Part.Pitch=Pc.Pitch;Part.Roll=Pc.Roll;Part.bHit=Pc.bHit&&!UseId.IsEmpty();Part.Glow=Pc.Glow>0&&Pc.Size.X==Pc.Size.Y&&Pc.Size.Y==Pc.Size.Z;
   if(Part.bHit&&Parent>=0)
   {
    C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
@@ -1030,13 +1685,60 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
   auto* Lc=NewObject<UPointLightComponent>(W,MakeUniqueObjectName(W,UPointLightComponent::StaticClass(),FName(*FString::Printf(TEXT("S47HapLamp_%s_%s"),*Kind,*Here)))) ;
   Lc->SetupAttachment(W->GetRootComponent());Lc->SetMobility(EComponentMobility::Movable);Lc->SetIntensityUnits(ELightUnits::Lumens);Lc->SetIntensity(0);
   Lc->SetAttenuationRadius(L.Radius);Lc->SetCastShadows(false);Lc->SetLightColor(S47Three::Hex(L.Colour));Lc->SetVisibility(false);Lc->RegisterComponent();
-  FProp::FLamp La;La.L=Lc;La.At=L.At;La.Lumens=L.Lumens;P.Lamps.Add(La);
+  FProp::FLamp La;La.L=Lc;La.At=L.At;La.Lumens=L.Lumens;La.Base=S47Three::Hex(L.Colour);P.Lamps.Add(La);
  }
- if(P.Parts.IsEmpty()&&P.Lamps.IsEmpty()){UE_LOG(LogS47Happen,Warning,TEXT("S47: happening prop %s: nothing could be loaded"),*Kind);return nullptr;}
+ // Critic round 7: the truck's spots end at 45 m (S47Truck, attenuation 4500), a road glimpse crosses at 60 to 120 m. A body that can
+ // be lit (not the shade's near-black) is also on lighting channel 1, and its own spot there, from the truck's lamps, gives it what
+ // their beam would give at that distance (FarBeam): the figure shows pale in the far throw, the road and land around it stay dark.
+ if(Kind.StartsWith(TEXT("glimpse_"))&&Kind!=TEXT("glimpse_shadow")&&!P.Parts.IsEmpty())
+ {
+  for(FProp::FPart& Pt:P.Parts)if(UStaticMeshComponent* C=Pt.C.Get())C->SetLightingChannels(true,true,false);
+  auto* Sp=NewObject<USpotLightComponent>(W,MakeUniqueObjectName(W,USpotLightComponent::StaticClass(),FName(*FString::Printf(TEXT("S47HapFarBeam_%s_%s"),*Kind,*Here))));
+  Sp->SetupAttachment(W->GetRootComponent());Sp->SetMobility(EComponentMobility::Movable);Sp->SetIntensityUnits(ELightUnits::Candelas);Sp->SetIntensity(0);
+  Sp->SetLightingChannels(false,true,false);Sp->SetCastShadows(false);Sp->SetIndirectLightingIntensity(0);Sp->SetVolumetricScatteringIntensity(0);
+  Sp->SetAffectTranslucentLighting(false);Sp->SetLightColor(FLinearColor(1.f,.9f,.72f));Sp->SetVisibility(false);Sp->RegisterComponent();
+  P.FarBeam=Sp;
+ }
+ // D37-LAST-20261109: the dust devil is air, not discs. Dust coloured, dense in the middle and soft at the rim, no height fog (so the
+ // puffs keep their own shape), a faint glow of their own like the farm's ground fog so that it reads against the land without a lamp.
+ if(Kind==TEXT("devil"))for(int32 I=0;I<S47Hap::DevilPuffs;++I)
+ {
+  auto* F=NewObject<ULocalFogVolumeComponent>(W,MakeUniqueObjectName(W,ULocalFogVolumeComponent::StaticClass(),FName(*FString::Printf(TEXT("S47HapAir_%s_%s"),*Kind,*Here))));
+  F->SetupAttachment(W->GetRootComponent());F->SetMobility(EComponentMobility::Movable);
+  F->SetRadialFogExtinction(1.1f-.15f*I);F->SetHeightFogExtinction(0.f);F->SetFogPhaseG(.35f);
+  F->SetFogAlbedo(FLinearColor(.56f,.47f,.35f));F->SetFogEmissive(FLinearColor(.006f,.005f,.0035f));
+  F->SetVisibility(false);F->RegisterComponent();P.Air.Add(F);
+ }
+ // D45-20261110: the coals' materials, each to glow and fade on its own (StepEmbers); and the smoke over the nests. Tom's Cosmos chimney
+ // smoke, small, when it is in this build (Tools/cosmossmoke); otherwise thin wisps of the engine's volumetric air, puff by puff.
+ if(Kind==TEXT("embers"))
+ {
+  for(const TPair<uint64,UMaterialInstanceDynamic*>& Pair:Paint)
+  {
+   FProp::FCoal Coal;Coal.Mat=Pair.Value;Coal.Col=S47Three::Hex(uint32(Pair.Key>>32));Coal.Glow=float(Pair.Key&0xffffffffu)/100.f;Coal.Phase=P.Coals.Num()*2.3;
+   P.Coals.Add(Coal);
+  }
+  const bool bCosmos=S47Hap::Exists(S47Hap::CosmosSmoke)&&!FParse::Param(FCommandLine::Get(),TEXT("S47CosmosSmokeOff"));
+  if(bCosmos)for(int32 I=0;I<S47Hap::EmberNests;++I)
+  {
+   if(UNiagaraComponent* Fx=S47Fx::Make(W,W->GetRootComponent(),S47Hap::CosmosSmoke,*MakeUniqueObjectName(W,UNiagaraComponent::StaticClass(),FName(*FString::Printf(TEXT("S47HapSmoke_%s_%d"),*Here,I))).ToString()))
+   {Fx->SetWorldRotation(FRotator::ZeroRotator);Fx->SetWorldScale3D(FVector(S47Hap::CosmosSmokeScale));Fx->SetVisibility(false);P.Smoke.Add(Fx);}
+  }
+  if(P.Smoke.IsEmpty())for(int32 I=0;I<S47Hap::EmberNests*S47Hap::WispPuffs;++I)
+  {
+   auto* Fog=NewObject<ULocalFogVolumeComponent>(W,MakeUniqueObjectName(W,ULocalFogVolumeComponent::StaticClass(),FName(*FString::Printf(TEXT("S47HapWisp_%s"),*Here))));
+   Fog->SetupAttachment(W->GetRootComponent());Fog->SetMobility(EComponentMobility::Movable);
+   Fog->SetRadialFogExtinction(0.f);Fog->SetHeightFogExtinction(0.f);Fog->SetFogPhaseG(.45f);
+   Fog->SetFogAlbedo(FLinearColor(.5f,.49f,.47f));Fog->SetFogEmissive(FLinearColor::Black);
+   Fog->SetVisibility(false);Fog->RegisterComponent();P.Air.Add(Fog);
+  }
+  UE_LOG(LogS47Happen,Display,TEXT("S47: happening embers in %s: %d coal materials, smoke %s"),*Here,P.Coals.Num(),P.Smoke.IsEmpty()?TEXT("as volumetric wisps"):TEXT("from the Cosmos pack"));
+ }
+ if(P.Parts.IsEmpty()&&P.Lamps.IsEmpty()&&P.Air.IsEmpty()){UE_LOG(LogS47Happen,Warning,TEXT("S47: happening prop %s: nothing could be loaded"),*Kind);return nullptr;}
  if(!UseId.IsEmpty()&&!P.Hits.IsEmpty())
  {
   const TWeakPtr<uint8> Guard=Alive;
-  FS47Interactable I;I.Id=UseId;I.Object=P.Hits[0];I.Range=UseId==TEXT("ff:hap:truck")||UseId==TEXT("ff:hap:rv")||UseId==TEXT("ff:hap:missing")?4.5:UseId==TEXT("ff:hap:carcass")?4.:3.2;
+  FS47Interactable I;I.Id=UseId;I.Object=P.Hits[0];I.Range=UseId==TEXT("ff:hap:truck")||UseId==TEXT("ff:hap:rv")||UseId==TEXT("ff:hap:missing")?4.5:UseId==TEXT("ff:hap:carcass")?4.:UseId==TEXT("ff:hap:bigmark")?6.:3.2;
   I.Label=[this,Guard,UseId]()->FString
   {
    if(!Guard.IsValid()||!M||!M->Freeform)return FString();
@@ -1047,6 +1749,7 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
    if(UseId==TEXT("ff:hap:humor"))return Now.Id!=TEXT("humor")?FString():Now.Variant==TEXT("car")?TEXT("Pink convertible / look"):Now.Variant==TEXT("singer")?TEXT("The singer / listen"):Now.Variant==TEXT("pump")?TEXT("The small man / talk"):FString();
    if(UseId==TEXT("ff:hap:phone"))return Now.Id==TEXT("phone_empty")&&Now.Stage==0?TEXT("The phone / answer it"):FString();
    if(UseId==TEXT("ff:hap:carcass"))return SiteOf(TEXT("carcass"))?TEXT("Dead cow / look closer"):FString();
+   if(UseId==TEXT("ff:hap:bigmark"))return SiteOf(TEXT("bigmark"))?TEXT("Marked ground / look closer"):FString();
    if(UseId==TEXT("ff:hap:missing")){const FSite* S=SiteOf(TEXT("missing"));return S&&!S->bDone?TEXT("Blue pickup / look inside"):FString();}
    if(UseId==TEXT("ff:hap:truck"))
    {
@@ -1067,6 +1770,7 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
    else if(UseId==TEXT("ff:hap:phone"))UsePhone();
    else if(UseId==TEXT("ff:hap:carcass"))UseSite(TEXT("carcass"));
    else if(UseId==TEXT("ff:hap:missing"))UseSite(TEXT("missing"));
+   else if(UseId==TEXT("ff:hap:bigmark"))UseBig();
   };
   I.Examine=I.Label;
   M->Inter->Add(I);
@@ -1078,16 +1782,41 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
 void FS47Happenings::PoseProp(FProp& P,const FVector& Foot,double Yaw,const FQuat& Tilt)
 {
  if(P.bPosed&&P.Foot.Equals(Foot,.01)&&FMath::IsNearlyEqual(P.Yaw,Yaw,.001)&&Tilt.Equals(FQuat::Identity,1e-4))return;
- P.Foot=Foot;P.Yaw=Yaw;P.bPosed=true;
+ P.Foot=Foot;P.Yaw=Yaw;P.Tilt=Tilt;P.bPosed=true; // (D45-20261110: the tilt kept for the coals' wisps, StepEmbers)
  const FQuat Turn=Tilt*S47Three::Euler(0,Yaw,0);
  for(FProp::FPart& Pt:P.Parts)
  {
   UStaticMeshComponent* C=Pt.C.Get();if(!IsValid(C))continue;
   const FQuat Q=Turn*S47Three::Euler(Pt.Pitch,Pt.Yaw,Pt.Roll,TEXT("YXZ"));
-  double E[16];S47Three::Compose(Foot+Turn.RotateVector(Pt.At),Q,Pt.Size,E);
+  double E[16];S47Three::Compose(Foot+Turn.RotateVector(Pt.At),Q,Pt.Glow?Pt.Size*P.GlowK:Pt.Size,E); // (UFO-TWINKLE-20261110: the glow balls at the twinkle's size)
   C->SetWorldTransform(S47Three::MatToUE(E));
  }
  for(FProp::FLamp& L:P.Lamps)if(UPointLightComponent* Lc=L.L.Get())Lc->SetWorldLocation(S47Three::ToUE(Foot+Turn.RotateVector(L.At)));
+ // The dust devil's air: each puff on its own slow orbit as the column turns (Yaw), a sphere of 5 m at scale 1 (the engine's unit).
+ // (D45-20261110: only the devil's; the coals' wisps rise on their own clock, StepEmbers. Their Cosmos smoke stands on the nests.)
+ for(int32 I=0;I<P.Smoke.Num();++I)if(UNiagaraComponent* Fx=P.Smoke[I].Get())Fx->SetWorldLocation(S47Three::ToUE(Foot+Turn.RotateVector(S47Hap::EmberNest(I))));
+ if(P.Kind==TEXT("devil"))for(int32 I=0;I<P.Air.Num();++I)if(ULocalFogVolumeComponent* F=P.Air[I].Get())
+ {
+  const S47Hap::FDevilPuff D=S47Hap::DevilPuff(I,Yaw);
+  F->SetWorldLocation(S47Three::ToUE(Foot+Tilt.RotateVector(D.At)));F->SetWorldScale3D(FVector(D.R/5.,D.R/5.,D.H/5.));
+ }
+}
+void FS47Happenings::PhotoSubjects(TArray<FPhotoSubject>& Out) const
+{
+ // D48-20261110: the props that are drawn in the area the player is in, with the box round their drawn parts.
+ if(!M||!IsValid(M->Web.Get()))return;
+ for(const auto& P:Props)
+ {
+  if(!P||!P->bShown||P->Area!=M->Web->Area())continue;
+  FPhotoSubject S;S.Kind=P->Kind;
+  for(const FProp::FPart& Pt:P->Parts)
+  {
+   const UStaticMeshComponent* C=Pt.C.Get();
+   if(!IsValid(C)||!C->IsRegistered()||!C->IsVisible()||C->bHiddenInGame)continue;
+   S.Box+=C->Bounds.GetBox();S.Parts.Add(C);
+  }
+  if(S.Box.IsValid&&S.Parts.Num())Out.Add(MoveTemp(S));
+ }
 }
 void FS47Happenings::ShowProp(FProp& P,bool bOn)
 {
@@ -1098,10 +1827,37 @@ void FS47Happenings::ShowProp(FProp& P,bool bOn)
  for(const FS47Obj& H:P.Hits)if(H.W==M->Web.Get()&&H)M->Web->SetVisible(H.I,bHere);
  for(FProp::FPart& Pt:P.Parts)if(UStaticMeshComponent* C=Pt.C.Get())
  {
-  C->SetVisibility(bHere);
+  // With its children: the eye's dots on it (P.Glints) show and hide with the body, and S47EyeGlint::Step reads that.
+  C->SetVisibility(bHere,true);
   C->SetCollisionEnabled(bHere&&Pt.bHit?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
  }
  for(FProp::FLamp& L:P.Lamps)if(UPointLightComponent* Lc=L.L.Get()){Lc->SetVisibility(bHere);Lc->SetIntensity(bHere?L.Lumens:0.f);}
+ for(TWeakObjectPtr<ULocalFogVolumeComponent>& F:P.Air)if(ULocalFogVolumeComponent* C=F.Get())C->SetVisibility(bHere);
+ // D45-20261110: the coals' smoke is started by StepEmbers while it has smoke to give; hidden, it stops at once.
+ if(!bHere)for(TWeakObjectPtr<UNiagaraComponent>& Fx:P.Smoke)if(UNiagaraComponent* C=Fx.Get()){C->DeactivateImmediate();C->SetVisibility(false);}
+ // The far beam is the road glimpse's to turn on (StepMore road_glimpse); it never outlasts the body.
+ if(!bHere)if(USpotLightComponent* Sp=P.FarBeam.Get()){Sp->SetIntensity(0);Sp->SetVisibility(false);}
+}
+// The big night's drawn things: posed with each part's place and size times Scale (a column that grows up off the ground), the
+// lamps at LampK of their strength. Not PoseProp's pose: its next call poses it again from scratch.
+bool FS47Happenings::ShowBig(const FString& Kind,const FVector& Foot,double Yaw,const FVector& Scale,float LampK,bool bOn)
+{
+ FProp* P=bOn?Prop(Kind):FindProp(Kind);
+ if(!P)return false;
+ if(!bOn){ShowProp(*P,false);return true;}
+ const FQuat Turn=S47Three::Euler(0,Yaw,0);
+ for(FProp::FPart& Pt:P->Parts)
+ {
+  UStaticMeshComponent* C=Pt.C.Get();if(!IsValid(C))continue;
+  const FQuat Q=Turn*S47Three::Euler(Pt.Pitch,Pt.Yaw,Pt.Roll,TEXT("YXZ"));
+  double E[16];S47Three::Compose(Foot+Turn.RotateVector(Pt.At*Scale),Q,Pt.Size*Scale,E);
+  C->SetWorldTransform(S47Three::MatToUE(E));
+ }
+ for(FProp::FLamp& L:P->Lamps)if(UPointLightComponent* Lc=L.L.Get())Lc->SetWorldLocation(S47Three::ToUE(Foot+Turn.RotateVector(L.At*Scale)));
+ P->bPosed=false;
+ ShowProp(*P,true);
+ for(FProp::FLamp& L:P->Lamps)if(UPointLightComponent* Lc=L.L.Get())Lc->SetIntensity(L.Lumens*FMath::Clamp(LampK,0.f,1.f));
+ return true;
 }
 void FS47Happenings::HideAll()
 {
@@ -1120,6 +1876,7 @@ void FS47Happenings::PlanTonight(int32 Night)
 {
  CloseTally(Night);
  Plan.Reset();PlanNight=Night;bLate=false;HumorKind.Empty();DangerAt=-1;RefusedSaid.Reset();LateDrawSaid.Reset();
+ SitHeld.Reset();SitHeldClock=-1; // LEAD-FIX-20261110
  auto* F=M?M->Freeform.Get():nullptr;if(!F)return;
  const int32 Seed=F->Seed();
  // This week's row of the curve: how much each level is worth, how near things come, how likely the night's danger is.
@@ -1162,27 +1919,37 @@ void FS47Happenings::PlanTonight(int32 Night)
   Draw(TEXT("carcass"),0x43415243u,3,.12f,20.,6.);
   Draw(TEXT("house_lit"),0x484f5553u,2,.25f,21.5,5.5);
   Draw(TEXT("horizon_figure"),0x484f525au,2,.2f,24.5,4.);
+  // N1110 (N1110-3): the camera moments, each seldom and at most once a night (director.json: eyes_window from two, the others from midnight and one).
+  Draw(TEXT("eyes_window"),0x45594553u,2,.22f,26.,2.5);
+  Draw(TEXT("beam_figure"),0x4245414du,2,.25f,24.,4.);
+  Draw(TEXT("dish_lights"),0x44534c54u,2,.2f,25.,3.5);
+  // GLIMPSE-ROAD-20261109: something across the road far ahead, in the glimpse tier's hours, at most once a week (director.json).
+  Draw(TEXT("road_glimpse"),0x52474c4du,3,.3f,24.,1.75);
   Draw(TEXT("cinema_film"),0x43494e45u,2,.15f,22.,3.);
   Draw(TEXT("room6_tv"),0x524f4f4du,3,.1f,23.,4.);
-  Draw(TEXT("array_burst"),0x42555253u,2,.25f,21.5,6.5);
+  // D45-20261110 (D45-26): from the first night (director.json and S47RhythmDefaults.inl from_day 1), and on it for sure, between
+  // 22:00 and 23:15 (FirstBurstHour): the one thing an operator who stays in the building is sure to meet before midnight.
+  Draw(TEXT("array_burst"),0x42555253u,1,.25f,21.5,6.5,Night==1?1.f:0.f);
+  if(Night==1)if(double* First=Plan.Find(TEXT("array_burst")))*First=FirstBurstHour(Seed);
   Draw(TEXT("truck_tracks"),0x5452434bu,3,.15f,23.,5.);
   Draw(TEXT("missing_person"),0x4d495353u,4,.1f,20.,4.);
   Draw(TEXT("cb_stranded"),0x43425354u,2,.28f,20.,4.5);
-  Draw(TEXT("landing"),0x4c414e44u,2,.24f,22.5,5.,bNoLanding&&Night>=4?.6f:0.f);
+  Draw(TEXT("landing"),0x4c414e44u,2,.24f,22.5,5.,bNoLanding&&Night>=5?.6f:0.f);
   Draw(TEXT("stranded_rv"),0x52564e54u,3,.14f,19.5,3.);
  }
  // The night's one danger of these (Tom's critics, 8 November: none of M1's was ever met, and none on foot): a slot at an hour in
  // their hours, kept until five, and taken by the first of them that fits where the player is then. How likely the slot is grows
- // week by week (curve "danger"); which shapes it may take tonight is each one's own per_night.
- if(!bCalm&&Night>=2&&Week.Danger>0&&FS47NightRhythm::Roll(Seed,Night,0x534c4f54u)<Week.Danger)
+ // week by week (curve "danger"); which shapes it may take tonight is each one's own per_night. M7: the same slot is the indoor
+ // systems' too (FS47Rhythm::DangerSlotOpen): a player who keeps inside meets it at a door, at the window, or in the yard.
+ DangerAt=FS47Rhythm::DangerSlotHour(Seed,Night,Week.Danger,F->BodyStartHour(Night),bCalm);
+ if(DangerAt>0)
  {
-  const double Start=F->BodyStartHour(Night)+24;
-  DangerAt=Start+FMath::Max(0.,27.8-Start)*FS47NightRhythm::Roll(Seed,Night,0x534c4f55u);
   const bool bEcho=bEchoArmed&&Night>EchoFrom&&Night<=EchoFrom+3;
   for(const TCHAR* Id:{TEXT("figure_near"),TEXT("hitchhiker"),TEXT("car_light"),TEXT("cb_echo")})
   {
    if(FString(Id)==TEXT("cb_echo")&&!bEcho)continue;
-   const float Shape=M->Rhythm?M->Rhythm->PerNight(FName(Id),.6f):.6f;
+   // The shape's own number, not the curve's: the slot's chance has the week's danger in it already.
+   const float Shape=M->Rhythm?M->Rhythm->PerNight(FName(Id),.6f,-1):.6f;
    if(FS47NightRhythm::Roll(Seed,Night,S47Hap::SaltOf(Id)^0x53484150u)<Shape)Plan.Add(Id,DangerAt);
   }
   // The night leads up to it, closer each time: the dogs go quiet, then the animals run past (a chain on one night, as the critics
@@ -1192,6 +1959,7 @@ void FS47Happenings::PlanTonight(int32 Night)
  }
  TArray<FString> Parts;for(const auto& KV:Plan)Parts.Add(FString::Printf(TEXT("%s %s"),*KV.Key,*S47Hap::ClockText(FMath::Fmod(KV.Value,24.)*3600.)));
  UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d drawn: %s; reserve %s%s; week from day %d: danger %.2f, near %.2f%s"),Night,Parts.IsEmpty()?TEXT("none"):*FString::Join(Parts,TEXT(", ")),*S47Hap::ClockText(FMath::Fmod(LateAt,24.)*3600.),bLateHush?TEXT(" (a hush)"):TEXT(""),Week.FromDay,Week.Danger,NearK,DangerAt>0?*FString::Printf(TEXT(", the danger's slot %s"),*S47Hap::ClockText(FMath::Fmod(DangerAt,24.)*3600.)):TEXT(""));
+ DrawLead(Night); // CHAIN-1-20261109
  PlanUnease(Night);
  PlanCues(Night);
 }
@@ -1276,7 +2044,22 @@ bool FS47Happenings::Due(const FString& Id) const
  const double H=HourOfNight(M->Freeform->Clock());
  const int32* Last=LastDays.Find(Id);
  // The night's danger waits in its slot until five for something that fits; the rest have an hour and a half.
- return S47Hap::DueAt(H,*From,IsDanger(Id)?DangerUntil:*From+DrawWindow)&&!(Last&&*Last==M->Freeform->Day());
+ // CHAIN-1-20261109: the lead a slip has pointed at waits as long, so that what the slip said is out there comes to be there.
+ const bool bPromised=LeadNow.bPointed&&LeadNow.Night==PlanNight&&LeadNow.Kind==Id;
+ // LEAD-FELT-20261110: and from now, once the player is out near its place (S47Hap::LeadEarly): who went at once does not stand waiting.
+ double Start=*From;
+ if(bPromised&&H<Start&&M->Freeform->EventPlaces)if(const FS47EventPlace* E=M->Freeform->EventPlaces->Find(LeadNow.Place))
+ {
+  double Px=0,Pz=0;
+  if(PlayerRoad(Px,Pz)&&S47Hap::LeadEarly(FVector2D::Distance(FVector2D(E->X,E->Z),FVector2D(Px,Pz)),FS47FieldRadio::InSaroBuilding(M),H)&&(LeadNow.Kind!=TEXT("landing")||H>=24.))Start=H; // (a landing never before midnight: the evening has hints only)
+ }
+ // NIGHT-20261110: the landing a slip pointed at sits lit on the ground; drawn for the evening it waits for midnight (hints only before).
+ if(bPromised&&LeadNow.Kind==TEXT("landing"))Start=FMath::Max(Start,24.);
+ // LEAD-FIX-20261110: and as long again as a pointed landing sitting on the ground held it back (SitHeld): it comes after, not never.
+ // D45-20261110 (D45-26): the first night's burst waits for the player in the building until half past one (FirstBurstUntil).
+ const double Window=IsDanger(Id)||bPromised?DangerUntil:*From+DrawWindow;
+ const double Gone=Id==TEXT("array_burst")&&PlanNight==1?FMath::Max(Window,FirstBurstUntil):Window;
+ return S47Hap::DueAt(H,Start,Gone+SitHeld.FindRef(Id))&&!(Last&&*Last==M->Freeform->Day());
 }
 bool FS47Happenings::MayStart(const FString& Id)
 {
@@ -1302,8 +2085,19 @@ void FS47Happenings::Cb(const TArray<FString>& Lines,const FString& Voice,bool b
 {
  if(!M||Lines.IsEmpty())return;
  static_cast<void>(bWrong);
- // The set's own sound and its HUD line, at the dash or beside the player at the base set.
+ // CB-TRUCK-20261109: the CB is under the truck's dash and nowhere else. Away from it, a call waits a while for the player to sit in
+ // the truck (StepTips), as a stranger's tip does; it is never put on the screen as a CB line out of the truck.
+ if(!CanHearCb())
+ {
+  FHeldTip Held;Held.Lines=Lines;Held.Voice=Voice;Held.Until=Paced+240;
+  if(HeldTips.Num()>=3)HeldTips.RemoveAt(0);
+  HeldTips.Add(Held);
+  return;
+ }
+ // The set's own sound and its HUD line, from the dash.
  if(FS47FieldRadio::CbSay(M,Lines,Voice))return;
+ // MSG-ONE-20261109: Dale's voice on the walkie: the call waits for him (StepTips), as one away from the CB does, not as text over him.
+ if(FS47FieldRadio::DaleOnAir(M)){FHeldTip Held;Held.Lines=Lines;Held.Voice=Voice;Held.Until=Paced+240;if(HeldTips.Num()>=3)HeldTips.RemoveAt(0);HeldTips.Add(Held);return;}
  // Busy, or no sound to play it with: the words, one after another.
  double In=0;for(const FString& L:Lines){Say(TEXT("CB: ")+L,In,float(S47CB::SecsOf(L))+1.5f);In+=S47CB::SecsOf(L)+.6;}
 }
@@ -1321,7 +2115,7 @@ void FS47Happenings::StepTips()
 {
  if(HeldTips.IsEmpty()||!M||M->ModalOpen())return;
  if(HeldTips[0].Until<Paced){HeldTips.RemoveAt(0);return;}
- if(CanHearCb()&&!(M->CB.IsValid()&&M->CB->bBusy)){const FHeldTip H=HeldTips[0];HeldTips.RemoveAt(0);Cb(H.Lines,H.Voice,false);}
+ if(CanHearCb()&&!(M->CB.IsValid()&&M->CB->bBusy)&&!FS47FieldRadio::DaleOnAir(M)){const FHeldTip H=HeldTips[0];HeldTips.RemoveAt(0);Cb(H.Lines,H.Voice,false);}
  else if(M->FieldRadio.IsValid()&&M->FieldRadio->Owned()&&!HeldTips[0].Passed.IsEmpty()){const FHeldTip H=HeldTips[0];HeldTips.RemoveAt(0);FS47FieldRadio::Report(M,H.Passed);}
 }
 FString FS47Happenings::Spoken(const FString& Title)
@@ -1345,6 +2139,12 @@ void FS47Happenings::Noticed(const FString& Id,double Dist,const TCHAR* How,int3
  const int32 Key=Ser>0?Ser:Now.Serial;
  if(Key<=0||NoticedSerials.Contains(Key))return;
  NoticedSerials.Add(Key);
+ // DREAD-20261110: what is first seen out there is felt too (a bought hit; nothing without the files, and never twice for one thing).
+ if(How&&FCString::Strstr(How,TEXT("sight"))&&M->FieldRadio)
+ {
+  const int32 Scare=FS47EncounterSound::ScareFor(Id.IsEmpty()?Now.Id:Id,Dist);
+  if(Scare>=0)M->FieldRadio->Scare(Scare,Dist<0?1.:FMath::Clamp(1.-Dist/600.,.3,1.));
+ }
  const bool bForced=Ser<=0&&Now.bForced;
  if(!bForced){++Tally.NNoticed;if(bNear)++Tally.NNear;if(Dist<1e5)Tally.Nearest=FMath::Min(Tally.Nearest,FMath::Max(0.,Dist));}
  UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s noticed day %d %s %s by %s%s"),Id.IsEmpty()?*Now.Id:*Id,M->Freeform->Day(),*S47Hap::ClockText(M->Freeform->Clock()),Dist<0?TEXT("at the player"):Dist>=1e5?TEXT("far off"):*FString::Printf(TEXT("at %.0f m"),Dist),How?How:TEXT("here"),bForced?TEXT(", F10"):TEXT(""));
@@ -1385,6 +2185,38 @@ double FS47Happenings::AwayNow(const FString& Id) const
  }
  return -1;
 }
+bool FS47Happenings::TakePointOut(FS47FreeformDirector* Director,int32 Night)
+{
+ if(!Director)return true;
+ if(!Director->MayPointOut(Night))return false;
+ Director->NotePointOut(Night);return true;
+}
+// D45-20261110 (D45-26): the first night's burst and unease, from the seed, the same in any Continue.
+double FS47Happenings::FirstBurstHour(int32 Seed){return FirstBurstFrom+FirstBurstSpan*FS47NightRhythm::Roll(Seed,1,0x42555253u+1u);}
+double FS47Happenings::FirstUneaseHour(int32 Seed)
+{
+ const double Burst=FirstBurstHour(Seed),Own=FirstBurstFrom+FirstBurstSpan*FS47NightRhythm::Roll(Seed,1,0x55415400u);
+ // Not on top of the burst: half an hour off it, still inside the same window.
+ if(FMath::Abs(Own-Burst)>=.4)return Own;
+ return Burst<FirstBurstFrom+FirstBurstSpan*.5?Burst+.5:Burst-.5;
+}
+bool FS47Happenings::FirstBurstOwed(int32 Night) const
+{
+ if(Night!=1||PlanNight!=1||!Plan.Contains(TEXT("array_burst"))||LastDays.Contains(TEXT("array_burst"))||Now.Id==TEXT("array_burst")||!M||!M->Freeform)return false;
+ return HourOfNight(M->Freeform->Clock())<FirstBurstUntil;
+}
+bool FS47Happenings::Stirred(const TArray<FStir>& Near,double X,double Z,int32 Day)
+{
+ for(const FStir& S:Near)if(S.Night<=Day&&S.Night>=Day-StirNights&&FVector2D::Distance(FVector2D(S.X,S.Z),FVector2D(X,Z))<=StirReach)return true;
+ return false;
+}
+bool FS47Happenings::StirredNear(double X,double Z) const
+{
+ if(!M||!M->Freeform)return false;
+ TArray<FStir> Near=Past;
+ for(const FSite& S:Sites)Near.Add({S.X,S.Z,S.Night});
+ return Stirred(Near,X,Z,M->Freeform->Day());
+}
 bool FS47Happenings::IsNightFinding(const FString& Id)
 {
  for(const TCHAR* K:S47Hap::NightKeys)if(Id.StartsWith(K))return true;
@@ -1397,6 +2229,7 @@ FString FS47Happenings::NightFindingKind(const FString& Id)
 }
 FString FS47Happenings::RestBlock() const
 {
+ if(Now.Id==TEXT("big_night"))return TEXT("Not now. Not with every light in the place doing that.");
  if(!Now.bDanger||!Now.bMet)return FString();
  if(Now.Id==TEXT("car_light"))return TEXT("Not with that light still over the truck.");
  if(Now.Id==TEXT("hitchhiker"))return TEXT("Not with her out there.");
@@ -1440,8 +2273,12 @@ void FS47Happenings::PutAway(const FString& Id)
 {
  static const TCHAR* const What[][2]={{TEXT("car_dies"),TEXT("passer")},{TEXT("landing"),TEXT("lander")},{TEXT("car_light"),TEXT("lander")},{TEXT("cb_echo"),TEXT("lander")},{TEXT("hitchhiker"),TEXT("hitcher")},
   {TEXT("humor"),TEXT("car")},{TEXT("humor"),TEXT("singer")},{TEXT("humor"),TEXT("hairy")},{TEXT("humor"),TEXT("zet")},{TEXT("phone_empty"),TEXT("phone")},{TEXT("horizon_figure"),TEXT("shade")},
-  {TEXT("room6_tv"),TEXT("tvlight")},{TEXT("animals_flee"),TEXT("rabbits")},{TEXT("dust_devil"),TEXT("devil")},{TEXT("figure_near"),TEXT("shade")},{TEXT("figure_near"),TEXT("lander")}};
+  {TEXT("room6_tv"),TEXT("tvlight")},{TEXT("animals_flee"),TEXT("rabbits")},{TEXT("dust_devil"),TEXT("devil")},{TEXT("figure_near"),TEXT("shade")},{TEXT("figure_near"),TEXT("lander")},
+  {TEXT("big_night"),TEXT("bigglow_column")},{TEXT("big_night"),TEXT("bigglow_fall")},{TEXT("big_night"),TEXT("bigglow_rise")},{TEXT("big_night"),TEXT("bigflash")},
+  {TEXT("eyes_window"),TEXT("eyes")},{TEXT("beam_figure"),TEXT("shade")},{TEXT("dish_lights"),TEXT("lander")}}; // (N1110: the camera moments')
  if(M&&IsValid(M->Web.Get()))for(const auto& W:What)if(Id==W[0])for(const auto& P:Props)if(P&&P->Kind==W[1])ShowProp(*P,false);
+ // The body a figure or a glimpse was given (glimpse_*), whichever it was.
+ if((Id==TEXT("horizon_figure")||Id==TEXT("figure_near")||Id==TEXT("road_glimpse")||Id==TEXT("beam_figure"))&&M&&IsValid(M->Web.Get()))for(const auto& P:Props)if(P&&P->Kind.StartsWith(TEXT("glimpse_")))ShowProp(*P,false);
  if(Id==TEXT("room6_tv")&&M&&IsValid(M->Audio))M->Audio->TvHiss({});
 }
 
@@ -1452,6 +2289,19 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  if(!bForced&&F->InTutorial()){Why=TEXT("the first shift");return false;}
  const bool bGround=!S47Hap::Background(Id);
  if(bGround&&!Now.Id.IsEmpty()){Why=FString::Printf(TEXT("%s is on"),*Now.Id);return false;}
+ // CRIT9-20261109: from ten to two the night is the week's case's (FS47WeekCase::HoldsFarm): nothing on the ground but the humor.
+ if(!bForced&&bGround&&Id!=TEXT("humor")&&FS47WeekCase::HoldsFarm(M)){Why=TEXT("the week's case has the night");return false;}
+ // D46-20261110 (D46-11): the event's script may hold it back by its gates (Content/Director/Events/<id>.json); never an F10 start.
+ if(!bForced&&!S47EventScript::Allows(M,Id,Why))return false;
+ // N1110 (ANIMALS-20261108): out on foot, the animals go first (a covey up all at once, a coyote stopped and staring) and the event follows
+ // a few seconds later (FS47AnimalWarn, its scripts animals_warn_*.json); once a night at most, and only when the event is likely to come.
+ if(!bForced&&FS47AnimalWarn::Warned(Id))
+ {
+  if(!AnimalWarn)AnimalWarn=MakeShared<FS47AnimalWarn>(M);
+  const bool bLamp=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn;
+  const bool bFit=(SituationNow()&S47Hap::NeedFoot)&&(Id!=TEXT("beam_figure")||bLamp)&&(Id!=TEXT("dish_lights")||M->Web->Area()==TEXT("saro"));
+  if(!AnimalWarn->Hold(Id,Variant,bFit,Why))return false;
+ }
  bool bOk=false;const int32 SitesBefore=Sites.Num();
  if(Id==TEXT("car_dies"))bOk=BeginCar(bForced,Why);
  else if(Id==TEXT("clock_ahead"))bOk=BeginAhead(bForced,Why);
@@ -1462,7 +2312,8 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  else if(Id==TEXT("hitchhiker"))bOk=BeginHitcher(bForced,Why);
  else if(Id==TEXT("stranded_rv"))bOk=BeginRv(bForced,Why);
  else if(Id==TEXT("humor"))bOk=BeginHumor(Variant,bForced,Why);
- else if(Id==TEXT("figure_near"))bOk=BeginFigure(bForced,Why);
+ else if(Id==TEXT("figure_near"))bOk=BeginFigure(Variant,bForced,Why);
+ else if(Id==TEXT("big_night"))bOk=BeginBig(Variant,bForced,Why);
  else bOk=BeginMore(Id,Variant,bForced,Why);
  if(!bOk)return false;
  ++Serial;TryAt.Remove(Id);
@@ -1488,6 +2339,8 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  const FString& PlaceId=Made?Made->Place:Now.Place;
  if(!PlaceId.IsEmpty()&&F->EventPlaces)FS47EventPlaces::LogPick(Id,F->EventPlaces->Find(PlaceId),TEXT("night event"));
  UE_LOG(LogS47Happen,Display,TEXT("S47: happening start %s%s day %d %s in %s at %s, %s%s"),*Id,Now.Id==Id&&!Now.Variant.IsEmpty()?*FString::Printf(TEXT(" (%s)"),*Now.Variant):TEXT(""),F->Day(),*S47Hap::ClockText(F->Clock()),*M->Web->Area(),*AtTitle,Away<0?TEXT("no distance"):*FString::Printf(TEXT("%.0f m from the player"),Away),bForced?TEXT(", F10"):TEXT(""));
+ // D46-5-20261110: the player's own thought as it starts (S47Thoughts: its own pool, one in 90 real seconds, through the one queue).
+ S47Thoughts::Think(M,Id);
  M->RequestAutosave();
  return true;
 }
@@ -1498,6 +2351,7 @@ void FS47Happenings::EndEvent(bool bEvidence)
  const double Away=AwayNow(Id);const bool bNoticed=NoticedSerials.Contains(Now.Serial);
  UE_LOG(LogS47Happen,Display,TEXT("S47: happening end %s after %.0f s (%.0f min of the night)%s%s, %s, %s"),*Id,Now.Age,M&&M->Freeform&&Now.Clock>0?(M->Freeform->Clock()-Now.Clock)/60.:0.,bEvidence?TEXT(", kept"):TEXT(""),bDanger?(bMet?TEXT(", met"):TEXT(", never met")):TEXT(""),bNoticed?TEXT("noticed"):TEXT("not noticed"),Away<0?TEXT("no distance"):*FString::Printf(TEXT("%.0f m from the player"),Away));
  PutAway(Id);
+ if(Id==TEXT("big_night"))EndBigEffects();
  if(M&&M->Audio)M->Audio->Stop(TEXT("hapEngine"),.6f);
  // The truck's lights are never left out by an event cut short.
  if(bDimmed&&M&&M->World){M->World->Trouble.Dim=1;bDimmed=false;}
@@ -1514,7 +2368,26 @@ void FS47Happenings::Step(double Dt)
 {
  auto* F=M?M->Freeform.Get():nullptr;
  if(!F||!F->Active()||!M->IsFreeform()||!M->Web||!M->Player||!M->World||!Life.IsValid())return;
- if(Scene.Get()!=M->Web.Get()){Props.Reset();Scene=M->Web;Sight.Init(M);LoopsOn.Reset();}
+ if(Scene.Get()!=M->Web.Get()){Props.Reset();Scene=M->Web;Sight.Init(M);if(M->Audio)for(const FString& K:LoopsOn)M->Audio->Stop(K,.3f);LoopsOn.Reset();} // (AFTER-TAKEN-20261109: a new scene stops what was looping, the projector or the generator, instead of forgetting it still plays)
+ // The Cosmic one breathes and its stars drift while it is out there.
+ for(const auto& P:Props)if(P&&P->bShown)for(S47TripoNew::FCosmicGlow& G:P->Cosmic)S47TripoNew::StepCosmicGlow(G,Dt);
+ // UFO-TWINKLE-20261110: the glow of passer / lander / bigglow_fall twinkles as the sky lights do (FS47SkyGlint at a quarter pace, one phase per
+ // lamp): a slow size drift on the glow balls of passer and lander, and colour on the point lights. Calm flashes damp it.
+ if(!FS47SkyGlint::Plain())for(int32 Pi=0;Pi<Props.Num();++Pi)if(const auto& P=Props[Pi];P&&P->bShown&&(P->Kind==TEXT("passer")||P->Kind==TEXT("lander")||P->Kind==TEXT("bigglow_fall")))
+ {
+  const double Damp=M->Flow&&M->Flow->bCalmFlash?.2:1.;
+  if(P->Kind!=TEXT("bigglow_fall")&&!P->Lamps.IsEmpty())
+  {
+   double Swell=1.;FS47SkyGlint::Gains(M->T*.25,200+Pi*4,FMath::DegreesToRadians(20.),&Swell);
+   P->GlowK=1.+Damp*(Swell-1.);P->bPosed=false; // posed again at this size (PoseProp)
+  }
+  for(int32 Li=0;Li<P->Lamps.Num();++Li)if(UPointLightComponent* Lc=P->Lamps[Li].L.Get())
+  {
+   const FVector Gain=FS47SkyGlint::Gains(M->T*.25,200+Pi*4+Li,FMath::DegreesToRadians(20.));
+   const double Mean=(Gain.X+Gain.Y+Gain.Z)/3.;
+   Lc->SetLightColor(P->Lamps[Li].Base*FLinearColor(float(1.+Damp*(Gain.X/Mean-1.)),float(1.+Damp*(Gain.Y/Mean-1.)),float(1.+Damp*(Gain.Z/Mean-1.))));
+  }
+ }
  if(F->Held()){StepGeiger(0);return;}
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
  if(Night!=PlanNight)PlanTonight(Night);
@@ -1528,19 +2401,27 @@ void FS47Happenings::Step(double Dt)
  StepSites(Dt);
  SiteSounds();
  StepTips();
+ StepBigAfter();
  // The night by its own rules: only where a real game is played (or a test asks for them), never in the first shift.
+ // The first big night asks for itself in the first shift too (it waits for the shift to end, and is never lost to it).
+ if(F->RulesLive()||bBigDevNatural)StepBigDue();
  if(F->RulesLive()&&!F->InTutorial())
  {
   StepSwap();
-  static const TCHAR* const Order[]={TEXT("figure_near"),TEXT("hitchhiker"),TEXT("cb_echo"),TEXT("car_light"),TEXT("car_dies"),TEXT("cb_stranded"),TEXT("landing"),TEXT("humor"),TEXT("array_burst"),
-   TEXT("dogs_hush"),TEXT("phone_empty"),TEXT("horizon_figure"),TEXT("room6_tv"),TEXT("town_blackout"),TEXT("animals_flee"),TEXT("dust_devil"),
+  // LEAD-FIX-20261110: a landing a slip pointed at, sitting (StartLanding gave it more than a landing's own length): what it holds back
+  // below is held for that long more (SitHeld, Due), one at a time and right after, never two on the ground at once.
+  const bool bSitHolds=Now.Id==TEXT("landing")&&!Now.bForced&&Now.Len>S47Hap::LandingLen;
+  const double SitDt=bSitHolds?S47Hap::SitHold(SitHeldClock,F->Clock()):0.;
+  SitHeldClock=bSitHolds?F->Clock():-1.;
+  static const TCHAR* const Order[]={TEXT("figure_near"),TEXT("hitchhiker"),TEXT("cb_echo"),TEXT("car_light"),TEXT("car_dies"),TEXT("road_glimpse"),TEXT("cb_stranded"),TEXT("landing"),TEXT("humor"),TEXT("array_burst"),
+   TEXT("dogs_hush"),TEXT("phone_empty"),TEXT("horizon_figure"),TEXT("eyes_window"),TEXT("beam_figure"),TEXT("dish_lights"),TEXT("room6_tv"),TEXT("town_blackout"),TEXT("animals_flee"),TEXT("dust_devil"),
    TEXT("cattle_ring"),TEXT("stranded_rv"),TEXT("carcass"),TEXT("house_lit"),TEXT("cinema_film"),TEXT("missing_person"),TEXT("truck_tracks"),TEXT("hood_warm"),TEXT("am_caller")};
   for(const TCHAR* Id:Order)
   {
    if(!Due(Id)||Paced<TryAt.FindRef(Id))continue;
    const bool bGround=!S47Hap::Background(FString(Id));
    // Nothing else, not even a word on the CB, while a danger holds the ground.
-   if((bGround||Now.bDanger)&&!Now.Id.IsEmpty())continue;
+   if((bGround||Now.bDanger)&&!Now.Id.IsEmpty()){if(bGround&&SitDt>0&&Now.Id!=Id)SitHeld.FindOrAdd(FString(Id))+=SitDt;continue;}
    FString Why;
    if(StartEvent(Id,FString(),false,Why))break;
    // Not here, not now: said once for each reason, and asked again in a few seconds of the night's pace, not every frame.
@@ -1549,11 +2430,23 @@ void FS47Happenings::Step(double Dt)
   }
   StepLate();
   StepCues();
+  // CHAIN-5B-20261109: the word of tonight on the CB (WordOfTonight), now and then while the player sits at it and the channel is quiet.
+  if(CanHearCb()&&Now.Id.IsEmpty()&&HeldTips.IsEmpty()&&WordNight!=Night&&Paced>=WordTry&&!(M->CB.IsValid()&&M->CB->bBusy)&&!FS47FieldRadio::DaleOnAir(M))
+  {
+   WordTry=Paced+120;
+   if(FS47NightRhythm::Roll(F->Seed(),int32(F->Clock()/600.),0x574f5244u)<.35f){const FString Said=WordOfTonight(TEXT("cb"));if(!Said.IsEmpty())Cb({Said},TEXT("man"),false);}
+  }
  }
  StepWatch();
  StepReport();
  StepUnease(Dt);
  StepGeiger(Dt);
+ StepFirstDay(); // D46-20261110 (D46-3): the first day's script (S47FirstDay.cpp)
+ // N1110 (ANIMALS-20261108): an event the animals went ahead of, its few seconds up
+ if(AnimalWarn){FString WId,WVar;while(AnimalWarn->Due(WId,WVar)){FString WWhy;if(!StartEvent(WId,WVar,false,WWhy))Refused(WId,WWhy);}}
+ // N1110 (rhythm): a false alarm in the evening, the ease eight to ten minutes after a danger
+ if(!Calm)Calm=MakeShared<FS47Calm>(M);
+ Calm->Step(Dt);
 }
 
 // Tom, 8 November: something every night, also between eleven and one. If nothing has come by half past twelve, the best of these that
@@ -1638,15 +2531,22 @@ uint32 FS47Happenings::NeedMask(const FString& Id)
  if(Id==TEXT("cattle_ring")||Id==TEXT("animals_flee")||Id==TEXT("dust_devil"))return NeedFoot|NeedSmall|NeedNear;
  if(Id==TEXT("dogs_hush"))return NeedFoot|NeedTown|NeedSmall|NeedNear;
  if(Id==TEXT("horizon_figure")||Id==TEXT("figure_near"))return NeedFoot;
+ // N1110 (N1110-3): the eyes at a SARO window, the figure in the beam on foot, the lights over the dishes from SARO's room or its yard.
+ if(Id==TEXT("eyes_window"))return NeedIndoors|NeedSaro;
+ if(Id==TEXT("beam_figure"))return NeedFoot;
+ if(Id==TEXT("dish_lights"))return NeedFoot|NeedIndoors|NeedSaro;
  if(Id==TEXT("landing"))return NeedFoot|NeedDrive|NeedSaro;
- if(Id==TEXT("cb_stranded")||Id==TEXT("missing_person"))return NeedDrive|NeedSaro;
- if(Id==TEXT("cb_echo"))return NeedDrive|NeedSaro;
+ // CB-TRUCK-20261109: the stuck driver and the voice come over the CB, and the CB is in the truck only. The missing man's word can
+ // also come from Dale over the walkie at SARO.
+ if(Id==TEXT("missing_person"))return NeedDrive|NeedSaro;
+ if(Id==TEXT("cb_stranded")||Id==TEXT("cb_echo"))return NeedDrive;
  if(Id==TEXT("stranded_rv")||Id==TEXT("carcass")||Id==TEXT("cinema_film"))return NeedFoot|NeedDrive|NeedIndoors|NeedSaro|NeedTown;
  if(Id==TEXT("house_lit"))return NeedFoot|NeedDrive|NeedTown;
  if(Id==TEXT("phone_empty")||Id==TEXT("town_blackout"))return NeedTown|NeedNear|(Id==TEXT("town_blackout")?NeedSmall:0u);
  if(Id==TEXT("room6_tv"))return NeedMotel|NeedNear;
  if(Id==TEXT("array_burst"))return NeedSaro;
  if(Id==TEXT("humor"))return NeedTown|NeedMotel|NeedDrive;
+ if(Id==TEXT("road_glimpse"))return NeedDrive;
  // What follows from something else (the clock, the hood, the tracks) is never drawn in another's place.
  return 0;
 }
@@ -1654,7 +2554,8 @@ uint32 FS47Happenings::NeedMask(const FString& Id)
 TArray<FString> FS47Happenings::SwapOrder(int32 Night) const
 {
  TArray<FString> Out;
- for(const FString& Id:Ids())if(NeedMask(Id)!=0&&!IsDanger(Id)&&Id!=TEXT("humor"))Out.Add(Id);
+ // Humour and the crossing far ahead are rare by the week, from the seed: never drawn in another's place.
+ for(const FString& Id:Ids())if(NeedMask(Id)!=0&&!IsDanger(Id)&&Id!=TEXT("humor")&&Id!=TEXT("road_glimpse"))Out.Add(Id);
  const int32 Seed=M&&M->Freeform?M->Freeform->Seed():47;
  Out.Sort([Seed,Night](const FString& A,const FString& B){return FS47NightRhythm::Roll(Seed,Night,S47Hap::SaltOf(A)^0x53574150u)<FS47NightRhythm::Roll(Seed,Night,S47Hap::SaltOf(B)^0x53574150u);});
  return Out;
@@ -1676,6 +2577,7 @@ void FS47Happenings::StepSwap()
  {
   const uint32 Need=NeedMask(KV.Key);
   if(Need==0||IsDanger(KV.Key)||LastDays.FindRef(KV.Key)==F->Day()||!S47Hap::StaleAt(H,KV.Value)||(Need&Sit))continue;
+  if(Night==1&&KV.Key==TEXT("array_burst"))continue; // D45-20261110: the first night's burst waits at SARO (Due), never given away
   Stale=KV.Key;StaleFrom=KV.Value;break;
  }
  if(Stale.IsEmpty())return;
@@ -1699,6 +2601,7 @@ void FS47Happenings::StepEvent(double Dt)
  else if(Now.Id==TEXT("hitchhiker"))StepHitcher(Dt);
  else if(Now.Id==TEXT("humor"))StepHumor(Dt);
  else if(Now.Id==TEXT("figure_near"))StepFigure(Dt);
+ else if(Now.Id==TEXT("big_night"))StepBig(Dt);
  else if(Now.Id==TEXT("cb_stranded"))
  {
   if(Now.Age>=Now.Len)EndEvent(true);
@@ -1706,7 +2609,8 @@ void FS47Happenings::StepEvent(double Dt)
  else if(Now.Id==TEXT("cb_echo"))
  {
   // Heard, it is the night's danger. When the voice stops the set goes dead and for a while it is out there: in the truck the engine
-  // and the lights die; at the base set the station goes quiet and something knocks. Out on foot in that while, the light comes down.
+  // and the lights die (CB-TRUCK-20261109: the CB is only in the truck). Out of the cab by then the night goes quiet, and at SARO
+  // something knocks. Out on foot in that while, the light comes down.
   if(!Now.bMet&&Now.Age>1.2&&CanHearCb())MeetDanger();
   if(Now.Stage==0&&Now.Age>=Now.Yaw)
   {
@@ -1741,6 +2645,7 @@ void FS47Happenings::StepSites(double Dt)
    if(Away>250||(S.Kind==TEXT("cattle")&&!Seen(At,400,50)))
    {
     UE_LOG(LogS47Happen,Display,TEXT("S47: happening site %s at %s gone"),*S.Kind,*S.Title);
+    Past.Add({S.X,S.Z,S.Night});while(Past.Num()>MostPast)Past.RemoveAt(0); // LOOP-4-20261109: the needle remembers it
     Sites.RemoveAt(I);M->RequestAutosave();continue;
    }
   }
@@ -1764,6 +2669,17 @@ void FS47Happenings::StepSites(double Dt)
    F->RecordEvidence(FString::Printf(TEXT("cattle_ring_d%d"),S.Night),FString::Printf(TEXT("At %s, out by %s: seven head of cattle close in a ring, heads all one way, about %.0f degrees (%s). A bell on one of them. None of them grazing.%s"),*S47Hap::ClockText(Clock),*S.Title,S.Az,*Way,bRing?*FString::Printf(TEXT(" The landing bearing on the map from night %d is %.0f degrees from SARO."),Ring->Night,Ring->Az):TEXT("")));
    Deed(FString::Printf(TEXT("You stood and looked at the cattle out by %s."),*S.Title));
    UE_LOG(LogS47Happen,Display,TEXT("S47: happening cattle_ring seen at %.0f m, facing %.0f%s"),Away,S.Az,S.Variant==TEXT("landing")?TEXT(", toward the landing"):TEXT(""));
+   M->RequestAutosave();
+  }
+  // GLIMPSE-ROAD-20261109: the prints on the shoulder, found on foot close by and looked at, in the day or in the lamp.
+  if(S.Kind==TEXT("roadtracks")&&!S.bFound&&Away<9&&!Driving()&&SeenLit(At+FVector(0,.1,0),10,40,LitGround,S.Variant==TEXT("low")?TEXT("roadtracks_low"):TEXT("roadtracks_tall")))
+  {
+   S.bFound=true;
+   const double Hr=S47Hap::HourOf(Clock);
+   Noticed(TEXT("road_glimpse"),Away,TEXT("sight"),S.Serial);
+   F->RecordEvidence(FString::Printf(TEXT("road_tracks_d%d"),S.Night),S47RoadGlimpse::TracksRecord(S.Variant==TEXT("low"),S47Hap::ClockText(Clock),Hr>=6.2&&Hr<19.6));
+   Deed(TEXT("You looked at the prints on the shoulder of the highway."));
+   UE_LOG(LogS47Happen,Display,TEXT("S47: happening road_glimpse: the prints on the shoulder found at %.0f m (%s)"),Away,*S.Variant);
    M->RequestAutosave();
   }
   if(S.Kind==TEXT("rv")&&!S.bHeard&&!S.bFound&&(H>=19.5&&H<30))
@@ -1864,6 +2780,18 @@ void FS47Happenings::SiteSounds()
    const FString Key=FString::Printf(TEXT("hapCinema%d"),S.Serial);Want.Add(Key);
    if(!LoopsOn.Contains(Key)){FS47Sound O;O.At=At+FVector(0,1.5,-3);O.Gain=.4f;O.Lp=3200;O.bLoop=true;A->LoopSfx(Key,Synth(TEXT("projector")),O);LoopsOn.Add(Key);}
   }
+  // D45-20261110: a ring's coals crackle, quietly and only close to (the panner's falloff does the rest), less as they go out.
+  if(S.Kind==TEXT("landing")&&Away<22&&M->Freeform&&!S47HapRakedSite(M,S.Place,S.Night))
+  {
+   const double Hot=S47Hap::EmberHeat(M->Freeform->Clock()-(S.Until-S47Hap::RingLastS));
+   if(Hot>.06)
+   {
+    const FString Key=FString::Printf(TEXT("hapEmbers%d"),S.Serial);Want.Add(Key);
+    const float Level=float(.28*FMath::Pow(Hot,.8));
+    if(!LoopsOn.Contains(Key)){FS47Sound O;O.At=At+FVector(0,.2,0);O.Gain=Level;O.bLoop=true;A->LoopSfx(Key,Synth(TEXT("crackle")),O);LoopsOn.Add(Key);}
+    else A->LoopLevel(Key,Level,1.f);
+   }
+  }
  }
  // The singer by the pool, while he sings.
  if(Now.Id==TEXT("humor")&&Now.Variant==TEXT("singer"))
@@ -1926,11 +2854,31 @@ void FS47Happenings::PlaceSites()
      Tilt=FQuat::FindBetweenNormals(FVector(0,1,0),FVector(-(Ev-Wv)/6.,1.,-(Sv-Nv)/6.).GetSafeNormal());
    }
    if(FProp* Ring=Prop(TEXT("ring"))){PoseProp(*Ring,At,S.Yaw,Tilt);ShowProp(*Ring,true);Want.Add(TEXT("ring"));}
+   // D45-20261110: its coals and their smoke while they last, from near enough to make them out (the ring itself from further).
+   const double After=M->Freeform->Clock()-(S.Until-S47Hap::RingLastS);
+   const double Hot=S47Hap::EmberHeat(After);
+   if(Hot>.02&&Away<250)if(FProp* Em=Prop(TEXT("embers"))){PoseProp(*Em,At,S.Yaw,Tilt);ShowProp(*Em,true);Want.Add(TEXT("embers"));StepEmbers(*Em,Hot,S47Hap::SmokeOf(After));}
   }
   else if(S.Kind==TEXT("cattle"))Show(TEXT("cattle"),At,S.Yaw);
   else if(S.Kind==TEXT("carcass"))Show(TEXT("deadcow"),At,S.Yaw);
   else if(S.Kind==TEXT("missing"))Show(TEXT("pickup"),At,S.Yaw);
   else if(S.Kind==TEXT("tracks"))Show(TEXT("tracks"),At,S.Yaw);
+  // GLIMPSE-ROAD-20261109: the prints going off the shoulder where something crossed (S.Yaw: along them, away from the road).
+  else if(S.Kind==TEXT("roadtracks"))Show(S.Variant==TEXT("low")?TEXT("roadtracks_low"):TEXT("roadtracks_tall"),At,S.Yaw);
+  // The big night's mark, in its own shape (S47BigNight.cpp).
+  else if(S.Kind==TEXT("bigmark"))
+  {
+   // Laid on the slope it is on, as the ring is: not a flat plate half in the air.
+   FQuat Tilt=FQuat::Identity;
+   if(M->Player&&M->Player->Floor&&Away<300)
+   {
+    const double Ev=M->Player->Floor(At.X+3,At.Z),Wv=M->Player->Floor(At.X-3,At.Z),Sv=M->Player->Floor(At.X,At.Z+3),Nv=M->Player->Floor(At.X,At.Z-3);
+    if(FMath::IsFinite(Ev)&&FMath::IsFinite(Wv)&&FMath::IsFinite(Sv)&&FMath::IsFinite(Nv))
+     Tilt=FQuat::FindBetweenNormals(FVector(0,1,0),FVector(-(Ev-Wv)/6.,1.,-(Sv-Nv)/6.).GetSafeNormal());
+   }
+   const FString Mark=TEXT("bigmark_")+S.Variant;
+   if(FProp* P=Prop(Mark)){PoseProp(*P,At,S.Yaw,Tilt);ShowProp(*P,true);Want.Add(Mark);}
+  }
   else if(S.Kind==TEXT("truck")&&!S.bDone)
   {
    if(S.Variant==TEXT("wrong"))Show(TEXT("handset"),At,S.Yaw);
@@ -1948,7 +2896,41 @@ void FS47Happenings::PlaceSites()
    }
   }
  }
- for(const TCHAR* K:{TEXT("ring"),TEXT("cattle"),TEXT("rig"),TEXT("driver"),TEXT("handset"),TEXT("rv"),TEXT("litwin"),TEXT("cinemalight"),TEXT("deadcow"),TEXT("pickup"),TEXT("tracks")})if(!Want.Contains(K))if(FProp* P=FindProp(K))ShowProp(*P,false);
+ for(const TCHAR* K:{TEXT("ring"),TEXT("embers"),TEXT("cattle"),TEXT("rig"),TEXT("driver"),TEXT("handset"),TEXT("rv"),TEXT("litwin"),TEXT("cinemalight"),TEXT("deadcow"),TEXT("pickup"),TEXT("tracks"),TEXT("roadtracks_low"),TEXT("roadtracks_tall"),TEXT("bigmark_column"),TEXT("bigmark_fall"),TEXT("bigmark_rise")})if(!Want.Contains(K))if(FProp* P=FindProp(K))ShowProp(*P,false);
+}
+// D45-20261110: a ring's coals now (Hot, S47Hap::EmberHeat): each material's glow at that heat, flickering slowly and out of step with the
+// others, duller red as they cool; the light over each nest with them; and the smoke over the nests while there is any (SmokeK).
+void FS47Happenings::StepEmbers(FProp& P,double Hot,double SmokeK)
+{
+ const double T=M?M->T:0.;
+ const float Cool=FMath::Clamp(float(Hot),0.f,1.f);
+ for(FProp::FCoal& Coal:P.Coals)if(UMaterialInstanceDynamic* Mat=Coal.Mat.Get())
+ {
+  const double Flick=.72+.18*FMath::Sin(T*1.7+Coal.Phase)+.1*FMath::Sin(T*4.3+Coal.Phase*1.9);
+  Mat->SetScalarParameterValue(TEXT("EmissivePower"),Coal.Glow*float(FMath::Clamp(Hot*Flick,0.,1.2)));
+  Mat->SetVectorParameterValue(TEXT("Emissive"),FMath::Lerp(S47Three::Hex(S47Hap::EmberDull)*.6f,Coal.Col,Cool));
+ }
+ for(int32 I=0;I<P.Lamps.Num();++I)if(UPointLightComponent* Lc=P.Lamps[I].L.Get())Lc->SetIntensity(P.Lamps[I].Lumens*float(Hot*(.8+.2*FMath::Sin(T*2.1+I*1.7))));
+ // Tom's smoke: one nest smoking as it thins, all three while it is thick.
+ const int32 Lit=SmokeK>.6?3:SmokeK>.3?2:SmokeK>.04?1:0;
+ for(int32 I=0;I<P.Smoke.Num();++I)if(UNiagaraComponent* Fx=P.Smoke[I].Get())
+ {
+  if(I<Lit&&!Fx->IsActive()){Fx->SetVisibility(true);Fx->Activate(true);}
+  else if(I>=Lit&&Fx->IsActive())Fx->Deactivate();
+ }
+ // Or the engine's air: puff by puff up from each nest, none once the smoke is done.
+ const FQuat Turn=P.Tilt*S47Three::Euler(0,P.Yaw,0);
+ for(int32 I=0;I<P.Air.Num();++I)if(ULocalFogVolumeComponent* Fog=P.Air[I].Get())
+ {
+  const S47Hap::FWisp Wp=S47Hap::Wisp(I/S47Hap::WispPuffs,I%S47Hap::WispPuffs,T,SmokeK);
+  Fog->SetVisibility(Wp.Ext>.01f);
+  if(Wp.Ext<=.01f)continue;
+  Fog->SetWorldLocation(S47Three::ToUE(P.Foot+Turn.RotateVector(Wp.At)));Fog->SetWorldScale3D(FVector(Wp.R/5.,Wp.R/5.,Wp.H/5.));
+  Fog->SetRadialFogExtinction(Wp.Ext);
+  // Lit a little from the coals under it, less as it rises.
+  const float Warm=float(Hot*.012*FMath::Clamp(1.-(Wp.At.Y-.25)/2.4,0.,1.));
+  Fog->SetFogEmissive(FLinearColor(Warm,Warm*.5f,Warm*.18f));
+ }
 }
 
 // ---------------------------------------------------------------- car_dies: something goes over the truck
@@ -2079,7 +3061,9 @@ void FS47Happenings::UseCattle()
 bool FS47Happenings::BeginStranded(const FString& Variant,bool bForced,FString& Why)
 {
  auto* F=M->Freeform.Get();
- if(!CanHearCb()&&!bForced){Why=TEXT("no CB to hear it on: the truck or the base set");return false;}
+ // NIGHT-20261110: what a slip has pointed at is out there whether or not anyone hears the call.
+ const bool bPromised=LeadNow.bPointed&&LeadNow.Kind==TEXT("cb_stranded")&&LeadNow.Night==FS47FreeformSession::NightOf(F->Clock());
+ if(!CanHearCb()&&!bForced&&!bPromised){Why=TEXT("no CB to hear it on: only sitting in the truck");return false;}
  if(const FSite* Old=SiteOf(TEXT("truck")))if(!Old->bDone){Why=TEXT("a driver is still waiting out there");return false;}
  using S47Hap::Bit;
  FSpot S=Where(TEXT("cb_stranded"),Bit(ES47PlaceTrait::Far),Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Road)|Bit(ES47PlaceTrait::Wash),Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro)|Bit(ES47PlaceTrait::Indoors),bForced?0:450,0,1.f,Serial);
@@ -2103,7 +3087,7 @@ bool FS47Happenings::BeginStranded(const FString& Variant,bool bForced,FString& 
  Cb(Lines,bWrong?TEXT("roswell"):FS47NightRhythm::Roll(F->Seed(),F->Day(),0x564f4943u)<.5f?TEXT("man"):TEXT("old"),bWrong);
  double Secs=0;for(const FString& L:Lines)Secs+=S47CB::SecsOf(L)+.6;
  Now.Len=Secs+3;
- Say(TEXT("On your map: where the driver said he is (TAB)."),Secs+1,5);
+ Say(FString::Printf(TEXT("On your map: where the driver said he is (%s)."),*S47Keys::MapSaid()),Secs+1,5);
  // His rig is a few metres off the place itself, beside it.
  const double A=FS47NightRhythm::Roll(F->Seed(),F->Day(),0x52494753u)*2*UE_DOUBLE_PI;
  FSite T;T.Kind=TEXT("truck");T.Variant=Kind;T.Place=S.Place;T.Title=S.Title;T.Night=F->Day();T.Serial=Serial+1;T.X=S.X+FMath::Cos(A)*14;T.Z=S.Z+FMath::Sin(A)*14;T.Yaw=A+.4;T.bHeard=true;
@@ -2117,7 +3101,7 @@ bool FS47Happenings::BeginStranded(const FString& Variant,bool bForced,FString& 
 bool FS47Happenings::BeginEcho(bool bForced,FString& Why)
 {
  auto* F=M->Freeform.Get();
- if(!CanHearCb()){Why=TEXT("no CB to hear it on");return false;}
+ if(!CanHearCb()){Why=TEXT("no CB to hear it on: only sitting in the truck");return false;}
  if(!bForced&&!MayStart(TEXT("cb_echo"))){Why=TEXT("the rhythm says not now");return false;}
  const FString Did=Deeds.IsEmpty()?FString(TEXT("You were out on the road at night.")):Deeds[int32(FS47NightRhythm::Roll(F->Seed(),F->Day(),0x44454544u)*Deeds.Num())%Deeds.Num()];
  Now=FActive();Now.Id=TEXT("cb_echo");Now.bForced=bForced;Now.bDanger=true;Now.Serial=Serial+1;Now.Clock=F->Clock();
@@ -2132,6 +3116,7 @@ bool FS47Happenings::BeginEcho(bool bForced,FString& Why)
 }
 
 // ---------------------------------------------------------------- landing
+namespace S47HapTiers{bool WindowLine(const US47Main* M,const FVector& Feet,const FVector& Fwd,FVector& Out);} // LEAD-FELT-20261110: below
 bool FS47Happenings::BeginLanding(bool bForced,FString& Why)
 {
  auto* F=M->Freeform.Get();
@@ -2142,20 +3127,27 @@ bool FS47Happenings::BeginLanding(bool bForced,FString& Why)
  FSpot S=Where(TEXT("landing"),0,Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Wash),Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro)|Bit(ES47PlaceTrait::Indoors)|Bit(ES47PlaceTrait::Array)|Bit(ES47PlaceTrait::People),bForced?250:FMath::Max(180.,350.*NearK),FMath::Max(900.,2800.*NearK),.3f*float(NearK),Serial);
  if(!S.bSet){Why=TEXT("no open ground for it");return false;}
  if(!bForced&&!MayStart(TEXT("landing"))){Why=TEXT("the rhythm says not now");return false;}
+ if(!bForced&&F->BigThingToday()){Why=TEXT("one big thing a night: another has played");return false;} // N1110 (pace, critic 3)
  if(!Prop(TEXT("lander"))){Why=TEXT("nothing to draw it with");return false;}
  // On open ground a little off the place's own point, never on top of a building.
  const double A=FS47NightRhythm::Roll(F->Seed(),F->Day(),0x4c4e4441u)*2*UE_DOUBLE_PI;
  const double X=S.X+FMath::Cos(A)*45,Z=S.Z+FMath::Sin(A)*45;
  // Ten seconds of warning (StepLanding), then twenty coming down, a pulse, and out.
- Now=FActive();Now.Id=TEXT("landing");Now.Place=S.Place;Now.Title=S.Title;Now.X=X;Now.Z=Z;Now.Len=36;Now.bForced=bForced;Now.Serial=Serial+1;Now.Clock=F->Clock();
+ Now=FActive();Now.Id=TEXT("landing");Now.Place=S.Place;Now.Title=S.Title;Now.X=X;Now.Z=Z;Now.Len=S47Hap::LandingLen;Now.bForced=bForced;Now.Serial=Serial+1;Now.Clock=F->Clock();
  double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
+ // LEAD-FELT-20261110: where a slip has pointed tonight it sits lit on the ground a while after (StepLanding), long enough to get there.
+ if(!bForced&&LeadNow.bPointed&&LeadNow.Kind==TEXT("landing")&&LeadNow.Night==FS47FreeformSession::NightOf(F->Clock())&&!S.Place.IsEmpty()&&S.Place==LeadNow.Place)
+ {
+  Now.Len+=S47Hap::LeadSit(FVector2D::Distance(FVector2D(SaroX,SaroZ),FVector2D(X,Z)));
+  UE_LOG(LogS47Happen,Display,TEXT("S47: happening landing at the place a slip pointed to: it sits on the ground %.0f s after it comes down"),Now.Len-S47Hap::LandingLen);
+ }
  // Without mended branches the array still logs it, only wide.
  const int32 B=Branches();
  const double Spread=B>0?FS47Places::SpreadFor(B):40.;
  const double Err=(FS47NightRhythm::Roll(F->Seed(),F->Day(),0x4c42455au)-.5)*Spread;
  FSite R;R.Kind=TEXT("landing");R.Place=S.Place;R.Title=S.Title;R.Night=F->Day();R.Serial=Serial+1;R.X=X;R.Z=Z;R.Yaw=A;R.Spread=Spread;
  // Its bearing now, kept (and saved) at once; on the map only once it is known: seen, logged, talked of or found.
- R.Az=S47Hap::Bearing(FS47Places::AzimuthOf(SaroX,SaroZ,X,Z)+Err);R.bKnown=false;R.Until=F->Clock()+3*86400.;
+ R.Az=S47Hap::Bearing(FS47Places::AzimuthOf(SaroX,SaroZ,X,Z)+Err);R.bKnown=false;R.Until=F->Clock()+S47Hap::RingLastS; // (D45-20261110: so Until-RingLastS is when it came down)
  Now.Yaw=R.Az;
  // One ring at a time: the older one is weathered away when new lights come down.
  Sites.RemoveAll([](const FSite& Old){return Old.Kind==TEXT("landing");});
@@ -2174,6 +3166,7 @@ void FS47Happenings::StepLanding(double Dt)
   Now.Stage=1;
   S47HapOmen::Forewarn(M,TEXT("happen:landing_warning"),Eye(),bHere?&Ground:nullptr,160,.5,60);
   if(A&&bHere)A->Far(TEXT("dog1"),Ground+FVector(40,2,-30),.25f,.95f);
+  {FS47EventCtx Quiet;S47EventScript::Play(M,TEXT("landing_warning"),Quiet);} // N1110-5: the hum, the thought, the gear and Dale are its script's
  }
  if(Now.Stage==1&&Now.Age>6)
  {
@@ -2183,6 +3176,8 @@ void FS47Happenings::StepLanding(double Dt)
   else if(M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn){M->Night->Flashlight->Flicker(.7,TEXT("cue"));ToneBack=M->T+1.2;}
  }
  // Then down slowly over twenty seconds from two hundred and fifty metres, a pulse on the ground, and out.
+ // LEAD-FELT-20261110: one a slip pointed at sits lit on the ground for Len's seconds past a landing's own (Sit) before the pulse.
+ const double Sit=FMath::Max(0.,Now.Len-S47Hap::LandingLen);
  const double Down=Now.Age-10.;
  const double T=FMath::Clamp(Down/20.,0.,1.);
  const double Up=FMath::Lerp(260.,5.,1.-FMath::Square(1.-T));
@@ -2190,36 +3185,69 @@ void FS47Happenings::StepLanding(double Dt)
  if(FProp* P=Prop(TEXT("lander")))
  {
   PoseProp(*P,At,Now.Age*.3);
-  const bool bOn=bHere&&Down>=0&&(Down<20||(Down<23.5&&FMath::Fmod(Down,.6)<.35));
+  const bool bOn=bHere&&Down>=0&&(Down<20+Sit||(Down-Sit<23.5&&FMath::Fmod(Down-Sit,.6)<.35));
   ShowProp(*P,bOn);
  }
- if(bHere&&Down>=0&&!Now.bSeen&&SeenLit(At,4500,38,LitOwn,TEXT("lander")))
+ // LEAD-FELT-20261110: or from SARO's control room, out through the window the player is looking out of toward it (WindowLine).
+ bool bPane=false;
+ if(bHere&&Down>=0&&!Now.bSeen&&M->Player&&Seen(At,4500,38))
  {
-  Now.bSeen=true;Noticed(TEXT("landing"),AwayFrom(At),TEXT("sight"));
-  UE_LOG(LogS47Happen,Display,TEXT("S47: happening landing seen at %.0f m"),FVector::Dist(Eye(),At));
+  const FS47Cam Cam=FS47Cam::Of(M->Player);const FVector Fwd=FVector(Cam.Forward.X,0,Cam.Forward.Z).GetSafeNormal();
+  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);const FVector Out=FVector(At.X-Feet.X,0,At.Z-Feet.Z).GetSafeNormal();
+  FVector Through=Fwd;bPane=S47HapTiers::WindowLine(M,Feet,Fwd,Through)&&FVector::DotProduct(Through,Out)>.94;
  }
- if(Now.Age<Now.Len)return;
+ if(bHere&&Down>=0&&!Now.bSeen&&(bPane||SeenLit(At,4500,38,LitOwn,TEXT("lander"))))
+ {
+  Now.bSeen=true;Noticed(TEXT("landing"),AwayFrom(At),bPane?TEXT("sight, through the window"):TEXT("sight"));
+  UE_LOG(LogS47Happen,Display,TEXT("S47: happening landing seen at %.0f m%s"),FVector::Dist(Eye(),At),bPane?TEXT(" through a SARO window"):TEXT(""));
+ }
+ // LEAD-FELT-20261110: sitting, it goes as the player comes up to it (S47Hap::LeadSitGone, by the tier): the pulse now, and out.
+ if(Sit>0&&bHere&&Down>=20&&Down<20+Sit&&AwayFrom(Ground)<S47Hap::LeadSitGone(S47NightTiers::AtClock(M->Freeform->Clock(),FS47FreeformSession::NightOf(M->Freeform->Clock()))))
+ {
+  Now.Len=FMath::Min(Now.Len,Now.Age+6.);
+  UE_LOG(LogS47Happen,Display,TEXT("S47: happening landing: the player came up to it (%.0f m), it goes"),AwayFrom(Ground));
+ }
+ const bool bEnd=Now.Age>=Now.Len;
+ // LEAD-FELT-20261110: one that sits is logged as it touches down (Stage 3), while it is still out there to be gone to; seen after
+ // that, it is kept as seen at once. One that does not sit is logged at its end, as before.
+ if(!bEnd&&!(Sit>0&&Down>=20&&(Now.Stage<3||Now.bSeen)))return;
  auto* F=M->Freeform.Get();
  FSite* R=nullptr;for(FSite& S:Sites)if(S.Kind==TEXT("landing")&&S.Serial==Now.Serial)R=&S;
  // At SARO the array logs it whether or not anyone is at the monitor; it is said only to one in the building.
  const bool bLogged=M->Web->Area()==TEXT("saro");
- const bool bAtMonitor=bLogged&&FS47FieldRadio::CbAtHand(M)&&!Driving();
- if(R&&(Now.bSeen||bLogged||Now.bForced))
+ const bool bAtMonitor=bLogged&&FS47FieldRadio::InSaroBuilding(M);
+ // LOOP-3-20261109: the array's own log has it, whoever is at SARO and whether or not anyone saw it: a time from out there can be
+ // set against it (FS47FreeformSession::SameMinute). LOOP-4: logged with nobody watching, its bearing is the night's one pointing-out
+ // at the land, or nothing on the map when the night has had it.
+ const bool bFirstLog=Now.Stage<3;
+ if(bFirstLog){Now.Stage=3;if(F)F->NoteArrayMinute(Now.Clock,Now.Clock+FMath::Max(Now.Len,60.),TEXT("landing"));}
+ const bool bSeenLater=!bFirstLog&&Now.bSeen&&R&&F&&!F->HasFinding(FString::Printf(TEXT("landing_seen_d%d"),R->Night));
+ if(R&&(bSeenLater||(bFirstLog&&(Now.bSeen||Now.bForced||(bLogged&&TakePointOut(F?F->Director.Get():nullptr,FS47FreeformSession::NightOf(Now.Clock)))))))
  {
   R->bKnown=true;
+  // N1110-5: the beeps, the printer, the line on the screen and the finding are its script's (landing_seen_log when it was seen,
+  // landing_logged when only the array has it); the old ones play only if the script cannot, and for a forced one nobody saw.
+  bool bScripted=false;
+  if(Now.bSeen||!Now.bForced)
+  {
+   FS47EventCtx Pulse;Pulse.Words.Add(TEXT("clock"),S47Hap::ClockText(Now.Clock));
+   Pulse.Words.Add(TEXT("az"),FString::Printf(TEXT("%.0f"),R->Az));Pulse.Words.Add(TEXT("spread"),FString::Printf(TEXT("%.0f"),R->Spread));Pulse.Words.Add(TEXT("landing_night"),FString::FromInt(R->Night));
+   bScripted=S47EventScript::Play(M,Now.bSeen?TEXT("landing_seen_log"):TEXT("landing_logged"),Pulse);
+  }
   // Only what it means for the map: what came down was on the screen, or on the array's monitor with its beeps and the printer.
-  if(bAtMonitor&&!Now.bSeen&&M->Audio)
+  if(!bScripted&&bAtMonitor&&!Now.bSeen&&M->Audio)
   {
    for(int32 K=0;K<4;++K)M->Audio->Beep(1320.f,.06f,.05f,.18f*K,TEXT("square"));
    FS47Sound P;P.At=FVector(-4,1,2);P.Gain=.3f;P.When=.9f;const FS47Play Line=M->Audio->Sfx(TEXT("printer"),P);
    if(Line&&M->Audio->Ctx.IsValid())Line.Src->Stop(M->Audio->Ctx->CurrentTime()+3.);
   }
-  if(M->UI&&(Now.bSeen||bAtMonitor))M->UI->Toast(Now.bSeen?FString(TEXT("Bearing on your map (TAB).")):FString(TEXT("ARRAY / A bearing logged, on your map (TAB).")),5);
-  if(Now.bSeen||Now.bForced)F->RecordEvidence(FString::Printf(TEXT("landing_seen_d%d"),R->Night),FString::Printf(TEXT("At %s lights came down out on the land, about %.0f degrees from SARO, give or take %.0f, and went out on the ground."),*S47Hap::ClockText(Now.Clock),R->Az,R->Spread));
+  if(!bScripted&&M->UI&&(Now.bSeen||bAtMonitor))M->UI->Toast(Now.bSeen?FString::Printf(TEXT("Bearing on your map (%s)."),*S47Keys::MapSaid()):FString::Printf(TEXT("ARRAY / A bearing logged, on your map (%s)."),*S47Keys::MapSaid()),5);
+  if(bScripted){}
+  else if(Now.bSeen||Now.bForced)F->RecordEvidence(FString::Printf(TEXT("landing_seen_d%d"),R->Night),FString::Printf(TEXT("At %s lights came down out on the land, about %.0f degrees from SARO, give or take %.0f, and went out on the ground."),*S47Hap::ClockText(Now.Clock),R->Az,R->Spread));
   else F->RecordEvidence(FString::Printf(TEXT("landing_logged_d%d"),R->Night),FString::Printf(TEXT("At %s the array logged something low on the horizon coming down, about %.0f degrees from SARO, give or take %.0f."),*S47Hap::ClockText(Now.Clock),R->Az,R->Spread));
   if(Now.bSeen)Deed(TEXT("You watched the lights come down."));
  }
- EndEvent(Now.bSeen||bLogged);
+ if(bEnd)EndEvent(Now.bSeen||bLogged);
 }
 void FS47Happenings::UseSite(const FString& Kind)
 {
@@ -2284,15 +3312,15 @@ void FS47Happenings::UseSite(const FString& Kind)
   if(S->Variant==TEXT("real"))
   {
    Title=TEXT("STUCK RIG");
-   F->SpendTime(30*60.);F->Earn(15);
+   F->SpendTime(30*60.);const int32 Paid=F->EarnSide(15,TEXT("stuck rig"));
    FString Lead=TEXT("says the CB has been strange out this way lately, and will not say how.");
    if(F->Places)
    {
     const FString Next=F->Places->NextUnknown(F->Day()+S->Serial*3);
     if(const FS47Places::FDef* D=Next.IsEmpty()?nullptr:FS47Places::Def(Next)){F->Places->Hear(Next);Lead=FString::Printf(TEXT("says he saw a light sitting out by %s a few nights back. He did not go and look. It is on your map."),D->Title);}
    }
-   PanelRows.Add(S47Kit::Text(TEXT("He has been at it with a tire iron. Between the two of you, his jack and a board off the trailer, it comes out in half an hour. He counts fifteen dollars into your hand, and ")+Lead));
-   F->RecordEvidence(FString::Printf(TEXT("cb_helped_d%d"),S->Night),FString::Printf(TEXT("Helped a driver dig his rig out of the sand by %s, after his call on the CB. Paid $15 for the trouble."),*S->Title));
+   PanelRows.Add(S47Kit::Text(TEXT("He has been at it with a tire iron. Between the two of you, his jack and a board off the trailer, it comes out in half an hour. ")+S47HapPay::RigPaid(Paid)+Lead));
+   F->RecordEvidence(FString::Printf(TEXT("cb_helped_d%d"),S->Night),S47HapPay::RigFound(Paid,S->Title));
    Deed(TEXT("You dug a man's rig out of the sand."));
    S->bDone=true;
   }
@@ -2631,13 +3659,16 @@ void FS47Happenings::UseHumor()
 // off to one side, then close behind. Then a light comes down over where it stood, and whoever is still out there under it is taken
 // (S47Taken, as under the light over the truck). The truck, a roof, or a hard run away is the way out, and it is kept as such.
 // Stages: 0 far, 1 gone, 2 nearer, 3 gone, 4 close, 5 the light coming, 6 the light down, 7 it went up, 8 taken, 9 got away.
-bool FS47Happenings::BeginFigure(bool bForced,FString& Why)
+bool FS47Happenings::BeginFigure(const FString& Variant,bool bForced,FString& Why)
 {
  auto* F=M->Freeform.Get();
  if(!bForced&&(Driving()||!Outdoors())){Why=TEXT("not out on foot");return false;}
  if(!S47Hap::Exists(S47Hap::HairyStandIn)){Why=TEXT("no figure for it in this build");return false;}
  if(!bForced&&!MayStart(TEXT("figure_near"))){Why=TEXT("the rhythm says not now");return false;}
- if(!Prop(TEXT("shade"))||!Prop(TEXT("lander"))){Why=TEXT("nothing to draw it with");return false;}
+ // Tom's Nordic or Cosmic some nights, when this build has them; the shade otherwise (S47RoadGlimpse::FigureFor, the seed's).
+ // F10's Variant: one of them, or shade (F10-NORDIC-COSMIC-20261109).
+ const FString Body=S47RoadGlimpse::FigureFor(F->Seed(),FS47FreeformSession::NightOf(F->Clock()),0x46494731u,[](const TCHAR* Path){return S47Hap::Exists(Path);},Variant);
+ if(!Prop(S47Hap::ShadeKind(Body))||!Prop(TEXT("lander"))){Why=TEXT("nothing to draw it with");return false;}
  const FS47Cam Cam=FS47Cam::Of(M->Player);
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
  const FVector Fwd=FVector(Cam.Forward.X,0,Cam.Forward.Z).GetSafeNormal(),Side(-Fwd.Z,0,Fwd.X);
@@ -2646,7 +3677,7 @@ bool FS47Happenings::BeginFigure(bool bForced,FString& Why)
  const double Off=(FS47NightRhythm::Roll(F->Seed(),F->Day(),0x46494731u)<.5f?-1.:1.)*.6;
  FVector At=Feet+(Fwd*FMath::Cos(Off)+Side*FMath::Sin(Off))*Far;double X=0,Z=0;
  if(!RoadOfWorld(At,X,Z)||!WorldOf(X,Z,At)){Why=TEXT("no ground there");return false;}
- Now=FActive();Now.Id=TEXT("figure_near");Now.bDanger=true;Now.bForced=bForced;Now.Serial=Serial+1;Now.Clock=F->Clock();
+ Now=FActive();Now.Id=TEXT("figure_near");Now.Variant=Body;Now.bDanger=true;Now.bForced=bForced;Now.Serial=Serial+1;Now.Clock=F->Clock();
  Now.At=At;Now.X=X;Now.Z=Z;Now.Dir=Feet;Now.Len=300;Now.Yaw=0;
  Now.Title=TEXT("the open ground");
  if(F->EventPlaces)if(const FS47EventPlace* P=F->EventPlaces->Nearest(500)){Now.Place=P->Id;Now.Title=FString::Printf(TEXT("the open ground near %s"),*P->Title);}
@@ -2654,13 +3685,15 @@ bool FS47Happenings::BeginFigure(bool bForced,FString& Why)
  // Before anything shows: the crickets stop.
  S47HapOmen::Forewarn(M,TEXT("happen:figure_near"),Eye(),&Now.At,0,.6,45);
  UsedPlace(Now.Place,TEXT("figure_near"));
+ {FS47EventCtx Follow;S47EventScript::Play(M,TEXT("figure_near"),Follow);} // N1110-5: the hum and the thought are its script's
  return true;
 }
 void FS47Happenings::StepFigure(double Dt)
 {
  auto* F=M->Freeform.Get();
  US47Audio* A=M->Audio.Get();
- FProp* P=Prop(TEXT("shade"));FProp* Light=Prop(TEXT("lander"));
+ const FString Shade=S47Hap::ShadeKind(Now.Variant);
+ FProp* P=Prop(Shade);FProp* Light=Prop(TEXT("lander"));
  const FS47Cam Cam=FS47Cam::Of(M->Player);
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
  const FVector Fwd=FVector(Cam.Forward.X,0,Cam.Forward.Z).GetSafeNormal(),Side(-Fwd.Z,0,Fwd.X);
@@ -2670,7 +3703,12 @@ void FS47Happenings::StepFigure(double Dt)
  const auto Record=[&](const FString& End)
  {
   if(!Now.bMet&&FigureSeen.IsEmpty())return;
-  F->RecordEvidence(FString::Printf(TEXT("figure_near_d%d"),F->Day()),FString::Printf(TEXT("At %s, out on %s: %s%s"),*S47Hap::ClockText(Now.Clock),*Now.Title,FigureSeen.IsEmpty()?TEXT("I saw nothing. There were steps in the gravel, and then one close behind me."):*FString::Join(FigureSeen,TEXT(" ")),End.IsEmpty()?TEXT(""):*(TEXT(" ")+End)));
+  // N1110-5: kept by its script (figure_near_end), with the sentences built here; the old line only if the script cannot play
+  const FString Said=FigureSeen.IsEmpty()?FString(TEXT("I saw nothing. There were steps in the gravel, and then one close behind me.")):FString::Join(FigureSeen,TEXT(" "));
+  const FString Ending=End.IsEmpty()?FString():TEXT(" ")+End;
+  FS47EventCtx Kept;Kept.Words.Add(TEXT("clock"),S47Hap::ClockText(Now.Clock));Kept.Words.Add(TEXT("place"),Now.Title);Kept.Words.Add(TEXT("seen"),Said);Kept.Words.Add(TEXT("end"),Ending);
+  if(!S47EventScript::Play(M,TEXT("figure_near_end"),Kept))
+   F->RecordEvidence(FString::Printf(TEXT("figure_near_d%d"),F->Day()),FString::Printf(TEXT("At %s, out on %s: %s%s"),*S47Hap::ClockText(Now.Clock),*Now.Title,*Said,*Ending));
  };
  const auto Over=[&](bool bGot,const FString& End)
  {
@@ -2703,7 +3741,7 @@ void FS47Happenings::StepFigure(double Dt)
  {
   // The lamp turned on it, or seen in fact: a moment, and it is not there. Nearer each time, so it comes the sooner.
   const bool bLamp=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn&&Seen(Now.At+FVector(0,1,0),400,7);
-  const bool bSeen=SeenLit(Now.At+FVector(0,1.6,0),340,30,LitGround|LitSky,TEXT("shade"));
+  const bool bSeen=SeenLit(Now.At+FVector(0,1.6,0),340,30,LitGround|LitSky,*Shade);
   FigureSeenFor=bSeen||bLamp?FigureSeenFor+Dt:FMath::Max(0.,FigureSeenFor-Dt*.5);
   if(bSeen&&FigureStageSeen!=Now.Stage)
   {
@@ -2725,6 +3763,7 @@ void FS47Happenings::StepFigure(double Dt)
     Now.Stage=5;Now.Yaw=Now.Age;
     if(A){if(A->Night)A->Night->Hush(30,.02,.2,3.);A->Boom(.25f);}
     if(M->Night&&M->Night->Flashlight)M->Night->Flashlight->FlickerOut(1.2);
+    {FS47EventCtx Down;Down.Points.Add(TEXT("figure"),Now.At+FVector(0,1.4,0));S47EventScript::Play(M,TEXT("figure_near_light"),Down);} // N1110-5: the hum, the gear and the thought
     UE_LOG(LogS47Happen,Display,TEXT("S47: happening figure_near: the light comes down, %.0f m from the player"),Away);
    }
    else{++Now.Stage;Now.Yaw=Now.Age;}
@@ -2743,7 +3782,14 @@ void FS47Happenings::StepFigure(double Dt)
    return;
   }
   ++Now.Stage;Now.Yaw=Now.Age;
-  if(A)
+  // N1110-5: the steps (and, close behind and after 02:00, the view turning to it) are its script's; the old steps only if it cannot play
+  bool bScripted=false;
+  {
+   FS47EventCtx Step;Step.Points.Add(TEXT("figure"),Now.At+FVector(0,1.4,0));
+   Step.bNoSnap=!Now.bForced&&NightHour(F->Clock())<26.;
+   bScripted=S47EventScript::Play(M,Now.Stage==2?TEXT("figure_near_steps"):TEXT("figure_near_close"),Step);
+  }
+  if(A&&!bScripted)
   {
    const int32 Steps=Now.Stage==2?3:1;
    for(int32 K=0;K<Steps;++K){FS47Sound O;O.At=Now.At+FVector(0,.1,0);O.Gain=Now.Stage==2?.35f:.5f;O.When=.55f*K;O.Lp=2400;A->Sfx(FString::Printf(TEXT("stepGravel%d"),(K+Now.Stage)%5),O);}
@@ -2775,8 +3821,32 @@ void FS47Happenings::StepFigure(double Dt)
 // 2 dogs, 6 a phone in an empty building, 10 a carcass, 12 a lit window in an empty house, 14 a figure on the rise, 15 the cinema,
 // 16 room 6, 17 Caliche's lights, 18 the array's burst, 19 the caller on 1420, 20 the warm hood, 21 tracks round the truck,
 // 22 animals running, 24 a light over the truck (a danger), 25 a dust devil, 26 the missing man. Each leaves a record or a lead.
+namespace S47HapTiers
+{
+ // TIERS-20261109: the moment holds a glimpse but not yet a full meeting (S47NightTiers, on the night the clock belongs to).
+ bool GlimpseOnly(double Clock){return S47NightTiers::AtClock(Clock,FS47FreeformSession::NightOf(Clock))==ES47Allowed::Glimpse;}
+ // How near the player comes before a glimpse on the horizon is gone (a full night's figure waits until 90 m).
+ constexpr double GlimpseGoneAt=130.;
+ // CHAIN-5B-20261109 (SAMMENFLETTING, dead time at SARO): the way out through the nearest of the control room's windows (the peeker's,
+ // FS47Glimpses::SaroWindowSpots), for one standing in the room and looking toward it, within forty degrees. False anywhere else.
+ // N1110: as WindowLine, and where that window is (its spot on the floor plan, FS47Glimpses::SaroWindowSpots).
+ bool WindowSpot(const US47Main* M,const FVector& Feet,const FVector& Fwd,FVector& Out,FVector2D& Pane)
+ {
+  if(!M||!M->Web||!M->Player||!FS47FieldRadio::InSaroBuilding(M)||!M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos))return false;
+  double Nearest=1e9;
+  for(const FVector2D& Spot:FS47Glimpses::SaroWindowSpots())
+  {
+   const FVector To(Spot.X-Feet.X,0,Spot.Y-Feet.Z);const double D=To.Size();
+   if(D<.3||D>=Nearest||FVector::DotProduct(To/D,Fwd)<.766)continue;
+   Nearest=D;Out=To/D;Pane=Spot;
+  }
+  return Nearest<1e9;
+ }
+ bool WindowLine(const US47Main* M,const FVector& Feet,const FVector& Fwd,FVector& Out){FVector2D Pane;return WindowSpot(M,Feet,Fwd,Out,Pane);}
+}
 bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bForced,FString& Why)
 {
+ using namespace S47HapTiers;
  static_cast<void>(Variant);
  auto* F=M->Freeform.Get();
  const double Clock=F->Clock();
@@ -2848,16 +3918,22 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
  if(Id==TEXT("house_lit"))
  {
   if(HasSite(TEXT("houselit"))){Why=TEXT("one is lit already");return false;}
-  if(!bOut&&!bDrive&&!bForced)return No(TEXT("indoors"));
+  // CHAIN-5B-20261109: or from SARO's control room, an empty house out through the window the player is looking out of (WindowLine).
+  FVector Through=Fwd;const bool bPane=!bOut&&!bDrive&&WindowLine(M,Feet,Fwd,Through);
+  if(!bOut&&!bDrive&&!bPane&&!bForced)return No(TEXT("indoors, not at a SARO window"));
   if(!F->EventPlaces)return No(TEXT("no place catalogue"));
   // An empty house: windows, nobody living there, on this ground and in sight.
   const FS47EventPlace* Best=nullptr;double BestScore=-1;
   for(const FS47EventPlace& P:F->EventPlaces->All())
   {
    if(!P.Has(ES47PlaceTrait::Window)||!P.Has(ES47PlaceTrait::Indoors)||P.Has(ES47PlaceTrait::People))continue;
+   // Critics, round 8: not the old house on the Alderete place while its own timer has its lamp on anyway (S47FarmLights: dusk to
+   // 22:30); a light there then is nobody's mystery.
+   if(P.Id==TEXT("oldhouse")&&S47FarmLights::HouseTimerOn(S47Hap::HourOf(Clock)))continue;
    FVector At;if(!F->EventPlaces->EntryNow(P.Id,At))continue;
    const FVector To(At.X-Feet.X,0,At.Z-Feet.Z);const double Far=To.Size();
    if(Far<(bForced?20:120)||Far>900)continue;
+   if(bPane&&!bForced&&FVector::DotProduct(To/Far,Through)<.8)continue; // CHAIN-5B-20261109: only what lies out through the glass
    const double Score=FVector::DotProduct(To/Far,Fwd)+FS47NightRhythm::Roll(F->Seed(),F->Day(),S47Hap::SaltOf(P.Id))*.5;
    if(Score>BestScore){BestScore=Score;Best=&P;}
   }
@@ -2872,16 +3948,94 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
  }
  if(Id==TEXT("horizon_figure"))
  {
-  if(!bOut&&!bForced)return No(TEXT("not out on foot"));
+  // CHAIN-5B-20261109: or in SARO's control room looking out of a window (WindowLine): on the rise out through the glass, as far off.
+  FVector Through=Fwd;const bool bPane=!bOut&&!bDrive&&WindowLine(M,Feet,Fwd,Through);
+  if(!bOut&&!bPane&&!bForced)return No(TEXT("not out on foot or at a SARO window"));
   if(!S47Hap::Exists(S47Hap::HairyStandIn))return No(TEXT("no figure for it in this build"));
   if(!Ask(TEXT("horizon_figure")))return No(TEXT("the rhythm says not now"));
-  if(!Prop(TEXT("shade")))return No(TEXT("nothing to draw it with"));
-  // On the rise at the edge of the view, a long way off; nearer as the weeks go.
-  const double Off=bForced?.15:.5,Far=bForced?110:FMath::Clamp(190.*NearK,100.,190.);
-  FVector At=Feet+(Fwd*FMath::Cos(Off)+Side*FMath::Sin(Off))*Far;
+  // Tom's Nordic or Cosmic on the rise some nights, when this build has them; the shade otherwise. F10's Variant: one of them, or shade.
+  const FString Body=S47RoadGlimpse::FigureFor(F->Seed(),FS47FreeformSession::NightOf(Clock),0x484f525au,[](const TCHAR* Path){return S47Hap::Exists(Path);},Variant);
+  if(!Prop(S47Hap::ShadeKind(Body)))return No(TEXT("nothing to draw it with"));
+  // On the rise at the edge of the view, a long way off; nearer as the weeks go. Before the full tier (TIERS-20261109: a glimpse, from
+  // midnight) it keeps farther off, never nearer than 170 m, and is gone sooner when the player comes (GlimpseGoneAt).
+  const bool bGlimpse=GlimpseOnly(Clock);
+  const double Off=bForced?.15:.5,Far=bForced?110:FMath::Max(FMath::Clamp(190.*NearK,100.,190.),bGlimpse||bPane?170.:0.);
+  // From the window: along the line out through its glass, never nearer than a glimpse's 170 m, whatever the hour.
+  FVector At=bPane&&!bForced?Feet+Through*Far:Feet+(Fwd*FMath::Cos(Off)+Side*FMath::Sin(Off))*Far;
   double X=0,Z=0;
   if(!RoadOfWorld(At,X,Z)||!WorldOf(X,Z,At))return No(TEXT("no ground there"));
-  Arm(TEXT("horizon_figure"),120);Now.At=At;Now.X=X;Now.Z=Z;
+  Arm(TEXT("horizon_figure"),120);Now.Variant=Body;Now.At=At;Now.X=X;Now.Z=Z;
+  {FS47EventCtx Rise;S47EventScript::Play(M,TEXT("horizon_figure"),Rise);} // N1110-5: the quiet and the low hum come from its script
+  return true;
+ }
+ // N1110 (N1110-3): three camera moments. The code says where and draws what is there; the event's script (Content/Director/Events/
+ // <id>.json, built in the same) does the snap of the view toward its point, the sting, the gear and the finding. Each seldom and at
+ // most once a night (the rhythm's draw and cooldown); S47EventScript::Allows holds each to its tier and hours as well.
+ if(Id==TEXT("eyes_window"))
+ {
+  // Inside the control room, at a window the player looks out of: the eyes just outside its glass, a face's height over the floor.
+  FVector Through=Fwd;FVector2D Pane;
+  const bool bWindow=bIn&&S47HapTiers::WindowSpot(M,Feet,Fwd,Through,Pane);
+  if(!bWindow&&!bForced)return No(TEXT("not looking out of a SARO window"));
+  if(!Ask(TEXT("eyes_window")))return No(TEXT("the rhythm says not now"));
+  if(!Prop(TEXT("eyes")))return No(TEXT("nothing to draw them with"));
+  const FVector EyesAt=bWindow?FVector(Pane.X,Feet.Y+1.5,Pane.Y)+Through*.45:Feet+Fwd*2.+FVector(0,1.5,0);
+  Arm(TEXT("eyes_window"),2.8+S47Hap::SilenceLead);Now.At=EyesAt;
+  FS47EventCtx Beats;Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));Beats.Points.Add(TEXT("eyes"),EyesAt);
+  S47EventScript::Play(M,TEXT("eyes_window"),Beats);
+  return true;
+ }
+ if(Id==TEXT("beam_figure"))
+ {
+  // Out on foot with the lamp on: somebody at the far end of the beam, on ground there is; the night's body, as on the rise.
+  const bool bLamp=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn;
+  if(!bForced&&!(bOut&&bLamp))return No(TEXT("not out on foot with the flashlight on"));
+  if(!S47Hap::Exists(S47Hap::HairyStandIn))return No(TEXT("no figure for it in this build"));
+  if(!Ask(TEXT("beam_figure")))return No(TEXT("the rhythm says not now"));
+  const FString Body=S47RoadGlimpse::FigureFor(F->Seed(),FS47FreeformSession::NightOf(Clock),0x4245414du,[](const TCHAR* Path){return S47Hap::Exists(Path);},Variant);
+  if(!Prop(S47Hap::ShadeKind(Body)))return No(TEXT("nothing to draw it with"));
+  FVector Stand=Feet+Fwd*(bForced?22.:24.); // N1110 (critic): 24 m, near enough to read as a person in the beam
+  double X=0,Z=0;
+  if(!RoadOfWorld(Stand,X,Z)||!WorldOf(X,Z,Stand))return No(TEXT("no ground there"));
+  Arm(TEXT("beam_figure"),3.+S47Hap::SilenceLead);Now.Variant=Body;Now.At=Stand;Now.X=X;Now.Z=Z;
+  FS47EventCtx Beats;Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));Beats.Points.Add(TEXT("figure"),Stand+FVector(0,1.4,0));
+  Beats.bNoSnap=!bForced&&NightHour(Clock)<26.; // N1110 (critic): before 02:00 the quiet and the figure alone, the view is not taken
+  S47EventScript::Play(M,TEXT("beam_figure"),Beats);
+  return true;
+ }
+ if(Id==TEXT("dish_lights"))
+ {
+  // At SARO, out of doors or at a control room window toward the array: a cluster of lights over the dishes (FS47ArrayShot::TARGET).
+  const FVector Over=FS47ArrayShot::TARGET+FVector(0,26,0);
+  FVector Through=Fwd;
+  const bool bToward=bIn&&S47HapTiers::WindowLine(M,Feet,Fwd,Through)&&FVector::DotProduct(Through,FVector(Over.X-Feet.X,0,Over.Z-Feet.Z).GetSafeNormal())>.8;
+  if(!bForced&&!(Area==TEXT("saro")&&(bOut||bToward)))return No(TEXT("not at SARO with a view of the dishes"));
+  if(!Ask(TEXT("dish_lights")))return No(TEXT("the rhythm says not now"));
+  if(!Prop(TEXT("lander")))return No(TEXT("nothing to draw them with"));
+  Arm(TEXT("dish_lights"),7.6);Now.At=Area==TEXT("saro")?Over:Feet+Fwd*60.+FVector(0,26,0);
+  FS47EventCtx Beats;Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));Beats.Points.Add(TEXT("lights"),Now.At);
+  S47EventScript::Play(M,TEXT("dish_lights"),Beats);
+  return true;
+ }
+ if(Id==TEXT("road_glimpse"))
+ {
+  // GLIMPSE-ROAD-20261109 (S47RoadGlimpse): at the wheel on the highway, something crosses far ahead in the lights and is gone before
+  // the truck comes up. The rhythm holds it to the glimpse tier and to once a week; which body, which side and how far are the seed's.
+  double Hx=0,Hz=0,Speed=0;
+  if(!OnHighway(Hx,Hz,Speed))return No(TEXT("not on the highway"));
+  if(!bForced&&FMath::Abs(Speed)<8)return No(TEXT("the truck is hardly moving"));
+  if(!bForced&&M->World->Trouble.Dim<=.5)return No(TEXT("the truck's lights are out"));
+  if(!Ask(TEXT("road_glimpse")))return No(TEXT("the rhythm says not now"));
+  const S47RoadGlimpse::FPlan Way=S47RoadGlimpse::PlanFor(F->Seed(),FS47FreeformSession::NightOf(Clock),Speed,[](const TCHAR* Path){return S47Hap::Exists(Path);},Variant);
+  if(Way.Id.IsEmpty()||!Prop(TEXT("glimpse_")+Way.Id))return No(TEXT("no figure for it in this build"));
+  // Which way the road runs ahead of the truck, road-local (z along the highway): its own heading, measured ten metres on.
+  const FS47DriveController* D=M->World->CabDrive();
+  const FVector Ahead(-FMath::Sin(D->Heading),0,-FMath::Cos(D->Heading));
+  double Dir=Ahead.Z<0?-1.:1.;
+  {double Ax=0,Az=0;if(RoadOfWorld(D->Pos+Ahead*10.,Ax,Az)&&!FMath::IsNearlyEqual(Az,Hz,.5))Dir=Az<Hz?-1.:1.;}
+  Arm(TEXT("road_glimpse"),S47RoadGlimpse::CrossSeconds(Way)+.5);
+  Glimpse=Way;Now.Variant=Way.Id;Now.X=0;Now.Z=Hz+Dir*Way.AheadM;Now.Yaw=Dir;Now.Title=TEXT("the highway");
+  WorldOf(Now.X,Now.Z,Now.At);
   return true;
  }
  if(Id==TEXT("cinema_film"))
@@ -2915,9 +4069,10 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   if(!bTown&&!bForced)return No(TEXT("not in Caliche"));
   FS47Town* T=M->TownLayer?M->TownLayer->Town.Get():nullptr;if(!T)return No(TEXT("no town here"));
   if(!Ask(TEXT("town_blackout")))return No(TEXT("the rhythm says not now"));
-  T->LampWave(M->T);
-  if(M->Audio){M->Audio->Beep(60.f,40.f,.05f,1.f,TEXT("sine"));M->Audio->Beep(120.f,40.f,.025f,1.f,TEXT("square"));}
-  F->RecordEvidence(FString::Printf(TEXT("blackout_d%d"),F->Day()),FString::Printf(TEXT("At %s every light in Caliche went out, one after another down the street, and the transformer hummed loud enough to hear across town. Then they came back."),*S47Hap::ClockText(Clock)));
+  // D46-20261110 (D46-11): the lamps going out down the street, the transformer's hum and the finding are the event's script
+  // (Content/Director/Events/town_blackout.json, built in the same: S47EventScript.h).
+  FS47EventCtx Beats;Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));
+  S47EventScript::Play(M,TEXT("town_blackout"),Beats);
   Deed(TEXT("You stood in Caliche when the lights went out."));
   Arm(TEXT("town_blackout"),30);
   return true;
@@ -2925,26 +4080,35 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
  if(Id==TEXT("array_burst"))
  {
   // Only at the monitor: in the SARO building, not out on the farm that shares its area.
-  if(!bForced&&(bDrive||!FS47FieldRadio::CbAtHand(M)))return No(TEXT("not in the SARO building"));
+  if(!bForced&&(bDrive||!FS47FieldRadio::InSaroBuilding(M)))return No(TEXT("not in the SARO building"));
+  // LOOP-4-20261109: the night's one pointing-out at the land, shared with the bearing slip and a logged landing.
+  const int32 PointNight=FS47FreeformSession::NightOf(Clock);
+  if(!bForced&&F->Director&&!F->Director->MayPointOut(PointNight))return No(TEXT("the night has pointed out at the land already"));
   if(!Ask(TEXT("array_burst")))return No(TEXT("the rhythm says not now"));
   // Off the main beam, toward somewhere nobody has looked at yet: which way, never what.
-  FString Target;double ToX=0,ToZ=0;bool bHave=false;
-  if(F->Places){Target=F->Places->NextUnknown(F->Day()+Serial);bHave=!Target.IsEmpty()&&F->Places->Spot(Target,ToX,ToZ);}
+  FString Target;double ToX=0,ToZ=0;bool bHave=false,bLine=false;
+  // D45-20261110 (D45-26): on the first night toward the noon slip's place, on the same bearing (FS47Places::ArcPlace, ArcBearing):
+  // the number the player has seen on paper comes back off the main beam.
+  if(PointNight==1&&F->Places){Target=FS47Places::ArcPlace(F->Seed());bHave=bLine=!Target.IsEmpty()&&F->Places->Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
+  if(!bHave&&F->Places){Target=F->Places->NextUnknown(F->Day()+Serial);bHave=!Target.IsEmpty()&&F->Places->Spot(Target,ToX,ToZ);}
   if(!bHave){const FSpot S=Where(TEXT("array_burst"),Bit(ES47PlaceTrait::Far),0,0,0,0,1.f,Serial);if(!S.bSet)return No(TEXT("nowhere for it to point"));Target=S.Place;ToX=S.X;ToZ=S.Z;}
   double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
   const int32 B=Branches();const double Spread=B>0?FS47Places::SpreadFor(B):18.;
-  const double Az=S47Hap::Bearing(FS47Places::AzimuthOf(SaroX,SaroZ,ToX,ToZ)+(FS47NightRhythm::Roll(F->Seed(),F->Day(),0x42525354u)-.5)*Spread);
+  const double Az=bLine?FS47Places::ArcBearing(F->Seed(),SaroX,SaroZ,ToX,ToZ,Spread)
+   :S47Hap::Bearing(FS47Places::AzimuthOf(SaroX,SaroZ,ToX,ToZ)+(FS47NightRhythm::Roll(F->Seed(),F->Day(),0x42525354u)-.5)*Spread);
   FSite S;S.Kind=TEXT("burst");S.Place=Target;S.Title=Target;S.Night=F->Day();S.Serial=Serial+1;S.X=ToX;S.Z=ToZ;S.Az=Az;S.Spread=Spread;S.Until=Clock+4*86400.;
   Sites.RemoveAll([](const FSite& Old){return Old.Kind==TEXT("burst");});Sites.Add(S);
-  if(F->Places&&FS47Places::Def(Target))F->Places->Hear(Target);
-  if(M->Audio)
-  {
-   for(int32 K=0;K<6;++K)M->Audio->Beep(1400.f,.05f,.06f,.12f*K,TEXT("square"));
-   FS47Sound P;P.At=FVector(-4,1,2);P.Gain=.3f;P.When=1.f;const FS47Play Line=M->Audio->Sfx(TEXT("printer"),P);
-   if(Line&&M->Audio->Ctx.IsValid())Line.Src->Stop(M->Audio->Ctx->CurrentTime()+3.);
-  }
-  Say(FString::Printf(TEXT("ARRAY / Off the main beam: about %.0f degrees. On your map (TAB)."),Az),.8,5);
-  F->RecordEvidence(FString::Printf(TEXT("array_burst_d%d"),F->Day()),FString::Printf(TEXT("At %s the array caught a short burst off the main beam, about %.0f degrees from SARO, give or take %.0f. The printer ran a line by itself."),*S47Hap::ClockText(Clock),Az,Spread));
+  if(!bForced)TakePointOut(F->Director.Get(),PointNight);
+  // D46-20261110 (D46-11): the place heard of on the map, the beeps, the printer, the finding and the line on the screen are the
+  // event's script (Content/Director/Events/array_burst.json, built in the same: S47EventScript.h); here only its words.
+  FS47EventCtx Beats;
+  Beats.Words.Add(TEXT("az"),FString::Printf(TEXT("%.0f"),Az));Beats.Words.Add(TEXT("spread"),FString::Printf(TEXT("%.0f"),Spread));
+  Beats.Words.Add(TEXT("target"),Target);Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));
+  // D45-20261110: the first night's under its night even after midnight, so that 1420's caller tells it back the next evening (S47NightLine)
+  Beats.Words.Add(TEXT("burst_night"),FString::FromInt(PointNight==1?1:F->Day()));
+  S47EventScript::Play(M,TEXT("array_burst"),Beats);
+  // D46-20261110 (D46-3): on the first night Dale's set in OPS goes to snow with it for a moment (1420's caller says so the next evening).
+  if(PointNight==1)FS47TvProgramme::JamFor(.95,2.);
   Arm(TEXT("array_burst"),5);
   return true;
  }
@@ -2990,9 +4154,12 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   }
   if(!Ask(TEXT("hood_warm")))return No(TEXT("the rhythm says not now"));
   HoodNight=F->Day();
-  // The engine ticking as it cools, as it does just after a drive: the truck has been sitting a good while.
-  if(M->Audio){FS47Sound O;O.At=T->Position+FVector(0,1,0);O.Gain=.55f;M->Audio->Sfx(Synth(TEXT("tick")),O);FS47Sound O2=O;O2.When=2.6f;O2.Gain=.4f;O2.Rate=.9f;M->Audio->Sfx(Synth(TEXT("tick")),O2);}
-  F->RecordEvidence(FString::Printf(TEXT("hood_warm_d%d"),F->Day()),FString::Printf(TEXT("At %s the truck had been sitting a good while, and its engine was ticking as it cooled when I came back to it. The hood was warm to the hand."),*S47Hap::ClockText(Clock)));
+  // The engine ticking as it cools, as it does just after a drive: the truck has been sitting a good while. D46-20261110 (D46-11):
+  // the ticks and the finding are the event's script (Content/Director/Events/hood_warm.json, built in the same), at the point
+  // "truck"; its recording "hap:tick" is made here first.
+  Synth(TEXT("tick"));
+  FS47EventCtx Beats;Beats.Words.Add(TEXT("clock"),S47Hap::ClockText(Clock));Beats.Points.Add(TEXT("truck"),T->Position+FVector(0,1,0));
+  S47EventScript::Play(M,TEXT("hood_warm"),Beats);
   Deed(TEXT("You came back to the truck."));
   return true;
  }
@@ -3017,6 +4184,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   Now.Watch=Now.Len-1;MeetDanger();
   FS47TroubleOpts O;O.bKey=true;M->World->Trouble.Start(ES47Trouble::Stall,O);
   if(M->Audio)M->Audio->Boom(.5f);
+  {FS47EventCtx Stalled;S47EventScript::Play(M,TEXT("car_light"),Stalled);} // N1110-5: the quiet, the hum, the gear and the thoughts are its script's
   return true;
  }
  if(Id==TEXT("dust_devil"))
@@ -3035,7 +4203,7 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
   if(HasSite(TEXT("missing"))){Why=TEXT("his pickup is still out there");return false;}
   FSpot S=Where(TEXT("missing_person"),Bit(ES47PlaceTrait::Far),Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Road)|Bit(ES47PlaceTrait::Wash),Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro),bForced?0:FMath::Max(250.,500.*NearK),0,1.f,Serial);
   if(!S.bSet)return No(TEXT("nowhere far out"));
-  if(!bForced&&!CanHearCb()&&!(M->FieldRadio.IsValid()&&M->FieldRadio->Owned()))return No(TEXT("nothing to hear the county on"));
+  if(!bForced&&!CanHearCb()&&!(M->FieldRadio.IsValid()&&M->FieldRadio->Owned())&&!(LeadNow.bPointed&&LeadNow.Kind==TEXT("missing_person")&&LeadNow.Night==FS47FreeformSession::NightOf(F->Clock())))return No(TEXT("nothing to hear the county on")); // NIGHT-20261110
   if(!Ask(TEXT("missing_person")))return No(TEXT("the rhythm says not now"));
   const double A=FS47NightRhythm::Roll(F->Seed(),F->Day(),0x4d495353u)*2*UE_DOUBLE_PI;
   FSite P;P.Kind=TEXT("missing");P.Place=S.Place;P.Title=S.Title;P.Night=F->Day();P.Serial=Serial+1;P.X=S.X+FMath::Cos(A)*18;P.Z=S.Z+FMath::Sin(A)*18;P.Yaw=A;P.Until=Clock+2*86400.;P.bHeard=true;
@@ -3085,20 +4253,127 @@ bool FS47Happenings::StepMore(double Dt)
  }
  if(Id==TEXT("horizon_figure"))
  {
-  FProp* P=Prop(TEXT("shade"));FVector At;
+  const FString Shade=S47Hap::ShadeKind(Now.Variant);
+  FProp* P=Prop(Shade);FVector At;
   if(WorldOf(Now.X,Now.Z,At))Now.At=At;
   const FVector To=Feet-Now.At;
   if(P){PoseProp(*P,Now.At,FMath::Atan2(To.X,To.Z));ShowProp(*P,Now.Stage==0);}
   // The lamp turned on it is the player's own doing, seen or not; seeing it is seeing it: against the sky on its rise, or lit.
   const bool bLamp=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn&&Seen(Now.At+FVector(0,1,0),400,6);
   const double Away=FVector2D(To.X,To.Z).Size();
-  if(!Now.bSeen&&SeenLit(Now.At+FVector(0,1.6,0),260,30,LitGround|LitSky,TEXT("shade"))){Now.bSeen=true;Noticed(TEXT("horizon_figure"),Away,TEXT("sight"));}
-  if(Now.Stage==0&&(bLamp||Away<90))
+  if(!Now.bSeen&&SeenLit(Now.At+FVector(0,1.6,0),260,30,LitGround|LitSky,*Shade)){Now.bSeen=true;Noticed(TEXT("horizon_figure"),Away,TEXT("sight"));}
+  if(Now.Stage==0&&(bLamp||Away<(S47HapTiers::GlimpseOnly(Now.Clock)?S47HapTiers::GlimpseGoneAt:90.)))
   {
    Now.Stage=1;Now.Len=Now.Age+1;
-   if(Now.bSeen)F->RecordEvidence(FString::Printf(TEXT("horizon_figure_d%d"),F->Day()),FString::Printf(TEXT("At %s a figure stood on the rise to the %s, a long way off, dead still. Then there was nobody on the rise."),*S47Hap::ClockText(Now.Clock),*DirectionFrom(Feet,Now.At)));
+   if(Now.bSeen)
+   {
+    // N1110-5: the finding, the gear and the thought are its script's (horizon_figure_gone); the old line only if the script cannot play
+    FS47EventCtx Gone;Gone.Words.Add(TEXT("clock"),S47Hap::ClockText(Now.Clock));Gone.Words.Add(TEXT("dir"),DirectionFrom(Feet,Now.At));
+    if(!S47EventScript::Play(M,TEXT("horizon_figure_gone"),Gone))
+     F->RecordEvidence(FString::Printf(TEXT("horizon_figure_d%d"),F->Day()),FString::Printf(TEXT("At %s a figure stood on the rise to the %s, a long way off, dead still. Then there was nobody on the rise."),*S47Hap::ClockText(Now.Clock),*DirectionFrom(Feet,Now.At)));
+   }
   }
   if(Now.Age>=Now.Len)EndEvent(Now.Stage>0);
+  return true;
+ }
+ // N1110 (N1110-3): the camera moments: what is drawn, for how long, and that it was seen. The script has the rest (S47EventScript).
+ if(Id==TEXT("eyes_window")||Id==TEXT("beam_figure")||Id==TEXT("dish_lights"))
+ {
+  const bool bEyes=Id==TEXT("eyes_window"),bFigure=Id==TEXT("beam_figure");
+  // Gone: the eyes while the view is still closed in on them, the figure as the lamp steadies, the lights the moment the view lands.
+  const double Lead=bEyes||bFigure?S47Hap::SilenceLead:0.; // N1110: their scripts open with the night going quiet, and the sight comes after
+  const double GoneAt=Lead+(bEyes?1.9:bFigure?1.7:5.45);
+  FProp* P=Prop(bEyes?FString(TEXT("eyes")):bFigure?S47Hap::ShadeKind(Now.Variant):FString(TEXT("lander")));
+  if(bFigure){FVector Ground;if(WorldOf(Now.X,Now.Z,Ground))Now.At=Ground;}
+  const FVector To=Feet-Now.At;
+  if(P){PoseProp(*P,Now.At,bEyes||bFigure?FMath::Atan2(To.X,To.Z):0.);ShowProp(*P,Now.Age>=Lead&&Now.Age<GoneAt);}
+  // Seen: the script's snap turns the view onto it, so what is drawn is what is seen; noticed once, as the snap lands.
+  if(Now.Stage==0&&Now.Age>=Lead+(bEyes?.4:bFigure?.5:4.5)){Now.Stage=1;Noticed(Id,FVector2D(To.X,To.Z).Size(),TEXT("sight"));}
+  if(Now.Age>=Now.Len)EndEvent(true);
+  return true;
+ }
+ if(Id==TEXT("road_glimpse"))
+ {
+  // Across from its shoulder to the other in the lights, far ahead (S47RoadGlimpse::CrossX: + toward the driver's right, which is
+  // road-local -z's way round: -Now.Yaw), and gone at the far side or once the truck is near, whichever comes first.
+  const FString Kind=TEXT("glimpse_")+Now.Variant;
+  FProp* P=Prop(Kind);
+  const double Right=-Now.Yaw;
+  bool bOn=false,bStand=false;
+  const double X=S47RoadGlimpse::CrossX(Glimpse,Now.Age,&bOn,&bStand)*Right;
+  FVector At;const bool bHere=WorldOf(X,Now.Z,At);
+  if(bHere)Now.At=At;
+  const double Away=bHere?AwayFrom(At):1e9;
+  const bool bShow=bHere&&bOn&&Now.Stage==0&&Away>S47RoadGlimpse::GoneWithinM;
+  if(P&&bHere)
+  {
+   // Facing its way across; the tall one, in its stop on the crown, turned to the lights.
+   double Yaw=0;FVector Next;
+   if(bStand){const FVector To=PlayerAt()-At;Yaw=FMath::Atan2(To.X,To.Z);}
+   else if(WorldOf(X-Glimpse.Side*Right,Now.Z,Next))Yaw=FMath::Atan2(Next.X-At.X,Next.Z-At.Z);
+   PoseProp(*P,At+FVector(0,S47RoadGlimpse::Bob(Glimpse,Now.Age),0),Yaw);
+  }
+  if(P)ShowProp(*P,bShow);
+  // In the truck's lights (their near throw, or the far reach straight ahead): its far beam, from the lamps, the pair's 2 x 4200 cd
+  // (S47Truck PlaceHeadlights) as their cone has it at that bearing, in over 40 to 50 m where the spots themselves end.
+  bool bBeam=false;
+  const double Head=Glimpse.Body==S47RoadGlimpse::EBody::Low?.5:1.5;
+  {
+   FS47Truck* T=bShow&&Driving()?M->World->CabTruck():nullptr;
+   const FS47DriveController* D=T?M->World->CabDrive():nullptr;
+   double Cd=0;FVector Lamp=FVector::ZeroVector,Flat=FVector::ZeroVector;
+   if(D)
+   {
+    const FVector Ahead(-FMath::Sin(D->Heading),0,-FMath::Cos(D->Heading));Flat=FVector(At.X-D->Pos.X,0,At.Z-D->Pos.Z);
+    const double Deg=FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(Ahead,Flat.GetSafeNormal()),-1.,1.)));
+    bBeam=M->World->Trouble.Dim>.5&&T->Beam()>.01&&S47RoadGlimpse::InBeam(Flat.Size(),Deg);
+    Lamp=T->LocalToWorld(FVector(0,.8435,-2.65));
+    if(bBeam)Cd=2.*4200.*T->Beam()*(1.-FMath::SmoothStep(10.,21.,Deg))*FMath::SmoothStep(40.,50.,Flat.Size());
+   }
+   if(USpotLightComponent* Sp=P?P->FarBeam.Get():nullptr)
+   {
+    const bool bLit=Cd>1.;
+    if(bLit)
+    {
+     const FVector Aim=At+FVector(0,Head*.6,0);const double Dist=FMath::Max(1.,(Aim-Lamp).Size());
+     // Narrow, onto the body alone (nothing else is on its channel); its reach twice the distance, so the falloff is the lamps'.
+     const float Cone=float(FMath::RadiansToDegrees(FMath::Atan(4./Dist)))+1.f;
+     Sp->SetWorldLocationAndRotation(S47Three::ToUE(Lamp),(S47Three::ToUE(Aim)-S47Three::ToUE(Lamp)).Rotation());
+     Sp->SetOuterConeAngle(Cone);Sp->SetInnerConeAngle(Cone*.75f);Sp->SetAttenuationRadius(float(Dist*200.));Sp->SetIntensity(float(Cd));
+    }
+    else Sp->SetIntensity(0);
+    if(Sp->IsVisible()!=bLit)Sp->SetVisibility(bLit);
+   }
+  }
+  // Seen: lit by that beam (the shade's near-black stays dark in it), glowing of itself (the Cosmic one), or against the sky, with
+  // nothing between.
+  if(bShow&&!Now.bSeen)
+  {
+   const bool bOwn=(bBeam&&Now.Variant!=TEXT("shadow"))||Now.Variant==TEXT("cosmic");
+   if(SeenLit(At+FVector(0,Head,0),S47RoadGlimpse::BeamFarM+5,32,bOwn?LitOwn:(LitGround|LitSky),*Kind)){Now.bSeen=true;Noticed(TEXT("road_glimpse"),Away,TEXT("sight"));}
+  }
+  if(Now.Stage==0&&(!bOn||Away<=S47RoadGlimpse::GoneWithinM))
+  {
+   Now.Stage=1;Now.Len=FMath::Min(Now.Len,Now.Age+.1);
+   if(Now.bSeen)
+   {
+    F->RecordEvidence(FString::Printf(TEXT("road_glimpse_d%d"),F->Day()),S47RoadGlimpse::Record(Glimpse,S47Hap::ClockText(Now.Clock)));
+    Deed(S47RoadGlimpse::Deed(Glimpse));
+   }
+   // Some nights it leaves prints going off the far shoulder, there the next day (StepSites finds them, PlaceSites draws them).
+   if(Glimpse.bTracks)
+   {
+    const double Off=-Glimpse.Side*Right;
+    FSite S;S.Kind=TEXT("roadtracks");S.Variant=Glimpse.Body==S47RoadGlimpse::EBody::Low?TEXT("low"):TEXT("tall");S.Title=TEXT("the highway");
+    S.Night=F->Day();S.Serial=Now.Serial;S.X=Off*6.5;S.Z=Now.Z;
+    FVector A0,A1;S.Yaw=WorldOf(S.X,S.Z,A0)&&WorldOf(S.X+Off,S.Z,A1)?FMath::Atan2(A1.X-A0.X,A1.Z-A0.Z):0.;
+    // Until eight in the evening of the day after.
+    S.Until=FS47FreeformSession::NightOf(F->Clock())*86400.+20*3600.;
+    Sites.RemoveAll([](const FSite& Old){return Old.Kind==TEXT("roadtracks");});Sites.Add(S);
+   }
+   UE_LOG(LogS47Happen,Display,TEXT("S47: happening road_glimpse (%s) %s, the truck %.0f m off at the end%s"),*Now.Variant,Now.bSeen?TEXT("seen"):TEXT("not seen"),Away,Glimpse.bTracks?TEXT(", prints left on the shoulder"):TEXT(""));
+  }
+  if(Now.Age>=Now.Len)EndEvent(Now.bSeen);
   return true;
  }
  if(Id==TEXT("room6_tv"))
@@ -3146,8 +4421,11 @@ bool FS47Happenings::StepMore(double Dt)
   if(Now.Age>=Now.Len||Now.Stage>=7)
   {
    M->World->Trouble.Dim=1;bDimmed=false;
-   F->RecordEvidence(FString::Printf(TEXT("car_light_d%d"),F->Day()),FString::Printf(TEXT("At %s a white light stood over the truck on the road and the engine died under it.%s"),*S47Hap::ClockText(Now.Clock),
-    Now.Stage==0?TEXT(" I stayed in the cab, and after about twenty seconds it went up."):Now.Stage==7?TEXT(" I got out under it, and it went up."):TEXT(" I got out under it.")));
+   // N1110-5: kept by its script (car_light_end); the old line only if the script cannot play
+   const FString Outcome=Now.Stage==0?TEXT(" I stayed in the cab, and after about twenty seconds it went up."):Now.Stage==7?TEXT(" I got out under it, and it went up."):TEXT(" I got out under it.");
+   FS47EventCtx Left;Left.Words.Add(TEXT("clock"),S47Hap::ClockText(Now.Clock));Left.Words.Add(TEXT("outcome"),Outcome);
+   if(!S47EventScript::Play(M,TEXT("car_light_end"),Left))
+    F->RecordEvidence(FString::Printf(TEXT("car_light_d%d"),F->Day()),FString::Printf(TEXT("At %s a white light stood over the truck on the road and the engine died under it.%s"),*S47Hap::ClockText(Now.Clock),*Outcome));
    Deed(Now.Stage==0?TEXT("You sat in the truck under the light and did not get out."):TEXT("You got out of the truck under the light."));
    EndEvent(true);
   }
@@ -3200,10 +4478,15 @@ void FS47Happenings::PlanUnease(int32 Night)
   return FS47NightRhythm::Roll(Seed,Night,0x55520000u+uint32(A))<FS47NightRhythm::Roll(Seed,Night,0x55520000u+uint32(B));
  });
  const float Many=FS47NightRhythm::Roll(Seed,Night,0x554e5754u);
- UneaseWant=Many<.25f?1:Many<.7f?2:3;
+ // M7, the rhythm review: as many in the first week as in the fourth was flat. One a night in the first week, two in the second,
+ // then up to three and four toward the end.
+ UneaseWant=FMath::Min(4,1+(Night>=8?1:0)+(Night>=15&&Many>.4f?1:0)+(Night>=22&&Many>.7f?1:0));
  UneaseAt.Reset();
  // Spread from half past eight to half past five, so they do not all fall in one hour.
- for(int32 K=0;K<UneaseWant;++K)UneaseAt.Add(20.5+(K+.2+.6*FS47NightRhythm::Roll(Seed,Night,0x55415400u+uint32(K)))*9./UneaseWant);
+ // D45-20261110 (D45-26): the first night's one before midnight, between 22:00 and 23:15 and not on top of the burst
+ // (FirstUneaseHour), so that an operator who keeps indoors meets it; the later nights as before.
+ if(Night==1&&UneaseWant==1)UneaseAt.Add(FirstUneaseHour(Seed));
+ else for(int32 K=0;K<UneaseWant;++K)UneaseAt.Add(20.5+(K+.2+.6*FS47NightRhythm::Roll(Seed,Night,0x55415400u+uint32(K)))*9./UneaseWant);
  UE_LOG(LogS47Happen,Display,TEXT("S47: unease night %d: %d wanted, first %.2f h, done already %d"),Night,UneaseWant,UneaseAt.Num()?FMath::Fmod(UneaseAt[0],24.):-1.,UneaseDone.Num());
 }
 void FS47Happenings::StepUnease(double Dt)
@@ -3238,7 +4521,7 @@ void FS47Happenings::StepUnease(double Dt)
   return;
  }
  const double H=HourOfNight(Clock);
- const bool bSlot=UneaseDone.Num()<FMath::Min(UneaseWant,3)&&UneaseAt.IsValidIndex(UneaseDone.Num())&&H>=UneaseAt[UneaseDone.Num()]&&H<29.8;
+ const bool bSlot=UneaseDone.Num()<FMath::Min(UneaseWant,4)&&UneaseAt.IsValidIndex(UneaseDone.Num())&&H>=UneaseAt[UneaseDone.Num()]&&H<29.8;
  FString Why;
  // What waits for a moment: getting into the truck, coming back into SARO after a while out, walking back up to the truck.
  if(bSlot&&Uneasy.I<0)
@@ -3279,8 +4562,9 @@ bool FS47Happenings::FireUnease(int32 I,bool bForced,FString& Why)
   if(!Now.Id.IsEmpty()){Why=TEXT("something else is on");return false;}
   const double Since=M->Rhythm?Clock-M->Rhythm->LastStart():1e9;
   if(Since<300+300*FS47NightRhythm::Roll(F->Seed(),int32(Clock/600.),0x55475031u)){Why=TEXT("something else began a moment ago");return false;}
-  // The strong ones (your name, the note) not before the sixth night unless the player has been taken, and only in a quiet stretch.
-  if((I==2||I==19)&&FS47FreeformSession::NightOf(Clock)<6&&F->TimesTaken()<=0){Why=TEXT("too early in the game for that one");return false;}
+  // The strong ones (your name, the note) not before the third week (M7: they were the same from the sixth night as on the last)
+  // unless the player has been taken, and only in a quiet stretch.
+  if((I==2||I==19)&&FS47FreeformSession::NightOf(Clock)<15&&F->TimesTaken()<=0){Why=TEXT("too early in the game for that one");return false;}
   if((I==2||I==19)&&Since<20*60){Why=TEXT("not quiet enough for that one");return false;}
   // Not just after a danger, nor on top of one, nor just before their hours begin.
   if(DangerSeen>0&&Clock-DangerClock<20*60){Why=TEXT("too soon after a danger");return false;}
@@ -3697,6 +4981,26 @@ bool FS47Happenings::ToggleCounter()
  if(M->Audio){FS47Sound O;O.Gain=.2f;O.Rate=1.3f;M->Audio->Sfx(TEXT("switch"),O);}
  return true;
 }
+// D45-20261110: for F10 and its sweep, what the ring's coals are doing now, and the ring made older to see them cool.
+bool FS47Happenings::DevEmbers(FString& Out) const
+{
+ const FSite* Ring=nullptr;for(const FSite& S:Sites)if(S.Kind==TEXT("landing"))Ring=&S;
+ if(!Ring||!M||!M->Freeform){Out=TEXT("no scorched ring out there");return false;}
+ const double After=M->Freeform->Clock()-(Ring->Until-S47Hap::RingLastS);
+ const double Hot=S47Hap::EmberHeat(After),SmokeK=S47Hap::SmokeOf(After);
+ const FProp* Em=FindProp(TEXT("embers"));
+ int32 Fx=0,Puffs=0;
+ if(Em){for(const TWeakObjectPtr<UNiagaraComponent>& C:Em->Smoke)if(C.IsValid()&&C->IsActive())++Fx;for(const TWeakObjectPtr<ULocalFogVolumeComponent>& C:Em->Air)if(C.IsValid()&&C->IsVisible())++Puffs;}
+ const bool bCrackle=LoopsOn.Contains(FString::Printf(TEXT("hapEmbers%d"),Ring->Serial));
+ Out=FString::Printf(TEXT("ring %.1f h old: coals %s at heat %.2f, smoke %.2f (%s), crackle %s"),After/3600.,Em&&Em->bShown?TEXT("shown"):TEXT("not shown"),Hot,SmokeK,
+  Em&&!Em->Smoke.IsEmpty()?*FString::Printf(TEXT("Cosmos, %d of %d nests"),Fx,Em->Smoke.Num()):*FString::Printf(TEXT("volumetric wisps, %d puffs up"),Puffs),bCrackle?TEXT("on"):TEXT("off"));
+ return Em&&Em->bShown;
+}
+bool FS47Happenings::DevAgeRing(double Hours)
+{
+ for(FSite& S:Sites)if(S.Kind==TEXT("landing")){S.Until-=Hours*3600.;return true;}
+ return false;
+}
 bool FS47Happenings::GeigerBuilt() const
 {
  return bDevGeiger||(M&&M->Freeform&&M->Freeform->Field&&M->Freeform->Field->Workshop().IsBuilt(TEXT("geiger")));
@@ -3737,7 +5041,8 @@ float FS47Happenings::DoseAt(const FVector& Foot,FString& Near,double& NearM) co
  if(F->Places)for(const FS47Places::FBearing& B:F->Places->Bearings())
  {
   double X=0,Z=0;
-  if(FS47Places::Def(B.Target)&&F->Places->Spot(B.Target,X,Z))Add(Road(X,Z),.22f,10.,TEXT("place:")+B.Target);
+  // LOOP-4-20261109: only while the bearing is live: a cold one (cold by noon) gives nothing (FS47Places::Dosed).
+  if(FS47Places::Dosed(B,F->Clock())&&F->Places->Spot(B.Target,X,Z))Add(Road(X,Z),.22f,10.,TEXT("place:")+B.Target);
  }
  return FMath::Min(Sum,1.5f);
 }
@@ -3745,20 +5050,47 @@ void FS47Happenings::StepGeiger(double Dt)
 {
  if(!M||!M->Freeform||!M->Player)return;
  const bool bCan=GeigerBuilt()&&Dt>0&&!Driving()&&!M->ModalOpen()&&M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&!(M->FieldCamera&&M->FieldCamera->bRaised);
- if(!bCan){Dose=0;GeigerUpFor=0;PoseGeiger(false);return;}
+ US47Audio* A=M->Audio.Get();
+ if(!bCan)
+ {
+  Dose=0;GeigerUpFor=0;GmMeter=0;PoseGeiger(false);
+  if(bGmRoar&&A)A->Stop(S47Hap::GmRoarKey,.1f);
+  bGmRoar=false;return;
+ }
  FString What;double NearM=0;
  Dose=DoseAt(M->Player->Pos,What,NearM);
  // A tube on a dry cell: the odd tick at background, a rattle over burnt ground, a roar where it pegs.
- const double TickRate=FMath::Min(70.,.6+55.*Dose);
- TickDebt+=TickRate*Dt;int32 Clicks=0;
- while(TickDebt>=1&&Clicks<10)
+ // D45-20261110 (Tom, d45): a real counter's sound in place of a square beep on a steady debt of ticks. The counts in this step are drawn
+ // as a Poisson process does them (so many, each at a uniform moment in it: no beat, bunches and gaps), each one a short sharp tick of
+ // its own (gmclick0 to 3, a little pitch and level apart). Past GmSingleTop a second only that many are played one by one, picked at
+ // random, and the rest is the loop of a dense train of counts (gmroar), louder as the rate climbs: the hiss of a pegged counter.
+ const double Cps=S47Hap::GeigerCps(Dose);
+ const auto Uniform=[]{return double(FMath::FRand());};
+ const int32 Counts=S47Hap::PoissonCount(Cps*Dt,Uniform);
+ if(A&&A->Ctx.IsValid())
  {
-  TickDebt-=1;++Clicks;
-  if(M->Audio)M->Audio->Beep(2200.f+FMath::FRand()*1800.f,.0025f,.035f+.03f*FMath::Min(1.f,Dose),FMath::FRand()*float(Dt),TEXT("square"));
+  const double Keep=FMath::Min(1.,S47Hap::GmSingleTop/FMath::Max(1e-6,Cps));
+  int32 Played=0;
+  for(int32 I=0;I<Counts&&Played<24;++I)if(Keep>=1.||FMath::FRand()<Keep)
+  {
+   ++Played;
+   static const TCHAR* const Ticks[]={TEXT("gmclick0"),TEXT("gmclick1"),TEXT("gmclick2"),TEXT("gmclick3")};
+   S47Hap::GmPlay(A,Synth(Ticks[FMath::RandRange(0,3)]),.16f*FMath::FRandRange(.8f,1.15f),FMath::FRandRange(.95f,1.05f),FMath::FRand()*Dt);
+  }
+  const float Roar=float(FMath::Clamp((Cps-S47Hap::GmSingleTop)/S47Hap::GmRoarCps,0.,1.));
+  if(Roar>.01f)
+  {
+   if(!bGmRoar){FS47Sound O;O.Gain=0;O.bLoop=true;bGmRoar=A->LoopSfx(S47Hap::GmRoarKey,Synth(TEXT("gmroar")),O).IsValid();}
+   if(bGmRoar)A->LoopLevel(S47Hap::GmRoarKey,.22f*Roar,1.f);
+  }
+  else if(bGmRoar){A->Stop(S47Hap::GmRoarKey,.15f);bGmRoar=false;}
  }
- TickDebt=FMath::Min(TickDebt,3.);
- const float Want=FMath::Clamp(float(FMath::LogX(10.,1.+60.*Dose)/FMath::LogX(10.,61.)),0.f,1.f);
- Needle+=(Want-Needle)*FMath::Min(1.f,float(Dt)*5.f)+(FMath::FRand()-.5f)*.025f*(1.f+Dose);
+ // The dial: a rate meter, every count kicking it and the kicks draining away through its time constant (GmMeterTau), so that it
+ // twitches with the counts themselves at background and stands, trembling, over hot ground. Pegged where the counter pegs.
+ GmMeter=GmMeter*FMath::Exp(-Dt/S47Hap::GmMeterTau)+Counts/S47Hap::GmMeterTau;
+ const double PegCps=S47Hap::GeigerCps(.85f);
+ const float Want=FMath::Clamp(float(FMath::LogX(10.,1.+GmMeter/1.5)/FMath::LogX(10.,1.+PegCps/1.5)),0.f,1.f);
+ Needle+=(Want-Needle)*FMath::Min(1.f,float(Dt)*6.f);
  Needle=FMath::Clamp(Needle,0.f,Dose>.85f?1.f:.97f);
  if((Dose>.07f&&!bGeigerAway)||bGeigerHeld)GeigerUpFor=4;else GeigerUpFor-=Dt;
  PoseGeiger(GeigerUpFor>0);
@@ -3777,9 +5109,9 @@ void FS47Happenings::StepGeiger(double Dt)
   const FString Jar=FString::Printf(TEXT("geiger_sample_%d"),N);
   if(Dose>.85f&&!F->HasFinding(Jar))
   {
-   F->RecordEvidence(Jar,FString::Printf(TEXT("A jar of soil from the middle of the scorched ring out by %s, where the counter pegged. Sent to Dr. Ward; $10 for it on the sheet."),Ring?*Ring->Title:TEXT("the land")));
-   F->Earn(10);
-   if(M->UI)M->UI->Toast(TEXT("COUNTER / Pegged. A jar of the soil goes in the kit: Dr. Ward pays $10 for it."),5);
+   const int32 Paid=F->EarnSide(10,TEXT("geiger jar"));
+   F->RecordEvidence(Jar,S47HapPay::JarFound(Paid,Ring?Ring->Title:FString(TEXT("the land"))));
+   if(M->UI)M->UI->Toast(S47HapPay::JarToast(Paid),5);
   }
  }
  else if(What.StartsWith(TEXT("marks:"))){Key=TEXT("geiger_")+What.Replace(TEXT(":"),TEXT("_d"));Page=TEXT("The counter over the marks: well above background, highest in the middle of them.");}
@@ -3819,10 +5151,10 @@ void FS47Happenings::PoseGeiger(bool bShow)
   FVector Local=Pt.At;FQuat Turn=S47Three::Euler(Pt.Pitch,Pt.Yaw,Pt.Roll,TEXT("YXZ"));
   if(I==Last)
   {
-   // The needle, about its pivot low on the dial: full left at nothing, full right where it pegs.
+   // The needle, about its pivot low on the dial (its At): full left at nothing, full right where it pegs.
    const double A=FMath::Lerp(1.05,-1.05,double(Needle));
    const FQuat R=S47Three::Euler(0,0,A,TEXT("XYZ"));
-   Local=FVector(0,-.018,.0392)+R.RotateVector(FVector(0,.021,0));Turn=R;
+   Local=Pt.At+R.RotateVector(FVector(0,Pt.Size.Y*.5,0));Turn=R;
   }
   double E[16];S47Three::Compose(Base+Q.RotateVector(Local),Q*Turn,Pt.Size,E);
   C->SetWorldTransform(S47Three::MatToUE(E));
@@ -3848,8 +5180,9 @@ bool FS47Happenings::DevStart(const FString& Id,const FString& Variant,FString& 
 }
 bool FS47Happenings::LiveAt(FVector& Out) const
 {
- if(Now.Id==TEXT("hitchhiker")||Now.Id==TEXT("humor")||Now.Id==TEXT("landing"))return WorldOf(Now.X,Now.Z,Out);
- if(Now.Id==TEXT("car_dies")||Now.Id==TEXT("dogs_hush")||Now.Id==TEXT("phone_empty")||Now.Id==TEXT("horizon_figure")||Now.Id==TEXT("room6_tv")||Now.Id==TEXT("dust_devil")||Now.Id==TEXT("car_light")||Now.Id==TEXT("figure_near")){Out=Now.At;return true;}
+ if(Now.Id==TEXT("hitchhiker")||Now.Id==TEXT("humor")||Now.Id==TEXT("landing")||Now.Id==TEXT("big_night"))return WorldOf(Now.X,Now.Z,Out);
+ if(Now.Id==TEXT("car_dies")||Now.Id==TEXT("dogs_hush")||Now.Id==TEXT("phone_empty")||Now.Id==TEXT("horizon_figure")||Now.Id==TEXT("room6_tv")||Now.Id==TEXT("dust_devil")||Now.Id==TEXT("car_light")||Now.Id==TEXT("figure_near")||Now.Id==TEXT("road_glimpse")
+  ||Now.Id==TEXT("eyes_window")||Now.Id==TEXT("beam_figure")||Now.Id==TEXT("dish_lights")){Out=Now.At;return true;}
  return false;
 }
 void FS47Happenings::DevClear(bool bSites)
@@ -3866,6 +5199,54 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
  const auto Check=[&](bool B,const FString& Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s happenings: %s"),B?TEXT("PASS"):TEXT("FAIL"),*Why));};
+ // CHAIN-1-20261109: tonight's lead, the rules by themselves.
+ {
+  TMap<FString,double> Drawn;Drawn.Add(TEXT("dogs_hush"),21.);Drawn.Add(TEXT("cattle_ring"),23.);
+  const bool bNone=LeadKindOf(Drawn).IsEmpty();
+  Drawn.Add(TEXT("cb_stranded"),21.);const bool bDriver=LeadKindOf(Drawn)==TEXT("cb_stranded");
+  Drawn.Add(TEXT("carcass"),22.);Drawn.Add(TEXT("landing"),26.);
+  Check(bNone&&bDriver&&LeadKindOf(Drawn)==TEXT("landing"),TEXT("tonight's lead is one of the night's own draws that leaves something (a landing first); a night without one has none"));
+  Check(LeadFits(-1,180,900,false)&&LeadFits(400,180,900,false)&&!LeadFits(100,180,900,false)&&!LeadFits(2000,180,900,false)&&LeadFits(2000,180,900,true)&&!LeadFits(100,180,900,true)&&LeadFits(5000,250,0,false),
+   TEXT("the lead starts at its drawn place when that fits where the player is, never on top of them, and however far once a slip has pointed there"));
+  // LEAD-FELT-20261110: a pointed lead can be reached. Night 6 of the 9 November run: 36 s at the Alderete barn, 434 m from SARO.
+  {
+   namespace H=S47Hap;
+   // At 45 minutes a night, a second of play is about a quarter of a minute of the night: 180 s is some 44 minutes, 360 s some 88.
+   const bool bSits=H::LeadSit(470)>=180&&H::LeadSit(470)<=H::LeadSit(2800)&&FMath::IsNearlyEqual(H::LeadSit(1500),240.)&&FMath::IsNearlyEqual(H::LeadSit(9000),360.)&&FMath::IsNearlyEqual(H::LeadSit(-5),180.);
+   const double Barn=H::LandingLen+H::LeadSit(470);
+   Check(bSits&&Barn>=H::LandingLen+180,TEXT("a landing a slip pointed at sits on the ground a minute and a half and ten metres a second from SARO (3 to 6 minutes of play), not 36 s"));
+   Check(H::LeadSitGone(ES47Allowed::Hint)>=300&&H::LeadSitGone(ES47Allowed::Glimpse)>=S47HapTiers::GlimpseGoneAt&&H::LeadSitGone(ES47Allowed::Full)<H::LeadSitGone(ES47Allowed::Glimpse)&&H::LeadSitGone(ES47Allowed::Glimpse)<H::LeadSitGone(ES47Allowed::Hint),
+    TEXT("sitting, it goes as the player comes up: 300 m off before midnight (only a light out there), nearer only in the later tiers"));
+   Check(H::LeadEarly(400,false,20.5)&&!H::LeadEarly(400,true,20.5)&&!H::LeadEarly(900,false,20.5)&&!H::LeadEarly(-1,false,20.5)&&!H::LeadEarly(100,false,15),
+    TEXT("one who went out at once and is near its place need not wait for its hour; one in the station, far off or by day does"));
+   const FVector2D Saro(0,0),Place(400,0);
+   const FVector2D Far=H::LeadOut(FVector2D(-100,0),Place,Saro,250),Near=H::LeadOut(FVector2D(380,0),Place,Saro,250),On=H::LeadOut(Place,Place,Saro,250);
+   Check(Far.Equals(Place)&&FVector2D::Distance(Near,FVector2D(380,0))>=250&&Near.X>400&&FVector2D::Distance(On,Place)>=250&&On.X>400,
+    TEXT("standing at a pointed lead's place, it comes down past the player beyond that place (away from SARO), never on top of them and never elsewhere"));
+   // LEAD-FIX-20261110: beside the place (not between it and SARO), still out on the slip's own bearing, not off to the side of it.
+   const FVector2D Side=H::LeadOut(FVector2D(400,100),Place,Saro,250);
+   const FVector2D Inward=H::LeadOut(FVector2D(380,0),Place,Saro,250,-1.);
+   Check(FMath::Abs(Side.Y)<.01&&Side.X>400&&FVector2D::Distance(Side,FVector2D(400,100))>=250&&FMath::Abs(Inward.Y)<.01&&Inward.X>0&&Inward.X<380&&FVector2D::Distance(Inward,FVector2D(380,0))>=250,
+    TEXT("one beside a pointed lead's place sees it come down on SARO's line through that place, so the slip's bearing and the ring's agree"));
+   // LEAD-FIX-20261110: the 9 November car_dies drawn for 22:44 came at 23:27 behind a sitting landing; near its window's end it was lost.
+   const double Drawn44=22.+44./60.,Held=H::SitHold(100,101)*396.;
+   Check(H::SitHold(-1,100)==0&&FMath::IsNearlyEqual(H::SitHold(100,101),1./3600.)&&FMath::IsNearlyEqual(H::SitHold(100,5000),60./3600.)
+    &&!H::DueAt(Drawn44+DrawWindow+.05,Drawn44,Drawn44+DrawWindow)&&H::DueAt(Drawn44+DrawWindow+.05,Drawn44,Drawn44+DrawWindow+Held),
+    TEXT("a draw held back by a pointed landing sitting on the ground keeps its window as long again, and comes after it; a skip is not held time"));
+  }
+  FS47Happenings Empty(nullptr);FString E,T;double X=0,Z=0;bool bAhead=true;
+  Check(!Empty.Lead().IsSet()&&!Empty.OutTonight(3,E,T,X,Z,bAhead)&&!bAhead,TEXT("with nothing drawn there is nothing out there for a slip to point at"));
+  // CHAIN-5B-20261109: the word of tonight: each voice has one for each thing a lead can be, a way only when one is given, no place named.
+  bool bWords=Empty.WordOfTonight(TEXT("earl")).IsEmpty()&&WordLine(TEXT("earl"),TEXT("dogs_hush"),FString(),false).IsEmpty()&&WordLine(TEXT("nobody"),TEXT("landing"),FString(),false).IsEmpty();
+  for(const TCHAR* Kind:{TEXT("landing"),TEXT("carcass"),TEXT("cattle_ring"),TEXT("missing_person"),TEXT("stranded_rv"),TEXT("cb_stranded")})
+   for(const TCHAR* Who:{TEXT("earl"),TEXT("cb"),TEXT("printer")})
+    for(const bool bAh:{false,true})
+    {
+     const FString With=WordLine(Who,Kind,TEXT("north-east"),bAh),Without=WordLine(Who,Kind,FString(),bAh);
+     bWords&=!With.IsEmpty()&&!Without.IsEmpty()&&With.Contains(TEXT("north-east"))&&!Without.Contains(TEXT("north"))&&!Without.Contains(TEXT("east"))&&!With.Contains(TEXT("%"));
+    }
+  Check(bWords,TEXT("the word of tonight: Earl, the CB and the printer each say what tonight's thing is like, which way only when it is given, and nothing with no night"));
+ }
  // Every one of them is in the rhythm's file, under its own system, and the dangerous ones wait past the first night.
  FS47RhythmData D;FString Why;
  FString Text;const bool bFile=FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Director/director.json")));
@@ -3898,13 +5279,32 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   Check(N[0]>3&&N[1]>3&&N[2]>=1&&H0<H1&&H1<H2,FString::Printf(TEXT("each night builds toward their hours: small things from %.1f, what is seen from %.1f, what comes near from %.1f on average"),H0,H1,H2));
   const FS47RhythmEvent* Fig=D.Find(TEXT("figure_near"));
   Check(Fig&&Fig->Level==ES47RhythmLevel::Danger&&Fig->Needs.Contains(FName(TEXT("on_foot")))&&Fig->FromDay>=8,TEXT("there is a danger for a player on foot, from the second week"));
+  // GLIMPSE-ROAD-20261109: the crossing far ahead is a glimpse, at the wheel, at most once a week, and no danger.
+  const FS47RhythmEvent* Cross=D.Find(TEXT("road_glimpse"));
+  Check(Cross&&Cross->Tier==ES47Allowed::Glimpse&&!Cross->bEarly&&Cross->MinNights>=7&&Cross->Needs.Contains(FName(TEXT("driving")))&&Cross->Level!=ES47RhythmLevel::Danger,TEXT("something crossing the road far ahead is a glimpse, at the wheel, at most once a week"));
+  // D45-20261110 (D45-26): the array's burst may come from the first night, as a hint that can be explained away, and not two nights running.
+  const FS47RhythmEvent* FirstBurst=D.Find(TEXT("array_burst"));
+  Check(FirstBurst&&FirstBurst->FromDay==1&&FirstBurst->Level==ES47RhythmLevel::Observation&&FirstBurst->Tier==ES47Allowed::Hint&&!FirstBurst->bEarly&&FirstBurst->CoolMin>=2&&!IsDanger(TEXT("array_burst")),
+   TEXT("director.json: the array's burst from the first night, an observation in the hint tier, two days or more apart, no danger"));
  }
  else Lines.Add(TEXT("PASS happenings: no director.json beside this build to read (packaged runs read the embedded one)"));
+ {
+  // D45-20261110 (D45-26): on the first night the burst and the unease both come between 22:00 and 23:15, half an hour or more apart,
+  // the same for the same seed; the burst then waits until 01:30 for the player to be in the building.
+  bool bWindow=true;
+  for(int32 Sd=1;Sd<=500;++Sd)
+  {
+   const double Bh=FirstBurstHour(Sd),Uh=FirstUneaseHour(Sd);
+   bWindow&=Bh>=22.&&Bh<23.25&&Uh>=22.&&Uh<23.25&&FMath::Abs(Bh-Uh)>=.4-1e-9&&Bh==FirstBurstHour(Sd)&&Uh==FirstUneaseHour(Sd);
+  }
+  Check(bWindow&&FirstBurstUntil<=25.5&&S47Hap::DueAt(25.4,22.,FirstBurstUntil)&&!S47Hap::DueAt(25.5,22.,FirstBurstUntil)&&!S47Hap::DueAt(21.9,22.,FirstBurstUntil),
+   TEXT("the first night's burst and unease come before midnight, apart, and the burst waits until 01:30 and no later"));
+ }
  // Words: the real ones, read from the source beside this build (as Predecessor reads its own tables): every literal with a space in
  // it that is not a log line or a path. Nothing named, no make or brand, American spelling, nothing from Story's far side.
  {
   int32 Read=0;TArray<FString> Bad,Tells;
-  for(const TCHAR* File:{TEXT("Signal47/Private/S47Happenings.cpp"),TEXT("Signal47/Private/S47HappeningsDev.cpp")})
+  for(const TCHAR* File:{TEXT("Signal47/Private/S47Happenings.cpp"),TEXT("Signal47/Private/S47HappeningsDev.cpp"),TEXT("Signal47/Private/S47BigNight.cpp"),TEXT("Signal47/Private/S47RoadGlimpse.cpp"),TEXT("Signal47/Private/S47FirstDay.cpp")})
   {
    FString Src;if(!FFileHelper::LoadFileToString(Src,*(FPaths::GameSourceDir()/File)))continue;
    TArray<FString> SrcLines;Src.ParseIntoArrayLines(SrcLines,false);
@@ -3917,7 +5317,10 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
      int32 Close=At+6;while(Close<L.Len()&&!(L[Close]==TEXT('"')&&L[Close-1]!=TEXT('\\')))++Close;
      const FString Lit=L.Mid(At+6,Close-At-6);
      if(!Lit.Contains(TEXT(" "))||Lit.StartsWith(TEXT("S47:"))||Lit.StartsWith(TEXT("/"))||Lit.Len()<8)continue;
-     ++Read;if(!S47Hap::Clean(Lit)&&Bad.Num()<4)Bad.Add(Lit.Left(60));
+     // Dale's own call sign on his hails and the speaker tag in front of his lines name him as the radio does (S47FieldRadio); every
+     // other line keeps "Dale" out.
+     const FString Said=Lit.Replace(TEXT("SARO, Dale."),TEXT("SARO.")).Replace(TEXT("DALE: "),TEXT(""));
+     ++Read;if(!S47Hap::Clean(Said)&&Bad.Num()<4)Bad.Add(Lit.Left(60));
      if(S47Hap::Concluding(Lit)&&Tells.Num()<4)Tells.Add(Lit.Left(60));
     }
    }
@@ -3947,15 +5350,84 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   }
   Check(bSound,TEXT("a whisper, a far laugh, wings and the alarm are made, not written"));
  }
+ // D45-20261110: the counter's count is a tick, not a tone: its peak in the first millisecond and nearly all of it in the first two;
+ // the pegged hiss and the coals' crackle are made and in range.
+ {
+  const float Hz=48000.f;
+  const TArray<float> Tick=S47Hap::Make(TEXT("gmclick0"),Hz),Roar=S47Hap::Make(TEXT("gmroar"),Hz),Crackle=S47Hap::Make(TEXT("crackle"),Hz);
+  double All=0,Early=0;int32 PeakAt=-1;float Top=0;bool bFinite=true;
+  for(int32 I=0;I<Tick.Num();++I){const double E=double(Tick[I])*Tick[I];All+=E;if(I<int32(Hz*.002))Early+=E;if(FMath::Abs(Tick[I])>Top){Top=FMath::Abs(Tick[I]);PeakAt=I;}bFinite&=FMath::IsFinite(Tick[I]);}
+  const bool bTick=Tick.Num()>0&&Tick.Num()<int32(Hz*.05)&&bFinite&&Top>.5f&&Top<=1.f&&PeakAt>=0&&PeakAt<int32(Hz*.001)&&All>0&&Early/All>.85;
+  const auto InRange=[](const TArray<float>& Snd,int32 Least){float Most=0;bool bOk=Snd.Num()>=Least;for(const float V:Snd){bOk&=FMath::IsFinite(V);Most=FMath::Max(Most,FMath::Abs(V));}return bOk&&Most>.3f&&Most<=1.f;};
+  Check(bTick&&InRange(Roar,int32(Hz*1.9))&&InRange(Crackle,int32(Hz*3.9))&&S47Hap::Make(TEXT("gmclick1"),Hz)!=Tick,
+   FString::Printf(TEXT("D45-27: a count is one sharp tick (peak at %.2f ms, %.0f%% of it in 2 ms), each of the four its own; the pegged hiss and the coals' crackle are made"),PeakAt*1000./Hz,All>0?100.*Early/All:0.));
+ }
+ // D45-20261110: the counts come as a real counter's do, at random: about as many as the rate says, as uneven as a Poisson process
+ // (variance as large as the mean, the gaps as spread as they are long), never on a beat; under one a second at background.
+ {
+  FRandomStream Rng(4747);
+  const auto U=[&Rng]{return double(Rng.FRand());};
+  const double Bg=S47Hap::GeigerCps(.015f),Peg=S47Hap::GeigerCps(.85f);
+  int32 Sum=0,Last=-1;TArray<double> Gaps;
+  for(int32 F=0;F<60*600;++F){const int32 N=S47Hap::PoissonCount(Bg/60.,U);Sum+=N;if(N>0){if(Last>=0)Gaps.Add(F-Last);Last=F;}}
+  double Mean=0,Var=0;for(const double G:Gaps)Mean+=G;Mean/=FMath::Max(1,Gaps.Num());for(const double G:Gaps)Var+=FMath::Square(G-Mean);Var/=FMath::Max(1,Gaps.Num());
+  const double Expect=Bg*600.,Spread=Mean>0?FMath::Sqrt(Var)/Mean:0.;
+  bool bPoisson=true;
+  for(const double L:{5.,45.})
+  {
+   double S1=0,S2=0;const int32 Draws=4000;
+   for(int32 I=0;I<Draws;++I){const double N=S47Hap::PoissonCount(L,U);S1+=N;S2+=N*N;}
+   const double Avg=S1/Draws,Dev=S2/Draws-Avg*Avg;
+   bPoisson&=FMath::Abs(Avg-L)<L*.06+.15&&Dev>L*.75&&Dev<L*1.3;
+  }
+  Check(Bg>.3&&Bg<1.&&Peg>100&&Peg<400&&S47Hap::GeigerCps(1.5f)<=450&&S47Hap::GeigerCps(.3f)>S47Hap::GeigerCps(.1f)&&S47Hap::PoissonCount(0,U)==0
+   &&FMath::Abs(Sum-Expect)<4*FMath::Sqrt(Expect)&&Spread>.75&&bPoisson,
+   FString::Printf(TEXT("D45-27: the counts are random as a real tube's: %.2f a second at background (%d in ten minutes, gaps spread %.2f of their mean), %.0f pegged"),Bg,Sum,Spread,Peg));
+ }
+ // D45-20261110: a ring's coals glow the first twenty minutes and fade over hours, gone by seven; its smoke thins first, gone by three;
+ // a wisp is soft at its foot and its top and nothing once the smoke is done. The coals sit at the ring's burnt edge, every one aglow.
+ {
+  const double H=3600.;
+  const bool bHeat=S47Hap::EmberHeat(0)==1.&&S47Hap::EmberHeat(.3*H)==1.&&S47Hap::EmberHeat(2*H)<S47Hap::EmberHeat(1*H)&&S47Hap::EmberHeat(1*H)<1.&&S47Hap::EmberHeat(4*H)>0.&&S47Hap::EmberHeat(7*H)==0.&&S47Hap::EmberHeat(30*H)==0.&&S47Hap::EmberHeat(-5)==0.&&S47Hap::EmberHeat(S47Hap::RingLastS)==0.;
+  const bool bSmoke=S47Hap::SmokeOf(.2*H)==1.&&S47Hap::SmokeOf(1.5*H)>0.&&S47Hap::SmokeOf(1.5*H)<1.&&S47Hap::SmokeOf(3*H)==0.&&S47Hap::EmberHeat(3*H)>.1;
+  bool bWisp=S47Hap::Wisp(0,0,0,1).Ext<.01f&&S47Hap::Wisp(0,0,2.75,1).Ext>1.f&&S47Hap::Wisp(1,2,9.3,0).Ext==0.f;
+  for(int32 I=0;I<S47Hap::EmberNests;++I)for(double T=0;T<20;T+=.37){const S47Hap::FWisp Wp=S47Hap::Wisp(I,int32(T)%S47Hap::WispPuffs,T,1);bWisp&=Wp.Ext>=0&&Wp.Ext<=2.2f&&Wp.At.Y>.2&&Wp.At.Y<3.&&Wp.R>.1&&Wp.R<.5;}
+  bool bCoals=S47Hap::EmberParts().Num()==27;
+  for(const S47Hap::FPiece& Pc:S47Hap::EmberParts()){const double R=FVector2D(Pc.At.X,Pc.At.Z).Size();bCoals&=Pc.Glow>0&&Pc.Colour!=0&&R>2.8&&R<4.3&&Pc.At.Y<.06;}
+  Check(bHeat&&bSmoke&&bWisp&&bCoals,TEXT("D45-28: the coals glow, then fade over the hours; the smoke thins first; wisps are soft at both ends; the coals lie at the ring's burnt edge"));
+ }
  // The models: Tom's own paths are one constant each, and every humorous one has a stand-in or skips itself.
  Check(FString(S47Hap::RvModel).StartsWith(TEXT("/Game/Licensed/"))&&FString(S47Hap::ConvertibleModel).StartsWith(TEXT("/Game/Licensed/"))&&FString(S47Hap::SingerModel).StartsWith(TEXT("/Game/Licensed/"))&&FString(S47Hap::HairyModel).StartsWith(TEXT("/Game/Licensed/"))&&FString(S47Hap::ZetModel).StartsWith(TEXT("/Game/Licensed/")),TEXT("Tom's own models stay out of Git, under /Game/Licensed, one path each"));
  Check(S47Hap::RvParts().Num()>8&&S47Hap::ZetParts().Num()>6&&S47Hap::RingParts().Num()>10&&S47Hap::CattleParts().Num()==14,TEXT("what stands in until they come is there"));
+ // D37-LAST-20261109: the dust devil is no stack of flat discs: no mesh parts, only overlapping volumetric puffs, wider going up, each
+ // reaching into the next (no gap to read as a stripe), and none flatter than it is wide.
+ {
+  bool bFunnel=S47Hap::DevilParts().IsEmpty()&&S47Hap::DevilPuffs>=3;
+  for(int32 I=0;I<S47Hap::DevilPuffs;++I)
+  {
+   const S47Hap::FDevilPuff Pf=S47Hap::DevilPuff(I,1.7*I);
+   bFunnel&=Pf.H>=Pf.R*.9;
+   if(I>0){const S47Hap::FDevilPuff B=S47Hap::DevilPuff(I-1,1.7*I);bFunnel&=Pf.R>B.R&&(Pf.At.Y-Pf.H)<(B.At.Y+B.H)-.5;}
+  }
+  Check(bFunnel,TEXT("D37-LAST: the dust devil is volumetric air in overlapping puffs, wider going up, not stacked discs"));
+ }
  // The compass, and a save round trip.
  Check(S47Hap::Bearing(47.2)==48.&&S47Hap::Bearing(146.6)==148.&&S47Hap::Bearing(-1)==359.&&S47Hap::Bearing(359.8)==0.&&S47Hap::Bearing(26)==26.,TEXT("a bearing is whole degrees and never Story's number"));
  Check(S47Hap::Compass(0)==TEXT("north")&&S47Hap::Compass(91)==TEXT("east")&&S47Hap::Compass(181)==TEXT("south")&&S47Hap::Compass(-89)==TEXT("west")&&S47Hap::Compass(359)==TEXT("north"),TEXT("a heading in words"));
  {
   FS47Happenings A(nullptr);A.Begin(nullptr);
   Check(A.Save()->Values.Num()==0&&A.Sites.IsEmpty(),TEXT("an older save has none of it and writes nothing"));
+ {
+  // LOOP-4-20261109: the needle has a history. Something out there near a place in the last two nights (standing there still, or
+  // gone): it will not settle. Further off, or longer ago, it is calm; what has gone survives a Continue.
+  const TArray<FStir> Near={{100,-400,6}};
+  Check(Stirred(Near,250,-400,6)&&Stirred(Near,100,-100,8)&&!Stirred(Near,100,-400,9)&&!Stirred(Near,600,-400,6)&&!Stirred(Near,100,-400,5)&&!Stirred({},0,0,6),
+   TEXT("the needle will not settle within 350 m of something the last two nights, and is calm further off, longer ago or with nothing"));
+  FS47Happenings Gone(nullptr);Gone.Begin(nullptr);Gone.Past.Add({100,-400,6});
+  FS47Happenings Back(nullptr);Back.Begin(S47J::Read(S47J::Write(Gone.Save())));
+  Check(Back.Past.Num()==1&&Back.Past[0].Night==6&&FMath::IsNearlyEqual(Back.Past[0].Z,-400.)&&Stirred(Back.Past,120,-380,7),TEXT("what stood out there and has gone is kept for the needle over a Continue"));
+  Gone.Stop();Back.Stop();
+ }
   FSite S;S.Kind=TEXT("landing");S.Title=TEXT("the wash");S.Night=4;S.Serial=3;S.X=120;S.Z=-440;S.Az=31;S.Spread=12;S.Until=9e5;A.Sites.Add(S);
   FSite Bad;Bad.Kind=TEXT("nonsense");Bad.Night=2;A.Sites.Add(Bad);
   A.LastDays.Add(TEXT("landing"),4);A.Deeds.Add(TEXT("You walked round the burnt ring out by the wash."));A.bEchoArmed=true;A.EchoFrom=4;A.HumorNight=3;
@@ -4009,6 +5481,8 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   bool bFoot=false,bDrive=false,bAll=true;
   for(const FString& Id:Ids())if(IsDanger(Id)){const uint32 Need=NeedMask(Id);bAll&=Need!=0;bFoot|=(Need&S47Hap::NeedFoot)!=0;bDrive|=(Need&S47Hap::NeedDrive)!=0;}
   Check(bAll&&bFoot&&bDrive,TEXT("the night's dangers fit somewhere the player is: one on foot, one at the wheel"));
+  // CB-TRUCK-20261109: the CB is under the truck's dash, so its calls are drawn only for a player sitting in the truck.
+  Check(NeedMask(TEXT("cb_stranded"))==S47Hap::NeedDrive&&NeedMask(TEXT("cb_echo"))==S47Hap::NeedDrive&&(NeedMask(TEXT("missing_person"))&S47Hap::NeedSaro),TEXT("the stuck driver and the voice on the CB come only in the truck; the missing man's word can also come over Dale's walkie at SARO"));
  }
  // The draws are the seed's: the same night draws the same, and something most nights.
  {
@@ -4021,5 +5495,37 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   }
   Check(Some>Nights*6/10,FString::Printf(TEXT("something of these is drawn on %d of %d nights"),Some,Nights));
  }
+ // GLIMPSE-ROAD-20261109: the crossing far ahead (S47RoadGlimpse), its prints, and the bodies figures may have.
+ {
+  Check(IsNightFinding(TEXT("road_glimpse_d5"))&&IsNightFinding(TEXT("road_tracks_d6"))&&NightFindingKind(TEXT("road_tracks_d6"))==TEXT("road_tracks"),TEXT("what crossed the road and its prints are night records"));
+  Check(NeedMask(TEXT("road_glimpse"))==S47Hap::NeedDrive&&!(NeedMask(TEXT("road_glimpse"))&S47Hap::NeedNear)&&!IsDanger(TEXT("road_glimpse")),TEXT("the crossing far ahead is at the wheel, far off, and no danger"));
+  FS47Happenings A(nullptr);A.Begin(nullptr);
+  Check(!A.SwapOrder(9).Contains(TEXT("road_glimpse"))&&!A.SwapOrder(9).Contains(TEXT("humor")),TEXT("the rare ones are never drawn in another's place"));
+  FSite S;S.Kind=TEXT("roadtracks");S.Variant=TEXT("low");S.Title=TEXT("the highway");S.Night=6;S.Serial=2;S.X=-6.5;S.Z=900;S.Until=6*86400.+20*3600.;A.Sites.Add(S);
+  A.Now.Id=TEXT("horizon_figure");A.Now.Variant=TEXT("cosmic");A.Now.Len=120;A.Now.Age=3;A.Now.X=10;A.Now.Z=20;
+  FS47Happenings B(nullptr);B.Begin(S47J::Read(S47J::Write(A.Save())));
+  Check(B.Sites.Num()==1&&B.Sites[0].Kind==TEXT("roadtracks")&&B.Sites[0].Variant==TEXT("low")&&B.Sites[0].X==-6.5,TEXT("the prints on the shoulder are still there after a Continue"));
+  Check(B.Now.Id==TEXT("horizon_figure")&&B.Now.Variant==TEXT("cosmic"),TEXT("a figure on the rise keeps the body it was given across a Continue"));
+  A.Now=FActive();A.Now.Id=TEXT("road_glimpse");A.Now.Variant=TEXT("crawler");A.Now.Len=3;
+  FS47Happenings C(nullptr);C.Begin(S47J::Read(S47J::Write(A.Save())));
+  Check(C.Now.Id.IsEmpty(),TEXT("a crossing cut off by a save is not carried on"));
+  Check(S47Hap::ShadeKind(FString())==TEXT("shade")&&S47Hap::ShadeKind(TEXT("nordic"))==TEXT("glimpse_nordic")&&S47Hap::RoadTrackParts(true).Num()>S47Hap::RoadTrackParts(false).Num(),TEXT("the shade, or Tom's figure by name; prints in fours and in strides"));
+ }
+ // CRIT6-20261109: what the field pays says what came of it, paid, part paid or past the week's cap.
+ {
+  using namespace S47HapPay;
+  const bool bFull=Short(20,20,TEXT("x")).IsEmpty()&&ReportFound(20,TEXT("the wash")).Contains(TEXT("came through"))&&ReportCb(20,TEXT("the wash")).Contains(TEXT("come through your station"))
+   &&JarFound(10,TEXT("the ring")).Contains(TEXT("$10"))&&JarToast(10).Contains(TEXT("$10"))&&RigPaid(15).Contains(TEXT("fifteen dollars into your hand"))&&RigFound(15,TEXT("the road")).Contains(TEXT("$15"));
+  bool bNone=true;
+  for(const FString& T:{Short(0,20,TEXT("x")),ReportFound(0,TEXT("the wash")),JarFound(0,TEXT("the ring")),JarToast(0),RigPaid(0),RigFound(0,TEXT("the road"))})bNone&=T.Contains(TEXT("field allowance"))&&!T.Contains(TEXT("$"));
+  bNone&=!ReportCb(0,TEXT("the wash")).Contains(TEXT("come through"));
+  const bool bPart=Short(5,20,TEXT("x")).Contains(TEXT("$5 of the $20"))&&ReportFound(5,TEXT("the wash")).Contains(TEXT("$5"))&&RigPaid(5).Contains(TEXT("$5"))&&JarFound(4,TEXT("the ring")).Contains(TEXT("$4"));
+  Check(bFull&&bNone&&bPart,TEXT("CRIT6: the pickup's reward, the geiger jar and the stuck rig say what they paid, and past the week's cap say so with no dollar promised"));
+ }
+ OK&=S47RoadGlimpse::SelfTest(Lines);
+ // M7: the first big night's plan, its save and its words (S47BigNight.cpp).
+ OK&=BigSelfTest(Lines);
+ // D46-20261110 (D46-3): the first day's script (S47FirstDay.cpp).
+ OK&=FirstDaySelfTest(Lines);
  return OK;
 }

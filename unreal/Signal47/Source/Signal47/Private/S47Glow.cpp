@@ -47,6 +47,14 @@ void FS47GlowPoints::SetPhase(int32 I, double Phase)
 	Apply(I);
 }
 
+void FS47GlowPoints::SetBlink(int32 I, const FVector2D& RatePhase)
+{
+	// D45-20261110: Update only refreshes blinking points, so a point made steady gets its brightness back here
+	if (!Blink.IsValidIndex(I) || Blink[I] == RatePhase) return;
+	Blink[I] = RatePhase;
+	Apply(I);
+}
+
 void FS47GlowPoints::SetColor(int32 I, const FLinearColor& C)
 {
 	if (!Col.IsValidIndex(I) || Col[I] == C) return;

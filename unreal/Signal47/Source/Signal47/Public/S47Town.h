@@ -30,6 +30,9 @@ public:
 	void SetPeople(bool bWoman, bool bSmoker);
 	void SetDeputy(bool bOn);
 	void SetCarOut(bool bOn);
+	// NPC-DAY (S47TownDay, Freeform): the car stays parked outside while he is not in (gone to lunch on foot). Off: as before.
+	void SetCarHeld(bool bOn);
+	bool bCarHeld = false;
 	void SetPaper(bool bOn);
 	void Update(double T, double Clock, bool bHold = false);
 	void Shine(int32 Src, const TArray<int32>& Slots, double K);

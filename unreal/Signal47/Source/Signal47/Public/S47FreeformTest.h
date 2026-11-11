@@ -16,6 +16,8 @@ private:
  void StepDuskOrb(double Dt);
  US47Main* M=nullptr;
  bool bStoryAccessReady=false;
+ bool bOriginalsTab=false,bStatusTab=false; // D45: the OPS RECORDS check has moved to the ORIGINALS tab once
+ int32 WatchDish=2; // D45: the dish the tracking check watches (one on remote)
  bool bInit=false,bDone=false,bAudioMarked=false,bFieldResume=false,bCarRoundTrip=false;
  int32 Stage=0,Checks=0,Restores=0,JobIndex=0,EventIndex=0,DayRuns=0,TripHoldSamples=0;
  double Age=0,At=0,Hold=0,InitialAz=0,InitialEl=0,PausedAz=0,PausedEl=0;
@@ -42,6 +44,12 @@ private:
  TFunction<void(const S47J::FObj&)> RestorePatch; // declared fixture, applied once to the next Restore's saved state
  double RescueClock=0;
  void StepGarageStart(double Dt);
+ void StepFirstStart(double Dt); // -S47FirstStartTest (S47FirstStartTest.cpp)
+ void StepSkyCut(double Dt); // -S47SkyCutTest (S47SkyCutTest.cpp)
+ void StepStationFiles(double Dt); // -S47StationFilesTest (S47StationFilesTest.cpp)
+ void StepTvChannel(double Dt); // -S47TvChannelTest (S47TvChannelTest.cpp)
+ void StepDevMenu(double Dt); // -S47DevMenuTest (S47DevMenuTest.cpp)
+ double BoxX=0,BoxZ=0,BoxYaw=0;
  void StepInternalControl(double Dt);
  TSharedPtr<struct FS47WorkshopJourneyState> WorkshopJourney;
  TSharedPtr<struct FS47LoggerJourneyState> LoggerJourney;

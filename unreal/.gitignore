@@ -11,6 +11,8 @@ Signal47/Content/Licensed/
 # Recipes/provenance belong in Tools/routenature; vendor binaries never enter this public repo.
 Signal47/Content/Northwood/
 Signal47/Content/JustBStudios/
+# D45-20261110: Tom's Cosmos VFX Smoke pack at its own package paths (Tools/cosmossmoke); licensed, never in the public repo.
+Signal47/Content/Rocket/
 Signal47/Content/Audio/
 # MetaHuman assets are licensed: rebuilt locally by Tools/metahuman, never committed.
 Signal47/Content/MetaHumans/

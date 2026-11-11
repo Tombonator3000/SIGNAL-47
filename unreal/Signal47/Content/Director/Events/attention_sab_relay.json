@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "id": "attention_sab_relay",
+  "name": "Frost on the cabinet",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with a relay fault on the array (FS47FreeformWorld::TriggerServiceFault): its repair is the usual one. Point: cabinet. Two more ceiling tubes go out in the control room (tube beat, next 2).",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 0,
+      "do": "sound",
+      "sound": "rack_switch",
+      "point": "cabinet",
+      "gain": 0.5,
+      "rate": 0.7
+    },
+    {
+      "at": 1,
+      "do": "printer",
+      "gain": 0.3,
+      "stop": 3,
+      "text": "PRINTER / REMOTE LINK LOST. JUNCTION CABINET TEMP 28 F."
+    },
+    {
+      "at": 5,
+      "do": "thought",
+      "text": "Twenty-eight degrees in there. On a warm night."
+    },
+    {
+      "at": 6.5,
+      "do": "tube",
+      "next": 2
+    },
+    {
+      "at": 5,
+      "do": "evidence",
+      "key": "attention_relay_d{day}",
+      "text": "At {clock} one antenna dropped its remote link, and the rack printer logged its junction cabinet at 28 degrees on a warm night. There was frost on the cabinet door."
+    },
+    {
+      "at": 11,
+      "do": "thought",
+      "text": "Two of the ceiling tubes just died. The Caliche shop counter sells them in pairs.",
+      "if": [
+        "in_saro"
+      ]
+    }
+  ]
+}

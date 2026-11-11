@@ -618,8 +618,7 @@ TFunction<void()> SS47Talk::CharacterReadingControls(const TSharedRef<SVerticalB
 	const TArray<FS47DialogueLine> Speech = FS47NpcDialogue::CharacterLines(Voice, Lines);
 	if (!Speech.Num()) return nullptr;
 	TSharedRef<FVoiceBox> V = MakeShared<FVoiceBox>();
-	V->Parody = Voice == TEXT("bacall") && Speech.ContainsByPredicate([](const FS47DialogueLine& L) { return L.Who == TEXT("THE LINE"); })
-		? FString(TEXT("Nora Vega's and the recorded line's voices")) : FString::Printf(TEXT("%s's voice"), *FS47NpcDialogue::Label(Voice));
+	V->Parody = FString::Printf(TEXT("%s's voice"), *FS47NpcDialogue::Label(Voice));
 	V->bDisabled = !Reader->Available(Voice, Lines);
 	const TWeakPtr<FS47NpcDialogue> R = Reader;
 	TFunction<void(ES47DialogueState)> Update = [V](ES47DialogueState S)
@@ -689,7 +688,8 @@ void SS47Talk::Render()
 	ShownLines = V.Lines;
 	if (bFresh) FreshT0 = FPlatformTime::Seconds();
 	FString Reply;
-	const bool bReply = O.Character == TEXT("bacall") && NpcOn() && V.Reply && FS47NpcDialogue::NoraQuote(V.Reply->Text, Reply);
+	// (her quoted replies are voiced only when N. Vega has a voice role; none since VOICE-OUT-3, so they are text)
+	const bool bReply = !O.Character.IsEmpty() && FS47NpcDialogue::Speaker(O.Character) == TEXT("N. VEGA") && NpcOn() && V.Reply && FS47NpcDialogue::NoraQuote(V.Reply->Text, Reply);
 	TArray<FS47DialogueLine> Speech;
 	if (bReply) Speech.Add({ TEXT("N. VEGA"), Reply });
 	else for (const S47Panels::FTalkLine& L : V.Lines) Speech.Add({ L.Who, L.Text });
@@ -700,14 +700,13 @@ void SS47Talk::Render()
 		if (UI.IsValid())
 		{
 			if (const TSharedPtr<FS47ReadAloud> D = UI->DescriptionReader()) D->Stop();
-			if (UI->ReadAloud.IsValid()) UI->ReadAloud->Stop();
 			if (O.bEarl && UI->EarlDialogue.IsValid()) UI->EarlDialogue->Stop();
 		}
 		StopCharacter();
 		TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
 		// the lines nobody voices get Read aloud (ui.readingControls): the character's own are its voice's
 		// (Earl's voice in this panel, ui.earlReadingControls, is Caliche's own panel's in this version, so
-		// o.earl takes no lines from Kinski here)
+		// o.earl takes no lines from another reader here; conversations have no reader since KINSKI-READ-OUT)
 		TArray<FS47DialogueLine> All;
 		for (const S47Panels::FTalkLine& L : V.Lines) All.Add({ L.Who, L.Text });
 		const TArray<FS47DialogueLine> Voiced = !O.Character.IsEmpty() && NpcOn() ? FS47NpcDialogue::CharacterLines(O.Character, All) : TArray<FS47DialogueLine>();

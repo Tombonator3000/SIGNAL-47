@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "horizon_figure",
+  "name": "Somebody on the rise, a long way off",
+  "notes": "N1110-5. Played by S47Happenings when the figure is put on the rise (out on foot, or at a control room window): the night's own sound drops and a low hum sits under it. The code draws the figure and decides whether it is seen (horizon_figure_gone says what then). The hour and the tier are the rhythm's (director.json) and the code's (a glimpse keeps farther off). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 7, "level": 0.05 },
+    { "at": 1, "do": "tone", "hz": 52, "secs": 6, "gain": 0.03, "wave": "sine" },
+    { "at": 2.5, "do": "light", "kind": "gear", "strength": 0.2, "secs": 3 }
+  ]
+}

@@ -320,8 +320,7 @@ void SS47Settings::BuildRows()
 			TEXT("Character voices for the attendant, deputy, souvenir man, Nora and the recorded field line."));
 		AddToggle(TEXT("The Night Narrator"), &FS47PauseOpts::bSerling, &FS47PauseOpts::OnSerling, true,
 			TEXT("The Night Narrator reads descriptions and chapter transitions. Hold Zoom for a spoken closer look; V repeats a description."));
-		AddToggle(TEXT("Dale's voice (read-aloud)"), &FS47PauseOpts::bKinski, &FS47PauseOpts::OnKinski, false,
-			TEXT("Dale's voice for papers, optional conversation reading and other phone voices. Also reads descriptions when The Night Narrator is Off."));
+		// (KINSKI-READ-OUT, Tom 9 November 2026: no "Dale's voice (read-aloud)" toggle; papers are text only)
 		AddToggle(TEXT("Earl, 1420 AM (radio host)"), &FS47PauseOpts::bArtBell, &FS47PauseOpts::OnArtBell, true,
 			TEXT("Earl's voice on Night Line, AM 1420, and when you speak with him in Caliche."));
 		AddToggle(TEXT("Radio callers & bulletin"), &FS47PauseOpts::bRadioCast, &FS47PauseOpts::OnRadioCast, true,
@@ -388,7 +387,9 @@ void SS47Settings::BuildRows()
 		AddToggle(TEXT("Large text"), &FS47PauseOpts::bLargeText, &FS47PauseOpts::OnLargeText, false,
 			TEXT("Larger words in the notebook, on the case board's evidence and question cards, and at the end of the night."));
 		AddToggle(TEXT("Head motion and bumps"), &FS47PauseOpts::bHeadMotion, &FS47PauseOpts::OnHeadMotion, true,
-			TEXT("Walking bob, camera roll, landing dip and camera shake, plus engine vibration and suspension bumps while driving. Turn off for a steadier view; movement and vehicle handling stay the same."));
+			TEXT("Walking bob, camera roll, landing dip and camera shake, plus engine vibration and suspension bumps while driving, and the chest sway of the Bodycam 1986 picture. Turn off for a steadier view; movement and vehicle handling stay the same."));
+		AddToggle(TEXT("Camera moments"), &FS47PauseOpts::bCameraMoments, &FS47PauseOpts::OnCameraMoments, true,
+			TEXT("Now and then at night the view snaps toward something for a second or two and comes back. Turn off to keep the view your own the whole time; the sounds and the notebook entry stay. With Head motion and bumps off the snap is gentler: half the zoom, no shake."));
 		AddToggle(TEXT("Still shots at the end"), &FS47PauseOpts::bStillShots, &FS47PauseOpts::OnStillShots, false,
 			TEXT("The camera in the last minutes holds still shots instead of moving, for anyone the movement makes unwell. It also stops film flicker, frame weave and moving tape disturbances. The same setting as on the Game tab."));
 		break;

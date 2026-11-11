@@ -38,7 +38,7 @@ bool FS47AnomalyDread::Protected(bool bIncludeOneAtATime) const
 	// cancel this beat instead of muting, stopping or rescheduling its dialogue.
 	if (Main->Night && (Main->Night->NightGoing() || (Main->Night->Hooks.NinthQuiet && Main->Night->Hooks.NinthQuiet()))) return true;
 	if (Main->Phones && Main->Phones->CbBusy && Main->Phones->CbBusy()) return true;
-	if (ReaderBusy(Main->UI->ReadAloud) || ReaderBusy(Main->UI->Narrator)) return true;
+	if (ReaderBusy(Main->UI->Narrator)) return true;
 	if (Main->UI->NpcDialogue && (Main->UI->NpcDialogue->Playing() || Main->UI->NpcDialogue->Loading())) return true;
 	if (Main->UI->EarlDialogue && (Main->UI->EarlDialogue->Playing() || Main->UI->EarlDialogue->Loading())) return true;
 	return false;

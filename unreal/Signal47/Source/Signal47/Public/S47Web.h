@@ -120,6 +120,8 @@ public:
 	void ReconcileFarmRanch(bool bFreeform);
 	bool AuditSaroArrival(TArray<FString>& Lines) const;
 	bool AuditCalicheHomes(TArray<FString>& Lines) const;
+	// D37-SARO-EMPTY-20261109: SARO's staff corner is empty (no parked staff cars), false with a SKIP line when it was not built.
+	bool AuditStaffFleet(TArray<FString>& Lines) const;
 	void RadioWomanAfterTownStep();
 	bool AuditRadioWoman(TArray<FString>& Lines) const;
 	TSharedPtr<FJsonObject> RadioWomanReadback() const;
@@ -429,6 +431,8 @@ private:
 		float Reference = 1, Candela = 0, GlowReference = 1, LastK = -1;
 		bool bWasOn = false;
 		bool bAuthoredLens = false;
+		bool bSodium = false;      // a street lamp (STREETLAMPS-20261108): high-pressure sodium yellow at the feed's brightness
+		bool bStreetHead = false;  // its light comes from a cobra head's bowl (S47StreetLamps)
 		TWeakObjectPtr<USpotLightComponent> Light;
 		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
 		TWeakObjectPtr<UStaticMeshComponent> Fixture;

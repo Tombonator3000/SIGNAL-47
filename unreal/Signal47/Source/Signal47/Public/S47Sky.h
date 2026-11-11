@@ -91,12 +91,30 @@ public:
 	void SetCometClock(double Clock);
 	/** MOON-20261108: the moon where S47Weather::Moon has it (degrees), the share of it lit, and the sun's place for its lit side. */
 	void SetMoon(bool bShow, double Az, double El, double Lit, double SunAz, double SunEl);
+	/** PT-MOON-20261109, F10 "World fixes (T)": the moon put where a line wants it (degrees, share lit), the sun its elongation away to the
+	 *  west; CloudCover >= 0 holds the sky's cover; Old draws the painted disc of 8 November for a before picture. Off: as the date has it. */
+	struct FDevMoon { bool bOn = false; double Az = 180, El = 40, Lit = .5, CloudCover = -1; bool bOld = false; };
+	static FDevMoon DevMoon;
+	/** The moon's plane uses M_S47_Moon (NASA's near side, its phase shaded, hidden by clouds); false: the painted fallback. */
+	bool MoonTextured() const { return bMoonTex; }
+	/** PT-MOON: what the moon's plane draws this frame, read from the component itself: "M_S47_Moon" with its Map (size, mips, group,
+	 *  streaming) and the values set on that MID (Color, SunL, Flip, Earth, Occ), or "painted disc", or "hidden". For the logs. */
+	FString MoonDrawn() const;
+	/** True when the moon's plane has M_S47_Moon's MID on it now (not only loaded). */
+	bool MoonDrawsTexture() const;
+	/** Where the moon's disc is drawn (Unreal, world), if it is drawn now. */
+	bool MoonWorld(FVector& Out) const;
 	/** meteorNow(): a shooting star now, unless one is crossing already. */
 	void MeteorNow();
 	/** Tests (-S47Meteor with -S47MeteorAim): the shooting star now starts where Dir points (the sky's terms). */
 	void MeteorFrom(const FVector& Dir);
-	/** update(dt, t, follow): the shooting stars and the lightning (the group's place: Draw). */
+	/** update(dt, t, follow): the shooting stars and the lightning (the group's place: Draw). D46-20261110 (D46-4): in Freeform the
+	 *  night's lightning is the day's weather's (S47Weather::Live().Lightning, LightningRate): none on a quiet night, the sky's own far-off
+	 *  flicker at 1, and from StormRate a storm standing on the horizon where the weather puts it, flashing more often, two or three
+	 *  strokes at a time, its thunder nearer. With no weather on the world (Story, a developer run) the sky's own, as before. */
 	void Update(double Dt, double T);
+	static double LightningRate();
+	static constexpr double QuietRate = .3, StormRate = 1.5;
 
 	// ---------- Unreal ----------
 	/** The sky group's parts from the export (AS47Web, its life data): false when there is no live sky. */
@@ -187,12 +205,15 @@ public:
 	int32 ShowerLive() const;
 	int32 ShowerSlotsBuilt() const { return ShowerComps.Num(); }
 	int32 ShowerSlotsVisible() const;
+	/** SHOWER-LOOK-20261109: the shower's cloud is this many cards (DrawCell). */
+	static constexpr int32 CellCards = 3;
 
 private:
 	double DawnLift = 1;
 	struct FMet { double T = -1, Dur = 0.6, Len = 0.15, Bright = 1, Next = 10; FVector Start = FVector::ZeroVector, Tan = FVector::ZeroVector; };
 	FMet Met;
 	double FlashT = 0, NextFlash = 9, DayThunderIn = 8;
+	double FlashPeak = 1; int32 Restrikes = 0; // D46-20261110: how bright this flash is, and the strokes of a storm's flash still to come
 	// the streak as meteorStep lays it out (its corners are the material's: M_WebMeteor)
 	bool bMetVisible = false;
 	double MetI = 0, Head = 0, Back = 0;
@@ -229,20 +250,31 @@ private:
 	// M5 sweep 3: the shower itself. The veil alone only greyed the blue (sweep-003: still a blue sky with white cloud): a painted card on
 	// the side the shower comes from (upwind), CellDistance out and turned to the eye, a dark, heavy cloud with grey virga hanging under
 	// it that dries before it reaches the ground. Drawn over the veil; hidden by night and without a shower.
-	TWeakObjectPtr<UStaticMeshComponent> CellComp;
-	TStrongObjectPtr<UMaterialInstanceDynamic> CellMid;
+	// SHOWER-LOOK-20261109: one flat card with a hard, straight base read as a painted plate. Now three, each its own picture (a soft,
+	// torn base, rain shafts that sag it, virga that curls back with the wind and dries at its own height): the cell, a paler mass
+	// behind it and a smaller, darker piece in front, on a little different distances and to either side; and they walk past with the
+	// wind on the shower's own clock (CellPlace): upwind before, close beside the land while it rains, downwind after, gone in the end.
+	TWeakObjectPtr<UStaticMeshComponent> CellComp[CellCards];
+	TStrongObjectPtr<UMaterialInstanceDynamic> CellMid[CellCards];
 	bool bCellTried = false;
 	void DrawCell(AS47Web* W, const FVector& Eye, double Rain, double Day);
 public:
 	/** The veil's colour and opacity for the sand (0 to 1), a shower's cloud (0 to 1) and the daylight (tested). */
 	static void VeilOf(double Sand, double Shower, double Day, FLinearColor& OutColor, double& OutOpacity);
-	/** The shower cloud's picture, Wd by Ht, its top row first (tested): the cloud, the virga under its base, nothing at the foot. */
-	static void CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out);
+	/** The shower cloud's picture, Wd by Ht, its top row first (tested): the cloud, the virga under its base, nothing at the foot.
+	 *  Variant: 0 the cell, 1 the mass behind it, 2 the piece in front (each its own lumps, shafts and torn base). */
+	static void CellPixels(int32 Wd, int32 Ht, TArray<FColor>& Out, int32 Variant = 0);
 	/** Where the shower stands from the eye and how big its card is (metres). */
 	static constexpr double CellDistance = 7000, CellWidth = 14000, CellHeight = 4000;
+	/** How fast the shower walks with the wind (metres an hour), and how far to the side of the land it passes (metres). */
+	static constexpr double CellSpeed = 9000, CellAside = 3200, CellFar = 16000;
+	/** Where the shower's cell stands from the eye (three-space metres, x east, z south) ShowerH hours after it set in, with the wind
+	 *  blowing toward (DirX, DirZ), and how much of it shows for its distance (0 gone over the horizon). Without a shower's clock
+	 *  (S47Weather::NoShower) it stands CellDistance upwind, as it did. */
+	static void CellPlace(double DirX, double DirZ, double ShowerH, FVector2D& OutOffset, double& OutShow);
 private:
-	TStrongObjectPtr<UMaterialInstanceDynamic> MoonMid;
-	bool bMoon = false;
+	TStrongObjectPtr<UMaterialInstanceDynamic> MoonMid, MoonTexMid;
+	bool bMoon = false, bMoonTex = false;
 	double MoonAz = 0, MoonEl = -90, MoonLit = 0, MoonSunAz = 0, MoonSunEl = -90, MoonPainted = -1, StarRadius = 400;
 	double MoonStarDim = 0; // a bright moon high washes out the faint stars and the Milky Way
 	void PaintMoon();

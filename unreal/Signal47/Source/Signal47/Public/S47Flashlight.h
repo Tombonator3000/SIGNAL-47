@@ -45,19 +45,30 @@ public:
 	// ---------- the battery (Freeform only; Unreal addition, HUD-20261108) ----------
 	/** Freeform: the lamp runs down. Story: it never does (the web version's lamp has no battery). */
 	bool bDrains = false;
-	/** Lit time from full to empty, and from empty to full when charged at SARO (seconds). */
-	static constexpr double RunSeconds = 2700, ChargeSeconds = 360;
+	/** NIGHT-20261110 FLASHLIGHT-BATTERY-03: reduced flicker (the Calm flashes setting): a weak cell dips smoothly instead of cutting out and stuttering. */
+	bool bCalm = false;
+	/** Lit time from full to empty, and from empty to full when charged at SARO (seconds). M7 (C): about half a night lit (the
+	 *  night is FS47FreeformSession's 2700 s), and a quarter of an hour on the charger, which needs station power (S47Night). */
+	static constexpr double RunSeconds = 1350, ChargeSeconds = 900;
 	/** Below this the beam is weak and the HUD shows the last stroke. */
 	static constexpr double LowLevel = 0.2;
 	/** 0 (empty) to 1 (full). */
 	double BatteryLevel() const { return Battery; }
 	bool Dead() const { return bDrains && Battery <= 0; }
 	bool Low() const { return bDrains && Battery < LowLevel; }
+	/** N1110 FLASHLIGHT-BATTERY: changing the cell takes SwapSeconds, can be done on the move, and the lamp is dark meanwhile. The spare
+	 *  is spent only when the swap is finished (TakeSwapDone), so a swap that is cut short costs nothing. F cancels it. */
+	static constexpr double SwapSeconds = 2.5;
+	bool Swapping() const { return SwapT > 0; }
+	void BeginSwap() { if (bHave && bDrains) { SwapT = SwapSeconds; bSwapDone = false; bOn = false; } }
+	void CancelSwap() { SwapT = 0; bSwapDone = false; }
+	/** True once, when the swap has run its time; the caller then spends the spare and calls Refill. */
+	bool TakeSwapDone() { const bool bDone = bSwapDone; bSwapDone = false; return bDone; }
 	/** A fresh dry cell. */
-	void Refill() { Battery = 1; bSaidLow = bSaidDead = false; }
+	void Refill() { Battery = 1; SputterT = 0; bSaidLow = bSaidDead = false; }
 	/** SARO's charger: K is a share of a full charge. */
 	void Charge(double K) { Battery = FMath::Clamp(Battery + K, 0.0, 1.0); if (Battery >= LowLevel) bSaidLow = false; if (Battery > 0) bSaidDead = false; }
-	void SetBattery(double Full) { Battery = FMath::Clamp(Full, 0.0, 1.0); bSaidLow = Battery < LowLevel; bSaidDead = Battery <= 0; }
+	void SetBattery(double Full) { Battery = FMath::Clamp(Full, 0.0, 1.0); SputterT = 0; bSaidLow = Battery < LowLevel; bSaidDead = Battery <= 0; }
 	/** A weak cell (Freeform, M2): now and then the bulb drops out for a moment, oftener the lower it is, like a loose contact or
 	 *  something near (FS47GearFlicker). Times a second; 0 for a good cell. */
 	static double CellDropRate(double Full);
@@ -67,6 +78,13 @@ public:
 	int32 TakeNotice();
 	/** The beam's share of full for this battery level: 1 down to LowLevel, then falling to a faint glow. */
 	static double BatteryGain(double Full);
+	/** N1110 FLASHLIGHT-BATTERY-03: a weak cell goes warmer and amber (0 at the low mark, 1 empty). Alien interference never changes the colour. */
+	static double WarmShare(double Full);
+	/** N1110: the one short sputter when the cell falls under the low mark: three quick dips of falling spacing (a slow, tired rhythm,
+	 *  not the fast uneven flutter of something near). Seconds since it began; the share of the beam kept, 1 outside it. */
+	static constexpr double SputterSeconds = 0.9;
+	static double SputterGain(double Seconds);
+	bool Sputtering() const { return SputterT > 0; }
 
 	/** three's intensity now (the tests): 0 when off. */
 	double Intensity() const { return ThreeIntensity; }
@@ -89,7 +107,9 @@ private:
 	bool bNativeNearReady = false, bLogNear = false;
 	TMap<FString, double> Flicks, Sags;
 	double SagK = 0;
-	double Battery = 1, CellDark = 0;
+	double Battery = 1, CellDark = 0, SputterT = 0, WarmNow = -1;
 	int32 Cuts = 0;
+	double SwapT = 0;
+	bool bSwapDone = false;
 	bool bSaidLow = false, bSaidDead = false;
 };

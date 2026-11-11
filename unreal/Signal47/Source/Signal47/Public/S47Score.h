@@ -50,6 +50,16 @@ public:
 	// Below 1 while the score stays audible under something the player is listening to.
 	double MusicDuck() const;
 	void SetDuck(double Level);
+	// D45-20261110 (Tom, d45: the town's saxophone went on under the horror bed at the feed store). How far the score stands back, 0 to
+	// 1, for the bought ground (Dread, FS47FieldRadio::DreadNow) and, in Freeform, for something the set hears coming (Heard). A
+	// place's own piece (town, dawn, the motel, the drive) goes all but under, to about a twentieth; the adaptive cues keep a third.
+	static double DreadDuck(bool bPlacePiece, double Dread, double Heard = 0);
+	static bool PlaceCue(const FString& Cue);
+	// The piece playing now, or the one still fading out under it, is a place's own.
+	bool PlacePieceSounding() const;
+	// D45-20261110: in Freeform the take's flood and lift hold the score; only the ground and the light are heard then.
+	// Stage is FS47Taken::EStage as a number.
+	static bool TakenHolds(bool bFree, int32 Stage);
 	struct FHeldHooks
 	{
 		TFunction<bool()> RoadsideSilent, MotelTvHeard, AbductionBusy, RecWalkBusy;
@@ -72,6 +82,7 @@ private:
 	TSharedPtr<FS47GainNode> OutgoingGain;
 	TMap<FString, FTrackTiming> Timings; // Empty until a track has verified timing metadata.
 	FString RequestedMood, Candidate, Pending;
+	FString OutgoingCue; // D45-20261110: the cue of the deck fading out, for PlacePieceSounding
 	double RequestedSeverity = 0, CandidateSince = 0, PendingAt = 0;
 	double ActionUntil = 0, RecoveryUntil = 0, OutgoingUntil = 0, RampUntil = 0, TargetGain = 0;
 	double PauseAt = 0, PausedRampLeft = 0, PausedOutgoingLeft = 0, FadeQuiet = 4;

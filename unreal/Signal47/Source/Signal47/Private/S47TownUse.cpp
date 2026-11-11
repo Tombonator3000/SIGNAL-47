@@ -5,13 +5,17 @@
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
+#include "S47Happenings.h"
 #include "S47Inter.h"
+#include "S47Legs.h"
+#include "S47RoadTerrain.h"
 #include "S47Kit.h"
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47RadioTips.h"
+#include "S47Outfit.h"
 #include "S47RoomDecor.h"
 #include "S47Three.h"
 #include "S47Townsfolk.h"
@@ -108,7 +112,7 @@ const TArray<FS47TownUse::FTourSite>& FS47TownUse::SaucerMap()
 		{ TEXT("The mine they shut"), -560, 1340, TEXT("mine") },
 		{ TEXT("Rock pile on the rise"), -320, 430, TEXT("cairn") },
 		{ TEXT("Line camp"), 440, 930, TEXT("shack") },
-		{ TEXT("Saucer Rock"), -760, 2240, nullptr },
+		{ TEXT("Saucer Rock"), -760, 2240, TEXT("saucer_rock") }, // PT-SAUCER-ROCK-20261109: out there now (FS47Places)
 		{ TEXT("The Glowing Wash"), 620, 1980, nullptr },
 		{ TEXT("Hermit's sighting"), -1250, 1720, nullptr },
 		{ TEXT("Landing circle (fenced)"), 950, 2700, nullptr },
@@ -404,6 +408,30 @@ bool FS47TownUse::Build()
 		Part(TEXT("S47TownSouvenirSign"), FVector(Top.X, Top.Y + .19, Top.Z), FVector(.03, .36, .6), 0x2b2a27, Souvenir);
 		Words(TEXT("S47TownSouvenirWords"), TEXT("TOURS - FILM\nWE BUY PHOTOS"), FVector(Top.X - .02, Top.Y + .19, Top.Z), 180, .055, Chalk);
 	}
+	// N1110 (Caliche history, approved by Tom 10 November): two boards on the east shoulder of the highway, readable from the road, each
+	// a post and a board with its heading on both faces; the whole text is read at the board. The marker by the Mesa Diner, the turnout
+	// south of town for the Lights Lookout. Placed on the road's own ground (S47RoadTerrain), as the places on the land are.
+	struct FRoadside { const TCHAR* Key; const TCHAR* Face; const TCHAR* Label; const TCHAR* Text; double RoadZ; uint32 Hex; };
+	static const FRoadside Boards[] = {
+		{ TEXT("marker"), TEXT("OFFICIAL SCENIC\nHISTORIC MARKER\nCALICHE"), TEXT("Historic marker"),
+		  TEXT("OFFICIAL SCENIC HISTORIC MARKER / CALICHE. Spanish herders wintered sheep on this plain before 1800 and called it el Llano del Salado. Silver brought a camp of 1,800 to the west hills in 1887; the price of silver sent them away by 1894. The town took its name from the hard white crust beneath it. Ranching, the highway and the observatory to the north have kept it here since."), 1985., 0x4b3d2e },
+		{ TEXT("lookout"), TEXT("LIGHTS LOOKOUT\nplease do not signal"), TEXT("Lights Lookout"),
+		  TEXT("LIGHTS LOOKOUT, on a painted board, and under it, smaller: PLEASE DO NOT SIGNAL. Somebody has added a bench, facing the playa."), 2420., 0x6a5a45 },
+	};
+	{
+		const FVector Road = S47Legs::ORIGINS(TEXT("road"));
+		for (const FRoadside& B : Boards)
+		{
+			const double LocalX = 16.6;
+			const double Ground = Road.Y + S47RoadTerrain::SurfaceY(LocalX, B.RoadZ);
+			const FVector Foot(Road.X + LocalX, Ground, Road.Z + B.RoadZ);
+			const FString Name(B.Key);
+			Part(TEXT("S47RoadPost_") + Name, Foot + FVector(0, .8, 0), FVector(.12, 1.6, .12), 0x4a3b2c, Name);
+			Part(TEXT("S47RoadBoard_") + Name, Foot + FVector(0, 1.7, 0), FVector(.05, .9, 1.5), B.Hex, Name);
+			Words(TEXT("S47RoadWordsW_") + Name, B.Face, Foot + FVector(-.04, 1.7, 0), 180, .075, Chalk);
+			Words(TEXT("S47RoadWordsE_") + Name, B.Face, Foot + FVector(.04, 1.7, 0), 0, .075, Chalk);
+		}
+	}
 	const auto Label = [this, Guard](const FString& Counter) -> FString
 	{
 		if (!Guard.IsValid() || !bLive || !M || !M->IsFreeform()) return FString();
@@ -421,8 +449,19 @@ bool FS47TownUse::Build()
 		{
 			return Counter == S47TownUseLocal::Radio ? FString(TEXT("A cork board: lost dogs, a hay baler, the church supper. A slot marked TIPS & REQUESTS."))
 				: Counter == S47TownUseLocal::Feed ? FString(TEXT("A price board in chalk: salt, range cubes, wire, a few things for a truck."))
-				: FString(TEXT("SOUVENIRS. TOURS. FILM. Painted by the same hand as the sign outside."));
+				: FString(TEXT("A card on the counter, in chalk: TOURS - FILM. WE BUY PHOTOS. The same hand as the sign outside."));
 		};
+		M->Inter->Add(I);
+	}
+	for (const FRoadside& B : Boards)
+	{
+		const FString Name(B.Key);
+		FS47Interactable I; I.Id = UseId(Name); I.Range = 5.5;
+		if (const int32* Node = FirstNode.Find(Name)) I.Object = W->ObjAt(*Node);
+		I.Label = [Guard, this, Title = FString(B.Label)] { return Guard.IsValid() && bLive && M && M->IsFreeform() ? Title : FString(); };
+		I.Use = [this, Guard, Text = FString(B.Text)] { if (Guard.IsValid() && bLive && M && M->UI) M->UI->Toast(Text, 16.f); };
+		I.ExamineRange = 12.;
+		I.Examine = [Guard, Text = FString(B.Text)] { return Guard.IsValid() ? Text : FString(); };
 		M->Inter->Add(I);
 	}
 	// What the town's wares put out into the world: drawn only when they are there (StepThings).
@@ -497,7 +536,10 @@ void FS47TownUse::SetPropsShown(bool bShow)
 void FS47TownUse::BasketRows(const FString& Counter, const TArray<FWare>& Wares, TArray<TSharedRef<SWidget>>& Rows, TFunction<void()> Reopen)
 {
 	if (BasketAt != Counter) { Basket.Reset(); BasketAt = Counter; }
-	int32 Total = 0;
+	int32 Total = 0, Items = 0;
+	for (const auto& Pair : Basket) Items += Pair.Value;
+	// M7 (Tom, 9 November): a parcel is what the truck's rack takes (FS47Outfit: eight items, twenty with the bed rack)
+	const int32 Room = M->Freeform->Field ? M->Freeform->Field->ParcelRoom() : FS47Outfit::StockLoad;
 	for (const FWare& Ware : Wares)
 	{
 		const FString Id = Ware.Id;
@@ -507,9 +549,10 @@ void FS47TownUse::BasketRows(const FString& Counter, const TArray<FWare>& Wares,
 			S47Kit::Col({ S47Kit::Text(FString::Printf(TEXT("%s / $%d"), *FS47FreeformWorld::SupplyTitle(Id), Ware.Price)), S47Kit::Small(FString::Printf(TEXT("%s At SARO: %d."), Ware.For, Have)) }, 2.f),
 			S47Kit::Row({ S47Kit::Button(TEXT("-"), [this, Id, Reopen] { if (int32* N = Basket.Find(Id)) { if (--*N <= 0) Basket.Remove(Id); } Reopen(); }, false, Count > 0),
 				S47Kit::Text(FString::Printf(TEXT("  %d  "), Count)),
-				S47Kit::Button(TEXT("+"), [this, Id, Reopen] { int32& N = Basket.FindOrAdd(Id); N = FMath::Min(N + 1, 9); Reopen(); }, false, Count < 9 && Have + Count < 99) }),
+				S47Kit::Button(TEXT("+"), [this, Id, Reopen] { int32& N = Basket.FindOrAdd(Id); N = FMath::Min(N + 1, 9); Reopen(); }, false, Count < 9 && Have + Count < 99 && Items < Room) }),
 			.72f, .28f));
 	}
+	if (Items >= Room) Rows.Add(S47Kit::Small(FString::Printf(TEXT("That is all the truck's rack takes in one parcel: %d items.%s"), Room, Room < FS47Outfit::RackLoad ? TEXT(" A bed rack (OPS stores list) takes more.") : TEXT(""))));
 	const bool bHands = M->Freeform->Field && M->Freeform->Field->ParcelStage() == 0;
 	if (!bHands) Rows.Add(S47Kit::Small(TEXT("You already have a parcel out. Load it in the truck or unpack it at SARO's receiving table first; one parcel at a time.")));
 	Rows.Add(S47Kit::Button(Total > 0 ? FString::Printf(TEXT("Pay $%d and take the parcel / budget $%d"), Total, M->Freeform->Budget()) : FString(TEXT("Nothing in the basket")),
@@ -527,6 +570,9 @@ bool FS47TownUse::Pay(const FString& Counter, const TArray<FWare>& Wares)
 		Total += Ware->Price * Pair.Value;
 	}
 	FS47FreeformWorld& Field = *M->Freeform->Field;
+	int32 Items = 0;
+	for (const auto& Pair : Basket) Items += Pair.Value;
+	if (Items > Field.ParcelRoom()) { if (M->UI) M->UI->Toast(FString::Printf(TEXT("The truck's rack takes %d items in one parcel."), Field.ParcelRoom()), 4); return false; }
 	if (Field.ParcelStage() != 0 || (M->World && M->World->bDriving)) { if (M->UI) M->UI->Toast(TEXT("One parcel at a time: load or unpack the one you have first."), 4); return false; }
 	if (!M->Freeform->Spend(Total)) { if (M->UI) M->UI->Toast(M->Freeform->FeedbackText(), 4); return false; }
 	const FString Where = Counter == S47TownUseLocal::Radio ? TEXT("1420 AM") : Counter == S47TownUseLocal::Feed ? TEXT("the Feed & Seed") : TEXT("the souvenir shop");
@@ -565,7 +611,7 @@ FString FS47TownUse::TipRows(TArray<TSharedRef<SWidget>>& Rows, bool bPhone)
 	else if (Can.IsEmpty()) Rows.Add(S47Kit::Small(TEXT("Nothing to tell him yet: a place you have been out to, or one where you saw something go on in the last few nights.")));
 	else
 	{
-		Rows.Add(S47Kit::Small(TEXT("He reads it on 1420 in his own time, and the county calls back about it. Listen in the truck (R in the cab).")));
+		Rows.Add(S47Kit::Small(FString::Printf(TEXT("He reads it on 1420 in his own time, and the county calls back about it. Listen in the truck (R in the cab). The station pays $%d for a tip it reads, while this week's field allowance lasts."), FS47RadioTips::TipPay)));
 		for (int32 I = 0; I < FMath::Min(Can.Num(), 8); ++I)
 		{
 			const FString Id = Can[I].Key, Title = Can[I].Value;
@@ -598,6 +644,8 @@ void FS47TownUse::OpenRadio(bool bPhone)
 	}
 	Rows.Add(S47Kit::Paper(bPhone ? TEXT("The request line rings a long time. Then Earl, eating something: \"Fourteen-twenty, you're on. No, you're not. Go ahead.\"")
 		: TEXT("1420 AM. A cork board by the studio glass: lost dogs, a hay baler for sale, the church supper. A slot in a box marked TIPS & REQUESTS, and a card: USED RADIO PARTS & BATTERIES, ASK EARL.")));
+	// CHAIN-5B-20261109: on the request line at night, once a night, what a caller told Earl about tonight (FS47Happenings::WordOfTonight).
+	if (bPhone && M->Freeform->Happenings) { const FString Word = M->Freeform->Happenings->WordOfTonight(TEXT("earl")); if (!Word.IsEmpty()) Rows.Add(S47Kit::Paper(Word)); }
 	TipRows(Rows, bPhone);
 	if (!bPhone)
 	{
@@ -686,10 +734,13 @@ bool FS47TownUse::SellCopy(const FString& PhotoId)
 	if (Pay <= 0) return false;
 	// He has copies made off it at the drugstore in Socorro: the player keeps the print, the field record keeps its photograph.
 	SoldPrints.Add(PhotoId); ++SoldToday;
-	F.Earn(Pay);
+	// M7 (Tom, 9 November): inside the week's cap on side money; past it he still takes the copy, for the window, and pays nothing
+	const int32 Paid = F.EarnSide(Pay, TEXT("souvenir copy"));
 	if (Shot->bOdd || Shot->Targets.Num() > 0) Note(TEXT("sold_odd"));
 	UE_LOG(LogS47TownUse, Display, TEXT("S47: town: a copy of print %s sold for $%d (%s)"), *PhotoId, Pay, *Why);
-	if (M->UI) M->UI->Toast(FString::Printf(TEXT("$%d for the right to copy it. You keep your print."), Pay), 4);
+	if (M->UI) M->UI->Toast(Paid >= Pay ? FString::Printf(TEXT("$%d for the right to copy it. You keep your print."), Pay)
+		: Paid > 0 ? FString::Printf(TEXT("$%d for it, not $%d: with that, this week's field allowance is used up. You keep your print."), Paid, Pay)
+		: FString(TEXT("\"It goes in the window anyway, if that's all right.\" This week's field allowance is used up: no payment. You keep your print.")), 5);
 	M->RequestAutosave();
 	return true;
 }
@@ -755,14 +806,14 @@ void FS47TownUse::OpenSouvenir()
 	{
 		TArray<FString> Names;
 		for (const FTourSite& S : SaucerMap()) Names.Add(S.Label);
-		Rows.Add(S47Kit::Small(TEXT("Your copy of his map, pencilled onto the survey sheet: ") + FString::Join(Names, TEXT(", ")) + TEXT(".")));
+		Rows.Add(S47Kit::Small(TEXT("Your copy of his map, penciled onto the survey sheet: ") + FString::Join(Names, TEXT(", ")) + TEXT(".")));
 	}
 	// The tour: two hours, once a day, while he has the light for it.
 	const bool bTourHours = Hour() >= 10 && Hour() < 15;
 	Rows.Add(S47Kit::Two(S47Kit::Small(bGone ? TEXT("A card on the register, in the girl's hand: NO TOURS THIS WEEK.") : TourDay == F.Day() ? TEXT("You took the tour today.") : bTourHours ? TEXT("The tour: two hours in his station wagon, the sites the book talks about. He always knows one more.") : TEXT("Tours leave between 10 AM and 3 PM.")),
 		S47Kit::Button(TEXT("Take the tour / $5 / 2 hours"), [this] { Tour(); }, false, !bGone && bTourHours && TourDay != F.Day() && F.Budget() >= 5), .7f, .3f));
 	// Postcards and a rubber spaceman: the town notices both.
-	Rows.Add(S47Kit::Two(S47Kit::Small(FString::Printf(TEXT("Postcards of the dishes at sunset, five for a dollar. You have bought %d."), Postcards)),
+	Rows.Add(S47Kit::Two(S47Kit::Small(FString::Printf(TEXT("Postcards of the dishes at sunset, a quarter apiece or five for a dollar. You have bought %d."), Postcards)),
 		S47Kit::Button(TEXT("Five postcards / $1"), [this] { if (M->Freeform->Spend(1)) { Postcards += 5; Note(TEXT("postcard")); M->RequestAutosave(); } OpenSouvenir(); }, false, F.Budget() >= 1), .7f, .3f));
 	Rows.Add(S47Kit::Two(S47Kit::Small(Seen(TEXT("spaceman")) ? TEXT("The rubber spaceman rides on your dash now, by the compass. People notice.") : TEXT("A rubber spaceman with a suction cup, gray, big eyes. For the dash.")),
 		S47Kit::Button(TEXT("A rubber spaceman / $3"), [this] { if (M->Freeform->Spend(3)) Note(TEXT("spaceman")); OpenSouvenir(); }, false, !Seen(TEXT("spaceman")) && F.Budget() >= 3), .7f, .3f));
@@ -780,7 +831,16 @@ void FS47TownUse::FillMap(FS47MapView& V) const
 	double SaroX = 0, SaroZ = 0;
 	S47OpenLand::RoadOf(TEXT("saro"), 9, 0, SaroX, SaroZ);
 	(void)SaroX;
-	if (bMap) for (const FTourSite& S : SaucerMap()) if (!S.Place) { FS47MapPin P; P.East = S.X; P.South = S.Z - SaroZ; P.Label = S.Label; P.bHeard = true; V.Pins.Add(P); }
+	// (PT-SAUCER-ROCK-20261109: a real site the survey sheet does not have yet, as on a map bought before Saucer Rock was out there,
+	// is still pencilled in from his map, where the land really has it.)
+	const FS47Places* Land = M && M->Freeform ? M->Freeform->Places.Get() : nullptr;
+	if (bMap) for (const FTourSite& S : SaucerMap())
+	{
+		double X = S.X, Z = S.Z;
+		if (S.Place && (!Land || Land->Heard(S.Place) || Land->Found(S.Place))) continue;
+		if (S.Place && Land) Land->Spot(S.Place, X, Z);
+		FS47MapPin P; P.East = X; P.South = Z - SaroZ; P.Label = S.Label; P.bHeard = true; V.Pins.Add(P);
+	}
 	if (M && M->Freeform && M->Freeform->Places)
 		for (const FLure& L : Lures)
 		{
@@ -792,12 +852,19 @@ void FS47TownUse::FillMap(FS47MapView& V) const
 
 // ---------- lures ----------
 
+namespace S47TownUseLocal
+{
+	// M7 (C): the night a lure set out now waits for. The shift's night runs to 08:00 (NightOf), but from 04:00 that night is over
+	// (NightsOver): a block set out at half past six in the morning waits for the coming night, not the one just gone.
+	int32 LureNightAt(double Clock) { return FMath::Max(FS47FreeformSession::NightOf(Clock), FS47FreeformSession::NightsOver(Clock) + 1); }
+}
+
 bool FS47TownUse::SetLure(const FString& Place, const FString& Kind)
 {
 	if (!M || !M->Freeform || (Kind != TEXT("salt") && Kind != TEXT("feed")) || !FS47Places::Def(Place)) return false;
 	if (!M->Freeform->Consume(Kind)) return false;
 	Lures.RemoveAll([&Place](const FLure& L) { return L.Place == Place; });
-	FLure L; L.Place = Place; L.Kind = Kind; L.Night = Night();
+	FLure L; L.Place = Place; L.Kind = Kind; L.Night = S47TownUseLocal::LureNightAt(M->Freeform->Clock());
 	Lures.Add(L);
 	Note(TEXT("lure"));
 	UE_LOG(LogS47TownUse, Display, TEXT("S47: town: %s set out at %s, night %d"), *Kind, *Place, L.Night);
@@ -820,9 +887,9 @@ FString FS47TownUse::ReadLure(const FString& Place)
 	const bool bSalt = L->Kind == TEXT("salt");
 	const int32 Pick = int32((FCrc::StrCrc32(*Place) + uint32(L->Night) * 31u) % 3u);
 	static const TCHAR* const SaltSaid[] = {
-		TEXT("Licked hollow on one side. Cattle tracks all round it, and a coyote's along the edge of them."),
+		TEXT("Licked hollow on one side. Cattle tracks all around it, and a coyote's along the edge of them."),
 		TEXT("Licked down a little. Deer tracks, a doe and a small one, and they took their time."),
-		TEXT("Licked, and the ground round it trampled. Cattle, by the tracks and by what they left.") };
+		TEXT("Licked, and the ground around it trampled. Cattle, by the tracks and by what they left.") };
 	static const TCHAR* const FeedSaid[] = {
 		TEXT("The cubes are gone. Javelina, by the tracks and the mess they made of the sack."),
 		TEXT("Gone. Coyote tracks over cattle tracks, and the coyote came last."),
@@ -924,6 +991,11 @@ bool FS47TownUse::SelfTest(TArray<FString>& Lines)
 		const auto One = [](double X, double Z, int32 N) { TArray<TPair<FVector2D, int32>> A; A.Emplace(FVector2D(X, Z), N); return A; };
 		Check(Shy(At, 5, One(300, 800, 5)) && Shy(At, 5, One(170, 720, 6)) && !Shy(At, 5, One(170, 720, 4)) && !Shy(At, 5, One(170, 1400, 5)) && !Shy(At, 5, TArray<TPair<FVector2D, int32>>()),
 			TEXT("a lure is shy when something came within 500 m of it that night, and only then"));
+		// M7 (C): a block set out at 06:30 on day 7 waits for night 7: at 08:05 it is still untouched, the next morning it is read
+		const double Day7 = 6 * 86400.0, SetAt = Day7 + 6.5 * 3600, Soon = Day7 + 8 * 3600 + 300, Next = Day7 + 86400 + 8 * 3600 + 300;
+		const int32 Waits = S47TownUseLocal::LureNightAt(SetAt);
+		Check(Waits == 7 && !(FS47FreeformSession::NightOf(Soon) > Waits) && FS47FreeformSession::NightOf(Next) > Waits && S47TownUseLocal::LureNightAt(Day7 + 20 * 3600) == 7 && S47TownUseLocal::LureNightAt(Day7 + 86400 + 2 * 3600) == 7,
+			TEXT("M7: salt set out at 06:30 is not eaten at 08:05; set out in the evening or at two in the morning it waits for that night"));
 	}
 	// Prints: better ones pay more.
 	{

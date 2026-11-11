@@ -6,8 +6,10 @@
 class US47Main;
 class AS47Web;
 class USceneComponent;
+class UTextRenderComponent;
 struct FS47Doc;
 struct FS47MapView;
+class FS47DaleVoice;
 
 // Freeform only (Tom, 7 November: "Forrige nattvakt: Reyes fra Story mode"). Why be at SARO, why build it up, why not just leave:
 // Ward's review, thirty days out; the operator before you, whose locker, notes and survey tags are still here; Mara Ortiz's wagon on
@@ -15,8 +17,13 @@ struct FS47MapView;
 // S47PredecessorText.cpp, and its self-test refuses the far side. Saved under "predecessor"; a save from before it picks it up
 // on load, its own calendar untouched, with a letter that says so. Nothing here takes away an original or a photograph.
 namespace S47PredecessorText{struct FBark;}
+class FS47Predecessor;
+// -S47Freeform -S47AssessMonthTest=routine|investigator|taken|taken-again|cases, with -UserDir=/tmp/...: thirty days through the real StepNews, the
+// post, the letter and the closing (S47AssessMonthTest.cpp). Does nothing without the flag.
+struct FS47AssessMonthTest{static void Step(FS47Predecessor& P,double Dt);};
 class FS47Predecessor
 {
+ friend struct FS47AssessMonthTest;
 public:
  explicit FS47Predecessor(US47Main* Main):M(Main){}
  enum class EOutcome:uint8{None,Stays,KnowsEnough,ClosedOriginals,ClosedNothing,Gone};
@@ -26,13 +33,28 @@ public:
  // Logs: night logs her office has initialed (FS47NightLog, NIGHTLOG-20261108): a station that reports its nights counts a little.
  // Tapes: cassettes played back with something on them nobody heard out there (FS47Tape, TAPE-20261108): what she can send on.
  // Trust: what her office makes of the weekly reports (FS47WardReport, WARD-REPORT-20261108): whole ones raise it, a lie found out lowers it.
- struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0;bool bWagon=false,bGap=false;};
- static constexpr int32 FiledFloor=10,PointsToStay=6,KnownEnough=10,TakenTooOften=3,FirstAssess=30,NoticeDays=7;
+ // M7 (9 November): Concluded counts only a line with something behind it (FS47FreeformCases::Supported); a mystery filed on
+ // nothing is Guessed, and counts for nothing. Photos: prints made in the camera, not enlargements of them. Reprieved: the times
+ // taken when "Not yet" gave the nights back; only a taking after that sends somebody else.
+ struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0,Guessed=0,Reprieved=0,Field=0;bool bWagon=false,bGap=false;};
+ // CHAIN-2-20261109: Field, of the cases carried through, those with something brought in from out there (FS47FreeformSession::
+ // CaseFromField); FieldToStay of them, or the station is not kept, however good the rest. The Monday note has the line every week.
+ static constexpr int32 FieldToStay=1;
+ // CasesToStay: routine alone does not keep the station (M7): the county wants at least one case carried through. LogsForPoint: the
+ // night sheets count once, a little. CarriedWarn: from here Ward names the limit of the carried line in her own words.
+ static constexpr int32 FiledFloor=10,PointsToStay=6,KnownEnough=10,TakenTooOften=3,FirstAssess=30,NoticeDays=7,CasesToStay=1,LogsForPoint=15,CarriedWarn=40,InspectorAfter=21,PayReplyDays=3;
  static constexpr double CleanQuality=.6;
+ // M7, weeks three and four (S47PredecessorLate.cpp): the late cases from LateCaseDay, somebody gone from a post in town between
+ // PostFrom and PostUntil when nobody has gone since AwayRest days, the Sky Watch's bulletin from LateCaseDay (from BulletinBy
+ // whatever the van saw), wagon 23's trip meter from LateTripDay, and the thermos's letter ThermosReplyDays after it went.
+ static constexpr int32 LateCaseDay=12,PostFrom=15,PostUntil=20,AwayRest=7,BulletinBy=15,LateTripDay=15,ThermosReplyDays=3;
  // What the station can show the county: cases carried through, the array mended, records that can be read, a few photographs,
  // and the work, which counts once it is there and no more for being piled up.
  static int32 Points(const FTally& T);
  static EOutcome Decide(const FTally& T);
+ // M7: the third stretch of lost time is answered the morning after it is noticed (TakenWarning said so), not on the assessment day;
+ // after "Not yet" only a further one does it. NoticedDay: the day it was first seen (0: not yet).
+ static bool GoneDue(int32 Taken,int32 Reprieved,int32 NoticedDay,int32 Today){return Taken>=TakenTooOften&&Taken>Reprieved&&NoticedDay>0&&Today>NoticedDay;}
  static const TCHAR* NameOf(EOutcome O);
  static EOutcome OutcomeOf(const FString& Name);
  FTally Count() const;
@@ -55,13 +77,20 @@ public:
  static bool WardHours(double Clock){const double H=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;return H>=8.&&H<21.;}
  bool WardAvailable() const;
  int32 TrayCount() const{return Tray.Num();}
+ // Whether this paper of hers waits unread in the OPS tray (ReadDoc takes it out).
+ bool InTray(const FString& Id) const{return Tray.Contains(Id);}
  bool RadioOn() const;
  // The closing order has taken effect: the county power is off, the array stowed, the truck the district's.
  bool StationClosed() const{return bClosed;}
  int32 ClosingDay() const{return CloseDay;}
+ // The assessment letter has been read: until then OPS says only that it is made (M7: the status does not give it away).
+ bool OutcomeRead() const{return bOutcomeRead;}
+ // SARO kept open and the letter read: the station's own finale has happened or is due (StepKept).
+ bool KeptOpen() const{return Outcome==EOutcome::Stays&&bOutcomeRead;}
 
  // OPS: what lies in the tray, the keys, and the station's status. SARO: UNDER REVIEW.
- void OpsRows(TArray<TSharedRef<SWidget>>& Rows);
+ // More: the session's own papers for the same tray (CASES-OPS-20261109: the morning's case replies), after Ward's and Reyes's.
+ void OpsRows(TArray<TSharedRef<SWidget>>& Rows,const TArray<TSharedRef<SWidget>>& More=TArray<TSharedRef<SWidget>>());
  void OpsKeys(TArray<TSharedRef<SWidget>>& Rows);
  FString StatusLine() const;
  FString AccountLine() const;
@@ -124,7 +153,22 @@ public:
  void TestFound(const FString& Id);
  void TestHear(const FString& Id){Hear(Id);}
  bool TestRadioOff();
- void TestReset(){Outcome=EOutcome::None;}
+ void TestReset(){Outcome=EOutcome::None;bOutcomeRead=false;}
+ // M7, weeks three and four (S47PredecessorLate.cpp), for F10 "Late cases (M7)": "post" somebody in Caliche gone now, "bulletin" the
+ // Sky Watch's sheet in the box now, "minute" its burst due a minute from now, "trip" wagon 23 as on day 15 with the call-out read,
+ // "thermos" the attendant's talk had, "reply" the thermos's letter due now. Why: what was done. False: not in a Freeform game.
+ bool TestLate(const FString& What,FString& Why);
+ // Where a late case's place is now (F10's Go): "post" the post of whoever is gone, "cairn", "rack". False: nowhere to go.
+ bool LateSpot(const FString& What,FString& OutArea,double& OutX,double& OutZ) const;
+ // The world clock of the Sky Watch's printed minute; 0 until the bulletin is posted.
+ double MinuteClock() const{return LateMinuteAt>0?LateMinuteAt:LateBulletinDay>0?double(LateBulletinDay+2)*86400.+50*60.:0;}
+ // "Not yet" on the letter to the next operator, as the button does it.
+ void TestNotYet(){NotYet();}
+ // Critic round 5: "Not yet" is given once. After it, a further stretch of lost time ends it, as her Monday note says.
+ bool OffersNotYet() const{return TakenAtReprieve==0;}
+ // Critic round 5: while the array is run up after KEPT OPEN, a dish's own pointing (where it goes back to), for the save; false
+ // when it is not one of the run, or there is none under way.
+ bool SaluteTarget(int32 I,double& Az,double& El) const;
  void TestTakeBack(){TakeKeysBack();}
  // A topic's or a bark's condition: a thing found, or how far things have gone. Public for the self-test.
  bool Meets(const TCHAR* Needs) const;
@@ -136,15 +180,64 @@ private:
  TSet<FString> Seen,HeardOf;
  TArray<FString> Tray;
  int32 OpensDay=1,AssessDay=FirstAssess,WeekNoted=0,RadioOffDay=-1,NoraState=0,DaleDay=0;
+ // M7: the times taken at "Not yet", the day a third taking was noticed, and the day the Stays letter was read.
+ int32 TakenAtReprieve=0,GoneNoticed=0,KeptDay=0;
+ bool bOutcomeRead=false;
+ // Critic round 5: a save from before M7 has no word of the reprieve or of the letter being read. Settled on the first Step,
+ // once the post is loaded (SettleLegacy): its "Not yet" kept, its letter not yet taken out of the box unread, its KEPT OPEN finale.
+ bool bLegacyReprieve=false,bLegacyRead=false;
+ void SettleLegacy(int32 Taken,bool bAssessmentPosted,int32 Today);
  EOutcome Outcome=EOutcome::None;
  bool bOlder=false,bLeft=false,bTest=false,bPayReturned=false,bClosed=false,bStowed=false;
  int32 CloseDay=0;
  void StepClosing();
  void Close();
  void StepWarnings();
- int32 LeftDay=0;double LeftClock=0;
+ // M7: after KEPT OPEN. The reverse of Close and StepClosing: the rack clicks over and the whole array is run up and back down from
+ // Dale's bench, once, the first quiet time at the station; the second locker gets a name; a reply to the routed pay comes by post.
+ void StepKept(double Dt);
+ struct FSaluteDish{int32 I=0;double Az=0,El=0;};
+ TArray<FSaluteDish> Salute;double SaluteTime=0;int32 SaluteStage=0;
+ TWeakObjectPtr<UTextRenderComponent> KeptLabel;
+ // M7, weeks three and four (S47PredecessorLate.cpp): the late cases' traces out in the world (FS47FreeformCases' PostLine, MinuteLine
+ // and RakedLine), the Sky Watch's bulletin, somebody gone from a post in town when nobody has gone by then, and unit 23's thermos
+ // on its way back to Ortiz's family. Saved: the bulletin's postmark, the day the thermos went, the day a post was emptied and the
+ // last day somebody was seen gone. Not saved: the sound at a place, which starts again where the player is.
+ void StepLate(double Dt);
+ void StepLatePost(int32 Today,double Hour);
+ void StepLateMinute(int32 Today);
+ void StepLateRaked(int32 Today);
+ void StepLateRack();
+ void StepLateThermos(int32 Today);
+ // Keeps a late line's trace (its text from the case's seeded reading) with what the player saw or heard. False: kept already.
+ bool LateKeep(int32 Line,int32 Clue,const FString& Toast);
+ void LateSound(const FString& Name,const FVector& At,float Gain);
+ void LateQuiet();
+ bool InControlRoom() const;
+ FString LateAway() const; // who in Caliche is gone now (FS47Townsfolk), empty: nobody
+ int32 LateBulletinDay=0,LateThermosDay=0,LatePostDay=0,LateAwayDay=0;
+ // F10 (TestLate): the day gates let go, and the printed minute set to a clock of its own. Neither is saved.
+ double LateIn=0,LateRackAt=-1,LateMinuteAt=0;
+ bool bLateLoop=false,bCairnHeard=false,bLateNow=false;
+ FString LateLoopName;
+ void OpenKept();
+ void NotYet();
+ // The day the first assessment was set for: a reprieve never comes back earlier than it.
+ int32 FirstAssessDay() const{return bOlder?OpensDay+FirstAssess:FirstAssess;}
+ // June 30, 1986, the end of the fiscal year the station is kept through, as a day of this game.
+ int32 FiscalEndDay() const;
+ // What you leave behind and how far you went into Reyes: OpenLeft's account, shared by the page after KEPT OPEN.
+ // bStaying: told to the operator who stays, not the one who goes.
+ void Account(TArray<TSharedRef<SWidget>>& Rows,const FTally& C,float Width,bool bStaying=false) const;
+ // Ward's word on each thing she reads (M7: no lever she counts goes unsaid).
+ FString LeverWords(const FTally& C) const;
+ // The title, and what the button says about the save: away from the building nothing is filed (M7-E, S47SaroSave).
+ bool AwayFromStation() const;
+ FString TitleButton() const; int32 LeftDay=0;double LeftClock=0;
  double NewsIn=8,RingLeft=0,NoraNext=0;
- bool bLetterTold=false,bRinging=false,bRadioLoop=false;
+ // bSawTutorial: the first shift ran in this sitting, so the HUD's card comes in with the letter when it is done (critic round 5:
+ // the toast said it a third time).
+ bool bLetterTold=false,bRinging=false,bRadioLoop=false,bSawTutorial=false;
  FString ToastSeen;double ToastAt=0;
  FString BackTo; // reopened on the next tick: not from inside the panel's own closing
  // In the world.
@@ -170,8 +263,19 @@ private:
  void StepNews(double Dt);
  void StepRing(double Dt);
  void Hear(const FString& Id);
- // Dale's next line that is due, if any; marked said by whoever delivers it.
- const S47PredecessorText::FBark* NextBark() const;
+ // Dale's next line that is due, if any; marked said by whoever delivers it. D45-20261110 (D45-26): bSecondToday, a second line on the
+ // first day: only one that answers something the player went and did (DayOneSecond: the windmill's tag, the locker, the mine).
+ const S47PredecessorText::FBark* NextBark(bool bSecondToday=false) const;
+ static bool DayOneSecond(const TCHAR* Id);
+ // D45-20261110: how many of his lines have been said (or left on the slip) in this game; on the first day, how many today.
+ int32 BarksSaid() const;
+ // D45-20261110: on the first day he may say two (his hello and one answer), unless he gave up calling today.
+ bool SecondBarkToday() const;
+ // D45-20261110: his hello is for the walkie: not on the slip by the phone in the first shift, nor while the set is in hand and he has
+ // not given up calling today. After it, his line about his bench (BenchAt, real seconds; -1 none; in memory only).
+ bool HelloWaitsForWalkie() const;
+ double BenchAt=-1;
+ void StepBench();
  void StepDale();
  // The walkie (not saved: after a Continue he simply calls again). How often he has answered today, when he last did, whether
  // a hail of his went unanswered, when he tries again, and which stretch of lost time he has already said something about.
@@ -189,6 +293,11 @@ private:
  void ShowDoc(const FS47Doc& Doc,const FString& Back);
  FS47Doc MakeDoc(const FString& Id) const;
  void ShowTalk(const FString& Who,const FString& TopicId);
+ // DALE-WIRE-20261109: Dale's own takes on the service line (FS47DaleVoice, "phone"), each line of his that the page shows, one
+ // after another; stopped when the receiver goes down (the page closed or put down) or another page of his replaces it. Lines with
+ // no take are the page's text, as before. Not saved, and it marks nothing as heard.
+ TSharedPtr<FS47DaleVoice> Phone;
+ void SpeakPhone(const TArray<FString>& Lines);
  void Leave();
  void TakeKeysBack();
  void ToTitle(bool bNextOperator);

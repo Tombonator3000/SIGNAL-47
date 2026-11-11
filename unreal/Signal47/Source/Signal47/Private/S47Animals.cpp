@@ -1,4 +1,5 @@
 #include "S47Animals.h"
+#include "S47AnimalWarn.h"
 
 #include "Animation/AnimSequence.h"
 #include "AnimationRuntime.h"
@@ -251,14 +252,62 @@ bool FS47Animals::Build()
 	for (int32 I = 0; I < 4; ++I) Cy.Legs[I] = Make(CubeMesh, Fur.Get(), true);
 	Cy.EyeL = Make(BallMesh, Glow, false); Cy.EyeR = Make(BallMesh, Glow, false);
 	// the rigged ones, where this build has them: a dun coyote with a pale belly, a brown ranch dog with a cream chest
-	BuildRig(CoyoteRig, TEXT("Coyote"), 70, Holder, Fur.Get(), Tint(FLinearColor(.62f, .55f, .44f), .9f), Tint(FLinearColor(.03f, .03f, .03f), .6f));
-	BuildRig(DogRig, TEXT("Dog"), 62, Holder, Tint(FLinearColor(.17f, .11f, .07f), .9f), Tint(FLinearColor(.66f, .58f, .47f), .9f), Tint(FLinearColor(.03f, .03f, .03f), .6f));
+	// (PT-FARM-GROUND-20261109: the colours go on copies of the model's own glTF materials, which may be drawn on a skeletal mesh; the
+	//  game's lit material may not, and in the packaged game the dog and the coyote were the engine's grey, Tom's "something big")
+	BuildRig(CoyoteRig, TEXT("Coyote"), 70, Holder, { FLinearColor(.33f, .28f, .21f), .9f }, { FLinearColor(.62f, .55f, .44f), .9f }, { FLinearColor(.03f, .03f, .03f), .6f });
+	BuildRig(DogRig, TEXT("Dog"), 62, Holder, { FLinearColor(.17f, .11f, .07f), .9f }, { FLinearColor(.66f, .58f, .47f), .9f }, { FLinearColor(.03f, .03f, .03f), .6f });
 	return true;
 }
 
-bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, UMaterialInterface* Coat, UMaterialInterface* Pale, UMaterialInterface* Nose)
+bool FS47Animals::RigFramesAgree(double PawsUp, double HeadUp, double Sole, double Tall, FString& Why)
 {
-	Rig.bTried = true; Rig.Animal = Animal; Rig.bReady = false;
+	// Along the skeleton's up, from the foot of the mesh's bounds, as a share of its height: a quadruped's paws are at the foot
+	// (the Quaternius paw bones some 2 % up) and its head well up in it (some 80 %). A mesh in another frame from its bones has
+	// its length along that up instead: the paws come out a third or more of the way up, or under it.
+	if (!(Tall > 0) || !FMath::IsFinite(PawsUp) || !FMath::IsFinite(HeadUp) || !FMath::IsFinite(Sole)) { Why = TEXT("no height"); return false; }
+	const double Paws = (PawsUp - Sole) / Tall, Head = (HeadUp - Sole) / Tall;
+	Why = FString::Printf(TEXT("paws %.0f %% and head %.0f %% up the mesh"), Paws * 100, Head * 100);
+	return Paws > -.05 && Paws < .2 && Head > .35 && Head < 1.05;
+}
+
+void FS47Animals::SetEyeShine(double Shine)
+{
+	const bool bOn = Shine > 0.02;
+	const FLinearColor Glow = bOn ? FLinearColor(.75f, .95f, .4f) * float(90.0 * Shine) : FLinearColor::Black;
+	if (UMaterialInstanceDynamic* Box = EyeGlow.Get())
+	{
+		Box->SetVectorParameterValue(TEXT("Emissive"), Glow);
+		Box->SetScalarParameterValue(TEXT("EmissivePower"), bOn ? 1.f : 0.f);
+	}
+	// the glTF material's own emissive (MF_Emissive: factor times strength)
+	for (FRig* Rig : { &CoyoteRig, &DogRig }) if (UMaterialInstanceDynamic* Own = Rig->Eye.Get())
+	{
+		Own->SetVectorParameterValue(TEXT("EmissiveFactor"), Glow);
+		Own->SetScalarParameterValue(TEXT("EmissiveStrength"), bOn ? 1.f : 0.f);
+	}
+}
+
+FString FS47Animals::RigReport() const
+{
+	FString Out;
+	for (const FRig* Rig : { &CoyoteRig, &DogRig })
+	{
+		if (!Rig->bTried) continue;
+		FString Mats;
+		if (const USkeletalMeshComponent* Part = Rig->Mesh.Get())
+		{
+			int32 Good = 0;
+			for (int32 I = 0; I < Part->GetNumMaterials(); ++I) if (const UMaterialInterface* Mat = Part->GetMaterial(I)) Good += Mat->GetUsageByFlag(MATUSAGE_SkeletalMesh);
+			Mats = FString::Printf(TEXT(", %d of %d materials drawable on a skeletal mesh"), Good, Part->GetNumMaterials());
+		}
+		Out += FString::Printf(TEXT("%s%s %s (%s)%s"), Out.IsEmpty() ? TEXT("") : TEXT("; "), *Rig->Animal, Rig->bReady ? TEXT("rigged") : TEXT("not shown"), *Rig->Note, *Mats);
+	}
+	return Out.IsEmpty() ? FString(TEXT("no rig tried yet (Freeform, outdoors, once)")) : Out;
+}
+
+bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USceneComponent* Holder, const FCoat& Coat, const FCoat& Pale, const FCoat& Nose)
+{
+	Rig.bTried = true; Rig.Animal = Animal; Rig.bReady = false; Rig.Note = TEXT("no model in this build");
 	const FString Package = FString::Printf(TEXT("/Game/Free/Animals/%s/SK_%s"), Animal, Animal);
 	if (!FPackageName::DoesPackageExist(Package) || !M || !M->Web || !Holder) return false;
 	USkeletalMesh* Body = LoadObject<USkeletalMesh>(nullptr, *(Package + TEXT(".SK_") + Animal));
@@ -273,6 +322,7 @@ bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USce
 	FName HeadName;
 	if (!FindRigBones(Ref, HeadAt, Paws, HeadName))
 	{
+		Rig.Note = TEXT("no head or paws in the skeleton");
 		UE_LOG(LogS47Animals, Warning, TEXT("S47: animals %s rig has no head or paws (%d bones): the boxes stay"), Animal, Ref.GetNum());
 		return false;
 	}
@@ -288,12 +338,26 @@ bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USce
 	const double Tall = 2.0 * (FMath::Abs(Up.X) * Ext.X + FMath::Abs(Up.Y) * Ext.Y + FMath::Abs(Up.Z) * Ext.Z);
 	if (Up.IsNearlyZero() || Ahead.IsNearlyZero() || Tall < 0.01)
 	{
+		Rig.Note = FString::Printf(TEXT("unusable, height %.3f"), Tall);
 		UE_LOG(LogS47Animals, Warning, TEXT("S47: animals %s rig unusable (height %.3f): the boxes stay"), Animal, Tall);
 		return false;
 	}
 	Rig.Fix = FRotationMatrix::MakeFromXZ(Ahead, Up).ToQuat().Inverse();
 	// the feet: under the paws, at the bottom of the bounds along up
 	const double Sole = FVector::DotProduct(Bounds.Origin, Up) - 0.5 * Tall;
+	// PT-FARM-GROUND-20261109: the bounds are the mesh's, the paws and the head the skeleton's. When they are not in one frame (the
+	// 8 November import: up from the bones, but the mesh's length along that up, 38936 units "tall" for a dog), the skinned body
+	// sweeps through the ground as it plays and stands nowhere near its feet. Then it is not shown: the dog is heard, the coyote
+	// is the boxes, until it is imported again (Tools/animals/check_rig.py says which).
+	FString Frames;
+	if (!RigFramesAgree(FVector::DotProduct(PawsAt, Up), FVector::DotProduct(HeadAt, Up), Sole, Tall, Frames)
+		&& !FParse::Param(FCommandLine::Get(), TEXT("S47RigsAsImported")))
+	{
+		Rig.Note = TEXT("mesh and skeleton in different frames: ") + Frames;
+		UE_LOG(LogS47Animals, Warning, TEXT("S47: animals %s rig not shown: the mesh and its skeleton are in different frames (%s; %.0f units along up); %s"),
+			Animal, *Frames, Tall, FCString::Strcmp(Animal, TEXT("Dog")) == 0 ? TEXT("the dog is only heard") : TEXT("the boxes stay"));
+		return false;
+	}
 	Rig.Feet = PawsAt - Up * (FVector::DotProduct(PawsAt, Up) - Sole);
 	Rig.Scale = HeightCm / Tall;
 	Rig.YawOffset = 0; Rig.Lift = 0;
@@ -304,18 +368,30 @@ bool FS47Animals::BuildRig(FRig& Rig, const TCHAR* Animal, double HeightCm, USce
 	Part->SetCollisionEnabled(ECollisionEnabled::NoCollision); Part->SetCastShadow(true);
 	Part->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	Part->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
-	// its colours, by the source's own slots: the coat, the pale under it, a dark nose; the eyes the ones that shine
+	// its colours, by the source's own slots: the coat, the pale under it, a dark nose; the eyes the ones that shine. Each on a copy of
+	// the slot's own material (the glTF import's MI_Default_Opaque, whose parent is made for skeletal meshes: BaseColorFactor,
+	// RoughnessFactor, EmissiveFactor). A slot whose material cannot be drawn on a skeletal mesh keeps what it has.
 	const TArray<FSkeletalMaterial>& Slots = Body->GetMaterials();
+	int32 Coloured = 0;
 	for (int32 I = 0; I < Slots.Num(); ++I)
 	{
 		const FString Slot = Slots[I].MaterialSlotName.ToString();
-		UMaterialInterface* Mat = Coat;
-		if (Slot.Contains(TEXT("Eye")) || Slot.EndsWith(TEXT("002"))) Mat = EyeGlow.Get();
-		else if (Slot.Contains(TEXT("Light")) || Slot.EndsWith(TEXT("003"))) Mat = Pale;
-		else if (Slot.Contains(TEXT("Nose")) || Slot.EndsWith(TEXT("006"))) Mat = Nose;
-		else if (Slot.EndsWith(TEXT("001"))) Mat = Pale;
-		if (Mat) Part->SetMaterial(I, Mat);
+		UMaterialInterface* Own = Slots[I].MaterialInterface;
+		if (!Own || !Own->GetUsageByFlag(MATUSAGE_SkeletalMesh)) continue;
+		UMaterialInstanceDynamic* Mid = UMaterialInstanceDynamic::Create(Own, M->Web.Get());
+		if (!Mid) continue;
+		const bool bEye = Slot.Contains(TEXT("Eye")) || Slot.EndsWith(TEXT("002"));
+		const FCoat& C = bEye ? FCoat{ FLinearColor(.04f, .04f, .03f), .3f }
+			: (Slot.Contains(TEXT("Light")) || Slot.EndsWith(TEXT("003")) || Slot.EndsWith(TEXT("001"))) ? Pale
+			: (Slot.Contains(TEXT("Nose")) || Slot.EndsWith(TEXT("006"))) ? Nose : Coat;
+		Mid->SetVectorParameterValue(TEXT("BaseColorFactor"), C.Colour);
+		Mid->SetScalarParameterValue(TEXT("RoughnessFactor"), C.Rough);
+		Mid->SetScalarParameterValue(TEXT("MetallicFactor"), 0.f);
+		if (bEye) { Mid->SetVectorParameterValue(TEXT("EmissiveFactor"), FLinearColor::Black); Mid->SetScalarParameterValue(TEXT("EmissiveStrength"), 0.f); Rig.Eye = Mid; }
+		Part->SetMaterial(I, Mid);
+		++Coloured;
 	}
+	Rig.Note = FString::Printf(TEXT("%d of %d slots coloured, %s"), Coloured, Slots.Num(), *Frames);
 	Part->SetVisibility(false); Part->SetHiddenInGame(true);
 	Part->RegisterComponent();
 	Rig.Mesh = Part; Rig.bReady = true;
@@ -524,7 +600,7 @@ bool FS47Animals::StartCrossing(bool bAhead, double Dist)
 	return true;
 }
 
-bool FS47Animals::StartOut()
+bool FS47Animals::StartOut(double StareFor)
 {
 	// A coyote out on its own business: off to one side of where the player looks, 18 to 30 m out on foot (inside the lamp's reach),
 	// trotting across or away; from the cab, crossing in the headlights further on. Never by a building.
@@ -556,6 +632,13 @@ bool FS47Animals::StartOut()
 	Cy.Gait = FMath::FRandRange(0.f, 6.f); Cy.Ground = Start.Y; Cy.GroundIn = 0.2; Cy.Yaw = S47AnimalsLocal::YawOf(Way); Cy.HeadYaw = 0; Cy.bLooked = false; Cy.Shine = 0;
 	Cy.SniffIn = FMath::FRandRange(5.f, 12.f); Cy.Out = 0; Cy.Glance = 0; Cy.bAtNothing = false;
 	++CoyotesOut;
+	// N1110: a warning (Warn): it is already stopped, looking at the player, and stays so for StareFor seconds
+	if (StareFor > 0)
+	{
+		BeginStare(Eye, false);
+		Cy.StareAt = StareToward(Cy.At, Eye, 6.0, FMath::FRand());
+		Cy.Left = StareFor; Cy.Glance = 0.3;
+	}
 	PoseCoyote(0);
 	if (bLog)
 	{
@@ -670,11 +753,7 @@ void FS47Animals::PoseCoyote(double Dt)
 		if (FMath::Abs(Shine0 - Cy.Shine) > 0.01 || (Shine0 <= 0 && Cy.Shine > 0))
 		{
 			Cy.Shine = Shine0;
-			if (UMaterialInstanceDynamic* Glow0 = EyeGlow.Get())
-			{
-				Glow0->SetVectorParameterValue(TEXT("Emissive"), Shine0 > 0.02 ? FLinearColor(.75f, .95f, .4f) * float(90.0 * Shine0) : FLinearColor::Black);
-				Glow0->SetScalarParameterValue(TEXT("EmissivePower"), Shine0 > 0.02 ? 1.f : 0.f);
-			}
+			SetEyeShine(Shine0);
 		}
 		return;
 	}
@@ -728,11 +807,7 @@ void FS47Animals::PoseCoyote(double Dt)
 	if (FMath::Abs(Shine - Cy.Shine) > 0.01 || (Shine <= 0 && Cy.Shine > 0))
 	{
 		Cy.Shine = Shine;
-		if (UMaterialInstanceDynamic* Glow = EyeGlow.Get())
-		{
-			Glow->SetVectorParameterValue(TEXT("Emissive"), Shine > 0.02 ? FLinearColor(.75f, .95f, .4f) * float(90.0 * Shine) : FLinearColor::Black);
-			Glow->SetScalarParameterValue(TEXT("EmissivePower"), Shine > 0.02 ? 1.f : 0.f);
-		}
+		SetEyeShine(Shine);
 	}
 }
 
@@ -1022,6 +1097,32 @@ bool FS47Animals::DevCoyote(FString& Why, bool bThreat)
 	return true;
 }
 
+bool FS47Animals::Warn(bool bBirds, const FVector& Threat, double Lead, FString& Why)
+{
+	if (!M || !M->IsFreeform() || !M->Player || !Build()) { Why = TEXT("Freeform only"); return false; }
+	if (!Outdoors()) { Why = TEXT("not out on foot"); return false; }
+	const FVector Stand(M->Player->Pos.X, M->Player->FloorY, M->Player->Pos.Z);
+	if (bBirds)
+	{
+		if (Covey.Mode == ECovey::Flying) { Why = TEXT("a covey is up already"); return false; }
+		// one sitting near is the one; else one is put near, 16 to 30 m off, where there is cover (not by a building)
+		if (Covey.Mode != ECovey::Sitting || S47AnimalsLocal::Flat(Stand, Covey.At) > 40)
+		{
+			Covey.Mode = ECovey::None;
+			PlaceCovey(Stand, FS47Cam::Of(M->Player).Forward);
+		}
+		if (Covey.Mode != ECovey::Sitting) { Why = TEXT("no cover for a covey here"); return false; }
+		Flush(Threat, EFlush::Danger);
+		return true;
+	}
+	if (!NightNow()) { Why = TEXT("coyotes are out at night"); return false; }
+	if (Coyote.Mode != ECoyote::None) { Why = TEXT("one is out already"); return false; }
+	FVector2D RoadAt;
+	if (M->Freeform && M->Freeform->EventPlaces && RoadOf(EyeNow(), RoadAt) && M->Freeform->EventPlaces->NearestTo(RoadAt, 90, ES47PlaceTrait::Town)) { Why = TEXT("not in town"); return false; }
+	if (!StartOut(Lead)) { Why = TEXT("too near a building here"); return false; }
+	return true;
+}
+
 bool FS47Animals::DevDog(FString& Why)
 {
 	FVector2D From;
@@ -1055,6 +1156,10 @@ bool FS47Animals::SelfTest(TArray<FString>& Lines)
 	Check(DogQuiet(1) > DogQuiet(0.2) && DogQuiet(0) >= 25, TEXT("the dog keeps quiet longer the worse it was"));
 	FS47Animals Bare(nullptr); Bare.Step(1); Bare.Reset();
 	FVector From = FVector::ZeroVector;
+	{
+		FString Why;
+		Check(!Bare.Warn(true, FVector::ZeroVector, 7, Why) && !Bare.Warn(false, FVector::ZeroVector, 7, Why) && !Bare.CoyoteOut() && Bare.Flushes() == 0, TEXT("without a game the warning puts no animal out"));
+	}
 	Check(Bare.HerdFear(FVector::ZeroVector, From) == 0 && !Bare.CoyoteOut() && !Bare.CoveyHere() && Bare.Flushes() == 0, TEXT("without a game no animal is out and nothing frightens the herd"));
 	// M2 critic: the rig's bones are "FF.L" in the glTF and "FF_L" as Unreal imported them; both are looked for
 	{
@@ -1073,6 +1178,31 @@ bool FS47Animals::SelfTest(TArray<FString>& Lines)
 		Check(bFound && !HeadName.IsNone() && !(Paws[0] - Paws[2]).IsNearlyZero(), FCString::Strcmp(Animal, TEXT("Coyote")) == 0
 			? TEXT("the coyote's model is there, and its head and four paws are found: it is the rigged coyote, not the boxes")
 			: TEXT("the dog's model is there, and its head and four paws are found: the dog is seen, not only heard"));
+		// PT-FARM-GROUND-20261109: its own materials can be coloured on a skeletal mesh (the game's lit one cannot: the engine's grey)
+		if (Body)
+		{
+			int32 Drawable = 0;
+			for (const FSkeletalMaterial& Slot : Body->GetMaterials()) Drawable += Slot.MaterialInterface && Slot.MaterialInterface->GetUsageByFlag(MATUSAGE_SkeletalMesh);
+			Check(Drawable > 0, FCString::Strcmp(Animal, TEXT("Coyote")) == 0 ? TEXT("the coyote's own materials may be drawn on a skeletal mesh: it is coloured, not the engine's grey")
+				: TEXT("the dog's own materials may be drawn on a skeletal mesh: it is coloured, not the engine's grey"));
+		}
+		// whether its mesh and skeleton agree is said here, not failed: a bad import is then not shown (BuildRig), which is safe
+		if (bFound)
+		{
+			FVector Up = FVector::CrossProduct(((Paws[0] + Paws[1]) - (Paws[2] + Paws[3])).GetSafeNormal(), ((Paws[0] + Paws[2]) - (Paws[1] + Paws[3])).GetSafeNormal()).GetSafeNormal();
+			const FVector PawsAt = (Paws[0] + Paws[1] + Paws[2] + Paws[3]) * .25;
+			if (FVector::DotProduct(Up, HeadAt - PawsAt) < 0) Up = -Up;
+			const FBoxSphereBounds B = Body->GetBounds();
+			const double Tall = 2.0 * (FMath::Abs(Up.X) * B.BoxExtent.X + FMath::Abs(Up.Y) * B.BoxExtent.Y + FMath::Abs(Up.Z) * B.BoxExtent.Z);
+			FString Why;
+			const bool bAgree = RigFramesAgree(FVector::DotProduct(PawsAt, Up), FVector::DotProduct(HeadAt, Up), FVector::DotProduct(B.Origin, Up) - .5 * Tall, Tall, Why);
+			Lines.Add(FString::Printf(TEXT("ok animals: %s rig %s (%s)"), Animal, bAgree ? TEXT("mesh and skeleton in one frame") : TEXT("NOTE mesh and skeleton in different frames, not shown until imported again"), *Why));
+		}
+	}
+	{
+		FString Why;
+		Check(RigFramesAgree(7, 255, 0, 319, Why) && !RigFramesAgree(7, 263, -14740, 38936, Why) && !RigFramesAgree(0, 0, 0, 0, Why),
+			TEXT("a rig whose paws stand at the foot of its mesh is shown; one whose mesh lies in another frame from its bones is not"));
 	}
 	{
 		bool bSpread = true, bLeft = false, bRight = false;
@@ -1105,5 +1235,6 @@ bool FS47Animals::SelfTest(TArray<FString>& Lines)
 		}
 		Check(bAside, TEXT("on foot a coyote is first out off to one side, within the lamp's reach, never paraded across the middle of the view"));
 	}
+	bOk &= FS47AnimalWarn::SelfTest(Lines);
 	return bOk;
 }

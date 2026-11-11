@@ -5,10 +5,11 @@
   python3 -I Tools/nightsounds/prepare.py --stage [CONTENT] write CONTENT/Audio/Raw/night/<clip>.wav (default: this project's
                                                             Content), which the game reads at run time (S47Ambience NightClip)
   python3 -I Tools/nightsounds/prepare.py --check           the clips are all there and match sources.json
+  --only PREFIX with --originals: cut only the clips whose name starts so (shed: the feed shed's, WEEKLY-CASE-20261109)
 
 The originals are downloaded data: they are only ever decoded by ffmpeg, never run. Needs python3 and ffmpeg only.
 Each clip: mono, 44.1 kHz, a high-pass under the rumble, its loud part levelled to -18 dBFS RMS with the peak under -1 dBFS,
-short fades; a held sound (loop) has its last two seconds crossfaded into its first, so that it can loop without a seam.
+short fades (fade_in/fade_out in a row: shorter, for a knock's attack); a held sound (loop) has its last two seconds crossfaded into its first, so that it can loop without a seam.
 """
 import argparse
 import array
@@ -79,15 +80,18 @@ def sources():
     return json.load(open(os.path.join(HERE, 'sources.json'), encoding='utf-8'))['clips']
 
 
-def cut(originals):
+def cut(originals, only=''):
     os.makedirs(os.path.join(HERE, 'clips'), exist_ok=True)
     for row in sources():
+        if only and not row['clip'].startswith(only):
+            continue
         src = os.path.join(originals, '%d.mp3' % row['id'])
         if not os.path.isfile(src):
             sys.exit('S47: night sounds: missing original %s' % src)
         samples = decode(src, row['from'], row['to'], row.get('highpass', 80))
         samples = level(samples)
-        samples = loop(samples) if row.get('loop') else fades(samples, 0.03, 0.25)
+        # fade_in/fade_out: a knock or a kick keeps its attack (the shed's clips)
+        samples = loop(samples) if row.get('loop') else fades(samples, row.get('fade_in', 0.03), row.get('fade_out', 0.25))
         out = os.path.join(HERE, 'clips', row['clip'] + '.ogg')
         encode(samples, out, 'ogg')
         print('S47: night sound %s: %.1f s from %d (%s)' % (row['clip'], len(samples) / RATE, row['id'], row['author']))
@@ -119,9 +123,10 @@ def main():
     p.add_argument('--originals')
     p.add_argument('--stage', nargs='?', const=os.path.join(HERE, '..', '..', 'Content'))
     p.add_argument('--check', action='store_true')
+    p.add_argument('--only', default='')
     a = p.parse_args()
     if a.originals:
-        cut(a.originals)
+        cut(a.originals, a.only)
     if a.stage:
         stage(os.path.abspath(a.stage))
     if a.check or not (a.originals or a.stage):

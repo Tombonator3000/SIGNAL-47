@@ -1,5 +1,6 @@
 #include "S47UfoPresentation.h"
 
+#include "S47SkyVisitors.h"
 #include "S47Three.h"
 #include "S47Web.h"
 #include "Camera/PlayerCameraManager.h"
@@ -215,13 +216,26 @@ void FS47UfoPresentation::Show(const FFrame& Input)
 	for (int32 I = 0; I < 3; ++I)
 	{
 		const FVector At = S47Three::ToUE(F.Position + Offsets[I] - FVector(0, Drop, 0));
-		const double Pulse = F.bCalm ? 1. : .89 + .11 * FMath::Sin(F.Seconds * .8 + I * 2.1);
+		double Pulse = F.bCalm ? 1. : .89 + .11 * FMath::Sin(F.Seconds * .8 + I * 2.1);
 		const FLinearColor Base = I == 1 ? FMath::Lerp(Red, WarmWhite, .3f) : Red;
-		const FLinearColor Color = FMath::Lerp(Base, NearWhite, float(F.NearWhite));
-		V.Lamps[I]->SetWorldLocation(At); V.Lamps[I]->SetWorldScale3D(FVector(F.Width * .035)); V.Lamps[I]->SetVisibility(true);
+		FLinearColor Color = FMath::Lerp(Base, NearWhite, float(F.NearWhite));
+		// UFO-TWINKLE-20261110: the sky lights' own glint (FS47SkyGlint, 9 Nov) at a quarter of its pace, per lamp: bigger core and halo,
+		// slow size and colour drift. Calm flashes damp it to a fifth; F10's plain comparison draws the old lamps.
+		double LampK = 1., HaloK = 1.;
+		if (!FS47SkyGlint::Plain())
+		{
+			double Swell = 1.;
+			const FVector Gain = FS47SkyGlint::Gains(F.Seconds * .25, 100 + I, FMath::DegreesToRadians(20.), &Swell);
+			const double Damp = F.bCalm ? .2 : 1., Mean = (Gain.X + Gain.Y + Gain.Z) / 3.;
+			Pulse *= 1. + Damp * (Mean - 1.);
+			Color.R *= float(1. + Damp * (Gain.X / Mean - 1.)); Color.G *= float(1. + Damp * (Gain.Y / Mean - 1.)); Color.B *= float(1. + Damp * (Gain.Z / Mean - 1.));
+			const double Drift = 1. + Damp * (Swell - 1.);
+			LampK = FS47SkyGlint::SizeScale * Drift; HaloK = FS47SkyGlint::SizeScale * 1.25 * Drift;
+		}
+		V.Lamps[I]->SetWorldLocation(At); V.Lamps[I]->SetWorldScale3D(FVector(F.Width * .035 * LampK)); V.Lamps[I]->SetVisibility(true);
 		V.LampMids[I]->SetVectorParameterValue(TEXT("Color"), Color);
 		V.LampMids[I]->SetScalarParameterValue(TEXT("EmissivePower"), float(F.Opacity * Pulse * (7 + 7 * F.NearWhite)));
-		V.Billboard(V.Halos[I].Get(), At, F.Width * (.19 + .09 * F.NearWhite), EyeUE);
+		V.Billboard(V.Halos[I].Get(), At, F.Width * (.19 + .09 * F.NearWhite) * HaloK, EyeUE);
 		V.HaloMids[I]->SetVectorParameterValue(TEXT("Color"), Color);
 		V.HaloMids[I]->SetScalarParameterValue(TEXT("Brightness"), float(F.Opacity * Pulse * (.65 + F.NearWhite)));
 	}

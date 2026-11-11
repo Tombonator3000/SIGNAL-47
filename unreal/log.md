@@ -2181,3 +2181,98 @@ Ikke bra ennå: bare vurdert i bilder, ikke gått langs foten; planter på vifte
 Gren `worktree-agent-a53f452b651d06604`, flettet av koordinator. Skumringen går ikke lenger som blått månelys: månene låner en varm glød fra vest (farge etter solas dybde), og et mykt blått lys fyller skyggesidene mens skumringen varer. Skyene får mauve på kroppen (`s47.dusk.*`). Lommelykta har laget lysprofil, 80 m rekkevidde og peker 7 grader ned (`s47.flash.*`). Natta er uendret (`s47.night.Base` 1; 1,8 venter på Tom). Kreosoten er spredt, står langs tørrløp og når ut til 400 m, med ny `T_FF_Field` (`import_field.py`). Gården har fått vindmølle og bølgeblikktank, SAROs veilykter kobrahoder og grenstolpene glassisolatorer. Pumpa er skalert til 0,8, og stasjon 01 og byskorpa er mindre oransje og mindre bleke.
 
 Sett i runde 1 og 2 (w2r1, w2r2): skumring, lykt, gård, lykter, pumpe. Ikke gjort: forbakker under fjellene (krever ny `build_range.py`), den lyse asfaltlappen (`wear`-dekalens «fade»), lastebilens platting (Mesa-parkeringen). Byens bleke bakke er bare delvis rettet. Motellet finnes: kritikeren sto 250 m sør for det.
+
+## 9. november 2026 kl.13:00, verdensfunnene fra Toms test av d36: månen, steinene og fjellene langt borte
+
+Gren `worktree-agent-a62fff5a8690dcbe4`, skrevet under Toms spilløkt (ingen motorjobb). PT-MOON: NASAs nærside (SVS CGI Moon Kit, public domain) som skive i eget materiale `M_S47_Moon` (`Tools/sky/import_moon.sh`), fasen skyggelagt fra sola, skjuler stjernene og skjules av skyene; malt skive som reserve til assetene er importert. PT-ROCKS: `Tools/routenature/cut_faces.py` måler åpne kanter og flate kutt på de private steinene; tabellen i `S47RouteNature.cpp` (tom til målingen er kjørt) snur kuttet bort fra veien eller senker det. PT-RANGE-FAR: klippeskanningens lag legges ikke lenger ovenfra i `M_S47_FreeformRange` (stripene i plan), avstandsfading og makroflekker. F10 «World fixes (T)». Syntakssjekket, ikke bygget, ikke sett i spillet.
+
+## 9. november 2026 kl.15:30, KINSKI-READ-OUT: Kinski-opplesningen av papirer fjernet
+
+Gren `claude/day-20261109`, uten motorjobb (syntakssjekk av 17 C++-filer OK). Opplesningen av papirer og samtaler med Kinski-banken, menyvalget «Dale's voice (read-aloud)», `bKinskiCalls` og den gamle telefonbanken er borte. De 24 telefonreplikkene (Ward, N. Vega, Reyes, THE LINE fra Story kapittel 2 til 5, ingen av dem Dale) vises som tekst til de spilles inn. `audio-raw.py` og `import-audio.sh` tar ikke med banken. `Content/Audio/Voice/Kinski`, `Raw/voice/kinski` og `Raw/phone` er flyttet til `~/.cache/signal47-kinski-retired/` (med README), og `kinski` er tatt ut av `voices.json`. Neste pakking skal vise at banken er ute av paken.
+
+## 9. november 2026 kl.15:50, VOICE-OUT-3: stemmene bacall, price og lynch fjernet
+
+Gren `claude/day-20261109`, uten motorjobb (syntakssjekk av 10 C++-filer OK). Tom: «Fjern bare bacall, price, lynch enn så lenge.» N. Vega (`bacall`: telefon, CB og rom 6), THE LINE (`price`) og suvenirmannen i Caliche (`lynch`) har ingen stemme lenger, og replikkene deres vises som tekst (5dcd4ad7). `FS47RadioVoice::RetiredVoices` holder dem ute også fra gamle tabeller, og selvtesten til npcDialogue sjekker at ingen bank, rolle eller katalog har et slikt navn. `audio-raw.py` og `import-audio` tar dem ikke med (23ba89f1). De 63 klippene er flyttet med README til `~/.cache/signal47-voices-retired/` og tatt ut av `voices.json` og `index.json`; `stanton`, `stack`, Serling og `artbell` står. Neste bygg og pakking skal vise at selvtestene går og at klippene er ute av paken.
+
+## 9. november, dagskift (Claude Code), slutt 20:13
+
+d37 installert 17:03 (`2c88bf9f`). Tom testet d36 og d37, og alle funn er rettet i kode. Etter d37 kom 35 commits: ukesak uke 1 patch 1–3, spilløkka trinn 1–4, notatbok, nattradio og CB, meldingskø, den store natta, Dale-stemme, kritikk 6–9 med flere. Siste bygg 19:03 (selvtest 4055/4059, de fire er rettet). d38 er pakket, men ikke installert. Neste: bygg, selvtest, editorjobber (prepare_cpu, døra i fôrskjulet, skjullyder), og pakk d38 på nytt.
+
+## 9. november kl. 22:15 (Claude Code): d39 installert
+
+`17e11f59`: sammenfletting trinn 1 og første retting av saksprøvene. Editor BUILD 0, selvtest 4073 OK, røyktest av kandidat og installert. Ikke spilt. Kandidatpakkene d30–d35 kan ryddes ved neste samlede kjøring; 127 GB ledig.
+
+## 10. november kl. 02:38 (Claude Code, nattskift): d40 installert
+
+`7c26148b`: sammenfletting trinn 2–5, store netter i uke 2 og 3, utpekt landing som blir stående, UFO-blink, «field allowance», kritikerrunde med fire rettinger. Selvtest 4112 OK, røyktest av kandidat og installert, månedsprøver routine og cases PASS (før siste rettinger). Testspilling n10/n11: lapp pekte på låven natt 6 og 9, stor natt runde 2 natt 9. 157 GB ledig. d36 og d37 kan ryddes ved neste samlede kjøring; d38 og d39 beholdes som eldre versjoner.
+
+## 10. november kl. 04:11 (Claude Code, nattskift): d41 installert
+
+`f2ca5e72`: Dales replikker for runde 2 og 3, utpekt landing som ikke tar andres trekkvindu, ingen mateledningsfeil på netter med ledetråd, skriverlinja følger kveldskartet, tekstrettinger, kritikerrunde med tre rettinger. Selvtest 4116 OK, røyktest av kandidat og installert, månedsprøver routine og cases PASS på `219a46c5`. Testspilling n13 (natt 15–25, store netter på): runde 3 natt 18, utpekte landinger natt 15, 19 og 23, mateledningsfeil bare dag 16 og 24 (uten ledetråd). Ledig disk 152 GB; tilbakerulling d40. Ved neste samlede rydding kan d36, d37 og d38 tas (d39, d40, d41 beholdes).
+
+## 10. november kl. 05:39 (Claude Code, nattskift): d42 installert
+
+`84510b26`: utpekt landing venter til midnatt også når den var trukket for kvelden, feltbesøket venter på den store natta og kommer etter nattens utpekte landing, testspilleren kan stå ute og se mot hendelsene (`-S47NaturalStand=land`). Selvtest 4116 OK, røyktest av kandidat og installert. Testspilling n14/n16 (spiller ute, natt 5–14): 22 startet, 18 merket; etter rettingen stor natt sett natt 10 og utpekt landing natt 13. Månedsprøver routine og cases PASS på `f2ca5e72`. Ledig disk 147 GB; tilbakerulling d41. Ved neste samlede rydding kan d36–d39 tas (d40, d41, d42 beholdes).
+
+## 10. november kl. 06:10 (Claude Code, nattskift): kontroll av d42
+
+Månedsprøvene routine (stasjonen stenger, som den skal for ren rutine) og cases (396 kontroller, beholdt) PASS på `84510b26`. Testspilling n17 (spiller ute, natt 1–4): stor natt natt 2 kl. 02:13 sett på 2326 m, feltbesøket ventet den natta og kom natt 3 (sett, ikke tatt). Ingen krasj.
+
+## 10. november kl. 06:40 (Claude Code, nattskift): d43 installert
+
+`7d1ae9ec`: Dales replikker under den store natta høres fra walkien på pulten når den ikke er tatt med (funnet i testspilling n18, bekreftet i n19: fem replikker levert natt 2). Kritikerrunde uten alvorlige funn, selvtest 4116 OK, røyktest av kandidat og installert. Ledig disk 142 GB; tilbakerulling d42. Ved neste samlede rydding kan d36–d40 tas (d41, d42, d43 beholdes). STORY-06: triagetabell lagt nederst i forbedringsdokumentet.
+
+## 10. november kl. 07:50 (Claude Code, nattskift): slutt på skiftet
+
+Kontroll av d43 (`7d1ae9ec`): månedsprøvene investigator (431) og taken (424) PASS; testspilling n20 (spiller ute, natt 15–24): 27 startet, 22 merket, stor natt runde 3 natt 18 sett på 1016 m, utpekte landinger natt 15, 17, 19, 23, ingen før midnatt, feltbesøk fem netter (tatt natt 19). Nattens installasjoner: d40, d41, d42, d43. Åpne spørsmål til Tom står i sluttrapporten og i STATUS under kjente svakheter. Ledig disk 142 GB.
+
+## 10. november kl. 10:15 (Claude Code, dagskift): fikslisten, punkt 1, 2 (aggregatet), 4 og 8
+
+Toms fiksliste av 10. november (FIX10 i TODO). `9aa027db`: skjermene og spolebåndet (punkt 1). Denne leveransen: første start ved postkassen med Wards brev og nøklene, mørk stasjon med glødende brytere, walkie og opptaker på kommoden i gangen (punkt 4 og 8), og aggregatets funksjon (punkt 2): et lys over SARO tar nettet, aggregatet bærer stasjonen og etterlater en strimmel som funn. Selvtest 4116 OK, første start PASS 18, garasjestart PASS 12, nettbrudd PASS 14, full Freeform-regresjon PASS 251 før nettbruddet kom inn (ny kjøring pågår). Ikke installert; kritikerrunde og d44 gjenstår.
+
+## 10. november kl. 10:43 (Claude Code, dagskift): stasjonsfilene og oversikt over kjøpte biblioteker
+
+`dc82b37a`: SAROs egne stasjonsfiler (FIX10-2 og 3). Åtte filer under OPS / RECORDS (fane STATION) og i arkivpermen; fire fra dag 1, resten slippes kl. 08 på dag 2 til 5 og merker RECORDS. Språkvask i selvtesten (`S47StationFiles::Lint`), prøve `-S47StationFilesTest` PASS 10, selvtest 4117 OK. Nye årstall og fakta i filene, funnet på her og ikke hentet fra eldre kilder: kartleggingslag ved Station 01 i 1955, avtale 1956, de seks første antennene 1958, tilbygget 1962, S-27 i 1971, nødaggregatet juni 1979, én kontraktsoperatør siden 1984 og sju operatører siden da, Dale på SAROs liste siden 1975, «indoors by 02:00» lagt til i skjemaet 1985.
+
+Toms kjøpte biblioteker er kartlagt i [Docs/Research/Assets](../Docs/Research/Assets/README.md): lydbiblioteket (2335 filer målt, tabell og skript i `Tools/sfx-catalog`) og Cosmos-inventaret (78 oppføringer, vurdert fra offentlige sider). Ingen lyd- eller assetfiler er lagt i Git. Spillet brukte allerede 17 klipp fra lydbiblioteket.
+
+## 10. november kl. 11:05 (Claude Code, dagskift): uhyggen under et møte, fra det kjøpte lydbiblioteket
+
+Toms idé (Horror Ambience som grunn, Horror Screamers i det noe sees) er bygget inn i møtelyden (`FS47EncounterSound`: `Dread`, `Scare`, `DreadFor`, `ScareFor`). Ni klipp er kuttet i den private klonen (`ca68683`, `sfx/MANIFEST.md`): to grunnløkker, fem slag, en braam og et svell. Grunnen ligger på musikkbussen og følger nærheten (18 m) og det som er i syne (35 m); slaget erstatter den syntetiske lyden ved første syn og hviler så 75 s (jakt 40 s); `FS47Happenings::Noticed` gir et slag første gang en landing, storenatta, en skikkelse eller kveget i ring sees. Uten de kjøpte filene er alt som før. F10 «Dread sound (T)» spiller hver del for seg (seks linjer, sveip 6/6 PASS med de virkelige filene). Selvtest 4136 OK (19 nye, med stedfortredere for filene). Ikke hørt, bare målt; ikke installert. Tom bekreftet samme dag at lydene er kjøpt på Humble Bundle og klarert for bruk i spill; ført i [oversikten](../Docs/Research/Assets/README.md).
+
+## 10. november kl. 11:30 (Claude Code, dagskift): TV-ene på én kanal, sendeslutt, bryter og forstyrrelser (FIX10-5)
+
+Freeform har nå én kanal som alle apparatene leser (`FS47TvProgramme::ChannelStep`, én gang per bilde fra `S47Main`): programmet 06:00 til 02:00, sendeslutt bare når overgangen faktisk skjer foran en våken spiller (flagg tegnet i kode, nasjonalsang syntetisert, ingen innspilling), prøvebilde, snø. Dales apparat (`S47OfficeTv`) har fått bryter som kontoret lagrer (`tvOff`, valgfritt felt), strek og prikk ved på og av, og forstyrrelser fra `ScreenInterference()` i bilde og lyd. Motellkontorets apparat (`S47MotelTv`) følger samme kanal og samme forstyrrelse. Story beholder sene timer og sine fem `ShowAt`-kontroller. Ny F10-gruppe «Television (T)» og ny test `-S47TvChannelTest` (PASS 17). Selvtest 4151 OK. Under første testkjøring kom det ekte klikk inn i testvinduet (bryteren slo av og på); andre og tredje kjøring var uforstyrret.
+
+## 10. november kl. 12:10 (Claude Code, dagskift): F10-menyen i to felt med søk (FIX10-6), og rettinger etter kritikerrunden
+
+F10 er skrevet om (`SS47Dev`): 66 grupper under åtte overskrifter til venstre, linjene til høyre med hele forklaringen under, søk ved å skrive (alle ord, i alle 774 linjer), «Used last» som husker de ti siste mellom kjøringer, og menyen åpner der den ble forlatt. Registeret (`FS47DevEvents`) er uendret, så alle prøver som slår opp linjer etter navn går som før. Tittelens START POINTS bruker samme skjerm som én liste. Prøve `-S47DevMenuTest` PASS 16 (skriver et søk, starter linjen med Enter og ser at stasjonen faktisk slutter sendingen, åpner igjen).
+
+Kritikerrunden før d44 (tre lesende agenter, regelen «felt, not fired»): skjermer og spole 6/10, første start, aggregat og filer 6/10, TV og uhygge 4/10 (TV-en solid, uhyggen for høy og oppå musikken). Rettet: slagnivå og hvile, sperre mot to slag oppå hverandre (`BoughtUntil`, `NextBought`), musikken viker under grunnen (`FS47EncounterSound::DreadNow`), varemerket i sekkens tekst, synlige rullebånd og tastblink, hørbar pekerlyd og sideskrift, nasjonalsangens rekkevidde, `mains-ride` som spor på land, brevet åpnes med en gang og viser til RECORDS. Resten står som FIX10-10 i [TODO](../Docs/Active/TODO.md).
+
+Kontroll: bygg, selvtest 4159 OK, `-S47FirstStartTest` 18, `-S47SkyCutTest` 14, `-S47StationFilesTest` 10, `-S47DevMenuTest` 16, `-S47TvChannelTest` 17, regresjon PASS 251. Ingen har hørt lyden: nivåene er satt etter måling og kritikernes regnestykke, og Toms øre avgjør.
+
+## 10. november kl. 12:40 (Claude Code, dagskift): d45 installert
+
+d44 (`f4e86536`) ble stoppet av leveringstesten: kommoden i gangen ville fått grått standardmateriale i pakket spill (materialet bygger på motorens glTF-standard, som ikke er merket for Nanite og ikke kan lagres om). S47Props tegner nå en slik prop fra det vanlige nettet og fører det i loggen (kommoden, to fjellrygger, utspringet og den knekte stolpen). d45 (`d99bd64f`) pakket, røyktestet og installert: ALL PASS, selvtest 4159 OK, ingen materialadvarsler. Disk 130 GB ledig etterpå.
+
+## 10. november kl. 16:47 (Claude Code, dagskift): d46 installert, Toms funn i d45
+
+Tom testet d45 og ga 29 punkter (TODO «Toms testfunn i d45»). Kartlagt og skrevet av agenter i scratchpad, satt sammen, bygget og testet her; kritikerrunde på Sonnet (tekst 7, skjermer 7, lyd 8 av 10) med billige rettinger. Cosmos-gjerdet migrert fra UE 4.22 i et engangsprosjekt, bobbleheaden delt i hode og kropp og importert uten Nanite, Cosmos-røyken kopiert inn, bodycam-materialet bygget. d46 (`ebe038ad`) ALL PASS, selvtest 4297 OK. Agentene i dag arvet Opus fordi modell ikke var satt; heretter settes modell på hver agent.
+
+## 10. november kl. 20:31 (Claude Code, dagskift og nattskift): d47 installert
+
+Toms ønsker etter d46 (D46-1..28) skrevet av agenter med modell per oppgave (Sonnet, Opus, Fable for jeep, trip camera, ballong, CASE BOARD, PHOTOGRAPHS og UFO-lys, Haiku for oversikter), satt sammen og bygget her. Jeep, trip camera og ballong importert uten Nanite. d41, d42 og avvist d44 ryddet for plass. d47 (`d44bc8b3`) ALL PASS, selvtest 4422 OK.
+
+## 11. november kl. 03:30 (Claude Code, nattskift): d48–d54 installert
+
+Toms nattbestilling (TODO «Nattskift 10.–11. november»): studie av skrekk og spilldesign (scratchpad STUDY_HORROR_DESIGN.md), oppmerksomhet og sabotasje, kameramomenter, stillhet før og flimmer under, dyr som varsler, lysrør som går to og to, Caliches historie i spillet (godkjent av Tom), dørsløyfen og dørsløyfen under jakt med flomlys (strobe maks tre i sekundet), fire hendelser i trinnvise manus, falske alarmer, lettelse etter fare, dagsspor, mål på tre nivåer, regelen som læres og brytes, hulen the Breather, gjemme seg under bordet, vitneutsagn, folkas dagsvaner, rommets skjermer, trip camera med overvåkningspreg, sporbok på CASE BOARD, veggvakt for WORLD-04. To spillkritikker av første uke (5/10, så 6,5/10) med tempo-rettinger. Lydeksport til WAV (`-S47ExportSounds`) og lydtester sendt Tom. Agenter med modell per oppgave (Sonnet mest, Opus for tverrgående logikk, Fable bare der Tom ga lov, Haiku for oversikter). Kandidatpakkene d45–d50 ryddet underveis for plass.
+
+## 11. november 06:20 (Claude, nattskift)
+
+- d56 (0.9.56, 05:25): tredje kritikk av første uke (7/10) – dyrevarsler fra dag 3, Dales hint faller ikke bort, én stor ting per natt for dørsløyfe/jakt/besøk/landing, landing tidligst natt 5, tre varianter av roen etter fare, svakt hundebjeff etter oppmerksomhetstegnet, lyd ved bom i hulen.
+- d57 (0.9.57, 06:19): dørsløyfe-kritikk (6,5/10) – jakten kan tapes ved døra som raslet, tanker og skritt ved tak/gulv, variasjon per natt, toning før kutt, mykere strobe.
+- Tester: in-world (77) og evidence (114) grønne kjørt alene etter testrettinger; journey stopper fortsatt på pakkefysikk (`OnComponentHit` kommer aldri; se TODO N1110-T).
+- Toms d45-funn (D45-1..29) merket med byggene de kom i.
+- Disk: d52–d55-kandidater og `Saved/StagedBuilds` + `Saved/Cooked` ryddet; 122 GB ledig; beholdt d56 (tilbakerulling) og d57.
+- Etter d57 (ikke installert): oppmerksomhet som forklarer seg selv, sabotasje som varierer, pakkeslipp ved pumpa rettet (sveipvakten), journey/in-world/evidence grønne (59/77/114), Dale uten «don't», Dales 11 nye walkie-replikker samlet i TODO N1110-V.

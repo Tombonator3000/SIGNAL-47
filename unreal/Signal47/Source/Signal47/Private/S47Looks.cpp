@@ -1,5 +1,6 @@
 // story/looks.ts
 #include "S47Looks.h"
+#include "S47SaroFixes.h"
 
 #include "S47Inter.h"
 #include "S47Web.h"
@@ -76,8 +77,8 @@ void S47Looks::BindLooks(const FS47LooksDeps& D)
 	Box(TEXT("labSign"), Say(TEXT("PHOTOGRAPHIC LAB. PROCESS / EXAMINE / FILE. Under it, in marker: SHUT THE DOOR WHEN THE RED LIGHT IS ON.")));
 	Box(TEXT("siteSign"), Say(TEXT("SARO. SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY. AUTHORIZED VEHICLES ONLY. NO VISITORS AFTER DARK. Sun-bleached on the side facing the highway.")), 20);
 	Box(TEXT("quietSign"), Say(TEXT("RADIO QUIET ZONE. NO TRANSMITTERS BEYOND THIS SIGN. The CB under the truck's dash is meant to stay off past here.")), 20);
-	// the stop sign where the service road meets the highway
-	Box(TEXT("stopSign"), Say(TEXT("STOP. The highway is empty both ways, as far as the dark goes.")), 20);
+	// the stop sign where the service road meets the highway (taken away after Tom's test of d36, PT-STOP; S47SaroFixes)
+	if (S47SaroFixes::Before()) Box(TEXT("stopSign"), Say(TEXT("STOP. The highway is empty both ways, as far as the dark goes.")), 20);
 	Box(TEXT("wingLetters"), Say(TEXT("SARO, and under it SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY. One bolt in the last word has rusted through.")), 30);
 	// ---------- down the highway to the motel: where drive/roadProps.ts signs() puts them ----------
 	Box(TEXT("speedSign"), Say(TEXT("SPEED LIMIT 55. Pocked with birdshot along the bottom edge.")), 24);
@@ -176,7 +177,7 @@ void S47Looks::BindLooks(const FS47LooksDeps& D)
 	Looks(TEXT("recPhone"), TEXT("A wall phone, beige, the cord stretched out long."));
 	Looks(TEXT("vending"), TEXT("Cola, orange soda, peanut butter crackers. The light inside flickers."));
 	Looks(TEXT("officeDoor"), TEXT("A frosted glass door, OPERATIONS in black. Dark behind it."));
-	Looks(TEXT("restroomDoor"), TEXT("MEN and WOMEN. The fan inside runs all night."));
+	Looks(TEXT("restroomDoor"), S47SaroFixes::Before() ? TEXT("MEN and WOMEN. The fan inside runs all night.") : TEXT("MEN and WOMEN. Locked. A note taped under the plate in Dale's hand: OUT OF ORDER, PLUMBER CALLED. The fan inside runs all night."));
 
 	// ---------- STATION 01 (Chapter3.ts) ----------
 	Looks(TEXT("s1transit"), TEXT("A brass transit on a concrete pier, its cover off. The bubble still settles."));
@@ -199,8 +200,8 @@ void S47Looks::BindLooks(const FS47LooksDeps& D)
 	Looks(TEXT("diner:coffee"), TEXT("The pot on the warmer, a ring of old coffee baked round the rim."));
 	Looks(TEXT("diner:counter"), TEXT("A radio on the shelf behind the counter, between the pie dome and the register."));
 	Looks(TEXT("diner:clipping"), TEXT("Yellow newsprint behind a strip of tape, the date cut off."));
-	Looks(TEXT("diner:payphone"), TEXT("A payphone in a niche. Numbers written all over the wall round it."));
-	Looks(TEXT("diner:booth"), TEXT("Red vinyl, split and taped. The window beside it is cold."));
+	Looks(TEXT("diner:payphone"), TEXT("A payphone in a niche. Numbers written all over the wall around it."));
+	Looks(TEXT("diner:booth"), TEXT("Red vinyl, split and taped. The window beside it is cold. A paper placemat, and in its lower corner: KIDS! Count the cows on the drive home. Count them again. Did you get the same number? Write them both down for Mom."));
 	Looks(TEXT("diner:menu"), TEXT("White letters pushed into a felt board. The P in PIE is upside down."));
 	Looks(TEXT("diner:jukebox"), TEXT("OUT OF ORDER, in ballpoint behind the glass. A record still on the arm."));
 	Looks(TEXT("diner:window"), TEXT("The lot, the truck, the highway, and past it the dark."));
@@ -215,8 +216,8 @@ void S47Looks::BindLooks(const FS47LooksDeps& D)
 	Looks(TEXT("town:amDoor"), TEXT("1420 AM. STUDIO IN USE, PLEASE WAIT. The buzzer button is worn white."), 6);
 	Looks(TEXT("town:souvenirSign"), TEXT("SAUCER CRASH 1947. TOURS. ASK INSIDE. Under the paint, an older word: BAIT."), 10);
 	Looks(TEXT("town:souvenirDoor"), TEXT("CLOSED. The hours on the card have faded white."), 6);
-	Looks(TEXT("town:letters"), TEXT("THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. One letter hangs crooked."), 10);
-	Looks(TEXT("town:churchDoor"), TEXT("SUNDAY 10 AM. ALL WELCOME. The doors are new; the step is worn hollow."), 8);
+	Looks(TEXT("town:letters"), TEXT("SAN ISIDRO. THE HEAVENS DECLARE THE GLORY OF GOD. PS 19:1. One letter hangs crooked."), 10);
+	Looks(TEXT("town:churchDoor"), TEXT("SAN ISIDRO. SUNDAY 10 AM. ALL WELCOME. The doors are new; the step is worn hollow."), 8);
 	Looks(TEXT("town:tv2"), TEXT("Snow, then the test pattern, then snow. Nobody in the room."), 9);
 	Looks(TEXT("town:kitchen"), TEXT("A kitchen light behind a curtain, and a shadow that does not move."), 7);
 }

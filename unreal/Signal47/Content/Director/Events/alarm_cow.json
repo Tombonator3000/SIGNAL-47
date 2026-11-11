@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "id": "alarm_cow",
+  "name": "False alarm: a cow at the fence",
+  "notes": "N1110 (rhythm, item 5). Played by FS47Calm (S47Calm.cpp), once or twice a night in the evening hours, when nothing else is on. It sounds like the start of something and is a cow leaning on the wire. Silence first, then the ordinary reveal. No finding, no map mark, no danger, no camera.",
+  "enabled": true,
+  "gates": { "from_day": 2, "hours": ["19:30", "01:30"], "tier": "hint", "areas": ["saro", "road"], "if": ["outdoors"] },
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 4 },
+    { "at": 1.2, "do": "sound", "sound": "metalTap", "gain": 0.35, "lp": 1400 },
+    { "at": 2.6, "do": "sound", "sound": "metalTap", "gain": 0.28, "lp": 1400, "rate": 0.9 },
+    { "at": 3.8, "do": "sound", "sound": "thudSoft", "gain": 0.35, "lp": 700 },
+    { "at": 4.4, "do": "thought", "text": "Something is at the fence.", "secs": 3 },
+    { "at": 9, "do": "thought", "text": "A cow. Just a cow, leaning on the wire and looking at me.", "secs": 4.5 }
+  ]
+}

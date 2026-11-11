@@ -36,6 +36,11 @@ public:
  static constexpr float SideSeconds=120;
  static constexpr int32 MostTakes=12,MostSounds=400;
  bool Carried() const{return bCarried;}
+ // FIX-20261110 (Tom, point 8): the recorder's place is the dresser in the hall inside the visitor entrance (Config/Props/saro.json
+ // "hallDresser"); in a build without that model it is back on the desk by the array's PC. What it is called follows where it is.
+ bool InHall() const{return bHall;}
+ const TCHAR* Top() const{return bHall?TEXT("dresser"):TEXT("desk");}
+ const TCHAR* Where() const{return bHall?TEXT("on the dresser in the hall"):TEXT("on the desk by the array's PC");}
  bool Recording() const{return bRec;}
  bool Playing() const{return PlayIndex!=INDEX_NONE;}
  const TArray<FTake>& Takes() const{return Kept;}
@@ -64,7 +69,7 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
- bool bCarried=false,bRec=false,bHooked=false,bKeyed=false;
+ bool bCarried=false,bRec=false,bHooked=false,bKeyed=false,bHall=false;
  TArray<FTake> Kept;
  int32 Next=1;
  // The take being recorded.
