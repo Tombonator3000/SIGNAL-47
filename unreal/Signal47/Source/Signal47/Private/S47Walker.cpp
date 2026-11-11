@@ -344,7 +344,8 @@ void AS47Walker::Tick(float DeltaSeconds)
 	}
 	// the camera held by something else (the truck's cab): its eye, no walking and no picking
 	FS47View View;
-	if (CameraOverride && CameraOverride(Dt, VehicleMove, FVector2D(LookX, LookY), View))
+	bCameraHeld = CameraOverride && CameraOverride(Dt, VehicleMove, FVector2D(LookX, LookY), View);
+	if (bCameraHeld)
 	{
 		if (bAir) Land(true); // (no jump goes on in the truck)
 		bCrouch = false; CrouchK = 0; bHideLock = false; HideK = 0; // (nor keeping low)

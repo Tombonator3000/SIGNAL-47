@@ -74,7 +74,7 @@ bool FS47ShotCamera::Start(const FS47ShotSpec& S,FString& Why)
  if(bLive){Why=TEXT("a shot is on");return false;}
  if(M->Flow&&!M->Flow->bCameraMoments){Why=TEXT("Camera moments is off");return false;}
  if(M->World&&M->World->bDriving){Why=TEXT("at the wheel");return false;}
- if(W->CameraOverride){Why=TEXT("the camera is held by something else");return false;}
+ if(W->bCameraHeld){Why=TEXT("the camera is held by something else");return false;}
  FS47ShotSpec Use=S;
  Use.Secs=FMath::Min(Use.Secs,MaxSecs);
  if(!Sane(Use,Why))return false;
@@ -252,8 +252,8 @@ bool S47Shot::Contract(US47Main* M,double Dt)
  const auto Finish=[](bool bGood,const FString& What)
  {
   R.bDone=true;
-  if(bGood)UE_LOG(LogS47Shot,Display,TEXT("S47: director shot contract COMPLETE PASS"));
-  else UE_LOG(LogS47Shot,Display,TEXT("S47: director shot contract FAIL %s"),*What);
+  if(bGood){UE_LOG(LogS47Shot,Display,TEXT("S47: director shot contract COMPLETE PASS"));}
+  else{UE_LOG(LogS47Shot,Display,TEXT("S47: director shot contract FAIL %s"),*What);}
   FPlatformMisc::RequestExitWithStatus(false,bGood?0:1);
   return true;
  };
@@ -262,13 +262,13 @@ bool S47Shot::Contract(US47Main* M,double Dt)
  if(R.Stage==0)
  {
   // The night settled and the player on foot with the camera their own; at most a minute for it.
-  const bool bReady=W&&P&&M->DevEvents&&(!M->World||!M->World->bDriving)&&!W->CameraOverride&&!P->Running();
+  const bool bReady=W&&P&&M->DevEvents&&(!M->World||!M->World->bDriving)&&!W->bCameraHeld&&!P->Running();
   if(!bReady||R.T<6)
   {
-   if(R.T>60)return Finish(false,!W||!P?FString(TEXT("no walker or no script player (not in Freeform?)")):W->CameraOverride?FString(TEXT("the camera is held by something else before the shot")):FString(TEXT("at the wheel, or a script is playing")));
+   if(R.T>60)return Finish(false,!W||!P?FString(TEXT("no walker or no script player (not in Freeform?)")):W->bCameraHeld?FString(TEXT("the camera is held by something else before the shot")):FString(TEXT("at the wheel, or a script is playing")));
    return false;
   }
-  R.Pos=W->Pos;R.bBefore=bool(W->CameraOverride);R.Fov0=W->Fov;
+  R.Pos=W->Pos;R.bBefore=W->bCameraHeld;R.Fov0=W->Fov;
   const FS47DevEvents::FEvent* E=M->DevEvents->Events().FindByPredicate([](const FS47DevEvents::FEvent& X){return X.Group==DevGroup;});
   if(!E||!E->Fn)return Finish(false,TEXT("no F10 line in the group Director shot (not a developer's run?)"));
   UE_LOG(LogS47Shot,Display,TEXT("S47: director shot contract: %s / %s"),*E->Group,*E->Label);
@@ -289,7 +289,7 @@ bool S47Shot::Contract(US47Main* M,double Dt)
   }
   const FS47ShotSpec& S=Shot->Playing();
   if(Shot->Age()<S.In+S.Secs*.5)return false;
-  if(!W->CameraOverride)return Finish(false,TEXT("(a) no CameraOverride mid-shot"));
+  if(!W->bCameraHeld)return Finish(false,TEXT("(a) the camera is not held mid-shot"));
   if(FVector::Dist(W->Pos,R.Pos)>1e-3)return Finish(false,FString::Printf(TEXT("(b) the player moved %.3f m"),FVector::Dist(W->Pos,R.Pos)));
   // The eye the walker's camera was put at (its actor, S47Walker's override branch), on the way from the first eye to the second.
   const FVector Eye=S47Three::ToThree(W->GetActorLocation());
@@ -305,7 +305,7 @@ bool S47Shot::Contract(US47Main* M,double Dt)
   if(R.T-R.At>20)return Finish(false,TEXT("(d) the shot did not end"));
   return false;
  }
- if(bool(W->CameraOverride)!=R.bBefore)return Finish(false,TEXT("(d) the CameraOverride is not back to what it was"));
+ if(W->bCameraHeld!=R.bBefore){if(R.T-R.At>20)return Finish(false,TEXT("(d) the camera is not given back"));return false;} // (the walker's flag is a frame behind)
  if(!FMath::IsNearlyEqual(W->Fov,R.Fov0,.01f))return Finish(false,FString::Printf(TEXT("(d) the field of view is %.2f, not %.2f"),W->Fov,R.Fov0));
  if(FVector::Dist(W->Pos,R.Pos)>1e-3)return Finish(false,TEXT("(b) the player moved after the shot"));
  return Finish(true,FString());
