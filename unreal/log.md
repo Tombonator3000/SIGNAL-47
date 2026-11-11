@@ -2285,3 +2285,7 @@ NEW STORY starter nå en Freeform-økt merket som Story (`storyDirector{v:1}`), 
 
 - 15:27 d59 installert fra `381fc28c` (Story steg 1 og tenningslås), rask levering ALL PASS.
 - 15:35 Story steg 2: `FS47FreeformSession::Begin` har et valgfritt flagg for én natt (dag 1 kl. 18:00, ingen opplæring); Flow gir det bare til en ny Story-økt og hopper over postkassestarten, så Story starter på SARO med stasjonen åpen og Jeepen på plassen. Freeform er uendret. Menypekertesten kontrollerer begge; begge PASS.
+
+## 2026-11-11 (Story steg 3)
+
+- Regissørens skjelett: `FS47StoryDirector` (`S47StoryDirector.h/.cpp`) med akter fra `Content/Director/Story/acts.json` (kveld 18:00, natt 00:00, morgen 04:00, nøytrale titler), historieflagg, lagring `storyDirector{v:1,act,flags}` og egen tekstsjekk `LintStory`; `S47Script::LintText` er uendret. Eies av `US47Main`, startes i `StartGame` bare på en Story-natt og tikkes bare da; Freeform er uendret. Akter stages som Events (Build.cs). Selvtest STORY-3 i Freeform-selvtesten. Ikke bygget her.

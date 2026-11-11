@@ -58,6 +58,7 @@
 #include "S47FinaleMovie.h"
 
 #include "S47Flow.h"
+#include "S47StoryDirector.h"
 #include "S47Radio.h"
 #include "S47NightLine.h"
 #include "S47TripRadio.h"
@@ -115,6 +116,7 @@ void US47Main::Step(double Dt)
 	}
 	const bool bFree = IsFreeform();
 	if (Freeform && bFree) Freeform->Step(Dt);
+	if (bFree && StoryDirector && Flow && Flow->StoryNight() && StoryDirector->Active()) StoryDirector->Tick(Dt); // STORY-ON-FREEFORM-01: nothing outside a Story night
 	if (!bFree && Evening) Evening->Step(Dt);
 	if (Office) Office->Step(Dt); // Doors, drawers and room visibility also update in Freeform.
 	if (!bFree && Observing) Observing->Step(Dt);

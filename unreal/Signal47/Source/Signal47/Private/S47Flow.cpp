@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47StoryDirector.h"
 #include "S47NightLog.h"
 #include "S47RoomDecor.h"
 #include "S47EastWing.h"
@@ -1100,6 +1101,13 @@ void US47Flow::StartGame(const FStart& O)
    else if(M->Player)M->Player->Place(-9.5,5.7,-UE_DOUBLE_PI/2);
   }
  }
+ // STORY-ON-FREEFORM-01 (step 3): the story director runs only on a Story night; any other start stops it.
+ if (bFreeform && bStoryNight && M->Freeform)
+ {
+  if(!M->StoryDirector)M->StoryDirector=MakeShared<FS47StoryDirector>(M);
+  M->StoryDirector->Begin(S47J::Obj(O.State,TEXT("storyDirector")));
+ }
+ else if (M->StoryDirector) M->StoryDirector->Stop();
  // New Freeform operators collect the camera physically. Every legacy Freeform
  // save had the automatic grant, so absence of this new field preserves that right.
  if (bFreeform && M->FieldCamera)
@@ -1876,7 +1884,7 @@ S47J::FObj US47Flow::GameState()
 	else State->RemoveField(TEXT("freeformCameraOwned"));
 	if (M->HighwayUfo) S47J::Set(State,TEXT("highwayUfo"),M->HighwayUfo->Save());
 	if (M->IsFreeform() && M->Freeform) S47J::Set(State,TEXT("freeform"),M->Freeform->Save()); else State->RemoveField(TEXT("freeform"));
-	if (M->IsFreeform() && bStoryNight) { auto D=S47J::New(); S47J::Set(D,TEXT("v"),1); S47J::Set(State,TEXT("storyDirector"),D); } else State->RemoveField(TEXT("storyDirector"));
+	if (M->IsFreeform() && bStoryNight) { S47J::FObj D=M->StoryDirector?M->StoryDirector->Save():S47J::FObj(); if(!D.IsValid()) D=S47J::New(); S47J::Set(D,TEXT("v"),1); S47J::Set(State,TEXT("storyDirector"),D); } else State->RemoveField(TEXT("storyDirector"));
 	S47J::Set(State,TEXT("journal"),Journal.Save());
 	S47J::Set(State,TEXT("timelineVersion"),M->Story && M->Story->bEveningTimeline ? 2 : 1);
 	if (M->Evening && M->Evening->Enabled()) S47J::Set(State,TEXT("evening"),M->Evening->Save());

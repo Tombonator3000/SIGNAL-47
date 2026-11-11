@@ -62,6 +62,7 @@ public:
 	TSharedPtr<class FS47SkyVisitors> SkyVisitors; // optional world-space sky progression, separately saved
 	TSharedPtr<class FS47Horror> Horror;
 	TSharedPtr<class FS47FreeformSession> Freeform;
+	TSharedPtr<class FS47StoryDirector> StoryDirector; // STORY-ON-FREEFORM-01: only a Story night's (S47StoryDirector.h)
 	TSharedPtr<class FS47HighwayUfo> HighwayUfo; // shared, saved road encounter; no player driving override
 	TSharedPtr<class FS47HighwayUfoTest> HighwayUfoTest;
 	TSharedPtr<class FS47UfoVisualTest> UfoVisualTest;
