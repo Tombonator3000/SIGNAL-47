@@ -80,6 +80,7 @@
 #include "S47EventScript.h"
 #include "S47CameraMoment.h"
 #include "S47Shot.h"
+#include "S47DirectorCam.h"
 #include "S47FieldLife.h"
 #include "S47Outfit.h"
 #include "S47NightLog.h"
@@ -316,6 +317,7 @@ void AS47HUD::Start()
 		bOk &= S47EventScript::SelfTest(Lines); // (D46-20261110: every event script parses, knows its beats and keeps to the rules)
 		bOk &= S47CameraMoment::SelfTest(Lines); // (N1110: the camera moment's curve, look-at and reduced motion)
 		bOk &= S47Shot::SelfTest(Lines); // (SHOT-BEAT-01: the director shot's pose, weight, reduced motion and limits)
+		bOk &= S47DirectorCam::SelfTest(Lines); // (DIRECTOR-MODE-01: the director's free camera, one step of flying)
 		bOk &= S47EyeGlint::SelfTest(Lines); // (ALIEN-EYES: the faint dot in the aliens' eyes, only in the dark and within 50 m)
 		bOk &= S47TripoNew::SelfTest(Lines); // (TRIPO-NEW: Tom's nine Tripo models of 9 November, private, with stand-ins when missing)
 		bOk &= FS47TruckCare::SelfTest(Lines);

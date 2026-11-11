@@ -1,4 +1,5 @@
 #include "S47Main.h"
+#include "S47DirectorCam.h"
 #include "S47CarPaint.h"
 #include "S47TripoCreature.h"
 #include "S47EyeGlint.h"
@@ -97,7 +98,7 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
-bool US47Main::OneAtATime() const { if (HighwayUfo && HighwayUfo->Busy()) return true; if (IsFreeform()) return (Freeform && Freeform->Director && Freeform->Director->Busy()) || FS47StoryDirector::Holds(this); /* STORY-ON-FREEFORM-01 (step 4): a Story night's script; false in any other night */ return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
+bool US47Main::OneAtATime() const { if (HighwayUfo && HighwayUfo->Busy()) return true; if (IsFreeform()) return (Freeform && Freeform->Director && Freeform->Director->Busy()) || FS47StoryDirector::Holds(this) || S47DirectorCam::On(this); /* STORY-ON-FREEFORM-01 (step 4): a Story night's script; false in any other night. DIRECTOR-MODE-01: the director's camera */ return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
 
 void US47Main::RequestAutosave(bool bMilestone)
 {
@@ -127,6 +128,7 @@ void US47Main::Step(double Dt)
 	if (HighwayUfoTest) HighwayUfoTest->Step(Dt);
 	if (UfoVisualTest) UfoVisualTest->Step(Dt);
 	if (DevEvents) { DevEvents->Step(Dt); DevEvents->ControlTest(Dt); }
+	S47DirectorCam::Tick(this, Dt); // DIRECTOR-MODE-01: the director's free camera (its keys, its text, leaving by itself)
 	if (Rhythm) Rhythm->Observe(Dt);
 	if (Spine) Spine->ControlTest(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);

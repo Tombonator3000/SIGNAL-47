@@ -1,4 +1,5 @@
 #include "S47DevEvents.h"
+#include "S47DirectorCam.h"
 #include "S47SaroWallWatch.h"
 #include "S47DevFreeform.h"
 #include "S47FloodProbe.h"
@@ -390,6 +391,8 @@ void FS47DevEvents::ControlTest(double Dt)
  if (OnlyGroup == TEXT("Director shot")) { if (S47Shot::Contract(M, Dt)) bTestDone = true; return; }
  // DIRECTOR-MODE-01 (slice 3): the trigger volumes' own check, with the real session's moment (S47ScriptVolumeDev::Contract).
  if (OnlyGroup == TEXT("Director volume")) { if (S47ScriptVolumeDev::Contract(M, Dt)) bTestDone = true; return; }
+ // DIRECTOR-MODE-01: the director's free camera (S47DirectorCam::Contract).
+ if (OnlyGroup == TEXT("Director mode")) { if (S47DirectorCam::Contract(M, Dt)) bTestDone = true; return; }
  // Opt-in extension of this contract: real menu actions and registered billboard
  // readback across ordinary world ticks, independent of the natural Data() getter.
  if (OnlyGroup == TEXT("Sky preview"))

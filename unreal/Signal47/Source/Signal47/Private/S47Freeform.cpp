@@ -1,4 +1,5 @@
 #include "S47Freeform.h"
+#include "S47DirectorCam.h"
 #include "S47SaroWallWatch.h"
 #include "S47GoalLine.h"
 #include "S47StoryDirector.h"
@@ -431,7 +432,8 @@ void FS47FreeformSession::Stop()
 }
 bool FS47FreeformSession::Held() const
 {
- return !bActive||bDead||bRecovering||!M||M->Mode!=US47Main::EMode::Play||M->bPausedByMenu||(M->ModalOpen()&&!TerminalOnGlass()&&!bTapePanel)||(M->World&&M->World->bBusy);
+ // DIRECTOR-MODE-01: the director's free camera holds the night as an open panel does (its clock stands; S47DirectorCam.h).
+ return !bActive||bDead||bRecovering||!M||M->Mode!=US47Main::EMode::Play||M->bPausedByMenu||(M->ModalOpen()&&!TerminalOnGlass()&&!bTapePanel)||(M->World&&M->World->bBusy)||S47DirectorCam::On(M);
 }
 bool FS47FreeformSession::ArrayMotionHeld() const
 {

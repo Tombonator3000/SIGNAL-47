@@ -14,6 +14,11 @@ class FS47ScriptPlayer;
 namespace S47ScriptEditor
 {
  void Open(US47Main* M);
+ // DIRECTOR-MODE-01: what is being edited, kept while the panel is closed (one game at a time on this machine); the director's camera
+ // places into it (S47DirectorCam.h). HaveDraft: there is one; Dirty: changed since it was opened or saved.
+ FS47Script& Draft();
+ bool& HaveDraft();
+ bool& Dirty();
 }
 
 class SS47ScriptEditor : public SCompoundWidget

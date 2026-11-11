@@ -1,4 +1,5 @@
 #include "SS47ScriptEditor.h"
+#include "S47DirectorCam.h"
 #include "S47EventPlaces.h"
 #include "S47Freeform.h"
 #include "S47FreeformCases.h"
@@ -23,12 +24,17 @@
 // DIRECTOR-TOOL-20261109: the director's panel (SS47ScriptEditor.h). Kept simple on purpose: rows of fields and buttons, built again
 // when the draft changes shape; typing writes straight into the draft. Drag and drop, copy and paste come later.
 
+// What is being edited, kept while the panel is closed (one game at a time on this machine). DIRECTOR-MODE-01: declared in the header
+// for the director's camera; the old names below stay.
+FS47Script& S47ScriptEditor::Draft(){static FS47Script D;return D;}
+bool& S47ScriptEditor::HaveDraft(){static bool b=false;return b;}
+bool& S47ScriptEditor::Dirty(){static bool b=false;return b;}
+
 namespace S47ScriptEditorLocal
 {
- // What is being edited, kept while the panel is closed (one game at a time on this machine).
- FS47Script& Draft(){static FS47Script D;return D;}
- bool& HaveDraft(){static bool b=false;return b;}
- bool& Dirty(){static bool b=false;return b;}
+ using S47ScriptEditor::Draft;
+ using S47ScriptEditor::HaveDraft;
+ using S47ScriptEditor::Dirty;
  FString NumText(double V){FString S=FString::SanitizeFloat(FMath::RoundToDouble(V*100)/100);if(S.EndsWith(TEXT(".0")))S.LeftChopInline(2);return S;}
  FString PointText(const FS47ScriptPoint& P){return P.bSet?FString::Printf(TEXT("(%.0f, %.0f%s)"),P.X,P.Z,P.Up>.05?*FString::Printf(TEXT(" +%.1f m"),P.Up):TEXT("")):FString(TEXT("(no point)"));}
  FString CaseOption(int32 L){return FString::Printf(TEXT("%d %s"),L,FS47FreeformCases::Def(L).Title);}
@@ -66,7 +72,19 @@ void SS47ScriptEditor::Construct(const FArguments& InArgs)
   SNew(SBorder).BorderImage(Box(Night(.93f),Css(Pal.Clock,.35f),1.f)).Padding(Pad(40,28,40,22))
   [
    SNew(SVerticalBox)
-   +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("DIRECTOR / SCRIPTED EVENTS"))).Font(Heading(34,2)).ColorAndOpacity(Css(Pal.Clock,Pal.ClockOn))]
+   +SVerticalBox::Slot().AutoHeight()
+   [
+    SNew(SHorizontalBox)
+    +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(TEXT("DIRECTOR / SCRIPTED EVENTS"))).Font(Heading(34,2)).ColorAndOpacity(Css(Pal.Clock,Pal.ClockOn))]
+    // DIRECTOR-MODE-01: the free camera (S47DirectorCam.h); the panel goes, the draft stays. Not let in: the panel again, and why.
+    +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(Pad(24,0,0,0))[Btn(TEXT("FLY"),[this]
+    {
+     US47Main* Main=M;
+     CloseIt();
+     FString Why;
+     if(!S47DirectorCam::Toggle(Main,Why))S47ScriptEditor::Open(Main);
+    },true)]
+   ]
    +SVerticalBox::Slot().AutoHeight().Padding(Pad(0,4,0,8))
    [
     SNew(STextBlock).AutoWrapText(true).Font(Term(18)).ColorAndOpacity(Mute())
