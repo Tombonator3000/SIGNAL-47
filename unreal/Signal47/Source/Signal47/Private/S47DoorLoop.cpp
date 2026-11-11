@@ -51,9 +51,9 @@ namespace S47DoorLoopLocal
  FString HouseId(const FString& Name){return TEXT("ff:olddoor:")+Name;}
  FString RoomId(const FString& Room){return TEXT("access:")+Room;}
  // N1110 (pace): after the three knocks, so that a door is tried. N1110 (pace, critic 2): three variants, rotated by the day.
- const TCHAR* const FrontDoors[3]={TEXT("Someone's at the front door."),TEXT("That was the front door. Knocking."),TEXT("Knocks. At this hour.")};
+ const TCHAR* const FrontDoors[3]={TEXT("Someone's at the front door."),TEXT("That was the front door. Knocking."),TEXT("Somebody is knocking. At this hour.")};
  constexpr double ThoughtNear=15.; // the thought is for one close enough to have heard the knocks at the front door, in metres
- const TCHAR* const AtTheDoor=TEXT("It's at the door. Get out. Use another door.");
+ const TCHAR* const AtTheDoor=TEXT("Something is at this door. Go out another way.");
  // The light at the windows: white, amber, blue, green.
  const FLinearColor FloodColors[4]={FLinearColor(.92f,.94f,1.f),FLinearColor(1.f,.6f,.18f),FLinearColor(.32f,.48f,1.f),FLinearColor(.38f,1.f,.48f)};
  constexpr double StrobeAfter=1.5,StrobeEvery=4.6,StrobeLong=1.,StrobeRate=2.5; // N1110 critic: at most three flashes a second for everyone (photosensitivity); Calm takes the bursts away
@@ -102,7 +102,7 @@ const TCHAR* FS47DoorLoop::ThoughtFor(int32 N,bool bFromFront)
  {
  case 1:return bFromFront?TEXT("That was the front door."):TEXT("That was the service door.");
  case 2:return TEXT("No.");
- case 3:return TEXT("I went out. I went OUT.");
+ case 3:return TEXT("I went out. I know I went out.");
  default:return TEXT("");
  }
 }
@@ -157,7 +157,7 @@ const TCHAR* FS47DoorLoop::ChaseThought(int32 N)
  {
  case 1:return TEXT("That was the front door. I'm back inside.");
  case 2:return TEXT("Something went past the window.");
- case 3:return TEXT("The handle. Somebody's trying the handle.");
+ case 3:return TEXT("Somebody is trying the handle.");
  default:return TEXT("");
  }
 }

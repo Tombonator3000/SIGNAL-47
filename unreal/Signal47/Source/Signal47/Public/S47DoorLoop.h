@@ -18,7 +18,7 @@ enum class ES47Taker : uint8;
 // the same. Each time the station is a little more wrong:
 //   1  the lights a step lower, the wall clock a minute on; "That was the front door." (or the service door)
 //   2  lower again, two minutes more; the radio on the shelf comes on by itself for a few seconds; "No."
-//   3  lower, three minutes more; the phone rings once; "I went out. I went OUT."
+//   3  lower, three minutes more; the phone rings once; "I went out. I know I went out."
 //   4  up near the corridor's ceiling: a moment's hang, a short fall, a thud and a small shake
 //   5  the view comes up through the control room floor to eye height over 1.2 s, a low note under it
 //   6  the door opens and the night is out there: the clock has lost 10 to 25 minutes in all, a field record says so, the lights

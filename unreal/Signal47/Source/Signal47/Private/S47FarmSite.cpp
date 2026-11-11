@@ -663,7 +663,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   StillHeld=bNothingToGoOn&&Visit==2&&!G->Individuals().IsEmpty()?StillHeld+Dt:0.;
   if(StillHeld>=5.&&M->Freeform&&!M->Freeform->HasFinding(TEXT("rule-still-held")))
   {
-   if(M->UI)M->UI->Thought(TEXT("It has lost me. Lamp off, standing still, and it looks past."),5.f);
+   if(M->UI)M->UI->Thought(TEXT("It has lost me. The lamp is off, I am standing still, and it is looking past me."),5.f);
    M->Freeform->RecordEvidence(TEXT("rule-still-held"),FString::Printf(TEXT("%s. A small one came near the place I stood. I had the lamp off and I kept still, and it looked past me. Lamp off, stand still, and the small ones pass."),*S47Text::ClockText(M->Freeform->Clock(),false)));
    UE_LOG(LogTemp,Display,TEXT("S47: rule taught: lamp off and still, the small one passed"));
   }
