@@ -116,7 +116,7 @@ if ONLY and os.path.isfile(manifest_path):
 rows = [m for m in old.values() if m['name'] not in ONLY]
 trims = {}
 if ONLY and os.path.isfile(manifest_path):
-	trims = {k: v for k, v in json.load(open(manifest_path)).get('trims', {}).items() if k not in ONLY}
+	trims = {k: v for k, v in json.load(open(manifest_path)).get('trims', {}).items() if k not in ONLY or os.environ.get('S47_FREE_KEEP_TRIM') == '1'}
 failed = []
 for entry in plan:
 	name = entry['name']

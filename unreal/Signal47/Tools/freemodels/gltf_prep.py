@@ -449,7 +449,9 @@ def prepare(work, report=False):
 		entry = dict(c, name=name, category=cfg['category'], scale=scale, alpha=alpha, meshes=meshes, masked=alpha_fix,
 			raw_size_m=[round(hi[k] - lo[k], 4) for k in range(3)], full_uv=bool(cfg.get('full_uv')), parts=[])
 		# trim: the old building cut out of the exported town (trim_web.py), imported with the model
-		if cfg.get('trim'):
+		# S47_FREE_KEEP_TRIM=1: the model changes, the cut of the old town does not (import_free.py keeps the
+		# trim it already has); for when the web export the cut is made from is no longer on disk
+		if cfg.get('trim') and os.environ.get('S47_FREE_KEEP_TRIM') != '1':
 			sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 			import trim_web
 			files, rep = trim_web.trim(cfg['trim'], WEB_EXPORT, os.path.join(work, 'trim', name))
