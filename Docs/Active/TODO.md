@@ -9,34 +9,34 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 Toms ord (forkortet): lydene på PC-ene er ok; resten under skal fikses. Kodemerke `D45-20261110`. Rekkefølgen er Toms nummerering.
 
-- [ ] **D45-1 CRT-båndet:** den grønne streken er for stor, går hele tiden og hopper når man bytter meny; skal se ut som en ekte CRT (sjelden, svak, naturlig).
-- [ ] **D45-2 Tracking array:** grønt blink over hele skjermen når musa beveges skal bort. I stedet: lyd og pekerstørrelse som sier at man nærmer seg rett sted å skanne.
-- [ ] **D45-3 Receiver-lappen:** lappen øverst til venstre blafrer i takt med nedlastingen.
-- [ ] **D45-4 Rare signaler og reel:** ta opp rett etter mottatt signal og så gå til reel for analyse (ikke skriver og tilbake til receiver); kulere opptaksanimasjon; reel som et 1980-talls high-tech lydsystem; alt på én skjerm uten rulling. Compare/retain skal ha tilfeldige animasjoner i lydvisningen, ikke den samme hver gang.
-- [ ] **D45-5 Kjeitete setninger:** «not for your ears», «not evidence», «read it once», «the form does not ask why they leave» og lignende skrives naturlig.
-- [ ] **D45-6 Peilelappen:** bedre språk.
-- [ ] **D45-7 Field guide:** en grei TODO-liste med viktighet; peilelappen står der med beskjed om at noe er lagt på kartet og må undersøkes.
-- [ ] **D45-8 Peilelappens sted:** koordinatene lå langt sør, utenfor selve kartet (merket «D1 12:28» i seksjon 31/32).
-- [ ] **D45-9 Nødaggregatet:** lydeffekter.
-- [ ] **D45-10 Receiver-målet:** målet kommer ikke på receiver-PC-en før arrayene har låst seg.
-- [ ] **D45-11 Vedlikehold:** array maintenance-PC-en brukes til vedlikehold (OPS kan vise til den); spilleren velger selv hvilke feilede antenner som repareres og i hvilken rekkefølge, så lenge det er deler; feilede antenner har rødt lys på boksen.
-- [ ] **D45-12 Radio og CB:** bort med «wah wah»-lyden; skurring eller lignende som antyder at noe skjer.
-- [ ] **D45-14 Gjerdet ved SARO:** byttes til bedre modell fra Cosmos (MilitaryBarriers, wired fence).
-- [ ] **D45-15 Gule bokser SC4 og SSC08:** hva de er; bort eller erstattes.
-- [ ] **D45-16 Gatelysene:** fortsatt ikke lys fra armaturene.
-- [ ] **D45-17 Fremkalling:** døra må lukkes og rødlysbryteren slås på før man kan fremkalle.
-- [ ] **D45-18 Butikklista på OPS:** må sorteres bedre.
-- [ ] **D45-19 Bodycam-innstilling:** i tillegg til VHS-innstillingen: bodycam-look blandet med VHS-effekter (sjekk hvordan bodycam ser ut).
-- [ ] **D45-20 «Array 12 of 27»:** står alltid det samme uansett hvor mange som er reparert.
-- [ ] **D45-21 S13 på kartet:** beskjed om å reparere S13, men den er ikke merket på kartet.
-- [ ] **D45-22 Tall One og musikken:** testet Tall One ved fôrbutikken (F10): den dukket ikke opp, og vanlig bymusikk spilte; musikken skal gå over til skrekk når en alien kommer nærmere. Toms spørsmål: har spillet et trip camera?
-- [ ] **D45-23 Lommelyktlader:** hvor er laderen til lommelyktbatteriet?
-- [ ] **D45-24 Caliche Ledger:** skal se ut som en ekte avis; kanskje kan man trykke på en artikkel med merkelig info og få stedet på kartet.
-- [ ] **D45-25 Pinboard:** Tom er usikker på om den er en god idé og om den virker; kritikerrunde og tilbakemelding.
-- [ ] **D45-26 Dag 1:** mer action, så spilleren blir hektet og vil finne ut mer.
-- [ ] **D45-27 Geigertelleren:** mer ekte geigertellerlyd.
-- [ ] **D45-28 Brente ringer:** skal se ekte ut: oser litt røyk, knitrer litt, glør på bakken.
-- [ ] **D45-29 Alien-bobblehead:** Toms nedlastede `alienbubblehead.glb` (skrivebordet) på dashbordet i bilen.
+- [ ] **D45-1 CRT-båndet:** den grønne streken er for stor, går hele tiden og hopper når man bytter meny; skal se ut som en ekte CRT (sjelden, svak, naturlig). **Installert i d46, ikke spilt av Tom.**
+- [ ] **D45-2 Tracking array:** grønt blink over hele skjermen når musa beveges skal bort. I stedet: lyd og pekerstørrelse som sier at man nærmer seg rett sted å skanne. **Installert i d46 (sikte som trekker seg sammen, tikk som går fortere), ikke spilt av Tom.**
+- [ ] **D45-3 Receiver-lappen:** lappen øverst til venstre blafrer i takt med nedlastingen. **Installert i d46, ikke spilt av Tom.**
+- [ ] **D45-4 Rare signaler og reel:** ta opp rett etter mottatt signal og så gå til reel for analyse (ikke skriver og tilbake til receiver); kulere opptaksanimasjon; reel som et 1980-talls high-tech lydsystem; alt på én skjerm uten rulling. Compare/retain skal ha tilfeldige animasjoner i lydvisningen, ikke den samme hver gang. **Installert i d46 (kontrollopptak rett etter opptaket, reel på én skjerm, ulik animasjon per opptak), ikke spilt av Tom.**
+- [ ] **D45-5 Kjeitete setninger:** «not for your ears», «not evidence», «read it once», «the form does not ask why they leave» og lignende skrives naturlig. **Installert i d46, ikke spilt av Tom.**
+- [ ] **D45-6 Peilelappen:** bedre språk. **Installert i d46, ikke spilt av Tom.**
+- [ ] **D45-7 Field guide:** en grei TODO-liste med viktighet; peilelappen står der med beskjed om at noe er lagt på kartet og må undersøkes. **Installert i d46 (NOW-liste etter viktighet), ikke spilt av Tom.**
+- [ ] **D45-8 Peilelappens sted:** koordinatene lå langt sør, utenfor selve kartet (merket «D1 12:28» i seksjon 31/32). **Installert i d46 (ring og mål innenfor kartflaten), ikke spilt av Tom.**
+- [ ] **D45-9 Nødaggregatet:** lydeffekter. **Installert i d46, ikke hørt av Tom.**
+- [ ] **D45-10 Receiver-målet:** målet kommer ikke på receiver-PC-en før arrayene har låst seg. **Installert i d46 (målet vises fra jobben velges), ikke spilt av Tom.**
+- [ ] **D45-11 Vedlikehold:** array maintenance-PC-en brukes til vedlikehold (OPS kan vise til den); spilleren velger selv hvilke feilede antenner som repareres og i hvilken rekkefølge, så lenge det er deler; feilede antenner har rødt lys på boksen. **Installert i d46 (MAINTENANCE, valgfri rekkefølge, røde lamper), ikke spilt av Tom.**
+- [ ] **D45-12 Radio og CB:** bort med «wah wah»-lyden; skurring eller lignende som antyder at noe skjer. **Installert i d46 (statikk i talens rytme), ikke hørt av Tom.**
+- [ ] **D45-14 Gjerdet ved SARO:** byttes til bedre modell fra Cosmos (MilitaryBarriers, wired fence). **Installert i d46 (Cosmos Military Barriers, privat utenfor Git), ikke sett av Tom.**
+- [ ] **D45-15 Gule bokser SC4 og SSC08:** hva de er; bort eller erstattes. **Installert i d46 (Story-plassholderne vises aldri i Freeform), ikke sett av Tom.**
+- [ ] **D45-16 Gatelysene:** fortsatt ikke lys fra armaturene. **Installert i d46 (kilden flyttet ut av skålen, sterkere lys), målt, ikke sett av Tom.**
+- [ ] **D45-17 Fremkalling:** døra må lukkes og rødlysbryteren slås på før man kan fremkalle. **Installert i d46, ikke spilt av Tom.**
+- [ ] **D45-18 Butikklista på OPS:** må sorteres bedre. **Installert i d46 (bånd: for arbeidet nå, kan kjøpes, kommer, har), ikke spilt av Tom.**
+- [ ] **D45-19 Bodycam-innstilling:** i tillegg til VHS-innstillingen: bodycam-look blandet med VHS-effekter (sjekk hvordan bodycam ser ut). **Installert i d46 (BODYCAM 1986), ikke sett av Tom.**
+- [ ] **D45-20 «Array 12 of 27»:** står alltid det samme uansett hvor mange som er reparert. **Installert i d46, ikke spilt av Tom.**
+- [ ] **D45-21 S13 på kartet:** beskjed om å reparere S13, men den er ikke merket på kartet. **Installert i d46 (krysset merkes på kartet), ikke spilt av Tom.**
+- [ ] **D45-22 Tall One og musikken:** testet Tall One ved fôrbutikken (F10): den dukket ikke opp, og vanlig bymusikk spilte; musikken skal gå over til skrekk når en alien kommer nærmere. Toms spørsmål: har spillet et trip camera? **Installert i d46 (Tall One venter til taket, musikken går over i skrekk); trip camera-spørsmålet besvart i d47 og bildene i d52, ikke spilt av Tom.**
+- [ ] **D45-23 Lommelyktlader:** hvor er laderen til lommelyktbatteriet? **Installert i d46 (synlig lader på kommoden), ikke spilt av Tom.**
+- [ ] **D45-24 Caliche Ledger:** skal se ut som en ekte avis; kanskje kan man trykke på en artikkel med merkelig info og få stedet på kartet. **Installert i d46 (to sider, klikkbare artikler med sted), ikke spilt av Tom.**
+- [ ] **D45-25 Pinboard:** Tom er usikker på om den er en god idé og om den virker; kritikerrunde og tilbakemelding. **Avklart: pinboard er fjernet i Freeform (D46-2), installert i d47.**
+- [ ] **D45-26 Dag 1:** mer action, så spilleren blir hektet og vil finne ut mer. **Installert i d46 (seks grep) og utvidet i d47 (D46-3, cliffhanger kl. 00:41); tempoet justert i d53..d56, ikke spilt av Tom.**
+- [ ] **D45-27 Geigertelleren:** mer ekte geigertellerlyd. **Installert i d46 (Poisson-klikk), ikke hørt av Tom.**
+- [ ] **D45-28 Brente ringer:** skal se ekte ut: oser litt røyk, knitrer litt, glør på bakken. **Installert i d46 (glør, røyk, knitring), ikke sett av Tom.**
+- [ ] **D45-29 Alien-bobblehead:** Toms nedlastede `alienbubblehead.glb` (skrivebordet) på dashbordet i bilen. **Installert i d46 (privat glb utenfor Git), ikke sett av Tom.**
 
 **Bygget 10. nov (D45-1..29 unntatt 25 pinboard og 26 delvis):** alle punktene over er kodet, bygget og selvtestet (4297 kontroller OK), regresjon PASS 251; trinnprøvene first, sky, files, menu, tv, service, wear, dusk, ictl, ictlearly, mail, casefield, spine, capacity PASS. Ikke spilt av Tom. Kjente testproblemer: `-S47OpsNavigationTest` finner ikke ORIGINALS-fanen som unik knapp etter at RECORDS åpner stasjonsfilen (testoppsett), `-S47FreeformJourneyTest` stopper på pakkefysikk (steg 4), `-S47FreeformInWorldTest` og `-S47FreeformEvidenceTest` forstyrres av den generelle testløypa som lukker skjermen; ikke avklart om de feilet før i dag. Natt 1 (D45-26) har fått de seks billigste grepene; cliffhangeren kl. 00:41 venter på Tom. Pinboard (D45-25) venter på Toms svar.
 
