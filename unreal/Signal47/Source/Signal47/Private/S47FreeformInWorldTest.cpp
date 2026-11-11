@@ -260,7 +260,9 @@ void FS47FreeformInWorldTest::Step(double Dt)
    {
     const auto* N=M->Web->Node(O.I);const auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
     const UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;
-    if(Mesh&&Mesh->GetName()==Name&&Mesh->GetPathName().StartsWith(TEXT("/Game/Licensed/TripoFleet/"))&&Mesh->GetRenderData()&&Mesh->GetNumLODs()>0&&Mesh->GetNumTriangles(0)>0&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame&&O.Shown())Found=true;
+    // N1110: since the wheel split the body is SM_TripoJeep_WheelBody (Lived or TripoFleet), in place of the cab body (S47TripoFleet::InstallJeep)
+    const bool bBodyName=FString(Name)==TEXT("SM_TripoJeep_InteriorBody")&&Mesh&&Mesh->GetName()==TEXT("SM_TripoJeep_WheelBody");
+    if(Mesh&&(Mesh->GetName()==Name||bBodyName)&&(Mesh->GetPathName().StartsWith(TEXT("/Game/Licensed/TripoFleet/"))||Mesh->GetPathName().StartsWith(TEXT("/Game/Lived/")))&&Mesh->GetRenderData()&&Mesh->GetNumLODs()>0&&Mesh->GetNumTriangles(0)>0&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame&&O.Shown())Found=true;
    });
    if(!Check(Found,FString(TEXT("actual driving Jeep has a valid visible mounted native mesh: "))+Name))return;
   }
