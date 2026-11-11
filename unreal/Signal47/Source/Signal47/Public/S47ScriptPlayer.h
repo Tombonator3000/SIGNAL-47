@@ -6,6 +6,7 @@
 class US47Main;
 class FS47FreeformSession;
 class FS47EventBeats;
+class FS47ShotCamera;
 
 // DIRECTOR-TOOL-20261109: plays the scripted events (S47Script.h) in Freeform. It reads every script in Content/Director/scripted
 // (and the developer's own copies, WriteDir), asks each enabled one every two seconds whether its trigger holds (S47Script::Ready,
@@ -133,4 +134,6 @@ private:
  bool LookingAt(const FVector& At,double Degrees) const;
  static TSet<FString>& Holders();
  TUniquePtr<FS47EventBeats> Beats;
+ // SHOT-BEAT-01: the shot action's camera (S47Shot.h), made on the first shot; stopped with the run's other effects (ClearEffects).
+ TSharedPtr<FS47ShotCamera> Shot;
 };

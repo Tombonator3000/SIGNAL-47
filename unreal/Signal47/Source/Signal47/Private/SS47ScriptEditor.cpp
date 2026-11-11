@@ -32,6 +32,9 @@ namespace S47ScriptEditorLocal
  FString NumText(double V){FString S=FString::SanitizeFloat(FMath::RoundToDouble(V*100)/100);if(S.EndsWith(TEXT(".0")))S.LeftChopInline(2);return S;}
  FString PointText(const FS47ScriptPoint& P){return P.bSet?FString::Printf(TEXT("(%.0f, %.0f%s)"),P.X,P.Z,P.Up>.05?*FString::Printf(TEXT(" +%.1f m"),P.Up):TEXT("")):FString(TEXT("(no point)"));}
  FString CaseOption(int32 L){return FString::Printf(TEXT("%d %s"),L,FS47FreeformCases::Def(L).Title);}
+ // SHOT-BEAT-01: HERE stores the player's standing point (HereRoad has no height), so a shot's eye set from it is put at eye height
+ // over that ground; LOOK puts it at eye height over what is looked at (a roof keeps its height).
+ constexpr double ShotEyeUp=1.7;
 }
 
 void S47ScriptEditor::Open(US47Main* M)
@@ -369,6 +372,40 @@ TSharedRef<SWidget> SS47ScriptEditor::BuildAction(int32 I)
   V->AddSlot().AutoHeight().Padding(24,0,0,0)[H];
   if(A.bFlag)Point(TEXT("AT"));
   return V;
+ case ES47ScriptAct::Shot:
+ {
+  // SHOT-BEAT-01: the lens (and the one it ends on, 0: the same), the hold, the ease in and out; then the eyes and what it looks at.
+  Add(Words(TEXT("fov"),19,2));Add(Num(TEXT("deg"),A.Fov,[Act](double X){if(auto* P=Act())P->Fov=FMath::Clamp(X,20.,90.);},60));
+  Add(Words(TEXT("to (0 same)"),19,2));Add(Num(TEXT("deg"),A.Fov2,[Act](double X){if(auto* P=Act())P->Fov2=X<=0?0.:FMath::Clamp(X,20.,90.);},60));
+  Secs(TEXT("held"),A.Secs);
+  Add(Words(TEXT("in"),19,2));Add(Num(TEXT("s"),A.In,[Act](double X){if(auto* P=Act())P->In=FMath::Clamp(X,.3,3.);},50));
+  Add(Words(TEXT("out"),19,2));Add(Num(TEXT("s"),A.Out,[Act](double X){if(auto* P=Act())P->Out=FMath::Clamp(X,.3,3.);},50));
+  V->AddSlot().AutoHeight().Padding(24,0,0,0)[H];
+  for(int32 Which=0;Which<2;++Which)
+  {
+   const bool bHas=A.Path.IsValidIndex(Which);
+   if(Which==1&&A.Path.IsEmpty())break; // a second eye only after a first
+   // Sets eye Which (the first, or the second once there is a first); false when there is no such place in the path.
+   const auto SetEye=[I,Which](const FS47ScriptPoint& Pt)
+   {
+    if(!Draft().Actions.IsValidIndex(I))return false;
+    TArray<FS47ScriptPoint>& Eyes=Draft().Actions[I].Path;
+    if(Which>Eyes.Num())return false;
+    if(Which==Eyes.Num())Eyes.Add(Pt);else Eyes[Which]=Pt;
+    return true;
+   };
+   V->AddSlot().AutoHeight().Padding(24,0,0,0)
+   [
+    SNew(SHorizontalBox)
+    +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,6,0)[Words((Which==0?FString(TEXT("EYE ")):FString(TEXT("EYE 2, moves there (optional) ")))+PointText(bHas?A.Path[Which]:FS47ScriptPoint()),19,2)]
+    +SHorizontalBox::Slot().AutoWidth()[Btn(TEXT("HERE"),[this,SetEye]{FS47ScriptPoint Pt;if(Player()&&Player()->HereRoad(Pt)){Pt.Up=ShotEyeUp;if(SetEye(Pt))Changed();}else Say(TEXT("no player on the land here"),true);})]
+    +SHorizontalBox::Slot().AutoWidth()[Btn(TEXT("LOOK"),[this,SetEye]{FS47ScriptPoint Pt;if(Player()&&Player()->LookRoad(Pt)){Pt.Up+=ShotEyeUp;if(SetEye(Pt))Changed();}else Say(TEXT("nothing in view to set a point on"),true);})]
+    +SHorizontalBox::Slot().AutoWidth()[Btn(TEXT("CLEAR"),[this,I,Which]{if(Draft().Actions.IsValidIndex(I)&&Draft().Actions[I].Path.IsValidIndex(Which))Draft().Actions[I].Path.RemoveAt(Which);Changed();})]
+   ];
+  }
+  Point(TEXT("LOOKS AT"));
+  return V;
+ }
  default:break;
  }
  V->AddSlot().AutoHeight().Padding(24,0,0,0)[H];
@@ -397,6 +434,14 @@ TSharedRef<SWidget> SS47ScriptEditor::BuildAdd()
    case ES47ScriptAct::Evidence:A.Kind=TEXT("script_")+D.Id;break;
    case ES47ScriptAct::Look:A.Secs=1.5;if(Player())Player()->LookRoad(A.Point);break;
    case ES47ScriptAct::Wait:A.Secs=5;break;
+   case ES47ScriptAct::Shot: // SHOT-BEAT-01: from where the player stands, at eye height, onto what they look at
+   {
+    A.Secs=6;
+    FS47ScriptPoint Eye;
+    if(Player()&&Player()->HereRoad(Eye)){Eye.Up=S47ScriptEditorLocal::ShotEyeUp;A.Path.Add(Eye);}
+    if(Player())Player()->LookRoad(A.Point);
+    break;
+   }
    default:break;
    }
    D.Actions.Add(A);Changed();

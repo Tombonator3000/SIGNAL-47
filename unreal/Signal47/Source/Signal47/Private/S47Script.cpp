@@ -5,7 +5,7 @@
 
 namespace S47ScriptLocal
 {
- const TCHAR* const ActNames[int32(ES47ScriptAct::Count)]={TEXT("figure"),TEXT("sky"),TEXT("sound"),TEXT("dish"),TEXT("fault"),TEXT("line"),TEXT("toast"),TEXT("note"),TEXT("evidence"),TEXT("look"),TEXT("wait")};
+ const TCHAR* const ActNames[int32(ES47ScriptAct::Count)]={TEXT("figure"),TEXT("sky"),TEXT("sound"),TEXT("dish"),TEXT("fault"),TEXT("line"),TEXT("toast"),TEXT("note"),TEXT("evidence"),TEXT("look"),TEXT("wait"),TEXT("shot")};
  S47J::FObj PointJson(const FS47ScriptPoint& P)
  {
   const S47J::FObj O=S47J::New();
@@ -92,6 +92,7 @@ double FS47Script::Length() const
   case ES47ScriptAct::Sky:Hold=A.Who==TEXT("fast")?24:95;break;
   case ES47ScriptAct::Wait:Waits+=A.Secs;break;
   case ES47ScriptAct::Fault:case ES47ScriptAct::Dish:case ES47ScriptAct::Look:case ES47ScriptAct::Toast:Hold=A.Secs;break;
+  case ES47ScriptAct::Shot:Hold=A.In+A.Secs+A.Out;break; // SHOT-BEAT-01: in, held, back
   default:break;
   }
   End=FMath::Max(End,A.At+Hold);
@@ -198,6 +199,13 @@ S47J::FObj ToJson(const FS47Script& S)
   case ES47ScriptAct::Evidence:S47J::Set(J,TEXT("id"),A.Kind);S47J::Set(J,TEXT("text"),A.Text);break;
   case ES47ScriptAct::Look:S47J::Set(J,TEXT("secs"),A.Secs);if(A.Point.bSet)S47J::Set(J,TEXT("point"),PointJson(A.Point));break;
   case ES47ScriptAct::Wait:S47J::Set(J,TEXT("secs"),A.Secs);if(A.bFlag){S47J::Set(J,TEXT("until_look"),true);if(A.Point.bSet)S47J::Set(J,TEXT("point"),PointJson(A.Point));}break;
+  case ES47ScriptAct::Shot: // SHOT-BEAT-01
+   if(A.Path.Num()>0)S47J::Set(J,TEXT("eye"),PointJson(A.Path[0]));
+   if(A.Path.Num()>1)S47J::Set(J,TEXT("eye2"),PointJson(A.Path[1]));
+   if(A.Point.bSet)S47J::Set(J,TEXT("point"),PointJson(A.Point));
+   S47J::Set(J,TEXT("fov"),A.Fov);if(A.Fov2>0)S47J::Set(J,TEXT("fov2"),A.Fov2);
+   S47J::Set(J,TEXT("secs"),A.Secs);S47J::Set(J,TEXT("in"),A.In);S47J::Set(J,TEXT("out"),A.Out);
+   break;
   default:break;
   }
   As.Add(MakeShared<FJsonValueObject>(J));
@@ -260,6 +268,14 @@ bool FromJson(const S47J::FObj& O,FS47Script& Out,FString& Why)
   case ES47ScriptAct::Evidence:A.Kind=S47J::Str(J,TEXT("id"));A.Text=S47J::Str(J,TEXT("text"));break;
   case ES47ScriptAct::Look:A.Secs=S47J::Num(J,TEXT("secs"),1.5);break;
   case ES47ScriptAct::Wait:A.Secs=S47J::Num(J,TEXT("secs"),5);A.bFlag=S47J::Bool(J,TEXT("until_look"));break;
+  case ES47ScriptAct::Shot: // SHOT-BEAT-01: the second eye only after a first
+  {
+   const FS47ScriptPoint Eye=PointFrom(S47J::Obj(J,TEXT("eye")));
+   if(Eye.bSet){A.Path.Add(Eye);const FS47ScriptPoint Eye2=PointFrom(S47J::Obj(J,TEXT("eye2")));if(Eye2.bSet)A.Path.Add(Eye2);}
+   A.Fov=S47J::Num(J,TEXT("fov"),60);A.Fov2=S47J::Num(J,TEXT("fov2"),0);
+   A.Secs=S47J::Num(J,TEXT("secs"),6);A.In=S47J::Num(J,TEXT("in"),.6);A.Out=S47J::Num(J,TEXT("out"),.8);
+   break;
+  }
   default:break;
   }
   Out.Actions.Add(A);
@@ -380,6 +396,25 @@ TArray<FString> Lint(const FS47Script& S,TArray<FString>* Warnings)
   case ES47ScriptAct::Evidence:if(A.Kind.IsEmpty()||A.Text.IsEmpty())E.Add(Where+TEXT(": a finding needs an id and a text"));break;
   case ES47ScriptAct::Look:if(!A.Point.bSet)E.Add(Where+TEXT(": no point to look at"));break;
   case ES47ScriptAct::Wait:if(A.bFlag&&!A.Point.bSet)E.Add(Where+TEXT(": until looked at, but no point"));break;
+  case ES47ScriptAct::Shot:
+  {
+   // SHOT-BEAT-01: the limits of S47Shot.h (MaxSecs, FovMin/FovMax, LeastFade/MostFade, LeastReach, MostTravel), written as what
+   // must hold so that a number that is not one fails. The distances here are road-local with Up; in play each is over its ground.
+   if(A.Path.IsEmpty())E.Add(Where+TEXT(": no eye"));
+   if(A.Path.Num()>2)E.Add(Where+TEXT(": two eyes at most"));
+   if(!A.Point.bSet)E.Add(Where+TEXT(": no point to look at"));
+   if(!(A.Secs>=1&&A.Secs<=30))E.Add(Where+TEXT(": held 1 to 30 s"));
+   if(!(A.Fov>=20&&A.Fov<=90)||!(A.Fov2==0||(A.Fov2>=20&&A.Fov2<=90)))E.Add(Where+TEXT(": a lens is 20 to 90 degrees (fov2 0: the same)"));
+   if(!(A.In>=.3&&A.In<=3&&A.Out>=.3&&A.Out<=3))E.Add(Where+TEXT(": in and out 0.3 to 3 s"));
+   const auto Up=[](const FS47ScriptPoint& P){return P.Up>=0&&P.Up<=300;};
+   const auto At=[](const FS47ScriptPoint& P){return FVector(P.X,P.Up,P.Z);};
+   bool bUp=!A.Point.bSet||Up(A.Point);
+   for(const FS47ScriptPoint& P:A.Path)bUp&=Up(P);
+   if(!bUp)E.Add(Where+TEXT(": up 0 to 300 m"));
+   if(A.Point.bSet&&A.Path.ContainsByPredicate([&At,&A](const FS47ScriptPoint& P){return !(FVector::Dist(At(P),At(A.Point))>=.5);}))E.Add(Where+TEXT(": an eye on the point it looks at (0.5 m at least)"));
+   if(A.Path.Num()>1&&!(FVector::Dist(At(A.Path[0]),At(A.Path[1]))<=200))E.Add(Where+TEXT(": the two eyes 200 m apart at most"));
+   break;
+  }
   default:break;
   }
  }
