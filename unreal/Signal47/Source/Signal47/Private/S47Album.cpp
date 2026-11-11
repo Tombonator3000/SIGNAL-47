@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "HAL/PlatformTime.h"
 #include "Materials/MaterialInterface.h"
+#include "S47Bodycam.h"
 #include "S47Docs.h"
 #include "S47FieldCamera.h"
 #include "S47FilmFace.h"
@@ -219,9 +220,11 @@ bool FS47Album::ExposeFrom(const FVector& Eye, const FVector& Look, const FStrin
 	const bool bSmall = D.Small && D.Small();
 	O.W = bSmall ? 320 : 640;
 	O.Super = !bSmall && D.Negative && D.Negative() ? 2 : 1;
-	// D48-20261110 (D46-27): the trip camera has a data back of its own kind; the same date in the same corner
-	const FString Imprint = D.Date ? US47FieldCamera::DataBackText(D.Date(Clock)) : FString();
-	if (!Imprint.IsEmpty()) O.Post = [Imprint](TArray<FColor>& Raw, int32 W, int32 H) { US47FieldCamera::DataBack(Raw, W, H, Imprint); };
+	// N1110 (D46-13): its frames come off a surveillance tape (wide lens, green monochrome, smear, noise) with the unit label and the
+	// date and time burned in, in place of the film data back; only these frames, never the player's own photographs.
+	const FDateTime Day = D.Date ? D.Date(Clock) : FDateTime(1986, 4, 28);
+	const FString Stamp = FS47Bodycam::StampText(FS47Bodycam::Stamp(Day.GetMonth(), Day.GetDay(), Day.GetYear(), Clock));
+	O.Post = [Stamp, Seed = O.Seed](TArray<FColor>& Raw, int32 W, int32 H) { US47FieldCamera::TripCamLook(Raw, W, H, Seed, Stamp, TEXT("TRIP CAM 3")); };
 	const FS47Snap Snap = F->Snap(O);
 	F->PhotoLoc = OldLoc;
 	F->PhotoRot = OldRot;

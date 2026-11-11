@@ -106,6 +106,13 @@ public:
 	// apostrophe and colon only; anything else is left blank, as the back would.
 	static FString DataBackText(const FDateTime& Date);
 	static void DataBack(TArray<FColor>& Px, int32 W, int32 H, const FString& Text);
+	// N1110 (D46-13): the trip camera's frames come off a 1986 surveillance tape, not the player's film: a wide lens (barrel), the
+	// picture smeared a little along the line and rolled in bands, a monochrome green cast with scan lines and tape noise, and the
+	// unit's burned-in date line (Stamp) under "TRIP CAM 3" (Label) in 5x7 dots. Works on the raw frame before the film look, so
+	// the film grain still lies over it; deterministic for a Seed. Only the trip camera calls it.
+	static void TripCamLook(TArray<FColor>& Px, int32 W, int32 H, double Seed, const FString& Stamp, const FString& Label);
+	// The tape's burned-in text in 5x7 dots (digits, / : . - and capitals), top left at X, Y with Scale pixels to a dot; returns the width drawn.
+	static int32 TripCamText(TArray<FColor>& Px, int32 W, int32 H, int32 X, int32 Y, int32 Scale, const FString& Text);
 
 	static bool SelfTest(TArray<FString>& Lines);
 

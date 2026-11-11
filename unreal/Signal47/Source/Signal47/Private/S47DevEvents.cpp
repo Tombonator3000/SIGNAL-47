@@ -1,4 +1,5 @@
 #include "S47DevEvents.h"
+#include "S47SaroWallWatch.h"
 #include "S47DevFreeform.h"
 #include "S47FloodProbe.h"
 #include "S47Freeform.h"
@@ -63,6 +64,7 @@ void FS47DevEvents::AddBuiltIn()
  FreeformLines = MakeShared<FS47DevFreeform>(M);
  FreeformLines->AddEntries(*this);
  const auto Say = [this](const FString& What) { if (M && M->UI) M->UI->Toast(TEXT("Developer event: ") + What, 3); UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer event %s"), *What); };
+ Add(TEXT("Station"), TEXT("SARO wall check"), TEXT("WORLD-04 (N1110): are the office walls drawing? Logs the room pieces; the same is logged around every Rest"), [this, Say] { Say(S47SaroWallWatch::Check(M)); });
  // ---- aliens ----
  // Pale: the label reads as it did so far (and Label.StartsWith "Pale" keeps its picture in the contract below).
  Add(TEXT("Aliens"), TEXT("Pale One, here"), TEXT("stands ahead of you and looks at you, then goes"), [this, Say] { SpawnPale(); Say(TEXT("Pale One")); });

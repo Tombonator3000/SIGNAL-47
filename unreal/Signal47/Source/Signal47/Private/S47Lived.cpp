@@ -215,6 +215,14 @@ namespace
    F->SetIntensity(bOn?HouseFillLumens*Day:0.f);F->SetLightColor(Tint*FLinearColor(1.f,.93f,.82f));F->SetVisibility(bOn);
   }
  }
+ // N1110: a kerb only where pavement meets gravel's neighbour, i.e. beside old asphalt lots, never a house; segments stay between the steps and the shoulder.
+ bool KerbWanted(bool bAsphalt,bool bHouse){return bAsphalt&&!bHouse;}
+ bool KerbSegmentInside(double Front,double FX,double X,double Edge){const double Out=(X-FX)*Front,Max=(Edge-FX)*Front;return Out>=2.2&&Out<=Max-.1;}
+ bool KerbSelfTest()
+ {
+  return KerbWanted(true,false)&&!KerbWanted(false,false)&&!KerbWanted(true,true)
+   &&KerbSegmentInside(1,100,103,110)&&!KerbSegmentInside(1,100,109.95,110)&&KerbSegmentInside(-1,100,97,90)&&!KerbSegmentInside(-1,100,101,90);
+ }
  // Caliche (T16-15): each building on the street gets ground in front of it, gravel or old asphalt, from its door out to the highway's
  // shoulder, as a decal on whatever ground the land has there; and a concrete curb down each side of it. Buildings from CalicheAccess/assembly.json.
  void BuildTown(FState& S,AS47Web* W)
@@ -230,7 +238,7 @@ namespace
   if(!TN||!TN->Comp.IsValid())return;
   const FVector O=W->Obj(TEXT("world.town.group")).WorldPosition();
   const auto Ground=[&](double X,double Z){return O.Y+S47RoadTerrain::SurfaceY(X-O.X,Z-O.Z);};
-  int32 Lots=0;
+  int32 Lots=0,KerbBad=0;
   for(const auto& V:J->GetArrayField(TEXT("buildings")))
   {
    const auto B=V->AsObject();const FString Id=B->GetStringField(TEXT("id"));
@@ -251,20 +259,23 @@ namespace
    D->SetWorldLocation(S47Three::ToUE(FVector(XM,Ground(XM,ZM),ZM)));D->SetWorldRotation(FRotator(-90.f,0.f,Front>0?0.f:180.f)); // seen 8 Nov: a quarter turn put the long side across the highway
    W->AddInstanceComponent(D);D->RegisterComponent();++Lots;
    // A concrete curb down each side, from the steps out to the shoulder, sitting on the land a segment at a time.
-   if(!bHouse&&Concrete)for(const double Side:{-1.,1.})
+   // N1110: gravel lots run out into the dirt with no kerb; only the old asphalt lots keep one, and a low, worn one (12 cm).
+   const bool bKerb=KerbWanted(Mat==Asphalt,bHouse);
+   if(bKerb&&Concrete)for(const double Side:{-1.,1.})
    {
     const double Z=ZM+Side*(Half+.08);
     for(double T=2.2;T<Out-.6;T+=1.)
     {
      const double X=FX+Front*(T+.5);
+     if(!KerbSegmentInside(Front,FX,X,Edge))++KerbBad;
      auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(TN->Comp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,Concrete);
      C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
-     C->SetWorldLocation(S47Three::ToUE(FVector(X,Ground(X,Z)+.05,Z)));C->SetWorldScale3D(FVector(.98,.15,.2));
+     C->SetWorldLocation(S47Three::ToUE(FVector(X,Ground(X,Z)+.02,Z)));C->SetWorldScale3D(FVector(.98,.15,.12));
     }
    }
   }
   S.bTownTried=true;
-  UE_LOG(LogS47Lived,Display,TEXT("S47: Caliche frontages: %d lots with their curbs"),Lots);
+  UE_LOG(LogS47Lived,Display,TEXT("S47: Caliche frontages: %d lots; kerb placement self-test (N1110) %s"),Lots,KerbSelfTest()&&KerbBad==0?TEXT("PASS"):TEXT("FAIL"));
  }
  // SARO from outside (T16-15): block joints, coping, downspouts, tray, cooling. Room-origin in the site's terms, nothing of the doors or signs under it.
  void BuildOutside(FState& S,AS47Web* W)

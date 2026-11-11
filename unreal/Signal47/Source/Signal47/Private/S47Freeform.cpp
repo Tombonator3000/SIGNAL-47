@@ -1,4 +1,5 @@
 #include "S47Freeform.h"
+#include "S47SaroWallWatch.h"
 #include "S47GoalLine.h"
 #include "S47RuleBreak.h"
 #include "S47Balloon.h"
@@ -3346,6 +3347,7 @@ bool FS47FreeformSession::WaitUntil(double Target)
  int32 Standby=0;
  if(RulesLive()&&Tutorial==0&&RestPlace==ERest::Station){Standby=FMath::Min(Cash,StandbyFor((bWoken?WokenAt:Target)-WorldClock));Cash-=Standby;StandbyTotal+=Standby;}
  const double SleptFrom=WorldClock;
+ S47SaroWallWatch::Mark(M,TEXT("before rest")); // WORLD-04 (N1110)
  WorldClock=bWoken?WokenAt:Target;DayNumber=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600.)/SecondsPerDay))+1);AddDay(DayNumber);LapseUntakenCards();Settle=0;bAudioPlaying=false;
  // FATIGUE-20261108: the rest was sleep, where it was had (a cot sleeps worst)
  if(Fatigue)Fatigue->Slept(WorldClock-SleptFrom,RestPlace==ERest::Motel?FS47Fatigue::EBed::Motel:RestPlace==ERest::Field?FS47Fatigue::EBed::Cot:FS47Fatigue::EBed::Station);
@@ -3355,6 +3357,7 @@ bool FS47FreeformSession::WaitUntil(double Target)
  if(CaseField)CaseField->AdvanceUnobservedTo(WorldClock);
  if(M&&M->Story)M->Story->SetClock(FMath::Fmod(WorldClock,SecondsPerDay));
  if(M&&M->UI)M->UI->Close();
+ S47SaroWallWatch::Mark(M,TEXT("after rest")); // WORLD-04 (N1110)
  if(bWoken)
  {
   WakeClock=WorldClock;
