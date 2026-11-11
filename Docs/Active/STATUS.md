@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 11. november kl. 02:03 (d52): versjon 0.9.52, `8b0750c0` på `claude/day-20261109`
+## Installert 11. november kl. 02:54 (d53): versjon 0.9.53, `f2e9f55d` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4714 kontroller; ingen materialadvarsler). Tilbakerulling: d52 (`8b0750c0`). Disk etterpå: 127 GB (d49-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d52 (etter en spillkritikk av første uke, 5/10): nye ting slippes gradvis inn (falske alarmer dag 2, dyrevarsel dag 3, dørsløyfe dag 4), flere falske alarmer inne og kjøleskapet høyst én gang i uka, stillhet som ikke kuttes av en kortere, sjeldnere dyrevarsel og iblant uten noe etter, lettelse som varierer etter hvor man er, Dales regler tidlig i uka, advarsler tidligere, rykter om hulen, første jakt hver uke ender i dørsløyfen, vitnebonus $8.
+
+Kontroll: regresjon PASS 251; first, dusk, casefield PASS.
+
+## Tidligere: installert 11. november kl. 02:03 (d52): versjon 0.9.52, `8b0750c0` på `claude/day-20261109`
 
 Pakket, røyktestet og installert (selvtest OK, 4697 kontroller; ingen materialadvarsler). Tilbakerulling: d51 (`cefe6d8f`). Disk etterpå: 127 GB (d48-pakken ryddet). Ikke spilt av Tom.
 
