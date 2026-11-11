@@ -47,6 +47,7 @@ public:
  // ---- the rule, pure ----
  static constexpr double WarnAt=18,SabotageAt=50,VisitAt=75,Top=100,FallPerDay=20; // N1110 (critic): calm play must not creep up; N1110 (pace): the first warning at 18, so the rule is met in week 1
  static constexpr double TellAt=12; // N1110 (pace): below the warnings, once a night, the night's sound dips for a second and nothing else
+ static constexpr double HintQuiet=10; // N1110 (pace, critic 2): game minutes since the night began and since Dale last spoke, before the day-3 hint
  static constexpr int32 HintDay=3; // N1110 (pace): Dale's word on the stare, said on day 3 if it has not been heard
  static constexpr double StareGrace=4,CameraGrace=2,StarePerSec=.25,CameraPerSec=.6,LampPerSec=1.5,ChasePerSec=.8,ChaseMps=1.5;
  static constexpr double ReturnAgain=6,PhotoBase=1,PhotoClose=6,TrackRecorded=5,TrackAgain=5,TrackPerSec=.04;
@@ -60,6 +61,8 @@ public:
  // What walking into the same fresh marks adds, the Nth time that night (1: the first, nothing).
  static double ReturnGain(int32 Times);
  static double PhotoGain(double Quality);
+ // N1110 (pace, critic 2): the hint comes in a quiet moment (pure): minutes since 18:00 and since Dale's last line.
+ static bool HintQuietEnough(double MinutesIntoNight,double MinutesSinceDale){return MinutesIntoNight>=HintQuiet&&MinutesSinceDale>=HintQuiet;}
  static bool WarnHours(double Hour);     // 18:00 to 05:30
  static bool SabotageHours(double Hour); // 23:30 to 05:00
  // The visit's own hours: the full tier to 05:30 (bEarly: the authored escalation, from midnight).

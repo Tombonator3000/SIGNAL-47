@@ -14,7 +14,8 @@ class US47Main;
 // later. The animals are the ones the game already has (S47Animals); nothing new is saved: a warning not yet followed by its event
 // when a game is loaded is simply asked again.
 //
-// N1110 (pace): the warnings come from the third night, one time in four (the scripts' odds); on about one night in three the warning comes
+// N1110 (pace, critic 2): from the fourth night, the lone one only outside the Director's rest and five game minutes clear of a false alarm.
+// N1110 (pace): the warnings come from the third night (now the fourth), one time in four (the scripts' odds); on about one night in three the warning comes
 // alone at some quiet moment on foot, with no event after it (Stray, run from Due).
 //
 // (The attention system, N1110-1, is not part of this file: when it is in, its score can scale the scripts' odds in Hold.)
@@ -35,6 +36,9 @@ public:
 	/** N1110 (pace, pure): a night on which the warning comes alone, with no event after it: about one in three, seeded. */
 	static bool StrayNight(int32 Seed, int32 NightNo);
 	/** The other one. */
+	/** N1110 (pace, critic 2, pure): the lone warning keeps clear of a false alarm (five game minutes) and of the Director's rest. */
+	static constexpr double StrayClear = 5 * 60.;
+	static bool StrayClearOf(double Clock, double LastAlarmClock, double RestLeft) { return RestLeft <= 0 && Clock - LastAlarmClock >= StrayClear; }
 	static EKind Other(EKind Kind) { return Kind == EKind::Birds ? EKind::Coyote : EKind::Birds; }
 
 	/** StartEvent's question, before the event's own code. True: go on. False with Why: the animals first; Due() hands the event

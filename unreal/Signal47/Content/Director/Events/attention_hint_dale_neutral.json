@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "attention_hint_dale_neutral",
+  "name": "Dale: out here they notice (day-3 hint, no lights named)",
+  "notes": "N1110 (pace, critic 2). Played by FS47Attention (S47Attention.cpp StepHint) on day 3 when nothing has warned yet, in a quiet moment (not during a happening or a rest, not driving, not in a window, 10 game minutes or more after the night began and after Dale last spoke). Same rule as attention_hint_dale but naming no lights, since none have been seen yet. The lamp line comes 16 s after the first, as in attention_hint_dale.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 1,
+      "do": "line",
+      "who": "dale",
+      "text": "Don't stare at anything out there too long. Out here they notice. Over."
+    },
+    {
+      "at": 1,
+      "do": "evidence",
+      "key": "attention_rule",
+      "text": "Dale, on the walkie: don't stare at anything out there too long. Out here they notice."
+    },
+    {
+      "at": 17,
+      "do": "line",
+      "who": "dale",
+      "text": "If one comes close, kill the lamp and hold still. The small ones look right past you. Over."
+    },
+    {
+      "at": 17,
+      "do": "evidence",
+      "key": "attention_rule_still",
+      "text": "Dale, on the walkie: if one comes close, kill the lamp and hold still. The small ones look right past you."
+    }
+  ]
+}

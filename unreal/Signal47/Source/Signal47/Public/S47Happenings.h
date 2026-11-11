@@ -209,6 +209,8 @@ public:
  int32 BigLatest() const{return BigNight;}
  int32 BigAhead() const{return BigNight==0?BigRound:BigRound+1<BigRounds?BigRound+1:-1;}
  bool BigLive() const{return Now.Id==TEXT("big_night");}
+ // N1110 (pace, critic 2): clock seconds of the last false alarm (S47Calm), -1e9 if none: the animals' lone warning keeps clear of it.
+ double LastFalseAlarmAt() const;
  // A sleeper on this night is woken for it (FS47FreeformDirector::DrawForNight).
  bool BigWakes(int32 Night) const;
  // PT-FEEDER-20261109 (d37): the big night's night is its own from dusk to morning, before it comes and after: no lights reported or

@@ -6,7 +6,7 @@ enum class ES47Taker : uint8;
 
 // N1110 (N1110-6, Tom 10 November: "prøver å gå ut en dør på SARO, men kommer inn sidedøra igjen og igjen; til slutt kommer man inn
 // fra taket og så fra gulvet"). The door loop: Freeform only, inside the SARO building, in the full tier (after two, to half past five),
-// never on the first night or in the first shift, never from the truck, at most once a week and only if no danger has come tonight.
+// never on the first night or in the first shift, never from the truck, at most once a week and only if no danger has come tonight, no taking and no broken rule (N1110 pace: one big thing a night).
 //
 // It is armed by the attention system at a visit's level, instead of the visit, when the player is inside with the power on (the visit
 // would only hold over the roof and go), or after the big night has passed over, with the player inside. Arming is quiet: the night
@@ -39,14 +39,14 @@ enum class ES47Taker : uint8;
 // and the shape crossing it is a slow dimming. The ways it ends: the sixth door lets them out, or a way out the loop does not hold, and
 // the thing is gone (the light out, missing time, a field record, quiet minutes); or they stop using doors: after 25 s the handle of the
 // nearest door turns and steps come round, and after 40 s it is in, and the ordinary taking takes over (FS47Taken::TakeNow).
-// At most once a night, every third night at most, never the night an ordinary loop ran, the full tier, and only on a draw (ChaseOdds .65; N1110 pace: the first eligible hunt of each week chases for sure, ChaseFirstOdds);
+// At most once a night, every third night at most, not before the fourth night (N1110 pace, critic 2), never the night an ordinary loop ran, the full tier, and only on a draw (ChaseOdds .65; N1110 pace: the first eligible hunt of each week chases for sure, ChaseFirstOdds);
 // the meeting is the hunt's own, so the night's one danger is not counted again. Nothing saved; the field record is door-loop-chase-d<day>.
 class SIGNAL47_API FS47DoorLoop
 {
 public:
  enum class EStage : uint8 { None, Armed, Running, Done };
  enum class EStep : uint8 { Normal, Side, Ceiling, Floor, Out };
- static constexpr int32 Cap=6,SideLoops=3,FirstDay=2,LoopFirstDay=4,WeekDays=7,ChaseEvery=3; // N1110 (pace): the loop from the fourth night; the chase keeps FirstDay
+ static constexpr int32 Cap=6,SideLoops=3,ChaseFirstDay=4,LoopFirstDay=4,WeekDays=7,ChaseEvery=3; // N1110 (pace, critic 2): the loop and the chase from the fourth night
  static constexpr double ArmedFor=1200,IdleFor=240,CutAfter=.35,InsteadOdds=.5,LastHour=5.5,BigQuiet=90,RestAfter=420;
  static constexpr double ChaseOdds=.65,ChaseFirstOdds=1.,ChaseWarn=25,ChaseIdle=40,DevChaseFor=300;
 
@@ -71,7 +71,7 @@ public:
  static FString RecordText(int32 Minutes,bool bFromFront);
  // N1110-7, the chase's own: the light at the windows (its strength, 0 to about 1.7, and its colour) Seconds into it; the shape crossing
  // it (a share, 1 untouched) Seconds after it began to cross, and how long that takes.
- static bool MayChase(int32 Day,int32 LastChase,int32 LastLoop){return Day>=FirstDay&&LastLoop!=Day&&(LastChase<=0||Day>=LastChase+ChaseEvery);}
+ static bool MayChase(int32 Day,int32 LastChase,int32 LastLoop){return Day>=ChaseFirstDay&&LastLoop!=Day&&(LastChase<=0||Day>=LastChase+ChaseEvery);}
  static double FloodK(double Seconds,bool bCalm);
  static FLinearColor FloodColor(double Seconds,bool bCalm);
  static double ShadeK(double Seconds,bool bCalm);

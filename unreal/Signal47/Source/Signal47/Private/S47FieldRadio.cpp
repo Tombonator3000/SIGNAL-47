@@ -238,7 +238,7 @@ bool FS47FieldRadio::Message(const FString& Text,bool bDeskToo)
  // CB-WALKIE-20261108: the walkie is Dale's. His come on channel 1 only, under the set's own caption head; a voice that is too
  // broken to make out comes on whatever channel it is on.
  FString Who,Said=Text;
- if(Text.StartsWith(TEXT("DALE: "))){if(Chan!=1)return false;Who=TEXT("DALE");Said=Text.Mid(6);}
+ if(Text.StartsWith(TEXT("DALE: "))){if(Chan!=1)return false;Who=TEXT("DALE");Said=Text.Mid(6);if(M->Freeform)LastDale=M->Freeform->Clock();}
  ++MessageCount; SinceMessage=0; SinceLoud=0;
  // DALE-WIRE-20261109: what he said, whole, is what his takes are looked up by.
  const FString Whole=Said;

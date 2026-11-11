@@ -1519,6 +1519,11 @@ void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
  // (a magnetometer reading at a place already read is kept once, but it is read again: the land's control takes it, LandRecord)
  if(Findings.Contains(Id)){LandRecord(Id);return;}
  Findings.Add(Id,Text);FindingDays.Add(Id,DayNumber);TakenCount+=Id.StartsWith(TEXT("taken-"))?1:0;
+ if(LessonRecordKey(Id)&&RulesLive())
+ {
+  const int32 Paid=EarnSide(FieldRecordPay,TEXT("field record, a lesson"));
+  if(Paid>0&&M&&M->UI)M->UI->Toast(FString::Printf(TEXT("Field record kept. $%d from the field allowance."),Paid),3.5f);
+ }
  NoteArrayRecord(Id,Text); // LOOP-3-20261109: the array's own log, and when a night record out there was kept
  // CASES-OPS-20261109: a case's own record (a test result, a conclusion, a reply) is no field record and no card on the board; its
  // telex is its one document and the night log has it under WORK (FS47NightLog, CaseRecordLine).

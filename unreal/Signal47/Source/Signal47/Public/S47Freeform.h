@@ -318,6 +318,9 @@ public:
  bool FieldRecordKept() const;
  // CHAIN-2-20261109: one record's key is of that kind: a place, marks, what the night left out there, a field time set against the array.
  static bool FieldRecordKey(const FString& Key);
+ // N1110 (pace, critic 2): a lesson learned in the field (the stare rule, the still rule held, the still rule broken): its record, once, pays
+ // FieldRecordPay like any field record, through the field allowance (EarnSide). Not a field record for what it unlocks.
+ static bool LessonRecordKey(const FString& Key){return Key==TEXT("attention_rule")||Key==TEXT("rule-still-held")||Key==TEXT("rule-pale-broken");}
  // Kinds of record the night's events have left (FS47Happenings::IsNightFinding), from that day on: for Ward and the assessment.
  int32 NightRecordKinds(int32 FromDay=0) const;
  bool BuyKit(const FString& Id);

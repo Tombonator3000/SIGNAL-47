@@ -2,9 +2,9 @@
   "version": 1,
   "id": "animals_warn_coyote",
   "name": "A coyote stops and stares",
-  "notes": "N1110 (ANIMALS-20261108). Played by FS47AnimalWarn (S47AnimalWarn.cpp) as FS47Animals puts a coyote 18 to 30 m off on open ground, stopped dead and staring at the player, about seven seconds before one of the night's events out in the open. It runs when the seven seconds are up. The code decides if and when: this file's hours and odds are its gates (the same each time that night is asked). Hint tier: coyotes stare at people. N1110 (pace): from the third night, odds one in four; on one night in three the warning comes alone, with no event after it. At most one warning a night, from either this or animals_warn_birds.",
+  "notes": "N1110 (ANIMALS-20261108). Played by FS47AnimalWarn (S47AnimalWarn.cpp) as FS47Animals puts a coyote 18 to 30 m off on open ground, stopped dead and staring at the player, about seven seconds before one of the night's events out in the open. It runs when the seven seconds are up. The code decides if and when: this file's hours and odds are its gates (the same each time that night is asked). Hint tier: coyotes stare at people. N1110 (pace): from the fourth night (N1110 pace, critic 2: the first week keeps day 3 free of this), odds one in four; on one night in three the warning comes alone, with no event after it. At most one warning a night, from either this or animals_warn_birds.",
   "enabled": true,
-  "gates": { "hours": ["19:30", "05:30"], "tier": "hint", "from_day": 3, "odds": 0.25 },
+  "gates": { "hours": ["19:30", "05:30"], "tier": "hint", "from_day": 4, "odds": 0.25 },
   "beats": [
     { "at": 3, "do": "thought", "text": "That one is not running. It is looking right at me.", "secs": 4.5 },
     { "at": 4, "do": "evidence", "key": "animals_warn_coyote_d{day}", "text": "At {clock} a coyote stopped on open ground about thirty yards off and stood looking at me, dead still, ears up, for ten seconds or so. Then it ran." }

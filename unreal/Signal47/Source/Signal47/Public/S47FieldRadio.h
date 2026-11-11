@@ -111,6 +111,8 @@ public:
  // The walkie is in use for the HUD's line: it is carried and something has just been said over it, Dale is calling, or the player
  // has just used it (a call, an answer, a turn of the channel). Never because it is breaking up: that is only heard (M2 critic:
  // the line was a rangefinder).
+ // N1110 (pace, critic 2): the game clock when a DALE line was last heard here (-1e9: none this session), for what waits on his quiet.
+ double LastDaleAt() const { return LastDale; }
  bool InUse() const { return bOwned && !bLeftOut && (SinceMessage<20. || HailLeft>0 || TxLeft>0 || SinceTouch<8.); }
  // Signal strength for the HUD's wave while the line is up for its own reason, 0 to 1: what the set is hearing, distance from the
  // mast and low ground as much as anything near, and never steady, so that it cannot be read as a meter.
@@ -169,7 +171,7 @@ private:
  double LastLevel=0,QuietFor=0,SeenFor=0,ThreatFor=0,TestT=0,LastRadio=0,CrackleIn=0,GearNoise=0,OrdHiss=0,OrdCrackle=0,RealNear=0;
  double StrengthNow=1,StrengthWant=1,StrengthIn=0,SinceNoise=1e9,SinceCrackle=1e9;
  int32 Crackled=0,MessageCount=0,DropCount=0,CrackleRun=0;
- double SinceMessage=1e9;
+ double SinceMessage=1e9,LastDale=-1e9;
  bool LastSeen=false,LastHunt=false;
  EMusicTier MusicNow=EMusicTier::Place; // D45-20261110
  int32 LastCue=-1,TestStage=0;

@@ -38,12 +38,21 @@ namespace S47DoorLoopLocal
  FS47FreeformSession* Session(US47Main* M){return M?M->Freeform.Get():nullptr;}
  FString Key(int32 Day){return FString::Printf(TEXT("door-loop-d%d"),Day);}
  // N1110-7
+ // N1110 (pace, critic 2): a taking (the record taken-<day>-<clock>) or the broken rule has been kept on this day: the night's one big thing is done.
+ bool BigThingKey(const FString& Key,int32 Day,const FS47FreeformSession* F){return Key.StartsWith(FString::Printf(TEXT("taken-%d-"),Day))||(Key==TEXT("rule-pale-broken")&&F&&F->FindingDay(Key)==Day);}
+ bool BigThingToday(const FS47FreeformSession& F)
+ {
+  for(const FString& K:F.FindingIdsFrom(F.Day()))if(BigThingKey(K,F.Day(),&F))return true;
+  return false;
+ }
  FString ChaseKey(int32 Day){return FString::Printf(TEXT("door-loop-chase-d%d"),Day);}
  const FVector HouseFrame(-24,0,300); // The old house stands in the farm's part of the SARO area (as FS47FarmHouseDoors has it).
  bool Outer(const FString& Name){return Name.StartsWith(TEXT("north"))||Name.StartsWith(TEXT("south"));}
  FString HouseId(const FString& Name){return TEXT("ff:olddoor:")+Name;}
  FString RoomId(const FString& Room){return TEXT("access:")+Room;}
- const TCHAR* const FrontDoor=TEXT("Someone's at the front door."); // N1110 (pace): after the three knocks, so that a door is tried
+ // N1110 (pace): after the three knocks, so that a door is tried. N1110 (pace, critic 2): three variants, rotated by the day.
+ const TCHAR* const FrontDoors[3]={TEXT("Someone's at the front door."),TEXT("That was the front door. Knocking."),TEXT("Knocks. At this hour.")};
+ constexpr double ThoughtNear=15.; // the thought is for one close enough to have heard the knocks at the front door, in metres
  const TCHAR* const AtTheDoor=TEXT("It's at the door. Get out. Use another door.");
  // The light at the windows: white, amber, blue, green.
  const FLinearColor FloodColors[4]={FLinearColor(.92f,.94f,1.f),FLinearColor(1.f,.6f,.18f),FLinearColor(.32f,.48f,1.f),FLinearColor(.38f,1.f,.48f)};
@@ -348,6 +357,7 @@ bool FS47DoorLoop::Gates(FString& Why,bool bDev) const
  const double Clock=F->Clock(),Hour=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;
  if(!S47NightTiers::Allows(ES47Allowed::Full,Hour,FS47FreeformSession::NightOf(Clock))||Hour>=LastHour){Why=TEXT("the full tier only, to half past five");return false;}
  if(F->Director&&(F->Director->DangerTonight()>0||F->Director->Busy())){Why=TEXT("one danger a night");return false;}
+ if(S47DoorLoopLocal::BigThingToday(*F)){Why=TEXT("one big thing a night: a taking or a broken rule has played");return false;} // N1110 (pace, critic 2)
  if(F->Happenings&&F->Happenings->BigLive()){Why=TEXT("the big night is under way");return false;}
  return true;
 }
@@ -364,13 +374,15 @@ bool FS47DoorLoop::Arm(const TCHAR* Why,bool bDev)
  for(int32 I=0;I<WasIn.Num();++I)WasIn[I]=InsideOf(I);
  // Quiet first: the night outside stops all at once, then three soft knocks at the front door.
  if(M->Audio&&M->Audio->Night.IsValid())M->Audio->Night->Hush(12,.04,.12,3.5);
+ const FS47WebItem* DoorIt=M->Web->Item(S47DoorLoopLocal::Doors[0].Id);
+ const FVector DoorAt=DoorIt?M->Web->ObjAt(DoorIt->Node).WorldPosition():FVector(S47DoorLoopLocal::Doors[0].Plane,1.2,5.7);
  if(M->Audio)
  {
-  const FS47WebItem* It=M->Web->Item(S47DoorLoopLocal::Doors[0].Id);
-  const FVector At=It?M->Web->ObjAt(It->Node).WorldPosition():FVector(S47DoorLoopLocal::Doors[0].Plane,1.2,5.7);
+  const FVector At=DoorAt;
   for(int32 K=0;K<3;++K)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.55f,.Rate=.9f,.At=At,.When=4.f+.5f*K});
  }
- Think(S47DoorLoopLocal::FrontDoor,5.6); // N1110 (pace): the knocks end at 5 s; the thought follows, so the player is drawn to try a door
+ // N1110 (pace): the knocks end at 5 s; the thought follows, so the player is drawn to try a door (not from the far end of the building)
+ if(M->Player&&FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(DoorAt.X,DoorAt.Z))<=S47DoorLoopLocal::ThoughtNear)Think(S47DoorLoopLocal::FrontDoors[FMath::Abs(F->Day())%3],5.6);
  UE_LOG(LogS47DoorLoop,Display,TEXT("S47: door loop armed (%s), day %d"),Why,F->Day());
  return true;
 }
@@ -720,7 +732,7 @@ bool FS47DoorLoop::ChaseGates(FString& Why,bool bDev) const
  if(!S47NightTiers::Allows(ES47Allowed::Full,Hour,Night)){Why=TEXT("the full tier only");return false;}
  if(ChaseNight==Night){Why=TEXT("once a night");return false;}
  const int32 LoopToday=LastDay==F->Day()||F->HasFinding(S47DoorLoopLocal::Key(F->Day()))?F->Day():0;
- if(!MayChase(F->Day(),LastChaseDay(),LoopToday)){Why=TEXT("every third night at most, never the first, never after a door loop");return false;}
+ if(!MayChase(F->Day(),LastChaseDay(),LoopToday)){Why=TEXT("every third night at most, not before the fourth, never after a door loop");return false;}
  if(FS47NightRhythm::Roll(F->Seed(),Night,S47DoorLoopLocal::Salt+2)>=OddsFor(ChasedThisWeek())){Why=TEXT("not tonight (the dice)");return false;}
  return true;
 }
@@ -956,6 +968,12 @@ bool FS47DoorLoop::SelfTest(TArray<FString>& Lines)
   Check(MissingMinutes(5,3)==MissingMinutes(5,3),TEXT("the same night, the same missing time"));
  }
  Check(!MayLoop(1,0)&&!MayLoop(2,0)&&!MayLoop(3,0)&&MayLoop(4,0)&&!MayLoop(5,3)&&!MayLoop(9,3)&&MayLoop(10,3),TEXT("N1110: not before the fourth night, at most once a week"));
+ Check(S47DoorLoopLocal::BigThingKey(TEXT("taken-5-70200"),5,nullptr)&&!S47DoorLoopLocal::BigThingKey(TEXT("taken-5-70200"),6,nullptr)&&!S47DoorLoopLocal::BigThingKey(TEXT("taken-50-1"),5,nullptr)&&!S47DoorLoopLocal::BigThingKey(TEXT("door-loop-d5"),5,nullptr),TEXT("N1110 (pace): a taking on this day, and only this day, is the night's one big thing"));
+ {
+  bool bThree=true;
+  for(int32 I=0;I<3;++I)bThree&=S47Script::LintText(S47DoorLoopLocal::FrontDoors[I]).IsEmpty()&&!FString(S47DoorLoopLocal::FrontDoors[I]).IsEmpty()&&(I==0||FCString::Strcmp(S47DoorLoopLocal::FrontDoors[I],S47DoorLoopLocal::FrontDoors[I-1])!=0);
+  Check(bThree,TEXT("N1110 (pace): three different arm thoughts"));
+ }
  // ---- N1110-7: the chase ----
  {
   // SARO through the building's door set: the same planes, bands and facing as the two doors had by themselves.
@@ -1005,11 +1023,11 @@ bool FS47DoorLoop::SelfTest(TArray<FString>& Lines)
   }
   Check(bColours,TEXT("chase: white, amber, blue and green all come, calm or not"));
  }
- Check(!MayChase(1,0,0)&&MayChase(2,0,0)&&!MayChase(4,3,0)&&!MayChase(5,3,0)&&MayChase(6,3,0)&&!MayChase(6,3,6)&&MayChase(6,3,5),TEXT("chase: never the first night, every third at most, never the night of a door loop"));
+ Check(!MayChase(1,0,0)&&!MayChase(2,0,0)&&!MayChase(3,0,0)&&MayChase(4,0,0)&&!MayChase(4,3,0)&&!MayChase(5,3,0)&&MayChase(6,3,0)&&!MayChase(6,3,6)&&MayChase(6,3,5),TEXT("chase: none before the fourth night (N1110 pace), every third at most, never the night of a door loop"));
  Check(OddsFor(false)==1.&&OddsFor(true)==ChaseOdds&&ChaseOdds>0&&ChaseOdds<1,TEXT("chase: the first eligible hunt of a week chases for sure (odds 1), then the draw (.65)"));
  Check(ChaseWarn<ChaseIdle&&ChaseIdle<IdleFor&&ChaseOdds>0&&ChaseOdds<1&&DevChaseFor>0,TEXT("chase: the handle before it is in, both well before the loop's own idle end"));
  {
-  TArray<FString> Words={S47DoorLoopLocal::FrontDoor,ChaseThought(1),ChaseThought(2),ChaseThought(3),S47DoorLoopLocal::AtTheDoor,TEXT("It's gone. How long was I in there?"),ChaseRecord(TEXT("the old house"),17),ChaseRecord(TEXT("SARO"),12),ChaseRecord(FString(),20)};
+  TArray<FString> Words={S47DoorLoopLocal::FrontDoors[0],S47DoorLoopLocal::FrontDoors[1],S47DoorLoopLocal::FrontDoors[2],ChaseThought(1),ChaseThought(2),ChaseThought(3),S47DoorLoopLocal::AtTheDoor,TEXT("It's gone. How long was I in there?"),ChaseRecord(TEXT("the old house"),17),ChaseRecord(TEXT("SARO"),12),ChaseRecord(FString(),20)};
   bool bClean=true;
   for(const FString& W:Words)bClean&=!W.IsEmpty()&&S47Script::LintText(W).IsEmpty()&&!W.Contains(TEXT("taken"));
   Check(bClean&&FString(ChaseThought(4)).IsEmpty()&&ChaseRecord(TEXT("the old house"),17).StartsWith(TEXT("The old house,")),TEXT("chase: its words keep to the spoiler limits"));

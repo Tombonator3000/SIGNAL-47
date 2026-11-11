@@ -3,6 +3,7 @@
 #include "S47DoorLoop.h"
 #include "S47EventScript.h"
 #include "S47FieldCamera.h"
+#include "S47FieldRadio.h"
 #include "S47Flashlight.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
@@ -11,6 +12,7 @@
 #include "S47Night.h"
 #include "S47NightTiers.h"
 #include "S47Omen.h"
+#include "S47Rhythm.h"
 #include "S47SaroSave.h"
 #include "S47ScriptPlayer.h"
 #include "S47Seen.h"
@@ -29,6 +31,7 @@ namespace S47AttentionLocal
 {
  const TCHAR* const SabNames[]={TEXT("none"),TEXT("relay"),TEXT("mains"),TEXT("lamp"),TEXT("truck")};
  const TCHAR* const HintRule=TEXT("attention_hint_dale");
+ const TCHAR* const HintNeutral=TEXT("attention_hint_dale_neutral"); // N1110 (pace, critic 2): the day-3 hint, with no lights named
  const TCHAR* const HintVisit=TEXT("attention_hint_visit");
  const TCHAR* const TellId=TEXT("attention_tell"); // N1110 (pace): a one-second dip of the ambience
  const TCHAR* const HintKey=TEXT("attention_rule"); // the field record Dale's word keeps (attention_hint_dale.json)
@@ -303,9 +306,15 @@ void FS47Attention::StepHint(double Hour,int32 Day)
  FS47FreeformSession* F=Session(M);
  if(bHintSaid||Day<HintDay||!F||!WarnHours(Hour))return;
  if(F->HasFinding(HintKey)){bHintSaid=true;return;}
- if(!Gated(HintRule))return;
+ // N1110 (pace, critic 2): not over another happening, a rest, the wheel or a window, and not at the start of the night or on top of Dale.
+ if(!M||!M->World||M->World->bDriving||M->ModalOpen()||M->OneAtATime())return;
+ if(F->Director){FS47RhythmNow Now;F->Director->FillRhythm(Now);if(F->Director->Busy()||Now.RestLeft>0)return;}
+ const double Clock=F->Clock(),IntoNight=(Hour>=18?Hour-18:Hour+6)*60.;
+ const double SinceDale=M->FieldRadio.IsValid()?(Clock-M->FieldRadio->LastDaleAt())/60.:1e9;
+ if(!HintQuietEnough(IntoNight,SinceDale))return;
+ if(!Gated(HintNeutral))return;
  bHintSaid=true;
- Play(HintRule);
+ Play(HintNeutral);
 }
 
 bool FS47Attention::CanSab(ESab K) const
@@ -542,7 +551,7 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
  // The scripts it plays: there, and clean (the spoiler rules and the word never said to the player).
  {
   TArray<FString> Ids=WarnScripts();
-  Ids.Append({S47AttentionLocal::TellId,S47AttentionLocal::HintRule,S47AttentionLocal::HintVisit,S47AttentionLocal::VisitId,S47AttentionLocal::VisitHeld,S47AttentionLocal::VisitEscaped});
+  Ids.Append({S47AttentionLocal::TellId,S47AttentionLocal::HintRule,S47AttentionLocal::HintNeutral,S47AttentionLocal::HintVisit,S47AttentionLocal::VisitId,S47AttentionLocal::VisitHeld,S47AttentionLocal::VisitEscaped});
   for(ESab K:{ESab::Relay,ESab::Mains,ESab::Lamp,ESab::Truck})Ids.Add(FString(TEXT("attention_sab_"))+SabName(K));
   int32 Found=0;bool bClean=true;FString First;
   for(const FString& Id:Ids)
@@ -564,6 +573,11 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
     bool bAfter=true;int32 Tubes=0;
     for(const FS47Beat& B:Mn->Beats)if(B.Do==ES47Beat::Tube){++Tubes;bAfter&=B.At>S47AttentionLocal::SabSag+S47AttentionLocal::SabOut;}
     Check(Tubes==1&&bAfter,TEXT("the mains' tube beat comes after the outage, not in the dark"));
+   }
+   {
+    const FS47EventScript* Nt=S47EventScript::Find(S47AttentionLocal::HintNeutral);
+    if(Nt)Check(Nt->Beats.Num()==4&&Nt->Beats[0].Do==ES47Beat::Line&&!Nt->Beats[0].Text.Contains(TEXT("light"))&&Nt->Beats[2].At-Nt->Beats[0].At>=16&&Nt->Beats[2].Text.Contains(TEXT("hold still")),TEXT("N1110 (pace, critic 2): the neutral hint names no lights, and the lamp line comes 16 s after it"));
+    Check(!HintQuietEnough(9,99)&&!HintQuietEnough(99,9)&&HintQuietEnough(10,10),TEXT("N1110 (pace, critic 2): the hint waits ten game minutes after the night's start and after Dale's last line"));
    }
    if(Hn)Check(Hn->Beats.Num()>0&&Hn->Beats[0].At>=10,TEXT("Dale's hint comes 10 s or more after the warning starts"));
    if(Hn)Check(Hn->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Line&&B.Text.Contains(TEXT("hold still"));}),TEXT("N1110 (pace): Dale's word gives the rule once: kill the lamp and hold still"));

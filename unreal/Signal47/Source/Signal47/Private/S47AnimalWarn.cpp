@@ -3,7 +3,10 @@
 #include "S47EventScript.h"
 #include "S47Freeform.h"
 #include "S47Main.h"
+#include "S47FreeformDirector.h"
+#include "S47Happenings.h"
 #include "S47NightRhythm.h"
+#include "S47Rhythm.h"
 #include "S47Taken.h"
 #include "S47Walker.h"
 #include "S47World.h"
@@ -85,14 +88,20 @@ void FS47AnimalWarn::Stray()
 	if (StrayAt < 0 || bUsed || M->T < StrayAt || Pending.Num()) return;
 	StrayAt = M->T + 20.;  // asked again in twenty seconds if this is not the moment
 	if (M->World->bDriving || (F->Taken && (F->Taken->Indoors() || F->Taken->Busy())) || F->Held() || M->ModalOpen() || M->OneAtATime()) return;
+	// N1110 (pace, critic 2): not in the Director's rest, and not within five game minutes of a false alarm.
+	FS47RhythmNow Rest;
+	if (F->Director) F->Director->FillRhythm(Rest);
+	if (!StrayClearOf(F->Clock(), F->Happenings ? F->Happenings->LastFalseAlarmAt() : -1e9, Rest.RestLeft)) return;
 	const double Bearing = FMath::FRand() * 2 * UE_DOUBLE_PI;
 	const FVector Eye(M->Player->Pos.X, 0, M->Player->Pos.Z);
 	const FVector Threat = Eye + FVector(FMath::Cos(Bearing) * 90, 0, FMath::Sin(Bearing) * 90);
+	// The script's odds roll (S47EventScript::Allows) is seeded by the night and the script: the same each time it is asked. So the
+	// night's one kind is asked and no fallback, which makes a stray night's odds the script's own (.25), not two draws of it.
 	const EKind First0 = First(F->Seed(), Night, TEXT("stray"));
-	for (const EKind Kind : { First0, Other(First0) })
+	for (const EKind Kind : { First0 })
 	{
 		FString Gate, Fail;
-		if (!S47EventScript::Allows(M, ScriptOf(Kind), Gate)) continue;
+		if (!S47EventScript::Allows(M, ScriptOf(Kind), Gate)) continue; // (hours or odds: the same answer all night, so asking again in twenty seconds costs nothing)
 		if (!M->Animals->Warn(Kind == EKind::Birds, Threat, Lead, Fail)) continue;
 		bUsed = true; ++Count; StrayAt = -1.;
 		FS47EventCtx Ctx;
@@ -138,6 +147,7 @@ bool FS47AnimalWarn::SelfTest(TArray<FString>& Lines)
 	int32 Strays = 0;
 	for (int32 N = 1; N <= 300; ++N) Strays += StrayNight(47, N) && StrayNight(47, N) == StrayNight(47, N);
 	Check(Strays > 70 && Strays < 130, TEXT("on about one night in three the warning comes alone, with no event after it (seeded)"));
+	Check(StrayClearOf(1000, 1000 - 301, 0) && !StrayClearOf(1000, 1000 - 299, 0) && !StrayClearOf(1000, -1e9, 1) && StrayClearOf(1000, -1e9, 0), TEXT("N1110 (pace, critic 2): the lone warning waits out the Director's rest and five game minutes after a false alarm"));
 	Check(Lead >= 4 && Lead <= 10, TEXT("the event follows its warning by a few seconds"));
 	FS47AnimalWarn Bare(nullptr);
 	FString Why;
@@ -149,8 +159,8 @@ bool FS47AnimalWarn::SelfTest(TArray<FString>& Lines)
 		bool bGood = S != nullptr && S->bEnabled && S47EventScript::Lint(*S).Num() == 0;
 		int32 Thoughts = 0, Findings = 0, Camera = 0;
 		if (S) for (const FS47Beat& B : S->Beats) { Thoughts += B.Do == ES47Beat::Thought; Findings += B.Do == ES47Beat::Evidence; Camera += B.Do == ES47Beat::CameraSnap; }
-		Check(bGood && Thoughts == 1 && Findings == 1 && Camera == 0 && S->Gates.HourFrom >= 0 && S->Gates.Odds > 0 && S->Gates.Odds <= .25 && S->Gates.DayFrom >= 3 && S->Gates.Tier == ES47Allowed::Hint,
-			K == EKind::Birds ? TEXT("animals_warn_birds: a thought, a finding, night hours, odds of at most a quarter, from the third night, no camera") : TEXT("animals_warn_coyote: a thought, a finding, night hours, odds of at most a quarter, from the third night, no camera"));
+		Check(bGood && Thoughts == 1 && Findings == 1 && Camera == 0 && S->Gates.HourFrom >= 0 && S->Gates.Odds > 0 && S->Gates.Odds <= .25 && S->Gates.DayFrom >= 4 && S->Gates.Tier == ES47Allowed::Hint,
+			K == EKind::Birds ? TEXT("animals_warn_birds: a thought, a finding, night hours, odds of at most a quarter, from the fourth night, no camera") : TEXT("animals_warn_coyote: a thought, a finding, night hours, odds of at most a quarter, from the fourth night, no camera"));
 	}
 	return bOk;
 }

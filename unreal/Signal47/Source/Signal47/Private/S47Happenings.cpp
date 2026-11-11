@@ -978,6 +978,7 @@ const TArray<FString>& FS47Happenings::Ids()
   TEXT("big_night")};
  return L;
 }
+double FS47Happenings::LastFalseAlarmAt() const{return Calm.IsValid()?Calm->LastAlarmAt():-1e9;}
 bool FS47Happenings::IsDanger(const FString& Id){return Id==TEXT("cb_echo")||Id==TEXT("hitchhiker")||Id==TEXT("car_light")||Id==TEXT("figure_near");}
 
 // ---------------------------------------------------------------- saving

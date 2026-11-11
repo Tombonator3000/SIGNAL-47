@@ -1,4 +1,6 @@
 #include "S47EventScript.h"
+#include "S47Freeform.h"
+#include "S47NightRhythm.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -257,6 +259,22 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
   Check(Fill(TEXT("At {clock}, about {az} degrees ({az}); {nothing}."),W)==TEXT("At 22:40, about 120 degrees (120); {nothing}."),TEXT("words filled in, an unknown one left as written"));
  }
 
+ // ---- N1110 (pace, critic 2) ----
+ {
+  // the odds roll a script is asked with is seeded by the seed, the night and the script: the same every time that night is asked
+  const uint32 Salt=GetTypeHash(FString(TEXT("animals_warn_birds")))^0x45565453u;
+  bool bSame=true;int32 Yes=0;
+  for(int32 N=1;N<=200;++N){const float A=FS47NightRhythm::Roll(47,N,Salt);bSame&=A==FS47NightRhythm::Roll(47,N,Salt);Yes+=A<.25f;}
+  Check(bSame&&Yes>25&&Yes<75,TEXT("a script's odds are rolled once per night (seeded), so .25 means about a quarter of the nights"));
+  for(const TCHAR* Id:{TEXT("animals_warn_birds"),TEXT("animals_warn_coyote")})
+  {
+   const FS47EventScript* W=Find(Id);
+   Check(W&&W->Gates.DayFrom==4,FString::Printf(TEXT("%s: from the fourth night"),Id));
+  }
+  const FS47EventScript* Nt=Find(TEXT("attention_hint_dale_neutral"));
+  Check(Nt&&Nt->bEnabled&&Lint(*Nt).Num()==0,TEXT("attention_hint_dale_neutral: there, enabled and clean"));
+  Check(FS47FreeformSession::LessonRecordKey(TEXT("attention_rule"))&&FS47FreeformSession::LessonRecordKey(TEXT("rule-still-held"))&&FS47FreeformSession::LessonRecordKey(TEXT("rule-pale-broken"))&&!FS47FreeformSession::LessonRecordKey(TEXT("attention_rule_still"))&&!FS47FreeformSession::LessonRecordKey(TEXT("place_windmill")),TEXT("the stare rule and the still rule's records are the lessons that pay a field record"));
+ }
  // ---- the gates ----
  {
   FS47EventGates G;FString Why;

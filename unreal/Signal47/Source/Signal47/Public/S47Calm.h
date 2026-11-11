@@ -40,6 +40,8 @@ public:
 	/** A new game or area: nothing waits. */
 	void Reset();
 
+	/** N1110 (pace, critic 2): clock seconds of the last false alarm (-1e9: none yet). */
+	double LastAlarmAt() const { return LastAlarm; }
 	int32 AlarmsPlayed() const { return Played; }
 	int32 ReliefPlayed() const { return Reliefs; }
 
