@@ -198,3 +198,5 @@ Pengeløkka, Tom 9. november ca. 10:50: mindre betalt per jobb (ca. $12–14) me
 Tidsnivåer for det uforklarlige, Tom 9. november ca. 11:45 (erstatter «ingen alien før ca. 02:00»): 18–24 vanlig jobb med hint som kan bortforklares (fjerne lys, lyder, radio, data som ikke stemmer, øyeglimt langt unna); 24–02 glimt (silhuett i kanten av lykta eller langt ute, noe som krysser veien langt foran bilen; aldri nært, aldri kontakt, ingen bortføring); etter 02 fulle møter. Forfattede store netter og regissørskript kan starte tidligere når det er satt med vilje, og grensene kan krype litt tidligere i uke 4.
 
 Bildetaket, Tom 11. november morgen: ukestaket for fotokostnader blir værende på $35 (forslaget om $80 er avvist).
+
+Story bygger på Freeform, Tom 11. november: alt Freeform har av ressurser og funksjoner brukes også i Story: samme terreng og fjell, samme grafikk, samme systemer. Story skal ikke ha egne fjell, egne kart eller andre grafiske forskjeller. Eneste forskjell: Story er en klart regissert utgave av Freeform med en konkret historie og hendelser som spilles gjennom én natt, med begynnelse, midte og slutt. Erstatter tidligere egne Story-oppsett der de avviker.

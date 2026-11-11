@@ -4,6 +4,10 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Story på Freeform-grunnlag (Tom 11. november, etter Linux-utgaven)
+
+- [ ] **STORY-ON-FREEFORM-01:** Story skal bruke alt Freeform har: samme verden (terreng, fjell, bygg, lys, vær), samme grafikk og alle Freeform-funksjoner (jobber, Jeep, utstyr, OPS, oppmerksomhet, hendelsesskript). Fjern Story-egne kart, fjell og grafiske avvik. Story blir en regissert Freeform-natt med konkret historie: begynnelse, midte og slutt, styrt med regissørens hendelsesskript. Første steg: kartlegg hva Story i dag har eget (kart, nivåer, terreng, UI, systemer) og hva som må flyttes over; lag plan før kode. Se [DECISIONS](DECISIONS.md).
+
 ## Ferdig, venter på Toms test
 
 Bygget, installert og kontrollert i koden; det eneste som gjenstår er at Tom spiller eller lytter. Full tekst for hvert punkt står i [TODO_FERDIG_2026-11-11](../Archive/TODO_FERDIG_2026-11-11.md). Når Tom har testet, meldes punktet ferdig eller flyttes tilbake hit som åpent funn. Bygg d46–d58 er installert; d58 (0.9.58) er gjeldende.
