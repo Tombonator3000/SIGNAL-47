@@ -6,7 +6,7 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Story på Freeform-grunnlag (Tom 11. november, etter Linux-utgaven)
 
-- [ ] **STORY-ON-FREEFORM-01:** Story skal bruke alt Freeform har: samme verden (terreng, fjell, bygg, lys, vær), samme grafikk og alle Freeform-funksjoner (jobber, Jeep, utstyr, OPS, oppmerksomhet, hendelsesskript). Fjern Story-egne kart, fjell og grafiske avvik. Story blir en regissert Freeform-natt med konkret historie: begynnelse, midte og slutt, styrt med regissørens hendelsesskript. Retning: alt i Freeform går inn i Story, aldri motsatt; Freeform endres ikke for Storys skyld. Første steg: kartlegg hva Story i dag har eget (kart, nivåer, terreng, UI, systemer), som skal erstattes med Freeforms versjon; lag plan før kode. Se [DECISIONS](DECISIONS.md).
+- [ ] **STORY-ON-FREEFORM-01:** Story skal bruke alt Freeform har: samme verden (terreng, fjell, bygg, lys, vær), samme grafikk og alle Freeform-funksjoner (jobber, Jeep, utstyr, OPS, oppmerksomhet, hendelsesskript). Fjern Story-egne kart, fjell og grafiske avvik. Story blir en regissert Freeform-natt med konkret historie: begynnelse, midte og slutt, styrt med regissørens hendelsesskript. Retning: alt i Freeform går inn i Story, aldri motsatt; Freeform endres ikke for Storys skyld. Første steg: kartlegg hva Story i dag har eget (kart, nivåer, terreng, UI, systemer), som skal erstattes med Freeforms versjon; lag plan før kode. Se [DECISIONS](DECISIONS.md) og [kartlegging og plan](../Design/Story/STORY_PA_FREEFORM_2026-11-11.md).
 
 ## Ferdig, venter på Toms test
 
