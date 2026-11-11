@@ -19,6 +19,10 @@ namespace S47ScriptEditor
  FS47Script& Draft();
  bool& HaveDraft();
  bool& Dirty();
+ // DIRECTOR-MODE-01, slice 4: the selected shot, shared by the editor's rows and the director's camera: an index into Draft().Actions,
+ // checked on every ask (INDEX_NONE without a draft, or when it is not a shot action there). SelectShot keeps it only if it is one.
+ int32 SelectedShot();
+ void SelectShot(int32 I);
 }
 
 class SS47ScriptEditor : public SCompoundWidget
@@ -55,7 +59,8 @@ private:
  void Select(const FString& Id);
  void NewScript();
  void SaveIt();
- void PreviewIt();
+ // From: seconds into the draft's timeline (PREVIEW FROM HERE on a shot); 0 from the top, as before.
+ void PreviewIt(double From = 0);
  void StopIt();
  void CloseIt();
  void Say(const FString& Text, bool bBad = false);
