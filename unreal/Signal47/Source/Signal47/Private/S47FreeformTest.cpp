@@ -982,7 +982,7 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==88052&&F.OperationsSection()==3&&!HasText(F.Jobs()[0].Id+TEXT(" / ORIGINAL"))&&!bOriginalsTab)
   {
    // FIX10-2: RECORDS opens on a station file that is due (day 1 has two); the originals are one tab over
-   bOriginalsTab=true;if(!Click(TEXT("ORIGINALS")))return;Go(88052,.3);return;
+   bOriginalsTab=true;{FString Tab;for(int32 N=0;N<40&&Tab.IsEmpty();++N){TArray<TSharedRef<SButton>> Found;const FString Try=FString::Printf(TEXT("ORIGINALS %d"),N);for(const auto& W:Roots())PhotoButtons(W,Try,Found);if(Found.Num()==1)Tab=Try;}if(!Check(!Tab.IsEmpty(),TEXT("the RECORDS tab ORIGINALS n is on the glass")))return;if(!Click(Tab))return;}Go(88052,.3);return; // (the glass tab carries its count)
   }
   if(Stage==88052)
   {
@@ -1000,6 +1000,11 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(!F.TerminalOnGlass()&&!M->UI->Modal()&&F.ActiveTerminalScreen()==-1,TEXT("separate physical leave returns to room and clears OPS modal")))return;
    // FIX-20261110: the array PC has work of its own: the drive check runs every element and says what it heard.
    const FVector Left=S47Three::ToThree(M->Web->PropLocation(TEXT("crtLeft")));M->Player->Place(Left.X,Left.Z+1.1,0);F.Use(TEXT("crtLeft"));Go(8807,1.);return;
+  }
+  if(Stage==8807&&F.TerminalOnGlass()&&!HasText(TEXT("OFF THE MAIN BEAM"))&&!bStatusTab)
+  {
+   // D45-11: the array PC reopens on the tab it was left on; the drive check is on STATUS
+   bStatusTab=true;if(!Click(TEXT("STATUS")))return;Go(8807,.4);return;
   }
   if(Stage==8807)
   {
