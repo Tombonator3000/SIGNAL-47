@@ -26,9 +26,9 @@ void SS47FreeformStart::Construct(const FArguments& Args)
      .Padding(FMargin(28,24))
      [
       S47Kit::Col({
-       SNew(STextBlock).Text(FText::FromString(TEXT("NEW FREEFORM / CONSEQUENCES")))
+       SNew(STextBlock).Text(FText::FromString(Args._Story ? TEXT("NEW STORY / CONSEQUENCES") : TEXT("NEW FREEFORM / CONSEQUENCES")))
         .Font(S47Theme::Term(30,3)).ColorAndOpacity(S47Kit::Css(0xffb7a4)),
-       S47Kit::Text(TEXT("April 28, 1986. SARO has a new night operator, and that is you. Work, investigate and improve the base across days and nights, for as long as the county keeps it open.")),
+       S47Kit::Text(Args._Story ? TEXT("April 28, 1986. SARO has a new night operator, and that is you. The same base, the same county, and one night that will not go the way it should.") : TEXT("April 28, 1986. SARO has a new night operator, and that is you. Work, investigate and improve the base across days and nights, for as long as the county keeps it open.")),
        Option(TEXT("Local recovery / recommended"),0),
        S47Kit::Small(TEXT("A capture costs time or interrupts field work. Filed evidence and repaired equipment survive.")),
        Option(TEXT("Death / reload last save"),1),

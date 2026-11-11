@@ -83,9 +83,11 @@ public:
 	void DevSave();
 	static FString DevDir();
 	void RequestNewNight(int32 InCaseId, bool bReplace = false);
-	void RequestNewFreeform();
+	void RequestNewFreeform(bool bStory = false);
+	/** STORY-ON-FREEFORM-01: NEW STORY is a Freeform session marked as Story (saved as storyDirector{v:1}); the story director builds on it. */
+	bool StoryNight() const { return bStoryNight; }
 	void OpenSave(const FS47SaveMeta& Meta);
-	struct FStart { int32 CaseId = 0; double Playtime = 0; S47J::FObj State; FString Jump; bool bDev = false; bool bReplaceCase = false; bool bFreeform = false; bool bLethal = false; };
+	struct FStart { int32 CaseId = 0; double Playtime = 0; S47J::FObj State; FString Jump; bool bDev = false; bool bReplaceCase = false; bool bFreeform = false; bool bLethal = false; bool bStoryNight = false; };
 	void StartGame(const FStart& O);
 	void LeavePlay();
 	void ToTitle();
@@ -105,6 +107,7 @@ public:
 	FS47SaveStore Saves;
 	int32 CaseId = 0;               // the case being played, 0 before a night starts
 	bool bDevRun = false;           // a run that is never saved
+	bool bStoryNight = false;      // this Freeform session is NEW STORY's (STORY-ON-FREEFORM-01)
 	bool bStarting = false;         // between Start or Continue and the first playable frame
 	bool bRestoringNow = false;
 	bool bPendingAuto = false;

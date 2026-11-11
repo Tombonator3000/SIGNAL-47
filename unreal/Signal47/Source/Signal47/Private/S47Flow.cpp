@@ -813,14 +813,10 @@ void US47Flow::ShowTitle()
 	O.OnFreeform = [this] { RequestNewFreeform(); };
 	O.OnStart = [this]
 	{
+		// STORY-ON-FREEFORM-01 (Tom 11 Nov): Story is Freeform's world and systems with a story on top.
+		// The legacy opening card and chapter engine stay reachable from DEVELOPER until the migration ends.
 		if (bStarting || Opening->Active() || M->UI->Modal()) return;
-		const int32 Free = Saves.FreeCase();
-		if (Free) { RequestNewNight(Free); return; }
-		// every case slot is taken: pick one to replace
-		FS47SaveMenuOpts S;
-		S.Mode = TEXT("new"); S.Metas = Saves.List(); S.ActiveCase = Saves.Active();
-		S.OnNewCase = [this](int32 C) { RequestNewNight(C, true); };
-		S47SaveMenu::Open(M->UI, S);
+		RequestNewFreeform(true);
 	};
 	O.bCanLoad = Saves.List().Num() > 0;
 	O.OnLoad = [this]
@@ -863,15 +859,15 @@ void US47Flow::ShowTitleAgain()
 	ShowTitle();
 }
 
-void US47Flow::RequestNewFreeform()
+void US47Flow::RequestNewFreeform(bool bStory)
 {
  if (bStarting || M->Mode != EMode::Title) return;
- auto Choose = [this](bool bLethal)
+ auto Choose = [this,bStory](bool bLethal)
  {
   UE_LOG(LogS47Flow,Display,TEXT("S47: Freeform consequences selected: %s"),bLethal?TEXT("reload"):TEXT("local recovery"));
   M->UI->Close();
-  auto Start = [this,bLethal](int32 Id,bool bReplace)
-  { FStart S; S.CaseId=Id; S.bReplaceCase=bReplace; S.bFreeform=true; S.bLethal=bLethal; StartGame(S); };
+  auto Start = [this,bLethal,bStory](int32 Id,bool bReplace)
+  { FStart S; S.CaseId=Id; S.bReplaceCase=bReplace; S.bFreeform=true; S.bLethal=bLethal; S.bStoryNight=bStory; StartGame(S); };
   const int32 Free = Saves.FreeCase();
   if (Free) { Start(Free,false); return; }
   FS47SaveMenuOpts O; O.Mode=TEXT("new"); O.bNewFreeform=true; O.Metas=Saves.List(); O.ActiveCase=Saves.Active();
@@ -879,7 +875,7 @@ void US47Flow::RequestNewFreeform()
  };
  // A start choice stays open until an explicit selection or Back. The generic
  // document shell dismisses on backdrop clicks and has no menu keyboard focus.
- M->UI->Open(SNew(SS47FreeformStart).OnChoose(Choose).OnBack([this] { M->UI->Close(); }));
+ M->UI->Open(SNew(SS47FreeformStart).Story(bStory).OnChoose(Choose).OnBack([this] { M->UI->Close(); }));
 }
 
 void US47Flow::RequestNewNight(int32 InCaseId, bool bReplace)
@@ -932,6 +928,7 @@ void US47Flow::StartGame(const FStart& O)
  Journal.Load(S47J::Obj(O.State,TEXT("journal")));
  if(M->UI)M->UI->NbTab=TEXT("tasks");
  M->SessionMode = bFreeform ? ES47SessionMode::Freeform : ES47SessionMode::Story;
+ bStoryNight = bFreeform && (O.State ? S47J::Obj(O.State,TEXT("storyDirector")).IsValid() : O.bStoryNight);
  // The shared world is built before mode selection. Apply its farm layout before
  // any restored truck/player pose is tested against the area's ground.
  S47FarmWorld::Reconcile(M);
@@ -1470,7 +1467,7 @@ FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
 {
 	// the strip's lines: the chapter, the clock and the place, the case and when it was last saved
 	AS47Story* S = M->Story;
-	O.Chapter = M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("FREEFORM / DAY %d"), M->Freeform->Day()) : S ? S->ChapterTitle() : FString();
+	O.Chapter = M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("%s / DAY %d"), bStoryNight ? TEXT("STORY") : TEXT("FREEFORM"), M->Freeform->Day()) : S ? S->ChapterTitle() : FString();
 	O.Clock = S ? FMath::Fmod(S->Clock()+86400.,86400.) : -1;
 	if (M->Evening && M->Evening->Commute()) O.Clock=-1;
 	O.Place = PlaceName();
@@ -1878,6 +1875,7 @@ S47J::FObj US47Flow::GameState()
 	else State->RemoveField(TEXT("freeformCameraOwned"));
 	if (M->HighwayUfo) S47J::Set(State,TEXT("highwayUfo"),M->HighwayUfo->Save());
 	if (M->IsFreeform() && M->Freeform) S47J::Set(State,TEXT("freeform"),M->Freeform->Save()); else State->RemoveField(TEXT("freeform"));
+	if (M->IsFreeform() && bStoryNight) { auto D=S47J::New(); S47J::Set(D,TEXT("v"),1); S47J::Set(State,TEXT("storyDirector"),D); } else State->RemoveField(TEXT("storyDirector"));
 	S47J::Set(State,TEXT("journal"),Journal.Save());
 	S47J::Set(State,TEXT("timelineVersion"),M->Story && M->Story->bEveningTimeline ? 2 : 1);
 	if (M->Evening && M->Evening->Enabled()) S47J::Set(State,TEXT("evening"),M->Evening->Save());
@@ -1935,7 +1933,7 @@ TOptional<FS47SaveMeta> US47Flow::WriteSave(const FString& Kind, int32 Slot, FSt
 	const S47J::FObj State = GameState();
 	const bool bPrologue = S47J::Str(State, TEXT("checkpoint")) == TEXT("residual");
 	FS47SaveCard Card;
-	Card.Chapter = M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("FREEFORM / DAY %d"),M->Freeform->Day()) : M->Story ? M->Story->ChapterTitle() : FString();
+	Card.Chapter = M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("%s / DAY %d"), bStoryNight ? TEXT("STORY") : TEXT("FREEFORM"), M->Freeform->Day()) : M->Story ? M->Story->ChapterTitle() : FString();
 	Card.Place = PlaceName();
 	Card.Clock = M->Evening && M->Evening->Commute() ? FString(TEXT("Late afternoon")) : bPrologue ? FString(M->Story && M->Story->bEveningTimeline ? TEXT("00:13") : TEXT("02:13")) : S47Text::ClockText(M->Story ? M->Story->Clock() : 0, false);
 	Card.Playtime = M->Playtime;
