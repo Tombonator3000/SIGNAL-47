@@ -1,0 +1,24 @@
+{
+ "_doc": "GAS-STATION-LIFT-01: bought Cosmos props in the Caliche gas station's shop (S47StationDressing; the meshes by Tools/cosmosshop, git-ignored under /Game/Licensed/CosmosShop, loaded only if present). at: the town metres (x, y up, z; the shop's interior_layout.json) where the bottom centre of the piece's turned and scaled bounds goes; origin_town: the station model's origin there (its placement.json town). yaw, pitch, roll: Unreal degrees in the model's frame (yaw 0: the mesh's +X to town +x, yaw 90: to town +z, the back wall). anchor_of: place by another piece's bounds (the drawer with its register). collide: a walk block from its bounds. Not read by S47Props.",
+ "origin_town": [-16.655942535400392, 3.9399999991059302, 2064.9074993133545],
+ "pieces": [
+  {"id": "register", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Cash_Register_Body.SM_Cash_Register_Body", "at": [-18.9, 6.3955, 2070.12], "yaw": 0},
+  {"id": "registerDrawer", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Cash_Register_Drawer.SM_Cash_Register_Drawer", "at": [-18.9, 6.3955, 2070.12], "yaw": 0, "anchor_of": "register"},
+  {"id": "coffeeMachine", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Coffee_Machine.SM_Coffee_Machine", "at": [-17.8, 6.3555, 2077.55], "yaw": 0},
+  {"id": "fireAlarm", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Fire_Alarm.SM_Fire_Alarm", "at": [-17.75, 6.85, 2066.216], "yaw": 0},
+  {"id": "trashBin", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Small_Trash_Bin.SM_Small_Trash_Bin", "at": [-22.85, 5.4455, 2077.45], "yaw": 0, "collide": true},
+  {"id": "noSmoking", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Signs_No_Smoking.SM_Signs_No_Smoking", "at": [-20.4, 7.3, 2066.207], "yaw": 0, "roll": 90},
+  {"id": "staffOnly", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Signs_Staff_only.SM_Signs_Staff_only", "at": [-24.55, 8.27, 2077.774], "yaw": 180, "scale": 0.8, "roll": 90},
+  {"id": "fridge", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Fridge.SM_Fridge", "at": [-26.375, 5.4455, 2067.47], "yaw": -90, "collide": true},
+  {"id": "boxTall", "asset": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_CardboardBox05.SM_CardboardBox05", "at": [-17.55, 5.4455, 2075.8], "yaw": 90, "collide": true},
+  {"id": "boxOnTall", "asset": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_CardboardBox03.SM_CardboardBox03", "at": [-17.58, 5.9455, 2075.82], "yaw": 78},
+  {"id": "boxLow", "asset": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_CardboardBox02.SM_CardboardBox02", "at": [-17.45, 5.4455, 2076.75], "yaw": 90, "collide": true},
+  {"id": "crate", "asset": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_Crate01.SM_Crate01", "at": [-17.46, 5.7155, 2076.72], "yaw": 94},
+  {"id": "ceilingVentAisle", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_AC_Unit_Ceiling.SM_AC_Unit_Ceiling", "at": [-25.9, 8.529, 2073.0], "yaw": 0},
+  {"id": "ceilingVentCoffee", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_AC_Unit_Ceiling.SM_AC_Unit_Ceiling", "at": [-21.3, 8.529, 2075.6], "yaw": 0},
+  {"id": "wallVent", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Vent_02.SM_Vent_02", "at": [-23.0, 8.05, 2066.21], "yaw": 0},
+  {"id": "fuseBox", "asset": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_WallBox01.SM_WallBox01", "at": [-17.264, 6.95, 2076.6], "yaw": 90},
+  {"id": "stockBoxA", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Box_02.SM_Box_02", "at": [-26.58, 7.2955, 2073.0], "yaw": 0},
+  {"id": "stockBoxB", "asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Box_01.SM_Box_01", "at": [-26.58, 7.2955, 2075.4], "yaw": 0}
+ ]
+}

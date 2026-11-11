@@ -125,6 +125,7 @@
 #include "S47Audio.h"
 #include "S47NightLife.h"
 #include "S47StationInsects.h"
+#include "S47StationDressing.h"
 #include "S47Ops.h"
 #include "S47Rx.h"
 #include "S47Three.h"
@@ -261,6 +262,7 @@ void AS47HUD::Start()
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
 		bOk &= FS47StationInsects::SelfTest(Lines); // (GAS-STATION-LIFT-01: the canopy swarm's population by light, hour, weather and hush)
+		bOk &= FS47StationDressing::SelfTest(Lines); // (GAS-STATION-LIFT-01: the shop's Cosmos props: the file, their places; with or without the assets)
 		bOk &= S47StreetLamps::SelfTest(Lines); // (STREETLAMP-GLOW: every LOD's lens, no WorldGrid slot, the spot in the head, the glow on and off)
 		// D37-SARO-EMPTY-20261109: the fleet cars keep their paint; no parked staff cars at SARO, no S-03 text on any car.
 		bOk &= S47CarPaint::SelfTest(Lines);

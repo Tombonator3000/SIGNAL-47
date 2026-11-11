@@ -12,6 +12,7 @@
 #include "S47Soundscape.h"
 #include "S47Animals.h"
 #include "S47StationInsects.h"
+#include "S47StationDressing.h"
 #include "S47FreeformTest.h"
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
@@ -207,6 +208,8 @@ void US47Main::Step(double Dt)
 	// GAS-STATION-LIFT-01: the moths under the gas station's tubes (after the night's sounds: they leave in its hush)
 	if (!StationInsects) StationInsects = MakeShared<FS47StationInsects>(this);
 	StationInsects->Step(Dt);
+	if (!StationDressing) StationDressing = MakeShared<FS47StationDressing>(this);
+	StationDressing->Step();
 	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)
 	if (Night) Night->FlashlightStep(Dt);
 	// the player's strain (after the flashlight: a lit lamp is one thing it reads)

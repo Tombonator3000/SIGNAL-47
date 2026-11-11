@@ -64,7 +64,8 @@ namespace
 		// malformed placement file merely because its required area/props is absent.
 		Out.RemoveAll([](const FString& Name)
 		{
-			return Name == TEXT("lookdev-bindings.json") || Name == TEXT("lookdev-environment.json");
+			return Name == TEXT("lookdev-bindings.json") || Name == TEXT("lookdev-environment.json")
+				|| Name == TEXT("gas_cosmos.json"); // (GAS-STATION-LIFT-01: the shop's Cosmos props, S47StationDressing)
 		});
 		Out.Sort();
 		return Out;
