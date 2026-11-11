@@ -9,6 +9,7 @@
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
 #include "S47Story.h"
+#include "S47StoryDirector.h"
 #include "S47UI.h"
 #include "S47Audio.h"
 #include "S47Web.h"
@@ -51,6 +52,11 @@ void FS47DevEvents::Add(const FString& Group, const FString& Label, const FStrin
 void FS47DevEvents::AddFreeform(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn)
 {
  List.Add({ Group, Label, Note, MoveTemp(Fn), true });
+}
+
+void FS47DevEvents::AddStory(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn)
+{
+ List.Add({ Group, Label, Note, MoveTemp(Fn), true, true });
 }
 
 void FS47DevEvents::Relabel(const FString& OldLabel, const FString& NewLabel)
@@ -178,6 +184,7 @@ void FS47DevEvents::Open()
  for (const FEvent& Ev : List)
  {
   if (Ev.bFreeform && !bFree) continue;
+  if (Ev.bStory && !FS47StoryDirector::Of(M)) continue; // STORY-ON-FREEFORM-01 (step 4): a Story night's lines only
   const TFunction<void()> Fn = Ev.Fn;
   const FString Group = Ev.Group;
   // A line that opens this menu again (a setting being cycled) comes back to its own group, not the front page.

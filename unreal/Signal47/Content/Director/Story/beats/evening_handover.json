@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "id": "evening_handover",
+  "name": "Story: the evening handover is due",
+  "notes": "STORY-ON-FREEFORM-01 (step 4). Started by the evening act (Content/Director/Story/acts.json). A story script: read only by the story director's store (S47StoryDirector), checked by S47EventScript::LintStory; Freeform's lint refuses its flag and objective beats. The call itself is step 5 (the scene beat).",
+  "enabled": true,
+  "beats": [
+    { "at": 2, "do": "toast", "text": "Dale's evening handover call is due at OPS.", "secs": 5 },
+    { "at": 2, "do": "flag", "flag": "handover_told" },
+    { "at": 2, "do": "objective", "text": "Take the evening handover call at OPS." }
+  ]
+}
