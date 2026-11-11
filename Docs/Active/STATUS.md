@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 11. november kl. 03:27 (d54): versjon 0.9.54, `1b347bcd` på `claude/day-20261109`
+## Installert 11. november kl. 04:21 (d55): versjon 0.9.55, `05a54edb` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4749 kontroller; ingen materialadvarsler). Tilbakerulling: d54. Disk etterpå: 127 GB (d51-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d54: nattens spillertekster gjennomgått (Dale uten sammentrekninger, tydeligere dørsløyfe-tanker), skritt på taket og S-03-feilen i trinnvise manus, OPS-navigasjonstesten grønn igjen.
+
+Kontroll: regresjon PASS 251; first, opsnav, casefield, sky PASS. Kjent: `-S47FreeformJourneyTest` stopper på pakkefysikk (steg 4), som før i dag.
+
+## Tidligere: installert 11. november kl. 03:27 (d54): versjon 0.9.54, `1b347bcd` på `claude/day-20261109`
 
 Pakket, røyktestet og installert (selvtest OK, 4725 kontroller; ingen materialadvarsler). Tilbakerulling: d53 (`f2e9f55d`). Disk etterpå: 127 GB (d50-pakken ryddet). Ikke spilt av Tom.
 
