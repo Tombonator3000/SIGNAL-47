@@ -53,6 +53,8 @@ namespace S47KeysLocal
 			A(TEXT("board"), TEXT("Case board"), Panels, TEXT("The case board, once there is one."), EKeys::B),
 			A(TEXT("devevents"), TEXT("Developer events"), Panels, TEXT("Make something happen now: aliens, sky, weather, time. Nothing is saved."), EKeys::F10),
 			A(TEXT("devstart"), TEXT("Developer start point"), Panels, TEXT("Keep a start point here for the title's Developer screen. Your cases are not touched."), EKeys::F9),
+			// DIRECTOR-MODE-01: the director's free camera (S47DirectorCam.h), a developer's run only, as the two above
+			A(TEXT("director"), TEXT("Director mode"), Panels, TEXT("Developer: fly a free camera and place shots and trigger points into the script being edited. The night waits meanwhile."), EKeys::F8),
 			A(TEXT("pause"), TEXT("Pause"), Panels, TEXT("Pause: settings, save and load. Escape always pauses, and lowers the camera first when it is raised."), EKeys::Escape, EKeys::P, true),
 			// SNEAK-20261108 and WALKIE-USE-20261108 (Tom, 8 November): keep low, and the walkie in the player's own hand. Last, so that a
 			// key a player has already given to something else stays theirs (Normalize keeps the first).

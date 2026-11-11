@@ -1,4 +1,5 @@
 #include "S47DevEvents.h"
+#include "S47DirectorCam.h"
 #include "S47SaroWallWatch.h"
 #include "S47DevFreeform.h"
 #include "S47FloodProbe.h"
@@ -387,6 +388,8 @@ void FS47DevEvents::ControlTest(double Dt)
  FString OnlyGroup; FParse::Value(FCommandLine::Get(),TEXT("S47DevEventsGroup="),OnlyGroup);
  // SHOT-BEAT-01: the director shot's own check, through its F10 line and the script player (S47Shot::Contract).
  if (OnlyGroup == TEXT("Director shot")) { if (S47Shot::Contract(M, Dt)) bTestDone = true; return; }
+ // DIRECTOR-MODE-01: the director's free camera (S47DirectorCam::Contract).
+ if (OnlyGroup == TEXT("Director mode")) { if (S47DirectorCam::Contract(M, Dt)) bTestDone = true; return; }
  // Opt-in extension of this contract: real menu actions and registered billboard
  // readback across ordinary world ticks, independent of the natural Data() getter.
  if (OnlyGroup == TEXT("Sky preview"))

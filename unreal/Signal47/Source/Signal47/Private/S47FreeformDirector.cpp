@@ -1,4 +1,5 @@
 #include "S47FreeformDirector.h"
+#include "S47DirectorCam.h"
 #include <limits>
 #include "S47SmallHints.h"
 #include "S47Rhythm.h"
@@ -672,6 +673,8 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  if(FS47WeekCase::Holds(M))return false;
  // STORY-ON-FREEFORM-01 (step 4): nor while a Story night's script runs (false in any other night).
  if(FS47StoryDirector::Holds(M))return false;
+ // DIRECTOR-MODE-01: nor while the developer flies the director's camera.
+ if(S47DirectorCam::On(M))return false;
  const auto* D=Definition(Id);if(!bEnabled||!D||!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!Event.IsEmpty()||M->Freeform->Held())return false;
  // CRIT9-20261109: from ten to two the night is the week's case's: no threat, major or presence on the ground before it begins.
  if(!Forced&&FS47WeekCase::HoldsFarm(M))

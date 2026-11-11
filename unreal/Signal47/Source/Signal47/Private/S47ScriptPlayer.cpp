@@ -2,6 +2,7 @@
 #include "SS47ScriptEditor.h"
 #include "S47Audio.h"
 #include "S47DevEvents.h"
+#include "S47DirectorCam.h"
 #include "S47Docs.h"
 #include "S47EventPlaces.h"
 #include "S47EventScript.h"
@@ -68,6 +69,7 @@ FS47ScriptPlayer::FS47ScriptPlayer(US47Main* Main):M(Main),Bodies(MakeUnique<FBo
 
 FS47ScriptPlayer::~FS47ScriptPlayer()
 {
+ S47DirectorCam::Leave(M); // DIRECTOR-MODE-01: the camera given back and the holds let go with the session
  auto& R=S47ScriptPlayerLocal::Registry();
  if(R.FindRef(M)==this)R.Remove(M);
 }
@@ -119,6 +121,7 @@ void FS47ScriptPlayer::Begin(const S47J::FObj& Saved)
 
 void FS47ScriptPlayer::Stop()
 {
+ S47DirectorCam::Leave(M); // DIRECTOR-MODE-01
  StopRun();
  if(Beats)Beats->Stop();
  if(Bodies)for(int32 K=0;K<3;++K)if(Bodies->Body[K].bBuilt)Bodies->Body[K].Apply(false,FVector::ZeroVector,0,0,0,0,0,FS47PaleBody::EPose::Walk);
@@ -185,6 +188,7 @@ void FS47ScriptPlayer::AddDevLines()
  if(Beats)Beats->AddDevLines();
  if(bLinesAdded||!M||!M->DevEvents||!DevAllowed(M))return;
  S47Shot::AddDevLine(M); // SHOT-BEAT-01: the F10 group "Director shot" (it looks for itself whether it is there)
+ S47DirectorCam::AddDevLine(M); // DIRECTOR-MODE-01: the F10 group "Director mode" (the same)
  static const TCHAR* const Group=TEXT("Director scripts");
  bLinesAdded=true;
  // The menu outlives a session: its lines are added once.
@@ -311,6 +315,48 @@ bool FS47ScriptPlayer::LookRoad(FS47ScriptPoint& Out) const
  // What is looked at above the ground (a roof, the sky's line) is kept as its height.
  Out.Up=FMath::Max(0.,FMath::RoundToDouble((Hit.Y-S47FarmWorld::FloorRoad(X,Z))*10)/10);
  return true;
+}
+
+bool FS47ScriptPlayer::RoadOfWorld(US47Main* InM,const FVector& Three,FS47ScriptPoint& Out)
+{
+ // DIRECTOR-MODE-01: WorldOf the other way round.
+ if(!InM||!InM->Web)return false;
+ double X=0,Z=0;
+ if(!S47OpenLand::RoadOf(InM->Web->Area(),Three.X,Three.Z,X,Z))return false;
+ Out=FS47ScriptPoint();Out.X=X;Out.Z=Z;Out.bSet=true;
+ Out.Up=Three.Y-S47FarmWorld::FloorRoad(X,Z);
+ return true;
+}
+
+bool FS47ScriptPlayer::RayRoad(US47Main* InM,const FVector& Eye,double Yaw,double Pitch,FS47ScriptPoint& Out)
+{
+ // DIRECTOR-MODE-01: LookRoad's trace, from an eye that need not be the player's.
+ if(!InM||!InM->Web||!InM->Web->GetWorld())return false;
+ const FVector Dir(-FMath::Sin(Yaw)*FMath::Cos(Pitch),FMath::Sin(Pitch),-FMath::Cos(Yaw)*FMath::Cos(Pitch));
+ FVector Hit=FVector::ZeroVector;
+ FHitResult R;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47ScriptRay),true);
+ if(InM->Web->GetWorld()->LineTraceSingleByChannel(R,S47Three::ToUE(Eye),S47Three::ToUE(Eye+Dir*400.),ECC_Visibility,Q))Hit=S47Three::ToThree(R.ImpactPoint);
+ else
+ {
+  // no hit: where the view meets the ground's height under the eye, looking down
+  FS47ScriptPoint Under;
+  if(!(Dir.Y<-.02)||!RoadOfWorld(InM,Eye,Under)||!(Under.Up>0))return false;
+  Hit=Eye+Dir*FMath::Min(400.,Under.Up/-Dir.Y);
+ }
+ FS47ScriptPoint P;
+ if(!RoadOfWorld(InM,Hit,P))return false;
+ P.Up=FMath::Max(0.,FMath::RoundToDouble(P.Up*10)/10);
+ Out=P;
+ return true;
+}
+
+FVector FS47ScriptPlayer::WorldOfRoad(US47Main* InM,const FS47ScriptPoint& P)
+{
+ // DIRECTOR-MODE-01: as WorldOf.
+ if(!InM||!InM->Web)return FVector::ZeroVector;
+ FVector At=S47OpenLand::FromRoad(InM->Web->Area(),P.X,P.Z);
+ At.Y=S47FarmWorld::FloorRoad(P.X,P.Z)+P.Up;
+ return At;
 }
 
 FVector FS47ScriptPlayer::WorldOf(const FS47ScriptPoint& P) const

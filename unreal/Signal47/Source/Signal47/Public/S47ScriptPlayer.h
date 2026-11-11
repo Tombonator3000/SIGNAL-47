@@ -59,6 +59,13 @@ public:
  // Where the player stands, or the ground they look at (within 400 m), road-local. False: no player on the land.
  bool HereRoad(FS47ScriptPoint& Out) const;
  bool LookRoad(FS47ScriptPoint& Out) const;
+ // DIRECTOR-MODE-01 (S47DirectorCam.h): LookRoad's trace from any eye (scene metres; the view's yaw and pitch, radians), Up over the
+ // ground and never below it; and a scene point as a road-local point with Up over the floor there as it is (below 0 under the ground:
+ // the caller decides). False: not on the land of the area the player is in (indoors), or nothing within 400 m.
+ static bool RayRoad(US47Main* InM,const FVector& Eye,double Yaw,double Pitch,FS47ScriptPoint& Out);
+ static bool RoadOfWorld(US47Main* InM,const FVector& Three,FS47ScriptPoint& Out);
+ // WorldOf for anyone: a road-local point in the area the player is in now, three-space, Up over its ground.
+ static FVector WorldOfRoad(US47Main* InM,const FS47ScriptPoint& P);
 
  // ---- for everyone else ----
  // The session's player, or null outside Freeform.

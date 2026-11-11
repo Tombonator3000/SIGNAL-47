@@ -1,4 +1,5 @@
 #include "S47Taken.h"
+#include "S47DirectorCam.h"
 #include "S47Rhythm.h"
 #include "S47Sneak.h"
 #include "S47CalicheAccess.h"
@@ -88,6 +89,7 @@ bool FS47Taken::Indoors() const
 
 bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
 {
+ if(S47DirectorCam::On(M))return false; // DIRECTOR-MODE-01: nobody is taken while the director's camera flies
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving))return false;
  if(!RulesAllow(M))return false;
  if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
@@ -105,6 +107,7 @@ bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
 
 bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over)
 {
+ if(S47DirectorCam::On(M))return false; // DIRECTOR-MODE-01
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving)||Indoors())return false;
  if(!RulesAllow(M))return false;
  if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
@@ -124,6 +127,7 @@ bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over
 
 bool FS47Taken::TakeNow(ES47Taker Who,const FString& Title)
 {
+ if(Now==EStage::None&&S47DirectorCam::On(M))return false; // DIRECTOR-MODE-01: not from nothing (director mode is never entered with one under way)
  if(!M||!M->Player||!M->Freeform)return false;
  if(Now==EStage::Lift||Now==EStage::Away)return false;
  Taker=Who;Place=Title;

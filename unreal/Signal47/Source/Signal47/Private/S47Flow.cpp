@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47DirectorCam.h"
 #include "S47StoryDirector.h"
 #include "S47NightLog.h"
 #include "S47RoomDecor.h"
@@ -423,6 +424,8 @@ void US47Flow::Init(US47Main* InM)
 	// F9: keep a developer start point here (the title's Developer lists them)
 	M->OnAction(TEXT("devevents"), [this] { if (M->Mode != EMode::Play || !M->DevEvents) return false; M->DevEvents->Open(); return true; });
 	M->OnAction(TEXT("devstart"), [this] { if (M->Mode != EMode::Play) return false; DevSave(); return true; });
+	// F8: DIRECTOR-MODE-01, the director's free camera, on or off (S47DirectorCam.h; it says itself why not, in a developer's run)
+	M->OnAction(TEXT("director"), [this] { if (M->Mode != EMode::Play) return false; FString Why; S47DirectorCam::Toggle(M, Why); return true; });
 	// V: the last description read again (ui.readLastDescription), not in a cinematic
 	M->OnAction(TEXT("describe"), [this]
 	{
