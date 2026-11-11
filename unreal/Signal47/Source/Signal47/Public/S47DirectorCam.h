@@ -18,7 +18,8 @@ class US47Main;
 // or the pad looks. 1 to 6, [ and ] are read straight off the keyboard (no rows in the key table: they mean something only here).
 // Slice 4: one shot of the draft is the selected one, shared with the script editor (S47ScriptEditor::SelectedShot): [ and ] pick
 // the one before or after, 2 gives the selected shot its second eye here, 5 puts its eye here and its look on the crosshair, 6
-// deletes it.
+// deletes it. Marks (S47DirectorMarks.h): 0 picks the kind of the next mark, 7 drops one here, 8 drops one with a picture, 9 takes back
+// the last one of this session.
 namespace S47DirectorCam
 {
  // The camera's pose: the eye in scene metres (three-space: x east, y up, z south), yaw and pitch in radians as the walker's.
@@ -42,6 +43,8 @@ namespace S47DirectorCam
  // The script as played from From seconds on its timeline (PREVIEW FROM HERE): the actions that start before From left out, the
  // rest From earlier. From 0 or less: the script as it is. Pure.
  SIGNAL47_API FS47Script FromTime(const FS47Script& S,double From);
+ // DIRECTOR-MODE-01, marks: what the camera marks and their file, MarkToShot and MarkToTrigger are in S47DirectorMarks.h (the keys
+ // 7, 8, 9 and 0 here call it; its "MARKS:" self-test lines are part of SelfTest below).
  // Lines "PASS/FAIL DIRECTOR-2: ..." for flying and "DIRECTOR-4: ..." for the selected shot (-S47SelfTest, from the HUD's).
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
  // Director mode is on: asked by everything that must wait while it is.
@@ -58,7 +61,8 @@ namespace S47DirectorCam
  SIGNAL47_API void AddDevLine(US47Main* M);
  // -S47Freeform -S47Director -S47DevEventsContract=/tmp/dir -S47DevEventsGroup="Director mode" (FS47DevEvents::ControlTest): enters
  // director mode, flies forward and up for two seconds through a test hook, checks the hold, the still player, the night held and a
- // shot placed at the camera, flies a little to the right and gives that shot its second eye (checking it is the selected shot), takes
+ // shot placed at the camera, flies a little to the right and gives that shot its second eye (checking it is the selected shot), drops one mark into
+ // <dir>/director-marks.json (never Saved/Director/marks.json) and reads it back (one mark, its camera point within 0.5 m), takes
  // director-mode-fly.png, leaves and checks everything is given back. True once it is over (it has asked the game to exit).
  SIGNAL47_API bool Contract(US47Main* M,double Dt);
 }

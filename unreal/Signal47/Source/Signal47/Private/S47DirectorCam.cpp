@@ -3,17 +3,22 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
+#include "HAL/PlatformProcess.h"
 #include "InputCoreTypes.h"
 #include "Misc/CommandLine.h"
 #include "Misc/DateTime.h"
 #include "Misc/Parse.h"
+#include "Misc/Paths.h"
 #include "UnrealClient.h"
 #include "S47Abduction.h"
 #include "S47Attention.h"
 #include "S47Away.h"
 #include "S47DevEvents.h"
+#include "S47DirectorMarks.h"
 #include "S47DoorLoop.h"
+#include "S47EventPlaces.h"
 #include "S47FarmSite.h"
 #include "S47Freeform.h"
 #include "S47IndoorDread.h"
@@ -26,6 +31,7 @@
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
+#include "S47Web.h"
 #include "S47World.h"
 #include "SS47ScriptEditor.h"
 
@@ -51,6 +57,7 @@ namespace S47DirectorCamLocal
   int32 Gen=0;         // counts up with every new text on the screen and with leaving: the text before goes
   FString Shown,Last;  // the text on the screen now; the last thing placed, or why nothing was
   TOptional<FVector> TestInput; // the contract's keys instead of the real ones: x right, y rise, z back
+  FString MarkKind=TEXT("place"); // the kind of the next mark (key 0; S47DirectorMarks::Kinds), kept while the game runs
  };
  FState& St(){static FState S;return S;}
 
@@ -166,6 +173,39 @@ namespace S47DirectorCamLocal
   }
   if(!(FVector::Dist(FS47ScriptPlayer::WorldOfRoad(M,At),S.Fly.Eye)>=S47Shot::LeastReach)){Said=TEXT("the crosshair is on something right at the camera");return false;}
   return true;
+ }
+
+ // Keys 7 and 8 (DIRECTOR-MODE-01, marks; S47DirectorMarks.h): a mark of the kind 0 picked, where the camera is and what it looks at,
+ // appended to the marks file; 8 also asks for a picture of the view beside it. Said: the line for the director's text.
+ bool DropMark(US47Main* M,bool bPicture,FString& Said)
+ {
+  const FState& S=St();
+  FS47DirectorMark K;
+  K.Kind=S.MarkKind;
+  K.Area=M->Web?M->Web->Area():FString();
+  K.Eye=S.Fly.Eye;K.Yaw=S.Fly.Yaw;K.Pitch=S.Fly.Pitch;
+  if(const AS47Walker* Wk=S.Walker.Get())K.Fov=Wk->Fov*Wk->FovScale;
+  FS47ScriptPoint Pt;
+  if(FS47ScriptPlayer::RoadOfWorld(M,S.Fly.Eye,Pt)){Pt.Up=FMath::RoundToDouble(Pt.Up*100)/100;K.Cam=Pt;}
+  if(FS47ScriptPlayer::RoadOfWorld(M,S.Fly.Eye+Forward(S.Fly)*20.,Pt)){Pt.Up=FMath::RoundToDouble(Pt.Up*100)/100;K.Ahead=Pt;}
+  if(FS47ScriptPlayer::RayRoad(M,S.Fly.Eye,S.Fly.Yaw,S.Fly.Pitch,Pt)){K.Look=Pt;K.LookDist=FVector::Dist(FS47ScriptPlayer::WorldOfRoad(M,Pt),S.Fly.Eye);}
+  // the scripts' own indoors test (US47World::Indoors, as FS47ScriptPlayer::Now asks it for the player), asked at the camera
+  K.Indoors=M->World?(M->World->Indoors(S.Fly.Eye)?TEXT("yes"):TEXT("no")):TEXT("unknown");
+  if(const FS47ScriptPlayer* Sp=FS47ScriptPlayer::Of(M))
+  {
+   const FS47ScriptNow Moment=Sp->Now();
+   const int32 Mins=int32(FMath::FloorToDouble(Moment.Hour()*60));
+   K.Clock=FString::Printf(TEXT("%02d:%02d"),(Mins/60)%24,Mins%60);
+   K.Day=Moment.Day;K.Weather=Moment.Weather;
+  }
+  const FS47FreeformSession* F=M->Freeform.Get();
+  const FS47ScriptPoint& From=K.Cam.bSet?K.Cam:K.Look;
+  if(F&&F->EventPlaces&&From.bSet)
+  {
+   if(const FS47EventPlace* Pl=F->EventPlaces->NearestTo(From.Road(),1e7)){K.Place=Pl->Id;K.PlaceDist=FVector2D::Distance(From.Road(),FVector2D(Pl->X,Pl->Z));}
+  }
+  K.Draft=S47ScriptEditor::HaveDraft()?S47ScriptEditor::Draft().Id:FString();
+  return S47DirectorMarks::Add(K,bPicture,Said);
  }
 
  // Key 1: a shot at the end of the draft's timeline, from the camera onto what the crosshair is on (or a point 20 m ahead). It is
@@ -291,6 +331,9 @@ namespace S47DirectorCamLocal
   if(M->UI)M->UI->Toast(bOk?TEXT("Preview: ")+S47ScriptEditor::Draft().Name+(Why.IsEmpty()?FString():TEXT(" (")+Why+TEXT(")")):TEXT("Director mode off; not played: ")+Why,4);
  }
 
+ // The marks of the file, drawn while flying (S47DirectorMarks::Draw).
+ void DrawMarks(US47Main* M,UWorld* World,const AS47Walker* Wk){if(M&&World&&Wk)S47DirectorMarks::Draw(M,World,Wk->GetActorLocation());}
+
  FString Text()
  {
   const FState& S=St();
@@ -298,8 +341,8 @@ namespace S47DirectorCamLocal
   const FString Walk=KeyOf(TEXT("forward"))+KeyOf(TEXT("left"))+KeyOf(TEXT("back"))+KeyOf(TEXT("right"));
   const int32 Sel=S47ScriptEditor::SelectedShot();
   const FString Picked=Sel==INDEX_NONE?FString(TEXT("no shot selected")):ShotName(Sel)+TEXT(" selected");
-  return FString::Printf(TEXT("DIRECTOR MODE: %s, %s. 1 a new shot from here, [ ] pick a shot, 2 it moves to here, 5 its eye here looking at the crosshair, 6 delete it, 3 the trigger's point, 4 preview, %s back. %s fly, %s up, %s down, %s fast.%s%s"),
-   *Name,*Picked,*KeyOf(TEXT("director")),*Walk,*KeyOf(TEXT("jump")),*KeyOf(TEXT("crouch")),*KeyOf(TEXT("run")),S.Last.IsEmpty()?TEXT(""):TEXT(" Last: "),*S.Last);
+  return FString::Printf(TEXT("DIRECTOR MODE: %s, %s. 1 a new shot from here, [ ] pick a shot, 2 it moves to here, 5 its eye here looking at the crosshair, 6 delete it, 3 the trigger's point, 4 preview, %s back. Marks (%d): 0 kind (%s), 7 mark here, 8 mark and picture, 9 take back the last. %s fly, %s up, %s down, %s fast.%s%s"),
+   *Name,*Picked,*KeyOf(TEXT("director")),S47DirectorMarks::Known().Num(),*S.MarkKind,*Walk,*KeyOf(TEXT("jump")),*KeyOf(TEXT("crouch")),*KeyOf(TEXT("run")),S.Last.IsEmpty()?TEXT(""):TEXT(" Last: "),*S.Last);
  }
 
  // One steady block of text: a caption held on a clock that stands still while it is director mode's text now, and runs out at once
@@ -321,6 +364,7 @@ namespace S47DirectorCamLocal
  {
   const AS47Walker* Wk=St().Walker.Get();
   UWorld* World=Wk?Wk->GetWorld():nullptr;
+  DrawMarks(M,World,Wk);
   if(!M||!World||!S47ScriptEditor::HaveDraft())return;
   const FS47Script& D=S47ScriptEditor::Draft();
   const auto At=[M](const FS47ScriptPoint& P){return S47Three::ToUE(FS47ScriptPlayer::WorldOfRoad(M,P));};
@@ -562,6 +606,8 @@ bool SelfTest(TArray<FString>& Lines)
   Check4(From5.Actions.Num()==3&&From5.Actions[0].Do==ES47ScriptAct::Shot&&From5.Actions[0].At==0&&From5.Actions[1].At==2&&From5.Actions[2].At==4,TEXT("preview from a shot leaves out what comes before it and starts the shot at 0"));
   Check4(From0.Actions.Num()==Acts.Num()&&From0.Actions[4].At==9,TEXT("preview from 0 is the whole script as it is"));
  }
+ // DIRECTOR-MODE-01, marks (S47DirectorMarks.h): "MARKS:" lines.
+ bAll&=S47DirectorMarks::SelfTest(Lines);
  return bAll;
 }
 
@@ -619,7 +665,7 @@ void Tick(US47Main* M,double /*Dt*/)
   if(M->UI)M->UI->Toast(TEXT("Director mode off: ")+Off+TEXT("."),3.f);
   return;
  }
- // 1 to 6, [ and ], straight off the keyboard (nothing else answers them; the walker neither walks nor picks while its camera is held)
+ // 0 to 9, [ and ], straight off the keyboard (nothing else answers them; the walker neither walks nor picks while its camera is held)
  const AS47Walker* W=S.Walker.Get();
  const APlayerController* PC=W&&W->IsActive()?Cast<APlayerController>(W->GetController()):nullptr;
  if(PC&&!S.TestInput.IsSet())
@@ -634,6 +680,14 @@ void Tick(US47Main* M,double /*Dt*/)
   else if(PC->WasInputKeyJustPressed(EKeys::Six))bDone=S47DirectorCamLocal::DeleteShot(Said);
   else if(PC->WasInputKeyJustPressed(EKeys::LeftBracket))bDone=S47DirectorCamLocal::PickShot(-1,Said);
   else if(PC->WasInputKeyJustPressed(EKeys::RightBracket))bDone=S47DirectorCamLocal::PickShot(1,Said);
+  else if(PC->WasInputKeyJustPressed(EKeys::Seven))bDone=S47DirectorCamLocal::DropMark(M,false,Said);
+  else if(PC->WasInputKeyJustPressed(EKeys::Eight))bDone=S47DirectorCamLocal::DropMark(M,true,Said);
+  else if(PC->WasInputKeyJustPressed(EKeys::Nine))bDone=S47DirectorMarks::RemoveLastOfSession(Said);
+  else if(PC->WasInputKeyJustPressed(EKeys::Zero))
+  {
+   S.MarkKind=S47DirectorMarks::NextKind(S.MarkKind);
+   Said=TEXT("next mark: ")+S.MarkKind;bDone=true;
+  }
   else bAsked=false;
   if(bAsked)
   {
@@ -650,7 +704,7 @@ void AddDevLine(US47Main* M)
  if(!M||!M->DevEvents||!FS47ScriptPlayer::DevAllowed(M))return;
  if(M->DevEvents->Events().ContainsByPredicate([](const FS47DevEvents::FEvent& E){return E.Group==S47DirectorCamLocal::DevGroup;}))return;
  M->DevEvents->AddFreeform(S47DirectorCamLocal::DevGroup,TEXT("Fly the director's camera"),
-  FString::Printf(TEXT("DIRECTOR-MODE-01: a free camera through the world; 1 a shot, [ ] pick a shot, 2 its move, 5 its eye here, 6 delete it, 3 the trigger's point, 4 preview; %s comes back. The night waits."),*S47DirectorCamLocal::KeyOf(TEXT("director"))),
+  FString::Printf(TEXT("DIRECTOR-MODE-01: a free camera through the world; 1 a shot, [ ] pick a shot, 2 its move, 5 its eye here, 6 delete it, 3 the trigger's point, 4 preview, 7 or 8 a mark, 9 takes it back, 0 its kind; %s comes back. The night waits."),*S47DirectorCamLocal::KeyOf(TEXT("director"))),
   [M]{FString Why;Toggle(M,Why);});
 }
 
@@ -665,6 +719,7 @@ bool Contract(US47Main* M,double Dt)
  {
   R.bDone=true;
   Leave(nullptr);
+  S47DirectorMarks::SetPathForTest(FString()); // (the marks back to the real file)
   if(bGood){UE_LOG(LogS47DirectorCam,Display,TEXT("S47: director mode contract COMPLETE PASS"));}
   else{UE_LOG(LogS47DirectorCam,Display,TEXT("S47: director mode contract FAIL %s"),*What);}
   FPlatformMisc::RequestExitWithStatus(false,bGood?0:1);
@@ -738,6 +793,23 @@ bool Contract(US47Main* M,double Dt)
   if(S47ScriptEditor::SelectedShot()!=D.Actions.Num()-1)return Finish(false,FString::Printf(TEXT("(g) the selected shot is action %d, not the last one (%d)"),S47ScriptEditor::SelectedShot()+1,D.Actions.Num()));
   S47DirectorCamLocal::St().Last=Said;
   UE_LOG(LogS47DirectorCam,Display,TEXT("S47: director mode contract: %s, selected action %d"),*Said,S47ScriptEditor::SelectedShot()+1);
+  // Marks: one dropped through the keys' own function into a file of the contract's own (never Saved/Director/marks.json), read back.
+  {
+   FString OutDir;
+   if(!FParse::Value(FCommandLine::Get(),TEXT("S47DevEventsContract="),OutDir,false)||OutDir.IsEmpty())OutDir=FPaths::Combine(FPlatformProcess::UserTempDir(),TEXT("s47-director-marks"));
+   const FString File=OutDir/TEXT("director-marks.json");
+   IFileManager::Get().Delete(*File,false,true,true);
+   S47DirectorMarks::SetPathForTest(File);
+   FString Got;
+   if(!S47DirectorCamLocal::DropMark(M,false,Got))return Finish(false,TEXT("(h) ")+Got);
+   TArray<FS47DirectorMark> Back;
+   if(S47DirectorMarks::ReadFile(File,Back)!=S47DirectorMarks::ERead::Good||Back.Num()!=1)return Finish(false,FString::Printf(TEXT("(h) %s does not hold one mark"),*File));
+   if(!Back[0].Cam.bSet)return Finish(false,TEXT("(h) the mark has no camera point"));
+   const double Away=FVector::Dist(FS47ScriptPlayer::WorldOfRoad(M,Back[0].Cam),S47DirectorCamLocal::St().Fly.Eye);
+   if(Away>.5)return Finish(false,FString::Printf(TEXT("(h) the mark's camera point is %.2f m off the camera"),Away));
+   S47DirectorCamLocal::St().Last=Got;
+   UE_LOG(LogS47DirectorCam,Display,TEXT("S47: director mode contract: %s, read back from %s (camera point %.3f m off)"),*Got,*File,Away);
+  }
   // back and up, so the picture shows the eyes, the path between them, the line to the look and the trigger's volume in the world
   S47DirectorCamLocal::St().TestInput=FVector(.4,.5,1);
   R.Stage=4;R.At=R.T;

@@ -1,5 +1,6 @@
 #include "SS47ScriptEditor.h"
 #include "S47DirectorCam.h"
+#include "S47DirectorMarks.h"
 #include "S47EventPlaces.h"
 #include "S47Freeform.h"
 #include "S47FreeformCases.h"
@@ -214,6 +215,42 @@ TSharedRef<SWidget> SS47ScriptEditor::BuildBody()
  V->AddSlot().AutoHeight().Padding(0,12,0,4)[Words(TEXT("ACTIONS (seconds from the start)"),22,1)];
  for(int32 I=0;I<D.Actions.Num();++I)V->AddSlot().AutoHeight().Padding(0,0,0,6)[BuildAction(I)];
  V->AddSlot().AutoHeight().Padding(0,4,0,0)[BuildAdd()];
+ // DIRECTOR-MODE-01, marks (S47DirectorMarks.h): how many were dropped while flying, the last one, and that one as a shot or the trigger.
+ {
+  const TArray<FS47DirectorMark>& Marks=S47DirectorMarks::Known();
+  TSharedRef<SHorizontalBox> Row=SNew(SHorizontalBox);
+  Row->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,8,0)[Words(Marks.IsEmpty()?FString(TEXT("MARKS: none yet (7 or 8 while flying)"))
+   :FString::Printf(TEXT("MARKS %d, last %d: %s"),Marks.Num(),Marks.Last().N,*S47DirectorMarks::Line(Marks.Last())),19,2)];
+  if(Marks.Num())
+  {
+   Row->AddSlot().AutoWidth()[Btn(TEXT("SHOT FROM LAST MARK"),[this]
+   {
+    const TArray<FS47DirectorMark>& All=S47DirectorMarks::Known();
+    if(All.IsEmpty())return;
+    FS47ScriptAction A=S47DirectorMarks::MarkToShot(All.Last());
+    if(A.Path.IsEmpty()){Say(TEXT("the last mark is not over the land: no eye for a shot"),true);Rebuild();return;}
+    FS47Script& Dr=Draft();
+    A.At=Dr.Actions.Num()?FMath::RoundToDouble(Dr.Length()*10)/10:0.;
+    Dr.Actions.Add(A);
+    S47ScriptEditor::SelectShot(Dr.Actions.Num()-1);
+    Say(FString::Printf(TEXT("a shot from mark %d at %.1f s (selected)"),All.Last().N,A.At));
+    Changed();
+   })];
+   Row->AddSlot().AutoWidth()[Btn(TEXT("TRIGGER FROM LAST MARK"),[this]
+   {
+    const TArray<FS47DirectorMark>& All=S47DirectorMarks::Known();
+    if(All.IsEmpty())return;
+    const FS47ScriptTrigger From=S47DirectorMarks::MarkToTrigger(All.Last());
+    if(!From.Point.bSet){Say(TEXT("the last mark is not over the land: no point for the trigger"),true);Rebuild();return;}
+    // where and how big from the mark; its days, hours, mode and conditions as they were
+    FS47ScriptTrigger& Tr=Draft().Trigger;
+    Tr.Place.Reset();Tr.Point=From.Point;Tr.Shape=From.Shape;Tr.Radius=From.Radius;Tr.Height=From.Height;
+    Say(FString::Printf(TEXT("the trigger: within %.0f m of (%.0f, %.0f), from mark %d"),Tr.Radius,Tr.Point.X,Tr.Point.Z,All.Last().N));
+    Changed();
+   })];
+  }
+  V->AddSlot().AutoHeight().Padding(0,8,0,0)[Row];
+ }
  // What is wrong, what holds it back, and whether it would start now.
  TArray<FString> Warn;
  const TArray<FString> Errors=S47Script::Lint(D,&Warn);
