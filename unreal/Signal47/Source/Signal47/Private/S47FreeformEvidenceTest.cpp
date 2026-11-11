@@ -36,7 +36,7 @@ namespace
  struct FOriginal {FString Id,Page,Stamp;};
  struct FRun
  {
-  bool Started=false,Done=false,Walking=false,HaveFoot=false,Quarantined=false,TrackShot=false,RxShot=false;bool PrinterAimed=false;
+  bool Started=false,Done=false,Walking=false,HaveFoot=false,Quarantined=false,TrackShot=false,RxShot=false;bool PrinterAimed=false,Aimed=false;
   int32 Stage=0,Job=0,Cursor=0,Cross=0,Knob=0,Checks=0,InitialCash=0,InitialDebt=0,Restores=0;
   double Began=0,At=0,Delay=.25,ProgressAt=0,WalkMetres=0,SampleAt=0,PhotoAt=0,BaseAz=0,BaseEl=0;
   FString Root,Ids[2],PendingPhoto,PickFailure;
@@ -311,7 +311,9 @@ namespace S47FreeformEvidenceTest
    const auto* P=F.ConsoleProfile();if(!Check(M,P&&F.TerminalWindowRendered(),TEXT("actual tracking terminal/card is ready")))return;
    if(!S.TrackShot){S.TrackShot=true;Photo(S.Job==0?TEXT("ui-03-tracking"):TEXT("ui-03b-tracking-pulsar"));Go(8,1.2);return;}S.TrackShot=false;
    S.BaseAz=(P->Az[0]+P->Az[1])*.5;S.BaseEl=J->bGenerated?J->Card.El:FS47Observing::Runs()[J->Source].El;
-   F.AimAtSource();if(!Click(M,TEXT("POINT ARRAY")))return;Close(M);WalkTo(M,{{2.16,-2.15},{0,-2.15}},9);return;
+   // N1110: a Slate button's enabled state follows on the next frame (bound attributes are read at paint), so aim, then click a moment later
+   if(!S.Aimed){F.AimAtSource();S.Aimed=true;Go(8,.25);return;}S.Aimed=false;
+   if(!Click(M,TEXT("POINT ARRAY")))return;Close(M);WalkTo(M,{{2.16,-2.15},{0,-2.15}},9);return;
   }
   if(S.Stage==9){Aim(M,Target(M,TEXT("crtCenter")));Go(10);return;}
   if(S.Stage==10){if(!Use(M,TEXT("crtCenter")))return;S.Knob=0;Go(11,.6);return;}
