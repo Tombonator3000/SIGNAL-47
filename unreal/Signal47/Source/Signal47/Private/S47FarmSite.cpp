@@ -503,7 +503,7 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
  const FVector FaceAt=bHeldNow?Attention.LookAt():Feet;
  if(bHeldNow)Speed=Attention.BackSpeed();
  const double Face=FMath::Atan2(FaceAt.Z-BodyAt.Z,FaceAt.X-BodyAt.X);
- if(!(VisitWho==1&&RuleBreak.Facing()))BodyYaw+=FMath::UnwindRadians(Face-BodyYaw)*FMath::Min(1.,Dt*2.5); // (N1110-6: stopped, it faces away until it turns)
+ if(!((VisitWho==1||VisitWho==2)&&RuleBreak.Facing()))BodyYaw+=FMath::UnwindRadians(Face-BodyYaw)*FMath::Min(1.,Dt*2.5); // (N1110-6: stopped, it faces away until it turns)
  if(VisitWho==2)
  {
   // Far off it watches, looks about, and waits, in long turns. Held in a lamp close by, and only when it is really seen, it
@@ -678,11 +678,11 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   const double To=FVector::Dist(BodyAt,Feet);
   // N1110 (N1110-6): once in the game, from night 4 and after two, the Pale One does not pass the player who has learned to stand still in the dark
   // (S47RuleBreak.h): it stops, turns its head, and comes on at a walk. The record is the log and spends it.
-  if(VisitWho==1&&M->Freeform)
+  if((VisitWho==1||VisitWho==2)&&M->Freeform) // N1110 (pace): the Tall One may break the rule too, not only the crab
   {
    FS47RuleBreak::FIn Rule;
    const double Clock=M->Freeform->Clock();
-   Rule.Night=FS47FreeformSession::NightOf(Clock);Rule.Hour=FMath::Fmod(Clock,86400.)/3600.;Rule.bPale=true;
+   Rule.Night=FS47FreeformSession::NightOf(Clock);Rule.Hour=FMath::Fmod(Clock,86400.)/3600.;Rule.bPale=VisitWho==1;Rule.bTall=VisitWho==2;
    Rule.bLearned=M->Freeform->HasFinding(TEXT("rule-still-held"));Rule.bSpent=bRuleBrokenThisSession||M->Freeform->HasFinding(TEXT("rule-pale-broken"));
    Rule.bStillDark=bNothingToGoOn;Rule.bInside=Tk->Indoors();Rule.Dist=To;
    RuleBreak.Step(Dt,Rule);
@@ -692,7 +692,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
     if(M->UI)M->UI->Thought(TEXT("It has stopped. It is facing away."),3.f);
     // the record says what was done only if it was: still and dark, and the stop is the moment of the break
     if(bNothingToGoOn)M->Freeform->RecordEvidence(TEXT("rule-pale-broken"),FString::Printf(TEXT("%s. I did what had worked: lamp off, standing still. This one was not small like the other. It stopped dead and turned to where I was. It did not pass. Standing still is not enough."),*S47Text::ClockText(Clock,false)));
-    UE_LOG(LogTemp,Display,TEXT("S47: rule broken once: the Pale One stopped %.0f m off and turned (night %d)"),To,Rule.Night);
+    UE_LOG(LogTemp,Display,TEXT("S47: rule broken once: the %s stopped %.0f m off and turned (night %d)"),VisitWho==2?TEXT("Tall One"):TEXT("Pale One"),To,Rule.Night);
    }
    if(RuleBreak.TakeTurned()&&M->UI)M->UI->Thought(TEXT("It is looking at me. Move."),4.f);
    if(RuleBreak.Over())
@@ -704,11 +704,11 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   }
   // The tall one first stands still and lets itself be found, then walks, slower as it nears. Its light goes before it.
   double Speed=(VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<TallStands?0.:To>30?1.35:.75))*S47Sneak::ApproachPace(LowK,bLampLit);
-  if(VisitWho==1)Speed=RuleBreak.Speed(Speed);
+  if(VisitWho==1||VisitWho==2)Speed=RuleBreak.Speed(Speed);
   StepBody(Dt,Speed);
   // A lamp reaches 25 m. Held on it for the first time it gets to freeze before their light comes on, not under it.
   const bool bLampFirst=VisitWho==2&&!bFreezeTried&&M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn;
-  if(VisitWho==2&&BodyClock>=TallStands&&VisitRounds<2&&!bDriving&&!Tk->Busy()&&FreezeLeft<=0&&To<(VisitRounds==0?(bLampFirst?14.:26.):10.)&&Tk->Begin(Who,Title))++VisitRounds;
+  if(VisitWho==2&&BodyClock>=TallStands&&VisitRounds<2&&!bDriving&&!Tk->Busy()&&!RuleBreak.Active()&&FreezeLeft<=0&&To<(VisitRounds==0?(bLampFirst?14.:26.):10.)&&Tk->Begin(Who,Title))++VisitRounds;
   if(To<(VisitWho==1?1.9:1.5)&&!bDriving){HideBody();Tk->TakeNow(Who,Title);bVisitTaken=true;return;}
  }
  // Away from the place, it lets go.

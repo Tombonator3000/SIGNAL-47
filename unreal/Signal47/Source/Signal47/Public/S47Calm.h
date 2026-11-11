@@ -5,7 +5,8 @@ class US47Main;
 // N1110 (rhythm, items 5 and 11 of the horror study): the night's breathing, as two small things the Director's events do not do.
 //
 // False alarms: once or twice an evening (before 01:30, the hint tier) something sounds like the start of an event and turns out
-// ordinary: a cow leaning on the fence wire, the wind on a shed door, a jackrabbit in the brush, the refrigerator clunking. The night
+// ordinary: a cow leaning on the fence wire, the wind on a shed door, a jackrabbit in the brush, the refrigerator clunking (once a week
+// at most), a pipe ticking, the printer's paper settling, a vent rattling (where each fits is its script's own indoors/outdoors gate). The night
 // holds still first (the scripts' silence beat), then the thought gives it away. Scripts alarm_cow, alarm_shed_door, alarm_jackrabbit
 // and alarm_fridge (Content/Director/Events) own the beats and their gates. Never in the first shift, never at the wheel, never while
 // anything else is on, a rest runs, or a danger has just ended. They are not events of the rhythm: no budget, no finding, no map mark.
@@ -30,6 +31,8 @@ public:
 	static TArray<FString> AlarmOrder(int32 Seed, int32 Night);
 	/** Twenty clock minutes or more since the last false alarm (pure). */
 	static bool GapOK(double LastAlarmClock, double Clock) { return Clock - LastAlarmClock >= 20 * 60.; }
+	/** The refrigerator alarm is once a week at most: Day, and the day it last played (0: never) (pure). */
+	static bool FridgeMay(int32 Day, int32 LastDay) { return LastDay <= 0 || Day >= LastDay + 7; }
 	static const TCHAR* ReliefScript() { return TEXT("calm_after"); }
 
 	/** Once a frame from FS47Happenings::Step. */
@@ -45,6 +48,7 @@ public:
 private:
 	bool Quiet(double Clock) const;
 	double LastAlarm = -1e9;       // clock seconds of the last false alarm
+	int32 LastFridgeDay = 0;       // the day the refrigerator last played (0: never)
 	US47Main* M = nullptr;
 	int32 Night = 0, Played = 0, Reliefs = 0;
 	double NextTry = 0;            // real seconds (US47Main::T) before the next question

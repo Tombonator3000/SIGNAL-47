@@ -83,7 +83,7 @@ void FS47Witness::Load(const S47J::FObj& Saved)
 
 FString FS47Witness::NoteText(const FRec& R)
 {
-	return FString::Printf(TEXT("%s says: \"%s\"%s"), *R.Who, *R.Text, R.bPaid ? TEXT(" (Matches your photograph.)") : TEXT(" (Not confirmed.)"));
+	return FString::Printf(TEXT("%s says: \"%s\"%s"), *R.Who, *R.Text, R.bPaid ? TEXT(" [x] Matches your photograph.") : TEXT(" [ ] Not confirmed."));
 }
 
 int32 FS47Witness::PayPhoto(US47Main* Main, const FS47AlbumShot& Shot)
@@ -130,7 +130,7 @@ bool FS47Witness::SelfTest(TArray<FString>& Lines)
 	FS47Witness Old; Old.Load(S47J::New());
 	Check(Old.Records().IsEmpty() && W.Save()->Values.Num() > 0 && FS47Witness().Save()->Values.Num() == 0, TEXT("an older save has none and an empty set saves nothing"));
 	const FString Note = NoteText(Back.Records()[0]);
-	Check(Note.Contains(TEXT("driver")) && Note.Contains(TEXT("Matches your photograph")) && !Note.Contains(TEXT("taken")), TEXT("the notebook line says who and whether it matched, without explaining"));
+	Check(Note.Contains(TEXT("driver")) && Note.Contains(TEXT("[x] Matches your photograph")) && !NoteText(FRec()).Contains(TEXT("[x]")) && Bonus == 8 && !Note.Contains(TEXT("taken")), TEXT("the notebook line says who and whether it matched, without explaining"));
 	FS47Witness Full;
 	for (int32 I = 0; I < MaxKept + 3; ++I) { FRec F = A; F.Id = FString::Printf(TEXT("w%d"), I); Full.Add(F); }
 	Check(Full.Records().Num() == MaxKept, TEXT("the notebook keeps a bounded number"));

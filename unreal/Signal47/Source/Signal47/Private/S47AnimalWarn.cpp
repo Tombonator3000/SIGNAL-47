@@ -4,7 +4,9 @@
 #include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47NightRhythm.h"
+#include "S47Taken.h"
 #include "S47Walker.h"
+#include "S47World.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47AnimalWarn, Log, All);
 
@@ -64,9 +66,46 @@ bool FS47AnimalWarn::Hold(const FString& Id, const FString& Variant, bool bOnFoo
 	return true;
 }
 
+bool FS47AnimalWarn::StrayNight(int32 Seed, int32 NightNo)
+{
+	return FS47NightRhythm::Roll(Seed, NightNo, 0x53545259u) < 1.f / 3.f;
+}
+
+// N1110 (pace): on one night in three the animals warn with no event after them, at some quiet moment out on foot.
+void FS47AnimalWarn::Stray()
+{
+	FS47FreeformSession* F = M->Freeform.Get();
+	if (!F || !F->Active() || !F->RulesLive() || F->InTutorial() || !M->Animals || !M->World || !M->Player) return;
+	const int32 Now = FS47FreeformSession::NightOf(F->Clock());
+	if (Now != Night)
+	{
+		Night = Now; bUsed = false; Asked.Reset(); Pending.Reset();
+		StrayAt = StrayNight(F->Seed(), Night) ? M->T + 180. + 600. * FMath::FRand() : -1.;
+	}
+	if (StrayAt < 0 || bUsed || M->T < StrayAt || Pending.Num()) return;
+	StrayAt = M->T + 20.;  // asked again in twenty seconds if this is not the moment
+	if (M->World->bDriving || (F->Taken && (F->Taken->Indoors() || F->Taken->Busy())) || F->Held() || M->ModalOpen() || M->OneAtATime()) return;
+	const double Bearing = FMath::FRand() * 2 * UE_DOUBLE_PI;
+	const FVector Eye(M->Player->Pos.X, 0, M->Player->Pos.Z);
+	const FVector Threat = Eye + FVector(FMath::Cos(Bearing) * 90, 0, FMath::Sin(Bearing) * 90);
+	const EKind First0 = First(F->Seed(), Night, TEXT("stray"));
+	for (const EKind Kind : { First0, Other(First0) })
+	{
+		FString Gate, Fail;
+		if (!S47EventScript::Allows(M, ScriptOf(Kind), Gate)) continue;
+		if (!M->Animals->Warn(Kind == EKind::Birds, Threat, Lead, Fail)) continue;
+		bUsed = true; ++Count; StrayAt = -1.;
+		FS47EventCtx Ctx;
+		S47EventScript::Play(M, ScriptOf(Kind), Ctx);
+		UE_LOG(LogS47AnimalWarn, Display, TEXT("S47: animals warn: a false alarm on its own, no event follows (%s)"), Kind == EKind::Birds ? TEXT("a covey goes up") : TEXT("a coyote stands and stares"));
+		return;
+	}
+}
+
 bool FS47AnimalWarn::Due(FString& OutId, FString& OutVariant)
 {
 	if (!M) return false;
+	Stray();
 	for (int32 I = 0; I < Pending.Num(); ++I)
 		if (M->T >= Pending[I].At)
 		{
@@ -78,7 +117,7 @@ bool FS47AnimalWarn::Due(FString& OutId, FString& OutVariant)
 	return false;
 }
 
-void FS47AnimalWarn::Reset() { Pending.Reset(); Night = 0; bUsed = false; Asked.Reset(); }
+void FS47AnimalWarn::Reset() { Pending.Reset(); Night = 0; bUsed = false; Asked.Reset(); StrayAt = -1.; }
 
 bool FS47AnimalWarn::SelfTest(TArray<FString>& Lines)
 {
@@ -96,6 +135,9 @@ bool FS47AnimalWarn::SelfTest(TArray<FString>& Lines)
 	}
 	Check(bSame && Birds > 60 && Birds < 140, TEXT("which animal comes first is seeded, the same each time that night is asked, and both come"));
 	Check(Other(EKind::Birds) == EKind::Coyote && Other(EKind::Coyote) == EKind::Birds, TEXT("the other animal is the fallback"));
+	int32 Strays = 0;
+	for (int32 N = 1; N <= 300; ++N) Strays += StrayNight(47, N) && StrayNight(47, N) == StrayNight(47, N);
+	Check(Strays > 70 && Strays < 130, TEXT("on about one night in three the warning comes alone, with no event after it (seeded)"));
 	Check(Lead >= 4 && Lead <= 10, TEXT("the event follows its warning by a few seconds"));
 	FS47AnimalWarn Bare(nullptr);
 	FString Why;
@@ -107,8 +149,8 @@ bool FS47AnimalWarn::SelfTest(TArray<FString>& Lines)
 		bool bGood = S != nullptr && S->bEnabled && S47EventScript::Lint(*S).Num() == 0;
 		int32 Thoughts = 0, Findings = 0, Camera = 0;
 		if (S) for (const FS47Beat& B : S->Beats) { Thoughts += B.Do == ES47Beat::Thought; Findings += B.Do == ES47Beat::Evidence; Camera += B.Do == ES47Beat::CameraSnap; }
-		Check(bGood && Thoughts == 1 && Findings == 1 && Camera == 0 && S->Gates.HourFrom >= 0 && S->Gates.Odds > 0 && S->Gates.Odds <= .5 && S->Gates.Tier == ES47Allowed::Hint,
-			K == EKind::Birds ? TEXT("animals_warn_birds: a thought, a finding, night hours, odds of at most a half, no camera") : TEXT("animals_warn_coyote: a thought, a finding, night hours, odds of at most a half, no camera"));
+		Check(bGood && Thoughts == 1 && Findings == 1 && Camera == 0 && S->Gates.HourFrom >= 0 && S->Gates.Odds > 0 && S->Gates.Odds <= .25 && S->Gates.DayFrom >= 3 && S->Gates.Tier == ES47Allowed::Hint,
+			K == EKind::Birds ? TEXT("animals_warn_birds: a thought, a finding, night hours, odds of at most a quarter, from the third night, no camera") : TEXT("animals_warn_coyote: a thought, a finding, night hours, odds of at most a quarter, from the third night, no camera"));
 	}
 	return bOk;
 }

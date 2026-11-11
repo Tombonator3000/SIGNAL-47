@@ -13,7 +13,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Calm, Log, All);
 
 namespace
 {
-	const TCHAR* const AlarmIds[] = { TEXT("alarm_cow"), TEXT("alarm_shed_door"), TEXT("alarm_jackrabbit"), TEXT("alarm_fridge") };
+	const TCHAR* const AlarmIds[] = { TEXT("alarm_cow"), TEXT("alarm_shed_door"), TEXT("alarm_jackrabbit"), TEXT("alarm_fridge"),
+		TEXT("alarm_pipe_tick"), TEXT("alarm_printer_settle"), TEXT("alarm_vent_rattle") }; // N1110 (pace): three indoor ones besides the refrigerator
 	// The night hour of a clock time: 19.5 to 25.5 is 19:30 to 01:30, so that midnight is 24.
 	double NightHourOf(double Clock)
 	{
@@ -55,6 +56,7 @@ void FS47Calm::Reset()
 	NextTry = 0;
 	DangerEnd = -1e9;
 	LastAlarm = -1e9;
+	LastFridgeDay = 0;
 	ReliefAt = -1;
 	PrevBusy = NAME_None;
 	bPrevDanger = false;
@@ -91,7 +93,6 @@ void FS47Calm::Step(double Dt)
 	}
 	if (!N.Busy.IsNone() || N.RestLeft >= 1) return;
 	const bool bDriving = M->World->bDriving;
-	const bool bIndoors = F->Taken && F->Taken->Indoors();
 
 	if (ReliefAt >= 0)
 	{
@@ -118,15 +119,16 @@ void FS47Calm::Step(double Dt)
 	if (N.DangerTonight > 0 || N.SinceStart < 600. || !Quiet(Clock)) return;
 	for (const FString& Id : AlarmOrder(F->Seed(), Night))
 	{
-		if (Id == TEXT("alarm_fridge") && !bIndoors) continue;
-		if (Id != TEXT("alarm_fridge") && Id != TEXT("alarm_shed_door") && bIndoors) continue;
+		// N1110 (pace): where each fits is the script's own gate (indoors / outdoors); the refrigerator is once a week at most
+		if (Id == TEXT("alarm_fridge") && !FridgeMay(F->Day(), LastFridgeDay)) continue;
 		FString Why;
 		if (!S47EventScript::Allows(M, Id, Why)) continue;
 		FS47EventCtx Ctx;
 		if (!S47EventScript::Play(M, Id, Ctx)) continue;
 		++Played;
 		LastAlarm = Clock;
-		F->Director->RestFor(30.);
+		if (Id == TEXT("alarm_fridge")) LastFridgeDay = F->Day();
+		F->Director->RestFor(90.); // N1110 (pace): a minute and a half of quiet after an alarm, not half a minute
 		UE_LOG(LogS47Calm, Display, TEXT("S47: calm: false alarm %s, night %d, %d of %d"), *Id, Night, Played, AlarmsFor(F->Seed(), Night));
 		return;
 	}
@@ -148,11 +150,11 @@ bool FS47Calm::SelfTest(TArray<FString>& Lines)
 		const double D = ReliefDelay(47, Night);
 		bRelief &= D >= 480. && D <= 600.;
 		const TArray<FString> O = AlarmOrder(47, Night);
-		bOrder &= O.Num() == 4 && O == AlarmOrder(47, Night) && O.Contains(TEXT("alarm_cow")) && O.Contains(TEXT("alarm_fridge"));
+		bOrder &= O.Num() == int32(UE_ARRAY_COUNT(AlarmIds)) && O == AlarmOrder(47, Night) && O.Contains(TEXT("alarm_cow")) && O.Contains(TEXT("alarm_fridge"));
 	}
 	Check(bSlots && bSame && Two > 25 && Two < 80, TEXT("one or two false alarms a night, seeded, the first in the early evening and the second near midnight"));
 	Check(bRelief, TEXT("the relief comes eight to ten minutes of the clock after the danger"));
-	Check(bOrder, TEXT("the order the alarms are tried in is seeded and holds all four"));
+	Check(bOrder, TEXT("the order the alarms are tried in is seeded and holds all seven"));
 	for (const TCHAR* Id : AlarmIds)
 	{
 		const FS47EventScript* S = S47EventScript::Find(Id);
@@ -173,13 +175,20 @@ bool FS47Calm::SelfTest(TArray<FString>& Lines)
 		const FS47EventScript* S = S47EventScript::Find(ReliefScript());
 		bool bGood = S && S->bEnabled && S47EventScript::Lint(*S).Num() == 0;
 		bool bDale = false, bThought = false, bFinding = false;
+		int32 Thoughts = 0, Drive = 0, DriveInTruck = 0;
 		if (S) for (const FS47Beat& B : S->Beats)
 		{
+			Thoughts += B.Do == ES47Beat::Thought;
+			if (B.Do == ES47Beat::Line && B.Who == TEXT("radio") && B.Text.Contains(TEXT("long drive home"))) { ++Drive; DriveInTruck += B.If.Num() == 1 && B.If[0].If == TEXT("in_truck"); }
 			bDale |= B.Do == ES47Beat::Line && B.Who == TEXT("dale") && B.Text.Contains(TEXT("You still with me?"));
 			bThought |= B.Do == ES47Beat::Thought;
 			bFinding |= B.Do == ES47Beat::Evidence || B.Do == ES47Beat::Map || B.Do == ES47Beat::CameraSnap || B.Do == ES47Beat::Silence;
 		}
 		Check(bGood && bDale && bThought && !bFinding, TEXT("calm_after: night sounds, a calm thought, Dale checks in; no finding, no silence, no camera"));
+		Check(Thoughts == 3 && Drive == 1 && DriveInTruck == 1, TEXT("calm_after: a thought for indoors, outdoors on foot and the truck; the long drive home only in the truck"));
+	}
+	{
+		Check(FridgeMay(2, 0) && !FridgeMay(5, 2) && !FridgeMay(8, 2) && FridgeMay(9, 2), TEXT("the refrigerator clunks once a week at most"));
 	}
 	{
 		// the gap between two alarms is the clock's, not the frame's: the same twenty minutes the danger rest uses

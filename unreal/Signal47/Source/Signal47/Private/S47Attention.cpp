@@ -30,6 +30,8 @@ namespace S47AttentionLocal
  const TCHAR* const SabNames[]={TEXT("none"),TEXT("relay"),TEXT("mains"),TEXT("lamp"),TEXT("truck")};
  const TCHAR* const HintRule=TEXT("attention_hint_dale");
  const TCHAR* const HintVisit=TEXT("attention_hint_visit");
+ const TCHAR* const TellId=TEXT("attention_tell"); // N1110 (pace): a one-second dip of the ambience
+ const TCHAR* const HintKey=TEXT("attention_rule"); // the field record Dale's word keeps (attention_hint_dale.json)
  const TCHAR* const VisitId=TEXT("attention_visit");
  const TCHAR* const VisitHeld=TEXT("attention_visit_held");
  const TCHAR* const VisitEscaped=TEXT("attention_visit_escaped");
@@ -103,7 +105,7 @@ void FS47Attention::Begin(const S47J::FObj& Saved)
  for(const FString& Id:S47J::Strs(Saved,TEXT("claims")))Claims.Add(Id);
  // An older save, or one from before anything counted: what is already recorded is not counted again on the first step.
  bBaseline=S47J::Has(Saved,TEXT("score"));
- bDev=bTruckArmed=false;WarnWait=SabWait=VisitWait=StareFor=VisitT=0;ChaseDist=-1;SpareIn=-1;LearnNight=0;Visit=EVisit::None;Who=0;TakenBefore=0;
+ bDev=bTruckArmed=false;WarnWait=SabWait=VisitWait=StareFor=VisitT=0;ChaseDist=-1;SpareIn=-1;LearnNight=0;TellNight=0;bHintSaid=false;Visit=EVisit::None;Who=0;TakenBefore=0;
  Returns.Reset();NearMarks.Reset();ReturnNight=0;
 }
 
@@ -177,6 +179,8 @@ void FS47Attention::Step(double Dt)
  Gains(Dt);
  StepSabotage(Dt,Hour,Night,Day);
  StepWarn(Dt,Hour,Night);
+ StepTell(Hour,Night);
+ StepHint(Hour,Day);
  StepVisitDraw(Dt,Hour,Night,Day);
 }
 
@@ -278,10 +282,30 @@ void FS47Attention::StepWarn(double Dt,double Hour,int32 Night)
   // Lights over the station: a slow formation crossing the sky over SARO, as a director script puts one up.
   if(Id==TEXT("attention_warn_lights")&&M->SkyVisitors&&AtSaro())M->SkyVisitors->DevFormation(ES47SkyForm::Circle,0,900.,450.);
   if(!Play(Id)&&M->UI)M->UI->Thought(TEXT("I can't shake the feeling something is looking back."),4.5f);
-  if(WarnCount==0)Play(S47AttentionLocal::HintRule);
+  if(WarnCount==0&&!bHintSaid){bHintSaid=true;Play(S47AttentionLocal::HintRule);}
   WarnNight=Night;++WarnCount;
   return;
  }
+}
+
+// N1110 (pace): below the first warning, the night's sound dips for a second and nothing else follows. Once a night, in the warning hours.
+void FS47Attention::StepTell(double Hour,int32 Night)
+{
+ if(Value<TellAt||Value>=WarnAt||TellNight==Night||!WarnHours(Hour))return;
+ TellNight=Night;
+ if(Gated(S47AttentionLocal::TellId))Play(S47AttentionLocal::TellId);
+}
+
+// N1110 (pace): Dale's word on the stare is said once on day 3 even if nothing has warned yet (it is kept as a field record when said).
+void FS47Attention::StepHint(double Hour,int32 Day)
+{
+ using namespace S47AttentionLocal;
+ FS47FreeformSession* F=Session(M);
+ if(bHintSaid||Day<HintDay||!F||!WarnHours(Hour))return;
+ if(F->HasFinding(HintKey)){bHintSaid=true;return;}
+ if(!Gated(HintRule))return;
+ bHintSaid=true;
+ Play(HintRule);
 }
 
 bool FS47Attention::CanSab(ESab K) const
@@ -473,8 +497,12 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
  Check(PhotoGain(0)==PhotoBase&&PhotoGain(1)==PhotoBase+PhotoClose&&PhotoGain(5)==PhotoGain(1),TEXT("a photograph adds, more when it fills the print"));
  // An ordinary night of work stays calm; a night of bothering them comes to a visit.
  {
-  const double Work=2*TrackRecorded+2*PhotoGain(.5)+4*Look(3,true)+Look(10,false)+ReturnGain(1);
-  Check(Work<WarnAt,FString::Printf(TEXT("an ordinary night (two strange cards, two photographs, short looks, one walk into marks) stays calm: %.1f"),Work));
+  // N1110 (pace): with the first warning at 18 a light night (one strange card, two photographs, short looks, one walk into marks) stays calm,
+  // and a busy one (two cards) may meet the first warning, but never sabotage.
+  const double Light=TrackRecorded+2*PhotoGain(.5)+4*Look(3,true)+Look(10,false)+ReturnGain(1);
+  const double Work=Light+TrackRecorded;
+  Check(Light<WarnAt&&Work<SabotageAt,FString::Printf(TEXT("a light night (one strange card, two photographs, short looks, one walk into marks) stays calm: %.1f; a busy one only warns: %.1f"),Light,Work));
+  Check(TellAt>0&&TellAt<WarnAt&&WarnAt==18&&HintDay==3,TEXT("the tell comes below the first warning (12 before 18), and Dale's word is due on day 3"));
   const double Pester=TrackRecorded+2*(TrackRecorded+TrackAgain)+Look(60,true)+10*LampPerSec+2*PhotoGain(.95)+ReturnGain(2)+ReturnGain(3);
   Check(Pester>=VisitAt,FString::Printf(TEXT("a night of bothering them (the same source three times, a minute through the camera, the lamp on one, close photographs, back in the marks) comes to a visit: %.1f"),Pester));
   const double Watch=Look(90,false);
@@ -514,7 +542,7 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
  // The scripts it plays: there, and clean (the spoiler rules and the word never said to the player).
  {
   TArray<FString> Ids=WarnScripts();
-  Ids.Append({S47AttentionLocal::HintRule,S47AttentionLocal::HintVisit,S47AttentionLocal::VisitId,S47AttentionLocal::VisitHeld,S47AttentionLocal::VisitEscaped});
+  Ids.Append({S47AttentionLocal::TellId,S47AttentionLocal::HintRule,S47AttentionLocal::HintVisit,S47AttentionLocal::VisitId,S47AttentionLocal::VisitHeld,S47AttentionLocal::VisitEscaped});
   for(ESab K:{ESab::Relay,ESab::Mains,ESab::Lamp,ESab::Truck})Ids.Add(FString(TEXT("attention_sab_"))+SabName(K));
   int32 Found=0;bool bClean=true;FString First;
   for(const FString& Id:Ids)
@@ -538,7 +566,10 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
     Check(Tubes==1&&bAfter,TEXT("the mains' tube beat comes after the outage, not in the dark"));
    }
    if(Hn)Check(Hn->Beats.Num()>0&&Hn->Beats[0].At>=10,TEXT("Dale's hint comes 10 s or more after the warning starts"));
+   if(Hn)Check(Hn->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Line&&B.Text.Contains(TEXT("hold still"));}),TEXT("N1110 (pace): Dale's word gives the rule once: kill the lamp and hold still"));
    if(Dg)Check(Dg->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Silence;}),TEXT("the dog warning goes quiet"));
+   const FS47EventScript* Tl=S47EventScript::Find(S47AttentionLocal::TellId);
+   if(Tl)Check(Tl->Beats.Num()==1&&Tl->Beats[0].Do==ES47Beat::Silence&&Tl->Beats[0].Secs<=1.5,TEXT("the tell is one second of the night's sound dipping and nothing else"));
    if(Li)Check(Li->Gates.Areas.Contains(TEXT("saro")),TEXT("the lights over the station are SARO's only"));
   }
   const FS47EventScript* V=S47EventScript::Find(S47AttentionLocal::VisitId);

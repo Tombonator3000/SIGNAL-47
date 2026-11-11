@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "alarm_pipe_tick",
+  "name": "False alarm: a pipe ticks in the wall",
+  "notes": "N1110 (pace). Played by FS47Calm, indoors. Something taps inside the wall, slowly, then a few more times as the pipe cools. Silence first, then the ordinary reveal. No finding, no danger, no camera.",
+  "enabled": true,
+  "gates": { "from_day": 2, "hours": ["19:30", "01:30"], "tier": "hint", "if": ["indoors"] },
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 4 },
+    { "at": 2.5, "do": "sound", "sound": "metalTap", "gain": 0.3, "lp": 1100, "rate": 0.8 },
+    { "at": 4.4, "do": "sound", "sound": "metalTap", "gain": 0.22, "lp": 1000, "rate": 0.75 },
+    { "at": 7.5, "do": "sound", "sound": "metalTap", "gain": 0.14, "lp": 900, "rate": 0.7 },
+    { "at": 8.5, "do": "thought", "text": "The pipes. They tick like that when the building cools off.", "secs": 4.5 }
+  ]
+}

@@ -8,6 +8,7 @@
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
 #include "S47Handling.h"
+#include "S47Breather.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
 #include "S47Visitors.h"
@@ -1435,6 +1436,9 @@ namespace S47FlowNotebook
 			if (M->Night && M->Night->Album && M->Night->Album->PendingLabPhoto() && !In.Next.Contains(TEXT("WET BENCH"))
 				&& !Tasks.ContainsByPredicate([](const FS47Task& T) { return T.Text.Contains(TEXT("WET BENCH")); }))
 				In.Tasks.Insert({ TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."), false }, 0);
+			// N1110 (pace): after the Breather's first record, the town's word of it stays on NOW until the week's hush has been heard
+			if (F.HasFinding(S47Breather::Finding) && F.TownUse && !F.TownUse->Seen(S47Breather::WeekFlag(S47Breather::WeekOf(FS47FreeformSession::NightOf(F.Clock())))))
+				In.Tasks.Add({ TEXT("WORTH A LOOK / The Breather: they say it goes quiet around two."), false });
 			FString Card;
 			if (F.FocusedFieldCase() >= 0) F.AvailableActivities(&Card);
 			if (!Card.IsEmpty() && Card != In.Next && !Card.Contains(TEXT("FOLLOW THE PLAN")) && !Card.Contains(TEXT("WET BENCH"))) In.Tasks.Insert({ Card, false }, 0);

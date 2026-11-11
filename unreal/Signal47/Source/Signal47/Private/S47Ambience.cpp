@@ -166,7 +166,21 @@ void FS47Ambience::Hush(double Secs, double Level, double Tau, double BackTau)
 	FS47AudioContext::FBatch Batch(*Ctx);
 	FS47AudioParam& G = Quiet->Gain;
 	const double Now = Ctx->CurrentTime();
+	// N1110 (pace): a call that lets go (no time, full level: the scenes' own release) ends the held hush; any other only extends it
+	if (Secs <= 0 && Level >= 1) { HushUntil = 0; HushLevel = 1; }
+	else
+	{
+		double S = Secs, L = Level;
+		MergeHush(HushUntil - Now, HushLevel, Secs, Level, S, L);
+		HushUntil = Now + S; HushLevel = L; Secs = S; Level = L;
+	}
 	G.CancelScheduledValues(Now); G.SetTargetAtTime(Level, Now, Tau); G.SetTargetAtTime(1, Now + Secs, BackTau);
+}
+
+void FS47Ambience::MergeHush(double Remaining, double HeldLevel, double Secs, double Level, double& OutSecs, double& OutLevel)
+{
+	if (Remaining <= 0) { OutSecs = Secs; OutLevel = Level; return; }
+	OutSecs = FMath::Max(Remaining, Secs); OutLevel = FMath::Min(HeldLevel, Level);
 }
 
 void FS47Ambience::Breath(double Secs)
@@ -257,6 +271,16 @@ bool FS47Ambience::SelfTest(TArray<FString>& Lines)
 		TEXT("negative and next-day restored clocks use the same daily phase"));
 	Check(FMath::IsNearlyZero(TimeOfDay(5.5 * 3600).Night, 1e-9) && TimeOfDay(12 * 3600).Night == 0,
 		TEXT("the nocturnal envelope is silent after dawn and at noon"));
+	{
+		// N1110 (pace): a short hush never cuts a long one short, and never lifts its level
+		double S = 0, L = 0;
+		MergeHush(100, 0.02, 10, 0.08, S, L);
+		const bool bLong = S == 100 && L == 0.02;
+		MergeHush(5, 0.3, 20, 0.08, S, L);
+		const bool bExtend = S == 20 && L == 0.08;
+		MergeHush(0, 0.02, 10, 0.5, S, L);
+		Check(bLong && bExtend && S == 10 && L == 0.5, TEXT("a new hush only extends the held one: the later end, the lower level; none held, it is its own"));
+	}
 	return bAll;
 }
 

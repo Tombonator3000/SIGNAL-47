@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "id": "alarm_printer_settle",
+  "name": "False alarm: the printer's paper settles",
+  "notes": "N1110 (pace). Played by FS47Calm, at SARO indoors. A small shuffle from the printer, a soft thump, then nothing. Ordinary: the paper in the tray settling. Silence first, then the ordinary reveal. No finding, no danger, no camera.",
+  "enabled": true,
+  "gates": { "from_day": 2, "hours": ["19:30", "01:30"], "tier": "hint", "areas": ["saro"], "if": ["indoors"] },
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 3.5 },
+    { "at": 3, "do": "sound", "sound": "thudSoft", "gain": 0.3, "lp": 1200 },
+    { "at": 3.7, "do": "sound", "sound": "switch", "gain": 0.18, "rate": 0.9 },
+    { "at": 5.5, "do": "thought", "text": "The printer. The paper in the tray settled, that's all.", "secs": 4.5 }
+  ]
+}

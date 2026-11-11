@@ -318,7 +318,7 @@ bool S47Breather::SelfTest(TArray<FString>& Lines)
 	// The script: there, clean, a full-tier night after two, rare, and a silence beat that says how long; nothing kept.
 	{
 		const FS47EventScript* S = S47EventScript::Find(HushScript);
-		bool bGood = S && S->bEnabled && S47EventScript::Lint(*S).Num() == 0 && S->Gates.bTier && S->Gates.Tier == ES47Allowed::Full && S->Gates.HourFrom >= 2 && S->Gates.Odds < 1;
+		bool bGood = S && S->bEnabled && S47EventScript::Lint(*S).Num() == 0 && S->Gates.bTier && S->Gates.Tier == ES47Allowed::Full && S->Gates.HourFrom >= 2 && S->Gates.Odds < 1 && S->Gates.Odds >= 0.5;
 		bool bSilence = false, bKept = false;
 		if (S) for (const FS47Beat& B : S->Beats) { bSilence |= B.Do == ES47Beat::Silence; bKept |= B.Do == ES47Beat::Evidence || B.Do == ES47Beat::Map || B.Do == ES47Beat::CameraSnap || B.Do == ES47Beat::Thought || B.Do == ES47Beat::Line; }
 		Check(bGood && bSilence && !bKept && HushSecs() >= 3 && HushSecs() <= 8, S ? FString::Printf(TEXT("breather_hush.json: full tier, from %.0f:00, odds %.2f, the draft holds %.1f s; no thought, line, finding or mark"), S->Gates.HourFrom, S->Gates.Odds, HushSecs()) : FString(TEXT("breather_hush.json is not in the library")));

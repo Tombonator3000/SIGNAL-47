@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "alarm_vent_rattle",
+  "name": "False alarm: a vent rattles",
+  "notes": "N1110 (pace). Played by FS47Calm, indoors. A rattle in the ductwork when the fan kicks on, then a low rush of air. Silence first, then the ordinary reveal. No finding, no danger, no camera.",
+  "enabled": true,
+  "gates": { "from_day": 2, "hours": ["19:30", "01:30"], "tier": "hint", "if": ["indoors"] },
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 4 },
+    { "at": 3.5, "do": "sound", "sound": "doorMetal", "gain": 0.22, "lp": 1800, "rate": 1.5 },
+    { "at": 4.1, "do": "sound", "sound": "metalTap", "gain": 0.2, "lp": 1600, "rate": 1.2 },
+    { "at": 5, "do": "sound", "sound": "gust", "gain": 0.16, "lp": 1200 },
+    { "at": 6.5, "do": "thought", "text": "The vent. The fan kicked on, and something in the duct is loose.", "secs": 4.5 }
+  ]
+}

@@ -19,6 +19,8 @@ class US47Main;
 // It falls by itself, FallPerDay a day of the game's clock (a rest falls it as much as the hours it skips).
 //
 // What it does, each at most once a night, in the hours of its tier (S47NightTiers):
+//   TellAt      (N1110 pace) from 12, once a night in the warning hours: the ambience dips for a second (attention_tell), nothing else
+//   HintDay     (N1110 pace) on day 3, Dale's word on the stare (attention_hint_dale) is said if the first warning has not brought it
 //   WarnAt      a warning (event scripts attention_warn_*: the TV in snow, two rings and nobody, the dog stopping, lights over
 //               the station, a thought), the first with Dale's word (attention_hint_dale): don't stare at them too long
 //   SabotageAt  one piece of equipment, never two at once, from day 2, 23:30 to 05:00 (the evenings stay deniable): a relay fault on the array, the mains
@@ -43,7 +45,9 @@ public:
  S47J::FObj Save() const;
 
  // ---- the rule, pure ----
- static constexpr double WarnAt=25,SabotageAt=50,VisitAt=75,Top=100,FallPerDay=20; // N1110 (critic): calm play must not creep up
+ static constexpr double WarnAt=18,SabotageAt=50,VisitAt=75,Top=100,FallPerDay=20; // N1110 (critic): calm play must not creep up; N1110 (pace): the first warning at 18, so the rule is met in week 1
+ static constexpr double TellAt=12; // N1110 (pace): below the warnings, once a night, the night's sound dips for a second and nothing else
+ static constexpr int32 HintDay=3; // N1110 (pace): Dale's word on the stare, said on day 3 if it has not been heard
  static constexpr double StareGrace=4,CameraGrace=2,StarePerSec=.25,CameraPerSec=.6,LampPerSec=1.5,ChasePerSec=.8,ChaseMps=1.5;
  static constexpr double ReturnAgain=6,PhotoBase=1,PhotoClose=6,TrackRecorded=5,TrackAgain=5,TrackPerSec=.04;
  static constexpr double WarnDelay=15,SabotageDelay=90,VisitDelay=30,VisitSag=30,VisitOut=150,VisitLook=VisitSag+6;
@@ -93,6 +97,8 @@ private:
  ESab Sab=ESab::None;
  bool bBaseline=false,bDev=false,bTruckArmed=false,bLinesAdded=false;
  double WarnWait=0,SabWait=0,VisitWait=0,StareFor=0,VisitT=0,ChaseDist=-1,SpareIn=-1;
+ int32 TellNight=0; // N1110 (pace): the night the tell was played (not saved)
+ bool bHintSaid=false; // N1110 (pace): Dale's word has been played this session
  int32 LearnNight=0; // N1110 (critic): the night the weak gear flicker for a long stare was played (not saved)
  EVisit Visit=EVisit::None;
  int32 Who=0;
@@ -104,6 +110,8 @@ private:
  void TakeBaseline();
  void Gains(double Dt);
  void StepWarn(double Dt,double Hour,int32 Night);
+ void StepTell(double Hour,int32 Night);
+ void StepHint(double Hour,int32 Day);
  void StepSabotage(double Dt,double Hour,int32 Night,int32 Day);
  void StepVisitDraw(double Dt,double Hour,int32 Night,int32 Day);
  void StepVisit(double Dt);

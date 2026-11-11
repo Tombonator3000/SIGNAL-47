@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "id": "attention_tell",
+  "name": "The night's sound dips for a second",
+  "notes": "N1110 (pace). Played by FS47Attention (S47Attention.cpp) once a night while the attention number is between 12 and the first warning. The ambience drops for one second and comes back; nothing else: no line, thought, record or mark. Deniable, so the first real warning is not the first sign.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 1, "level": 0.03 }
+  ]
+}

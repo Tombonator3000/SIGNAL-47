@@ -14,6 +14,9 @@ class US47Main;
 // later. The animals are the ones the game already has (S47Animals); nothing new is saved: a warning not yet followed by its event
 // when a game is loaded is simply asked again.
 //
+// N1110 (pace): the warnings come from the third night, one time in four (the scripts' odds); on about one night in three the warning comes
+// alone at some quiet moment on foot, with no event after it (Stray, run from Due).
+//
 // (The attention system, N1110-1, is not part of this file: when it is in, its score can scale the scripts' odds in Hold.)
 class SIGNAL47_API FS47AnimalWarn
 {
@@ -29,6 +32,8 @@ public:
 	static const TCHAR* ScriptOf(EKind Kind);
 	/** Which animal comes first on a night (pure): seeded and the same each time it is asked. */
 	static EKind First(int32 Seed, int32 Night, const FString& Id);
+	/** N1110 (pace, pure): a night on which the warning comes alone, with no event after it: about one in three, seeded. */
+	static bool StrayNight(int32 Seed, int32 NightNo);
 	/** The other one. */
 	static EKind Other(EKind Kind) { return Kind == EKind::Birds ? EKind::Coyote : EKind::Birds; }
 
@@ -51,5 +56,7 @@ private:
 	TArray<FWait> Pending;
 	int32 Night = 0, Count = 0;
 	bool bUsed = false;
+	double StrayAt = -1;  // real seconds (US47Main::T) when this night's lone warning may come; negative: none tonight
+	void Stray();
 	TSet<FString> Asked;  // the events asked about this night (once each)
 };

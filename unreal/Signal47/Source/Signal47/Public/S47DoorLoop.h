@@ -39,16 +39,16 @@ enum class ES47Taker : uint8;
 // and the shape crossing it is a slow dimming. The ways it ends: the sixth door lets them out, or a way out the loop does not hold, and
 // the thing is gone (the light out, missing time, a field record, quiet minutes); or they stop using doors: after 25 s the handle of the
 // nearest door turns and steps come round, and after 40 s it is in, and the ordinary taking takes over (FS47Taken::TakeNow).
-// At most once a night, every third night at most, never the night an ordinary loop ran, the full tier, and only on a draw (ChaseOdds);
+// At most once a night, every third night at most, never the night an ordinary loop ran, the full tier, and only on a draw (ChaseOdds .65; N1110 pace: the first eligible hunt of each week chases for sure, ChaseFirstOdds);
 // the meeting is the hunt's own, so the night's one danger is not counted again. Nothing saved; the field record is door-loop-chase-d<day>.
 class SIGNAL47_API FS47DoorLoop
 {
 public:
  enum class EStage : uint8 { None, Armed, Running, Done };
  enum class EStep : uint8 { Normal, Side, Ceiling, Floor, Out };
- static constexpr int32 Cap=6,SideLoops=3,FirstDay=2,WeekDays=7,ChaseEvery=3;
+ static constexpr int32 Cap=6,SideLoops=3,FirstDay=2,LoopFirstDay=4,WeekDays=7,ChaseEvery=3; // N1110 (pace): the loop from the fourth night; the chase keeps FirstDay
  static constexpr double ArmedFor=1200,IdleFor=240,CutAfter=.35,InsteadOdds=.5,LastHour=5.5,BigQuiet=90,RestAfter=420;
- static constexpr double ChaseOdds=.65,ChaseWarn=25,ChaseIdle=40,DevChaseFor=300;
+ static constexpr double ChaseOdds=.65,ChaseFirstOdds=1.,ChaseWarn=25,ChaseIdle=40,DevChaseFor=300;
 
  // ---- the rule, pure ----
  // The loop's own state, nothing of the world: armed, then each door use is one step until the way out (or the cap).
@@ -66,7 +66,7 @@ public:
  static int32 JumpMinutes(int32 N);    // the clock's jump at this use
  static int32 MissingMinutes(int32 Seed,int32 Night); // in all, 10 to 25
  static int32 FinalMinutes(int32 Seed,int32 Night);   // what is left for the way out
- static bool MayLoop(int32 Day,int32 LastDay){return Day>=FirstDay&&(LastDay<=0||Day>=LastDay+WeekDays);}
+ static bool MayLoop(int32 Day,int32 LastDay){return Day>=LoopFirstDay&&(LastDay<=0||Day>=LastDay+WeekDays);}
  static const TCHAR* ThoughtFor(int32 N,bool bFromFront);
  static FString RecordText(int32 Minutes,bool bFromFront);
  // N1110-7, the chase's own: the light at the windows (its strength, 0 to about 1.7, and its colour) Seconds into it; the shape crossing
@@ -181,6 +181,9 @@ private:
  void YieldHunt();
  void Caught();
  int32 LastChaseDay() const;
+ // N1110 (pace): whether a chase has come in the last week (the first eligible hunt of a week chases for sure, then ChaseOdds).
+ bool ChasedThisWeek() const;
+ static double OddsFor(bool bChasedThisWeek){return bChasedThisWeek?ChaseOdds:ChaseFirstOdds;}
  bool Calm() const;
  // False: it has ended (caught).
  bool StepChase(double Dt);

@@ -4,7 +4,7 @@
 // N1110 (N1110-6): see S47RuleBreak.h.
 bool FS47RuleBreak::Eligible(const FIn& In)
 {
- return In.bPale && In.bLearned && !In.bSpent && !In.bInside && In.Night >= FromNight && S47NightTiers::Allows(ES47Allowed::Full, In.Hour, In.Night)
+ return (In.bPale || In.bTall) && In.bLearned && !In.bSpent && !In.bInside && In.Night >= FromNight && S47NightTiers::Allows(ES47Allowed::Full, In.Hour, In.Night)
   && In.Dist >= NearestStart && In.Dist <= FarthestStart;
 }
 
@@ -52,8 +52,10 @@ bool FS47RuleBreak::SelfTest(TArray<FString>& Lines)
  X = In; X.Hour = 0.5; Check(!Eligible(X), TEXT("N1110-6: not before two in the morning"));
  X = In; X.bLearned = false; Check(!Eligible(X), TEXT("N1110-6: not until the rule has been learned"));
  X = In; X.bSpent = true; Check(!Eligible(X), TEXT("N1110-6: once in the whole game"));
- X = In; X.bPale = false; Check(!Eligible(X), TEXT("N1110-6: only the Pale One"));
- X = In; X.Dist = 8; Check(!Eligible(X), TEXT("N1110-6: never from nearer than 12 m"));
+ X = In; X.bPale = false; Check(!Eligible(X), TEXT("N1110-6: only the Pale One or the Tall One"));
+ X = In; X.bPale = false; X.bTall = true; Check(Eligible(X), TEXT("N1110 (pace): the Tall One may break the rule as well"));
+ X = In; X.Dist = 6; Check(!Eligible(X), TEXT("N1110-6: never from nearer than 8 m (was 12)"));
+ X = In; X.Dist = 9; Check(Eligible(X), TEXT("N1110 (pace): from 9 m it may break the rule"));
  X = In; X.bInside = true; Check(!Eligible(X), TEXT("N1110-6: not on a player under a roof"));
  FS47RuleBreak B; int32 Broke = 0, Turned = 0; double Longest = 0, FastestWhileHeld = 0, PaceComing = 0;
  for (int32 I = 0; I < 1200; ++I)
@@ -71,7 +73,7 @@ bool FS47RuleBreak::SelfTest(TArray<FString>& Lines)
  FIn Moving = In; Moving.bStillDark = false;
  FS47RuleBreak Mv; for (int32 I = 0; I < 600; ++I) Mv.Step(0.1, Moving);
  Check(Mv.Part() == FS47RuleBreak::EPart::Watching && Mv.Speed(1.2) == 1.2, TEXT("N1110-6: a player who moves or has the lamp on never sees it: the visit goes on as it always did"));
- FIn Near = In; Near.Dist = 6; FS47RuleBreak Nr; for (int32 I = 0; I < 600; ++I) Nr.Step(0.1, Near);
+ FIn Near = In; Near.Dist = 6.; FS47RuleBreak Nr; for (int32 I = 0; I < 600; ++I) Nr.Step(0.1, Near);
  Check(Nr.Part() == FS47RuleBreak::EPart::Watching, TEXT("N1110-6: close by it does not stop (no sudden turn at arm's length)"));
  FS47RuleBreak Go; for (int32 I = 0; I < 120 && Go.Part() != FS47RuleBreak::EPart::Coming; ++I) Go.Step(0.1, In);
  FIn Door = In; Door.bInside = true; Go.Step(0.1, Door);

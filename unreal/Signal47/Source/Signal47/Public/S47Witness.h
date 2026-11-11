@@ -19,7 +19,7 @@ public:
 	};
 	static constexpr int32 MaxKept = 24, MaxText = 220;
 	/** A small bonus, inside the week's field allowance. */
-	static constexpr int32 Bonus = 3;
+	static constexpr int32 Bonus = 8; // N1110 (pace): was 3, too small to notice
 	/** The photograph is of the place if it was taken within this many metres, facing it unless it was taken close up. */
 	static constexpr double Reach = 160, CloseUp = 30, FacingDegrees = 60;
 	/** Same night or the next: a photograph this many seconds after the statement, or less. */

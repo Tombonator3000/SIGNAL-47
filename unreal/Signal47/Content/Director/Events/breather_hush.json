@@ -2,9 +2,9 @@
   "version": 1,
   "id": "breather_hush",
   "name": "The Breather holds its breath",
-  "notes": "N1110 (Caliche history, the Breather). Played by FS47Breather when the player has stood three seconds on foot at the cave tour gate west of Main Street, after 02:00, at most once a week (the town keeps breather_w<week>) and once a night asked; the odds below make it rare. The cave's own draft stops for as long as the silence beat's secs (FS47Breather reads them, 1 to 15) and the night's crickets and wind with it, then both come back over a few seconds. Nothing else: no thought, no line, no finding, no map mark. Deniable.",
+  "notes": "N1110 (Caliche history, the Breather). Played by FS47Breather when the player has stood three seconds on foot at the cave tour gate west of Main Street, after 02:00, at most once a week (the town keeps breather_w<week>) and once a night asked; the odds below (0.6 since N1110 pace, was 0.4: a week-one player should meet it) keep it from being a sure thing; the town talks of it first (the Ledger, the gas station, the NOW line after the first record). The cave's own draft stops for as long as the silence beat's secs (FS47Breather reads them, 1 to 15) and the night's crickets and wind with it, then both come back over a few seconds. Nothing else: no thought, no line, no finding, no map mark. Deniable.",
   "enabled": true,
-  "gates": { "hours": ["02:00", "05:30"], "tier": "full", "areas": ["road", "diner"], "odds": 0.4, "if": ["outdoors"] },
+  "gates": { "hours": ["02:00", "05:30"], "tier": "full", "areas": ["road", "diner"], "odds": 0.6, "if": ["outdoors"] },
   "beats": [
     { "at": 0, "do": "silence", "secs": 5, "level": 0.03 }
   ]

@@ -60,6 +60,7 @@ const TArray<S47LedgerText::FItemDef>& S47LedgerText::Locals()
   {TEXT("San Isidro parish holds First Communion for eleven children Sunday at the ten o'clock Mass."),nullptr,0,0},
   {TEXT("The fair board needs a superintendent for the poultry barn. The last one retired after the business with the rooster."),nullptr,0,0},
   {TEXT("The Rotary Club heard a talk Thursday on the history of the old mine on the west side. It never paid out, the speaker said, which surprised nobody at the table."),nullptr,0,0},
+  {TEXT("From our files, 1931: the Trujillo family opens the Breather to visitors. Old-timers say the cave draws a long breath in and lets it out with the hours of the day, and that around two in the morning it holds that breath. The family says it is the weather."),nullptr,0,0}, // N1110 (pace)
   {TEXT("A dance at the community center Saturday benefits the ambulance fund. Music by the Rio Salado Ramblers. Admission $3."),nullptr,0,0},
   {TEXT("The ambulance crew is two short and asks for volunteers who can take calls at night. Training is free."),nullptr,0,0},
   {TEXT("The cattlemen's association meets at the Mesa Diner Tuesday at noon to talk about the brand inspection fee."),nullptr,0,0},

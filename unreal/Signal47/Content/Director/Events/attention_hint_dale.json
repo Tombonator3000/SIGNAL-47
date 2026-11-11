@@ -2,7 +2,7 @@
   "version": 1,
   "id": "attention_hint_dale",
   "name": "Dale: don't stare at them too long",
-  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the first warning ever. The rule, said once, 10 s after the warning so it does not collide with the warning's own beat.",
+  "notes": "Played by FS47Attention (S47Attention.cpp, N1110) with the first warning ever, or on day 3 if nothing has warned by then (N1110 pace). The rule, said once, 13 s after the warning so it does not collide with the warning's own beat; 15 s later the second line of the lesson: lamp off, hold still, the small ones look past.",
   "enabled": true,
   "gates": {},
   "beats": [
@@ -17,6 +17,18 @@
       "do": "evidence",
       "key": "attention_rule",
       "text": "Dale, on the walkie: don't stare at the lights too long. Out here they notice."
+    },
+    {
+      "at": 29,
+      "do": "line",
+      "who": "dale",
+      "text": "If one comes close, kill the lamp and hold still. The small ones look right past you. Over."
+    },
+    {
+      "at": 29,
+      "do": "evidence",
+      "key": "attention_rule_still",
+      "text": "Dale, on the walkie: if one comes close, kill the lamp and hold still. The small ones look right past you."
     }
   ]
 }
