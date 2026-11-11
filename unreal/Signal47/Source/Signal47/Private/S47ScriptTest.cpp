@@ -224,5 +224,65 @@ bool S47Script::SelfTest(TArray<FString>& Lines)
   FS47Script Empty;Empty.Id=TEXT("Bad Id");
   Check(Lint(Empty).Num()>=2,TEXT("a bad id and no actions are refused"));
  }
+
+ // ---- the shot (SHOT-BEAT-01) ----
+ {
+  FS47Script One;One.Id=TEXT("test_shot");One.Name=TEXT("A shot at the array");
+  FS47ScriptPoint Eye;Eye.X=36;Eye.Z=-318;Eye.Up=1.7;Eye.bSet=true;
+  FS47ScriptPoint Eye2=Eye;Eye2.X=28;Eye2.Z=-332;Eye2.Up=2.5;
+  FS47ScriptPoint Mark;Mark.X=18;Mark.Z=-370;Mark.Up=9;Mark.bSet=true;
+  {FS47ScriptAction A;A.Do=ES47ScriptAct::Shot;A.At=10;A.Path={Eye};A.Point=Mark;A.Fov=55;A.Secs=6;A.In=.6;A.Out=.8;One.Actions.Add(A);}
+  FS47Script Two=One;Two.Actions[0].Path.Add(Eye2);Two.Actions[0].Fov2=40;
+  FString Why;FS47Script R1,R2;
+  const FString T1=Write(One),T2=Write(Two);
+  const bool bR1=Read(T1,R1,Why),bR2=Read(T2,R2,Why);
+  Check(bR1&&Write(R1)==T1&&R1.Actions.Num()==1&&R1.Actions[0].Do==ES47ScriptAct::Shot&&R1.Actions[0].Path.Num()==1&&FMath::IsNearlyEqual(R1.Actions[0].Path[0].Up,1.7)
+   &&R1.Actions[0].Point.bSet&&FMath::IsNearlyEqual(R1.Actions[0].Point.Up,9.)&&FMath::IsNearlyEqual(R1.Actions[0].Fov,55.)&&R1.Actions[0].Fov2==0&&FMath::IsNearlyEqual(R1.Actions[0].Secs,6.)
+   &&T1.Contains(TEXT("\"eye\""))&&!T1.Contains(TEXT("eye2"))&&!T1.Contains(TEXT("fov2")),TEXT("SHOT: a shot with one eye is written, read and written again the same, without eye2 or fov2"));
+  Check(bR2&&Write(R2)==T2&&R2.Actions[0].Path.Num()==2&&FMath::IsNearlyEqual(R2.Actions[0].Path[1].X,28.)&&FMath::IsNearlyEqual(R2.Actions[0].Path[1].Up,2.5)&&FMath::IsNearlyEqual(R2.Actions[0].Fov2,40.)
+   &&FMath::IsNearlyEqual(R2.Actions[0].In,.6)&&FMath::IsNearlyEqual(R2.Actions[0].Out,.8),TEXT("SHOT: a shot with a second eye keeps both eyes, both lenses and its ease in and out"));
+  FS47Script Dflt;
+  Check(Read(TEXT("{\"version\":1,\"id\":\"x\",\"actions\":[{\"at\":0,\"do\":\"shot\",\"eye2\":{\"x\":1,\"z\":2},\"point\":{\"x\":9,\"z\":9}}]}"),Dflt,Why)&&Dflt.Actions.Num()==1&&Dflt.Actions[0].Path.IsEmpty()
+   &&FMath::IsNearlyEqual(Dflt.Actions[0].Fov,60.)&&FMath::IsNearlyEqual(Dflt.Actions[0].Secs,6.)&&FMath::IsNearlyEqual(Dflt.Actions[0].In,.6)&&Lint(Dflt).Num()>0,TEXT("SHOT: the defaults, and no second eye without a first (then refused: no eye)"));
+  Check(Lint(One).Num()==0&&Lint(Two).Num()==0,TEXT("SHOT: the lint takes a good shot with one eye and with two"));
+  Check(FMath::IsNearlyEqual(One.Length(),10+.6+6+.8),FString::Printf(TEXT("SHOT: the script lasts until the shot has eased back (%.1f s)"),One.Length()));
+  // Each rule refuses on its own.
+  struct FRule{const TCHAR* What;TFunction<void(FS47ScriptAction&)> Spoil;};
+  const TArray<FRule> Rules={
+   {TEXT("no eye"),[](FS47ScriptAction& X){X.Path.Reset();}},
+   {TEXT("three eyes"),[](FS47ScriptAction& X){const FS47ScriptPoint First=X.Path[0];X.Path.Add(First);}},
+   {TEXT("no point"),[](FS47ScriptAction& X){X.Point=FS47ScriptPoint();}},
+   {TEXT("held 0.5 s"),[](FS47ScriptAction& X){X.Secs=.5;}},
+   {TEXT("held 31 s"),[](FS47ScriptAction& X){X.Secs=31;}},
+   {TEXT("fov 15"),[](FS47ScriptAction& X){X.Fov=15;}},
+   {TEXT("fov 95"),[](FS47ScriptAction& X){X.Fov=95;}},
+   {TEXT("fov2 10"),[](FS47ScriptAction& X){X.Fov2=10;}},
+   {TEXT("in 0.2 s"),[](FS47ScriptAction& X){X.In=.2;}},
+   {TEXT("out 4 s"),[](FS47ScriptAction& X){X.Out=4;}},
+   {TEXT("an eye on the point"),[](FS47ScriptAction& X){X.Path[1]=X.Point;X.Path[1].X+=.2;}},
+   {TEXT("eyes 250 m apart"),[](FS47ScriptAction& X){X.Path[1].X=X.Path[0].X+250;}},
+   {TEXT("an eye under the ground"),[](FS47ScriptAction& X){X.Path[0].Up=-1;}},
+   {TEXT("a point 301 m up"),[](FS47ScriptAction& X){X.Point.Up=301;}}};
+  FString Let;
+  for(const FRule& Rule:Rules){FS47Script B=Two;Rule.Spoil(B.Actions[0]);if(Lint(B).Num()==0)Let+=FString(Rule.What)+TEXT(" | ");}
+  Check(Let.IsEmpty(),TEXT("SHOT: the lint refuses each rule on its own")+(Let.IsEmpty()?FString():TEXT(": let through ")+Let));
+  // An older file, without a shot: read and written as before, nothing of the shot's in it.
+  const FString Old=TEXT("{\"version\":1,\"id\":\"old\",\"name\":\"old\",\"enabled\":false,\"repeat\":\"once\",\"trigger\":{},\"actions\":[{\"at\":0,\"do\":\"look\",\"secs\":1.5,\"point\":{\"x\":4,\"z\":5}},{\"at\":2,\"do\":\"toast\",\"text\":\"Wind.\",\"secs\":4}]}");
+  FS47Script O1,O2;
+  const bool bOld=Read(Old,O1,Why)&&Read(Write(O1),O2,Why);
+  const FString W1=Write(O1);
+  Check(bOld&&Write(O2)==W1&&!W1.Contains(TEXT("\"fov\""))&&!W1.Contains(TEXT("\"eye\""))&&!W1.Contains(TEXT("\"in\""))&&!W1.Contains(TEXT("\"out\""))&&!Write(Sample()).Contains(TEXT("\"fov\""))
+   &&O1.Actions.Num()==2&&FMath::IsNearlyEqual(O1.Actions[0].Secs,1.5)&&FMath::IsNearlyEqual(O1.Length(),6.),TEXT("SHOT: an older file without a shot reads and writes as before, with nothing of the shot's in it"));
+  // The example that comes with the game: there, and switched off.
+  const FString Example=FPaths::ProjectContentDir()/TEXT("Director/scripted/example_shot_array.json");
+  FString Text;
+  if(FFileHelper::LoadFileToString(Text,*Example))
+  {
+   FS47Script E;
+   const bool bOk=Read(Text,E,Why);
+   Check(bOk&&!E.bEnabled&&Lint(E).Num()==0&&E.Actions.ContainsByPredicate([](const FS47ScriptAction& X){return X.Do==ES47ScriptAct::Shot&&X.Path.Num()==2;}),TEXT("SHOT: the shot example reads, keeps to the limits, has a moving shot, and is off"));
+  }
+  else Lines.Add(TEXT("NOTE scripts: the shot example is not in this build (Content/Director/scripted)"));
+ }
  return bAll;
 }

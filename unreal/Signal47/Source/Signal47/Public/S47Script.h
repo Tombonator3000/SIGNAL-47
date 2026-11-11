@@ -23,7 +23,7 @@
 // Points are road-local metres (x east, z south), the land's one frame (S47OpenLand, S47EventPlaces), so a script works whichever
 // area the player is in. Up is metres above the ground there.
 
-enum class ES47ScriptAct : uint8 { Figure, Sky, Sound, Dish, Fault, Line, Toast, Note, Evidence, Look, Wait, Count };
+enum class ES47ScriptAct : uint8 { Figure, Sky, Sound, Dish, Fault, Line, Toast, Note, Evidence, Look, Wait, Shot, Count };
 enum class ES47ScriptRepeat : uint8 { Once, Nightly, Always };
 
 struct FS47ScriptPoint
@@ -70,10 +70,13 @@ struct FS47ScriptAction
  //   evidence  Kind the finding id; Text
  //   look      Point; Secs the turn takes
  //   wait      Secs; bFlag: until the player looks at Point instead, at most Secs
+ //   shot      SHOT-BEAT-01 (S47Shot.h): Path[0] the eye, Path[1] a second eye it moves to (optional); Point what it looks at; Fov
+ //             degrees, Fov2 at the end (0: the same); Secs held, In and Out the ease from and back onto the player's view
  FString Kind,Who,Text,Title;
  TArray<FS47ScriptPoint> Path;
  FS47ScriptPoint Point;
  double Secs=0,Speed=1,Gain=1,Az=26,El=40,Slew=9;
+ double Fov=60,Fov2=0,In=.6,Out=.8; // the shot's (SHOT-BEAT-01); not written for any other kind
  bool bFlag=false;
  int32 Index=-1;
 };

@@ -1,0 +1,22 @@
+{
+	"version": 1,
+	"id": "example_shot_array",
+	"name": "The array turns (a director shot)",
+	"enabled": false,
+	"repeat": "once",
+	"trigger":
+	{
+		"nights": [2, 0],
+		"hours": [23, 4],
+		"place": "array",
+		"radius": 150,
+		"conditions": [
+			{ "if": "outdoors" }
+		]
+	},
+	"actions": [
+		{ "at": 0, "do": "dish", "az": 26, "el": 32, "slew": 4, "hold": 25 },
+		{ "at": 1, "do": "shot", "eye": { "x": 34, "z": -318, "up": 1.8 }, "eye2": { "x": 30, "z": -326, "up": 2.2 }, "point": { "x": 18, "z": -370, "up": 6 }, "fov": 55, "fov2": 38, "secs": 8, "in": 1, "out": 1.2 },
+		{ "at": 12, "do": "toast", "text": "Every dish has turned the same way.", "secs": 4 }
+	]
+}

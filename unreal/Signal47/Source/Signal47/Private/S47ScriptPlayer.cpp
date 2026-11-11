@@ -17,6 +17,7 @@
 #include "S47OpenLand.h"
 #include "S47PaleBody.h"
 #include "S47Radio.h"
+#include "S47Shot.h"
 #include "S47Sky.h"
 #include "S47SkyVisitors.h"
 #include "S47Taken.h"
@@ -183,6 +184,7 @@ void FS47ScriptPlayer::AddDevLines()
  // D46-20261110 (D46-11): the event scripts' lines are there in any Freeform night, not only a developer's run.
  if(Beats)Beats->AddDevLines();
  if(bLinesAdded||!M||!M->DevEvents||!DevAllowed(M))return;
+ S47Shot::AddDevLine(M); // SHOT-BEAT-01: the F10 group "Director shot" (it looks for itself whether it is there)
  static const TCHAR* const Group=TEXT("Director scripts");
  bLinesAdded=true;
  // The menu outlives a session: its lines are added once.
@@ -382,7 +384,7 @@ void FS47ScriptPlayer::RestoreDishes()
 
 bool FS47ScriptPlayer::EffectsLive() const
 {
- return Look.bLive||DishHold.bLive||SkyLeft>0||OmenLeft>0||Figures.ContainsByPredicate([](const FFigure& F){return F.bLive;});
+ return (Shot&&Shot->Live())||Look.bLive||DishHold.bLive||SkyLeft>0||OmenLeft>0||Figures.ContainsByPredicate([](const FFigure& F){return F.bLive;});
 }
 
 void FS47ScriptPlayer::ClearEffects()
@@ -395,6 +397,7 @@ void FS47ScriptPlayer::ClearEffects()
  Figures.Reset();
  if(Bodies)for(bool& U:Bodies->bInUse)U=false;
  Look=FLook();
+ if(Shot)Shot->Stop(); // SHOT-BEAT-01: the camera as it was before the shot, also mid-shot
  RestoreDishes();
  DishHold=FDishHold();
  if(bSkyStarted&&M&&M->SkyVisitors)M->SkyVisitors->DevFormationStop();
@@ -407,6 +410,7 @@ void FS47ScriptPlayer::Step(double Dt)
 {
  if(!M)return;
  AddDevLines();
+ if(Shot)Shot->Tick(); // SHOT-BEAT-01: a shot that is over gives the walker its camera back (outside the walker's frame)
  FS47FreeformSession* F=Session();
  if(!F){if(bRun)StopRun(TEXT("left Freeform"));if(Beats&&Beats->Live())Beats->Stop();return;}
  if(F->Held()||Dt<=0)return; // a menu, a paper, a held scene: the timeline waits where it is
@@ -585,6 +589,22 @@ void FS47ScriptPlayer::Fire(const FS47ScriptAction& A)
   Run.Hold=FMath::Max(0.,A.Secs);Run.bHoldLook=A.bFlag&&A.Point.bSet;Run.HoldAt=A.Point;
   Log(FString::Printf(TEXT("%.1f s%s"),A.Secs,Run.bHoldLook?TEXT(", or until looked at"):TEXT("")));
   break;
+ case ES47ScriptAct::Shot:
+ {
+  // SHOT-BEAT-01: the eyes and the point in the area the player is in, each its Up over the ground there (as Look's point); the
+  // player is never moved. A refused shot is one line and the timeline goes on.
+  if(A.Path.IsEmpty()||!A.Point.bSet){UE_LOG(LogS47Script,Display,TEXT("S47: script shot skipped (no eye or no point)"));break;}
+  FS47ShotSpec Spec;
+  Spec.EyeA=WorldOf(A.Path[0]);Spec.EyeB=A.Path.Num()>1?WorldOf(A.Path[1]):Spec.EyeA;Spec.Target=WorldOf(A.Point);
+  Spec.FovA=A.Fov;Spec.FovB=A.Fov2>0?A.Fov2:A.Fov;
+  Spec.Secs=A.Secs;Spec.In=A.In;Spec.Out=A.Out;
+  Spec.bMove=A.Path.Num()>1||Spec.FovB!=Spec.FovA;
+  if(!Shot)Shot=MakeShared<FS47ShotCamera>(M);
+  FString Why;
+  if(Shot->Start(Spec,Why))Log(FString::Printf(TEXT("%d eye%s, %.0f to %.0f degrees, %.1f s"),A.Path.Num(),A.Path.Num()>1?TEXT("s"):TEXT(""),Spec.FovA,Spec.FovB,Spec.Secs));
+  else UE_LOG(LogS47Script,Display,TEXT("S47: script shot skipped (%s)"),*Why);
+  break;
+ }
  default:break;
  }
 }
