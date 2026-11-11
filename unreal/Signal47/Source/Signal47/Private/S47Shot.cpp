@@ -1,4 +1,6 @@
 #include "S47Shot.h"
+#include "UnrealClient.h"
+#include "Misc/CommandLine.h"
 #include "S47CameraMoment.h"
 #include "S47DevEvents.h"
 #include "S47Flow.h"
@@ -296,6 +298,8 @@ bool S47Shot::Contract(US47Main* M,double Dt)
   const double Miss=FMath::PointDistToSegment(Eye,S.EyeA,S.bMove?S.EyeB:S.EyeA);
   if(Miss>.25)return Finish(false,FString::Printf(TEXT("(c) the camera eye %.2f %.2f %.2f is %.2f m off the shot's"),Eye.X,Eye.Y,Eye.Z,Miss));
   UE_LOG(LogS47Shot,Display,TEXT("S47: director shot contract: mid-shot held, player still, eye %.2f m from the shot's"),Miss);
+  // a picture of what the shot shows, next to the contract's other proof
+  if(FString Dir;FParse::Value(FCommandLine::Get(),TEXT("S47DevEventsContract="),Dir,false)&&!Dir.IsEmpty())FScreenshotRequest::RequestScreenshot(Dir/TEXT("director-shot-mid.png"),false,false);
   R.Stage=2;R.At=R.T;
   return false;
  }
