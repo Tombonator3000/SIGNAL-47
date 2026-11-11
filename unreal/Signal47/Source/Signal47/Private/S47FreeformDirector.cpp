@@ -15,6 +15,7 @@
 #include "S47HighwayUfo.h"
 #include "S47Freeform.h"
 #include "S47Happenings.h"
+#include "S47EventScript.h"
 #include "S47WeekCase.h"
 #include "S47CaseFieldTests.h"
 #include "S47RoomLights.h"
@@ -902,6 +903,14 @@ void FS47FreeformDirector::Apply()
   {
    M->Freeform->Field->TriggerServiceFault();
    if(!M->Freeform->Field->HasArrayFault()){Finish(false);return;}
+   // N1110: the quiet, the relay and the answering gear are its script's; the old start was silent, so nothing stands in for it
+   FS47EventCtx Fault;S47EventScript::Play(M,TEXT("s03_failure"),Fault);
+  }
+  // N1110: the steps above the station: the night goes still first, so the code holds the first step back while the script plays (the old timer if it cannot)
+  if(Event==TEXT("roof_steps"))
+  {
+   FS47EventCtx Roof;Roof.Points.Add(TEXT("roof"),Anchor);
+   if(S47EventScript::Play(M,TEXT("roof_steps"),Roof))SoundAt=3.5;
   }
   if(Event==TEXT("feeder_fault"))M->Freeform->SetPowerFault(true);
   if(Event==TEXT("service_presence")&&Stage==0)
@@ -1266,6 +1275,7 @@ void FS47FreeformDirector::StepOwed()
   bOwed=false;const auto* Def=Definition(Id);if(!Def)return;
   const FString Key=M->Freeform->HasFinding(Id)?FString(Id)+FString::Printf(TEXT(".day%d"),M->Freeform->Day()):FString(Id);
   M->Freeform->RecordEvidence(Key,Def->Finding);Changed();
+  if(FCString::Strcmp(Id,TEXT("s03_failure"))==0){FS47EventCtx Back;S47EventScript::Play(M,TEXT("s03_failure_mended"),Back);} // N1110: the finding stays the code's
  };
  Mended(bOwedArray,M->Freeform->Field&&M->Freeform->Field->HasArrayFault(),TEXT("s03_failure"));
  Mended(bOwedFeeder,M->Freeform->PowerFault(),TEXT("feeder_fault"));
@@ -1520,12 +1530,16 @@ void FS47FreeformDirector::Step(double Dt)
  if(Event==TEXT("quiet_zone")&&M->Audio)
  {const bool Inside=Near(Anchor,5);M->Audio->HoldRoomTone(Inside?.15f:1.f);if(Stage==0&&Inside){Stage=1;Changed();}else if(Stage==1&&!Inside){Stage=2;Changed();}}
  if(Event==TEXT("roof_steps")&&Age>=6&&Near(FVector(9,0,0),8)&&!M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos))
- {bSeen=true;Stage=1;}
+ {
+  // N1110: once, when the player first goes out under the steps; the script is the yard's quiet and the steps going on (nothing if it cannot play)
+  if(Stage==0){FS47EventCtx Yard;Yard.Points.Add(TEXT("roof"),Anchor);S47EventScript::Play(M,TEXT("roof_steps_yard"),Yard);}
+  bSeen=true;Stage=1;
+ }
  // The low lights' visits are of uneven length, written with each one.
  if(Age>(Event==TEXT("dusk_orb")?FMath::Min(Def->Duration,DuskOrb.VisitSeconds()):Def->Duration)&&Event!=TEXT("observer")&&Event!=TEXT("service_presence")&&Event!=TEXT("feeder_presence")&&Event!=TEXT("array_presence"))
  {
   if(Def->Action==TEXT("service")||Def->Action==TEXT("feeder")){Finish(false);return;} // leave actual unresolved hardware state intact
-  if(Event==TEXT("roof_steps")){Finish(bSeen);return;}
+  if(Event==TEXT("roof_steps")){if(bSeen){FS47EventCtx Over;S47EventScript::Play(M,TEXT("roof_steps_end"),Over);}Finish(bSeen);return;} // N1110: the finding is Finish's, key unchanged
   Finish(bPhoto||bCompared||(Event==TEXT("quiet_zone")&&Stage==2));
  }
 }

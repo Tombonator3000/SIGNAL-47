@@ -194,6 +194,38 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
   Check(bNoGates,TEXT("N1110-5: the twelve scripts add no gates of their own (the rhythm, the tiers and the code's rules are as they were)"));
  }
 
+ // ---- N1110: roof_steps and s03_failure, the Director's two, in stages ----
+ {
+  const TCHAR* const Ids[]={TEXT("roof_steps"),TEXT("roof_steps_yard"),TEXT("roof_steps_end"),TEXT("s03_failure"),TEXT("s03_failure_mended")};
+  int32 DirSnaps=0;bool bFive=true,bNoGate=true,bNoFind=true;
+  for(const TCHAR* Id:Ids)
+  {
+   const FS47EventScript* S=Built.Find(Id);
+   bFive&=S!=nullptr&&Wired().Contains(FString(Id));
+   if(!S)continue;
+   DirSnaps+=CountOf(*S,ES47Beat::CameraSnap);bNoGate&=!S->Gates.Any()&&S->bEnabled;
+   bNoFind&=CountOf(*S,ES47Beat::Evidence)==0; // the findings (keys roof_steps and s03_failure) stay the Director's own
+  }
+  Check(bFive,TEXT("N1110: the five Director stages are wired and built in"));
+  Check(bNoFind,TEXT("N1110: roof_steps and s03_failure keep their finding keys in the code (no evidence beat in any stage)"));
+  Check(DirSnaps<=1,TEXT("N1110: at most one camera snap across roof_steps and s03_failure (none here: nothing is earned)"));
+  Check(bNoGate,TEXT("N1110: the five add no gates of their own"));
+  for(const TCHAR* Id:{TEXT("roof_steps"),TEXT("roof_steps_yard"),TEXT("s03_failure")})
+  {
+   const FS47EventScript* S=Built.Find(Id);
+   Check(S&&S->Beats.Num()>=3&&S->Beats[0].Do==ES47Beat::Silence&&S->Beats[0].At==0&&CountOf(*S,ES47Beat::Silence)==1&&First(*S,ES47Beat::Light),FString::Printf(TEXT("%s: the night goes still first, and the gear answers"),Id));
+  }
+  if(const FS47EventScript* S=Built.Find(TEXT("roof_steps_yard")))
+  {
+   int32 Steps=0;bool bAt=true;for(const FS47Beat& B:S->Beats)if(B.Do==ES47Beat::Sound){++Steps;bAt&=B.Point==TEXT("roof")&&B.Name==TEXT("stepConcrete0");}
+   Check(Steps==3&&bAt&&PointsOf(TEXT("roof_steps_yard")).Contains(TEXT("roof")),TEXT("roof_steps_yard: three steps heard at the roof point"));
+  }
+  if(const FS47EventScript* S=Built.Find(TEXT("s03_failure")))
+  {
+   Check(CountOf(*S,ES47Beat::Sound)==2&&First(*S,ES47Beat::Printer)&&CountOf(*S,ES47Beat::Thought)==1,TEXT("s03_failure: two relay clicks in the rack, the printer and one thought"));
+  }
+ }
+
  // ---- every file it reads: parses, known beats, clean; a wired one as it is built in, or said ----
  int32 Files=0;
  for(const FString& Dir:ReadDirs())

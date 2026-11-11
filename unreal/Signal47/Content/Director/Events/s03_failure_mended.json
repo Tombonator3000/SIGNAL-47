@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "id": "s03_failure_mended",
+  "name": "The dish is back on the array",
+  "notes": "N1110. Played by S47FreeformDirector when the service fault has been mended. The finding is the code's own (key s03_failure). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 1, "do": "thought", "text": "The array is answering again.", "secs": 3.5, "if": ["in_saro"] }
+  ]
+}

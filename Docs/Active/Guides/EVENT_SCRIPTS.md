@@ -14,7 +14,7 @@ Et hendelsesmanus er én JSON-fil per hendelse, `unreal/Signal47/Content/Directo
 | Frittstående, egne hendelser med figurer, himmel og antenner | `Content/Director/scripted/*.json` (Regissørverktøyet, F10 «Director scripts») | Ja |
 | F10-linjer | `S47DevFreeform.cpp`, `S47HappeningsDev.cpp`, `S47DevEvents.cpp`; nå også F10 «Event scripts» | – |
 
-Koblet nå: `array_burst`, `town_blackout` og `hood_warm` (nattens hendelser i `S47Happenings`), og fra N1110 de tre kameramomentene `eyes_window`, `beam_figure` og `dish_lights` (se eget avsnitt). Fire av de skumleste hendelsene har fått flere slag (avsnittet «Fire hendelser i flere trinn», N1110-5). `roof_steps` og `s03_failure` ligger i `S47FreeformDirector`, som en annen agent eier i dag. De kobles i en senere runde på samme måte: koden gir ord og punkter, og manuset står for slagene. Det samme gjelder resten av hendelsene.
+Koblet nå: `array_burst`, `town_blackout` og `hood_warm` (nattens hendelser i `S47Happenings`), og fra N1110 de tre kameramomentene `eyes_window`, `beam_figure` og `dish_lights` (se eget avsnitt). Fire av de skumleste hendelsene har fått flere slag (avsnittet «Fire hendelser i flere trinn», N1110-5). `roof_steps` og `s03_failure` (i `S47FreeformDirector`) er koblet i trinn fra N1110 (se tabellen under). Koden gir ord og punkter, og manuset står for slagene. Det samme gjelder resten av hendelsene.
 
 ## Slik leses det
 
@@ -91,8 +91,13 @@ Hendelsene `horizon_figure`, `figure_near`, `landing` og `car_light` (alle i `S4
 | | `landing_logged` (bare arrayet så det) | fire pip, skriveren fra 0,9 s, linje og tanke for den som er i bygget; funn | `{az}` `{spread}` `{landing_night}` |
 | `car_light` (fare) | `car_light` (lyset over bilen; stopp og knall i koden) | stillhet 14 s, brum 44 Hz, utstyret svarer, to tanker | – |
 | | `car_light_end` (borte) | funn med utfall; tanke | `{outcome}` |
+| `roof_steps` (Direktøren, N1110) | `roof_steps` (skrittene begynner; koden holder første skritt tilbake 3,5 s) | 0 s stillhet 6 s; 0,4 s brum 50 Hz; 2,5 s utstyret svarer svakt; 4 s tanke inne | – |
+| | `roof_steps_yard` (spilleren går ut under dem, én gang) | 0 s stillhet; tre skritt på taket; utstyret svarer; tanke ute | punkt `roof` |
+| | `roof_steps_end` (borte, og bare hvis de ble hørt eller sett) | utstyret svarer svakt; tanke | – |
+| `s03_failure` (Direktøren, N1110) | `s03_failure` (feilen tar en parabol) | 0 s stillhet 4 s; to rele-klikk i racket; skriveren; utstyret svarer; tanke inne | – |
+| | `s03_failure_mended` (reparert) | tanke på SARO | – |
 
-Et forced landing (F10) som ingen så bruker den gamle koden for pip og funn. Ordene er korte setninger koden bygger: `{seen}` er det som ble sett i rekkefølge (eller skrittene når man ikke så noe), `{end}` hvordan det endte (med mellomrom først), `{outcome}` hva spilleren gjorde (med mellomrom først). F10 «Event scripts» → «Run: <id>» spiller hvert trinn med prøveord. Selvtesten kontrollerer funnnøklene og tekstene, stillheten først, de tre skrittene, snappen (ett sted), pip og skriver og at ingen har egne porter.
+Et forced landing (F10) som ingen så bruker den gamle koden for pip og funn. Ordene er korte setninger koden bygger: `{seen}` er det som ble sett i rekkefølge (eller skrittene når man ikke så noe), `{end}` hvordan det endte (med mellomrom først), `{outcome}` hva spilleren gjorde (med mellomrom først). F10 «Event scripts» → «Run: <id>» spiller hvert trinn med prøveord. Funnene for `roof_steps` og `s03_failure` (nøklene `roof_steps` og `s03_failure`, med dagsuffiks) skrives fortsatt av Direktøren (`Finish` og reparasjonen), ikke av manusene, og ingen av de fem trinnene har kamerasnapp (ingenting er fortjent). Uten manus (ingen løper) gjør koden det den gjorde før: `s03_failure` var stille, og skrittene kommer på sin gamle timer. Selvtesten kontrollerer funnnøklene og tekstene, stillheten først, de tre skrittene, snappen (ett sted), pip og skriver og at ingen har egne porter.
 
 ## Stillhet før, flimmer under (N1110)
 

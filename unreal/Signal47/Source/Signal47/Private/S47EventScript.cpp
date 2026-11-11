@@ -285,7 +285,8 @@ const TArray<FString>& Wired()
 {
  static const TArray<FString> L={TEXT("array_burst"),TEXT("town_blackout"),TEXT("hood_warm"),TEXT("eyes_window"),TEXT("beam_figure"),TEXT("dish_lights"),
   TEXT("horizon_figure"),TEXT("horizon_figure_gone"),TEXT("figure_near"),TEXT("figure_near_steps"),TEXT("figure_near_close"),TEXT("figure_near_light"),TEXT("figure_near_end"),
-  TEXT("landing_warning"),TEXT("landing_seen_log"),TEXT("landing_logged"),TEXT("car_light"),TEXT("car_light_end")};
+  TEXT("landing_warning"),TEXT("landing_seen_log"),TEXT("landing_logged"),TEXT("car_light"),TEXT("car_light_end"),
+  TEXT("roof_steps"),TEXT("roof_steps_yard"),TEXT("roof_steps_end"),TEXT("s03_failure"),TEXT("s03_failure_mended")}; // N1110: the Director's two
  return L;
 }
 const TArray<FString>& WordsOf(const FString& Id)
@@ -296,8 +297,8 @@ const TArray<FString>& WordsOf(const FString& Id)
 }
 const TArray<FString>& PointsOf(const FString& Id)
 {
- static const TArray<FString> Truck={TEXT("truck")},Eyes={TEXT("eyes")},Figure={TEXT("figure")},Lights={TEXT("lights")},None;
- return Id==TEXT("hood_warm")?Truck:Id==TEXT("eyes_window")?Eyes:Id==TEXT("beam_figure")||Id==TEXT("figure_near_steps")||Id==TEXT("figure_near_close")||Id==TEXT("figure_near_light")?Figure:Id==TEXT("dish_lights")?Lights:None;
+ static const TArray<FString> Truck={TEXT("truck")},Eyes={TEXT("eyes")},Figure={TEXT("figure")},Lights={TEXT("lights")},Roof={TEXT("roof")},None;
+ return Id==TEXT("hood_warm")?Truck:Id==TEXT("eyes_window")?Eyes:Id==TEXT("beam_figure")||Id==TEXT("figure_near_steps")||Id==TEXT("figure_near_close")||Id==TEXT("figure_near_light")?Figure:Id==TEXT("dish_lights")?Lights:Id==TEXT("roof_steps_yard")?Roof:None;
 }
 const TArray<TPair<FString,FString>>& BuiltIn()
 {
@@ -655,7 +656,7 @@ bool FS47EventBeats::DevRun(const FString& Id,FString& Why)
  // (N1110: a point a camera moment looks at is put six metres ahead, so that the snap is seen to turn)
  if(M->Player)for(const FString& P:S47EventScript::PointsOf(Id))
  {
-  const bool bAhead=P==TEXT("eyes")||P==TEXT("figure")||P==TEXT("lights");
+  const bool bAhead=P==TEXT("eyes")||P==TEXT("figure")||P==TEXT("lights")||P==TEXT("roof");
   const FVector Ahead=bAhead?FVector(-FMath::Sin(M->Player->Yaw)*6,P==TEXT("lights")?4.:.6,-FMath::Cos(M->Player->Yaw)*6):FVector::ZeroVector;
   Ctx.Points.Add(P,FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z)+Ahead);
  }

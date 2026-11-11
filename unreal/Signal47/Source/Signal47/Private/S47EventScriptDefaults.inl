@@ -253,4 +253,73 @@ static const TCHAR* const S47EventScriptBuiltIn[][2]={
     { "at": 0.6, "do": "thought", "text": "The light is gone. It is just the road and the dark again.", "secs": 4.5 }
   ]
 })S47JSON")},
+ {TEXT("roof_steps"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "roof_steps",
+  "name": "Slow steps on the roof",
+  "notes": "N1110. Played by S47FreeformDirector when the steps begin above the station (night, SARO). The night goes still first, a low hum sits under it, and the gear answers faintly. The code keeps the steps themselves (it holds them back about 3.5 s so the quiet comes first), the report and the finding. The yard stage is roof_steps_yard, the end roof_steps_end. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 6, "level": 0.05 },
+    { "at": 0.4, "do": "tone", "hz": 50, "secs": 5, "gain": 0.025, "wave": "sine" },
+    { "at": 2.5, "do": "light", "kind": "gear", "strength": 0.2, "secs": 2 },
+    { "at": 4, "do": "thought", "text": "Footsteps overhead. Slow ones.", "secs": 4, "if": ["indoors"] }
+  ]
+})S47JSON")},
+ {TEXT("roof_steps_yard"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "roof_steps_yard",
+  "name": "Out in the yard, the steps above go on",
+  "notes": "N1110. Played by S47FreeformDirector once, when the player has gone out into the yard under the roof while the steps are still going. Point: roof (where they are). No view is taken from the player. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 5, "level": 0.04 },
+    { "at": 0.4, "do": "sound", "sound": "stepConcrete0", "point": "roof", "gain": 0.4, "lp": 1800 },
+    { "at": 1.2, "do": "light", "kind": "gear", "strength": 0.3, "secs": 2.5 },
+    { "at": 1.6, "do": "sound", "sound": "stepConcrete0", "point": "roof", "gain": 0.35, "lp": 1800 },
+    { "at": 2.9, "do": "sound", "sound": "stepConcrete0", "point": "roof", "gain": 0.3, "lp": 1800 },
+    { "at": 3.8, "do": "thought", "text": "Somebody is walking up there. I do not see anybody.", "secs": 4, "if": ["outdoors"] }
+  ]
+})S47JSON")},
+ {TEXT("roof_steps_end"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "roof_steps_end",
+  "name": "The roof goes quiet",
+  "notes": "N1110. Played by S47FreeformDirector when the steps stop, only if the player was outside or close enough to have heard them. The finding is the code's own (key roof_steps, unchanged). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0.5, "do": "light", "kind": "gear", "strength": 0.15, "secs": 1.5 },
+    { "at": 2, "do": "thought", "text": "Nothing is walking up there now.", "secs": 4 }
+  ]
+})S47JSON")},
+ {TEXT("s03_failure"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "s03_failure",
+  "name": "A dish drops off the array",
+  "notes": "N1110. Played by S47FreeformDirector when the service fault takes a dish (SARO). The code picks the dish, sets the fault and keeps the repair, the work order and the finding (key s03_failure, written when it is mended). The night goes still, two relay clicks in the rack, the printer, the gear answers. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 4, "level": 0.05 },
+    { "at": 0.8, "do": "sound", "sound": "rack_switch", "pos": [-3, 1, 1], "gain": 0.3 },
+    { "at": 1.5, "do": "sound", "sound": "rack_switch", "pos": [-3, 1, 1], "gain": 0.22 },
+    { "at": 1.6, "do": "light", "kind": "gear", "strength": 0.35, "secs": 2 },
+    { "at": 2.2, "do": "printer", "gain": 0.25, "stop": 2 },
+    { "at": 3.5, "do": "thought", "text": "That was a relay letting go. Something has dropped off the array.", "secs": 4.5, "if": ["indoors"] }
+  ]
+})S47JSON")},
+ {TEXT("s03_failure_mended"),TEXT(R"S47JSON({
+  "version": 1,
+  "id": "s03_failure_mended",
+  "name": "The dish is back on the array",
+  "notes": "N1110. Played by S47FreeformDirector when the service fault has been mended. The finding is the code's own (key s03_failure). Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 1, "do": "thought", "text": "The array is answering again.", "secs": 3.5, "if": ["in_saro"] }
+  ]
+})S47JSON")},
 };

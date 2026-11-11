@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "id": "s03_failure",
+  "name": "A dish drops off the array",
+  "notes": "N1110. Played by S47FreeformDirector when the service fault takes a dish (SARO). The code picks the dish, sets the fault and keeps the repair, the work order and the finding (key s03_failure, written when it is mended). The night goes still, two relay clicks in the rack, the printer, the gear answers. Words: {clock} {day} {night}.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 4, "level": 0.05 },
+    { "at": 0.8, "do": "sound", "sound": "rack_switch", "pos": [-3, 1, 1], "gain": 0.3 },
+    { "at": 1.5, "do": "sound", "sound": "rack_switch", "pos": [-3, 1, 1], "gain": 0.22 },
+    { "at": 1.6, "do": "light", "kind": "gear", "strength": 0.35, "secs": 2 },
+    { "at": 2.2, "do": "printer", "gain": 0.25, "stop": 2 },
+    { "at": 3.5, "do": "thought", "text": "That was a relay letting go. Something has dropped off the array.", "secs": 4.5, "if": ["indoors"] }
+  ]
+}
