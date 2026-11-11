@@ -1,4 +1,5 @@
 #include "S47StoryDirector.h"
+#include "S47StoryScene.h"
 #include "S47Main.h"
 #include "S47Freeform.h"
 #include "S47Script.h"
@@ -30,7 +31,10 @@ namespace S47StoryDirectorLocal
  }
 }
 
-FS47StoryDirector::FS47StoryDirector(US47Main* Main):M(Main),Runner(MakeUnique<FS47EventBeats>(Main)){}
+FS47StoryDirector::FS47StoryDirector(US47Main* Main):M(Main),Runner(MakeUnique<FS47EventBeats>(Main)),Scene(MakeUnique<FS47StoryScene>(Main))
+{
+ Scene->OnFlag=[this](const FString& F){SetFlag(F);};
+}
 
 FS47StoryDirector::~FS47StoryDirector()
 {
@@ -182,6 +186,9 @@ bool FS47StoryDirector::Load(const S47J::FObj& Saved)
   if(S47Script::CleanId(Id)!=Id||Id.IsEmpty()||!FMath::IsFinite(T)||T<0||Played<0)continue;
   if(!Pending.ContainsByPredicate([&Id](const FPending& P){return P.Id==Id;}))Pending.Add(FPending{Id,T,Played});
  }
+ // Step 5 (absent in older saves: no scene): the scene under way, taken up again.
+ const S47J::FObj* SceneSaved=nullptr;
+ if(Scene&&Saved->TryGetObjectField(TEXT("scene"),SceneSaved)&&SceneSaved)Scene->Load(*SceneSaved);
  return bAt;
 }
 
@@ -196,6 +203,7 @@ void FS47StoryDirector::Stop()
  Pending.Reset();
  ObjectiveLine.Reset();
  ClockAt=-1;ClockWaited=0;
+ if(Scene)Scene->Stop();
  SetHold(false);
 }
 
@@ -232,6 +240,7 @@ void FS47StoryDirector::Tick(double Dt)
   StartPending();
   if(Runner)Runner->Step(Dt);
  }
+ if(Scene)Scene->Tick(Dt);
  StepClock(Dt);
  SetHold(M!=nullptr&&Busy());
 }
@@ -254,6 +263,8 @@ S47J::FObj FS47StoryDirector::Save() const
  if(Runner)for(const FS47EventBeats::FProgress& P:Runner->Progress())Keep(P.Id,P.T,P.Next);
  for(const FPending& P:Pending)Keep(P.Id,P.T,P.Next);
  if(Under.Num())O->SetArrayField(TEXT("scripts"),Under);
+ // Step 5: the scene under way (the pack's own save: its scene, line, pending reply and flags).
+ if(Scene&&Scene->Busy())O->SetObjectField(TEXT("scene"),Scene->Save());
  return O;
 }
 
@@ -307,6 +318,12 @@ FS47StoryDirector* FS47StoryDirector::Of(const US47Main* Main)
  return Main->StoryDirector.Get();
 }
 
+bool FS47StoryDirector::UsePhone(const US47Main* Main)
+{
+ const FS47StoryDirector* D=Of(Main);
+ return D&&D->Scene&&D->Scene->UsePhone();
+}
+
 bool FS47StoryDirector::Holds(const US47Main* Main)
 {
  const FS47StoryDirector* D=Of(Main);
@@ -340,7 +357,7 @@ double FS47StoryDirector::ClockPushFor(double Clock,double AtLeast)
 
 bool FS47StoryDirector::Busy() const
 {
- return Pending.Num()>0||ClockAt>=0||(Runner&&Runner->Live()>0);
+ return Pending.Num()>0||ClockAt>=0||(Runner&&Runner->Live()>0)||(Scene&&Scene->Busy());
 }
 
 int32 FS47StoryDirector::RunningCount() const
@@ -370,6 +387,13 @@ FString FS47StoryDirector::Apply(const FS47Beat& B,const FString& Text)
   if(B.AtLeast<8.)return TEXT("clock: no hour");
   ClockAt=FMath::Max(ClockAt,B.AtLeast);ClockWaited=0;
   return TEXT("clock to at least ")+S47StoryDirectorLocal::HourText(ClockAt);
+ case ES47Beat::Scene:
+ {
+  // Step 5: one scene of the EveningShift pack on Freeform's telephone, walkie or radio (S47StoryScene.h).
+  FString Why;
+  if(!Scene)return TEXT("scene left out: no host");
+  return Scene->Begin(B.Name,Why)?TEXT("scene starts: ")+B.Name:TEXT("scene not started: ")+B.Name+TEXT(" (")+Why+TEXT(")");
+ }
  case ES47Beat::Objective:
   ObjectiveLine=Text.TrimStartAndEnd();
   return ObjectiveLine.IsEmpty()?FString(TEXT("objective cleared")):TEXT("objective: ")+ObjectiveLine;
@@ -725,6 +749,16 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
    FPaths::NormalizeDirectoryName(StoryDir);FPaths::CollapseRelativeDirectories(StoryDir);
    Check(!S47EventScript::ReadDirs().Contains(StoryDir)&&!S47EventScript::Find(TEXT("evening_handover")),TEXT("STORY-4: Freeform's event folders do not read the story's scripts"));
   }
+ }
+ { // Step 5: the scene beat
+  const FS47EventScript* Handover=FindScript(TEXT("evening_handover"));
+  const bool bScenes=Handover&&Handover->Beats.ContainsByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Scene&&Bt.Name==TEXT("D01_HANDOVER");});
+  FS47EventScript Bad;Bad.Id=TEXT("story_scene_probe");Bad.Name=TEXT("probe");
+  FS47Beat Sc;Sc.Do=ES47Beat::Scene;Sc.Name=TEXT("D01_HANDOVER");Bad.Beats.Add(Sc);
+  FS47EventScript Unknown=Bad;Unknown.Beats[0].Name=TEXT("NO_SUCH_SCENE");
+  const bool bLint=S47EventScript::Lint(Bad).Num()>0&&S47EventScript::LintStory(Unknown).Num()>0;
+  Check(bScenes&&bLint,TEXT("STORY-5: evening_handover plays the handover as a scene; Freeform's lint refuses a scene beat, the story's refuses an unknown scene"));
+  OK&=FS47StoryScene::SelfTest(Lines);
  }
  return OK;
 }

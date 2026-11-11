@@ -347,7 +347,10 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal,bool bOneNi
  if(!Places)Places=MakeShared<FS47Places>(M);Places->Begin(S47J::Obj(Saved,TEXT("places")));
  if(!EventPlaces)EventPlaces=MakeShared<FS47EventPlaces>(M);EventPlaces->Begin(S47J::Obj(Saved,TEXT("eventPlaces")));
  if(!Balloon)Balloon=MakeShared<FS47Balloon>(M);Balloon->Begin(S47J::Obj(Saved,TEXT("balloon"))); // D48-20261110 (after Places: it stands where the place does)
- if(!Predecessor)Predecessor=MakeShared<FS47Predecessor>(M);Predecessor->Begin(S47J::Obj(Saved,TEXT("predecessor")),Saved.IsValid(),DayNumber);
+ // STORY-ON-FREEFORM-01 (Tom 11 Nov): the Story player is Reyes, and Freeform comes after Story, when Reyes is gone. On a Story night his
+ // disappearance's aftermath (the predecessor: his locker, Dale and Ward on the vanished Reyes, his mail) is not there yet.
+ if(M&&M->Flow&&M->Flow->StoryNight())Predecessor.Reset();
+ else{if(!Predecessor)Predecessor=MakeShared<FS47Predecessor>(M);Predecessor->Begin(S47J::Obj(Saved,TEXT("predecessor")),Saved.IsValid(),DayNumber);}
  if(!Tips)Tips=MakeShared<FS47RadioTips>(M);Tips->Begin(S47J::Obj(Saved,TEXT("tips")));
  if(!TownUse)TownUse=MakeShared<FS47TownUse>(M);TownUse->Begin(S47J::Obj(Saved,TEXT("townUse")));
  if(!TownSites)TownSites=MakeShared<FS47TownSites>(M);TownSites->Begin();
@@ -4483,7 +4486,7 @@ bool FS47FreeformSession::Use(const FString& Id)
  }
  if(Id==TEXT("printer")){Feedback.Empty();if(!CollectChart())Changed(Feedback.IsEmpty()?TEXT("No paper waiting. ")+NextAction():Feedback);return true;}
  if(Id==TEXT("binder")||Id==TEXT("excBinder")||Id==TEXT("serviceRecord")){OpenArchive();return true;}
- if(Id==TEXT("phone")||Id==TEXT("recPhone")){if(Director&&Director->Use(TEXT("ff:phone")))return true;if(Predecessor&&Predecessor->UsePhone())return true;Changed(TEXT("SARO operations line. No scheduled call. Incoming messages are retained at the telex."));return true;}
+ if(Id==TEXT("phone")||Id==TEXT("recPhone")){if(FS47StoryDirector::UsePhone(M))return true; /* STORY-ON-FREEFORM-01 step 5: a Story night's call */ if(Director&&Director->Use(TEXT("ff:phone")))return true;if(Predecessor&&Predecessor->UsePhone())return true;Changed(TEXT("SARO operations line. No scheduled call. Incoming messages are retained at the telex."));return true;}
  if(Fatigue&&Fatigue->Use(Id))return true; // the coffee (FATIGUE-20261108)
  return Director&&Director->Use(Id);
 }

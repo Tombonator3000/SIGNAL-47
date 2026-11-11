@@ -16,6 +16,7 @@
 #include "S47Radio.h"
 #include "S47ScriptPlayer.h"
 #include "S47StoryDirector.h"
+#include "S47StoryScene.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
 #include "S47UI.h"
@@ -34,7 +35,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47EventScript,Log,All);
 
 namespace S47EventScriptLocal
 {
- const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake"),TEXT("camera_snap"),TEXT("silence"),TEXT("tube"),TEXT("flag"),TEXT("start"),TEXT("clock"),TEXT("objective")};
+ const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake"),TEXT("camera_snap"),TEXT("silence"),TEXT("tube"),TEXT("flag"),TEXT("start"),TEXT("clock"),TEXT("objective"),TEXT("scene")};
  // Besides the scripted events' conditions (S47Script::CondKinds): in the SARO building, and the scene's area by name.
  // STORY-ON-FREEFORM-01 (step 4): and the story's flags, read by every script but let through only by the story store's lint.
  bool OwnCond(const FString& If){return If==TEXT("in_saro")||If==TEXT("area")||S47EventScript::StoryOnlyCond(If);}
@@ -89,7 +90,7 @@ namespace S47EventScriptLocal
   const FString Do=S47J::Str(J,TEXT("do"));
   if(!S47EventScript::BeatFrom(Do,B.Do)){Why=FString::Printf(TEXT("beat \"%s\" is not known"),*Do);return false;}
   B.At=S47J::Num(J,TEXT("at"));
-  B.Name=B.Do==ES47Beat::Sound?S47J::Str(J,TEXT("sound")):B.Do==ES47Beat::Map?S47J::Str(J,TEXT("place")):S47J::Str(J,TEXT("node"));
+  B.Name=B.Do==ES47Beat::Sound?S47J::Str(J,TEXT("sound")):B.Do==ES47Beat::Map?S47J::Str(J,TEXT("place")):B.Do==ES47Beat::Scene?S47J::Str(J,TEXT("scene")):S47J::Str(J,TEXT("node"));
   B.Kind=B.Do==ES47Beat::Tone?S47J::Str(J,TEXT("wave"),TEXT("square")):S47J::Str(J,TEXT("kind"));
   B.Who=S47J::Str(J,TEXT("who"));B.Text=S47J::Str(J,TEXT("text"));B.Key=S47J::Str(J,TEXT("key"));B.Point=S47J::Str(J,TEXT("point"));
   FVector V;
@@ -163,7 +164,7 @@ const TArray<FString>& BeatNames()
  return L;
 }
 
-bool StoryOnlyBeat(ES47Beat B){return B==ES47Beat::Flag||B==ES47Beat::Start||B==ES47Beat::Clock||B==ES47Beat::Objective;}
+bool StoryOnlyBeat(ES47Beat B){return B==ES47Beat::Flag||B==ES47Beat::Start||B==ES47Beat::Clock||B==ES47Beat::Objective||B==ES47Beat::Scene;}
 bool StoryOnlyCond(const FString& If){return If==TEXT("story_flag")||If==TEXT("no_story_flag");}
 
 bool Read(const FString& Text,FS47EventScript& Out,FString& Why)
@@ -273,6 +274,7 @@ static TArray<FString> LintAs(const FS47EventScript& S,TArray<FString>* Warnings
    Need(B.Script.IsEmpty()||(S47Script::CleanId(B.Script)==B.Script&&B.Script!=S.Id),TEXT("script is another story script's id"));
    break;
   case ES47Beat::Clock:Need(B.AtLeast>=8,TEXT("needs at_least, \"HH:MM\""));break;
+  case ES47Beat::Scene:Need(FS47StoryScene::Known(B.Name),TEXT("needs scene, a scene id of the EveningShift pack (Narrative/EveningShift)"));break; // STORY-ON-FREEFORM-01 (step 5)
   case ES47Beat::Tube:Need((B.Tube>=2&&B.Tube<=7&&B.Next==0)||(B.Tube<0&&B.Next>=1&&B.Next<=6),TEXT("needs tube, 2 to 7, or next, 1 to 6, not both (tubes 0 and 1 are the working light and are never put out)"));break; // N1110
   default:break;
   }
@@ -677,6 +679,7 @@ void FS47EventBeats::Fire(const FS47Beat& B,const FRun& R)
  case ES47Beat::Start:
  case ES47Beat::Clock:
  case ES47Beat::Objective:
+ case ES47Beat::Scene:
  {
   // STORY-ON-FREEFORM-01 (step 4): the story's own beats are the story director's; without a Story night they do nothing.
   FS47StoryDirector* Story=FS47StoryDirector::Of(M);

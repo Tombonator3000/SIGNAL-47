@@ -56,7 +56,7 @@ class FS47CameraMoment;
 // seed, the same each night it is asked), if (conditions). Asked by the night's happenings (FS47Happenings::StartEvent) before the
 // rhythm, never for an F10 start.
 
-enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Silence, Tube, Flag, Start, Clock, Objective, Count };
+enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Silence, Tube, Flag, Start, Clock, Objective, Scene, Count };
 
 struct FS47Beat
 {

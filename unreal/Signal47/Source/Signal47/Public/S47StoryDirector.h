@@ -3,6 +3,7 @@
 #include "S47Json.h"
 #include "S47EventScript.h"
 class US47Main;
+class FS47StoryScene;
 
 // STORY-ON-FREEFORM-01, step 3 (Docs/Design/Story/STORY_PA_FREEFORM_2026-11-11.md): the story director's skeleton. NEW STORY is a
 // Freeform session marked as Story (US47Flow::StoryNight); this sits on top of it and does nothing in any other session. It holds a
@@ -86,6 +87,9 @@ public:
  // Starts a story script on the next tick. False with why: not in the store, or already running or waiting.
  bool StartScript(const FString& Id,FString& Why);
  bool Busy() const;
+ // Step 5: the story's telephone call is the player's to pick up (the OPS "phone"); true when it took the use.
+ static bool UsePhone(const US47Main* Main);
+ FS47StoryScene* SceneHost() const{return Scene.Get();}
  int32 RunningCount() const;
  // F10's group "Story (director)", shown on a Story night only (FS47DevEvents::AddStory).
  void AddDevLines();
@@ -126,6 +130,7 @@ private:
  bool Load(const S47J::FObj& Saved);
  // Step 4.
  TUniquePtr<FS47EventBeats> Runner;
+ TUniquePtr<FS47StoryScene> Scene; // step 5: the scene beat's host (S47StoryScene.h)
  struct FPending{FString Id;double T=0;int32 Next=0;};
  TArray<FPending> Pending;     // started on the next tick: from an act, a start beat, F10 or a save
  FString ObjectiveLine;
