@@ -198,7 +198,8 @@ void FS47FreeformJourneyTest::Step(double Dt)
   const FString Picked=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
   if(!Check((Picked==TEXT("ff:service")||Picked==TEXT("field:S-03")),FString(TEXT("eye ray reaches the existing S-03 cable cabinet from standing ground; picked="))+Picked))return;
   FScreenshotRequest::RequestScreenshot(Root/TEXT("service-reachable.png"),true,false);
-  M->Player->OnUse(Picked);M->Player->OnUse(Picked);
+  // N1110: one use now inspects, isolates and opens the hatch (stage 2 to 4); a second would already seat the relay in stock
+  M->Player->OnUse(Picked);
   if(!Check(W.ServiceStage()==4,TEXT("existing cabinet isolates and opens before relay exchange")))return;
   Go(93);return;
  }
@@ -212,8 +213,9 @@ void FS47FreeformJourneyTest::Step(double Dt)
  {
   if(Age-At<.5)return;F.Director->Stop();PlaceAt(TEXT("ff:service"));
   if(!Check(W.ServiceStage()==4&&W.InventoryCount(TEXT("relay"))==2,TEXT("Continue keeps cabinet open and spare unconsumed")))return;
-  W.Use(TEXT("ff:service"));W.Use(TEXT("ff:service"));
-  if(!Check(W.ServiceStage()==6&&W.InventoryCount(TEXT("relay"))==1,TEXT("local isolation, cover and relay exchange consume one real spare")))return;
+  // N1110: seating the relay is one use (stage 4 to 5, one spare used); closing the hatch and asking for the test is the next single action
+  W.Use(TEXT("ff:service"));
+  if(!Check(W.ServiceStage()==5&&W.InventoryCount(TEXT("relay"))==1,TEXT("local isolation, cover and relay exchange consume one real spare")))return;
   int32 I=0;for(;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==TEXT("S-03"))break;
   if(!Check(I<M->Web->DishCount(),TEXT("S-03 actual encoder found")))return;InitialAz=M->Web->DishAz(I);
   W.Use(TEXT("ff:service"));if(!Check(W.ServiceStage()==7&&!F.CompleteServiceGuide(),TEXT("actual movement starts; unfinished service cannot be archived")))return;Go(10);return;
