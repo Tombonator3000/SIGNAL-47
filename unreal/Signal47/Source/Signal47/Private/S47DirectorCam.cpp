@@ -378,16 +378,17 @@ namespace S47DirectorCamLocal
    static FS47ScriptPoint Logged;
    if(Logged.X!=T.Point.X||Logged.Z!=T.Point.Z){Logged=T.Point;const FVector C=At(T.Point);UE_LOG(LogS47DirectorCam,Display,TEXT("S47: director mode draws the trigger at %.0f %.0f %.0f (UE cm), %d outline points"),C.X,C.Y,C.Z,S47Script::Outline(T,32).Num());}
    const FColor Amber(255,176,32);
+   const float Far=float(FMath::Max(1.,FVector::Dist(At(T.Point),Wk->GetActorLocation())/2500.)); // (line widths are world centimetres: wider from far off, so the zone is seen from high up)
    const TArray<FS47ScriptPoint> Ring=S47Script::Outline(T,32);
    const double Tall=T.Height>0?T.Height:2.; // (any height: a low fence, so the outline is seen over rough ground)
    const int32 Posts=T.Shape==ES47ScriptShape::Box?1:8;
    for(int32 I=0;I+1<Ring.Num();++I)
    {
     FS47ScriptPoint A=Ring[I],B=Ring[I+1];
-    DrawDebugLine(World,At(A),At(B),Amber,false,-1.f,0,6.f);
+    DrawDebugLine(World,At(A),At(B),Amber,false,-1.f,0,6.f*Far);
     FS47ScriptPoint A2=A,B2=B;A2.Up+=Tall;B2.Up+=Tall;
-    DrawDebugLine(World,At(A2),At(B2),Amber,false,-1.f,0,T.Height>0?6.f:2.f);
-    if(I%Posts==0)DrawDebugLine(World,At(A),At(A2),Amber,false,-1.f,0,2.f);
+    DrawDebugLine(World,At(A2),At(B2),Amber,false,-1.f,0,(T.Height>0?6.f:2.f)*Far);
+    if(I%Posts==0)DrawDebugLine(World,At(A),At(A2),Amber,false,-1.f,0,2.f*Far);
    }
    DrawDebugPoint(World,At(T.Point),14.f,Amber,false,-1.f);
   }

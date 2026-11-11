@@ -321,7 +321,7 @@ namespace S47ShotStillsLocal
  {
   int32 Stage=0,Phase=0,PhaseFrames=0,Pic=0,Written=0;
   double T=0,At=0,PhaseAt=0,NextTry=0,WantHour=22;
-  bool bDone=false,bRead=false,bFovSaved=false,bDraftSwapped=false;
+  bool bDone=false,bRead=false,bPushed=false,bSettled=false,bFovSaved=false,bDraftSwapped=false;
   FString Dir,Arg;
   FS47Script Script;
   FSheet Sheet;
@@ -656,12 +656,12 @@ bool Step(US47Main* M,double Dt)
   S47DirectorCam::SetOverlay(false);
   S47DirectorCam::SetPose(M,S47Three::ToThree(W->GetActorLocation()),W->Yaw,W->Pitch,0);
   // The clock forward to the hour asked for, as the developer tools push it (never back).
-  FS47FreeformSession& F=*M->Freeform;
-  const double Push=FMath::Fmod(R.WantHour*3600.-FMath::Fmod(F.Clock(),86400.)+86400.,86400.);
-  if(Push>30&&!F.TestAdvance(Push)){UE_LOG(LogS47ShotStills,Display,TEXT("S47: shot stills warning: the clock was not pushed"));}
-  R.Sheet.Clock=S47Script::HourText(FMath::Fmod(F.Clock(),86400.)/3600.);
+  // (pushed only when the first shot's picture is due: the overviews are taken first, in the daylight the session starts in,
+  // so the land under the drawing can be read)
+  R.Sheet.Clock=S47Script::HourText(R.WantHour);
   PlanShots(M,R);
   PlanTrigger(M,R,World,W);
+  R.Pics.StableSort([](const FPic& A,const FPic& B){return A.bOverlay&&!B.bOverlay;});
   if(R.Pics.IsEmpty())return Finish(M,false,TEXT("nothing to take: no shot has an eye and a point, and the trigger's place is not on the list"));
   UE_LOG(LogS47ShotStills,Display,TEXT("S47: shot stills: director mode on, clock %s, %d shots, %d pictures to take"),*R.Sheet.Clock,R.Sheet.Shots.Num(),R.Pics.Num());
   R.Stage=2;R.Phase=0;R.Pic=0;
@@ -675,6 +675,14 @@ bool Step(US47Main* M,double Dt)
   const FString Path=R.Dir/Pc.File;
   if(R.Phase==0)
   {
+   if(!Pc.bOverlay&&!R.bPushed)
+   {
+    R.bPushed=true;
+    FS47FreeformSession& F=*M->Freeform;
+    const double Push=FMath::Fmod(R.WantHour*3600.-FMath::Fmod(F.Clock(),86400.)+86400.,86400.);
+    if(Push>30&&!F.TestAdvance(Push)){UE_LOG(LogS47ShotStills,Display,TEXT("S47: shot stills warning: the clock was not pushed"));}
+    R.Sheet.Clock=S47Script::HourText(FMath::Fmod(F.Clock(),86400.)/3600.);
+   }
    // the camera to the picture's pose; no picture asked for on this frame
    S47DirectorCam::SetOverlay(Pc.bOverlay);
    if(!S47DirectorCam::SetPose(M,Pc.Eye,Pc.Yaw,Pc.Pitch,Pc.Fov))return Finish(M,false,TEXT("the director's camera would not take a pose"));
@@ -685,8 +693,9 @@ bool Step(US47Main* M,double Dt)
   {
    // a moment for the streaming and the exposure: longer for the first picture (the clock has just been pushed) and the overviews
    W->Fov=float(Pc.Fov);
-   const double Need=R.Pic==0?4.:Pc.bOverlay?2.:1.2;
+   const double Need=(R.Pic==0||(R.bPushed&&!R.bSettled))?4.:Pc.bOverlay?2.:1.2;
    if(R.T-R.PhaseAt<Need||R.PhaseFrames<20)return false;
+   if(R.bPushed)R.bSettled=true;
    R.Phase=2;
    return false;
   }
