@@ -62,6 +62,8 @@ public:
  static double ReturnGain(int32 Times);
  static double PhotoGain(double Quality);
  // N1110 (pace, critic 2): the hint comes in a quiet moment (pure): minutes since 18:00 and since Dale's last line.
+ // N1110 (pace, critic 3): Dale's word is not skippable: if the quiet never came it is said anyway after 02:00 on day 3, and at the first quiet moment (the other gates still hold) on day 4 or later.
+ static bool HintForced(int32 Day,double Hour){return Day>HintDay||(Day==HintDay&&Hour>=2&&Hour<5.5);}
  static bool HintQuietEnough(double MinutesIntoNight,double MinutesSinceDale){return MinutesIntoNight>=HintQuiet&&MinutesSinceDale>=HintQuiet;}
  static bool WarnHours(double Hour);     // 18:00 to 05:30
  static bool SabotageHours(double Hour); // 23:30 to 05:00

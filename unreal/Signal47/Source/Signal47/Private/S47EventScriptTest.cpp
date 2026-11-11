@@ -301,7 +301,7 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
   for(const TCHAR* Id:{TEXT("animals_warn_birds"),TEXT("animals_warn_coyote")})
   {
    const FS47EventScript* W=Find(Id);
-   Check(W&&W->Gates.DayFrom==4,FString::Printf(TEXT("%s: from the fourth night"),Id));
+   Check(W&&W->Gates.DayFrom==3,FString::Printf(TEXT("%s: from the third night (N1110 pace, critic 3)"),Id));
   }
   const FS47EventScript* Nt=Find(TEXT("attention_hint_dale_neutral"));
   Check(Nt&&Nt->bEnabled&&Lint(*Nt).Num()==0,TEXT("attention_hint_dale_neutral: there, enabled and clean"));

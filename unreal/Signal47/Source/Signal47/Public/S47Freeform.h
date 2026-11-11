@@ -514,6 +514,10 @@ public:
  // The day a finding was kept on (0: never), and every finding kept on or after a day: what the Ledger reads for its front page.
  int32 FindingDay(const FString& Id) const { return FindingDays.FindRef(Id); }
  TArray<FString> FindingIdsFrom(int32 FromDay) const;
+ // N1110 (pace, critic 3): the night's one big thing. A record is one if it is a taking on this day (taken-<day>-<clock>), the broken rule kept this
+ // day, or the door loop or its chase on this day. The chase, the attention visit, the door loop and a landing the night did not plan wait when one has played.
+ static bool BigThingKey(const FString& Key,int32 Day,int32 KeptDay){return Key.StartsWith(FString::Printf(TEXT("taken-%d-"),Day))||(Key==TEXT("rule-pale-broken")&&KeptDay==Day)||Key==FString::Printf(TEXT("door-loop-d%d"),Day)||Key==FString::Printf(TEXT("door-loop-chase-d%d"),Day);}
+ bool BigThingToday() const{for(const TPair<FString,int32>& K:FindingDays)if(K.Value==DayNumber&&BigThingKey(K.Key,DayNumber,K.Value))return true;return false;}
  bool InTutorial() const { return Tutorial>0; }
  // SPAWN-MAILBOX-20261109: this new game began at the box at the road (US47Flow), so Dr. Ward's letter there is the HUD's first
  // task, before the first shift's OPS. Not saved: a Continue goes on with the tutorial as it was.

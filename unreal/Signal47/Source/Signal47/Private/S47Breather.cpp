@@ -22,6 +22,8 @@ namespace S47BreatherLocal
 {
 	const TCHAR* const BufKey = TEXT("made:breather_draft");
 	const TCHAR* const LoopKey = TEXT("breatherDraft");
+	// N1110 (pace, critic 3): when the odds say not tonight, the player who waited at the gate is not met with nothing: the draft catches for half a second, and a pebble falls inside a moment later. Audio only.
+	constexpr double MissHold = 0.5, PebbleAfter = 1.1, PebbleGain = 0.12;
 	// The uses (S47TownSites' "breather" row names them on its parts).
 	const TCHAR* const UseGate = TEXT("ff:breather:gate");
 	const TCHAR* const UseSign = TEXT("ff:breather:sign");
@@ -276,7 +278,17 @@ void FS47Breather::StepHush(double Dt, bool bAtGate, double Hour)
 	AskedNight = Night;
 	F->TownUse->Note(AskedFlag);  // (N1110: kept with the town, so that a reload does not throw the night's odds again)
 	FString Why;
-	if (!S47EventScript::Allows(M, S47Breather::HushScript, Why)) { UE_LOG(LogS47Breather, Display, TEXT("S47: the Breather: no hush tonight (%s)"), *Why); return; }
+	if (!S47EventScript::Allows(M, S47Breather::HushScript, Why))
+	{
+		UE_LOG(LogS47Breather, Display, TEXT("S47: the Breather: no hush tonight (%s)"), *Why);
+		// (only the odds' miss: the hours, the area and the conditions were fine and the player stood there)
+		if (Why.Contains(TEXT("odds")))
+		{
+			HushAt = 0; HushSecsNow = S47BreatherLocal::MissHold;
+			if (IsValid(M->Audio) && M->Audio->Ctx.IsValid()) { FS47Sound O; O.Gain = float(S47BreatherLocal::PebbleGain); O.Lp = 2400.f; O.Rate = 1.7f; O.When = float(S47BreatherLocal::PebbleAfter); M->Audio->Sfx(TEXT("thudSoft"), O); }
+		}
+		return;
+	}
 	FS47EventCtx Ctx;
 	if (!S47EventScript::Play(M, S47Breather::HushScript, Ctx)) return;
 	HushAt = 0; HushSecsNow = S47Breather::HushSecs();
@@ -323,6 +335,8 @@ bool S47Breather::SelfTest(TArray<FString>& Lines)
 		if (S) for (const FS47Beat& B : S->Beats) { bSilence |= B.Do == ES47Beat::Silence; bKept |= B.Do == ES47Beat::Evidence || B.Do == ES47Beat::Map || B.Do == ES47Beat::CameraSnap || B.Do == ES47Beat::Thought || B.Do == ES47Beat::Line; }
 		Check(bGood && bSilence && !bKept && HushSecs() >= 3 && HushSecs() <= 8, S ? FString::Printf(TEXT("breather_hush.json: full tier, from %.0f:00, odds %.2f, the draft holds %.1f s; no thought, line, finding or mark"), S->Gates.HourFrom, S->Gates.Odds, HushSecs()) : FString(TEXT("breather_hush.json is not in the library")));
 	}
+	Check(S47BreatherLocal::MissHold >= 0.4 && S47BreatherLocal::MissHold <= 0.6 && S47BreatherLocal::PebbleAfter > S47BreatherLocal::MissHold && S47BreatherLocal::PebbleGain > 0 && S47BreatherLocal::PebbleGain <= 0.2,
+		TEXT("N1110 (pace, critic 3): on the odds' miss the draft catches for half a second and a quiet pebble falls inside after it (audio only)"));
 	// Where it stands, and its words.
 	{
 		const S47TownSites::FSite* S = S47TownSites::Find(TEXT("breather"));

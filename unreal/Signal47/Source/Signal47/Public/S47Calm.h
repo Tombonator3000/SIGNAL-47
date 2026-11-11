@@ -33,7 +33,8 @@ public:
 	static bool GapOK(double LastAlarmClock, double Clock) { return Clock - LastAlarmClock >= 20 * 60.; }
 	/** The refrigerator alarm is once a week at most: Day, and the day it last played (0: never) (pure). */
 	static bool FridgeMay(int32 Day, int32 LastDay) { return LastDay <= 0 || Day >= LastDay + 7; }
-	static const TCHAR* ReliefScript() { return TEXT("calm_after"); }
+	// N1110 (pace, critic 3): three variants of the relief, by the day (calm_after for days 1, 4, 7; calm_after_b for 2, 5, 8; calm_after_c for 3, 6, 9).
+	static const TCHAR* ReliefScript(int32 Day = 1) { const int32 K = ((Day % 3) + 3) % 3; return K == 2 ? TEXT("calm_after_b") : K == 0 ? TEXT("calm_after_c") : TEXT("calm_after"); }
 
 	/** Once a frame from FS47Happenings::Step. */
 	void Step(double Dt);

@@ -159,8 +159,8 @@ bool FS47AnimalWarn::SelfTest(TArray<FString>& Lines)
 		bool bGood = S != nullptr && S->bEnabled && S47EventScript::Lint(*S).Num() == 0;
 		int32 Thoughts = 0, Findings = 0, Camera = 0;
 		if (S) for (const FS47Beat& B : S->Beats) { Thoughts += B.Do == ES47Beat::Thought; Findings += B.Do == ES47Beat::Evidence; Camera += B.Do == ES47Beat::CameraSnap; }
-		Check(bGood && Thoughts == 1 && Findings == 1 && Camera == 0 && S->Gates.HourFrom >= 0 && S->Gates.Odds > 0 && S->Gates.Odds <= .25 && S->Gates.DayFrom >= 4 && S->Gates.Tier == ES47Allowed::Hint,
-			K == EKind::Birds ? TEXT("animals_warn_birds: a thought, a finding, night hours, odds of at most a quarter, from the fourth night, no camera") : TEXT("animals_warn_coyote: a thought, a finding, night hours, odds of at most a quarter, from the fourth night, no camera"));
+		Check(bGood && Thoughts == 1 && Findings == 1 && Camera == 0 && S->Gates.HourFrom >= 0 && S->Gates.Odds > 0 && S->Gates.Odds <= .25 && S->Gates.DayFrom == 3 && S->Gates.Tier == ES47Allowed::Hint,
+			K == EKind::Birds ? TEXT("animals_warn_birds: a thought, a finding, night hours, odds of at most a quarter, from the third night, no camera") : TEXT("animals_warn_coyote: a thought, a finding, night hours, odds of at most a quarter, from the third night, no camera"));
 	}
 	return bOk;
 }

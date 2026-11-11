@@ -14,7 +14,7 @@ class US47Main;
 // later. The animals are the ones the game already has (S47Animals); nothing new is saved: a warning not yet followed by its event
 // when a game is loaded is simply asked again.
 //
-// N1110 (pace, critic 2): from the fourth night, the lone one only outside the Director's rest and five game minutes clear of a false alarm.
+// N1110 (pace, critic 2): from the third night (N1110 pace, critic 3), the lone one only outside the Director's rest and five game minutes clear of a false alarm.
 // N1110 (pace): the warnings come from the third night (now the fourth), one time in four (the scripts' odds); on about one night in three the warning comes
 // alone at some quiet moment on foot, with no event after it (Stray, run from Due).
 //

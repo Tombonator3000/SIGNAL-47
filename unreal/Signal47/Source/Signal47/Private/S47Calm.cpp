@@ -103,7 +103,7 @@ void FS47Calm::Step(double Dt)
 		const double Rh = NightHourOf(Clock);
 		if (Rh < 19.5 || Rh > 29.5) { UE_LOG(LogS47Calm, Display, TEXT("S47: calm: no relief in daylight (hour %.1f), %.0f s after the danger"), Rh, Clock - DangerEnd); return; }
 		FS47EventCtx Ctx;
-		if (S47EventScript::Play(M, ReliefScript(), Ctx)) { ++Reliefs; UE_LOG(LogS47Calm, Display, TEXT("S47: calm: the night eases, day %d, %.0f s of the clock after the danger"), F->Day(), Clock - DangerEnd); }
+		if (S47EventScript::Play(M, ReliefScript(F->Day()), Ctx)) { ++Reliefs; UE_LOG(LogS47Calm, Display, TEXT("S47: calm: the night eases, day %d, %.0f s of the clock after the danger"), F->Day(), Clock - DangerEnd); }
 		return;
 	}
 
@@ -171,21 +171,31 @@ bool FS47Calm::SelfTest(TArray<FString>& Lines)
 		Check(bGood && Silence == 1 && FirstSilence == 0 && Thoughts >= 1 && LastThought >= LastSound && Other == 0 && S->Gates.Tier == ES47Allowed::Hint && S->Gates.DayFrom >= 2 && S->Gates.HourFrom >= 0,
 			Id);
 	}
+	// N1110 (pace, critic 3): three variants chosen by the day, each with its own thoughts and its own Dale line (no contractions)
 	{
-		const FS47EventScript* S = S47EventScript::Find(ReliefScript());
-		bool bGood = S && S->bEnabled && S47EventScript::Lint(*S).Num() == 0;
-		bool bDale = false, bThought = false, bFinding = false;
-		int32 Thoughts = 0, Drive = 0, DriveInTruck = 0;
-		if (S) for (const FS47Beat& B : S->Beats)
+		TSet<FString> DaleLines, Thoughts3;
+		bool bAllGood = true;
+		for (int32 Day = 1; Day <= 3; ++Day)
 		{
-			Thoughts += B.Do == ES47Beat::Thought;
-			if (B.Do == ES47Beat::Line && B.Who == TEXT("radio") && B.Text.Contains(TEXT("long drive home"))) { ++Drive; DriveInTruck += B.If.Num() == 1 && B.If[0].If == TEXT("in_truck"); }
-			bDale |= B.Do == ES47Beat::Line && B.Who == TEXT("dale") && B.Text.Contains(TEXT("You still with me?"));
-			bThought |= B.Do == ES47Beat::Thought;
-			bFinding |= B.Do == ES47Beat::Evidence || B.Do == ES47Beat::Map || B.Do == ES47Beat::CameraSnap || B.Do == ES47Beat::Silence;
+			const FString Id = ReliefScript(Day);
+			const FS47EventScript* S = S47EventScript::Find(Id);
+			bool bGood = S && S->bEnabled && S47EventScript::Lint(*S).Num() == 0 && S->Gates.DayFrom == 2 && S->Gates.Tier == ES47Allowed::Hint;
+			bool bDale = false, bThought = false, bFinding = false, bContraction = false;
+			int32 Thoughts = 0, Drive = 0, DriveInTruck = 0;
+			if (S) for (const FS47Beat& B : S->Beats)
+			{
+				Thoughts += B.Do == ES47Beat::Thought;
+				if (B.Do == ES47Beat::Thought) Thoughts3.Add(B.Text);
+				if (B.Do == ES47Beat::Line && B.Who == TEXT("radio") && B.Text.Contains(TEXT("long drive home"))) { ++Drive; DriveInTruck += B.If.Num() == 1 && B.If[0].If == TEXT("in_truck"); }
+				if (B.Do == ES47Beat::Line && B.Who == TEXT("dale")) { bDale = B.Text.EndsWith(TEXT("Over.")); DaleLines.Add(B.Text); bContraction = B.Text.Contains(TEXT("'")); }
+				bThought |= B.Do == ES47Beat::Thought;
+				bFinding |= B.Do == ES47Beat::Evidence || B.Do == ES47Beat::Map || B.Do == ES47Beat::CameraSnap || B.Do == ES47Beat::Silence;
+			}
+			bAllGood &= bGood && bDale && bThought && !bFinding && !bContraction && Thoughts == 3 && Drive == 1 && DriveInTruck == 1;
+			if (!bGood || !bDale || bFinding || bContraction || Thoughts != 3 || Drive != 1 || DriveInTruck != 1) Lines.Add(FString::Printf(TEXT("  (%s is not right)"), *Id));
 		}
-		Check(bGood && bDale && bThought && !bFinding, TEXT("calm_after: night sounds, a calm thought, Dale checks in; no finding, no silence, no camera"));
-		Check(Thoughts == 3 && Drive == 1 && DriveInTruck == 1, TEXT("calm_after: a thought for indoors, outdoors on foot and the truck; the long drive home only in the truck"));
+		Check(bAllGood, TEXT("calm_after (three variants): night sounds, a calm thought for indoors, outdoors on foot and the truck, the long drive home only in the truck, Dale checks in without contractions; no finding, no silence, no camera"));
+		Check(FString(ReliefScript(1)) != FString(ReliefScript(2)) && FString(ReliefScript(2)) != FString(ReliefScript(3)) && FString(ReliefScript(4)) == FString(ReliefScript(1)) && DaleLines.Num() == 3 && Thoughts3.Num() == 9, TEXT("calm_after: the variant turns with the day, and the three differ in all nine thoughts and the three Dale lines"));
 	}
 	{
 		Check(FridgeMay(2, 0) && !FridgeMay(5, 2) && !FridgeMay(8, 2) && FridgeMay(9, 2), TEXT("the refrigerator clunks once a week at most"));

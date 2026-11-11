@@ -1934,7 +1934,7 @@ void FS47Happenings::PlanTonight(int32 Night)
   Draw(TEXT("truck_tracks"),0x5452434bu,3,.15f,23.,5.);
   Draw(TEXT("missing_person"),0x4d495353u,4,.1f,20.,4.);
   Draw(TEXT("cb_stranded"),0x43425354u,2,.28f,20.,4.5);
-  Draw(TEXT("landing"),0x4c414e44u,2,.24f,22.5,5.,bNoLanding&&Night>=4?.6f:0.f);
+  Draw(TEXT("landing"),0x4c414e44u,2,.24f,22.5,5.,bNoLanding&&Night>=5?.6f:0.f);
   Draw(TEXT("stranded_rv"),0x52564e54u,3,.14f,19.5,3.);
  }
  // The night's one danger of these (Tom's critics, 8 November: none of M1's was ever met, and none on foot): a slot at an hour in
@@ -3127,6 +3127,7 @@ bool FS47Happenings::BeginLanding(bool bForced,FString& Why)
  FSpot S=Where(TEXT("landing"),0,Bit(ES47PlaceTrait::Open)|Bit(ES47PlaceTrait::Wash),Bit(ES47PlaceTrait::Town)|Bit(ES47PlaceTrait::Saro)|Bit(ES47PlaceTrait::Indoors)|Bit(ES47PlaceTrait::Array)|Bit(ES47PlaceTrait::People),bForced?250:FMath::Max(180.,350.*NearK),FMath::Max(900.,2800.*NearK),.3f*float(NearK),Serial);
  if(!S.bSet){Why=TEXT("no open ground for it");return false;}
  if(!bForced&&!MayStart(TEXT("landing"))){Why=TEXT("the rhythm says not now");return false;}
+ if(!bForced&&F->BigThingToday()){Why=TEXT("one big thing a night: another has played");return false;} // N1110 (pace, critic 3)
  if(!Prop(TEXT("lander"))){Why=TEXT("nothing to draw it with");return false;}
  // On open ground a little off the place's own point, never on top of a building.
  const double A=FS47NightRhythm::Roll(F->Seed(),F->Day(),0x4c4e4441u)*2*UE_DOUBLE_PI;

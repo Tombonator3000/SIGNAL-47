@@ -2,7 +2,7 @@
   "version": 1,
   "id": "calm_after",
   "name": "The night eases after a danger",
-  "notes": "N1110 (rhythm, item 11; pace). Played by FS47Calm ninety seconds-plus after a danger has ended, eight to ten minutes of the clock (not after a long absence): the wind and a far dog come back gently, one calm thought chosen by where the player is (indoors, outdoors on foot, in the truck), the radio at 1420 AM finds an ordinary program if the player is indoors or in the truck (the long drive home line only in the truck), Dale checks in. No finding, no map mark, no new event. The director's own rest after a danger (rest_after.danger) holds the night meanwhile.",
+  "notes": "N1110 (rhythm, item 11; pace). N1110 (pace, critic 3): three variants, calm_after, calm_after_b and calm_after_c, chosen by the day (FS47Calm::ReliefScript: day modulo three), each with its own thought for indoors, outdoors on foot and the truck and its own Dale line, so the same relief is not heard twice in a row. This is the first (days 1, 4, 7...). Played by FS47Calm ninety seconds-plus after a danger has ended, eight to ten minutes of the clock (not after a long absence): the wind and a far dog come back gently, one calm thought chosen by where the player is (indoors, outdoors on foot, in the truck), the radio at 1420 AM finds an ordinary program if the player is indoors or in the truck (the long drive home line only in the truck), Dale checks in. No finding, no map mark, no new event. The director's own rest after a danger (rest_after.danger) holds the night meanwhile.",
   "enabled": true,
   "gates": { "from_day": 2, "tier": "hint" },
   "beats": [

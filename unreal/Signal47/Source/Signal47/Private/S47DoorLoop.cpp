@@ -39,12 +39,7 @@ namespace S47DoorLoopLocal
  FString Key(int32 Day){return FString::Printf(TEXT("door-loop-d%d"),Day);}
  // N1110-7
  // N1110 (pace, critic 2): a taking (the record taken-<day>-<clock>) or the broken rule has been kept on this day: the night's one big thing is done.
- bool BigThingKey(const FString& Key,int32 Day,const FS47FreeformSession* F){return Key.StartsWith(FString::Printf(TEXT("taken-%d-"),Day))||(Key==TEXT("rule-pale-broken")&&F&&F->FindingDay(Key)==Day);}
- bool BigThingToday(const FS47FreeformSession& F)
- {
-  for(const FString& K:F.FindingIdsFrom(F.Day()))if(BigThingKey(K,F.Day(),&F))return true;
-  return false;
- }
+ // (N1110, critic 3: the check is FS47FreeformSession::BigThingToday now, shared with the chase, the attention visit and the landing.)
  FString ChaseKey(int32 Day){return FString::Printf(TEXT("door-loop-chase-d%d"),Day);}
  const FVector HouseFrame(-24,0,300); // The old house stands in the farm's part of the SARO area (as FS47FarmHouseDoors has it).
  bool Outer(const FString& Name){return Name.StartsWith(TEXT("north"))||Name.StartsWith(TEXT("south"));}
@@ -357,7 +352,7 @@ bool FS47DoorLoop::Gates(FString& Why,bool bDev) const
  const double Clock=F->Clock(),Hour=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;
  if(!S47NightTiers::Allows(ES47Allowed::Full,Hour,FS47FreeformSession::NightOf(Clock))||Hour>=LastHour){Why=TEXT("the full tier only, to half past five");return false;}
  if(F->Director&&(F->Director->DangerTonight()>0||F->Director->Busy())){Why=TEXT("one danger a night");return false;}
- if(S47DoorLoopLocal::BigThingToday(*F)){Why=TEXT("one big thing a night: a taking or a broken rule has played");return false;} // N1110 (pace, critic 2)
+ if(F->BigThingToday()){Why=TEXT("one big thing a night: a taking, a broken rule or a loop has played");return false;} // N1110 (pace, critic 2)
  if(F->Happenings&&F->Happenings->BigLive()){Why=TEXT("the big night is under way");return false;}
  return true;
 }
@@ -725,6 +720,7 @@ bool FS47DoorLoop::ChaseGates(FString& Why,bool bDev) const
  ES47Taker Who{};FString Title;
  if(!Chased(Who,Title)){Why=TEXT("nothing is after the player");return false;}
  if(bDev)return true;
+ if(F->BigThingToday()){Why=TEXT("one big thing a night: another has played");return false;} // N1110 (pace, critic 3)
  if(!F->RulesLive()){Why=TEXT("not a live night");return false;}
  if(F->InTutorial()){Why=TEXT("the first shift");return false;}
  const double Clock=F->Clock(),Hour=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;
@@ -968,7 +964,8 @@ bool FS47DoorLoop::SelfTest(TArray<FString>& Lines)
   Check(MissingMinutes(5,3)==MissingMinutes(5,3),TEXT("the same night, the same missing time"));
  }
  Check(!MayLoop(1,0)&&!MayLoop(2,0)&&!MayLoop(3,0)&&MayLoop(4,0)&&!MayLoop(5,3)&&!MayLoop(9,3)&&MayLoop(10,3),TEXT("N1110: not before the fourth night, at most once a week"));
- Check(S47DoorLoopLocal::BigThingKey(TEXT("taken-5-70200"),5,nullptr)&&!S47DoorLoopLocal::BigThingKey(TEXT("taken-5-70200"),6,nullptr)&&!S47DoorLoopLocal::BigThingKey(TEXT("taken-50-1"),5,nullptr)&&!S47DoorLoopLocal::BigThingKey(TEXT("door-loop-d5"),5,nullptr),TEXT("N1110 (pace): a taking on this day, and only this day, is the night's one big thing"));
+ Check(FS47FreeformSession::BigThingKey(TEXT("taken-5-70200"),5,5)&&!FS47FreeformSession::BigThingKey(TEXT("taken-5-70200"),6,6)&&!FS47FreeformSession::BigThingKey(TEXT("taken-50-1"),5,5)&&FS47FreeformSession::BigThingKey(TEXT("rule-pale-broken"),5,5)&&!FS47FreeformSession::BigThingKey(TEXT("rule-pale-broken"),5,3),TEXT("N1110 (pace): a taking on this day, and only this day, is the night's one big thing"));
+ Check(FS47FreeformSession::BigThingKey(TEXT("door-loop-d5"),5,5)&&FS47FreeformSession::BigThingKey(TEXT("door-loop-chase-d5"),5,5)&&!FS47FreeformSession::BigThingKey(TEXT("door-loop-d4"),5,4)&&!FS47FreeformSession::BigThingKey(TEXT("door-loop-chase-d50"),5,5),TEXT("N1110 (pace, critic 3): the door loop and its chase on this day count as the night's one big thing, for the chase, the visit and a landing too"));
  {
   bool bThree=true;
   for(int32 I=0;I<3;++I)bThree&=S47Script::LintText(S47DoorLoopLocal::FrontDoors[I]).IsEmpty()&&!FString(S47DoorLoopLocal::FrontDoors[I]).IsEmpty()&&(I==0||FCString::Strcmp(S47DoorLoopLocal::FrontDoors[I],S47DoorLoopLocal::FrontDoors[I-1])!=0);

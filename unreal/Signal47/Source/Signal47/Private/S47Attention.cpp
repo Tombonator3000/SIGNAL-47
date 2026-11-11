@@ -311,7 +311,7 @@ void FS47Attention::StepHint(double Hour,int32 Day)
  if(F->Director){FS47RhythmNow Now;F->Director->FillRhythm(Now);if(F->Director->Busy()||Now.RestLeft>0)return;}
  const double Clock=F->Clock(),IntoNight=(Hour>=18?Hour-18:Hour+6)*60.;
  const double SinceDale=M->FieldRadio.IsValid()?(Clock-M->FieldRadio->LastDaleAt())/60.:1e9;
- if(!HintQuietEnough(IntoNight,SinceDale))return;
+ if(!HintQuietEnough(IntoNight,SinceDale)&&!HintForced(Day,Hour))return; // N1110 (pace, critic 3)
  if(!Gated(HintNeutral))return;
  bHintSaid=true;
  Play(HintNeutral);
@@ -402,7 +402,7 @@ void FS47Attention::StepVisitDraw(double Dt,double Hour,int32 Night,int32 Day)
  const FS47EventScript* S=S47EventScript::Find(VisitId);
  if(!VisitHours(Hour,Night,S&&S->Gates.bEarly)){VisitWait=0;return;}
  FString Why;
- if(FS47ScriptPlayer::BigEvent(M,Why)||(F->Taken&&F->Taken->Busy())||!Gated(VisitId))return;
+ if(FS47ScriptPlayer::BigEvent(M,Why)||(F->Taken&&F->Taken->Busy())||F->BigThingToday()||!Gated(VisitId))return; // N1110 (pace, critic 3): one big thing a night
  if((VisitWait+=Dt)<VisitDelay)return;
  VisitWait=0;
  // N1110 (N1110-6): inside with the power on, the visit may come as the door loop instead (S47DoorLoop.h); it is spent the same way.
@@ -577,13 +577,14 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
    {
     const FS47EventScript* Nt=S47EventScript::Find(S47AttentionLocal::HintNeutral);
     if(Nt)Check(Nt->Beats.Num()==4&&Nt->Beats[0].Do==ES47Beat::Line&&!Nt->Beats[0].Text.Contains(TEXT("light"))&&Nt->Beats[2].At-Nt->Beats[0].At>=16&&Nt->Beats[2].Text.Contains(TEXT("hold still")),TEXT("N1110 (pace, critic 2): the neutral hint names no lights, and the lamp line comes 16 s after it"));
+    Check(!HintForced(2,3)&&!HintForced(3,1.9)&&!HintForced(3,20)&&HintForced(3,2)&&HintForced(3,5)&&!HintForced(3,5.6)&&HintForced(4,19),TEXT("N1110 (pace, critic 3): the day-3 hint cannot be skipped: after 02:00 on day 3, and at the first quiet moment from day 4"));
     Check(!HintQuietEnough(9,99)&&!HintQuietEnough(99,9)&&HintQuietEnough(10,10),TEXT("N1110 (pace, critic 2): the hint waits ten game minutes after the night's start and after Dale's last line"));
    }
    if(Hn)Check(Hn->Beats.Num()>0&&Hn->Beats[0].At>=10,TEXT("Dale's hint comes 10 s or more after the warning starts"));
    if(Hn)Check(Hn->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Line&&B.Text.Contains(TEXT("hold still"));}),TEXT("N1110 (pace): Dale's word gives the rule once: kill the lamp and hold still"));
    if(Dg)Check(Dg->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Silence;}),TEXT("the dog warning goes quiet"));
    const FS47EventScript* Tl=S47EventScript::Find(S47AttentionLocal::TellId);
-   if(Tl)Check(Tl->Beats.Num()==1&&Tl->Beats[0].Do==ES47Beat::Silence&&Tl->Beats[0].Secs<=1.5,TEXT("the tell is one second of the night's sound dipping and nothing else"));
+   if(Tl)Check(Tl->Beats.Num()==2&&Tl->Beats[0].Do==ES47Beat::Silence&&Tl->Beats[0].Secs<=1.5&&Tl->Beats[1].Do==ES47Beat::Sound&&Tl->Beats[1].Name.StartsWith(TEXT("dog"))&&Tl->Beats[1].At>=Tl->Beats[0].Secs&&Tl->Beats[1].Gain<=.06&&Tl->Beats[1].Stop>0&&Tl->Beats[1].Stop<=.8,TEXT("the tell is one second of the night's sound dipping, then a very faint far dog for under a second (N1110 pace, critic 3), and nothing else"));
    if(Li)Check(Li->Gates.Areas.Contains(TEXT("saro")),TEXT("the lights over the station are SARO's only"));
   }
   const FS47EventScript* V=S47EventScript::Find(S47AttentionLocal::VisitId);
