@@ -113,7 +113,7 @@ namespace S47EventScriptLocal
   if(B.Do==ES47Beat::Tube){B.Tube=S47J::Int(J,TEXT("tube"),-1);B.Next=S47J::Int(J,TEXT("next"),0);}
   // STORY-ON-FREEFORM-01 (step 4): the story-only beats' own words.
   if(B.Do==ES47Beat::Flag){B.Flag=S47J::Str(J,TEXT("flag"));B.bSet=S47J::Bool(J,TEXT("set"),true);}
-  if(B.Do==ES47Beat::Start){B.Script=S47J::Str(J,TEXT("script"));B.Happening=S47J::Str(J,TEXT("happening"));}
+  if(B.Do==ES47Beat::Start){B.Script=S47J::Str(J,TEXT("script"));B.Happening=S47J::Str(J,TEXT("happening"));B.Event=S47J::Str(J,TEXT("event"));}
   if(B.Do==ES47Beat::Clock&&!FS47StoryDirector::ParseFrom(S47J::Str(J,TEXT("at_least")),B.AtLeast))B.AtLeast=-1;
   return CondsFrom(J,TEXT("if"),B.If,Why)&&CondsFrom(J,TEXT("wait"),B.Wait,Why);
  }
@@ -270,7 +270,7 @@ static TArray<FString> LintAs(const FS47EventScript& S,TArray<FString>* Warnings
   case ES47Beat::Silence:Need(B.Secs>=.5&&B.Secs<=30,TEXT("needs secs, 0.5 to 30: how long the night holds still"));break; // N1110 (level is checked as strength)
   case ES47Beat::Flag:Need(FS47StoryDirector::ValidId(B.Flag),TEXT("needs flag, a story flag's id (a to z, 0 to 9 and _)"));break; // STORY-ON-FREEFORM-01 (step 4)
   case ES47Beat::Start:
-   Need(B.Script.IsEmpty()!=B.Happening.IsEmpty(),TEXT("needs script (a story script) or happening (a night happening), not both"));
+   Need(int32(!B.Script.IsEmpty())+int32(!B.Happening.IsEmpty())+int32(!B.Event.IsEmpty())==1,TEXT("needs one of script (a story script), happening (a night happening) or event (a Freeform Director event)"));
    Need(B.Script.IsEmpty()||(S47Script::CleanId(B.Script)==B.Script&&B.Script!=S.Id),TEXT("script is another story script's id"));
    break;
   case ES47Beat::Clock:Need(B.AtLeast>=8,TEXT("needs at_least, \"HH:MM\""));break;

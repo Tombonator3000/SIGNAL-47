@@ -62,6 +62,11 @@ bool FS47StoryScene::Begin(const FString& Id,FString& Why)
  return true;
 }
 
+void FS47StoryScene::SetContext(const TMap<FString,bool>& Ctx)
+{
+ for(const TPair<FString,bool>& P:Ctx)Pack.SetExternal(P.Key,P.Value);
+}
+
 bool FS47StoryScene::Busy() const
 {
  return Pack.CurrentScene()!=nullptr;

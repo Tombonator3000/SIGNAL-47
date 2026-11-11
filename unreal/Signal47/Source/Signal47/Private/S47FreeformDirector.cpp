@@ -829,6 +829,15 @@ bool FS47FreeformDirector::Force(const FString& Id)
  }
  return Good;
 }
+bool FS47FreeformDirector::StartForStory(const FString& Id,FString& Why)
+{
+ if(!FS47StoryDirector::Of(M)){Why=TEXT("not a Story night");return false;}
+ if(!Definition(Id)){Why=TEXT("no event ")+Id;return false;}
+ if(!Event.IsEmpty()){Why=TEXT("event ")+Event+TEXT(" is under way");return false;}
+ if(!Start(Id,true)){Why=TEXT("the world cannot start it now (area, power, or a panel)");return false;}
+ UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform event %s started for the story"),*Id);
+ return true;
+}
 bool FS47FreeformDirector::TestBegin(const FString& Id)
 {
  if(!M||!M->Flow||!M->Flow->bDevRun||!Start(Id,true))return false;

@@ -42,6 +42,18 @@
         }
       ],
       "max": 7200
+    },
+    {
+      "at": 5,
+      "do": "start",
+      "script": "evening_shift",
+      "wait": [
+        {
+          "if": "story_flag",
+          "flag": "handover_done"
+        }
+      ],
+      "max": 7200
     }
   ]
 }

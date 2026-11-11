@@ -38,6 +38,8 @@ public:
  void Stop();
  S47J::FObj Save() const;
  void Load(const S47J::FObj& Saved);
+ // Step 6: the pack's external (ctx_*) flags from Freeform's world, told by the director each tick. Unknown ids are ignored.
+ void SetContext(const TMap<FString,bool>& Ctx);
  // Called with each story flag a finished scene sets (the director's SetFlag).
  TFunction<void(const FString&)> OnFlag;
 

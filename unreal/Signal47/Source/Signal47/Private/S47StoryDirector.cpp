@@ -1,5 +1,6 @@
 #include "S47StoryDirector.h"
 #include "S47StoryScene.h"
+#include "S47FreeformDirector.h"
 #include "S47Main.h"
 #include "S47Freeform.h"
 #include "S47Script.h"
@@ -240,6 +241,15 @@ void FS47StoryDirector::Tick(double Dt)
   StartPending();
   if(Runner)Runner->Step(Dt);
  }
+ // Step 6: Freeform's world told to the story. The power fault (feeder_fault, or any other) as story flags, its rise and its repair;
+ // the pack's ctx_* flags from the same (S47StoryScene::SetContext). power_fault is set while it lasts, so a save keeps the state.
+ if(M&&M->Freeform)
+ {
+  const bool bFault=M->Freeform->PowerFault();
+  if(bFault&&!HasFlag(TEXT("power_fault")))SetFlag(TEXT("power_fault"));
+  if(!bFault&&HasFlag(TEXT("power_fault"))){ClearFlag(TEXT("power_fault"));SetFlag(TEXT("power_restored"));}
+  if(Scene)Scene->SetContext({{TEXT("ctx_power_available"),!bFault},{TEXT("ctx_trafo_service_ok"),HasFlag(TEXT("power_restored"))},{TEXT("ctx_room_quiet"),!M->ModalOpen()}});
+ }
  if(Scene)Scene->Tick(Dt);
  StepClock(Dt);
  SetHold(M!=nullptr&&Busy());
@@ -376,6 +386,12 @@ FString FS47StoryDirector::Apply(const FS47Beat& B,const FString& Text)
  {
   FString Why;
   if(!B.Script.IsEmpty())return StartScript(B.Script,Why)?TEXT("story script starts: ")+B.Script:TEXT("story script not started: ")+B.Script+TEXT(" (")+Why+TEXT(")");
+  if(!B.Event.IsEmpty())
+  { // step 6: one of Freeform's Director events, started for the story (as F10's Force, without its developer gate)
+   FS47FreeformDirector* Dir=M&&M->Freeform?M->Freeform->Director.Get():nullptr;
+   if(!Dir)return TEXT("event not started: ")+B.Event+TEXT(" (no Freeform director)");
+   return Dir->StartForStory(B.Event,Why)?TEXT("event starts: ")+B.Event:TEXT("event not started: ")+B.Event+TEXT(" (")+Why+TEXT(")");
+  }
   FS47Happenings* Haps=M&&M->Freeform?M->Freeform->Happenings.Get():nullptr;
   if(!Haps)return TEXT("happening not asked for: ")+B.Happening+TEXT(" (no night happenings here)");
   // Asked as the night asks (not forced): its tier, the rhythm, the tutorial and its gates may say no; the reason goes to the log.
@@ -759,6 +775,13 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
   const bool bLint=S47EventScript::Lint(Bad).Num()>0&&S47EventScript::LintStory(Unknown).Num()>0;
   Check(bScenes&&bLint,TEXT("STORY-5: evening_handover plays the handover as a scene; Freeform's lint refuses a scene beat, the story's refuses an unknown scene"));
   OK&=FS47StoryScene::SelfTest(Lines);
+  // Step 6: a start beat's event, and the evening's second script
+  FS47EventScript Ev;Ev.Id=TEXT("story_event_probe");Ev.Name=TEXT("probe");
+  FS47Beat St;St.Do=ES47Beat::Start;St.Event=TEXT("feeder_fault");Ev.Beats.Add(St);
+  FS47EventScript Two=Ev;Two.Beats[0].Script=TEXT("evening_shift");
+  const FS47EventScript* Shift=FindScript(TEXT("evening_shift"));
+  const bool bShift=Shift&&Shift->Beats.ContainsByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Event==TEXT("feeder_fault");})&&S47EventScript::LintStory(*Shift).IsEmpty();
+  Check(S47EventScript::LintStory(Ev).IsEmpty()&&S47EventScript::LintStory(Two).Num()>0&&S47EventScript::Lint(Ev).Num()>0&&bShift,TEXT("STORY-6: start may name a Freeform Director event (one of script, happening, event); Freeform's lint refuses it; evening_shift starts feeder_fault"));
  }
  return OK;
 }

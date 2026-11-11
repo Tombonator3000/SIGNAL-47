@@ -122,6 +122,9 @@ public:
  void RoomLightInput(const FString& Room,int32 Serial,bool bOff);
  FString InspectRoomLight(const FString& Room);
  bool Force(const FString& Id); // explicit developer/test action; still needs a usable world
+ // STORY-ON-FREEFORM-01 step 6: a Story night's beat starts one of the night's events as Force does (past its day and tier rules,
+ // not past a usable world): only with a Story night's director. False with why.
+ bool StartForStory(const FString& Id,FString& Why);
  // FIX-20261110 (Tom, point 2): the next forced flyover or close pass takes the mains as one in play does (a fixture otherwise
  // keeps its older, immediate life). Sag: seconds of dips before it; After: seconds the mains stay out once it has gone.
  void SkyCutNext(double Sag=45,double After=75){bSkyCutNext=true;SkyCutSag=FMath::Max(1.,Sag);SkyCutAfter=FMath::Max(1.,After);}

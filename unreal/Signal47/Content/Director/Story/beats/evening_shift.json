@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "id": "evening_shift",
+  "name": "Story: the evening shift until the power goes",
+  "notes": "STORY-ON-FREEFORM-01 step 6, act evening (first draft, Claude 11 Nov night). Started by evening_handover once handover_done. Routine check (N01_ROUTINE, a ui scene), the evening moves on to 22:30, then Freeform's own feeder_fault takes the power (started for the story: FS47FreeformDirector::StartForStory) and the act waits for its repair (story flag power_restored, set by the director when Freeform's power fault ends). Dale's power calls D11/D12 are left out: their text sends the player to a 'junction station down the gravel turnoff', while Freeform's fault is at the road cabinet (ff:feeder); the pack's text needs that place first.",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 20,
+      "do": "objective",
+      "text": "Check receiver calibration before the survey runs."
+    },
+    {
+      "at": 21,
+      "do": "scene",
+      "scene": "N01_ROUTINE",
+      "wait": [
+        {
+          "if": "in_saro"
+        }
+      ],
+      "max": 900
+    },
+    {
+      "at": 30,
+      "do": "clock",
+      "at_least": "22:30"
+    },
+    {
+      "at": 40,
+      "do": "start",
+      "event": "feeder_fault"
+    },
+    {
+      "at": 41,
+      "do": "objective",
+      "text": "The power is out. Find the fault on the feeder line.",
+      "wait": [
+        {
+          "if": "story_flag",
+          "flag": "power_fault"
+        }
+      ],
+      "max": 120
+    },
+    {
+      "at": 42,
+      "do": "objective",
+      "text": "",
+      "wait": [
+        {
+          "if": "story_flag",
+          "flag": "power_restored"
+        }
+      ],
+      "max": 7200
+    }
+  ]
+}

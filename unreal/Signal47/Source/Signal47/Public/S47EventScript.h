@@ -75,6 +75,7 @@ struct FS47Beat
  // STORY-ON-FREEFORM-01 (step 4), the story-only beats: flag's id and set; start's script or happening; clock's at_least as the
  // night's hour (8 to 32, FS47StoryDirector::ParseFrom; below zero: not given or not HH:MM).
  FString Flag,Script,Happening;
+ FString Event; // step 6: start's Freeform Director event (director.json), started for the story (FS47FreeformDirector::StartForStory)
  bool bSet=true;
  double AtLeast=-1;
  TArray<FS47ScriptCond> If,Wait;
