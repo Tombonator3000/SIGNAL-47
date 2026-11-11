@@ -36,6 +36,14 @@
       "do": "evidence",
       "key": "attention_relay_d{day}",
       "text": "At {clock} one antenna dropped its remote link, and the rack printer logged its junction cabinet at 28 degrees on a warm night. There was frost on the cabinet door."
+    },
+    {
+      "at": 11,
+      "do": "thought",
+      "text": "Two of the ceiling tubes just died. The Caliche shop counter sells them in pairs.",
+      "if": [
+        "in_saro"
+      ]
     }
   ]
 }

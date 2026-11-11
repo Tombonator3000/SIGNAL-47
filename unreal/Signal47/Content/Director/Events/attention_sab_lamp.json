@@ -28,6 +28,14 @@
       "do": "evidence",
       "key": "attention_lamp_d{day}",
       "text": "At {clock} the flashlight went weak all at once. The cells were warm in my hand."
+    },
+    {
+      "at": 12,
+      "do": "thought",
+      "text": "Two more ceiling tubes went out with it. The Caliche shop counter sells them in pairs.",
+      "if": [
+        "in_saro"
+      ]
     }
   ]
 }

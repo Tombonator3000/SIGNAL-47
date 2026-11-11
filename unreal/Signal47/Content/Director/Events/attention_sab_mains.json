@@ -32,7 +32,7 @@
     {
       "at": 174,
       "do": "thought",
-      "text": "Two more of the tubes in here never came back.",
+      "text": "Two more of the tubes in here never came back. The Caliche shop counter sells them in pairs.",
       "if": [
         "in_saro"
       ]

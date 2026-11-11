@@ -35,6 +35,11 @@
       "do": "evidence",
       "key": "attention_visit_held_d{day}",
       "text": "At {clock} something came right over the station and stayed there while the mains were out. The lamps stayed on, I stayed inside, and after a while it went."
+    },
+    {
+      "at": 7,
+      "do": "thought",
+      "text": "It lost interest. Better stay away from those lights for a few days."
     }
   ]
 }

@@ -575,6 +575,15 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
     Check(Tubes==1&&bAfter,TEXT("the mains' tube beat comes after the outage, not in the dark"));
    }
    {
+    // N1110 (attfix): every sabotage that darkens the ceiling points at the shop counter that sells the tubes back, and the lowering rule is said.
+    bool bShop=true;int32 Sabs=0;
+    for(const TCHAR* Id:{TEXT("attention_sab_relay"),TEXT("attention_sab_lamp"),TEXT("attention_sab_truck"),TEXT("attention_sab_mains")})
+     if(const FS47EventScript* Sb=S47EventScript::Find(Id)){++Sabs;bShop&=Sb->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Thought&&B.Text.Contains(TEXT("shop counter"));});}
+    const FS47EventScript* Hv=S47EventScript::Find(S47AttentionLocal::HintVisit);
+    if(Sabs>0)Check(bShop,TEXT("N1110 (attfix): each sabotage's thought names the shop counter that sells the tubes in pairs"));
+    if(Hv)Check(Hv->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Line&&B.Text.Contains(TEXT("lose interest"));}),TEXT("N1110 (attfix): Dale says how it is lowered: leave the lights alone a day or two"));
+   }
+   {
     const FS47EventScript* Nt=S47EventScript::Find(S47AttentionLocal::HintNeutral);
     if(Nt)Check(Nt->Beats.Num()==4&&Nt->Beats[0].Do==ES47Beat::Line&&!Nt->Beats[0].Text.Contains(TEXT("light"))&&Nt->Beats[2].At-Nt->Beats[0].At>=16&&Nt->Beats[2].Text.Contains(TEXT("hold still")),TEXT("N1110 (pace, critic 2): the neutral hint names no lights, and the lamp line comes 16 s after it"));
     Check(!HintForced(2,3)&&!HintForced(3,1.9)&&!HintForced(3,20)&&HintForced(3,2)&&HintForced(3,5)&&!HintForced(3,5.6)&&HintForced(4,19),TEXT("N1110 (pace, critic 3): the day-3 hint cannot be skipped: after 02:00 on day 3, and at the first quiet moment from day 4"));
