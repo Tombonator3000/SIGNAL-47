@@ -92,7 +92,7 @@ Toms eksempler omfatter UFO på himmelen, ku-abduksjon, skikkelser ved trafo og 
 
 ## Nattskift 1. til 2. november 2026
 
-Tom bestilte1. november arbeid fra kl.22:00 til kl.08:00 neste morgen, Europe/Oslo, for å gjennomføre mest mulig av TODO. Prioriter felles fysisk PC-betjening og lysstyring, deretter tydelig utstyrsrespons, etterprøvbare arbeidsrelaterte hendelser og skrekk som reagerer på spillerens handlinger. Se [nattprioriteringene](TODO.md#nattskift-1-november-kl2200-til-2-november-kl0800). Engangsbestillingen er avsluttet 2. november ved fristen kl. 08:00; trådautomasjonen `signal-47-nattskift-22-08` er slettet. Dette var ett nattskift, ikke en stående daglig bestilling. Vanlige prosjektregler om kildevern, reduserte tester, én tung jobb og samlet opprydding gjelder.
+Tom bestilte1. november arbeid fra kl.22:00 til kl.08:00 neste morgen, Europe/Oslo, for å gjennomføre mest mulig av TODO. Prioriter felles fysisk PC-betjening og lysstyring, deretter tydelig utstyrsrespons, etterprøvbare arbeidsrelaterte hendelser og skrekk som reagerer på spillerens handlinger. Se [nattprioriteringene](../Archive/TODO_FERDIG_2026-11-11.md#nattskift-1-november-kl2200-til-2-november-kl0800). Engangsbestillingen er avsluttet 2. november ved fristen kl. 08:00; trådautomasjonen `signal-47-nattskift-22-08` er slettet. Dette var ett nattskift, ikke en stående daglig bestilling. Vanlige prosjektregler om kildevern, reduserte tester, én tung jobb og samlet opprydding gjelder.
 
 ## Freeform-verdensprøve 1. november
 
