@@ -29,6 +29,9 @@
 FS47Script& S47ScriptEditor::Draft(){static FS47Script D;return D;}
 bool& S47ScriptEditor::HaveDraft(){static bool b=false;return b;}
 bool& S47ScriptEditor::Dirty(){static bool b=false;return b;}
+namespace S47ScriptEditorLocal{int32& SelectedRaw(){static int32 I=INDEX_NONE;return I;}}
+int32 S47ScriptEditor::SelectedShot(){return HaveDraft()?S47DirectorCam::ShotOrNone(Draft().Actions,S47ScriptEditorLocal::SelectedRaw()):INDEX_NONE;}
+void S47ScriptEditor::SelectShot(int32 I){S47ScriptEditorLocal::SelectedRaw()=HaveDraft()?S47DirectorCam::ShotOrNone(Draft().Actions,I):INDEX_NONE;}
 
 namespace S47ScriptEditorLocal
 {
@@ -264,6 +267,17 @@ TSharedRef<SWidget> SS47ScriptEditor::BuildTrigger()
   if(!P){Say(TEXT("no place from the list within 400 m"),true);return;}
   Draft().Trigger.Place=P->Id;Draft().Trigger.Point=FS47ScriptPoint();Say(TEXT("place: ")+P->Id+TEXT(", ")+P->Title);Changed();
  })];
+ // DIRECTOR-MODE-01, slice 4: one press from any WHERE to a point of its own where the player stands (road-local, on the ground; the
+ // volume's shape and size as they were). The POINT row's HERE below does the same once there is a point.
+ Where->AddSlot().AutoWidth()[Btn(TEXT("POINT HERE"),[this]
+ {
+  FS47ScriptPoint Here;
+  if(!Player()||!Player()->HereRoad(Here)){Say(TEXT("no player on the land here"),true);return;}
+  FS47ScriptTrigger& Tr=Draft().Trigger;
+  Tr.Place.Reset();Tr.Point=Here;
+  Say(FString::Printf(TEXT("the trigger's point is where you stand: (%.0f, %.0f)"),Here.X,Here.Z));
+  Changed();
+ })];
  if(Draft().Trigger.HasWhere())
  {
   Where->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(12,0,6,0)[Words(TEXT("WITHIN m"),19,2)];
@@ -333,15 +347,37 @@ TSharedRef<SWidget> SS47ScriptEditor::BuildAction(int32 I)
  FS47ScriptAction& A=Draft().Actions[I];
  const auto Act=[I]()->FS47ScriptAction*{return Draft().Actions.IsValidIndex(I)?&Draft().Actions[I]:nullptr;};
  TSharedRef<SVerticalBox> V=SNew(SVerticalBox);
- V->AddSlot().AutoHeight()
- [
-  SNew(SHorizontalBox)
-  +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,6,0)[Words(FString::Printf(TEXT("%d %s AT"),I+1,*FString(S47Script::ActName(A.Do)).ToUpper()),20,1)]
+ // DIRECTOR-MODE-01, slice 4: a shot's row is also the shot list: which shot it is, its timing and lens at a glance, SELECT (the one
+ // the director's camera works on, drawn yellow there) and PREVIEW FROM HERE. The selection follows the rows as they move or go.
+ const bool bShot=A.Do==ES47ScriptAct::Shot;
+ const bool bPicked=bShot&&S47ScriptEditor::SelectedShot()==I;
+ TSharedRef<SHorizontalBox> Head=SNew(SHorizontalBox)
+  +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,6,0)[Words(FString::Printf(TEXT("%s%d %s AT"),bPicked?TEXT("> "):TEXT(""),I+1,*FString(S47Script::ActName(A.Do)).ToUpper()),20,1)]
   +SHorizontalBox::Slot().AutoWidth()[Num(TEXT("s"),A.At,[Act](double X){if(auto* P=Act())P->At=FMath::Max(0.,X);},70)]
-  +SHorizontalBox::Slot().AutoWidth().Padding(8,0,0,0)[Btn(TEXT("UP"),[this,I]{if(I>0){Draft().Actions.Swap(I,I-1);Changed();}})]
-  +SHorizontalBox::Slot().AutoWidth()[Btn(TEXT("DOWN"),[this,I]{if(I+1<Draft().Actions.Num()){Draft().Actions.Swap(I,I+1);Changed();}})]
-  +SHorizontalBox::Slot().AutoWidth()[Btn(TEXT("DEL"),[this,I]{Draft().Actions.RemoveAt(I);Changed();})]
- ];
+  +SHorizontalBox::Slot().AutoWidth().Padding(8,0,0,0)[Btn(TEXT("UP"),[this,I]{if(I>0){const int32 Was=S47ScriptEditor::SelectedShot();Draft().Actions.Swap(I,I-1);S47ScriptEditor::SelectShot(S47DirectorCam::AfterSwap(Was,I,I-1));Changed();}})]
+  +SHorizontalBox::Slot().AutoWidth()[Btn(TEXT("DOWN"),[this,I]{if(I+1<Draft().Actions.Num()){const int32 Was=S47ScriptEditor::SelectedShot();Draft().Actions.Swap(I,I+1);S47ScriptEditor::SelectShot(S47DirectorCam::AfterSwap(Was,I,I+1));Changed();}})]
+  +SHorizontalBox::Slot().AutoWidth()[Btn(TEXT("DEL"),[this,I]
+  {
+   if(!Draft().Actions.IsValidIndex(I))return;
+   const int32 Was=S47ScriptEditor::SelectedShot();
+   Draft().Actions.RemoveAt(I);
+   S47ScriptEditor::SelectShot(S47DirectorCam::AfterRemove(Draft().Actions,Was,I));
+   Changed();
+  })];
+ if(bShot)
+ {
+  const FString Lens=A.Fov2>0&&A.Fov2!=A.Fov?FString::Printf(TEXT("fov %s to %s"),*NumText(A.Fov),*NumText(A.Fov2)):FString::Printf(TEXT("fov %s"),*NumText(A.Fov));
+  const FString Sum=FString::Printf(TEXT("shot %d: from %s s for %s s, %s, %s"),S47DirectorCam::ShotNumber(Draft().Actions,I),*NumText(A.At),*NumText(A.Secs),*Lens,A.Path.Num()>1?TEXT("moves to eye 2"):TEXT("one eye"));
+  Head->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(12,0,6,0)[Words(Sum,19,bPicked?1:2)];
+  Head->AddSlot().AutoWidth()[Btn(bPicked?TEXT("SELECTED"):TEXT("SELECT"),[this,I]{S47ScriptEditor::SelectShot(I);Say(TEXT("selected: the director's camera works on this shot (F8)"));Rebuild();})];
+  Head->AddSlot().AutoWidth()[Btn(TEXT("PREVIEW FROM HERE"),[this,I]
+  {
+   if(!Draft().Actions.IsValidIndex(I))return;
+   S47ScriptEditor::SelectShot(I);
+   PreviewIt(Draft().Actions[I].At);
+  })];
+ }
+ V->AddSlot().AutoHeight()[Head];
  TSharedRef<SHorizontalBox> H=SNew(SHorizontalBox);
  const auto Add=[&H](TSharedRef<SWidget> W){H->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,4,0)[W];};
  const auto Text=[this,&Add,Act](const FString& Hint,const FString& Value,float W){Add(Field(Hint,Value,[Act](const FString& S){if(auto* P=Act())P->Text=S;},W));};
@@ -490,7 +526,9 @@ TSharedRef<SWidget> SS47ScriptEditor::BuildAdd()
    }
    default:break;
    }
-   D.Actions.Add(A);Changed();
+   D.Actions.Add(A);
+   if(A.Do==ES47ScriptAct::Shot)S47ScriptEditor::SelectShot(D.Actions.Num()-1); // DIRECTOR-MODE-01: a new shot is the selected one
+   Changed();
   })];
  return W;
 }
@@ -529,6 +567,7 @@ void SS47ScriptEditor::Select(const FString& Id)
  const FS47Script* S=P?P->Find(Id):nullptr;
  if(!S)return;
  Draft()=*S;HaveDraft()=true;Dirty()=false;
+ S47ScriptEditor::SelectShot(INDEX_NONE);
  const FString* Why=P->Refused().Find(Id);
  Say(Why?TEXT("this one will not play: ")+*Why:TEXT("opened ")+Id,Why!=nullptr);
 }
@@ -542,6 +581,7 @@ void SS47ScriptEditor::NewScript()
  S.bEnabled=false;
  S.Trigger.HourFrom=23;S.Trigger.HourTo=4;
  Draft()=S;HaveDraft()=true;Dirty()=true;
+ S47ScriptEditor::SelectShot(INDEX_NONE);
  Say(TEXT("a new script: give it a name, a trigger and actions, then SAVE"));
 }
 
@@ -556,15 +596,16 @@ void SS47ScriptEditor::SaveIt()
  Rebuild();
 }
 
-void SS47ScriptEditor::PreviewIt()
+void SS47ScriptEditor::PreviewIt(double From)
 {
  FS47ScriptPlayer* P=Player();
  if(!P){Say(TEXT("no script player"),true);return;}
  FString Why;
- if(!P->Preview(S47ScriptEditorLocal::Draft(),Why)){Say(TEXT("not played: ")+Why,true);Rebuild();return;}
+ // DIRECTOR-MODE-01, slice 4: from a shot's start, the actions before it left out (S47DirectorCam::FromTime); 0: the whole draft.
+ if(!P->Preview(From>0?S47DirectorCam::FromTime(S47ScriptEditorLocal::Draft(),From):S47ScriptEditorLocal::Draft(),Why)){Say(TEXT("not played: ")+Why,true);Rebuild();return;}
  // The game has to run for it to play: the panel goes, the draft stays.
  US47Main* Main=M;
- const FString Name=S47ScriptEditorLocal::Draft().Name;
+ const FString Name=S47ScriptEditorLocal::Draft().Name+(From>0?FString::Printf(TEXT(", from %s s"),*S47ScriptEditorLocal::NumText(From)):FString());
  CloseIt();
  if(Main&&Main->UI)Main->UI->Toast(TEXT("Preview: ")+Name+(Why.IsEmpty()?FString():TEXT(" (")+Why+TEXT(")")),4);
 }

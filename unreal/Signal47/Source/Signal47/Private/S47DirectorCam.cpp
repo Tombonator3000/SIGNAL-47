@@ -132,6 +132,17 @@ namespace S47DirectorCamLocal
   N.bEnabled=false;
   N.Trigger.HourFrom=23;N.Trigger.HourTo=4;
   S47ScriptEditor::Draft()=N;S47ScriptEditor::HaveDraft()=true;S47ScriptEditor::Dirty()=true;
+  S47ScriptEditor::SelectShot(INDEX_NONE);
+ }
+
+ bool IsShotAt(const TArray<FS47ScriptAction>& Acts,int32 I){return Acts.IsValidIndex(I)&&Acts[I].Do==ES47ScriptAct::Shot;}
+ int32 ShotCount(const TArray<FS47ScriptAction>& Acts){int32 N=0;for(const FS47ScriptAction& X:Acts)N+=X.Do==ES47ScriptAct::Shot?1:0;return N;}
+ // "shot 2 of 3" for the selected one, by its place among the shots.
+ FString ShotName(int32 I)
+ {
+  if(!S47ScriptEditor::HaveDraft())return FString(TEXT("no shot"));
+  const TArray<FS47ScriptAction>& Acts=S47ScriptEditor::Draft().Actions;
+  return IsShotAt(Acts,I)?FString::Printf(TEXT("shot %d of %d"),S47DirectorCam::ShotNumber(Acts,I),ShotCount(Acts)):FString(TEXT("no shot"));
  }
 
  // The camera's eye as a shot's eye: on the land, 0 to 300 m over it (the lint's). False with Said: nothing to store.
@@ -144,19 +155,27 @@ namespace S47DirectorCamLocal
   return true;
  }
 
- // Key 1: a shot at the end of the draft's timeline, from the camera onto what the crosshair is on (or a point 20 m ahead).
- bool PlaceShot(US47Main* M,FString& Said)
+ // What the crosshair is on (or a point 20 m ahead), as what a shot looks at. False with Said: nothing fit to look at.
+ bool AimHere(US47Main* M,FS47ScriptPoint& At,FString& Said)
  {
   const FState& S=St();
+  if(!FS47ScriptPlayer::RayRoad(M,S.Fly.Eye,S.Fly.Yaw,S.Fly.Pitch,At))
+  {
+   if(!FS47ScriptPlayer::RoadOfWorld(M,S.Fly.Eye+Forward(S.Fly)*20.,At)){Said=TEXT("nothing on the land ahead to look at");return false;}
+   At.Up=FMath::Clamp(FMath::RoundToDouble(At.Up*10)/10,0.,300.);
+  }
+  if(!(FVector::Dist(FS47ScriptPlayer::WorldOfRoad(M,At),S.Fly.Eye)>=S47Shot::LeastReach)){Said=TEXT("the crosshair is on something right at the camera");return false;}
+  return true;
+ }
+
+ // Key 1: a shot at the end of the draft's timeline, from the camera onto what the crosshair is on (or a point 20 m ahead). It is
+ // the selected shot from then on.
+ bool PlaceShot(US47Main* M,FString& Said)
+ {
   FS47ScriptPoint Eye,At;
   FString Why;
   if(!EyeHere(M,Eye,Why)){Said=TEXT("no shot: ")+Why;return false;}
-  if(!FS47ScriptPlayer::RayRoad(M,S.Fly.Eye,S.Fly.Yaw,S.Fly.Pitch,At))
-  {
-   if(!FS47ScriptPlayer::RoadOfWorld(M,S.Fly.Eye+Forward(S.Fly)*20.,At)){Said=TEXT("no shot: nothing on the land ahead to look at");return false;}
-   At.Up=FMath::Clamp(FMath::RoundToDouble(At.Up*10)/10,0.,300.);
-  }
-  if(!(FVector::Dist(FS47ScriptPlayer::WorldOfRoad(M,At),S.Fly.Eye)>=S47Shot::LeastReach)){Said=TEXT("no shot: the crosshair is on something right at the camera");return false;}
+  if(!AimHere(M,At,Why)){Said=TEXT("no shot: ")+Why;return false;}
   EnsureDraft();
   FS47Script& D=S47ScriptEditor::Draft();
   FS47ScriptAction A;
@@ -166,20 +185,21 @@ namespace S47DirectorCamLocal
   A.Point=At;
   A.Fov=55;A.Secs=5;
   D.Actions.Add(A);
+  S47ScriptEditor::SelectShot(D.Actions.Num()-1);
   S47ScriptEditor::Dirty()=true;
-  Said=FString::Printf(TEXT("shot %d at %.1f s from (%.0f, %.0f) +%.1f m"),D.Actions.Num(),A.At,Eye.X,Eye.Z,Eye.Up);
+  Said=FString::Printf(TEXT("%s at %.1f s from (%.0f, %.0f) +%.1f m"),*ShotName(D.Actions.Num()-1),A.At,Eye.X,Eye.Z,Eye.Up);
   return true;
  }
 
- // Key 2: the last shot's second eye here, so that it moves.
+ // Key 2: the selected shot's second eye here, so that it moves (no shot selected: the last one, which is selected then).
  bool PlaceEye2(US47Main* M,FString& Said)
  {
   const FState& S=St();
-  int32 I=INDEX_NONE;
-  if(S47ScriptEditor::HaveDraft())for(int32 K=S47ScriptEditor::Draft().Actions.Num()-1;K>=0;--K)if(S47ScriptEditor::Draft().Actions[K].Do==ES47ScriptAct::Shot){I=K;break;}
+  const int32 I=S47ScriptEditor::HaveDraft()?S47DirectorCam::ShotOrLast(S47ScriptEditor::Draft().Actions,S47ScriptEditor::SelectedShot()):INDEX_NONE;
   if(I==INDEX_NONE){Said=TEXT("no shot to move: place one with 1 first");return false;}
+  S47ScriptEditor::SelectShot(I);
   FS47ScriptAction& A=S47ScriptEditor::Draft().Actions[I];
-  if(A.Path.IsEmpty()){Said=FString::Printf(TEXT("shot %d has no first eye"),I+1);return false;}
+  if(A.Path.IsEmpty()){Said=FString::Printf(TEXT("%s has no first eye"),*ShotName(I));return false;}
   FS47ScriptPoint Eye;
   FString Why;
   if(!EyeHere(M,Eye,Why)){Said=TEXT("no move: ")+Why;return false;}
@@ -188,7 +208,58 @@ namespace S47DirectorCamLocal
   if(A.Point.bSet&&!(FVector::Dist(FS47ScriptPlayer::WorldOfRoad(M,A.Point),S.Fly.Eye)>=S47Shot::LeastReach)){Said=TEXT("no move: on the point the shot looks at");return false;}
   if(A.Path.Num()<2)A.Path.Add(Eye);else A.Path[1]=Eye;
   S47ScriptEditor::Dirty()=true;
-  Said=FString::Printf(TEXT("shot %d moves %.0f m to (%.0f, %.0f) +%.1f m"),I+1,Apart,Eye.X,Eye.Z,Eye.Up);
+  Said=FString::Printf(TEXT("%s moves %.0f m to (%.0f, %.0f) +%.1f m"),*ShotName(I),Apart,Eye.X,Eye.Z,Eye.Up);
+  return true;
+ }
+
+ // Key 5: the selected shot shot again from here: its eye at the camera, looking at what the crosshair is on (its second eye, its
+ // lens and its timing as they were).
+ bool ReshootHere(US47Main* M,FString& Said)
+ {
+  const FState& S=St();
+  const int32 I=S47ScriptEditor::SelectedShot();
+  if(I==INDEX_NONE){Said=TEXT("no shot selected: [ or ] picks one, 1 places one");return false;}
+  FS47ScriptPoint Eye,At;
+  FString Why;
+  if(!EyeHere(M,Eye,Why)){Said=TEXT("not moved: ")+Why;return false;}
+  if(!AimHere(M,At,Why)){Said=TEXT("not moved: ")+Why;return false;}
+  FS47ScriptAction& A=S47ScriptEditor::Draft().Actions[I];
+  if(A.Path.Num()>1&&A.Path[1].bSet)
+  {
+   const double Apart=FVector::Dist(FS47ScriptPlayer::WorldOfRoad(M,A.Path[1]),S.Fly.Eye);
+   if(!(Apart<=S47Shot::MostTravel)){Said=FString::Printf(TEXT("not moved: %.0f m from its second eye, more than %.0f"),Apart,S47Shot::MostTravel);return false;}
+   if(!(FVector::Dist(FS47ScriptPlayer::WorldOfRoad(M,A.Path[1]),FS47ScriptPlayer::WorldOfRoad(M,At))>=S47Shot::LeastReach)){Said=TEXT("not moved: its second eye would be on the point it looks at");return false;}
+  }
+  if(A.Path.IsEmpty())A.Path.Add(Eye);else A.Path[0]=Eye;
+  A.Point=At;
+  S47ScriptEditor::Dirty()=true;
+  Said=FString::Printf(TEXT("%s now from (%.0f, %.0f) +%.1f m onto the crosshair"),*ShotName(I),Eye.X,Eye.Z,Eye.Up);
+  return true;
+ }
+
+ // Key 6: the selected shot deleted; the next shot is selected (or the one before).
+ bool DeleteShot(FString& Said)
+ {
+  const int32 I=S47ScriptEditor::SelectedShot();
+  if(I==INDEX_NONE){Said=TEXT("no shot selected to delete");return false;}
+  const FString Was=ShotName(I);
+  TArray<FS47ScriptAction>& Acts=S47ScriptEditor::Draft().Actions;
+  Acts.RemoveAt(I);
+  S47ScriptEditor::SelectShot(S47DirectorCam::AfterRemove(Acts,I,I));
+  S47ScriptEditor::Dirty()=true;
+  Said=Was+TEXT(" deleted; selected now: ")+ShotName(S47ScriptEditor::SelectedShot());
+  return true;
+ }
+
+ // [ and ]: the shot before or after the selected one, round the end.
+ bool PickShot(int32 Dir,FString& Said)
+ {
+  if(!S47ScriptEditor::HaveDraft()){Said=TEXT("no shots yet: 1 places one");return false;}
+  const int32 I=S47DirectorCam::CycleShot(S47ScriptEditor::Draft().Actions,S47ScriptEditor::SelectedShot(),Dir);
+  if(I==INDEX_NONE){Said=TEXT("no shots yet: 1 places one");return false;}
+  S47ScriptEditor::SelectShot(I);
+  const FS47ScriptAction& A=S47ScriptEditor::Draft().Actions[I];
+  Said=FString::Printf(TEXT("selected %s, at %.1f s for %.1f s%s"),*ShotName(I),A.At,A.Secs,A.Path.Num()>1?TEXT(", moves"):TEXT(""));
   return true;
  }
 
@@ -225,8 +296,10 @@ namespace S47DirectorCamLocal
   const FState& S=St();
   const FString Name=S47ScriptEditor::HaveDraft()?S47ScriptEditor::Draft().Name:FString(TEXT("a new script"));
   const FString Walk=KeyOf(TEXT("forward"))+KeyOf(TEXT("left"))+KeyOf(TEXT("back"))+KeyOf(TEXT("right"));
-  return FString::Printf(TEXT("DIRECTOR MODE: %s. 1 a shot from here, 2 the last shot moves to here, 3 the trigger's point, 4 preview, %s back. %s fly, %s up, %s down, %s fast.%s%s"),
-   *Name,*KeyOf(TEXT("director")),*Walk,*KeyOf(TEXT("jump")),*KeyOf(TEXT("crouch")),*KeyOf(TEXT("run")),S.Last.IsEmpty()?TEXT(""):TEXT(" Last: "),*S.Last);
+  const int32 Sel=S47ScriptEditor::SelectedShot();
+  const FString Picked=Sel==INDEX_NONE?FString(TEXT("no shot selected")):ShotName(Sel)+TEXT(" selected");
+  return FString::Printf(TEXT("DIRECTOR MODE: %s, %s. 1 a new shot from here, [ ] pick a shot, 2 it moves to here, 5 its eye here looking at the crosshair, 6 delete it, 3 the trigger's point, 4 preview, %s back. %s fly, %s up, %s down, %s fast.%s%s"),
+   *Name,*Picked,*KeyOf(TEXT("director")),*Walk,*KeyOf(TEXT("jump")),*KeyOf(TEXT("crouch")),*KeyOf(TEXT("run")),S.Last.IsEmpty()?TEXT(""):TEXT(" Last: "),*S.Last);
  }
 
  // One steady block of text: a caption held on a clock that stands still while it is director mode's text now, and runs out at once
@@ -270,14 +343,55 @@ namespace S47DirectorCamLocal
    }
    DrawDebugPoint(World,At(T.Point),14.f,Amber,false,-1.f);
   }
-  for(const FS47ScriptAction& A:D.Actions)
+  // Slice 4: each shot numbered at its eye (its place among the shots), the selected one yellow and thicker, and a moving shot's
+  // path as the camera will fly it (S47Shot::PoseAt, eased), not a straight line. Whatever is within 1.5 m of the camera is left
+  // out: the camera stands in it, and its lines would cross the whole view.
+  const FVector Cam=Wk->GetActorLocation();
+  const auto Far=[&Cam](const FVector& P){return FVector::Dist(P,Cam)>=150.;};
+  const int32 Sel=S47ScriptEditor::SelectedShot();
+  int32 Number=0;
+  for(int32 I=0;I<D.Actions.Num();++I)
   {
-   if(A.Do!=ES47ScriptAct::Shot||A.Path.IsEmpty()||!A.Path[0].bSet)continue;
+   const FS47ScriptAction& A=D.Actions[I];
+   if(A.Do!=ES47ScriptAct::Shot)continue;
+   ++Number;
+   if(A.Path.IsEmpty()||!A.Path[0].bSet)continue;
+   const bool bSel=I==Sel;
+   const FColor Tint=bSel?FColor::Yellow:FColor::Cyan,Tint2=bSel?FColor::Yellow:FColor::White;
+   const float Thick=bSel?6.f:3.f;
    const FVector Eye=At(A.Path[0]);
-   if(FVector::Dist(Eye,Wk->GetActorLocation())<150.)continue; // (the camera stands in it: its lines would cross the whole view)
-   DrawDebugSphere(World,Eye,35.f,10,FColor::Cyan,false,-1.f,0,3.f);
-   if(A.Point.bSet){DrawDebugLine(World,Eye,At(A.Point),FColor::Cyan,false,-1.f,0,3.f);DrawDebugPoint(World,At(A.Point),14.f,FColor::Cyan,false,-1.f);}
-   if(A.Path.Num()>1&&A.Path[1].bSet){DrawDebugSphere(World,At(A.Path[1]),35.f,10,FColor::White,false,-1.f,0,3.f);DrawDebugLine(World,Eye,At(A.Path[1]),FColor::White,false,-1.f,0,2.f);}
+   const bool bEyeFar=Far(Eye);
+   if(bEyeFar)
+   {
+    DrawDebugSphere(World,Eye,bSel?45.f:35.f,10,Tint,false,-1.f,0,Thick);
+    DrawDebugString(World,Eye+FVector(0,0,70),FString::Printf(TEXT("%s%d"),bSel?TEXT("> "):TEXT(""),Number),nullptr,Tint,0.f,true,bSel?1.6f:1.2f);
+    if(A.Point.bSet)DrawDebugLine(World,Eye,At(A.Point),Tint,false,-1.f,0,Thick);
+   }
+   if(A.Point.bSet)DrawDebugPoint(World,At(A.Point),bSel?20.f:14.f,Tint,false,-1.f);
+   if(A.Path.Num()<2||!A.Path[1].bSet)continue;
+   const FVector Eye2=At(A.Path[1]);
+   if(Far(Eye2))
+   {
+    DrawDebugSphere(World,Eye2,bSel?45.f:35.f,10,Tint2,false,-1.f,0,Thick);
+    DrawDebugString(World,Eye2+FVector(0,0,70),FString::Printf(TEXT("%d end"),Number),nullptr,Tint2,0.f,true,bSel?1.4f:1.f);
+   }
+   FS47ShotSpec Spec;
+   Spec.EyeA=FS47ScriptPlayer::WorldOfRoad(M,A.Path[0]);Spec.EyeB=FS47ScriptPlayer::WorldOfRoad(M,A.Path[1]);
+   Spec.Target=A.Point.bSet?FS47ScriptPlayer::WorldOfRoad(M,A.Point):Spec.EyeB;
+   Spec.FovA=A.Fov;Spec.FovB=A.Fov2>0?A.Fov2:A.Fov;
+   Spec.Secs=A.Secs>0?A.Secs:1.;Spec.In=A.In;Spec.Out=A.Out;Spec.bMove=true;
+   constexpr int32 Samples=12;
+   FVector Prev=S47Three::ToUE(S47Shot::PoseAt(Spec,0).Eye);
+   for(int32 K=1;K<=Samples;++K)
+   {
+    const FVector Next=S47Three::ToUE(S47Shot::PoseAt(Spec,Spec.Secs*K/Samples).Eye);
+    if(Far(Prev)&&Far(Next))
+    {
+     DrawDebugLine(World,Prev,Next,Tint2,false,-1.f,0,bSel?4.f:2.f);
+     if(K<Samples)DrawDebugPoint(World,Next,bSel?10.f:7.f,Tint2,false,-1.f);
+    }
+    Prev=Next;
+   }
   }
  }
 
@@ -322,6 +436,61 @@ FFly Step(const FFly& In,const FVector2D& Move,double Rise,const FVector2D& Look
  return O;
 }
 
+int32 ShotOrNone(const TArray<FS47ScriptAction>& Acts,int32 Sel){return S47DirectorCamLocal::IsShotAt(Acts,Sel)?Sel:INDEX_NONE;}
+
+int32 ShotOrLast(const TArray<FS47ScriptAction>& Acts,int32 Sel)
+{
+ if(S47DirectorCamLocal::IsShotAt(Acts,Sel))return Sel;
+ for(int32 K=Acts.Num()-1;K>=0;--K)if(Acts[K].Do==ES47ScriptAct::Shot)return K;
+ return INDEX_NONE;
+}
+
+int32 CycleShot(const TArray<FS47ScriptAction>& Acts,int32 Sel,int32 Dir)
+{
+ TArray<int32> Shots;
+ for(int32 K=0;K<Acts.Num();++K)if(Acts[K].Do==ES47ScriptAct::Shot)Shots.Add(K);
+ if(Shots.IsEmpty())return INDEX_NONE;
+ const int32 Here=Shots.IndexOfByKey(Sel);
+ if(Here==INDEX_NONE)return Dir<0?Shots.Last():Shots[0];
+ const int32 N=Shots.Num(),By=Dir<0?-1:Dir>0?1:0;
+ return Shots[((Here+By)%N+N)%N];
+}
+
+int32 AfterRemove(const TArray<FS47ScriptAction>& After,int32 Sel,int32 Removed)
+{
+ if(Sel<0)return INDEX_NONE;
+ if(Removed<0||Removed>Sel)return ShotOrNone(After,Sel);
+ if(Removed<Sel)return ShotOrNone(After,Sel-1);
+ // the selected one itself: the next shot, else the one before
+ for(int32 K=Removed;K<After.Num();++K)if(After[K].Do==ES47ScriptAct::Shot)return K;
+ for(int32 K=FMath::Min(Removed,After.Num())-1;K>=0;--K)if(After[K].Do==ES47ScriptAct::Shot)return K;
+ return INDEX_NONE;
+}
+
+int32 AfterSwap(int32 Sel,int32 A,int32 B){return Sel==A?B:Sel==B?A:Sel;}
+
+int32 ShotNumber(const TArray<FS47ScriptAction>& Acts,int32 I)
+{
+ if(!S47DirectorCamLocal::IsShotAt(Acts,I))return 0;
+ int32 N=0;
+ for(int32 K=0;K<=I;++K)N+=Acts[K].Do==ES47ScriptAct::Shot?1:0;
+ return N;
+}
+
+FS47Script FromTime(const FS47Script& S,double From)
+{
+ FS47Script O=S;
+ if(!(From>0))return O;
+ O.Actions.Reset();
+ for(const FS47ScriptAction& X:S.Actions)if(X.At>=From-1e-6)
+ {
+  FS47ScriptAction Y=X;
+  Y.At=FMath::Max(0.,FMath::RoundToDouble((X.At-From)*1000)/1000);
+  O.Actions.Add(Y);
+ }
+ return O;
+}
+
 bool SelfTest(TArray<FString>& Lines)
 {
  bool bAll=true;
@@ -358,6 +527,40 @@ bool SelfTest(TArray<FString>& Lines)
   Check(FMath::IsNearlyEqual(Half,2*Quarter,1e-9)&&FMath::IsNearlyEqual(Fast,5*Half,1e-9)&&FMath::IsNearlyEqual(Half,3.,1e-9),TEXT("the distance scales with the step's time and the speed (6 and 30 m/s)"));
   Check(FMath::IsNearlyEqual((Step(F,FVector2D(1,-1),0,No,FlyMps,.5).Eye-F.Eye).Size(),3.,1e-9),TEXT("forward and sideways at once is no faster"));
   Check(Step(F,FVector2D(0,-1),1,No,FlyMps,-1).Eye==F.Eye,TEXT("a step back in time moves nothing"));
+ }
+ // DIRECTOR-MODE-01, slice 4: the selected shot, shared by the editor and the camera.
+ const auto Check4=[&](bool bOk,const FString& What){bAll&=bOk;Lines.Add(FString::Printf(TEXT("%s DIRECTOR-4: %s"),bOk?TEXT("PASS"):TEXT("FAIL"),*What));};
+ const auto Act=[](ES47ScriptAct Do,double When){FS47ScriptAction X;X.Do=Do;X.At=When;return X;};
+ // shots at indices 0, 2 and 4 (0, 5 and 9 s); a toast at 1, a wait at 3
+ const TArray<FS47ScriptAction> Acts={Act(ES47ScriptAct::Shot,0),Act(ES47ScriptAct::Toast,1),Act(ES47ScriptAct::Shot,5),Act(ES47ScriptAct::Wait,7),Act(ES47ScriptAct::Shot,9)};
+ {
+  Check4(CycleShot(Acts,0,1)==2&&CycleShot(Acts,2,1)==4&&CycleShot(Acts,4,1)==0,TEXT("] goes shot by shot over the other actions and wraps at the end"));
+  Check4(CycleShot(Acts,0,-1)==4&&CycleShot(Acts,4,-1)==2,TEXT("[ goes back and wraps at the start"));
+  Check4(CycleShot(Acts,INDEX_NONE,1)==0&&CycleShot(Acts,INDEX_NONE,-1)==4&&CycleShot(Acts,1,1)==0&&CycleShot(Acts,99,-1)==4,TEXT("from no shot: ] the first, [ the last"));
+  const TArray<FS47ScriptAction> NoShots={Act(ES47ScriptAct::Toast,0)};
+  Check4(CycleShot(NoShots,0,1)==INDEX_NONE&&CycleShot(TArray<FS47ScriptAction>(),INDEX_NONE,1)==INDEX_NONE,TEXT("without shots nothing is selected"));
+ }
+ {
+  Check4(ShotOrNone(Acts,2)==2&&ShotOrNone(Acts,1)==INDEX_NONE&&ShotOrNone(Acts,5)==INDEX_NONE&&ShotOrNone(Acts,-3)==INDEX_NONE&&ShotOrNone(Acts,INDEX_NONE)==INDEX_NONE,TEXT("an index past the end, below 0 or on another action is no shot"));
+  Check4(ShotOrLast(Acts,2)==2&&ShotOrLast(Acts,1)==4&&ShotOrLast(Acts,INDEX_NONE)==4&&ShotOrLast(TArray<FS47ScriptAction>(),0)==INDEX_NONE,TEXT("2 without a selection works on the last shot"));
+  Check4(ShotNumber(Acts,0)==1&&ShotNumber(Acts,2)==2&&ShotNumber(Acts,4)==3&&ShotNumber(Acts,1)==0&&ShotNumber(Acts,7)==0,TEXT("shots are numbered among the shots"));
+ }
+ {
+  const auto Without=[&Acts](int32 Gone){TArray<FS47ScriptAction> R=Acts;R.RemoveAt(Gone);return R;};
+  Check4(AfterRemove(Without(1),4,1)==3&&AfterRemove(Without(1),2,1)==1,TEXT("deleting an earlier action shifts the selection with its shot"));
+  Check4(AfterRemove(Without(3),0,3)==0&&AfterRemove(Without(3),2,3)==2,TEXT("deleting a later action leaves the selection"));
+  Check4(AfterRemove(Without(2),2,2)==3,TEXT("deleting the selected shot selects the next shot"));
+  Check4(AfterRemove(Without(4),4,4)==2,TEXT("deleting the selected last shot selects the one before"));
+  TArray<FS47ScriptAction> One={Act(ES47ScriptAct::Toast,0),Act(ES47ScriptAct::Shot,1)};
+  One.RemoveAt(1);
+  Check4(AfterRemove(One,1,1)==INDEX_NONE&&AfterRemove(Without(1),INDEX_NONE,1)==INDEX_NONE,TEXT("deleting the only shot leaves none selected, and none stays none"));
+  Check4(AfterSwap(2,2,1)==1&&AfterSwap(1,2,1)==2&&AfterSwap(4,2,1)==4,TEXT("UP and DOWN take the selection with the shot"));
+ }
+ {
+  FS47Script Sc;Sc.Actions=Acts;
+  const FS47Script From5=FromTime(Sc,5),From0=FromTime(Sc,0);
+  Check4(From5.Actions.Num()==3&&From5.Actions[0].Do==ES47ScriptAct::Shot&&From5.Actions[0].At==0&&From5.Actions[1].At==2&&From5.Actions[2].At==4,TEXT("preview from a shot leaves out what comes before it and starts the shot at 0"));
+  Check4(From0.Actions.Num()==Acts.Num()&&From0.Actions[4].At==9,TEXT("preview from 0 is the whole script as it is"));
  }
  return bAll;
 }
@@ -416,7 +619,7 @@ void Tick(US47Main* M,double /*Dt*/)
   if(M->UI)M->UI->Toast(TEXT("Director mode off: ")+Off+TEXT("."),3.f);
   return;
  }
- // 1 to 4, straight off the keyboard (nothing else answers them; the walker neither walks nor picks while its camera is held)
+ // 1 to 6, [ and ], straight off the keyboard (nothing else answers them; the walker neither walks nor picks while its camera is held)
  const AS47Walker* W=S.Walker.Get();
  const APlayerController* PC=W&&W->IsActive()?Cast<APlayerController>(W->GetController()):nullptr;
  if(PC&&!S.TestInput.IsSet())
@@ -427,6 +630,10 @@ void Tick(US47Main* M,double /*Dt*/)
   if(PC->WasInputKeyJustPressed(EKeys::One))bDone=S47DirectorCamLocal::PlaceShot(M,Said);
   else if(PC->WasInputKeyJustPressed(EKeys::Two))bDone=S47DirectorCamLocal::PlaceEye2(M,Said);
   else if(PC->WasInputKeyJustPressed(EKeys::Three))bDone=S47DirectorCamLocal::PlaceTrigger(M,Said);
+  else if(PC->WasInputKeyJustPressed(EKeys::Five))bDone=S47DirectorCamLocal::ReshootHere(M,Said);
+  else if(PC->WasInputKeyJustPressed(EKeys::Six))bDone=S47DirectorCamLocal::DeleteShot(Said);
+  else if(PC->WasInputKeyJustPressed(EKeys::LeftBracket))bDone=S47DirectorCamLocal::PickShot(-1,Said);
+  else if(PC->WasInputKeyJustPressed(EKeys::RightBracket))bDone=S47DirectorCamLocal::PickShot(1,Said);
   else bAsked=false;
   if(bAsked)
   {
@@ -443,7 +650,7 @@ void AddDevLine(US47Main* M)
  if(!M||!M->DevEvents||!FS47ScriptPlayer::DevAllowed(M))return;
  if(M->DevEvents->Events().ContainsByPredicate([](const FS47DevEvents::FEvent& E){return E.Group==S47DirectorCamLocal::DevGroup;}))return;
  M->DevEvents->AddFreeform(S47DirectorCamLocal::DevGroup,TEXT("Fly the director's camera"),
-  FString::Printf(TEXT("DIRECTOR-MODE-01: a free camera through the world; 1 a shot, 2 its move, 3 the trigger's point, 4 preview; %s comes back. The night waits."),*S47DirectorCamLocal::KeyOf(TEXT("director"))),
+  FString::Printf(TEXT("DIRECTOR-MODE-01: a free camera through the world; 1 a shot, [ ] pick a shot, 2 its move, 5 its eye here, 6 delete it, 3 the trigger's point, 4 preview; %s comes back. The night waits."),*S47DirectorCamLocal::KeyOf(TEXT("director"))),
   [M]{FString Why;Toggle(M,Why);});
 }
 
@@ -514,7 +721,24 @@ bool Contract(US47Main* M,double Dt)
   // a trigger box where the shot looks, so the picture shows what the director sees drawn (the test's own draft, never saved)
   {FS47ScriptTrigger& Tr=S47ScriptEditor::Draft().Trigger;Tr.Place.Reset();Tr.Point=D.Actions.Last().Point;Tr.Shape=ES47ScriptShape::Box;Tr.HalfX=9;Tr.HalfZ=6;Tr.Yaw=.4;Tr.Height=4;}
   UE_LOG(LogS47DirectorCam,Display,TEXT("S47: director mode contract: held, player still, camera %.1f m away, night held, %s (eye %.3f m off)"),FVector::Dist(Cam,Body),*Said,Miss);
-  // back and up from the shot's eye, so the picture shows the eye, its line and the trigger's volume drawn in the world
+  // Slice 4: a little to the right for a second, for the shot's second eye
+  S47DirectorCamLocal::St().TestInput=FVector(1,0,0);
+  R.Stage=5;R.At=R.T;
+  return false;
+ }
+ if(R.Stage==5)
+ {
+  if(!On(M))return Finish(false,TEXT("director mode went off while flying to the second eye"));
+  if(R.T-R.At<1)return false;
+  S47DirectorCamLocal::St().TestInput=FVector::ZeroVector;
+  FString Said;
+  if(!S47DirectorCamLocal::PlaceEye2(M,Said))return Finish(false,TEXT("(g) ")+Said);
+  const FS47Script& D=S47ScriptEditor::Draft();
+  if(D.Actions.IsEmpty()||D.Actions.Last().Do!=ES47ScriptAct::Shot||D.Actions.Last().Path.Num()!=2)return Finish(false,TEXT("(g) the last shot has no second eye"));
+  if(S47ScriptEditor::SelectedShot()!=D.Actions.Num()-1)return Finish(false,FString::Printf(TEXT("(g) the selected shot is action %d, not the last one (%d)"),S47ScriptEditor::SelectedShot()+1,D.Actions.Num()));
+  S47DirectorCamLocal::St().Last=Said;
+  UE_LOG(LogS47DirectorCam,Display,TEXT("S47: director mode contract: %s, selected action %d"),*Said,S47ScriptEditor::SelectedShot()+1);
+  // back and up, so the picture shows the eyes, the path between them, the line to the look and the trigger's volume in the world
   S47DirectorCamLocal::St().TestInput=FVector(.4,.5,1);
   R.Stage=4;R.At=R.T;
   return false;
