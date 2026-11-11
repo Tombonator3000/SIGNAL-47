@@ -179,7 +179,7 @@ double FS47FreeformSession::AdvanceClock(double Clock,double ActiveSeconds)
 FS47FreeformSession::FS47FreeformSession(US47Main* Main):M(Main) {}
 FS47FreeformSession::~FS47FreeformSession() { Stop(); }
 
-void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
+void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal,bool bOneNight)
 {
  Stop();
  bOldCalendar=Saved.IsValid()&&!Saved->HasField(TEXT("calendar"));
@@ -191,6 +191,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  TutorialJobId.Empty();FieldFocus=-1;bMailboxStart=false;bStationLocked=bDarkTold=false;
  DayNumber=1;WorldClock=8*3600;Cash=120;Loan=0;Selected=AudioSourceIndex=SelectedDish=0;WokenNight=RousedNight=0;WakeClock=0;ReviewWeek=Carried=StandbyTotal=0;LastPay=20;SideWeek=SidePaid=Repairs=0;
  Settle=CrossSample=AudioCursor=AutosaveAt=IntegrationPulse=0;CrossPoint=0;bCrossRunning=false;ArrayJob.Empty();
+ if(!Saved&&bOneNight){Tutorial=0;WorldClock=18*3600;} // Story's one night: day 1 from the evening shift, nothing to teach
  JobSeed=M&&M->Flow&&!M->Flow->bDevRun?int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()):470047;
  Journal.Load(S47J::Obj(Saved,TEXT("journal")));
  Work.Reset();Findings.Reset();FindingDays.Reset();MysterySteps={0,0,0};Upgrades={false,false,false};SavedAngles.Reset();bRestoreAngles=false;Feedback.Empty();PhenomenonId.Empty();

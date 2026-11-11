@@ -2280,3 +2280,8 @@ Toms nattbestilling (TODO «Nattskift 10.–11. november»): studie av skrekk og
 ## 11. november, dag: Story steg 1 og tenningslås
 
 NEW STORY starter nå en Freeform-økt merket som Story (`storyDirector{v:1}`), med hele Freeform-verdenen; menypekertesten har `-S47MenuPointerStory`. Tenningslås (IGNITION-20261111): K/Y i førerhuset, tomgang med frontlys når man går ut, avstandsdempet motorlyd, drivstoff på tomgang i Freeform; F10 «Truck (ignition)» og `-S47DevEventsHold`. Kontroll: selvtest 4764 (st55), regresjon 251, journey 59, inworld 77, evidence 114, F10-tenningsprøven PASS. Ikke installert.
+
+## 2026-11-11 (Story steg 2)
+
+- 15:27 d59 installert fra `381fc28c` (Story steg 1 og tenningslås), rask levering ALL PASS.
+- 15:35 Story steg 2: `FS47FreeformSession::Begin` har et valgfritt flagg for én natt (dag 1 kl. 18:00, ingen opplæring); Flow gir det bare til en ny Story-økt og hopper over postkassestarten, så Story starter på SARO med stasjonen åpen og Jeepen på plassen. Freeform er uendret. Menypekertesten kontrollerer begge; begge PASS.

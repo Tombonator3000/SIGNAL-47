@@ -1,6 +1,6 @@
 # Story på Freeform-grunnlag: kartlegging og plan
 
-**Status:** Plan, ikke påbegynt. **Gjelder:** STORY-ON-FREEFORM-01 ([TODO](../../Active/TODO.md), [DECISIONS](../../Active/DECISIONS.md) 11. november). **Sist kontrollert:** 11. november 2026, på `cbe78986`.
+**Status:** Under arbeid, steg 1–2 gjort. **Gjelder:** STORY-ON-FREEFORM-01 ([TODO](../../Active/TODO.md), [DECISIONS](../../Active/DECISIONS.md) 11. november). **Sist kontrollert:** 11. november 2026, på `cbe78986`.
 
 Retning: alt i Freeform går inn i Story, aldri motsatt. Freeform endres ikke for Storys skyld; Freeform-koden får bare tillegg som er av uten Story-regi. Stier er under `unreal/Signal47/Source/Signal47/Private/` om ikke annet står; linjetall kan flytte seg.
 

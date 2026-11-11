@@ -7,12 +7,14 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 ## Story på Freeform-grunnlag (Tom 11. november, etter Linux-utgaven)
 
 - [ ] **STORY-ON-FREEFORM-01:** Story skal bruke alt Freeform har: samme verden (terreng, fjell, bygg, lys, vær), samme grafikk og alle Freeform-funksjoner (jobber, Jeep, utstyr, OPS, oppmerksomhet, hendelsesskript). Fjern Story-egne kart, fjell og grafiske avvik. Story blir en regissert Freeform-natt med konkret historie: begynnelse, midte og slutt, styrt med regissørens hendelsesskript. Retning: alt i Freeform går inn i Story, aldri motsatt; Freeform endres ikke for Storys skyld. Første steg: kartlegg hva Story i dag har eget (kart, nivåer, terreng, UI, systemer), som skal erstattes med Freeforms versjon; lag plan før kode. Se [DECISIONS](DECISIONS.md) og [kartlegging og plan](../Design/Story/STORY_PA_FREEFORM_2026-11-11.md).
+  - Fremdrift: steg 1 (NEW STORY er en Freeform-økt merket Story) og steg 2 (én natt: dag 1 kl. 18:00 på SARO, uten opplæring og postkassestart) er gjort. Neste: steg 3, regissørens skjelett.
 
 ## Ferdig, venter på Toms test
 
-Bygget, installert og kontrollert i koden; det eneste som gjenstår er at Tom spiller eller lytter. Full tekst for hvert punkt står i [TODO_FERDIG_2026-11-11](../Archive/TODO_FERDIG_2026-11-11.md). Når Tom har testet, meldes punktet ferdig eller flyttes tilbake hit som åpent funn. Bygg d46–d58 er installert; d58 (0.9.58) er gjeldende.
+Bygget, installert og kontrollert i koden; det eneste som gjenstår er at Tom spiller eller lytter. Full tekst for hvert punkt står i [TODO_FERDIG_2026-11-11](../Archive/TODO_FERDIG_2026-11-11.md). Når Tom har testet, meldes punktet ferdig eller flyttes tilbake hit som åpent funn. Bygg d46–d59 er installert; d59 (0.9.59) er gjeldende.
 
-- **IGNITION-20261111** – Tenningslås i bilen (K / Y): motor og lys av og på når bilen står; går du ut med motoren i gang, står den på tomgang med frontlysene på, lyden dempes med avstand, tomgang bruker litt drivstoff i Freeform. F10 «Truck (ignition)». Kodet på `claude/story-on-freeform`, ikke installert.
+- **IGNITION-20261111** – Tenningslås i bilen (K / Y): motor og lys av og på når bilen står; går du ut med motoren i gang, står den på tomgang med frontlysene på, lyden dempes med avstand, tomgang bruker litt drivstoff i Freeform. F10 «Truck (ignition)». Installert i d59.
+- **STORY-ON-FREEFORM steg 1** – NEW STORY gir hele Freeform-verdenen (fjell, relieff, gård, veikanter, natur, vær) og alle systemene; fortsett-linja viser STORY. Installert i d59; ingen historie koblet på ennå.
 - **D45-1** – CRT-båndet: den grønne streken er for stor, går hele tiden og hopper når man bytter meny; skal se ut som en… Installert i d46.
 - **D45-2** – Tracking array: grønt blink over hele skjermen når musa beveges skal bort. Installert i d46.
 - **D45-3** – Receiver-lappen: lappen øverst til venstre blafrer i takt med nedlastingen. Installert i d46.

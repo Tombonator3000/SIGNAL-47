@@ -1784,7 +1784,10 @@ namespace
     if(M->Flow->StoryNight()!=bStory) return Fail(TEXT("NEW STORY must start a Freeform session marked as Story, NEW FREEFORM one without the mark"));
     if(bStory){const S47J::FObj State=M->Flow->GameState();const S47J::FObj D=S47J::Obj(State,TEXT("storyDirector"));
      if(!D||S47J::Int(D,TEXT("v"))!=1||S47J::Str(State,TEXT("sessionMode"))!=TEXT("freeform")||!S47J::Obj(State,TEXT("freeform"))) return Fail(TEXT("a Story session saves as Freeform with storyDirector v1"));
-     if(!S47FarmWorld::Enabled(M)) return Fail(TEXT("Story must have Freeform's world: relief, mountains, farm, road edges and nature"));}
+     if(!S47FarmWorld::Enabled(M)) return Fail(TEXT("Story must have Freeform's world: relief, mountains, farm, road edges and nature"));
+     // Step 2: one night, from the evening shift at SARO, with nothing to teach and no mailbox start.
+     if(FMath::Abs(FMath::Fmod(M->Freeform->Clock(),86400.)-18*3600)>1800||M->Freeform->InTutorial()||M->Freeform->bMailboxStart) return Fail(TEXT("a Story night starts at 18:00 at SARO without the tutorial or the mailbox start"));}
+    else if(FMath::Fmod(M->Freeform->Clock(),86400.)>12*3600) return Fail(TEXT("NEW FREEFORM must still start in the morning"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));
     // -S47MenuPointerRelief: Freeform's rolling land from an ordinary game (S47ReliefProbe.h says what it does and when it passes).

@@ -49,7 +49,8 @@ public:
  };
  explicit FS47FreeformSession(US47Main* Main);
  ~FS47FreeformSession();
- void Begin(const S47J::FObj& Saved,bool bLethal=false);
+ // bOneNight (STORY-ON-FREEFORM-01 step 2): a new Story night begins on day 1 at 18:00 with no first-shift tutorial. A saved game ignores it.
+ void Begin(const S47J::FObj& Saved,bool bLethal=false,bool bOneNight=false);
  void Stop();
  void Step(double Dt);
  S47J::FObj Save() const;
