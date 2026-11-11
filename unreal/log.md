@@ -2267,3 +2267,11 @@ Toms ønsker etter d46 (D46-1..28) skrevet av agenter med modell per oppgave (So
 ## 11. november kl. 03:30 (Claude Code, nattskift): d48–d54 installert
 
 Toms nattbestilling (TODO «Nattskift 10.–11. november»): studie av skrekk og spilldesign (scratchpad STUDY_HORROR_DESIGN.md), oppmerksomhet og sabotasje, kameramomenter, stillhet før og flimmer under, dyr som varsler, lysrør som går to og to, Caliches historie i spillet (godkjent av Tom), dørsløyfen og dørsløyfen under jakt med flomlys (strobe maks tre i sekundet), fire hendelser i trinnvise manus, falske alarmer, lettelse etter fare, dagsspor, mål på tre nivåer, regelen som læres og brytes, hulen the Breather, gjemme seg under bordet, vitneutsagn, folkas dagsvaner, rommets skjermer, trip camera med overvåkningspreg, sporbok på CASE BOARD, veggvakt for WORLD-04. To spillkritikker av første uke (5/10, så 6,5/10) med tempo-rettinger. Lydeksport til WAV (`-S47ExportSounds`) og lydtester sendt Tom. Agenter med modell per oppgave (Sonnet mest, Opus for tverrgående logikk, Fable bare der Tom ga lov, Haiku for oversikter). Kandidatpakkene d45–d50 ryddet underveis for plass.
+
+## 11. november 06:20 (Claude, nattskift)
+
+- d56 (0.9.56, 05:25): tredje kritikk av første uke (7/10) – dyrevarsler fra dag 3, Dales hint faller ikke bort, én stor ting per natt for dørsløyfe/jakt/besøk/landing, landing tidligst natt 5, tre varianter av roen etter fare, svakt hundebjeff etter oppmerksomhetstegnet, lyd ved bom i hulen.
+- d57 (0.9.57, 06:19): dørsløyfe-kritikk (6,5/10) – jakten kan tapes ved døra som raslet, tanker og skritt ved tak/gulv, variasjon per natt, toning før kutt, mykere strobe.
+- Tester: in-world (77) og evidence (114) grønne kjørt alene etter testrettinger; journey stopper fortsatt på pakkefysikk (`OnComponentHit` kommer aldri; se TODO N1110-T).
+- Toms d45-funn (D45-1..29) merket med byggene de kom i.
+- Disk: d52–d55-kandidater og `Saved/StagedBuilds` + `Saved/Cooked` ryddet; 122 GB ledig; beholdt d56 (tilbakerulling) og d57.

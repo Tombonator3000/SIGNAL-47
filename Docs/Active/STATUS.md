@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 11. november kl. 05:25 (d56): versjon 0.9.56, `e12603e5` på `claude/day-20261109`
+## Installert 11. november kl. 06:19 (d57): versjon 0.9.57, `168af36f` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4756 kontroller). Tilbakerulling: d56 (`e12603e5`). Disk etterpå: 122 GB (d53-, d54- og d55-pakkene og generert `Saved/StagedBuilds` + `Saved/Cooked` ryddet; neste pakking koker derfor fra start). Ikke spilt av Tom.
+
+Nytt siden d56 (kritikk av dørsløyfen, 6,5/10): under jakt blir du tatt hvis du går ut døra du hørte noen rasle i (steg 3 sier «Not that one.» når bygget har to dører); taket og gulvet (steg 4–5) har egne tanker og skritt over deg, og gulvtonen har en 92 Hz-deltone som høres på små høyttalere; lysfarger, sted i taket og tanker varierer fra natt til natt; kort toning mot svart før kuttet; strobens laveste nivå hevet (mindre lysforskjell, fortsatt høyst 2,5 blink i sekundet).
+
+Kontroll: regresjon PASS 251; first og sky PASS.
+
+## Tidligere: installert 11. november kl. 05:25 (d56): versjon 0.9.56, `e12603e5` på `claude/day-20261109`
 
 Pakket, røyktestet og installert (selvtest OK, 4754 kontroller). Tilbakerulling: d55. Disk etterpå: 127 GB (d52-pakken ryddet). Ikke spilt av Tom.
 
