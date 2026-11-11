@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "id": "attention_sab_relay_b",
+  "name": "Cold cabinet door",
+  "notes": "N1110: the second wording of attention_sab_relay, chosen per night by FS47Attention::SabScript (same beats and timing, other thoughts and trace text).",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 0,
+      "do": "sound",
+      "sound": "rack_switch",
+      "point": "cabinet",
+      "gain": 0.5,
+      "rate": 0.7
+    },
+    {
+      "at": 1,
+      "do": "printer",
+      "gain": 0.3,
+      "stop": 3,
+      "text": "PRINTER / REMOTE LINK LOST. JUNCTION CABINET TEMP 26 F."
+    },
+    {
+      "at": 5,
+      "do": "thought",
+      "text": "The cabinet door is cold to the touch. It should be warm in here."
+    },
+    {
+      "at": 6.5,
+      "do": "tube",
+      "next": 2
+    },
+    {
+      "at": 5,
+      "do": "evidence",
+      "key": "attention_relay_d{day}",
+      "text": "At {clock} one antenna dropped its remote link, and the rack printer logged its junction cabinet at 26 degrees. The cabinet door was cold and beaded with frost."
+    },
+    {
+      "at": 11,
+      "do": "thought",
+      "text": "Two of the tubes overhead are dead. I can buy a pair at the Caliche shop counter.",
+      "if": [
+        "in_saro"
+      ]
+    }
+  ]
+}

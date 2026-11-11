@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "attention_sab_truck_b",
+  "name": "Frost on the glass",
+  "notes": "N1110: the second wording of attention_sab_truck, chosen per night by FS47Attention::SabScript (same beats and timing, other thoughts and trace text).",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 0.5,
+      "do": "thought",
+      "text": "Frost on the hood and nothing else. It is not that cold."
+    },
+    {
+      "at": 0.8,
+      "do": "tube",
+      "next": 2
+    },
+    {
+      "at": 1,
+      "do": "evidence",
+      "key": "attention_truck_d{day}",
+      "text": "At {clock} the truck would not turn over. Frost covered the hood and nowhere else, and the cab smelled of hot wiring."
+    },
+    {
+      "at": 7,
+      "do": "thought",
+      "text": "Two tubes died back at the station. I can get a pair at the Caliche shop counter.",
+      "if": [
+        "in_saro"
+      ]
+    }
+  ]
+}

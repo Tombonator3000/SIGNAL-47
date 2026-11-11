@@ -10,6 +10,7 @@
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47NightRhythm.h"
 #include "S47NightTiers.h"
 #include "S47Omen.h"
 #include "S47Rhythm.h"
@@ -82,13 +83,17 @@ FS47Attention::ESab FS47Attention::SabFrom(const FString& Name)
  for(int32 I=1;I<5;++I)if(Name==S47AttentionLocal::SabNames[I])return ESab(I);
  return ESab::None;
 }
-FS47Attention::ESab FS47Attention::PickSab(bool bAtSaro,int32 Turn,TFunctionRef<bool(ESab)> Can)
+FS47Attention::ESab FS47Attention::PickSab(bool bAtSaro,int32 Seed,int32 Turn,ESab Last,TFunctionRef<bool(ESab)> Can)
 {
  static const ESab Here[]={ESab::Relay,ESab::Mains,ESab::Lamp},Away[]={ESab::Truck,ESab::Lamp};
  const ESab* L=bAtSaro?Here:Away;const int32 N=bAtSaro?3:2;
- for(int32 I=0;I<N;++I){const ESab K=L[(FMath::Max(0,Turn)+I)%N];if(Can(K))return K;}
- return ESab::None;
+ ESab Ok[3];int32 Count=0;
+ for(int32 I=0;I<N;++I)if(L[I]!=Last&&Can(L[I]))Ok[Count++]=L[I];
+ if(Count==0)return ESab::None;
+ return Ok[FMath::Min(Count-1,int32(FS47NightRhythm::Roll(Seed,FMath::Max(0,Turn),0x53414254u)*Count))];
 }
+bool FS47Attention::SabVariantB(int32 Seed,int32 Night){return FS47NightRhythm::Roll(Seed,Night,0x53414256u)<.5f;}
+FString FS47Attention::SabScript(ESab K,bool bB){return FString(TEXT("attention_sab_"))+SabName(K)+(bB?TEXT("_b"):TEXT(""));}
 const TArray<FString>& FS47Attention::WarnScripts()
 {
  static const TArray<FString> L={TEXT("attention_warn_tv"),TEXT("attention_warn_call"),TEXT("attention_warn_dog"),TEXT("attention_warn_lights"),TEXT("attention_warn_thought")};
@@ -101,7 +106,7 @@ void FS47Attention::Begin(const S47J::FObj& Saved)
 {
  Value=FMath::Clamp(S47J::Num(Saved,TEXT("score")),0.,Top);LastClock=-1;
  WarnNight=S47J::Int(Saved,TEXT("warnNight"));WarnCount=S47J::Int(Saved,TEXT("warns"));
- SabNight=S47J::Int(Saved,TEXT("sabNight"));SabCount=S47J::Int(Saved,TEXT("sabs"));Sab=SabFrom(S47J::Str(Saved,TEXT("sab")));
+ SabNight=S47J::Int(Saved,TEXT("sabNight"));SabCount=S47J::Int(Saved,TEXT("sabs"));Sab=SabFrom(S47J::Str(Saved,TEXT("sab")));LastSab=SabFrom(S47J::Str(Saved,TEXT("lastSab")));
  VisitNight=S47J::Int(Saved,TEXT("visitNight"));VisitCount=S47J::Int(Saved,TEXT("visits"));
  Tracked.Reset();Claims.Reset();
  for(const FString& Id:S47J::Strs(Saved,TEXT("tracked")))Tracked.Add(Id);
@@ -125,6 +130,7 @@ S47J::FObj FS47Attention::Save() const
  S47J::Set(O,TEXT("score"),FMath::RoundToDouble(Value*100.)/100.);
  if(WarnCount){S47J::Set(O,TEXT("warnNight"),WarnNight);S47J::Set(O,TEXT("warns"),WarnCount);}
  if(SabCount){S47J::Set(O,TEXT("sabNight"),SabNight);S47J::Set(O,TEXT("sabs"),SabCount);}
+ if(LastSab!=ESab::None)S47J::Set(O,TEXT("lastSab"),SabName(LastSab));
  if(Sab!=ESab::None&&Sab!=ESab::Truck)S47J::Set(O,TEXT("sab"),SabName(Sab)); // the truck's is not saved (S47World's bKeyStall is not)
  if(VisitCount){S47J::Set(O,TEXT("visitNight"),VisitNight);S47J::Set(O,TEXT("visits"),VisitCount);}
  TArray<FString> T=Tracked.Array();T.Sort();if(T.Num())S47J::Set(O,TEXT("tracked"),T);
@@ -354,7 +360,7 @@ bool FS47Attention::DoSabotage(bool bForced)
  using namespace S47AttentionLocal;
  FS47FreeformSession* F=Session(M);
  if(!F||Sab!=ESab::None)return false;
- const ESab K=PickSab(AtSaro(),SabCount,[this](ESab X){return CanSab(X);});
+ const ESab K=PickSab(AtSaro(),F->Seed(),SabCount,LastSab,[this](ESab X){return CanSab(X);});
  bool bDone=false;
  switch(K)
  {
@@ -365,10 +371,10 @@ bool FS47Attention::DoSabotage(bool bForced)
  default:break;
  }
  if(!bDone)return false;
- Sab=K;++SabCount;
+ Sab=LastSab=K;++SabCount;bSabB=SabVariantB(F->Seed(),FS47FreeformSession::NightOf(F->Clock())); // N1110 (critic, sabvar)
  UE_LOG(LogS47Attention,Display,TEXT("S47: attention %.0f: sabotage, %s%s"),Value,SabName(K),bForced?TEXT(" (F10)"):TEXT(""));
  // The truck's trace waits for the player to be at the wheel (StepSabotage).
- if(K!=ESab::Truck)Play(FString(TEXT("attention_sab_"))+SabName(K));
+ if(K!=ESab::Truck)Play(SabScript(K,bSabB));
  if(SabCount==1)Play(HintVisit);
  return true;
 }
@@ -383,7 +389,7 @@ void FS47Attention::StepSabotage(double Dt,double Hour,int32 Night,int32 Day)
  if(Sab==ESab::Truck&&bTruckArmed&&M->World&&!M->World->bKeyStall)
  {
   bTruckArmed=false;
-  if(M->World->bDriving&&M->World->Trouble.WantsKey())Play(TEXT("attention_sab_truck"));
+  if(M->World->bDriving&&M->World->Trouble.WantsKey())Play(SabScript(ESab::Truck,bSabB));
  }
  if(Sab!=ESab::None&&SabOver()){UE_LOG(LogS47Attention,Display,TEXT("S47: attention: the %s is put right"),SabName(Sab));Sab=ESab::None;}
  if(Value<SabotageAt||Day<FirstDay||SabNight==Night||Sab!=ESab::None||!SabotageHours(Hour)){SabWait=0;return;}
@@ -531,10 +537,27 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
   const auto All=[](ESab){return true;};
   const auto NoRelay=[](ESab K){return K!=ESab::Relay;};
   const auto Nothing=[](ESab){return false;};
-  Check(PickSab(true,0,All)==ESab::Relay&&PickSab(true,1,All)==ESab::Mains&&PickSab(true,2,All)==ESab::Lamp&&PickSab(true,3,All)==ESab::Relay,TEXT("at SARO: the relay, the mains, the lamp, in turn"));
-  Check(PickSab(false,0,All)==ESab::Truck&&PickSab(false,1,All)==ESab::Lamp&&PickSab(true,0,NoRelay)==ESab::Mains&&PickSab(true,0,Nothing)==ESab::None,TEXT("away: the truck, the lamp; what cannot be done is passed over, and nothing when nothing can"));
-  bool bNoTruck=true;for(int32 T=0;T<6;++T)bNoTruck&=PickSab(true,T,All)!=ESab::Truck;
-  Check(bNoTruck,TEXT("the truck is never the station's"));
+  // N1110 (critic, sabvar): drawn from the seed, not in strict turn; never the kind before; every kind reachable; the same for the same game.
+  {
+   int32 Seen[5]={0,0,0,0,0},Seen2[5]={0,0,0,0,0};bool bRepeat=false,bNoTruck=true,bSame=true,bAwayOnly=true,bPass=true;
+   for(int32 Seed=1;Seed<=40;++Seed)
+   {
+    ESab LastH=ESab::None,LastA=ESab::None;
+    for(int32 T=0;T<30;++T)
+    {
+     const ESab H=PickSab(true,Seed,T,LastH,All),A=PickSab(false,Seed,T,LastA,All);
+     bRepeat|=H==LastH||A==LastA;bNoTruck&=H!=ESab::Truck&&H!=ESab::None;bAwayOnly&=(A==ESab::Truck||A==ESab::Lamp);bSame&=H==PickSab(true,Seed,T,LastH,All);
+     ++Seen[int32(H)];++Seen2[int32(A)];LastH=H;LastA=A;
+     bPass&=PickSab(true,Seed,T,H,NoRelay)!=ESab::Relay&&PickSab(true,Seed,T,H,NoRelay)!=H;
+    }
+   }
+   Check(!bRepeat&&bNoTruck&&bAwayOnly&&bSame&&bPass,TEXT("N1110 (sabvar): over 40 games of 30 sabotages the kind never repeats the one before, the truck is never the station's, and the same game draws the same"));
+   Check(Seen[int32(ESab::Relay)]>100&&Seen[int32(ESab::Mains)]>100&&Seen[int32(ESab::Lamp)]>100&&Seen2[int32(ESab::Truck)]>100&&Seen2[int32(ESab::Lamp)]>100,TEXT("N1110 (sabvar): every kind comes up (at SARO the relay, the mains and the lamp; away the truck and the lamp), none starved"));
+   bool bOnly=PickSab(false,3,0,ESab::Truck,All)==ESab::Lamp&&PickSab(false,3,0,ESab::Lamp,All)==ESab::Truck&&PickSab(false,3,0,ESab::Lamp,[](ESab K){return K==ESab::Lamp;})==ESab::None&&PickSab(true,3,0,ESab::None,Nothing)==ESab::None&&PickSab(true,3,0,ESab::Mains,[](ESab K){return K==ESab::Mains;})==ESab::None;
+   Check(bOnly&&PickSab(true,3,0,ESab::None,NoRelay)!=ESab::Relay,TEXT("N1110 (sabvar): what cannot be done is passed over, the one before is not drawn again even if it is all that can be done, and nothing when nothing can"));
+   int32 B=0;for(int32 N=1;N<=200;++N)B+=SabVariantB(7,N);
+   Check(B>60&&B<140&&SabVariantB(7,5)==SabVariantB(7,5)&&SabScript(ESab::Relay,false)==TEXT("attention_sab_relay")&&SabScript(ESab::Truck,true)==TEXT("attention_sab_truck_b"),FString::Printf(TEXT("N1110 (sabvar): the wording is drawn per night, both about half the time (%d of 200 on b), and named attention_sab_<kind>[_b]"),B));
+  }
   bool bNames=true;for(ESab K:{ESab::Relay,ESab::Mains,ESab::Lamp,ESab::Truck})bNames&=SabFrom(SabName(K))==K;
   Check(bNames&&SabFrom(TEXT("printer"))==ESab::None,TEXT("each kind keeps its name in the save"));
  }
@@ -552,7 +575,7 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
  {
   TArray<FString> Ids=WarnScripts();
   Ids.Append({S47AttentionLocal::TellId,S47AttentionLocal::HintRule,S47AttentionLocal::HintNeutral,S47AttentionLocal::HintVisit,S47AttentionLocal::VisitId,S47AttentionLocal::VisitHeld,S47AttentionLocal::VisitEscaped});
-  for(ESab K:{ESab::Relay,ESab::Mains,ESab::Lamp,ESab::Truck})Ids.Add(FString(TEXT("attention_sab_"))+SabName(K));
+  for(ESab K:{ESab::Relay,ESab::Mains,ESab::Lamp,ESab::Truck}){Ids.Add(SabScript(K,false));Ids.Add(SabScript(K,true));} // N1110 (sabvar): both wordings
   int32 Found=0;bool bClean=true;FString First;
   for(const FString& Id:Ids)
   {
@@ -577,8 +600,10 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
    {
     // N1110 (attfix): every sabotage that darkens the ceiling points at the shop counter that sells the tubes back, and the lowering rule is said.
     bool bShop=true;int32 Sabs=0;
-    for(const TCHAR* Id:{TEXT("attention_sab_relay"),TEXT("attention_sab_lamp"),TEXT("attention_sab_truck"),TEXT("attention_sab_mains")})
-     if(const FS47EventScript* Sb=S47EventScript::Find(Id)){++Sabs;bShop&=Sb->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Thought&&B.Text.Contains(TEXT("shop counter"));});}
+    TSet<FString> Words;
+    for(const TCHAR* Id:{TEXT("attention_sab_relay"),TEXT("attention_sab_lamp"),TEXT("attention_sab_truck"),TEXT("attention_sab_mains"),TEXT("attention_sab_relay_b"),TEXT("attention_sab_lamp_b"),TEXT("attention_sab_truck_b"),TEXT("attention_sab_mains_b")})
+     if(const FS47EventScript* Sb=S47EventScript::Find(Id)){++Sabs;bShop&=Sb->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Thought&&B.Text.Contains(TEXT("shop counter"))&&B.Text.Contains(TEXT("pair"));});for(const FS47Beat& B:Sb->Beats)if(B.Do==ES47Beat::Thought)Words.Add(B.Text);}
+    if(Sabs==8)Check(Words.Num()==16,TEXT("N1110 (sabvar): the eight sabotage scripts (two wordings of four kinds) have sixteen different thoughts"));
     const FS47EventScript* Hv=S47EventScript::Find(S47AttentionLocal::HintVisit);
     if(Sabs>0)Check(bShop,TEXT("N1110 (attfix): each sabotage's thought names the shop counter that sells the tubes in pairs"));
     if(Hv)Check(Hv->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Line&&B.Text.Contains(TEXT("lose interest"));}),TEXT("N1110 (attfix): Dale says how it is lowered: leave the lights alone a day or two"));

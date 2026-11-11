@@ -109,7 +109,7 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
  {
   // N1110: every sabotage (relay, mains, lamp, truck) puts out the next two working ceiling tubes, and each script is clean.
   bool bSabs=true,bFound=false;
-  for(const TCHAR* Sab:{TEXT("relay"),TEXT("mains"),TEXT("lamp"),TEXT("truck")})
+  for(const TCHAR* Sab:{TEXT("relay"),TEXT("mains"),TEXT("lamp"),TEXT("truck"),TEXT("relay_b"),TEXT("mains_b"),TEXT("lamp_b"),TEXT("truck_b")}) // N1110 (sabvar): both wordings
   {
    FString Text;FS47EventScript S;FString Why;
    if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Director/Events/attention_sab_")+Sab+TEXT(".json")))||!Read(Text,S,Why))continue;

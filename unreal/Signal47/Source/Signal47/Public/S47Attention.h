@@ -77,8 +77,12 @@ public:
  enum class ESab : uint8 { None, Relay, Mains, Lamp, Truck };
  static const TCHAR* SabName(ESab K);
  static ESab SabFrom(const FString& Name);
- // The first kind Can allows, from the turn Turn: at SARO the relay, the mains, the lamp; away the truck, the lamp.
- static ESab PickSab(bool bAtSaro,int32 Turn,TFunctionRef<bool(ESab)> Can);
+ // N1110 (critic, sabvar): a draw from the kinds Can allows, never the kind Last: at SARO the relay, the mains, the lamp; away the truck, the lamp.
+ // Drawn from the game's seed and the turn (the sabotages so far), so a Continue gives the same. None when nothing else can be done.
+ static ESab PickSab(bool bAtSaro,int32 Seed,int32 Turn,ESab Last,TFunctionRef<bool(ESab)> Can);
+ // N1110 (critic, sabvar): the wording of a kind's script for a night: attention_sab_<kind>, or attention_sab_<kind>_b.
+ static bool SabVariantB(int32 Seed,int32 Night);
+ static FString SabScript(ESab K,bool bB);
  // The warning scripts, in turn; the last is a thought and plays anywhere.
  static const TArray<FString>& WarnScripts();
 
@@ -99,7 +103,8 @@ private:
  US47Main* M=nullptr;
  double Value=0,LastClock=-1;
  int32 WarnNight=0,WarnCount=0,SabNight=0,SabCount=0,VisitNight=0,VisitCount=0,TakenBefore=0;
- ESab Sab=ESab::None;
+ ESab Sab=ESab::None,LastSab=ESab::None; // LastSab: the kind before, so it is not drawn twice in a row (saved as lastSab, optional)
+ bool bSabB=false;
  bool bBaseline=false,bDev=false,bTruckArmed=false,bLinesAdded=false;
  double WarnWait=0,SabWait=0,VisitWait=0,StareFor=0,VisitT=0,ChaseDist=-1,SpareIn=-1;
  int32 TellNight=0; // N1110 (pace): the night the tell was played (not saved)

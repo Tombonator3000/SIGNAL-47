@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "attention_sab_lamp_b",
+  "name": "Warm cells, again",
+  "notes": "N1110: the second wording of attention_sab_lamp, chosen per night by FS47Attention::SabScript (same beats and timing, other thoughts and trace text).",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 0,
+      "do": "light",
+      "kind": "lamp",
+      "strength": 0.8,
+      "secs": 2
+    },
+    {
+      "at": 2,
+      "do": "thought",
+      "text": "The flashlight is nearly dead and the cell is warm. It should not drain that fast."
+    },
+    {
+      "at": 2.5,
+      "do": "tube",
+      "next": 2
+    },
+    {
+      "at": 3,
+      "do": "evidence",
+      "key": "attention_lamp_d{day}",
+      "text": "At {clock} the flashlight went dim all at once. The cells felt warm, as if they had been running for hours."
+    },
+    {
+      "at": 12,
+      "do": "thought",
+      "text": "Two ceiling tubes went out with it. The Caliche shop counter has them in pairs.",
+      "if": [
+        "in_saro"
+      ]
+    }
+  ]
+}
