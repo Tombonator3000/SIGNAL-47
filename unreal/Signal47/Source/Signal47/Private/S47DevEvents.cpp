@@ -19,6 +19,7 @@
 #include "S47Night.h"
 #include "S47Glimpses.h"
 #include "S47Shot.h"
+#include "S47ShotStills.h"
 #include "S47ScriptVolumeDev.h"
 #include "S47Sky.h"
 #include "S47SkyVisitors.h"
@@ -384,6 +385,8 @@ void FS47DevEvents::Step(double Dt)
 void FS47DevEvents::ControlTest(double Dt)
 {
  if (ProofTest(Dt)) return;
+ // DIRECTOR-MODE-01 stills: -S47ShotStills=<dir>, a run of its own (S47ShotStills.h).
+ if (S47ShotStills::Wanted()) { if (!bTestDone && M && S47ShotStills::Step(M, Dt)) bTestDone = true; return; }
  if (!bTestInit) { bTestInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47DevEventsContract="), TestDir); }
  if (TestDir.IsEmpty() || bTestDone || !M || M->Mode != US47Main::EMode::Play) return;
  FString OnlyGroup; FParse::Value(FCommandLine::Get(),TEXT("S47DevEventsGroup="),OnlyGroup);

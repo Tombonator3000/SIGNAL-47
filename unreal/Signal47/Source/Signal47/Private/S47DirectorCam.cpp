@@ -74,7 +74,8 @@ namespace S47DirectorCamLocal
    Rise=(S47Keys::Down(PC,TEXT("jump"))?1.:0.)-(S47Keys::Down(PC,TEXT("crouch"))?1.:0.);
    bFast=S47Keys::Down(PC,TEXT("run"));
   }
-  S.Fly=S47DirectorCam::Step(S.Fly,Mv,Rise,LookIn,bFast?S47DirectorCam::FastMps:S47DirectorCam::FlyMps,Dt);
+  // (the test hook holds the look too: a pose put by SetPose stays exactly where it was put)
+  S.Fly=S47DirectorCam::Step(S.Fly,Mv,Rise,S.TestInput.IsSet()?FVector2D::ZeroVector:LookIn,bFast?S47DirectorCam::FastMps:S47DirectorCam::FlyMps,Dt);
   Out.Eye=S.Fly.Eye;Out.Yaw=S.Fly.Yaw;Out.Pitch=S.Fly.Pitch;Out.Roll=0;
   return true;
  }
@@ -317,8 +318,11 @@ namespace S47DirectorCamLocal
  // DIRECTOR-MODE-01, the next slice: the trigger's volume, the shots' eyes and what they look at, drawn in the world while flying.
  // Steady lines, drawn again each frame (no blinking): the draft's trigger volume in amber (ground outline, and its top and corner
  // posts when it has a height), each shot's eye in cyan with a line to what it looks at, and its second eye in white.
+ // DIRECTOR-MODE-01 stills: off while the shot pictures are taken (S47DirectorCam::SetOverlay); on otherwise.
+ bool& OverlayOn(){static bool bOn=true;return bOn;}
  void Draw(US47Main* M)
  {
+  if(!OverlayOn())return;
   const AS47Walker* Wk=St().Walker.Get();
   UWorld* World=Wk?Wk->GetWorld():nullptr;
   if(!M||!World||!S47ScriptEditor::HaveDraft())return;
@@ -772,4 +776,18 @@ bool Contract(US47Main* M,double Dt)
  if(FVector::Dist(W->Pos,R.Pos)>1e-3)return Finish(false,TEXT("(b) the player moved after director mode"));
  return Finish(true,FString());
 }
+
+// DIRECTOR-MODE-01 stills (S47ShotStills.h): an exact pose, held through the test hook; the in-world drawing on or off.
+bool SetPose(US47Main* M,const FVector& Eye,double Yaw,double Pitch,double Fov)
+{
+ S47DirectorCamLocal::FState& S=S47DirectorCamLocal::St();
+ if(!On(M))return false;
+ S.Fly.Eye=Eye;S.Fly.Yaw=Yaw;S.Fly.Pitch=FMath::Clamp(Pitch,-PitchLimit,PitchLimit);
+ S.TestInput=FVector::ZeroVector;
+ if(Fov>0)if(AS47Walker* W=S.Walker.Get())W->Fov=float(Fov);
+ return true;
+}
+
+void SetOverlay(bool bOn){S47DirectorCamLocal::OverlayOn()=bOn;}
+bool Overlay(){return S47DirectorCamLocal::OverlayOn();}
 }

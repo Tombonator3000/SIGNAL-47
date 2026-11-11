@@ -61,4 +61,13 @@ namespace S47DirectorCam
  // shot placed at the camera, flies a little to the right and gives that shot its second eye (checking it is the selected shot), takes
  // director-mode-fly.png, leaves and checks everything is given back. True once it is over (it has asked the game to exit).
  SIGNAL47_API bool Contract(US47Main* M,double Dt);
+
+ // DIRECTOR-MODE-01 stills (S47ShotStills.h). SetPose: while director mode is on (false otherwise), the camera put exactly at Eye
+ // (scene metres) looking along Yaw and Pitch (radians as the walker's; the pitch held within PitchLimit), and held there: neither
+ // the keys nor the look fly it until director mode is left. Fov above 0: the walker's vertical field of view (the caller puts the
+ // one it had back). SetOverlay: the in-world drawing (the trigger's volume, the shots' eyes) drawn or not; on unless set off, and
+ // whoever sets it off sets it on again.
+ SIGNAL47_API bool SetPose(US47Main* M,const FVector& Eye,double Yaw,double Pitch,double Fov);
+ SIGNAL47_API void SetOverlay(bool bOn);
+ SIGNAL47_API bool Overlay();
 }
