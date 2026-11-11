@@ -12,7 +12,7 @@ Nytt siden d56 (kritikk av dørsløyfen, 6,5/10): under jakt blir du tatt hvis d
 
 Kontroll: regresjon PASS 251; first og sky PASS.
 
-**Etter d57 på grenen (testet i editor, ikke installert):** oppmerksomhet som forklarer seg selv (Dale: interessen går over etter noen dager; tanke når besøket gir opp; hver sabotasje peker på lysrør i par ved butikkdisken i Caliche), sabotasjetypen trekkes per natt uten gjentakelse og med to tekstvarianter, og en sluppet pakke blir ikke lenger hengende i lufta ved pumpen (faller og dunker). Selvtest OK 4764, regresjon PASS 251, mail PASS 38.
+**Etter d57 på grenen (testet i editor, ikke installert):** oppmerksomhet som forklarer seg selv (Dale: interessen går over etter noen dager; tanke når besøket gir opp; hver sabotasje peker på lysrør i par ved butikkdisken i Caliche), sabotasjetypen trekkes per natt uten gjentakelse og med to tekstvarianter, og en sluppet pakke blir ikke lenger hengende i lufta ved pumpen (faller og dunker). Selvtest OK 4764, regresjon PASS 251, mail PASS 38. Hele testrekka er nå grønn: `-S47FreeformJourneyTest` PASS 59 etter pakkerettingen og to testrettinger ved S-03-skapet (ett trykk åpner luka, ett setter reléet).
 
 ## Tidligere: installert 11. november kl. 05:25 (d56): versjon 0.9.56, `e12603e5` på `claude/day-20261109`
 
