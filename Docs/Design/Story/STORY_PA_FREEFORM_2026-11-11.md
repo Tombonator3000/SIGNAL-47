@@ -1,6 +1,6 @@
 # Story på Freeform-grunnlag: kartlegging og plan
 
-**Status:** Under arbeid, steg 1–3 gjort. **Gjelder:** STORY-ON-FREEFORM-01 ([TODO](../../Active/TODO.md), [DECISIONS](../../Active/DECISIONS.md) 11. november). **Sist kontrollert:** 11. november 2026, på `cbe78986`.
+**Status:** Under arbeid, steg 1–4 gjort (steg 4 ikke bygget ennå). **Gjelder:** STORY-ON-FREEFORM-01 ([TODO](../../Active/TODO.md), [DECISIONS](../../Active/DECISIONS.md) 11. november). **Sist kontrollert:** 11. november 2026, på `cbe78986`.
 
 Retning: alt i Freeform går inn i Story, aldri motsatt. Freeform endres ikke for Storys skyld; Freeform-koden får bare tillegg som er av uten Story-regi. Stier er under `unreal/Signal47/Source/Signal47/Private/` om ikke annet står; linjetall kan flytte seg.
 
@@ -33,7 +33,7 @@ Hvert steg holder selvtest, reg, journey, inworld og evidence grønne. Gammel St
 1. **Story-identitet uten innhold:** `FStart.bStoryNight` og lagringsfelt `storyDirector{v:1}`; NEW STORY starter Freeform med flagget; fortsett-linja viser STORY. Dette fjerner alle grafiske forskjeller med én gang. Risiko lav.
 2. **Oppsett for én natt:** valgfri parameter til `FS47FreeformSession::Begin` (ingen opplæring/postkassestart, start ved SARO kl. 18). Standard gir uendret Freeform. Risiko middels.
 3. **Regissørens skjelett:** `FS47StoryDirector`, akter, historieflagg, eget lager og tekstsjekk; eies av `US47Main`, stoppes i `StartGame`. Risiko lav.
-4. **Tilleggene i hendelseslaget** (liste over). Risiko middels; F10 og tekstsjekk må holde dem unna Freeform-mappene.
+4. **Tilleggene i hendelseslaget** (liste over). Risiko middels; F10 og tekstsjekk må holde dem unna Freeform-mappene. *Gjort:* `story_flag`/`no_story_flag`, beatene `flag`, `start`, `clock`, `objective` (nøkkelen `"do"`) i eget lager `Content/Director/Story/beats` med `S47EventScript::LintStory`; Freeforms `Lint` avviser dem ved navn. Regissøren kjører manusene på sin egen `FS47EventBeats`, akter starter dem med `"scripts"`, og mens de går holdes Freeforms terninger (`Hold("story")`, `Eligible`, `OneAtATime`). En Freeform-hendelse startes ikke tvunget, men via `FS47Happenings::Request`. `scene` og `end` hører til steg 5.
 5. **Dialog med valg:** beat `scene` kobler `FS47EveningPack` til Freeforms telefon/walkie/radio; D01_HANDOVER først. Risiko middels.
 6. **Natta som beats, én akt per PR:** kveld (D01, kalibrering, trafo via `feeder_fault`); midt (SC02 jakt/Hide, SC03 DeputyRound, SC05 residual og stjernehull, SC08 array_presence, SC10 rom 6); slutt (SC11 attention_visit, SC12 Ward, SC13 `end`). Ny `-S47StoryNightContract` per akt og kritikerrunde før installasjon.
 7. **Opprydding:** gamle Story-lagringer avvises med melding; legacy-start, kapittelmotor (`S47Story`, `S47Chapter2–6`, `S47Spine`, `S47Horror*`, `S47SC04/08/11`, `S47Evening*` unntatt `FS47EveningPack`, `S47Observing`, `S47Anomaly*`, Story-delen av `S47Substation`), Story-klokka, Story-grener i notatbok/kart/brett, finalebakken (node 1820/1821), Story-testene og `-S47Jump`-linjene i `Scripts/screenshots.sh` fjernes. Til sist `ES47SessionMode::Story`. Kamera og mørkerom i `S47Chapter1` brukes av Freeform og flyttes, ikke slettes; `AS47Story` beholdes som vert hvis Freeform fortsatt bruker `Story->Saro`.

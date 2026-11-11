@@ -16,10 +16,12 @@ class SIGNAL47_API FS47DevEvents
 {
 public:
  // bFreeform: only offered in a Freeform night, and left out of the Story contract below.
- struct FEvent { FString Group, Label, Note; TFunction<void()> Fn; bool bFreeform=false; };
+ // bStory (STORY-ON-FREEFORM-01, step 4): only offered on a Story night with its director (FS47StoryDirector::Of).
+ struct FEvent { FString Group, Label, Note; TFunction<void()> Fn; bool bFreeform=false; bool bStory=false; };
  explicit FS47DevEvents(US47Main* InM);
  void Add(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn);
  void AddFreeform(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn);
+ void AddStory(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn);
  // Renames a line in place, for a line that says what it is set to now.
  void Relabel(const FString& OldLabel, const FString& NewLabel);
  void Open();

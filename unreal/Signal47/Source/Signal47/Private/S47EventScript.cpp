@@ -15,6 +15,7 @@
 #include "S47Places.h"
 #include "S47Radio.h"
 #include "S47ScriptPlayer.h"
+#include "S47StoryDirector.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
 #include "S47UI.h"
@@ -33,9 +34,10 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47EventScript,Log,All);
 
 namespace S47EventScriptLocal
 {
- const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake"),TEXT("camera_snap"),TEXT("silence"),TEXT("tube")};
+ const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake"),TEXT("camera_snap"),TEXT("silence"),TEXT("tube"),TEXT("flag"),TEXT("start"),TEXT("clock"),TEXT("objective")};
  // Besides the scripted events' conditions (S47Script::CondKinds): in the SARO building, and the scene's area by name.
- bool OwnCond(const FString& If){return If==TEXT("in_saro")||If==TEXT("area");}
+ // STORY-ON-FREEFORM-01 (step 4): and the story's flags, read by every script but let through only by the story store's lint.
+ bool OwnCond(const FString& If){return If==TEXT("in_saro")||If==TEXT("area")||S47EventScript::StoryOnlyCond(If);}
  bool CondKnown(const FString& If){return OwnCond(If)||S47Script::CondKinds().Contains(If);}
  // The printer at the rack, where the night's events have always run it (scene metres at SARO).
  const FVector PrinterAt(-4,1,2);
@@ -58,6 +60,7 @@ namespace S47EventScriptLocal
    else if(C.If==TEXT("weather")||C.If==TEXT("area"))C.Arg=S47J::Str(*J,TEXT("is"));
    else if(C.If==TEXT("moon_min")||C.If==TEXT("moon_max"))C.Num=S47J::Num(*J,TEXT("lit"));
    else if(C.If==TEXT("near")||C.If==TEXT("far")){C.Arg=S47J::Str(*J,TEXT("place"));C.Num=S47J::Num(*J,TEXT("m"),100);}
+   else if(S47EventScript::StoryOnlyCond(C.If))C.Arg=S47J::Str(*J,TEXT("flag")); // STORY-ON-FREEFORM-01 (step 4)
   }
   if(!CondKnown(C.If)){Why=FString::Printf(TEXT("condition \"%s\" is not known"),*C.If);return false;}
   return true;
@@ -107,6 +110,10 @@ namespace S47EventScriptLocal
   // N1110: silence's level (what is left of the night's sound, as strength) and the tube beat's tube.
   if(B.Do==ES47Beat::Silence)B.Strength=S47J::Num(J,TEXT("level"),.04);
   if(B.Do==ES47Beat::Tube){B.Tube=S47J::Int(J,TEXT("tube"),-1);B.Next=S47J::Int(J,TEXT("next"),0);}
+  // STORY-ON-FREEFORM-01 (step 4): the story-only beats' own words.
+  if(B.Do==ES47Beat::Flag){B.Flag=S47J::Str(J,TEXT("flag"));B.bSet=S47J::Bool(J,TEXT("set"),true);}
+  if(B.Do==ES47Beat::Start){B.Script=S47J::Str(J,TEXT("script"));B.Happening=S47J::Str(J,TEXT("happening"));}
+  if(B.Do==ES47Beat::Clock&&!FS47StoryDirector::ParseFrom(S47J::Str(J,TEXT("at_least")),B.AtLeast))B.AtLeast=-1;
   return CondsFrom(J,TEXT("if"),B.If,Why)&&CondsFrom(J,TEXT("wait"),B.Wait,Why);
  }
  // The words a text asks for: {az} -> az.
@@ -156,6 +163,9 @@ const TArray<FString>& BeatNames()
  return L;
 }
 
+bool StoryOnlyBeat(ES47Beat B){return B==ES47Beat::Flag||B==ES47Beat::Start||B==ES47Beat::Clock||B==ES47Beat::Objective;}
+bool StoryOnlyCond(const FString& If){return If==TEXT("story_flag")||If==TEXT("no_story_flag");}
+
 bool Read(const FString& Text,FS47EventScript& Out,FString& Why)
 {
  using namespace S47EventScriptLocal;
@@ -198,11 +208,23 @@ bool Read(const FString& Text,FS47EventScript& Out,FString& Why)
  return true;
 }
 
-TArray<FString> Lint(const FS47EventScript& S,TArray<FString>* Warnings)
+// Freeform's (bStory false) and the story store's (true) lint; see Lint and LintStory in the header.
+static TArray<FString> LintAs(const FS47EventScript& S,TArray<FString>* Warnings,bool bStory)
 {
  using namespace S47EventScriptLocal;
  TArray<FString> E;
  const auto Warn=[Warnings](const FString& W){if(Warnings)Warnings->Add(W);};
+ // STORY-ON-FREEFORM-01 (step 4): the story's conditions, refused in Freeform's folders and checked for a flag's id in the story's.
+ const auto CondsLint=[&E,bStory](const TArray<FS47ScriptCond>& Conds,const FString& Where)
+ {
+  for(const FS47ScriptCond& C:Conds)
+  {
+   if(!StoryOnlyCond(C.If))continue;
+   if(!bStory)E.Add(FString::Printf(TEXT("%s: condition %s is story-only (Content/Director/Story/beats)"),*Where,*C.If));
+   else if(!FS47StoryDirector::ValidId(C.Arg))E.Add(FString::Printf(TEXT("%s: %s needs flag, a story flag's id"),*Where,*C.If));
+  }
+ };
+ CondsLint(S.Gates.If,TEXT("gates"));
  if(S.Id.IsEmpty()||S47Script::CleanId(S.Id)!=S.Id)E.Add(TEXT("id: a to z, 0 to 9 and _ only"));
  const FS47EventGates& G=S.Gates;
  if(G.DayTo>0&&G.DayFrom>G.DayTo)E.Add(TEXT("gates: the days run backwards"));
@@ -211,7 +233,7 @@ TArray<FString> Lint(const FS47EventScript& S,TArray<FString>* Warnings)
  for(const FString& A:G.Areas)if(A.IsEmpty())E.Add(TEXT("gates: an empty area"));
  if(G.Odds<=0)Warn(TEXT("gates: odds 0, it never starts"));
  const bool bWired=Wired().Contains(S.Id);
- if(!bWired)Warn(TEXT("no event's code plays this one: it runs from F10 only"));
+ if(!bWired&&!bStory)Warn(TEXT("no event's code plays this one: it runs from F10 only"));
  if(!S.bEnabled&&bWired)Warn(TEXT("switched off: the built-in beats play instead"));
  TArray<FString> Words={TEXT("clock"),TEXT("day"),TEXT("night"),TEXT("map_key")};Words.Append(WordsOf(S.Id));
  TArray<FString> Points={TEXT("here")};Points.Append(PointsOf(S.Id));
@@ -220,6 +242,8 @@ TArray<FString> Lint(const FS47EventScript& S,TArray<FString>* Warnings)
   const FS47Beat& B=S.Beats[I];
   const FString At=FString::Printf(TEXT("beat %d (%s)"),I+1,BeatName(B.Do));
   const auto Need=[&E,&At](bool bOk,const TCHAR* What){if(!bOk)E.Add(At+TEXT(": ")+What);};
+  CondsLint(B.If,At);CondsLint(B.Wait,At);
+  if(!bStory&&StoryOnlyBeat(B.Do)){E.Add(At+TEXT(": a story-only beat (Content/Director/Story/beats); Freeform's events cannot play it"));continue;}
   Need(B.At>=0&&B.At<=MostSeconds,TEXT("at is 0 to 600 seconds"));
   Need(B.Gain>=0&&B.Gain<=2,TEXT("gain is 0 to 2"));
   Need(B.Delay>=0&&B.Delay<=30,TEXT("delay is 0 to 30 seconds"));
@@ -243,16 +267,26 @@ TArray<FString> Lint(const FS47EventScript& S,TArray<FString>* Warnings)
    Need(B.Kind.IsEmpty()||B.Kind==TEXT("soft")||B.Kind==TEXT("hard")||B.Kind==TEXT("braam")||B.Kind==TEXT("swell"),TEXT("scare is soft, hard, braam or swell"));
    break;
   case ES47Beat::Silence:Need(B.Secs>=.5&&B.Secs<=30,TEXT("needs secs, 0.5 to 30: how long the night holds still"));break; // N1110 (level is checked as strength)
+  case ES47Beat::Flag:Need(FS47StoryDirector::ValidId(B.Flag),TEXT("needs flag, a story flag's id (a to z, 0 to 9 and _)"));break; // STORY-ON-FREEFORM-01 (step 4)
+  case ES47Beat::Start:
+   Need(B.Script.IsEmpty()!=B.Happening.IsEmpty(),TEXT("needs script (a story script) or happening (a night happening), not both"));
+   Need(B.Script.IsEmpty()||(S47Script::CleanId(B.Script)==B.Script&&B.Script!=S.Id),TEXT("script is another story script's id"));
+   break;
+  case ES47Beat::Clock:Need(B.AtLeast>=8,TEXT("needs at_least, \"HH:MM\""));break;
   case ES47Beat::Tube:Need((B.Tube>=2&&B.Tube<=7&&B.Next==0)||(B.Tube<0&&B.Next>=1&&B.Next<=6),TEXT("needs tube, 2 to 7, or next, 1 to 6, not both (tubes 0 and 1 are the working light and are never put out)"));break; // N1110
   default:break;
   }
-  const FString Why=PlayerWords(B.Text);
-  if(!Why.IsEmpty())E.Add(At+TEXT(": ")+Why);
+  // The story's text by its own check (it may carry the story's words, which Freeform's refuses); an objective may be empty (it clears).
+  if(bStory){const TArray<FString> StoryWhy=B.Text.IsEmpty()?TArray<FString>():FS47StoryDirector::LintStory(B.Text);if(StoryWhy.Num())E.Add(At+TEXT(": text ")+StoryWhy[0]);}
+  else{const FString Why=PlayerWords(B.Text);if(!Why.IsEmpty())E.Add(At+TEXT(": ")+Why);}
   for(const FString* T:{&B.Text,&B.Key,&B.Name})for(const FString& W:WordsIn(*T))if(!Words.Contains(W))Warn(FString::Printf(TEXT("%s: {%s} is not a word this event gives"),*At,*W));
   if(!B.Point.IsEmpty()&&!Points.Contains(B.Point))Warn(FString::Printf(TEXT("%s: point \"%s\" is not one this event gives"),*At,*B.Point));
  }
  return E;
 }
+
+TArray<FString> Lint(const FS47EventScript& S,TArray<FString>* Warnings){return LintAs(S,Warnings,false);}
+TArray<FString> LintStory(const FS47EventScript& S,TArray<FString>* Warnings){return LintAs(S,Warnings,true);}
 
 FString Fill(const FString& Text,const TMap<FString,FString>& Words)
 {
@@ -368,7 +402,7 @@ bool Allows(US47Main* M,const FString& Id,FString& Why)
  const FS47ScriptNow Now=P->Now();
  const double Roll=FS47NightRhythm::Roll(F->Seed(),Now.Night,GetTypeHash(Id)^0x45565453u);
  const FString Area=M->Web?M->Web->Area():FString();
- return GatesHold(S->Gates,Now,Area,Roll,Why,[M,&Area](const FS47ScriptCond& C){return C.If==TEXT("in_saro")?FS47FieldRadio::InSaroBuilding(M):C.If==TEXT("area")&&Area==C.Arg;});
+ return GatesHold(S->Gates,Now,Area,Roll,Why,[M,&Area](const FS47ScriptCond& C){return C.If==TEXT("in_saro")?FS47FieldRadio::InSaroBuilding(M):StoryOnlyCond(C.If)?FS47StoryDirector::CondHolds(M,C):C.If==TEXT("area")&&Area==C.Arg;});
 }
 
 bool Play(US47Main* M,const FString& Id,const FS47EventCtx& Ctx)
@@ -395,10 +429,21 @@ bool CameraSnap(US47Main* M,const FS47CameraSnap& Snap,FString& Why)
 
 // ---------- the runner ----------
 
-bool FS47EventBeats::Start(const FS47EventScript& S,const FS47EventCtx& Ctx)
+bool FS47EventBeats::Start(const FS47EventScript& S,const FS47EventCtx& Ctx){return Resume(S,Ctx,0,0);}
+
+TArray<FS47EventBeats::FProgress> FS47EventBeats::Progress() const
+{
+ TArray<FProgress> Out;
+ for(const FRun& R:Runs)Out.Add({R.S.Id,R.T,R.Next});
+ return Out;
+}
+
+bool FS47EventBeats::Resume(const FS47EventScript& S,const FS47EventCtx& Ctx,double At,int32 Played)
 {
  if(!M||Runs.Num()>=S47EventScriptLocal::MostRuns)return false;
  FRun R;R.S=S;R.Ctx=Ctx;
+ // STORY-ON-FREEFORM-01 (step 4): taken up where a save left it (Start: from the beginning).
+ R.T=FMath::Clamp(FMath::IsFinite(At)?At:0.,0.,S47EventScriptLocal::MostSeconds);R.Next=FMath::Clamp(Played,0,S.Beats.Num());
  // The words every event gives, unless its code gave its own.
  const FS47FreeformSession* F=M->Freeform.Get();
  const double Clock=F?F->Clock():0;
@@ -407,7 +452,7 @@ bool FS47EventBeats::Start(const FS47EventScript& S,const FS47EventCtx& Ctx)
  if(!R.Ctx.Words.Contains(TEXT("day")))R.Ctx.Words.Add(TEXT("day"),FString::FromInt(F?F->Day():1));
  if(!R.Ctx.Words.Contains(TEXT("night")))R.Ctx.Words.Add(TEXT("night"),FString::FromInt(FS47FreeformSession::NightOf(Clock)));
  if(!R.Ctx.Words.Contains(TEXT("map_key")))R.Ctx.Words.Add(TEXT("map_key"),S47Keys::MapSaid());
- UE_LOG(LogS47EventScript,Display,TEXT("S47: event script %s starts (%s, %d beats)"),*S.Id,*S.Source,S.Beats.Num());
+ UE_LOG(LogS47EventScript,Display,TEXT("S47: event script %s starts (%s, %d beats%s)"),*S.Id,*S.Source,S.Beats.Num(),R.Next>0||R.T>0?*FString::Printf(TEXT(", taken up at %.1f s after %d"),R.T,R.Next):TEXT(""));
  Runs.Add(R);
  // What comes at once comes now, before the event's code goes on.
  if(Advance(Runs.Last(),0))Runs.RemoveAt(Runs.Num()-1);
@@ -461,7 +506,8 @@ bool FS47EventBeats::Holds(const TArray<FS47ScriptCond>& Conds) const
  const FString Area=M->Web?M->Web->Area():FString();
  for(const FS47ScriptCond& C:Conds)
  {
-  const bool bOk=C.If==TEXT("in_saro")?FS47FieldRadio::InSaroBuilding(M):C.If==TEXT("area")?Area==C.Arg:S47Script::CondHolds(C,Now);
+  const bool bOk=C.If==TEXT("in_saro")?FS47FieldRadio::InSaroBuilding(M):C.If==TEXT("area")?Area==C.Arg
+   :S47EventScript::StoryOnlyCond(C.If)?FS47StoryDirector::CondHolds(M,C):S47Script::CondHolds(C,Now); // STORY-ON-FREEFORM-01 (step 4)
   if(!bOk)return false;
  }
  return true;
@@ -625,6 +671,16 @@ void FS47EventBeats::Fire(const FS47Beat& B,const FRun& R)
    Log(FString::Printf(TEXT("tube %d sparks and is out"),K));
   }
   if(Hit.IsEmpty())Log(B.Next>0?TEXT("no working tube is left to put out"):FString::Printf(TEXT("tube %d was already out"),B.Tube));
+  break;
+ }
+ case ES47Beat::Flag:
+ case ES47Beat::Start:
+ case ES47Beat::Clock:
+ case ES47Beat::Objective:
+ {
+  // STORY-ON-FREEFORM-01 (step 4): the story's own beats are the story director's; without a Story night they do nothing.
+  FS47StoryDirector* Story=FS47StoryDirector::Of(M);
+  Log(Story?Story->Apply(B,Text):FString(TEXT("left out: no story director")));
   break;
  }
  default:break;

@@ -4594,6 +4594,8 @@ FString FS47FreeformSession::Objective()const
  if(bDead)return TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT");
  // Stranded away from SARO: the only thing that matters is the way back. An empty tank at SARO stays a task below.
  if(Field&&!Field->HasVehicleFuel()&&M&&M->World&&M->World->Area!=TEXT("saro"))return TEXT("SERVICE TRUCK: TANK EMPTY. GET OUT AND USE THE TRUCK TO CALL ROADSIDE RETURN; IT COSTS MONEY AND A LONG WAIT");
+ // STORY-ON-FREEFORM-01 (step 4): a Story night's objective goes on top; empty, and so nothing, in any other night.
+ {const FString Story=FS47StoryDirector::ObjectiveOf(M);if(!Story.IsEmpty())return Story;}
  if(FieldFocus>=0)return FieldNextAction(FieldFocus);
  if(!HasPower()&&PrinterProgress()>=1)return PrinterHint();
  if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))
@@ -4716,6 +4718,7 @@ void FS47FreeformSession::NoteChore(TArray<FS47Task>& Result,const TCHAR* Kind,c
 TArray<FS47Task> FS47FreeformSession::Tasks()const
 {
  TArray<FS47Task> Result;
+ {const FString Story=FS47StoryDirector::ObjectiveOf(M);if(!Story.IsEmpty())Result.Add({Story,false});} // STORY-ON-FREEFORM-01 (step 4): a Story night's objective, first
  if(Director){const FString Reported=Director->ReportedLine();if(!Reported.IsEmpty())Result.Add({Reported,Director->ReportDone()});} // PT-FEEDER-20261109
  if(Director){const FString Watch=Director->EveningLightsLine();if(!Watch.IsEmpty())Result.Add({Watch,false});} // D45-20261110: the first evening's appointment
  if(Places)for(const TPair<FString,bool>& Slip:Places->SlipRows(Clock()))Result.Add({Slip.Key,Slip.Value}); // D45-20261110: the slip's circle to look at, ticked once stood in

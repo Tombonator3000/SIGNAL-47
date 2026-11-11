@@ -2,11 +2,40 @@
 #include "S47Main.h"
 #include "S47Freeform.h"
 #include "S47Script.h"
+#include "S47DevEvents.h"
+#include "S47Flow.h"
+#include "S47Happenings.h"
+#include "S47ScriptPlayer.h"
+#include "S47UI.h"
+#include "S47World.h"
+#include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
-// STORY-ON-FREEFORM-01, step 3: see S47StoryDirector.h.
+// STORY-ON-FREEFORM-01, steps 3 and 4: see S47StoryDirector.h.
 DEFINE_LOG_CATEGORY_STATIC(LogS47StoryDirector,Log,All);
+
+namespace S47StoryDirectorLocal
+{
+ // The story's scripts, read once and again on F10's "Read the story scripts again" (and at each Story night's Begin).
+ struct FStore{TArray<FS47EventScript> List;TMap<FString,FString> Bad;bool bRead=false;};
+ FStore& Store(){static FStore St;return St;}
+ void ReadOnce(){if(!Store().bRead)FS47StoryDirector::ReloadScripts();}
+ const TCHAR* const DevGroup=TEXT("Story (director)");
+ // The night's hour (8 to 32) as HH:MM.
+ FString HourText(double Hour)
+ {
+  const int32 Minutes=FMath::RoundToInt((Hour>=24?Hour-24:Hour)*60.);
+  return FString::Printf(TEXT("%02d:%02d"),(Minutes/60)%24,Minutes%60);
+ }
+}
+
+FS47StoryDirector::FS47StoryDirector(US47Main* Main):M(Main),Runner(MakeUnique<FS47EventBeats>(Main)){}
+
+FS47StoryDirector::~FS47StoryDirector()
+{
+ SetHold(false);
+}
 
 FString FS47StoryDirector::ActsPath()
 {
@@ -70,6 +99,12 @@ bool FS47StoryDirector::ParseActs(const FString& Text,TArray<FAct>& Out,FString&
    if(!V.IsValid()||V->Type!=EJson::String||!V->TryGetString(Need)||!ValidId(Need)){Why=FString::Printf(TEXT("act %s: a need is not a flag id"),*Act.Id);return false;}
    Act.Needs.AddUnique(Need);
   }
+  for(const TSharedPtr<FJsonValue>& V:S47J::Arr(A,TEXT("scripts"))) // step 4: the story scripts the act starts
+  {
+   FString Script;
+   if(!V.IsValid()||V->Type!=EJson::String||!V->TryGetString(Script)||!ValidId(Script)){Why=FString::Printf(TEXT("act %s: a script is not a story script's id"),*Act.Id);return false;}
+   Act.Scripts.AddUnique(Script);
+  }
   Parsed.Add(MoveTemp(Act));
  }
  Out=MoveTemp(Parsed);
@@ -93,6 +128,7 @@ TArray<FString> FS47StoryDirector::LintStory(const FString& Text)
 
 void FS47StoryDirector::Begin(const S47J::FObj& Saved)
 {
+ ReloadScripts(); // step 4: the story's scripts as they are on disk tonight
  FString Text;
  const FString Path=ActsPath();
  if(!FFileHelper::LoadFileToString(Text,*Path))
@@ -115,21 +151,38 @@ void FS47StoryDirector::BeginWith(const FString& ActsText,const S47J::FObj& Save
  }
  ActList=MoveTemp(Parsed);
  bActive=true;
- Load(Saved);
+ // A night that had not reached its act's start yet (a new night, or a save from before step 4) starts the act's scripts now.
+ if(!Load(Saved))QueueAct(ActIndex);
  UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story act %s (%s)"),*ActList[ActIndex].Id,*StateText());
+ AddDevLines();
 }
 
-void FS47StoryDirector::Load(const S47J::FObj& Saved)
+bool FS47StoryDirector::Load(const S47J::FObj& Saved)
 {
- ActIndex=0;Flags.Reset();
- if(!Saved.IsValid()||S47J::Int(Saved,TEXT("v"),0)!=1)return; // no save, or one this version cannot read: the first act
+ ActIndex=0;Flags.Reset();ObjectiveLine.Reset();Pending.Reset();
+ if(!Saved.IsValid()||S47J::Int(Saved,TEXT("v"),0)!=1)return false; // no save, or one this version cannot read: the first act
+ bool bAt=false;
  const FString At=S47J::Str(Saved,TEXT("act"));
- for(int32 I=0;I<ActList.Num();++I)if(ActList[I].Id==At){ActIndex=I;break;}
+ for(int32 I=0;I<ActList.Num();++I)if(ActList[I].Id==At){ActIndex=I;bAt=true;break;}
  for(const TSharedPtr<FJsonValue>& V:S47J::Arr(Saved,TEXT("flags")))
  {
   FString Flag;
   if(V.IsValid()&&V->Type==EJson::String&&V->TryGetString(Flag)&&ValidId(Flag))Flags.Add(Flag);
  }
+ // Step 4 (absent in older saves: none): the objective, and the story scripts under way, taken up where they were.
+ const FString Line=S47J::Str(Saved,TEXT("objective"));
+ if(!Line.IsEmpty()&&LintStory(Line).IsEmpty())ObjectiveLine=Line;
+ for(const TSharedPtr<FJsonValue>& V:S47J::Arr(Saved,TEXT("scripts")))
+ {
+  const S47J::FObj* Entry=nullptr;
+  if(!V.IsValid()||V->Type!=EJson::Object||!V->TryGetObject(Entry)||!Entry||!Entry->IsValid())continue;
+  const FString Id=S47J::Str(*Entry,TEXT("id"));
+  const double T=S47J::Num(*Entry,TEXT("t"));
+  const int32 Played=S47J::Int(*Entry,TEXT("next"));
+  if(S47Script::CleanId(Id)!=Id||Id.IsEmpty()||!FMath::IsFinite(T)||T<0||Played<0)continue;
+  if(!Pending.ContainsByPredicate([&Id](const FPending& P){return P.Id==Id;}))Pending.Add(FPending{Id,T,Played});
+ }
+ return bAt;
 }
 
 void FS47StoryDirector::Stop()
@@ -138,6 +191,12 @@ void FS47StoryDirector::Stop()
  ActList.Reset();
  ActIndex=-1;
  Flags.Reset();
+ // Step 4: the story's runs, the objective and a waiting clock go with it, and Freeform's dice are let go.
+ if(Runner)Runner->Stop();
+ Pending.Reset();
+ ObjectiveLine.Reset();
+ ClockAt=-1;ClockWaited=0;
+ SetHold(false);
 }
 
 bool FS47StoryDirector::ClockNow(double& Out) const
@@ -147,22 +206,34 @@ bool FS47StoryDirector::ClockNow(double& Out) const
  return false;
 }
 
-void FS47StoryDirector::Tick(double)
+void FS47StoryDirector::Tick(double Dt)
 {
  if(!bActive||!ActList.IsValidIndex(ActIndex))return;
  double Clock=0;
- if(!ClockNow(Clock))return;
- const double Hour=NightHourOf(Clock);
- while(ActList.IsValidIndex(ActIndex+1))
+ if(ClockNow(Clock))
  {
-  const FAct& Next=ActList[ActIndex+1];
-  if(Hour<Next.From)break;
-  bool bNeedsSet=true;
-  for(const FString& Need:Next.Needs)bNeedsSet&=Flags.Contains(Need);
-  if(!bNeedsSet)break;
-  ++ActIndex;
-  UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story act %s"),*Next.Id);
+  const double Hour=NightHourOf(Clock);
+  while(ActList.IsValidIndex(ActIndex+1))
+  {
+   const FAct& Next=ActList[ActIndex+1];
+   if(Hour<Next.From)break;
+   bool bNeedsSet=true;
+   for(const FString& Need:Next.Needs)bNeedsSet&=Flags.Contains(Need);
+   if(!bNeedsSet)break;
+   ++ActIndex;
+   UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story act %s"),*Next.Id);
+   QueueAct(ActIndex);
+  }
  }
+ // Step 4: the story's scripts, held where they are while a menu, a paper or a held scene is up (as Freeform's events are).
+ const bool bSceneHeld=M&&M->Freeform&&M->Freeform->Held();
+ if(!bSceneHeld&&Dt>0)
+ {
+  StartPending();
+  if(Runner)Runner->Step(Dt);
+ }
+ StepClock(Dt);
+ SetHold(M!=nullptr&&Busy());
 }
 
 S47J::FObj FS47StoryDirector::Save() const
@@ -171,7 +242,237 @@ S47J::FObj FS47StoryDirector::Save() const
  S47J::Set(O,TEXT("v"),1);
  if(const FAct* Now=CurrentAct())S47J::Set(O,TEXT("act"),Now->Id);
  S47J::Set(O,TEXT("flags"),FlagList());
+ // Step 4: the objective, and the story scripts under way (and those about to start) with how far they had come.
+ if(!ObjectiveLine.IsEmpty())S47J::Set(O,TEXT("objective"),ObjectiveLine);
+ TArray<TSharedPtr<FJsonValue>> Under;
+ const auto Keep=[&Under](const FString& Id,double T,int32 Played)
+ {
+  const S47J::FObj E=S47J::New();
+  S47J::Set(E,TEXT("id"),Id);S47J::Set(E,TEXT("t"),T);S47J::Set(E,TEXT("next"),Played);
+  Under.Add(MakeShared<FJsonValueObject>(E));
+ };
+ if(Runner)for(const FS47EventBeats::FProgress& P:Runner->Progress())Keep(P.Id,P.T,P.Next);
+ for(const FPending& P:Pending)Keep(P.Id,P.T,P.Next);
+ if(Under.Num())O->SetArrayField(TEXT("scripts"),Under);
  return O;
+}
+
+// ---------- step 4: the story's scripts ----------
+
+FString FS47StoryDirector::ScriptsDir()
+{
+ return FPaths::ProjectContentDir()/TEXT("Director/Story/beats");
+}
+
+bool FS47StoryDirector::ReadScript(const FString& Text,FS47EventScript& Out,FString& Why)
+{
+ if(!S47EventScript::Read(Text,Out,Why))return false;
+ const TArray<FString> Errors=S47EventScript::LintStory(Out);
+ if(Errors.Num()){Why=Errors[0];return false;}
+ return true;
+}
+
+void FS47StoryDirector::ReloadScripts()
+{
+ using namespace S47StoryDirectorLocal;
+ FStore& St=Store();
+ St.bRead=true;St.List.Reset();St.Bad.Reset();
+ const FString Dir=ScriptsDir();
+ TArray<FString> Files;
+ IFileManager::Get().FindFiles(Files,*(Dir/TEXT("*.json")),true,false);
+ Files.Sort();
+ for(const FString& File:Files)
+ {
+  const FString Path=Dir/File;
+  FString Text,Why;FS47EventScript Script;
+  if(!FFileHelper::LoadFileToString(Text,*Path)){St.Bad.Add(Path,TEXT("could not be read"));UE_LOG(LogS47StoryDirector,Warning,TEXT("S47: story script %s could not be read"),*Path);continue;}
+  if(!ReadScript(Text,Script,Why)){St.Bad.Add(Path,Why);UE_LOG(LogS47StoryDirector,Warning,TEXT("S47: story script %s refused: %s"),*Path,*Why);continue;}
+  if(!Script.bEnabled){UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story script %s is switched off"),*Path);continue;}
+  const FString Id=Script.Id;
+  if(St.List.ContainsByPredicate([&Id](const FS47EventScript& Other){return Other.Id==Id;}))
+  {St.Bad.Add(Path,TEXT("its id is another story script's"));UE_LOG(LogS47StoryDirector,Warning,TEXT("S47: story script %s refused: id %s is used twice"),*Path,*Id);continue;}
+  Script.Source=Path;
+  St.List.Add(MoveTemp(Script));
+ }
+ UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story scripts: %d from %s, %d refused"),St.List.Num(),*Dir,St.Bad.Num());
+}
+
+const TArray<FS47EventScript>& FS47StoryDirector::StoryScripts(){S47StoryDirectorLocal::ReadOnce();return S47StoryDirectorLocal::Store().List;}
+const FS47EventScript* FS47StoryDirector::FindScript(const FString& Id){return StoryScripts().FindByPredicate([&Id](const FS47EventScript& Script){return Script.Id==Id;});}
+const TMap<FString,FString>& FS47StoryDirector::RefusedScripts(){S47StoryDirectorLocal::ReadOnce();return S47StoryDirectorLocal::Store().Bad;}
+
+FS47StoryDirector* FS47StoryDirector::Of(const US47Main* Main)
+{
+ if(!Main||!Main->IsFreeform()||!Main->Flow||!Main->Flow->StoryNight()||!Main->StoryDirector||!Main->StoryDirector->Active())return nullptr;
+ return Main->StoryDirector.Get();
+}
+
+bool FS47StoryDirector::Holds(const US47Main* Main)
+{
+ const FS47StoryDirector* D=Of(Main);
+ return D&&D->Busy();
+}
+
+bool FS47StoryDirector::FlagCond(const FS47ScriptCond& C) const
+{
+ const bool bHas=Flags.Contains(C.Arg);
+ return C.If==TEXT("no_story_flag")?!bHas:C.If==TEXT("story_flag")&&bHas;
+}
+
+bool FS47StoryDirector::CondHolds(const US47Main* Main,const FS47ScriptCond& C)
+{
+ const FS47StoryDirector* D=Of(Main);
+ return D?D->FlagCond(C):C.If==TEXT("no_story_flag");
+}
+
+FString FS47StoryDirector::ObjectiveOf(const US47Main* Main)
+{
+ const FS47StoryDirector* D=Of(Main);
+ return D?D->ObjectiveLine:FString();
+}
+
+double FS47StoryDirector::ClockPushFor(double Clock,double AtLeast)
+{
+ if(!FMath::IsFinite(Clock)||!FMath::IsFinite(AtLeast)||AtLeast<8.||AtLeast>=32.)return 0;
+ const double Hour=NightHourOf(Clock);
+ return AtLeast>Hour?(AtLeast-Hour)*3600.:0.;
+}
+
+bool FS47StoryDirector::Busy() const
+{
+ return Pending.Num()>0||ClockAt>=0||(Runner&&Runner->Live()>0);
+}
+
+int32 FS47StoryDirector::RunningCount() const
+{
+ return Runner?Runner->Live():0;
+}
+
+FString FS47StoryDirector::Apply(const FS47Beat& B,const FString& Text)
+{
+ switch(B.Do)
+ {
+ case ES47Beat::Flag:
+  if(B.bSet)return SetFlag(B.Flag)?TEXT("story flag set: ")+B.Flag:TEXT("not a story flag's id: ")+B.Flag;
+  return ClearFlag(B.Flag)?TEXT("story flag cleared: ")+B.Flag:TEXT("story flag was not set: ")+B.Flag;
+ case ES47Beat::Start:
+ {
+  FString Why;
+  if(!B.Script.IsEmpty())return StartScript(B.Script,Why)?TEXT("story script starts: ")+B.Script:TEXT("story script not started: ")+B.Script+TEXT(" (")+Why+TEXT(")");
+  FS47Happenings* Haps=M&&M->Freeform?M->Freeform->Happenings.Get():nullptr;
+  if(!Haps)return TEXT("happening not asked for: ")+B.Happening+TEXT(" (no night happenings here)");
+  // Asked as the night asks (not forced): its tier, the rhythm, the tutorial and its gates may say no; the reason goes to the log.
+  if(Haps->Request(B.Happening,Why))return TEXT("happening starts: ")+B.Happening;
+  UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story: happening %s refused: %s"),*B.Happening,*Why);
+  return TEXT("happening refused: ")+B.Happening+TEXT(" (")+Why+TEXT(")");
+ }
+ case ES47Beat::Clock:
+  if(B.AtLeast<8.)return TEXT("clock: no hour");
+  ClockAt=FMath::Max(ClockAt,B.AtLeast);ClockWaited=0;
+  return TEXT("clock to at least ")+S47StoryDirectorLocal::HourText(ClockAt);
+ case ES47Beat::Objective:
+  ObjectiveLine=Text.TrimStartAndEnd();
+  return ObjectiveLine.IsEmpty()?FString(TEXT("objective cleared")):TEXT("objective: ")+ObjectiveLine;
+ default:
+  return TEXT("not a story beat");
+ }
+}
+
+bool FS47StoryDirector::StartScript(const FString& Id,FString& Why)
+{
+ if(!FindScript(Id)){Why=TEXT("no story script ")+Id;return false;}
+ if((Runner&&Runner->Running(Id))||Pending.ContainsByPredicate([&Id](const FPending& P){return P.Id==Id;})){Why=Id+TEXT(" is running already");return false;}
+ Pending.Add(FPending{Id,0.,0});
+ return true;
+}
+
+void FS47StoryDirector::QueueAct(int32 Index)
+{
+ if(!ActList.IsValidIndex(Index))return;
+ for(const FString& Id:ActList[Index].Scripts)
+ {
+  FString Why;
+  if(!StartScript(Id,Why))UE_LOG(LogS47StoryDirector,Warning,TEXT("S47: story act %s: script %s not started: %s"),*ActList[Index].Id,*Id,*Why);
+ }
+}
+
+void FS47StoryDirector::StartPending()
+{
+ if(Pending.IsEmpty()||!Runner)return;
+ // A start beat in what starts now waits for the next tick (the runner is never asked to start a run from inside its own step).
+ const TArray<FPending> Due=MoveTemp(Pending);
+ Pending.Reset();
+ for(const FPending& P:Due)
+ {
+  const FS47EventScript* Script=FindScript(P.Id);
+  if(!Script){UE_LOG(LogS47StoryDirector,Warning,TEXT("S47: story script %s is not in the store; left out"),*P.Id);continue;}
+  if(!Runner->Resume(*Script,FS47EventCtx(),P.T,P.Next))UE_LOG(LogS47StoryDirector,Warning,TEXT("S47: story script %s could not start (no game, or too many runs)"),*P.Id);
+ }
+}
+
+void FS47StoryDirector::StepClock(double Dt)
+{
+ if(ClockAt<0)return;
+ double Clock=0;
+ if(!M||!M->Freeform||!ClockNow(Clock)){ClockAt=-1;ClockWaited=0;return;}
+ // Never under a panel or at the wheel: it waits a few seconds for them, then it is left out.
+ if(M->ModalOpen()||(M->World&&M->World->bDriving))
+ {
+  ClockWaited+=FMath::Max(0.,Dt);
+  if(ClockWaited>=ClockWaitMost)
+  {
+   UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story clock to %s left out: a panel open or driving for %.0f s"),*S47StoryDirectorLocal::HourText(ClockAt),ClockWaitMost);
+   ClockAt=-1;ClockWaited=0;
+  }
+  return;
+ }
+ const double Push=ClockPushFor(Clock,ClockAt);
+ if(Push>0&&M->Freeform->SpendTime(Push))UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story clock pushed %.0f min to %s"),Push/60.,*S47StoryDirectorLocal::HourText(ClockAt));
+ ClockAt=-1;ClockWaited=0;
+}
+
+void FS47StoryDirector::SetHold(bool bOn)
+{
+ if(bOn==bHeld)return;
+ bHeld=bOn;
+ FS47ScriptPlayer::Hold(TEXT("story"),bOn);
+ UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story %s Freeform's dice"),bOn?TEXT("holds"):TEXT("lets go of"));
+}
+
+void FS47StoryDirector::AddDevLines()
+{
+ using namespace S47StoryDirectorLocal;
+ if(!M||!M->DevEvents)return;
+ US47Main* Main=M;
+ const auto AddOnce=[Main](const FString& Label,const FString& Note,TFunction<void()> Fn)
+ {
+  if(Main->DevEvents->Events().ContainsByPredicate([&Label](const FS47DevEvents::FEvent& Ev){return Ev.Group==DevGroup&&Ev.Label==Label;}))return;
+  Main->DevEvents->AddStory(DevGroup,Label,Note,MoveTemp(Fn));
+ };
+ const auto Say=[Main](const FString& Line){if(Main->UI)Main->UI->Toast(TEXT("Developer event: ")+Line,5);};
+ AddOnce(TEXT("Story director: state"),TEXT("the act, the flags, the objective and the story scripts running"),[Main,Say]
+ {
+  const FS47StoryDirector* D=Of(Main);
+  Say(D?D->StateText():FString(TEXT("not a Story night")));
+ });
+ AddOnce(TEXT("Read the story scripts again"),TEXT("Content/Director/Story/beats; a new file gets its own line"),[Main,Say]
+ {
+  ReloadScripts();
+  const TMap<FString,FString>& Bad=RefusedScripts();
+  Say(FString::Printf(TEXT("%d story scripts, %d refused%s."),StoryScripts().Num(),Bad.Num(),Bad.Num()?*(TEXT(" (first: ")+Bad.CreateConstIterator().Value()+TEXT(")")):TEXT("")));
+  if(FS47StoryDirector* D=Of(Main))D->AddDevLines();
+ });
+ for(const FS47EventScript& Script:StoryScripts())
+ {
+  const FString Id=Script.Id;
+  AddOnce(TEXT("Run: ")+Id,Script.Name.IsEmpty()?FString(TEXT("this story script now (its flags and objective are kept)")):Script.Name,[Main,Say,Id]
+  {
+   FS47StoryDirector* D=Of(Main);
+   FString Why=TEXT("not a Story night");
+   const bool bOk=D&&D->StartScript(Id,Why);
+   Say(bOk?TEXT("story script ")+Id+TEXT(" starts"):TEXT("not now: ")+Why);
+  });
+ }
 }
 
 bool FS47StoryDirector::SetFlag(const FString& Flag)
@@ -197,7 +498,7 @@ FString FS47StoryDirector::StateText() const
 {
  const FAct* Now=CurrentAct();
  if(!Now)return TEXT("inactive");
- return FString::Printf(TEXT("act %s, %d of %d, flags [%s]"),*Now->Id,ActIndex+1,ActList.Num(),*FString::Join(FlagList(),TEXT(",")));
+ return FString::Printf(TEXT("act %s, %d of %d, flags [%s], objective \"%s\", %d story scripts running, %d to start"),*Now->Id,ActIndex+1,ActList.Num(),*FString::Join(FlagList(),TEXT(",")),*ObjectiveLine,RunningCount(),Pending.Num());
 }
 
 bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
@@ -298,6 +599,131 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
    for(const FAct& Act:Parsed)bClean&=S47Script::LintText(Act.Title).IsEmpty();
    Check(bClean&&Parsed.Num()==3&&Parsed[0].Id==TEXT("evening")&&Parsed[1].Id==TEXT("night")&&Parsed[2].Id==TEXT("morning"),TEXT("STORY-3: Content/Director/Story/acts.json has evening, night and morning with neutral titles"));
    if(!Why.IsEmpty())Lines.Add(TEXT("NOTE acts.json: ")+Why);
+  }
+ }
+ // ---------- STORY-4 (step 4): the story's beats and conditions, its store, its lint, the clock, the objective, the save, the hold ----------
+ {
+  const FString NoGates;
+  const auto Wrap=[](const FString& BeatJson,const FString& GatesJson){return FString::Printf(TEXT("{\"version\":1,\"id\":\"story_test\",%s\"beats\":[%s]}"),*GatesJson,*BeatJson);};
+  const auto FirstBeat=[](const FString& Json){FS47EventScript Sc;FString W;return ReadScript(Json,Sc,W)&&Sc.Beats.Num()?Sc.Beats[0]:FS47Beat();};
+  const FString FlagOn=TEXT("{\"at\":0,\"do\":\"flag\",\"flag\":\"a_flag\"}");
+  const FString FlagOff=TEXT("{\"at\":0,\"do\":\"flag\",\"flag\":\"a_flag\",\"set\":false}");
+  const FString ClockOne=TEXT("{\"at\":0,\"do\":\"clock\",\"at_least\":\"23:30\"}");
+  const FString Goal=TEXT("{\"at\":0,\"do\":\"objective\",\"text\":\"Take the call at OPS.\"}");
+  const FString GoalOff=TEXT("{\"at\":0,\"do\":\"objective\",\"text\":\"\"}");
+  const TArray<FString> Samples={Wrap(FlagOn,NoGates),Wrap(FlagOff,NoGates),Wrap(TEXT("{\"at\":0,\"do\":\"start\",\"script\":\"other_script\"}"),NoGates),
+   Wrap(TEXT("{\"at\":0,\"do\":\"start\",\"happening\":\"hitchhiker\"}"),NoGates),Wrap(ClockOne,NoGates),Wrap(Goal,NoGates),Wrap(GoalOff,NoGates),
+   Wrap(TEXT("{\"at\":0,\"do\":\"toast\",\"text\":\"A line.\",\"if\":[{\"if\":\"story_flag\",\"flag\":\"a_flag\"}]}"),NoGates),
+   Wrap(TEXT("{\"at\":0,\"do\":\"toast\",\"text\":\"A line.\",\"wait\":[{\"if\":\"no_story_flag\",\"flag\":\"a_flag\"}],\"max\":5}"),NoGates),
+   Wrap(TEXT("{\"at\":0,\"do\":\"toast\",\"text\":\"A line.\"}"),TEXT("\"gates\":{\"if\":[{\"if\":\"story_flag\",\"flag\":\"a_flag\"}]},"))};
+  bool bFreeRefuses=true,bStoryTakes=true;
+  for(const FString& Json:Samples)
+  {
+   FS47EventScript Sample;FString SampleWhy;
+   const bool bSampleRead=S47EventScript::Read(Json,Sample,SampleWhy);
+   const TArray<FString> FreeErrors=bSampleRead?S47EventScript::Lint(Sample):TArray<FString>();
+   bFreeRefuses&=bSampleRead&&FreeErrors.Num()>0&&FreeErrors[0].Contains(TEXT("story-only"));
+   FS47EventScript StoryOne;FString StoryWhy;
+   const bool bTaken=ReadScript(Json,StoryOne,StoryWhy);
+   if(!bTaken)Lines.Add(TEXT("NOTE story lint refused a sample: ")+StoryWhy);
+   bStoryTakes&=bTaken;
+  }
+  Check(bFreeRefuses,TEXT("STORY-4: Freeform's lint refuses story_flag, no_story_flag and the flag, start, clock and objective beats by name"));
+  Check(bStoryTakes,TEXT("STORY-4: the story store's lint (S47EventScript::LintStory) lets them through"));
+  bool bStoryRefuses=true;
+  for(const FString& Wrong:{Wrap(TEXT("{\"at\":0,\"do\":\"flag\",\"flag\":\"Not A Flag\"}"),NoGates),Wrap(TEXT("{\"at\":0,\"do\":\"start\"}"),NoGates),
+   Wrap(TEXT("{\"at\":0,\"do\":\"start\",\"script\":\"a_one\",\"happening\":\"hitchhiker\"}"),NoGates),Wrap(TEXT("{\"at\":0,\"do\":\"start\",\"script\":\"story_test\"}"),NoGates),
+   Wrap(TEXT("{\"at\":0,\"do\":\"clock\",\"at_least\":\"25:00\"}"),NoGates),Wrap(TEXT("{\"at\":0,\"do\":\"clock\"}"),NoGates),
+   Wrap(TEXT("{\"at\":0,\"do\":\"toast\",\"text\":\"A line.\",\"if\":[{\"if\":\"story_flag\"}]}"),NoGates)})
+  {
+   FS47EventScript WrongOne;FString WrongWhy;
+   bStoryRefuses&=!ReadScript(Wrong,WrongOne,WrongWhy);
+  }
+  Check(bStoryRefuses,TEXT("STORY-4: the story's lint refuses a bad flag id, a start with neither or both, a start of itself, a clock without HH:MM, a story_flag without flag"));
+  { // the story's text by LintStory, Freeform's by LintText
+   const FString Told=Wrap(TEXT("{\"at\":0,\"do\":\"toast\",\"text\":\"The tape stops at 05:29:47, as it did in 1947.\"}"),NoGates);
+   const FString Named=Wrap(TEXT("{\"at\":0,\"do\":\"toast\",\"text\":\"He shouts like Kinski.\"}"),NoGates);
+   FS47EventScript TextOne;FString TextWhy;
+   const bool bFreeNo=S47EventScript::Read(Told,TextOne,TextWhy)&&S47EventScript::Lint(TextOne).Num()>0;
+   const bool bStoryYes=ReadScript(Told,TextOne,TextWhy);
+   const bool bNamedNo=!ReadScript(Named,TextOne,TextWhy);
+   Check(bFreeNo&&bStoryYes&&bNamedNo,TEXT("STORY-4: story text is checked by LintStory (the story's own words pass; a banned name does not); Freeform's lint still refuses them"));
+  }
+  FS47StoryDirector Dir(nullptr);
+  Dir.BeginWith(ActsText,S47J::FObj());
+  FS47ScriptCond Has;Has.If=TEXT("story_flag");Has.Arg=TEXT("a_flag");
+  FS47ScriptCond HasNot;HasNot.If=TEXT("no_story_flag");HasNot.Arg=TEXT("a_flag");
+  const bool bBefore=!Dir.FlagCond(Has)&&Dir.FlagCond(HasNot);
+  Dir.Apply(FirstBeat(Wrap(FlagOn,NoGates)),FString());
+  const bool bSetNow=Dir.HasFlag(TEXT("a_flag"))&&Dir.FlagCond(Has)&&!Dir.FlagCond(HasNot);
+  Dir.Apply(FirstBeat(Wrap(FlagOff,NoGates)),FString());
+  const bool bClearedNow=!Dir.HasFlag(TEXT("a_flag"))&&!Dir.FlagCond(Has)&&Dir.FlagCond(HasNot);
+  Check(bSetNow&&bClearedNow,TEXT("STORY-4: the flag beat sets a story flag, and with set false clears it"));
+  Check(bBefore&&bSetNow&&bClearedNow&&!CondHolds(nullptr,Has)&&CondHolds(nullptr,HasNot),TEXT("STORY-4: story_flag and no_story_flag follow the flags; without a Story night's director no story flag is set"));
+  const FS47Beat GoalBeat=FirstBeat(Wrap(Goal,NoGates));
+  Dir.Apply(GoalBeat,GoalBeat.Text);
+  const bool bGoal=Dir.ObjectiveText()==TEXT("Take the call at OPS.");
+  const FS47Beat GoalClear=FirstBeat(Wrap(GoalOff,NoGates));
+  Dir.Apply(GoalClear,GoalClear.Text);
+  Check(bGoal&&Dir.ObjectiveText().IsEmpty()&&ObjectiveOf(nullptr).IsEmpty(),TEXT("STORY-4: the objective beat sets the story's line and an empty one clears it; none without a director"));
+  { // clock at_least: forward only, to that hour of tonight, never into the next night (pure)
+   bool bForwardOnly=true;
+   for(int32 Half=0;Half<96;++Half)for(int32 K=0;K<48;++K)
+   {
+    const double From=Half*1800.,Target=8.+K*.5;
+    const double Push=ClockPushFor(From,Target);
+    bForwardOnly&=Push>=0&&FS47FreeformSession::NightOf(From+Push)==FS47FreeformSession::NightOf(From);
+    bForwardOnly&=Push>0?FMath::IsNearlyEqual(NightHourOf(From+Push),Target,1e-6):NightHourOf(From)>=Target;
+   }
+   double H2330=0,H2300=0;
+   const bool bHours=ParseFrom(TEXT("23:30"),H2330)&&ParseFrom(TEXT("23:00"),H2300);
+   const bool bCases=bHours&&FMath::IsNearlyEqual(ClockPushFor(82800.,H2330),1800.)&&ClockPushFor(Day2+3*3600.,H2300)==0&&ClockPushFor(82800.,H2300)==0
+    &&ClockPushFor(82800.,5.)==0&&ClockPushFor(82800.,32.)==0&&FMath::IsNearlyEqual(FirstBeat(Wrap(ClockOne,NoGates)).AtLeast,23.5);
+   Check(bForwardOnly&&bCases,TEXT("STORY-4: clock at_least only pushes the clock forward, to that hour of tonight, never back and never into the next night"));
+  }
+  FS47StoryDirector Idle(nullptr);
+  const bool bIdle=!Idle.Busy()&&!Holds(nullptr)&&!Of(nullptr);
+  Dir.Apply(FirstBeat(Wrap(ClockOne,NoGates)),FString());
+  Check(bIdle&&Dir.Busy()&&!Holds(nullptr),TEXT("STORY-4: Holds is false without a director; a waiting story beat makes the director busy"));
+  { // the save: objective and the scripts under way, v stays 1; absent fields read as none
+   FS47StoryDirector Saver(nullptr);
+   Saver.BeginWith(ActsText,S47J::Read(TEXT("{\"v\":1,\"act\":\"night\",\"flags\":[\"a_flag\"],\"objective\":\"Take the call at OPS.\",\"scripts\":[{\"id\":\"evening_handover\",\"t\":2.5,\"next\":1},{\"id\":\"Bad Id\",\"t\":1,\"next\":0}]}")));
+   const S47J::FObj Kept=S47J::Read(S47J::Write(Saver.Save()));
+   const TArray<TSharedPtr<FJsonValue>> Under=S47J::Arr(Kept,TEXT("scripts"));
+   const S47J::FObj* Entry=nullptr;
+   const bool bRun=Under.Num()==1&&Under[0].IsValid()&&Under[0]->TryGetObject(Entry)&&Entry&&S47J::Str(*Entry,TEXT("id"))==TEXT("evening_handover")
+    &&FMath::IsNearlyEqual(S47J::Num(*Entry,TEXT("t")),2.5)&&S47J::Int(*Entry,TEXT("next"))==1;
+   FS47StoryDirector Older(nullptr);
+   Older.BeginWith(ActsText,S47J::Read(TEXT("{\"v\":1,\"act\":\"night\",\"flags\":[]}")));
+   const S47J::FObj OlderSaved=Older.Save();
+   Check(bRun&&S47J::Int(Kept,TEXT("v"))==1&&S47J::Str(Kept,TEXT("objective"))==TEXT("Take the call at OPS.")&&Saver.ObjectiveText()==TEXT("Take the call at OPS.")&&Saver.CurrentIndex()==1
+    &&Older.ObjectiveText().IsEmpty()&&!Older.Busy()&&!S47J::Has(OlderSaved,TEXT("scripts"))&&!S47J::Has(OlderSaved,TEXT("objective")),
+    TEXT("STORY-4: the save keeps the objective and the story scripts under way (v stays 1); a save without them has none"));
+  }
+  { // acts list the scripts they start
+   TArray<FAct> WithScripts,WrongScripts;FString ActWhy;
+   const FString ActsWith=TEXT("{\"v\":1,\"acts\":[{\"id\":\"evening\",\"title\":\"Evening\",\"from\":\"18:00\",\"scripts\":[\"evening_handover\"]},{\"id\":\"night\",\"title\":\"Night\",\"from\":\"00:00\"}]}");
+   const bool bActs=ParseActs(ActsWith,WithScripts,ActWhy)&&WithScripts[0].Scripts.Num()==1&&WithScripts[0].Scripts[0]==TEXT("evening_handover")&&WithScripts[1].Scripts.IsEmpty();
+   const bool bActRefuses=!ParseActs(TEXT("{\"v\":1,\"acts\":[{\"id\":\"evening\",\"title\":\"Evening\",\"from\":\"18:00\",\"scripts\":[\"Bad Id\"]}]}"),WrongScripts,ActWhy);
+   Check(bActs&&bActRefuses,TEXT("STORY-4: an act lists the story scripts it starts; a bad id refuses the acts"));
+   ReloadScripts();
+   for(const TPair<FString,FString>& Refused:RefusedScripts())Lines.Add(FString::Printf(TEXT("NOTE story script %s refused: %s"),*Refused.Key,*Refused.Value));
+   const FS47EventScript* Handover=FindScript(TEXT("evening_handover"));
+   if(!Handover)Lines.Add(TEXT("NOTE story director: no Content/Director/Story/beats/evening_handover.json beside this build"));
+   else
+   {
+    const bool bShape=Handover->Beats.ContainsByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Flag&&Bt.Flag==TEXT("handover_told")&&Bt.bSet;})
+     &&Handover->Beats.ContainsByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Objective&&Bt.Text==TEXT("Take the evening handover call at OPS.");})
+     &&Handover->Beats.ContainsByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Toast&&!Bt.Text.IsEmpty();});
+    FS47StoryDirector Fresh(nullptr);
+    Fresh.BeginWith(ActsWith,S47J::FObj());
+    FS47StoryDirector Later(nullptr);
+    Later.BeginWith(ActsWith,S47J::Read(TEXT("{\"v\":1,\"act\":\"evening\"}")));
+    Check(bShape&&S47EventScript::Lint(*Handover).Num()>0&&Fresh.Busy()&&!Later.Busy(),TEXT("STORY-4: evening_handover is in the story store, Freeform's lint refuses it, and the evening act starts it (once: not again from a save)"));
+   }
+   FString StoryDir=ScriptsDir();
+   FPaths::NormalizeDirectoryName(StoryDir);FPaths::CollapseRelativeDirectories(StoryDir);
+   Check(!S47EventScript::ReadDirs().Contains(StoryDir)&&!S47EventScript::Find(TEXT("evening_handover")),TEXT("STORY-4: Freeform's event folders do not read the story's scripts"));
   }
  }
  return OK;
