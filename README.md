@@ -16,9 +16,9 @@ Førstepersons skrekk- og mysteriespill med jobbsimulator i åpen ørken. Det er
 
 ## Spill på Linux
 
-[Komplett Linux-testutgave 29. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-29), x86-64 med Vulkan. Modeller, teksturer og lyd følger med. Du trenger verken Git, Unreal-editor eller separate Artifacts. Denne utgaven har samme runtime som installert Farm R1; se statuslenken ovenfor.
+[Komplett Linux-testutgave 11. november 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-11-11) (versjon 0.9.58, Freeform), x86-64 med Vulkan. Modeller, teksturer og lyd følger med. Du trenger verken Git, Unreal-editor eller separate Artifacts.
 
-Last ned bare [Spill-SIGNAL47.sh](https://github.com/Tombonator3000/SIGNAL-47/releases/download/playtest-linux-2026-10-29/Spill-SIGNAL47.sh) til en skrivbar mappe og kjør:
+Last ned bare [Spill-SIGNAL47.sh](https://github.com/Tombonator3000/SIGNAL-47/releases/download/playtest-linux-2026-11-11/Spill-SIGNAL47.sh) til en skrivbar mappe og kjør:
 
 ```sh
 bash Spill-SIGNAL47.sh
