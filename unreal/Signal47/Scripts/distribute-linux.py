@@ -8,10 +8,14 @@ parser.add_argument("output", type=Path, help="New output directory, with BUILD.
 parser.add_argument("--date", required=True)
 args = parser.parse_args()
 # Audio/Raw is staged into every package. These are third-party clips kept for private local trials only.
-PRIVATE_ONLY = [Path(__file__).resolve().parents[1] / 'Content/Audio/Raw/sound_design/alien_interference.wav']
-present = [str(path) for path in PRIVATE_ONLY if path.exists()]
+# The Unarius TV programme's rights are not cleared (DECISIONS 9 Nov): it stays local too.
+# Checked in the package's own manifests, so a package cooked with them set aside can ship.
+PRIVATE_ONLY = ['Content/Audio/Raw/sound_design/alien_interference.wav', 'Content/Audio/Raw/tv/unarius.wav',
+                'Content/WebData/tv/unarius.s47tv']
+staged = ''.join((args.source / m).read_text() for m in ('Manifest_UFSFiles_Linux.txt', 'Manifest_NonUFSFiles_Linux.txt'))
+present = [p for p in PRIVATE_ONLY if p in staged]
 if present:
-    sys.exit('Refusing to package for distribution: private third-party audio would ship: ' + ', '.join(present))
+    sys.exit('Refusing to package for distribution: private third-party content would ship: ' + ', '.join(present))
 WORK = args.output.resolve()
 ARCHIVES = WORK / 'archives'
 ARCHIVES.mkdir(exist_ok=True)
@@ -81,7 +85,9 @@ mandatory law or the separate licenses of open-license components.
 build = json.loads((WORK / 'BUILD.json').read_text())
 assert build['runtime_source_commit'] and build['release_source_commit']
 assert build['full_matrix']['status'] == 'PASS', 'Release requires the full matrix'
-assert build['night_contract']['status'] == 'PASS', 'Release requires the night sequence contract'
+# Story's SC01 night contract, or (since Freeform comes first, DECISIONS 7/11 Nov) the Freeform journey contract.
+assert build.get('night_contract', {}).get('status') == 'PASS' or build.get('freeform_journey', {}).get('status') == 'PASS', \
+    'Release requires the night sequence contract or the Freeform journey contract'
 build['distribution'] = {'archives': NAMES, 'ucas_sha256': ucas_sha}
 build['payload_sha256'] = {name: info['sha256'] for name, info in files.items()}
 save('BUILD.json', build)

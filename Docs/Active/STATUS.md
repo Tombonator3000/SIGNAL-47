@@ -4,7 +4,13 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 11. november kl. 06:19 (d57): versjon 0.9.57, `168af36f` på `claude/day-20261109`
+## Installert 11. november kl. 10:16 (d58): versjon 0.9.58, `f16655f0` på `claude/day-20261111`
+
+PR #510 merget til main av Tom. Pakket, røyktestet og installert. Innhold: arbeidet etter d57 (oppmerksomhet som forklarer seg selv, sabotasje som varierer, pakkeslipp med fall og dunk, Dales tekst). Selvtest 4764 (st53), regresjon PASS 251. Tilbakerulling: d57 (`168af36f`). Ikke spilt av Tom.
+
+**Linux-testutgave 11. november** ([release](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-11-11), [kvittering](../Evidence/UnrealDeliveries/LINUX_RELEASE_2026-11-11.md)): samme kilde som d58, kokt for seg uten de tre lokale tredjepartsklippene (Unarius-TV og alien_interference). Pakket matrise 112/112, Freeform-reisen 59, utpakket fra ZIP og startet gjennom Play.sh (selvtest 4764, tittel 0.9.58). Ikke prøvd på en annen PC.
+
+## Tidligere: installert 11. november kl. 06:19 (d57): versjon 0.9.57, `168af36f` på `claude/day-20261109`
 
 Pakket, røyktestet og installert (selvtest OK, 4756 kontroller). Tilbakerulling: d56 (`e12603e5`). Disk etterpå: 122 GB (d53-, d54- og d55-pakkene og generert `Saved/StagedBuilds` + `Saved/Cooked` ryddet; neste pakking koker derfor fra start). Ikke spilt av Tom.
 

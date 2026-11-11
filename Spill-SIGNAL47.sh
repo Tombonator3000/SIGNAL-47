@@ -6,9 +6,9 @@
 # Kjør med --hjelp for valg og feilsøking.
 set -euo pipefail
 
-tag='playtest-linux-2026-11-02'
+tag='playtest-linux-2026-11-11'
 base="https://github.com/Tombonator3000/SIGNAL-47/releases/download/$tag"
-archives=(Signal47-Linux-2026-11-02.zip Signal47-Linux-2026-11-02-Data1.zip Signal47-Linux-2026-11-02-Data2.zip)
+archives=(Signal47-Linux-2026-11-11.zip Signal47-Linux-2026-11-11-Data1.zip Signal47-Linux-2026-11-11-Data2.zip)
 
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 game_dir="$repo_dir/Spill/$tag"

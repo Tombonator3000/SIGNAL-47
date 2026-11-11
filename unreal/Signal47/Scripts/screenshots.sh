@@ -147,7 +147,7 @@ shot caliche "S47: Caliche conversation attendant, people 1" "-S47Jump=chapter1 
 # the dawn at 05:20 behind the mesas, the flora along the road far from SARO on the drive, and the
 # mesas round STATION 01 without the fog (dark against the sky, no rim)
 shot beacon "S47: life clock .* beacon 0\.[5-9]" "-S47Jump=chapter1 -S47Face=outside -S47LifeLog" 8
-shot starhole "S47: life clock 02:1.* hole 0\.[1-9]" "-S47Jump=chapter1 -S47Face=at:10;-12;-0.4538;0.5585 -S47LifeLog" 14
+shot starhole "S47: life clock 02:1.* hole \(0\.[1-9]\|1\.0\)" "-S47Jump=chapter1 -S47Face=at:10;-12;-0.4538;0.5585 -S47LifeLog" 14
 shot meteor "S47: shooting star now" "-S47Jump=chapter1 -S47Face=at:10;-12;0.6;0.7 -S47Meteor=3 -S47MeteorAim" 4.6
 shot dawn "S47: life clock 05:2.* dawn 0\.[3-6]" "-S47Jump=chapter1 -S47Face=at:10;-12;-1.379;0.08 -S47Clock=05:20 -S47LifeLog" 12
 shot roadflora "S47: life clock .* road:[1-9]" "-S47Drive=saro:station01 -S47Throttle=0.35 -S47LifeLog" 110
