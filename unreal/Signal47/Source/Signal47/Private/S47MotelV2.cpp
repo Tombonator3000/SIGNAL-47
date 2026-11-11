@@ -4,6 +4,7 @@
 #include "S47Glow.h"
 #include "S47Three.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Components/RectLightComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -349,16 +350,35 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   }
  }
  // Playtest: natural oiled timber over the seven static painted leaves. Hardware and frames stay.
- // The live Room6 leaf retains its movement/interaction and receives the same restrained brown tint.
+ // PLAY-31-01: the live Room6 leaf gets the same timber, raised panels and peephole, attached to the leaf so they swing with it
+ // (it used to keep only a flat brown tint, a darker, plainer door that gave the story door away). Its number plate, the
+ // lit window and the Look text tell the door now; it keeps its movement, proxy and interaction.
+ // (the leaf's own brown tint first: SetColor reaches every mesh under the leaf, and would tint the metal added below)
+ W->Obj(TEXT("world.motel.objs.room6DoorLeaf")).SetColor(S47Three::Hex(0x61432b));
+ const int32 Leaf6=W->Handle(TEXT("world.motel.objs.room6DoorLeaf"));
+ USceneComponent* Leaf6Comp=W->Node(Leaf6)?W->Node(Leaf6)->Comp.Get():nullptr;
+ double Leaf6Shift=0;
+ if(Leaf6Comp&&!Leaf6Comp->GetRelativeRotation().IsNearlyZero(.01)){UE_LOG(LogS47MotelV2,Warning,TEXT("S47: room 6 leaf is not shut at build; it keeps its tint only (PLAY-31-01)"));Leaf6Comp=nullptr;}
+ if(Leaf6Comp)
+ {
+  // The finish sits just in front of the leaf's own face (its brass hardware left out), never behind it.
+  FBox Face(ForceInit);
+  for(const int32 LeafChild:W->Node(Leaf6)->Children){const auto* LeafNode=W->Node(LeafChild);if(auto* LeafMesh=MeshAt(W,LeafChild);LeafMesh&&LeafNode&&!(LeafNode->Mats.Num()&&LeafNode->Mats[0]==332))Face+=LeafMesh->Bounds.GetBox();}
+  if(Face.IsValid){const FVector FaceLo=S47Three::ToThree(Face.Min),FaceHi=S47Three::ToThree(Face.Max);Leaf6Shift=FMath::Max(0.,FMath::Max(FaceLo.X,FaceHi.X)+.002-(-45.9+2.316));}
+  UE_LOG(LogS47MotelV2,Display,TEXT("S47: room 6 leaf gets the timber finish of the other seven doors, %.3f m out (PLAY-31-01)"),Leaf6Shift);
+ }
  if(auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")))
  if(auto* Wood=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_DarkWood.M_Town_DarkWood")))
- for(int32 Room=1;Room<=8;++Room)if(Room!=6)
+ for(int32 Room=1;Room<=8;++Room)
  {
-  const double DoorY=-.1-5.*Room;
+  const bool bLive=Room==6;
+  if(bLive&&!Leaf6Comp)continue;
+  USceneComponent* Holder=bLive?Leaf6Comp:W->Node(Motel)->Comp.Get();const int32 HolderNode=bLive?Leaf6:Motel;
+  const double DoorY=-.1-5.*Room,Out=bLive?Leaf6Shift:0.;
   auto Panel=[&](double X,double Y,double Z,double Width,double Height)
   {
-   auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->Node(Motel)->Comp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,Wood);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
-   C->SetWorldLocation(S47Three::ToUE(FVector(-45.9,-2.0985683853163195,674.9)+FVector(X,Z,-Y)));C->SetWorldScale3D(FVector(.012,Width,Height));W->AdoptNode(C,Motel,FString::Printf(TEXT("motel-v2:timber-door-%d"),Room));F->Parts.Add(C);++F->ExpectedPartCount;
+   auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(Holder);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,Wood);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
+   C->SetWorldLocation(S47Three::ToUE(FVector(-45.9,-2.0985683853163195,674.9)+FVector(X+Out,Z,-Y)));C->SetWorldScale3D(FVector(.012,Width,Height));W->AdoptNode(C,HolderNode,FString::Printf(TEXT("motel-v2:timber-door-%d"),Room));F->Parts.Add(C);++F->ExpectedPartCount;
   };
   Panel(2.322,DoorY,1.035,.94,2.05);
   for(double DY:{-.215,.215})for(double Z:{.40,1.02,1.66})Panel(2.331,DoorY+DY,Z,.35,.48);
@@ -366,12 +386,45 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   if(auto* Cylinder=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cylinder.Cylinder")))
   if(auto* Metal=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_Metal.M_Town_Metal")))
   {
-   auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->Node(Motel)->Comp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cylinder);C->SetMaterial(0,Metal);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
-   C->SetWorldLocation(S47Three::ToUE(FVector(-45.9,-2.0985683853163195,674.9)+FVector(2.345,1.62,-DoorY)));C->SetWorldRotation(FRotator(90,0,0));C->SetWorldScale3D(FVector(.024,.024,.014));W->AdoptNode(C,Motel,FString::Printf(TEXT("motel-v2:timber-door-peephole-%d"),Room));F->Parts.Add(C);++F->ExpectedPartCount;
+   auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(Holder);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cylinder);C->SetMaterial(0,Metal);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
+   C->SetWorldLocation(S47Three::ToUE(FVector(-45.9,-2.0985683853163195,674.9)+FVector(2.345+Out,1.62,-DoorY)));C->SetWorldRotation(FRotator(90,0,0));C->SetWorldScale3D(FVector(.024,.024,.014));W->AdoptNode(C,HolderNode,FString::Printf(TEXT("motel-v2:timber-door-peephole-%d"),Room));F->Parts.Add(C);++F->ExpectedPartCount;
+   // The seven static leaves have the model's round knob and three hinges; the live leaf (the model has no room-6 leaf) gets
+   // the same in the same metal, its knob on its latch side (north: it hinges on its south edge) instead of the export's brass.
+   if(bLive)if(auto* Sphere=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere")))
+   {
+    auto Metal3=[&](UStaticMesh* Shape,double X,double Y,double Z,const FVector& Scale,const FRotator& Turn,const TCHAR* What)
+    {
+     auto* K=NewObject<UStaticMeshComponent>(W);K->SetupAttachment(Holder);K->SetMobility(EComponentMobility::Movable);K->SetStaticMesh(Shape);K->SetMaterial(0,Metal);K->SetCollisionEnabled(ECollisionEnabled::NoCollision);K->RegisterComponent();
+     K->SetWorldLocation(S47Three::ToUE(FVector(-45.9,-2.0985683853163195,674.9)+FVector(X+Out,Z,-Y)));K->SetWorldRotation(Turn);K->SetWorldScale3D(Scale);W->AdoptNode(K,HolderNode,FString::Printf(TEXT("motel-v2:timber-door-%s-%d"),What,Room));F->Parts.Add(K);++F->ExpectedPartCount;
+    };
+    Metal3(Cylinder,2.334,DoorY+.36,.98,FVector(.065,.065,.012),FRotator(90,0,0),TEXT("rose"));
+    Metal3(Sphere,2.37,DoorY+.36,.98,FVector(.055,.055,.055),FRotator::ZeroRotator,TEXT("knob"));
+    for(double Z:{.30,1.05,1.80})Metal3(Cube,2.331,DoorY-.452,Z,FVector(.012,.035,.10),FRotator::ZeroRotator,TEXT("hinge"));
+    for(const int32 LeafChild:W->Node(Leaf6)->Children){const auto* LeafNode=W->Node(LeafChild);if(auto* Brass=MeshAt(W,LeafChild);Brass&&LeafNode&&LeafNode->Mats.Num()&&LeafNode->Mats[0]==332)Retire(Brass);}
+   }
   }
  }
- W->Obj(TEXT("world.motel.objs.room6DoorLeaf")).SetColor(S47Three::Hex(0x61432b));
  W->Obj(TEXT("world.room6.objs.door")).SetColor(S47Three::Hex(0x61432b));
+ // PLAY-31-01: the desert scatter outside the motel (saroCorridor's boulders, export instances) does not know the building; one
+ // boulder (node 962, instance 5, at x -44.1 z 672.8) lay on the office floor by the door. Any scatter instance under the motel's
+ // roof (x -52.65..-40.69, z 671.5..720.5, the room row and the office) is shrunk to nothing where it stands; instance indices stay.
+ {
+  int32 Shrunk=0;
+  for(int32 I=0;I<W->PartCount();++I)
+  {
+   const auto* N=W->Node(I);auto* Ism=N&&N->bInstanced&&N->Root!=Motel?Cast<UInstancedStaticMeshComponent>(N->Comp.Get()):nullptr;
+   if(!Ism)continue;
+   for(int32 K=0;K<Ism->GetInstanceCount();++K)
+   {
+    FTransform T;if(!Ism->GetInstanceTransform(K,T,true))continue;
+    const FVector P=S47Three::ToThree(T.GetLocation());
+    if(P.X<-52.65||P.X>-40.69||P.Z<671.5||P.Z>720.5||P.Y>W->WorldThree(Motel).Y+3.5)continue;
+    T.SetScale3D(FVector(1e-4));Ism->UpdateInstanceTransform(K,T,true,true,true);++Shrunk;
+    UE_LOG(LogS47MotelV2,Display,TEXT("S47: motel: scatter node%d instance %d at x %.2f z %.2f was under the motel's roof; shrunk (PLAY-31-01)"),I,K,P.X,P.Z);
+   }
+  }
+  if(!Shrunk)UE_LOG(LogS47MotelV2,Display,TEXT("S47: motel: no scatter instance under the motel's roof (PLAY-31-01)"));
+ }
  // Copy only the dedicated pane, sharing the original dynamic material so gameplay still switches it.
  {
   auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->Node(663)->Comp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(RoomWindow->GetStaticMesh());
