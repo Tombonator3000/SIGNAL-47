@@ -2275,3 +2275,4 @@ Toms nattbestilling (TODO «Nattskift 10.–11. november»): studie av skrekk og
 - Tester: in-world (77) og evidence (114) grønne kjørt alene etter testrettinger; journey stopper fortsatt på pakkefysikk (`OnComponentHit` kommer aldri; se TODO N1110-T).
 - Toms d45-funn (D45-1..29) merket med byggene de kom i.
 - Disk: d52–d55-kandidater og `Saved/StagedBuilds` + `Saved/Cooked` ryddet; 122 GB ledig; beholdt d56 (tilbakerulling) og d57.
+- Etter d57 (ikke installert): oppmerksomhet som forklarer seg selv, sabotasje som varierer, pakkeslipp ved pumpa rettet (sveipvakten), journey/in-world/evidence grønne (59/77/114), Dale uten «don't», Dales 11 nye walkie-replikker samlet i TODO N1110-V.
