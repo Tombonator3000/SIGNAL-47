@@ -1,10 +1,18 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 10. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 11. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 11. november kl. 04:21 (d55): versjon 0.9.55, `05a54edb` på `claude/day-20261109`
+## Installert 11. november kl. 05:25 (d56): versjon 0.9.56, `e12603e5` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4754 kontroller). Tilbakerulling: d55. Disk etterpå: 127 GB (d52-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d55 (tredje kritikk av første uke, 7/10): dyrevarsler fra dag 3, Dales hint på dag 3 kommer også om det aldri blir stille, én stor ting per natt gjelder nå dørsløyfe, jakt, besøk og landing, tvungen landing tidligst natt 5, roen etter fare har tre varianter (også Dales linje), svakt hundebjeff langt borte etter oppmerksomhetstegnet, og hulens port svarer med lyd når ingenting skjer.
+
+Kontroll: regresjon PASS 251; files, menu, tv, service, wear, dusk, ictl, ictlearly, mail, spine, capacity PASS på d55-koden; in-world (77) og evidence (114) PASS kjørt alene etter testrettinger. Kjent: `-S47FreeformJourneyTest` stopper på pakkefysikk (steg 4).
+
+## Tidligere: installert 11. november kl. 04:21 (d55): versjon 0.9.55, `05a54edb` på `claude/day-20261109`
 
 Pakket, røyktestet og installert (selvtest OK, 4749 kontroller; ingen materialadvarsler). Tilbakerulling: d54. Disk etterpå: 127 GB (d51-pakken ryddet). Ikke spilt av Tom.
 
