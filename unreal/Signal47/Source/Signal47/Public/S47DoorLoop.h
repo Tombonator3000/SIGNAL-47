@@ -67,16 +67,22 @@ public:
  static int32 MissingMinutes(int32 Seed,int32 Night); // in all, 10 to 25
  static int32 FinalMinutes(int32 Seed,int32 Night);   // what is left for the way out
  static bool MayLoop(int32 Day,int32 LastDay){return Day>=LoopFirstDay&&(LastDay<=0||Day>=LastDay+WeekDays);}
- static const TCHAR* ThoughtFor(int32 N,bool bFromFront);
+ // N1110 (critic): Variant (0 or 1, by the night) picks one of two texts of each; 4 and 5 are the ceiling and the floor.
+ static const TCHAR* ThoughtFor(int32 N,bool bFromFront,int32 Variant=0);
+ static int32 VariantFor(int32 Seed,int32 Night);
+ // N1110 (critic): where along the corridor the ceiling spot is, by night (inside the corridor, clear of its ends).
+ static double CeilingX(int32 Seed,int32 Night);
+ static int32 ColorShiftFor(int32 Seed,int32 Night); // which of the four colours the light starts with
  static FString RecordText(int32 Minutes,bool bFromFront);
  // N1110-7, the chase's own: the light at the windows (its strength, 0 to about 1.7, and its colour) Seconds into it; the shape crossing
  // it (a share, 1 untouched) Seconds after it began to cross, and how long that takes.
  static bool MayChase(int32 Day,int32 LastChase,int32 LastLoop){return Day>=ChaseFirstDay&&LastLoop!=Day&&(LastChase<=0||Day>=LastChase+ChaseEvery);}
  static double FloodK(double Seconds,bool bCalm);
- static FLinearColor FloodColor(double Seconds,bool bCalm);
+ static FLinearColor FloodColor(double Seconds,bool bCalm,int32 Shift=0);
  static double ShadeK(double Seconds,bool bCalm);
  static double ShadeFor(bool bCalm){return bCalm?1.4:.7;}
  static const TCHAR* ChaseThought(int32 N);
+ static const TCHAR* NotThatOne(){return TEXT("Not that one.");} // N1110 (critic): said with the handle of step 3 when there are two doors
  static FString ChaseRecord(const FString& Title,int32 Minutes);
 
  explicit FS47DoorLoop(US47Main* Main):M(Main){}
@@ -148,7 +154,9 @@ private:
  double FloodT=0,FloodFind=0,ShadeT=-1;
  FVector FloodFrom=FVector::ZeroVector;
  bool bFloodWay=false;
- int32 StepsLeft=0,StepsTotal=0,KnobGate=-1;
+ int32 StepsLeft=0,StepsTotal=0,KnobGate=-1,LastKnob=-1,ColorShift=0; // N1110 (critic): LastKnob, the door heard rattling at step 3: using it later in the chase is being caught
+ double StepsLift=0;
+ bool bFaded=false;
  double StepsIn=0,KnobT=-1,KnobTick=0,KnobWait=0;
  FVector StepsA=FVector::ZeroVector,StepsB=FVector::ZeroVector;
  bool Gates(FString& Why,bool bDev) const;
@@ -165,6 +173,7 @@ private:
  void Restore();
  void StepMotion(double Dt);
  void Think(const FString& Text,double After){ThoughtText=Text;ThoughtIn=After;}
+ void FadeDown(); // N1110 (critic): the view dips to black for the cut (the HUD's own fade), put back at the cut or by Restore
  void AddDevLines();
  // The doors, whichever building they are in.
  bool GateOpen(const FPlace& P,int32 I) const;
@@ -188,7 +197,7 @@ private:
  // False: it has ended (caught).
  bool StepChase(double Dt);
  void StepFlood(double Dt);
- void Footsteps(int32 Gate,int32 Count);
+ void Footsteps(int32 Gate,int32 Count,bool bOverhead=false);
  void Knob(int32 Gate,double Seconds,double Wait);
  int32 NearestShut() const;
  // The door of P the player has just walked out through, standing open, from inside; -1 none. bAtDoor: near one of them.

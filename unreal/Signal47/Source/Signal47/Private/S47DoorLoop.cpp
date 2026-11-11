@@ -91,16 +91,26 @@ int32 FS47DoorLoop::FinalMinutes(int32 Seed,int32 Night)
  return FMath::Max(1,MissingMinutes(Seed,Night)-Spent);
 }
 
-const TCHAR* FS47DoorLoop::ThoughtFor(int32 N,bool bFromFront)
+const TCHAR* FS47DoorLoop::ThoughtFor(int32 N,bool bFromFront,int32 Variant)
 {
+ const bool B=(Variant&1)!=0;
  switch(N)
  {
- case 1:return bFromFront?TEXT("That was the front door."):TEXT("That was the service door.");
- case 2:return TEXT("No.");
- case 3:return TEXT("I went out. I know I went out.");
+ case 1:return B?(bFromFront?TEXT("I was just out of the front door."):TEXT("I was just out of the service door.")):(bFromFront?TEXT("That was the front door."):TEXT("That was the service door."));
+ case 2:return B?TEXT("That is wrong."):TEXT("No.");
+ case 3:return B?TEXT("I know I went out. I felt the air."):TEXT("I went out. I know I went out.");
+ case 4:return B?TEXT("I am up by the ceiling."):TEXT("The ceiling?");
+ case 5:return B?TEXT("Up through the floor."):TEXT("Underneath. That is not possible.");
  default:return TEXT("");
  }
 }
+
+int32 FS47DoorLoop::VariantFor(int32 Seed,int32 Night){return FMath::Clamp(FMath::FloorToInt(FS47NightRhythm::Roll(Seed,Night,S47DoorLoopLocal::Salt+5)*2.f),0,1);}
+
+// The corridor runs x -5.75 to 1.75; the spot stays within .6 m of the usual one, well clear of both ends and of the doors at them.
+double FS47DoorLoop::CeilingX(int32 Seed,int32 Night){return S47DoorLoopLocal::CeilX+(2.*FS47NightRhythm::Roll(Seed,Night,S47DoorLoopLocal::Salt+4)-1.)*.6;}
+
+int32 FS47DoorLoop::ColorShiftFor(int32 Seed,int32 Night){return FMath::Clamp(FMath::FloorToInt(FS47NightRhythm::Roll(Seed,Night,S47DoorLoopLocal::Salt+3)*4.f),0,3);}
 
 FString FS47DoorLoop::RecordText(int32 Minutes,bool bFromFront)
 {
@@ -118,11 +128,11 @@ double FS47DoorLoop::FloodK(double Seconds,bool bCalm)
  const double Base=FMath::Clamp(T/.25,0.,1.)*(1.3+.12*FMath::Sin(T*2.3));
  if(T<StrobeAfter)return Base;
  const double Into=FMath::Fmod(T-StrobeAfter,StrobeEvery);
- if(Into<StrobeLong)return FMath::Fmod(Into*StrobeRate,1.)<.5?1.7:.08;
+ if(Into<StrobeLong)return FMath::Fmod(Into*StrobeRate,1.)<.5?1.7:.3;
  return Base;
 }
 
-FLinearColor FS47DoorLoop::FloodColor(double Seconds,bool bCalm)
+FLinearColor FS47DoorLoop::FloodColor(double Seconds,bool bCalm,int32 Shift)
 {
  using namespace S47DoorLoopLocal;
  const double T=FMath::Max(0.,Seconds);
@@ -130,14 +140,14 @@ FLinearColor FS47DoorLoop::FloodColor(double Seconds,bool bCalm)
  if(!bCalm&&T>=StrobeAfter)
  {
   const double Into=FMath::Fmod(T-StrobeAfter,StrobeEvery);
-  if(Into<StrobeLong)return FloodColors[FMath::Clamp(FMath::FloorToInt(Into*StrobeRate),0,1000)%4];
+  if(Into<StrobeLong)return FloodColors[(FMath::Clamp(FMath::FloorToInt(Into*StrobeRate),0,1000)+Shift)%4];
  }
  // Between: one colour, then a quick turn to the next (calm: a slow fade the whole way).
  const double Span=bCalm?3.2:1.6,Blend=bCalm?1.:.25;
  const double U=FMath::Fmod(T/Span,4.);
- const int32 A=FMath::Clamp(FMath::FloorToInt(U),0,3);
+ const int32 A=FMath::Clamp(FMath::FloorToInt(U),0,3),C=(A+Shift)%4;
  const double K=FMath::Clamp((U-A-(1.-Blend))/Blend,0.,1.);
- return FLinearColor::LerpUsingHSV(FloodColors[A],FloodColors[(A+1)%4],float(K*K*(3.-2.*K)));
+ return FLinearColor::LerpUsingHSV(FloodColors[C],FloodColors[(C+1)%4],float(K*K*(3.-2.*K)));
 }
 
 double FS47DoorLoop::ShadeK(double Seconds,bool bCalm)
@@ -153,6 +163,8 @@ const TCHAR* FS47DoorLoop::ChaseThought(int32 N)
  case 1:return TEXT("That was the front door. I'm back inside.");
  case 2:return TEXT("Something went past the window.");
  case 3:return TEXT("Somebody is trying the handle.");
+ case 4:return TEXT("The ceiling?");
+ case 5:return TEXT("Underneath. That is not possible.");
  default:return TEXT("");
  }
 }
@@ -311,12 +323,24 @@ void FS47DoorLoop::Stop()
  Flood.Reset();
 }
 
+void FS47DoorLoop::FadeDown()
+{
+ if(bFaded||!M||!M->UI||M->UI->Faded())return; // never over a fade that is not ours
+ M->UI->Fade(true);bFaded=true;
+}
+
 void FS47DoorLoop::Restore()
 {
  // N1110-7: the light at the windows out, the air clear, a handle let go, nothing more walking round outside.
  if(Flood){Flood->Hide();Flood->SetAir(0,FVector::ZeroVector,FLinearColor::White,true);}
  if(KnobGate>=0)GateKnob(Where,KnobGate,-1);
- KnobGate=-1;KnobT=-1;KnobWait=0;StepsLeft=0;ShadeT=-1;FloodT=0;FloodFind=0;bFloodWay=false;bWarned=false;bChase=false;
+ KnobGate=-1;KnobT=-1;KnobWait=0;StepsLeft=0;ShadeT=-1;FloodT=0;FloodFind=0;bFloodWay=false;bWarned=false;bChase=false;LastKnob=-1;StepsLift=0;ColorShift=0;
+ if(bFaded)
+ {
+  bFaded=false;
+  const FS47FreeformSession* Fs=S47DoorLoopLocal::Session(M);
+  if(M&&M->UI&&!(Fs&&Fs->Taken&&Fs->Taken->Busy()))M->UI->Fade(false);
+ }
  if(bDimmed&&M&&M->Web)M->Web->SetLightsScale(1.f,1.f);
  bDimmed=false;
  if(bRadioOurs&&M&&M->Audio)M->Audio->AmRadioThree(TOptional<FVector>());
@@ -443,6 +467,8 @@ bool FS47DoorLoop::Use(const FString& Id)
  const TOptional<FVector> LatchAt=It?TOptional<FVector>(M->Web->ObjAt(It->Node).WorldPosition()):Where.Kind!=EPlace::Saro&&M->Player?TOptional<FVector>(Where.Gates[Door].Mid+FVector(0,M->Player->FloorY+1,0)):TOptional<FVector>();
  if(M->Audio)M->Audio->Sfx(M->Audio->Or(TEXT("door_latch"),TEXT("switch")),FS47Sound{.Gain=.5f,.At=LatchAt});
  Pending=CutAfter;PendingStep=S;PendingFrom=Door;
+ if(bChase&&LastKnob>=0&&Door==LastKnob&&S!=EStep::Out){Caught();return true;} // N1110 (critic): the door it was trying
+ FadeDown();
  return true;
 }
 
@@ -455,6 +481,7 @@ void FS47DoorLoop::Start()
  {
   // N1110-7: the hunt's own meeting, already counted: what was after them gives way, and is outside now.
   ChaseDay=F->Day();
+  ColorShift=ColorShiftFor(F->Seed(),FS47FreeformSession::NightOf(F->Clock()));
   YieldHunt();
   FloodT=0;FloodFind=0;bFloodWay=false;ShadeT=-1;
   if(M->Audio&&M->Audio->Night.IsValid())M->Audio->Night->Hush(12,.04,.12,3.5);
@@ -475,9 +502,16 @@ void FS47DoorLoop::Cut(EStep S,int32 FromDoor)
  const int32 Other=OtherOf(FromDoor),N=Run.Uses;
  double X=0,Z=0,Yaw=0;
  bool bSpot=Arrival(Other,X,Z,Yaw);
- if(S==EStep::Ceiling&&Where.bUp&&M->Player->Walkable(Where.Up.X,Where.Up.Z)){X=Where.Up.X;Z=Where.Up.Z;if(Where.bUpYaw)Yaw=Where.UpYaw;bSpot=true;}
+ if(S==EStep::Ceiling&&Where.bUp)
+ {
+  // N1110 (critic): in the SARO corridor the spot moves along it by night; where that cannot be walked, the usual one.
+  const double Ux=Where.Kind==EPlace::Saro?CeilingX(F->Seed(),FS47FreeformSession::NightOf(F->Clock())):Where.Up.X;
+  if(M->Player->Walkable(Ux,Where.Up.Z)){X=Ux;Z=Where.Up.Z;if(Where.bUpYaw)Yaw=Where.UpYaw;bSpot=true;}
+  else if(M->Player->Walkable(Where.Up.X,Where.Up.Z)){X=Where.Up.X;Z=Where.Up.Z;if(Where.bUpYaw)Yaw=Where.UpYaw;bSpot=true;}
+ }
  if(!bSpot){Finish(TEXT("nowhere to stand"));return;} // never stuck: an ordinary station at once
  M->Player->Place(X,Z,Yaw);
+ if(bFaded){bFaded=false;if(M->UI)M->UI->Fade(false);} // N1110 (critic): the view comes back up out of the dark
  // The other door has just let the player in (the same one, in a room with only one): it swings shut behind them, with its own sound.
  if(S==EStep::Side)GateSwingShut(Where,Other);
  else if(S==EStep::Ceiling)
@@ -487,7 +521,11 @@ void FS47DoorLoop::Cut(EStep S,int32 FromDoor)
  else if(S==EStep::Floor)
  {
   RiseSecs=M->Player->bHeadMotion?1.2:1.8;RiseDepth=1.75;RiseT=0;M->Player->Lift=-RiseDepth;
-  if(M->Audio)M->Audio->Beep(46.f,float(RiseSecs)+.6f,.06f,0.f,TEXT("sine"));
+  if(M->Audio)
+  {
+   M->Audio->Beep(46.f,float(RiseSecs)+.6f,.06f,0.f,TEXT("sine"));
+   M->Audio->Beep(92.f,float(RiseSecs)+.6f,.03f,0.f,TEXT("sine")); // N1110 (critic): the octave above, so a small speaker has it
+  }
  }
  // A step dimmer, the clock on, the night still holding its breath. In the chase the light outside has the room's lamps already.
  if(!bChase){M->Web->SetLightsScale(float(LightAt(N)),float(FMath::Max(.5,LightAt(N))));bDimmed=true;}
@@ -502,7 +540,12 @@ void FS47DoorLoop::Cut(EStep S,int32 FromDoor)
    ShadeT=0;
    if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.6f,.Rate=.6f,.At=Where.Gates[Other].Mid+Where.Gates[Other].Out*2.5+FVector(0,M->Player->FloorY+1,0)});
   }
-  if(N==3)Knob(Other,1.6,1.1);
+  if(N==4)Footsteps(Other,3,true); // N1110 (critic): over the ceiling
+  if(N==3)
+  {
+   Knob(Other,1.6,1.1);
+   LastKnob=Where.Gates.Num()>1?Other:-1;
+  }
   FloodFind=0; // from where they are now, it finds its way in again
   bWarned=false;
  }
@@ -518,7 +561,8 @@ void FS47DoorLoop::Cut(EStep S,int32 FromDoor)
   if(Phone)Ring.At=M->Web->ObjAt(Phone->Node).WorldPosition();
   M->Audio->Sfx(TEXT("phoneRing"),Ring);
  }
- const FString Said=bChase?FString(ChaseThought(N)):FString(ThoughtFor(N,From==0));
+ FString Said=bChase?FString(ChaseThought(N)):FString(ThoughtFor(N,From==0,VariantFor(F->Seed(),FS47FreeformSession::NightOf(F->Clock()))));
+ if(bChase&&N==3&&LastKnob>=0)Said+=TEXT(" ")+FString(NotThatOne());
  if(!Said.IsEmpty())Think(Said,.9);
  Idle=0;for(bool& B:WasIn)B=false; // a cut is never a walk out
  UE_LOG(LogS47DoorLoop,Display,TEXT("S47: door loop %d/%d: step %d, from %s, now at %.2f %.2f%s"),N,Cap,int32(S),Where.Gates.IsValidIndex(FromDoor)?*Where.Gates[FromDoor].Id:TEXT("-"),X,Z,bChase?TEXT(" (chase)"):TEXT(""));
@@ -637,7 +681,8 @@ void FS47DoorLoop::Step(double Dt)
   Start();From=Door;
   const EStep S=Run.Press();
   GateShut(Where,Door);
-  Cut(S,Door);
+  if(bChase&&LastKnob>=0&&Door==LastKnob&&S!=EStep::Out){Caught();return;} // N1110 (critic)
+  Pending=CutAfter;PendingStep=S;PendingFrom=Door;FadeDown(); // N1110 (critic): a blink of dark, then the cut
   return;
  }
  // Anything bigger, or a way out it does not hold: over, and the station as it was. The chase is in the dark often enough (the
@@ -665,7 +710,8 @@ void FS47DoorLoop::Step(double Dt)
   const EStep S=Run.Press();
   if(S==EStep::Out){Break(Door);return;}
   GateShut(Where,Door);
-  Cut(S,Door);
+  if(bChase&&LastKnob>=0&&Door==LastKnob){Caught();return;} // N1110 (critic): the door it was trying
+  Pending=CutAfter;PendingStep=S;PendingFrom=Door;FadeDown(); // N1110 (critic): a blink of dark, then the cut
   return;
  }
  // Out some other way (the east wing's doors): it lets go. In the chase that is getting away: the thing is gone.
@@ -784,13 +830,16 @@ int32 FS47DoorLoop::NearestShut() const
  return Best;
 }
 
-void FS47DoorLoop::Footsteps(int32 Gate,int32 Count)
+void FS47DoorLoop::Footsteps(int32 Gate,int32 Count,bool bOverhead)
 {
  if(!Where.Gates.IsValidIndex(Gate)||Count<=0)return;
+ StepsLift=0;
  // Along the outside of the wall, past the door, at a walk.
  const FGate& G=Where.Gates[Gate];
  const FVector Along(-G.Out.Z,0,G.Out.X),Out=G.Mid+G.Out*2.2;
  StepsA=Out+Along*3.5;StepsB=Out-Along*3.5;StepsLeft=StepsTotal=Count;StepsIn=.5;
+ // Overhead: over the ceiling of the place, along it, heavier and slower, 2.6 m above the floor.
+ if(bOverhead&&Where.bUp){StepsA=Where.Up+FVector(-3,0,0);StepsB=Where.Up+FVector(3,0,0);StepsLift=2.6;StepsIn=.8;}
 }
 
 void FS47DoorLoop::Knob(int32 Gate,double Seconds,double Wait)
@@ -810,7 +859,7 @@ bool FS47DoorLoop::StepChase(double Dt)
   const double K=StepsTotal>1?double(StepsTotal-StepsLeft)/double(StepsTotal-1):.5;
   --StepsLeft;
   const FVector At=FMath::Lerp(StepsA,StepsB,K);
-  if(M->Audio)M->Audio->Sfx(TEXT("stepConcrete0"),FS47Sound{.Gain=.75f,.Rate=FMath::FRandRange(.62f,.8f),.At=FVector(At.X,Floor+.1,At.Z)});
+  if(M->Audio)M->Audio->Sfx(TEXT("stepConcrete0"),FS47Sound{.Gain=.75f,.Rate=FMath::FRandRange(.62f,.8f),.At=FVector(At.X,Floor+.1+StepsLift,At.Z)});
  }
  if(KnobGate>=0)
  {
@@ -867,7 +916,7 @@ void FS47DoorLoop::StepFlood(double Dt)
   if(ShadeT>=ShadeFor(bCalm))ShadeT=-1;
  }
  FS47OutsideLight::FFrame Frame;
- Frame.Aim=Chest;Frame.From=FS47OutsideLight::Swept(FloodFrom,Chest,FloodT);Frame.Color=FloodColor(FloodT,bCalm);Frame.K=K;Frame.Seconds=FloodT;
+ Frame.Aim=Chest;Frame.From=FS47OutsideLight::Swept(FloodFrom,Chest,FloodT);Frame.Color=FloodColor(FloodT,bCalm,ColorShift);Frame.K=K;Frame.Seconds=FloodT;
  Flood->Show(Frame);
  Flood->SetAir(FMath::Min(1.,FloodT/2.)*.85,Chest-FVector(0,.15,0),Frame.Color,true);
 }
@@ -992,7 +1041,7 @@ bool FS47DoorLoop::SelfTest(TArray<FString>& Lines)
   Check(Two.OtherOf(0)==1&&Two.OtherOf(1)==0&&One.OtherOf(0)==0,TEXT("chase: the other door of two, the same door of a room with one"));
  }
  {
-  // The light: calm flashes never flash; otherwise bursts of strobe no quicker than seven a second, and all four colours come.
+  // The light: calm flashes never flash; otherwise bursts of strobe no quicker than three a second, and all four colours come.
   constexpr double Dt=1./240.;
   double CalmStep=0,CalmTop=0,CalmLow=9;int32 MostInSecond=0,Bursts=0;
   TArray<double> Ons;double Was=FloodK(0,false);
@@ -1006,34 +1055,53 @@ bool FS47DoorLoop::SelfTest(TArray<FString>& Lines)
   }
   for(int32 I=0;I<Ons.Num();++I){int32 N=0;for(const double O:Ons)N+=O>=Ons[I]&&O<Ons[I]+1.?1:0;MostInSecond=FMath::Max(MostInSecond,N);if(I==0||Ons[I]-Ons[I-1]>2.)++Bursts;}
   Check(CalmStep<.01&&CalmTop<1.35&&CalmLow>1.&&ShadeK(0,true)==1.&&ShadeK(ShadeFor(true)*.5,true)>.4,TEXT("chase: with calm flashes the light only breathes, and the shape crossing it is a slow dimming"));
+  double BurstLow=9;for(double T=S47DoorLoopLocal::StrobeAfter+.01;T<S47DoorLoopLocal::StrobeAfter+S47DoorLoopLocal::StrobeLong;T+=Dt)BurstLow=FMath::Min(BurstLow,FloodK(T,false));
+  Check(BurstLow>=.29&&BurstLow<.5,TEXT("chase (critic): the burst's low is .3, a smaller swing than before"));
   Check(Bursts>=6&&MostInSecond>=1&&MostInSecond<=3&&FloodK(1.,false)>1.1&&ShadeK(ShadeFor(false)*.5,false)<.1,TEXT("chase: otherwise strong, with bursts of strobe at most three a second, and the shape all but blacks it"));
   bool bColours=true;
-  for(const bool bCalm:{false,true})for(const FLinearColor& Want:S47DoorLoopLocal::FloodColors)
+  for(const bool bCalm:{false,true})for(const int32 Shift:{0,1,2,3})for(const FLinearColor& Want:S47DoorLoopLocal::FloodColors)
   {
    double Near=9;
    for(double T=0;T<40.;T+=Dt)
    {
-    const FLinearColor C=FloodColor(T,bCalm);
+    const FLinearColor C=FloodColor(T,bCalm,Shift);
     Near=FMath::Min(Near,double(FMath::Abs(C.R-Want.R)+FMath::Abs(C.G-Want.G)+FMath::Abs(C.B-Want.B)));
    }
    bColours&=Near<.03;
   }
-  Check(bColours,TEXT("chase: white, amber, blue and green all come, calm or not"));
+  Check(bColours,TEXT("chase: white, amber, blue and green all come, calm or not, from whichever the night starts with"));
+  bool bStarts=true;for(const bool bCalm:{false,true})for(int32 Sh=1;Sh<4;++Sh)bStarts&=!FloodColor(.1,bCalm,Sh).Equals(FloodColor(.1,bCalm,0),.05f);
+  bool bShift=true;for(int32 Seed=1;Seed<400;Seed+=7)for(int32 Night=2;Night<30;Night+=3)bShift&=ColorShiftFor(Seed,Night)>=0&&ColorShiftFor(Seed,Night)<4;
+  Check(bStarts&&bShift,TEXT("N1110 (critic): the colour the light starts with is offset by the night, and the offset is one of four"));
  }
  Check(!MayChase(1,0,0)&&!MayChase(2,0,0)&&!MayChase(3,0,0)&&MayChase(4,0,0)&&!MayChase(4,3,0)&&!MayChase(5,3,0)&&MayChase(6,3,0)&&!MayChase(6,3,6)&&MayChase(6,3,5),TEXT("chase: none before the fourth night (N1110 pace), every third at most, never the night of a door loop"));
  Check(OddsFor(false)==1.&&OddsFor(true)==ChaseOdds&&ChaseOdds>0&&ChaseOdds<1,TEXT("chase: the first eligible hunt of a week chases for sure (odds 1), then the draw (.65)"));
  Check(ChaseWarn<ChaseIdle&&ChaseIdle<IdleFor&&ChaseOdds>0&&ChaseOdds<1&&DevChaseFor>0,TEXT("chase: the handle before it is in, both well before the loop's own idle end"));
  {
-  TArray<FString> Words={S47DoorLoopLocal::FrontDoors[0],S47DoorLoopLocal::FrontDoors[1],S47DoorLoopLocal::FrontDoors[2],ChaseThought(1),ChaseThought(2),ChaseThought(3),S47DoorLoopLocal::AtTheDoor,TEXT("It's gone. How long was I in there?"),ChaseRecord(TEXT("the old house"),17),ChaseRecord(TEXT("SARO"),12),ChaseRecord(FString(),20)};
+  TArray<FString> Words={S47DoorLoopLocal::FrontDoors[0],S47DoorLoopLocal::FrontDoors[1],S47DoorLoopLocal::FrontDoors[2],ChaseThought(1),ChaseThought(2),ChaseThought(3),ChaseThought(4),ChaseThought(5),FString(ChaseThought(3))+TEXT(" ")+NotThatOne(),S47DoorLoopLocal::AtTheDoor,TEXT("It's gone. How long was I in there?"),ChaseRecord(TEXT("the old house"),17),ChaseRecord(TEXT("SARO"),12),ChaseRecord(FString(),20)};
   bool bClean=true;
   for(const FString& W:Words)bClean&=!W.IsEmpty()&&S47Script::LintText(W).IsEmpty()&&!W.Contains(TEXT("taken"));
-  Check(bClean&&FString(ChaseThought(4)).IsEmpty()&&ChaseRecord(TEXT("the old house"),17).StartsWith(TEXT("The old house,")),TEXT("chase: its words keep to the spoiler limits"));
+  Check(bClean&&FString(ChaseThought(6)).IsEmpty()&&ChaseRecord(TEXT("the old house"),17).StartsWith(TEXT("The old house,")),TEXT("chase: its words keep to the spoiler limits"));
  }
  {
-  TArray<FString> Words={ThoughtFor(1,true),ThoughtFor(1,false),ThoughtFor(2,true),ThoughtFor(3,true),RecordText(17,true),RecordText(12,false),TEXT("How long was I in there?")};
-  bool bClean=true;
+  TArray<FString> Words={RecordText(17,true),RecordText(12,false),TEXT("How long was I in there?")};
+  bool bTexts=true;
+  for(int32 V=0;V<2;++V)for(int32 N=1;N<=5;++N)for(const bool bFront:{true,false})
+  {
+   Words.Add(ThoughtFor(N,bFront,V));
+   bTexts&=!FString(ThoughtFor(N,bFront,V)).IsEmpty();
+  }
+  for(int32 N=1;N<=5;++N)bTexts&=FCString::Strcmp(ThoughtFor(N,true,0),ThoughtFor(N,true,1))!=0;
+  bool bClean=bTexts;
   for(const FString& W:Words)bClean&=S47Script::LintText(W).IsEmpty()&&!W.Contains(TEXT("taken"));
-  Check(bClean&&FString(ThoughtFor(4,true)).IsEmpty(),TEXT("its words keep to the spoiler limits"));
+  bool bVar=true,bX=true;int32 Seen[2]={0,0};
+  for(int32 Seed=1;Seed<400;Seed+=7)for(int32 Night=2;Night<30;Night+=3)
+  {
+   const int32 V=VariantFor(Seed,Night);bVar&=V==0||V==1;++Seen[V&1];
+   const double X=CeilingX(Seed,Night); // inside the corridor (x -5.75 to 1.75), at least 1.2 m from the west end, within .6 m of the usual spot
+   bX&=X>=-5.75+1.2&&X<=1.75-1.2&&FMath::Abs(X-S47DoorLoopLocal::CeilX)<=.6+1e-9;
+  }
+  Check(bClean&&bVar&&Seen[0]>0&&Seen[1]>0&&bX&&FString(ThoughtFor(6,true)).IsEmpty(),TEXT("its words keep to the spoiler limits"));
  }
  {
   FS47DoorLoop Old(nullptr);Old.Begin();
