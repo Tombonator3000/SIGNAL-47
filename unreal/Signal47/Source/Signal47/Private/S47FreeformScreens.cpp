@@ -94,6 +94,7 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
   // line here; the set was already on (PowerOn comes with the supply, FS47FreeformSession::Step).
   if(M->Audio){M->Audio->Play(TEXT("rack_switch"),.34f);M->Audio->Beep(58.f,.42f,.060f,.02f,TEXT("sine"));M->Audio->Beep(116.f,.26f,.026f,.02f,TEXT("sine"));}
  }
+ if(Screen>=0&&Screen<4)LastPage[Screen]=Title; // N1110 PC-WORLD-DISPLAY-04
  if(Title!=TerminalTitle){TerminalPage(M->Audio,Title);TerminalTitle=Title;}
  S47FreeformTerminal::SetClock([this]{return TerminalClock();});S47FreeformTerminal::SetStation(TerminalStation(Screen));S47FreeformTerminal::SetHumScreen(Screen);
  auto Content=S47FreeformTerminal::Frame(Title,Body);
@@ -148,20 +149,24 @@ TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
 {
  TArray<FString> L;if(!Active()||!M||!M->Story||!M->Web)return L;
  const FJob* J=CurrentJob();const FS47Profile P=J?EffectiveProfile(*J):FS47Profile();
+ // N1110 PC-WORLD-DISPLAY-04: what the PC was last left on ("OPS / DAILY WORK" -> "LAST PAGE / DAILY WORK") and what the printer is doing
+ const FString PageLine=[this,Screen]{if(Screen<0||Screen>=4||LastPage[Screen].IsEmpty())return FString();const int32 Bar=LastPage[Screen].Find(TEXT(" / "));const FString Name=Bar==INDEX_NONE?LastPage[Screen]:LastPage[Screen].RightChop(Bar+3);return Name.Len()>22?FString():TEXT("LAST PAGE / ")+Name;}();
+ const double Paper=PrinterProgress(),Sheet=SheetProgress();
+ const FString PrintLine=Paper>=0||Sheet>=0?(FMath::Max(Paper,Sheet)>=1?FString(TEXT("PRINTER / PAPER WAITING")):FString::Printf(TEXT("PRINTER / PRINTING %d%%"),FMath::Clamp(int32(100*FMath::Max(Paper,Sheet)),0,99))):FString();
  if(Screen==0)
  {
   int32 Remote=0;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I))++Remote;
-  L={TEXT("SARO ARRAY / STATUS"),FString::Printf(TEXT("REMOTE %02d / %02d"),Remote,M->Web->DishCount()),!bPowerFault?TEXT("FEEDER / SUPPLY NORMAL"):HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("SUPPLY LOST / FIELD CHECK"),Field&&Field->HasArrayFault()?Field->ServiceDishId()+TEXT(" / LOCAL SERVICE DUE"):TEXT("ARRAY / REMOTE AVAILABLE"),MaintenanceLine(),TEXT("LOCAL TEST BEFORE RELEASE")}; // D45-20261110: the open faults and the next one, from across the room
+  L={TEXT("SARO ARRAY / STATUS"),FString::Printf(TEXT("REMOTE %02d / %02d"),Remote,M->Web->DishCount()),!bPowerFault?TEXT("FEEDER / SUPPLY NORMAL"):HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("SUPPLY LOST / FIELD CHECK"),Field&&Field->HasArrayFault()?Field->ServiceDishId()+TEXT(" / LOCAL SERVICE DUE"):TEXT("ARRAY / REMOTE AVAILABLE"),MaintenanceLine(),TEXT("LOCAL TEST BEFORE RELEASE")};if(!PageLine.IsEmpty())L.Add(PageLine); // D45-20261110: the open faults and the next one, from across the room
  }
  else if(Screen==1)
  {
   // D45-20261110: the array's state where the printer tray's static line was, so the line count stays the same
   const FString Array=!J?FString(TEXT("ARRAY / NO JOB")):PointReady()?FString(Settle>=1?TEXT("ARRAY / LOCKED"):TEXT("ARRAY / SETTLING")):J->Stage==EJobStage::New?FString(TEXT("ARRAY / NOT POINTED")):FString(TEXT("ARRAY / SLEWING"));
-  L={TEXT("RX BANK 3 / RECEIVER"),J?J->Id:TEXT("NO JOB SELECTED"),FString::Printf(TEXT("F %.3f MHz"),M->Story->Rx.Frequency),FString::Printf(TEXT("GAIN %.0f / BW %.0f"),M->Story->Rx.Gain,M->Story->Rx.Bandwidth),FString::Printf(TEXT("CARD %.3f / AZ %.1f"),P.F,(P.Az[0]+P.Az[1])*.5),J?FString::Printf(TEXT("REC %.1f / %.1f s"),J->Elapsed,SourceSeconds()):FString(),Array};
+  L={TEXT("RX BANK 3 / RECEIVER"),J?J->Id:TEXT("NO JOB SELECTED"),FString::Printf(TEXT("F %.3f MHz"),M->Story->Rx.Frequency),FString::Printf(TEXT("GAIN %.0f / BW %.0f"),M->Story->Rx.Gain,M->Story->Rx.Bandwidth),FString::Printf(TEXT("CARD %.3f / AZ %.1f"),P.F,(P.Az[0]+P.Az[1])*.5),J?FString::Printf(TEXT("REC %.1f / %.1f s / %d%%"),J->Elapsed,SourceSeconds(),SourceSeconds()>0?FMath::Clamp(int32(100*J->Elapsed/SourceSeconds()),0,100):0):FString(),Array};
  }
  else if(Screen==2)
  {
-  L={TEXT("TRACKING / ENCODERS"),J?J->Id:TEXT("NO JOB SELECTED"),FString::Printf(TEXT("TARGET AZ %.1f EL %.1f"),TargetAz(),TargetEl()),FString::Printf(TEXT("ACTUAL AZ %.1f EL %.1f"),M->Web->DishAz(0),M->Web->DishEl(0)),PointReady()?TEXT("ENCODERS / ON TARGET"):TEXT("WAIT / SLEW OR SERVICE"),TEXT("COMMAND SOURCE TO START"),TEXT("OBSERVATIONS NEED SETTLE")};
+  L={TEXT("TRACKING / ENCODERS"),J?J->Id:TEXT("NO JOB SELECTED"),FString::Printf(TEXT("TARGET AZ %.1f EL %.1f"),TargetAz(),TargetEl()),FString::Printf(TEXT("ACTUAL AZ %.1f EL %.1f"),M->Web->DishAz(0),M->Web->DishEl(0)),PointReady()?TEXT("ENCODERS / ON TARGET"):TEXT("WAIT / SLEW OR SERVICE"),TEXT("COMMAND SOURCE TO START"),PageLine.IsEmpty()?FString(TEXT("OBSERVATIONS NEED SETTLE")):PageLine};
  }
  else
  {
@@ -169,7 +174,7 @@ TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
   // To be seen from across the room: it is only ever on the glass when it is wrong.
   if(Aftermath&&Aftermath->PcStuck())L.Insert(FString::Printf(TEXT("SYSTEM CLOCK %s"),*FS47FreeformCases::Clock(FMath::Fmod(Aftermath->PcShown(),86400.))),1);
   for(const auto& W:Work)if(W.Stage!=EJobStage::Filed&&L.Num()<6)L.Add(W.Id+FString::Printf(TEXT(" / SRC%d %s"),W.Source,W.Stage==EJobStage::Filed?TEXT("FILED"):TEXT("OPEN")));
-  L.Add(ServiceGuide==1?TEXT("WORK ORDER OPEN / ARRAY PC"):TEXT("MAINTENANCE / AT ARRAY PC"));L.Add(TEXT("ORIGINALS / RECORDS")); // D45-20261110: work orders are issued and signed there
+  L.Add(ServiceGuide==1?TEXT("WORK ORDER OPEN / ARRAY PC"):TEXT("MAINTENANCE / AT ARRAY PC"));L.Add(PrintLine.IsEmpty()?FString(TEXT("ORIGINALS / RECORDS")):PrintLine); // D45-20261110: work orders are issued and signed there
  }
  if(Screen>=0&&Screen<=2)L.Add(FString::Printf(TEXT("ARRAY %d/27 / RATE %.0f%% / %s"),AvailableDishCount(),100*ArrayMeasurementRate(),AvailableDishCount()<(Field&&Field->ArrayWear().bActive?FS47ArrayWear::MinDishes:24)?TEXT("BLOCKED - REPAIR"):AvailableDishCount()<27?(Field&&Field->ArrayWear().DownCount()>0?TEXT("WORN"):TEXT("DEGRADED")):TEXT("FULL")));
  if(const FString NextLine=TerminalNextLine(Objective(),Screen);!NextLine.IsEmpty())L.Insert(NextLine,1);

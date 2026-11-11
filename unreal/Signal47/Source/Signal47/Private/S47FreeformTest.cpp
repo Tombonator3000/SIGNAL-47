@@ -524,6 +524,7 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(F.TerminalOnGlass()&&F.ActiveTerminalScreen()==0&&W.ServiceStage()==1&&W.ServiceDishId()==TEXT("S-03")&&F.ActiveServiceGuide()==1,FString::Printf(TEXT("service acceptance on the array PC: glass=%d screen=%d stage=%d target=%s guide=%d"),F.TerminalOnGlass(),F.ActiveTerminalScreen(),W.ServiceStage(),*W.ServiceDishId(),F.ActiveServiceGuide())))return;
    if(!Check(!F.CanCompleteServiceGuide(),TEXT("unfinished service cannot be archived")))return;
    if(!Check(F.TerminalLines(0).Contains(FString(TEXT("MAINTENANCE / 1 FAULT / NEXT S-03"))),TEXT("the array PC's glass names the open relay order as next")))return;
+   if(!Check(F.TerminalLines(0).Contains(FString(TEXT("LAST PAGE / MAINTENANCE"))),TEXT("N1110: the array PC's idle glass names the page it was left on")))return;
    Shot(TEXT("service-accepted"));M->UI->Close(true);Go(9205,.2);return;
   }
   if(Stage==9205)

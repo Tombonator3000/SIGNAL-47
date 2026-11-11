@@ -44,6 +44,7 @@ public:
   // Case test job (FS47FreeformCases); -1 for ordinary work.
   int32 CaseLine=-1,CaseTest=-1;
   bool bCaseValid=true,bCaseRecorded=false;
+  int32 PaidAmount=-1; // N1110 (T16-20): what was credited when this card paid, for the shift log; -1 before it paid (or in a save from before)
   bool bDocked=false; // the day the player was taken: this card pays half (TakenCosts)
  };
  explicit FS47FreeformSession(US47Main* Main);
@@ -460,6 +461,8 @@ public:
  static constexpr const TCHAR* SameNightMark=TEXT("Same-night rate");
  bool NightPhotoRegistered(const FString& ShotId) const{return HasFinding(TEXT("field-registration.")+ShotId);}
  static bool MinuteSelfTest(TArray<FString>& Lines);
+ // N1110 CASEBOARD-20261108: one line of the case board's trace book: day, time (none if Clock<0), place (may be empty), kind, text.
+ static FString TraceBookLine(int32 Day,double Clock,const FString& Place,const TCHAR* Kind,const FString& Text);
  // Field-work case tests (FS47FreeformCases::ECondition::FieldWork) are carried out in the world.
  // The world asks which test is planned and what the hidden cause makes it show, enacts that
  // physically, then reports what the player actually secured. -1 when no field test is planned.
@@ -721,6 +724,7 @@ private:
  int32 DataRef=0; // D48-20261110 (D46-16): the reference the receiver's DATA page shows beside the take; not saved
  // D45-20261110: ARRAY STATUS's tab (0 STATUS, 1 MAINTENANCE) and the fault picked on MAINTENANCE; presentation only, never saved
  int32 StatusTab=0;FString MaintPick;
+ FString LastPage[4]; // N1110 PC-WORLD-DISPLAY-04: the page each PC was last left on, shown on its idle glass; presentation only, never saved
  TSharedRef<class SWidget> MaintenancePage();
  FString MaintenanceLine() const; // the array PC's line across the room: "MAINTENANCE / 3 FAULTS / NEXT S-13"
  // CASES-OPS-20261109: the result sheets on the printer (FResultSheet), the case the next OPS visit opens on (-1: the overview), the

@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 11. november kl. 00:12 (d50): versjon 0.9.50 på `claude/day-20261109`
+## Installert 11. november kl. 01:11 (d51): versjon 0.9.51, `cefe6d8f` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4688 kontroller; ingen materialadvarsler). Tilbakerulling: d50 (`030f3b66`). Disk etterpå: 127 GB (d47-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d50: gjemme seg under pulten i kontrollrommet og arkivbordet, vitneutsagn i notatboka som betaler med eget bilde, folkas dagsvaner i Caliche, rettinger etter kritikken (falske alarmer med avstand, lettelse bare om natta, regelbruddet tydeligere, hulen høres kortere, seks slags dagsspor).
+
+Kontroll: regresjon PASS 251; first, sky, dusk, casefield PASS.
+
+## Tidligere: installert 11. november kl. 00:12 (d50): versjon 0.9.50 på `claude/day-20261109`
 
 Pakket, røyktestet og installert (selvtest OK, 4671 kontroller; ingen materialadvarsler). Tilbakerulling: d49 (`9f8ed0ba`). Disk etterpå: 127 GB (kandidatpakkene d45 og d46 ryddet for plass). Ikke spilt av Tom.
 

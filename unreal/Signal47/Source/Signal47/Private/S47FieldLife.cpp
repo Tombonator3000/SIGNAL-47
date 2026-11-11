@@ -723,10 +723,14 @@ void FS47TripCamera::Watch()
  TOptional<FVector> Body,Light;
  const double Reach=F.InventoryCount(TEXT("wire"))>0?WireBodyReach:BodyReach;
  if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(Flat(I.Pos)<Reach&&Sees(Lens,I.Eye)){Body=I.Eye;break;}
+ // N1110 (T16-20): a figure the night sent to the station's fences is a body near the lens as well.
+ if(!Body&&F.Director)for(const TCHAR* Fig:{TEXT("observer"),TEXT("service_presence"),TEXT("feeder_presence"),TEXT("array_presence")})if(F.Director->ActiveEvent()==Fig&&Flat(F.Director->EventAnchor())<Reach&&Sees(Lens,F.Director->EventAnchor()+FVector(0,1.6,0))){Body=F.Director->EventAnchor()+FVector(0,1.6,0);break;}
  if(!Body&&F.FarmSite)if(const TOptional<FVector> Eye=F.FarmSite->VisitBodyEye();Eye&&Flat(*Eye)<Reach&&Sees(Lens,*Eye))Body=*Eye;
  if(!Body)
  {
   if(F.Taken&&F.Taken->Stage()==FS47Taken::EStage::Flood&&Flat(F.Taken->LightFrom())<LightReach)Light=F.Taken->LightFrom();
+  // N1110 (T16-20): a landing that came down within reach leaves its ring on the ground in front of the lens, lit or not.
+  if(!Light&&F.Director&&F.Director->ActiveEvent()==TEXT("landing_trace")&&Flat(F.Director->EventAnchor())<LightReach)Light=F.Director->EventAnchor();
   static const TCHAR* const Lights[]={TEXT("farm_lights"),TEXT("town_lights"),TEXT("dusk_orb"),TEXT("response_lights"),TEXT("flyover"),TEXT("close_pass")};
   if(!Light&&F.Director)for(const TCHAR* L:Lights)if(F.Director->ActiveEvent()==L&&Flat(F.Director->EventAnchor())<LightReach&&Sees(Lens,F.Director->EventAnchor())){Light=F.Director->EventAnchor();break;}
  }
@@ -878,7 +882,7 @@ void FS47DayRound::WriteLog(int32 Day)
  if(!M||!M->Story||!M->Freeform)return;
  auto& F=*M->Freeform;
  int32 Filed=0,Paid=0;
- for(const auto& J:F.Jobs())if(J.Day==Day&&J.Stage==FS47FreeformSession::EJobStage::Filed&&J.CaseTest<0){++Filed;Paid+=J.bDocked?10:20;}
+ for(const auto& J:F.Jobs())if(J.Day==Day&&J.Stage==FS47FreeformSession::EJobStage::Filed&&J.CaseTest<0){++Filed;Paid+=J.PaidAmount>=0?J.PaidAmount:J.bPaid?(J.bDocked?10:20):0;} // N1110 (T16-20): what was credited, not a flat guess (a save from before has none: the old figure for a paid card)
  const FString Trouble=F.PowerFault()?TEXT("feeder fault"):F.Field&&F.Field->HasArrayFault()?TEXT("antenna fault"):FString();
  FS47Doc D;D.Id=FString::Printf(TEXT("shiftlog-%d"),Day);D.Title=FString::Printf(TEXT("Shift log, day %d"),Day);D.Kind=TEXT("typed");D.Stamp=FString::Printf(TEXT("SARO / DAY %d"),Day);
  D.Page=LogPage(Day,Filed,Paid,DoneDay==Day||F.HasFinding(FString::Printf(TEXT("round-d%d"),Day)),F.RecordsOnDay(Day),Trouble);D.Transcript=D.Page;
@@ -894,6 +898,7 @@ bool FS47DayRound::SelfTest(TArray<FString>& Lines)
  Check(bThree&&bStable&&bDiffers,TEXT("three different stops a day, the same all day, not the same every day"));
  const FString P=LogPage(4,2,40,true,3,TEXT("feeder fault"));
  Check(P.Contains(TEXT("DAY 4"))&&P.Contains(TEXT("FILED 2"))&&P.Contains(TEXT("$40"))&&P.Contains(TEXT("feeder fault")),TEXT("the log says what the record says"));
+ Check(LogPage(5,1,17,false,0,FString()).Contains(TEXT("CREDITED $17")),TEXT("N1110: the log shows the amount that was credited, not a flat rate"));
  FS47DayRound R(nullptr);R.Begin(nullptr);Check(R.Save()->Values.Num()==0&&R.StopsDone()==0,TEXT("an older save has no round behind it"));
  return OK;
 }

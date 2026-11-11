@@ -29,6 +29,7 @@
 #include "S47Openings.h"
 #include "S47Outfit.h"
 #include "S47Places.h"
+#include "S47Witness.h"
 #include "S47EventPlaces.h"
 #include "S47Predecessor.h"
 #include "S47Mail.h"
@@ -242,7 +243,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
    J.PacketFeed=FMath::Clamp(SafeNum(O,TEXT("packetFeed"),LegacyKind==1?PrinterSeconds:0),0.,PrinterSeconds);
    J.DuplicateFeed=FMath::Clamp(SafeNum(O,TEXT("duplicateFeed"),LegacyKind==2?PrinterSeconds:0),0.,PrinterSeconds);
    J.CaseLine=FMath::Clamp(SafeInt(O,TEXT("caseLine"),-1),-1,FS47FreeformCases::CaseCount-1);J.CaseTest=J.CaseLine<0?-1:FMath::Clamp(SafeInt(O,TEXT("caseTest"),-1),-1,FS47FreeformCases::TestCount-1);if(J.CaseTest<0)J.CaseLine=-1;
-   J.bDocked=S47J::Bool(O,TEXT("docked"));J.bCaseValid=S47J::Bool(O,TEXT("caseValid"),true);J.bCaseRecorded=S47J::Bool(O,TEXT("caseRecorded"));if(J.CaseTest>=0){J.bAnomaly=false;J.Phenomenon.Empty();}
+   J.bDocked=S47J::Bool(O,TEXT("docked"));J.PaidAmount=FMath::Clamp(int32(S47J::Num(O,TEXT("paidAmt"),-1)),-1,10000);J.bCaseValid=S47J::Bool(O,TEXT("caseValid"),true);J.bCaseRecorded=S47J::Bool(O,TEXT("caseRecorded"));if(J.CaseTest>=0){J.bAnomaly=false;J.Phenomenon.Empty();}
    const auto ValidSamples=[](const TArray<double>& A){if(A.Num()>3)return false;for(double V:A)if(!FMath::IsFinite(V))return false;return true;};
    if(!ValidSamples(J.BeamAz)||!ValidSamples(J.BeamEl)||!ValidSamples(J.BeamAmplitude)){J.BeamAz.Reset();J.BeamEl.Reset();J.BeamAmplitude.Reset();J.bBeamVerified=false;J.bControl=false;J.ControlAt=0;}
    if(const auto C=S47J::Obj(O,TEXT("card"));C&&S47J::Int(C,TEXT("v"))==1)
@@ -1413,7 +1414,7 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
  // The whole modem recording: nothing in the panel transition cuts it short.
  if(M&&M->Audio)M->Audio->PcTransferAtOps(M->Web,27.);
  FString PayWhy;
- if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;LastPay=JobPay(*J);JobBonus(*J,&PayWhy);Earn(LastPay);DeskWork(*J);}J->Stage=EJobStage::Filed;}
+ if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;LastPay=JobPay(*J);J->PaidAmount=LastPay;JobBonus(*J,&PayWhy);Earn(LastPay);DeskWork(*J);}J->Stage=EJobStage::Filed;}
  if(J->CaseTest>=0&&!J->bCaseRecorded){RecordCaseResult(*J);ClearCompletedSelection();return true;}
  if(Places)Places->AfterRegistered(J->bAnomaly); // LOOP-1-20261109: a discrepancy points out even with no branch mended
  const bool WasTutorial=InTutorial();StepTutorial();ClearCompletedSelection();
@@ -1450,7 +1451,7 @@ bool FS47FreeformSession::FilePacket()
  // Another job may have been selected since the packet was collected; its paper still waits here.
  FJob* J=Work.FindByPredicate([](const FJob& X){return X.Stage==EJobStage::Packet;});if(Job()&&Job()->Stage==EJobStage::Packet)J=Job();if(!J)return false;
  if(!NearBinder()){Feedback=TEXT("Take the registered paper packet to the actual records-room binder. The remote archive is read-only.");Changed(Feedback);return false;}
- J->Stage=EJobStage::Filed;if(!J->bPaid){J->bPaid=true;LastPay=JobPay(*J);Earn(LastPay);DeskWork(*J);}
+ J->Stage=EJobStage::Filed;if(!J->bPaid){J->bPaid=true;LastPay=JobPay(*J);J->PaidAmount=LastPay;Earn(LastPay);DeskWork(*J);}
  if(J->bAnomaly)
  {
   RecordEvidence(TEXT("pulse-archive"),TEXT("Original, internal control and registered conclusion physically filed under one reference."));
@@ -4254,6 +4255,46 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line,bool bNotes)
    }
    if(Shown>0){Notes.Add(Land);NoteCount+=Shown;}
   }
+  {
+   // N1110 CASEBOARD-20261108: the trace book fills itself. Bearings, photographs, field records and witness statements that belong to
+   // this case (by its leads, its places and its nights), newest first, each with day, time, place and kind. Eight lines; the rest are counted.
+   struct FTrace{double Key=0;int32 Day=0;double Clock=-1;FString Place,Kind,Text;};
+   TArray<FTrace> Trace;TSet<FString> Here;
+   if(const auto* Y=Line==FS47FreeformCases::LandLine?nullptr:D.Mystery)for(int32 Index=0;Index<FS47FreeformCases::ClueCount;++Index)Here.Add(FString(Y->Clues[Index].Place).ToLower());
+   if(Director)for(const auto& O:Director->Observations())if(C->Leads.Contains(O.Id))
+   {
+    Here.Add(O.Place.ToLower());
+    FTrace Row;Row.Key=O.Clock;Row.Day=O.Day;Row.Clock=O.Clock;Row.Place=O.Place;
+    Row.Kind=O.Bearing.IsEmpty()?(O.bHeard?TEXT("HEARD"):TEXT("SEEN")):TEXT("BEARING");
+    Row.Text=O.Bearing.IsEmpty()?FString(TEXT("noted")):FString::Printf(TEXT("%s, %s"),*O.Bearing,O.bHeard?TEXT("heard"):TEXT("seen"));
+    Trace.Add(Row);
+    if(!O.PhotoId.IsEmpty())
+    {
+     const auto* Claim=Director->PhotoClaims().FindByPredicate([&](const FS47FreeformDirector::FPhotoClaim& P){return P.PhotoId==O.PhotoId;});
+     FTrace Pic=Row;Pic.Key=O.Clock+1;Pic.Kind=TEXT("PHOTO");Pic.Text=Claim?Claim->Title+(Claim->bPaid?TEXT(", registered"):TEXT(", not yet registered")):FString(TEXT("exposed"));Trace.Add(Pic);
+    }
+   }
+   for(const FString& L:C->Leads)if(Findings.Contains(L))
+   {
+    FTrace Row;Row.Day=FindingDays.FindRef(L);Row.Key=8*3600.+Row.Day*86400.-1;Row.Kind=TEXT("RECORD");
+    FString First=Findings.FindRef(L);int32 Stop=INDEX_NONE;if(First.FindChar(TEXT('.'),Stop)&&Stop>0)First=First.Left(Stop+1);
+    Row.Text=First;Trace.Add(Row);
+   }
+   if(Tips)for(const FS47Witness::FRec& R:Tips->Witness().Records())
+   {
+    const FS47Places::FDef* Def=FS47Places::Def(R.PlaceId);
+    if(!Def||!(Here.Contains(FString(Def->Title).ToLower())||Here.Contains(R.PlaceId.ToLower())))continue;
+    FTrace Row;Row.Key=R.Clock;Row.Clock=R.Clock;Row.Day=FMath::Max(1,int32(FMath::FloorToDouble((R.Clock-8*3600)/SecondsPerDay))+1);Row.Place=Def->Title;Row.Kind=TEXT("STATEMENT");Row.Text=FS47Witness::NoteText(R);Trace.Add(Row);
+   }
+   if(!Trace.IsEmpty())
+   {
+    Trace.StableSort([](const FTrace& A,const FTrace& B){return A.Key>B.Key;});
+    FString Book=TEXT("TRACE BOOK / what you gathered here, newest first");const int32 Shown=FMath::Min(8,Trace.Num());
+    for(int32 Index=0;Index<Shown;++Index)Book+=TEXT("\n")+TraceBookLine(Trace[Index].Day,Trace[Index].Clock,Trace[Index].Place,*Trace[Index].Kind,Trace[Index].Text);
+    if(Trace.Num()>Shown)Book+=FString::Printf(TEXT("\nEARLIER / %d MORE, EACH STILL IN YOUR NOTEBOOK"),Trace.Num()-Shown);
+    Notes.Insert(Book,0);NoteCount+=Shown;
+   }
+  }
   if(!Notes.IsEmpty())Left.Add(T::Button(FString::Printf(TEXT("%s CASE NOTES (%d)\nTRACES / LEADS / RECORDS"),bCaseDetails?TEXT("[-]"):TEXT("[+]"),NoteCount),[this,Line]{bCaseDetails=!bCaseDetails;OpenCaseBoard(Line);},false));
   else bCaseDetails=false;
  }
@@ -4712,7 +4753,7 @@ S47J::FObj FS47FreeformSession::Save()const
    auto Sound=S47J::New();S47J::Set(Sound,TEXT("v"),J.RecordingSoundVersion);S47J::Set(Sound,TEXT("gain"),J.RecordingGain);
    S47J::Set(Sound,TEXT("bandwidth"),J.RecordingBandwidth);S47J::Set(Sound,TEXT("quality"),J.RecordingQuality);S47J::Set(A,TEXT("recordingSound"),Sound);
   }
-  S47J::Set(A,TEXT("beamPoint"),J.BeamPoint);S47J::Set(A,TEXT("beamSettle"),J.BeamSettle);S47J::Set(A,TEXT("beamSample"),J.BeamSample);S47J::Set(A,TEXT("beamAz"),J.BeamAz);S47J::Set(A,TEXT("beamEl"),J.BeamEl);S47J::Set(A,TEXT("beamAmplitude"),J.BeamAmplitude);S47J::Set(A,TEXT("beamVerified"),J.bBeamVerified);S47J::Set(A,TEXT("clockMeasured"),J.bClockMeasured);S47J::Set(A,TEXT("duplicateCollected"),J.bDuplicateCollected);S47J::Set(A,TEXT("duplicateRejected"),J.bDuplicateRejected);S47J::Set(A,TEXT("originalPage"),J.OriginalPage);S47J::Set(A,TEXT("originalStamp"),J.OriginalStamp);S47J::Set(A,TEXT("duplicatePage"),J.DuplicatePage);S47J::Set(A,TEXT("duplicateStamp"),J.DuplicateStamp);S47J::Set(A,TEXT("caseLine"),J.CaseLine);S47J::Set(A,TEXT("caseTest"),J.CaseTest);S47J::Set(A,TEXT("caseValid"),J.bCaseValid);S47J::Set(A,TEXT("caseRecorded"),J.bCaseRecorded);if(J.bDocked)S47J::Set(A,TEXT("docked"),true);if(J.bGenerated)
+  S47J::Set(A,TEXT("beamPoint"),J.BeamPoint);S47J::Set(A,TEXT("beamSettle"),J.BeamSettle);S47J::Set(A,TEXT("beamSample"),J.BeamSample);S47J::Set(A,TEXT("beamAz"),J.BeamAz);S47J::Set(A,TEXT("beamEl"),J.BeamEl);S47J::Set(A,TEXT("beamAmplitude"),J.BeamAmplitude);S47J::Set(A,TEXT("beamVerified"),J.bBeamVerified);S47J::Set(A,TEXT("clockMeasured"),J.bClockMeasured);S47J::Set(A,TEXT("duplicateCollected"),J.bDuplicateCollected);S47J::Set(A,TEXT("duplicateRejected"),J.bDuplicateRejected);S47J::Set(A,TEXT("originalPage"),J.OriginalPage);S47J::Set(A,TEXT("originalStamp"),J.OriginalStamp);S47J::Set(A,TEXT("duplicatePage"),J.DuplicatePage);S47J::Set(A,TEXT("duplicateStamp"),J.DuplicateStamp);S47J::Set(A,TEXT("caseLine"),J.CaseLine);S47J::Set(A,TEXT("caseTest"),J.CaseTest);S47J::Set(A,TEXT("caseValid"),J.bCaseValid);S47J::Set(A,TEXT("caseRecorded"),J.bCaseRecorded);if(J.bDocked)S47J::Set(A,TEXT("docked"),true);if(J.PaidAmount>=0)S47J::Set(A,TEXT("paidAmt"),J.PaidAmount);if(J.bGenerated)
   {
    auto C=S47J::New();const auto& P=J.Card.Receiver;S47J::Set(C,TEXT("v"),1);S47J::Set(C,TEXT("f"),P.F);S47J::Set(C,TEXT("ftol"),P.FTol);S47J::Set(C,TEXT("g0"),P.Gain[0]);S47J::Set(C,TEXT("g1"),P.Gain[1]);S47J::Set(C,TEXT("bw0"),P.Bw[0]);S47J::Set(C,TEXT("bw1"),P.Bw[1]);S47J::Set(C,TEXT("az0"),P.Az[0]);S47J::Set(C,TEXT("az1"),P.Az[1]);S47J::Set(C,TEXT("el"),J.Card.El);S47J::Set(C,TEXT("seconds"),J.Card.Seconds);S47J::Set(C,TEXT("suggested"),J.Card.SuggestedClock);S47J::Set(C,TEXT("text"),P.Card);S47J::Set(A,TEXT("card"),C);
   }
@@ -4774,9 +4815,23 @@ TArray<double> FS47FreeformSession::TubesToSave(const TSet<int32>& Broken)
  for(const int32 K:Sorted)Out.Add(K);
  return Out;
 }
+FString FS47FreeformSession::TraceBookLine(int32 Day,double Clock,const FString& Place,const TCHAR* Kind,const FString& Text)
+{
+ // N1110 CASEBOARD-20261108: "D2 22:10 / ARRAY SERVICE AREA / BEARING / NE, heard"; no time if Clock<0, no place if empty.
+ FString Out=FString::Printf(TEXT("D%d"),FMath::Max(1,Day));
+ if(Clock>=0)Out+=TEXT(" ")+FS47FreeformCases::Clock(Clock);
+ if(!Place.IsEmpty())Out+=TEXT(" / ")+Place.ToUpper();
+ return Out+FString::Printf(TEXT(" / %s / %s"),Kind,*Text.Left(150));
+}
 bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {
  bool OK=S47CaptureSound::SelfTest(Lines);auto Check=[&](bool B,const TCHAR* Name){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+Name);};
+ { // N1110 CASEBOARD-20261108: the trace book's line carries day, time, place and kind; no time or place when there is none
+  const FString A=TraceBookLine(2,22*3600.+600,TEXT("array service area"),TEXT("BEARING"),TEXT("NE, heard"));
+  const FString B2=TraceBookLine(0,-1,FString(),TEXT("RECORD"),TEXT("A light over the ridge."));
+  Check(A==TEXT("D2 22:10 / ARRAY SERVICE AREA / BEARING / NE, heard"),TEXT("trace book line: day, time, place, kind"));
+  Check(B2==TEXT("D1 / RECORD / A light over the ridge."),TEXT("trace book line: no time or place"));
+ }
  OK&=SS47TapeScope::SelfTest(Lines); // D45-20261110: each take's own look on the reel deck's displays
  OK&=FS47Attention::SelfTest(Lines); // N1110: the attention curve, its thresholds, sabotage and the visit
  OK&=FS47DoorLoop::SelfTest(Lines); // N1110 (N1110-6): the door loop's steps, cap, reset and words
