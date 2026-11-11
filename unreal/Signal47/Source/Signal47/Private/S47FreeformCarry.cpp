@@ -219,7 +219,10 @@ void FS47FreeformCarry::Step(double Dt,int32 State,const FString& Id,const FVect
   if(C->IsSimulatingPhysics())
   {
    bool Hit=false;const FVector Current=C->GetComponentLocation();const FVector Safe=Clearance(LastSafe,Current,C->GetComponentQuat(),Hit);
-   if(Hit&&FVector::DistSquared(Safe,Current)>1)
+   // N1110: a sweep that starts inside scenery returns its own start (Clearance), which pinned a dropped parcel where it left the
+   // hands for good: no fall, no contact, no thud (journey stage 4). Already inside is no reason to hold it there; physics moves it on.
+   const bool bStartedInside=Hit&&Safe.Equals(LastSafe,.001);
+   if(Hit&&!bStartedInside&&FVector::DistSquared(Safe,Current)>1)
    {const FVector V=C->GetPhysicsLinearVelocity();C->SetWorldLocation(Safe,false,nullptr,ETeleportType::TeleportPhysics);C->SetPhysicsLinearVelocity(-V*.12);}
    LastSafe=C->GetComponentLocation();Pose=C->GetComponentTransform();Velocity=C->GetPhysicsLinearVelocity();Angular=C->GetPhysicsAngularVelocityInDegrees();bSleep=!C->RigidBodyIsAwake();
    // Keep the one physical contact patch bounded; stop on actual native ground
