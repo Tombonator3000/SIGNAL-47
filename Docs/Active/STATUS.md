@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 11. november kl. 01:11 (d51): versjon 0.9.51, `cefe6d8f` på `claude/day-20261109`
+## Installert 11. november kl. 02:03 (d52): versjon 0.9.52, `8b0750c0` på `claude/day-20261109`
+
+Pakket, røyktestet og installert (selvtest OK, 4697 kontroller; ingen materialadvarsler). Tilbakerulling: d51 (`cefe6d8f`). Disk etterpå: 127 GB (d48-pakken ryddet). Ikke spilt av Tom.
+
+Nytt siden d51: rommets skjermer viser siste side og framdrift; trip camera fanger landinger og skikkelser og bildene har overvåkningspreg (D46-13); skiftloggen viser faktisk beløp; sporbok på CASE BOARD; veggvakt for WORLD-04 med F10 «SARO wall check»; kantstein bare mot asfalt.
+
+Kontroll: regresjon PASS 251; service, casefield, ictl, first PASS.
+
+## Tidligere: installert 11. november kl. 01:11 (d51): versjon 0.9.51, `cefe6d8f` på `claude/day-20261109`
 
 Pakket, røyktestet og installert (selvtest OK, 4688 kontroller; ingen materialadvarsler). Tilbakerulling: d50 (`030f3b66`). Disk etterpå: 127 GB (d47-pakken ryddet). Ikke spilt av Tom.
 
