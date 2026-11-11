@@ -62,6 +62,10 @@ Første forsøk med egne RT-proxyinnstillinger var utilstrekkelig: Unreal 5.8 by
 
 `repair_water.py` korrigerer bare eksisterende `M_MotelV2_PoolWater`: ensidig gjennomskinnelig overflate med den oppgitte vannfargen som tint på atlaset. Ruhet, normaler, opacity og geometri beholdes. Begge skript bruker `S47_MOTEL_SOURCE` og `S47_MOTEL_REPORT`; LOD-skriptet bruker også `S47_MOTEL_TRIMS`. Etter endringer kjøres `verify_assets.py` i en ny Unreal-prosess og `stage_assembly.py` før pakking. Native PASS erstatter ikke visuell kontroll i det pakkede spillet.
 
+## Vrengte solider inne i større øyer (PLAY-31-01, 11. november)
+
+Vinding mot lagret normal (S47MotelProbe) og negativt volum per vertexøy (`repair_playtest_walls.py`) fanger ikke en vegg som er bygd av flere bokser som deler kanter (kanter med fire flater). I 31. oktober-pakken er tre bokser i kontorets frontvegg (sørpilaren, brystningen under vinduet og pilaren mellom vindu og dør) og to i frontveggen til rom 2, 6, 7 og 8 vrengt: innerflaten peker inn i veggen, så man ser baksiden av ytterflaten 25 cm lenger inne, og vindus- og dørsmyg peker bort fra åpningen. `inside_out_regions.py FBX...` deler øyene langs mangfoldige kanter og melder lukkede solider med negativt volum (ren Python, ingen motor). `repair_inside_out_walls.py` (Blender, kø) snur bare disse flatene i 31. oktober-pakken, beholder posisjoner/UV/materialer og lager LOD1/LOD2 med samme forhold som før; `import_playtest_walls.py` med `S47_MOTEL_WALL_SOURCE` importerer og legger på LOD3.
+
 ## Presist dagslys på blandet Office-glød
 
 `prepare_office_daylight.py` kloner bare `M_MotelV2_GlowOffice` og omslutter eksisterende emissive-utgang med lokal X-maske. Faktisk 31. oktober-FBX plasserer utvendig lightbox ved X268,85–270,15cm og innvendig takpanel ved X9,50–70,50cm; grensen200cm skiller dem i alle fire native LOD-er. Unreal5.8 bruker `MaterialExpressionLocalPosition`. Mesh, UV, normaler og originalmaterialet endres ikke. Root kjører verktøyet sekvensielt under guard; `S47_LIGHT01_REPORT` får resultatet. Shader-/lagringskontroll erstatter ikke faktisk GPU-bildekontroll.
