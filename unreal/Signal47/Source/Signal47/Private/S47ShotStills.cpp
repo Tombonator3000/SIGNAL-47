@@ -26,6 +26,7 @@
 #include "S47ScriptPlayer.h"
 #include "S47Three.h"
 #include "S47Walker.h"
+#include "S47World.h"
 #include "S47Web.h"
 #include "SS47ScriptEditor.h"
 
@@ -320,8 +321,8 @@ namespace S47ShotStillsLocal
  struct FRun
  {
   int32 Stage=0,Phase=0,PhaseFrames=0,Pic=0,Written=0;
-  double T=0,At=0,PhaseAt=0,NextTry=0,WantHour=22;
-  bool bDone=false,bRead=false,bPushed=false,bSettled=false,bFovSaved=false,bDraftSwapped=false;
+  double T=0,At=0,PhaseAt=0,NextTry=0,WantHour=22,SettleAt=0;
+  bool bDone=false,bRead=false,bMoved=false,bPushed=false,bSettled=false,bFovSaved=false,bDraftSwapped=false;
   FString Dir,Arg;
   FS47Script Script;
   FSheet Sheet;
@@ -623,6 +624,32 @@ bool Step(US47Main* M,double Dt)
   R.Sheet.Id=R.Script.Id;R.Sheet.Name=R.Script.Name;R.Sheet.Source=R.Script.File.IsEmpty()?R.Arg:R.Script.File;
   const bool bShots=R.Script.Actions.ContainsByPredicate([](const FS47ScriptAction& X){return X.Do==ES47ScriptAct::Shot;});
   if(!bShots&&!R.Script.Trigger.HasWhere())return Finish(M,false,FString::Printf(TEXT("%s has neither a shot nor a trigger point or place"),*R.Script.Id));
+  // Somewhere else than where the session starts (Caliche, the diner): the player is put there first, as F10's places do it, or the
+  // pictures show the land without its town. Where: the trigger's place, else the first shot's eye.
+  if(!R.bMoved)
+  {
+   R.bMoved=true;
+   double X=0,Z=0;bool bHave=false,bTown=false;
+   if(!R.Script.Trigger.Place.IsEmpty()&&M->Freeform->EventPlaces)
+   {
+    if(const FS47EventPlace* Pl=M->Freeform->EventPlaces->Find(R.Script.Trigger.Place)){X=Pl->X;Z=Pl->Z;bHave=true;bTown=Pl->Region==TEXT("caliche")||Pl->Region==TEXT("diner");}
+   }
+   if(!bHave&&R.Script.Trigger.Point.bSet){X=R.Script.Trigger.Point.X;Z=R.Script.Trigger.Point.Z;bHave=true;}
+   if(!bHave)for(const FS47ScriptAction& A:R.Script.Actions)if(A.Do==ES47ScriptAct::Shot&&A.Path.Num()>0){X=A.Path[0].X;Z=A.Path[0].Z;bHave=true;break;}
+   if(bHave&&M->World)
+   {
+    FString Area=S47OpenLand::LegFor(TEXT("road"),X,Z);
+    if(Area==TEXT("road")&&bTown)Area=TEXT("diner");
+    if(M->Web->Area()!=Area)
+    {
+     const FVector At=S47OpenLand::FromRoad(Area,X,Z);
+     M->World->PlaceTruck(Area);M->World->Enter(Area);W->Place(At.X,At.Z,0);
+     R.SettleAt=R.T+12;
+     UE_LOG(LogS47ShotStills,Display,TEXT("S47: shot stills: the player put in %s at (%.1f, %.1f) for the pictures"),*Area,At.X,At.Z);
+    }
+   }
+  }
+  if(R.T<R.SettleAt)return false;
   // The script is the editor's draft meanwhile, so that director mode draws it (its own draft is put back after).
   R.Draft=S47ScriptEditor::Draft();R.bHadDraft=S47ScriptEditor::HaveDraft();R.bWasDirty=S47ScriptEditor::Dirty();R.Selected=S47ScriptEditor::SelectedShot();
   R.bDraftSwapped=true;
