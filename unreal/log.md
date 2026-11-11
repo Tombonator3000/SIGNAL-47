@@ -2312,3 +2312,10 @@ NEW STORY starter nå en Freeform-økt merket som Story (`storyDirector{v:1}`), 
 
 - 18:25 Stillbilder for en skriptforfatter som ikke ser verden: `-S47Freeform -S47Director -S47ShotStills=<mappe> -S47ShotStillsScript=<id eller .json> [-S47ShotStillsClock=HH:MM]` slår på regissørmodus, skyver klokka fram (`TestAdvance`), setter kameraet nøyaktig i hvert opptaks første, midtre og siste positur (`S47Shot::PoseAt`) og tar `shot<NN>-a/b/c.png` uten tegning, så `trigger-top.png` og `trigger-side.png` med tegning. Avsluttes med `S47: shot stills COMPLETE PASS (<n> pictures)` eller `FAIL: <hvorfor>`.
 - Siktrapport fra linjesporing (blokkert av hva og hvor langt, høyde over bakken, under bakken, banen mellom øynene) og utløserens fakta (bakkehøyde, gangbar, nærmeste sted, nærmeste opptaksøye) i `sheet.md` og `sheet.json`; advarsler logges som `S47: shot stills warning: ...`. Nye filer `S47ShotStills.h/.cpp`; `S47DirectorCam` fikk `SetPose` og `SetOverlay`/`Overlay`. Selvtest `STILLS:`. Ikke bygget her.
+
+## 2026-11-11 (kveld og natt: bensinstasjon og Story steg 5)
+
+- 21:20 GAS-STATION-LIFT-01: nytt butikkinteriør i spillet, insektene virker (Niagara-systemet ventet ikke på kompilering i uferdig spill), Fable-løft av materialer og lys. `ee958345`, `89859227`.
+- 22:00 Cosmos-rekvisitter i butikken når de finnes (18 deler, `Tools/cosmosshop`), Blender-kassaapparatet tatt ut. Selvtest OK 4898 med og uten delene. `4cc874f3`.
+- 22:10 Tom: ekte 1980-tallsfoto som mål (tre målbilder utenfor Git); stjernehimmelen skal ikke endres.
+- 23:00 STORY-ON-FREEFORM-01 steg 5: `FS47StoryScene`, beat `scene`, D01 ringer på OPS-telefonen; ingen forgjenger på Story-natt (Tom: spilleren er Reyes). `S47StationLook` (bildetone, tegnes når `M_StationLook` finnes). Selvtest OK 4904. `c49017a8`. Regresjon avbrutt av samtidig motorjobb; kjøres på nytt.
