@@ -79,8 +79,20 @@ Poly Haven, CC0 (public domain, https://creativecommons.org/publicdomain/zero/1.
 "Television 02" by Poly Haven, CC0, https://polyhaven.com/a/television_02
 "Vintage Radio Transceiver" by Poly Haven, CC0, https://polyhaven.com/a/vintage_radio_transceiver
 
+Freeform terrain textures, Poly Haven, CC0 (Tools/freeformterrain/KILDER.md):
+"Cliff Side" by James Ray Cock, Jenelle van Heerden and Dario Barresi, CC0, https://polyhaven.com/a/cliff_side (sedimentary rock of the hills)
+"Dark Rock 02" by Amal Kumar, CC0, https://polyhaven.com/a/dark_rock_02 (basalt of the hills)
+"Dry Ground Rocks", "Aerial Ground Rock" and "Dry Ground 01" by Rob Tuytel, CC0, https://polyhaven.com/a/dry_ground_rocks https://polyhaven.com/a/aerial_ground_rock https://polyhaven.com/a/dry_ground_01
+"Rocky Trail" by Amal Kumar, CC0, https://polyhaven.com/a/rocky_trail
+"Sandy Gravel 02" by Dario Barresi, CC0, https://polyhaven.com/a/sandy_gravel_02
+Elevation data: U.S. Geological Survey, 3D Elevation Program (public domain). Imagery: USGS, USDA, The National Map: Orthoimagery (public domain).
+
 Daytime sky photography, CC0:
 "Kloppenheim 06 (Pure Sky)" by Greg Zaal / Jarod Guest, CC0, https://polyhaven.com/a/kloppenheim_06_puresky
+
+The moon (2026-11-09), public domain:
+"CGI Moon Kit" (LRO LROC colour map, lroc_color_poles_2k), NASA's Scientific Visualization Studio, visualizer Ernie Wright (USRA), scientist Noah Petro (NASA/GSFC), https://svs.gsfc.nasa.gov/4720
+Public domain as stated by NASA SVS (https://svs.gsfc.nasa.gov/help/). Projected to the near side as a disc and desaturated for SIGNAL / 47 (Tools/sky/moon/bake_moon.py).
 
 Additional licensed environment assets (Fab):
 "Modular Post Apocalyptic Desert Environment (Desert City,Desert Village)" by JustB Studios, https://www.fab.com/listings/be5ed72e-f542-41f4-b747-bdb343eef609
@@ -90,6 +102,14 @@ MetaHuman character and hair assets: Epic Games, https://www.metahuman.com/
 Original waitress uniform and native integration: SIGNAL / 47.
 
 Music, sound and fonts are credited in the game's end credits.
+
+SIERRA MOTOR COURT V2 (2026-10-27)
+Original Blender geometry, geometric facade ornament, reception, pool and walnut lining made for SIGNAL / 47.
+Painted Plaster Wall and Concrete Floor 02: Rob Tuytel, Poly Haven, CC0.
+https://polyhaven.com/a/painted_plaster_wall
+https://polyhaven.com/a/concrete_floor_02
+https://polyhaven.com/license
+The three existing Daniel Zhabotinsky cars and their credits above remain in use.
 
 Space radio listening references (radio/plasma measurements made audible):
 NASA/JPL/University of Iowa, Cassini RPWS at Jupiter (2001):
@@ -104,3 +124,26 @@ https://commons.wikimedia.org/wiki/File:Chorus_Radio_Waves_within_Earth%27s_Atmo
 Prepared for local playback at 48 kHz; NASA reference playback preserves speed and source identity.
 Synthetic Nebula ambience: Ultimate SFX for Games, Function Loops (purchased library).
 These source credits describe the recordings, not the fictional instrument's acquisition date.
+
+STREET LAMPS (2026-11-09)
+Cobra-head street lamp, davit arm, tapered steel pole and wood-pole arm: original Blender geometry and procedural textures made for SIGNAL / 47 (unreal/ArtSource/StreetLamps). No third-party meshes or images.
+
+FEED SHED SOUNDS (2026-11-09, WEEKLY-CASE-20261109)
+Freesound, CC0 1.0 (public domain, https://creativecommons.org/publicdomain/zero/1.0/); credited by choice. Cut, levelled and
+staged by Tools/nightsounds (KILDER.md, sources.json "shed*"):
+"knock and bang on wood doors various" by kyles, CC0, https://freesound.org/people/kyles/sounds/637643/
+"door wood old heavy kick open good impact 1 with rattle 1 without" by kyles, CC0, https://freesound.org/people/kyles/sounds/452609/
+"Wooden Door breaks" by Saladsounds, CC0, https://freesound.org/people/Saladsounds/sounds/723974/
+"Locked door being forced open" by Talitha5, CC0, https://freesound.org/people/Talitha5/sounds/262538/
+"Kicking/Forcing/Breaking Wooden Door" by qubodup, CC0, https://freesound.org/people/qubodup/sounds/160213/
+"axe chops through thin wood trailer rv wall tearing splinters" by kyles, CC0, https://freesound.org/people/kyles/sounds/452561/
+"chain thick rattle hooked onto metal1" by kyles, CC0, https://freesound.org/people/kyles/sounds/452576/
+"Padlock Chain Lock Unlock" by leonelmail, CC0, https://freesound.org/people/leonelmail/sounds/330635/
+"CHAIN & LOCK ON FENCE SOUND" by metrostock99, CC0, https://freesound.org/people/metrostock99/sounds/345070/
+"G24-09-Falling on Wooden or Dirt Floor with Splinters" by craigsmith, CC0, https://freesound.org/people/craigsmith/sounds/438308/
+"Dragging Furniture" by Mrthenoronha, CC0, https://freesound.org/people/Mrthenoronha/sounds/377016/
+"Dragging a body across a concrete floor 2" by PostProdDog, CC0, https://freesound.org/people/PostProdDog/sounds/578493/
+"MONSTER BREATH 1" by mucky_pete7, CC0, https://freesound.org/people/mucky_pete7/sounds/574208/
+"Monster breathing" by Zrte, CC0, https://freesound.org/people/Zrte/sounds/470900/
+"Animal Heavy Breathing" by bevibeldesign, CC0, https://freesound.org/people/bevibeldesign/sounds/350414/
+"Heavy Dog Breathing" by Sheyvan, CC0, https://freesound.org/people/Sheyvan/sounds/476032/
