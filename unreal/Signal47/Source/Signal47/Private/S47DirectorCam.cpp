@@ -1,5 +1,7 @@
 #include "S47DirectorCam.h"
 #include "CoreGlobals.h"
+#include "DrawDebugHelpers.h"
+#include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/PlatformMisc.h"
 #include "InputCoreTypes.h"
@@ -240,9 +242,43 @@ namespace S47DirectorCamLocal
  }
 
  // DIRECTOR-MODE-01, the next slice: the trigger's volume, the shots' eyes and what they look at, drawn in the world while flying.
+ // Steady lines, drawn again each frame (no blinking): the draft's trigger volume in amber (ground outline, and its top and corner
+ // posts when it has a height), each shot's eye in cyan with a line to what it looks at, and its second eye in white.
  void Draw(US47Main* M)
  {
-  (void)M;
+  const AS47Walker* Wk=St().Walker.Get();
+  UWorld* World=Wk?Wk->GetWorld():nullptr;
+  if(!M||!World||!S47ScriptEditor::HaveDraft())return;
+  const FS47Script& D=S47ScriptEditor::Draft();
+  const auto At=[M](const FS47ScriptPoint& P){return S47Three::ToUE(FS47ScriptPlayer::WorldOfRoad(M,P));};
+  const FS47ScriptTrigger& T=D.Trigger;
+  if(T.Point.bSet)
+  {
+   static FS47ScriptPoint Logged;
+   if(Logged.X!=T.Point.X||Logged.Z!=T.Point.Z){Logged=T.Point;const FVector C=At(T.Point);UE_LOG(LogS47DirectorCam,Display,TEXT("S47: director mode draws the trigger at %.0f %.0f %.0f (UE cm), %d outline points"),C.X,C.Y,C.Z,S47Script::Outline(T,32).Num());}
+   const FColor Amber(255,176,32);
+   const TArray<FS47ScriptPoint> Ring=S47Script::Outline(T,32);
+   const double Tall=T.Height>0?T.Height:2.; // (any height: a low fence, so the outline is seen over rough ground)
+   const int32 Posts=T.Shape==ES47ScriptShape::Box?1:8;
+   for(int32 I=0;I+1<Ring.Num();++I)
+   {
+    FS47ScriptPoint A=Ring[I],B=Ring[I+1];
+    DrawDebugLine(World,At(A),At(B),Amber,false,-1.f,0,6.f);
+    FS47ScriptPoint A2=A,B2=B;A2.Up+=Tall;B2.Up+=Tall;
+    DrawDebugLine(World,At(A2),At(B2),Amber,false,-1.f,0,T.Height>0?6.f:2.f);
+    if(I%Posts==0)DrawDebugLine(World,At(A),At(A2),Amber,false,-1.f,0,2.f);
+   }
+   DrawDebugPoint(World,At(T.Point),14.f,Amber,false,-1.f);
+  }
+  for(const FS47ScriptAction& A:D.Actions)
+  {
+   if(A.Do!=ES47ScriptAct::Shot||A.Path.IsEmpty()||!A.Path[0].bSet)continue;
+   const FVector Eye=At(A.Path[0]);
+   if(FVector::Dist(Eye,Wk->GetActorLocation())<150.)continue; // (the camera stands in it: its lines would cross the whole view)
+   DrawDebugSphere(World,Eye,35.f,10,FColor::Cyan,false,-1.f,0,3.f);
+   if(A.Point.bSet){DrawDebugLine(World,Eye,At(A.Point),FColor::Cyan,false,-1.f,0,3.f);DrawDebugPoint(World,At(A.Point),14.f,FColor::Cyan,false,-1.f);}
+   if(A.Path.Num()>1&&A.Path[1].bSet){DrawDebugSphere(World,At(A.Path[1]),35.f,10,FColor::White,false,-1.f,0,3.f);DrawDebugLine(World,Eye,At(A.Path[1]),FColor::White,false,-1.f,0,2.f);}
+  }
  }
 
  void Enter(US47Main* M)
@@ -475,7 +511,18 @@ bool Contract(US47Main* M,double Dt)
   const double Miss=FVector::Dist(FS47ScriptPlayer::WorldOfRoad(M,D.Actions.Last().Path[0]),S47DirectorCamLocal::St().Fly.Eye);
   if(Miss>.5)return Finish(false,FString::Printf(TEXT("(e) the shot's eye is %.2f m off the camera"),Miss));
   S47DirectorCamLocal::St().Last=Said;
+  // a trigger box where the shot looks, so the picture shows what the director sees drawn (the test's own draft, never saved)
+  {FS47ScriptTrigger& Tr=S47ScriptEditor::Draft().Trigger;Tr.Place.Reset();Tr.Point=D.Actions.Last().Point;Tr.Shape=ES47ScriptShape::Box;Tr.HalfX=9;Tr.HalfZ=6;Tr.Yaw=.4;Tr.Height=4;}
   UE_LOG(LogS47DirectorCam,Display,TEXT("S47: director mode contract: held, player still, camera %.1f m away, night held, %s (eye %.3f m off)"),FVector::Dist(Cam,Body),*Said,Miss);
+  // back and up from the shot's eye, so the picture shows the eye, its line and the trigger's volume drawn in the world
+  S47DirectorCamLocal::St().TestInput=FVector(.4,.5,1);
+  R.Stage=4;R.At=R.T;
+  return false;
+ }
+ if(R.Stage==4)
+ {
+  if(R.T-R.At<1.5)return false;
+  S47DirectorCamLocal::St().TestInput=FVector::ZeroVector;
   // a picture of what the director sees, next to the contract's other proof
   if(FString Dir;FParse::Value(FCommandLine::Get(),TEXT("S47DevEventsContract="),Dir,false)&&!Dir.IsEmpty())FScreenshotRequest::RequestScreenshot(Dir/TEXT("director-mode-fly.png"),false,false);
   R.Stage=2;R.At=R.T;
