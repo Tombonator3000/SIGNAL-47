@@ -51,6 +51,9 @@ public:
  int32 PlayedCount(const FString& Id) const{return Memory.Count.FindRef(Id);}
  // The moment, as a trigger reads it.
  FS47ScriptNow Now() const;
+ // DIRECTOR-MODE-01 (slice 3): Base with what this script's trigger volume reads (FS47ScriptNow's bLooking, Held, bWasInside): its
+ // look test now, and what its watch has seen so far. Base itself for a trigger without a volume (FS47ScriptTrigger::HasVolume).
+ FS47ScriptNow NowFor(const FS47Script& S,const FS47ScriptNow& Base) const;
  // CRIT6-20261109: the weather and the moon a trigger reads, as the world shows them at Clock: the calendar day's (FS47WeatherLive,
  // the sky's moon), not the shift day's, whose morning is still "today" until 08:00. The night's storm is the evening's, the shift
  // day's (ShiftDay), held into the small hours. CalendarDate: that calendar day's date (FS47FreeformSession::DateOfDay).
@@ -87,6 +90,13 @@ private:
  TMap<FString,FString> Bad;
  FS47ScriptMemory Memory;
  double CheckIn=4;
+ // DIRECTOR-MODE-01 (slice 3): each enabled volume trigger's watch, by script id: how long its mode's test has held and whether the
+ // player has been inside. Not saved: a Continue starts every watch fresh, and so does any gap in the asking (a script playing, the
+ // tutorial). SincePoll: the seconds since the last ask.
+ struct FVolumeWatch{double Held=0;bool bHolding=false,bWasInside=false;};
+ TMap<FString,FVolumeWatch> Watch;
+ double SincePoll=0;
+ FS47ScriptNow Watched(const FS47Script& S,const FS47ScriptNow& Base,double Gap);
  bool bLinesAdded=false;
  void AddDevLines();
  // The run.

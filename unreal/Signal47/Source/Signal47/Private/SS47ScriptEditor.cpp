@@ -253,6 +253,32 @@ TSharedRef<SWidget> SS47ScriptEditor::BuildTrigger()
  }
  V->AddSlot().AutoHeight().Padding(0,0,0,4)[Where];
  if(T.Place.IsEmpty()&&T.Point.bSet)V->AddSlot().AutoHeight().Padding(0,0,0,4)[PointRow(TEXT("POINT"),[]{return &Draft().Trigger.Point;})];
+ // DIRECTOR-MODE-01 (slice 3): the volume around the place or the point: its shape and height band, then what the player does with it
+ // and for how long. A box, a look and a leave need a point of their own (the lint says so).
+ if(T.HasWhere())
+ {
+  TSharedRef<SHorizontalBox> ShapeRow=SNew(SHorizontalBox),ModeRow=SNew(SHorizontalBox);
+  const auto Put=[](const TSharedRef<SHorizontalBox>& Row,TSharedRef<SWidget> W){Row->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,4,0)[W];};
+  const bool bBox=T.Shape==ES47ScriptShape::Box;
+  Put(ShapeRow,Cycle(TEXT("SHAPE "),{TEXT("circle"),TEXT("box")},bBox?TEXT("box"):TEXT("circle"),[](const FString& S){Draft().Trigger.Shape=S==TEXT("box")?ES47ScriptShape::Box:ES47ScriptShape::Circle;}));
+  if(bBox)
+  {
+   Put(ShapeRow,Words(TEXT("HALF x"),19,2));Put(ShapeRow,Num(TEXT("m"),T.HalfX,[](double X){Draft().Trigger.HalfX=X;},60));
+   Put(ShapeRow,Words(TEXT("z"),19,2));Put(ShapeRow,Num(TEXT("m"),T.HalfZ,[](double X){Draft().Trigger.HalfZ=X;},60));
+   Put(ShapeRow,Words(TEXT("YAW"),19,2));Put(ShapeRow,Num(TEXT("radians"),T.Yaw,[](double X){Draft().Trigger.Yaw=X;},70));
+  }
+  Put(ShapeRow,Words(TEXT("HEIGHT m (0: any)"),19,2));Put(ShapeRow,Num(TEXT("m"),T.Height,[](double X){Draft().Trigger.Height=X;},60));
+  V->AddSlot().AutoHeight().Padding(0,0,0,4)[ShapeRow];
+  const TCHAR* const ModeNow=T.Mode==ES47ScriptMode::Look?TEXT("look"):T.Mode==ES47ScriptMode::Leave?TEXT("leave"):TEXT("enter");
+  Put(ModeRow,Cycle(TEXT("MODE "),{TEXT("enter"),TEXT("look"),TEXT("leave")},ModeNow,[](const FString& S){Draft().Trigger.Mode=S==TEXT("look")?ES47ScriptMode::Look:S==TEXT("leave")?ES47ScriptMode::Leave:ES47ScriptMode::Enter;}));
+  if(T.Mode==ES47ScriptMode::Look)
+  {
+   Put(ModeRow,Words(TEXT("WITHIN deg"),19,2));Put(ModeRow,Num(TEXT("deg"),T.Degrees,[](double X){Draft().Trigger.Degrees=X;},60));
+   Put(ModeRow,Words(TEXT("FROM m"),19,2));Put(ModeRow,Num(TEXT("m"),T.LookRange,[](double X){Draft().Trigger.LookRange=X;},60));
+  }
+  Put(ModeRow,Words(TEXT("DWELL s"),19,2));Put(ModeRow,Num(TEXT("s"),T.Dwell,[](double X){Draft().Trigger.Dwell=X;},60));
+  V->AddSlot().AutoHeight().Padding(0,0,0,4)[ModeRow];
+ }
  for(int32 I=0;I<T.Conds.Num();++I)V->AddSlot().AutoHeight().Padding(0,0,0,2)[BuildCond(I)];
  V->AddSlot().AutoHeight()[Btn(TEXT("+ CONDITION"),[this]{FS47ScriptCond C;C.If=TEXT("outdoors");Draft().Trigger.Conds.Add(C);Changed();})];
  return V;
@@ -277,6 +303,8 @@ TSharedRef<SWidget> SS47ScriptEditor::BuildCond(int32 I)
   H->AddSlot().AutoWidth()[Field(TEXT("place id"),C.Arg,[I](const FString& S){Draft().Trigger.Conds[I].Arg=S.TrimStartAndEnd();},180)];
   H->AddSlot().AutoWidth()[Num(TEXT("m"),C.Num,[I](double X){Draft().Trigger.Conds[I].Num=FMath::Max(0.,X);})];
  }
+ else if(C.If==TEXT("story_flag")||C.If==TEXT("no_story_flag")) // DIRECTOR-MODE-01: a story flag's id, as the lint asks
+  H->AddSlot().AutoWidth()[Field(TEXT("story flag id"),C.Arg,[I](const FString& S){Draft().Trigger.Conds[I].Arg=S.TrimStartAndEnd();},200)];
  H->AddSlot().AutoWidth().Padding(8,0,0,0)[Btn(TEXT("DEL"),[this,I]{Draft().Trigger.Conds.RemoveAt(I);Changed();})];
  return H;
 }

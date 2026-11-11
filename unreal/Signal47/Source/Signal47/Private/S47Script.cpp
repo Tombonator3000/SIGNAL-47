@@ -32,6 +32,33 @@ namespace S47ScriptLocal
   From=V.Num()>0?FMath::Max(0,int32(V[0])):0;To=V.Num()>1?FMath::Max(0,int32(V[1])):From;
  }
  bool In(const TArray<FString>& List,const FString& What){return List.Contains(What);}
+ // DIRECTOR-MODE-01 (slice 3): story_flag and no_story_flag, and a story flag's id (as FS47StoryDirector::ValidId: a to z, 0 to 9, _).
+ bool StoryCond(const FString& If){return If==TEXT("story_flag")||If==TEXT("no_story_flag");}
+ bool FlagId(const FString& Id)
+ {
+  if(Id.IsEmpty()||Id.Len()>48)return false;
+  for(const TCHAR C:Id)if(!((C>='a'&&C<='z')||(C>='0'&&C<='9')||C=='_'))return false;
+  return true;
+ }
+ // The volume around Mid (its place's middle, or its point): the circle or the turned box, and the height band.
+ bool InsideAround(const FS47ScriptTrigger& T,const FVector2D& Mid,const FS47ScriptPoint& P)
+ {
+  if(T.Height>0&&!(P.Up>=T.Point.Up-S47Script::HeightSlack&&P.Up<=T.Point.Up+T.Height+S47Script::HeightSlack))return false;
+  const FVector2D D=P.Road()-Mid;
+  if(T.Shape!=ES47ScriptShape::Box)return D.Size()<=T.Radius;
+  // Into the box's own frame: turned back by its Yaw (Outline turns its own frame forward by the same).
+  const double C=FMath::Cos(T.Yaw),S=FMath::Sin(T.Yaw);
+  const double LX=D.X*C+D.Y*S,LZ=-D.X*S+D.Y*C;
+  return FMath::Abs(LX)<=T.HalfX&&FMath::Abs(LZ)<=T.HalfZ;
+ }
+ // Where the volume is: its place's middle, or its point. False when its place is not on the list.
+ bool MidOf(const FS47ScriptTrigger& T,const FS47ScriptNow& Now,FVector2D& Mid)
+ {
+  Mid=T.Point.Road();double R=0;
+  return T.Place.IsEmpty()||(Now.PlaceAt&&Now.PlaceAt(T.Place,Mid,R));
+ }
+ FS47ScriptPoint PlayerPoint(const FS47ScriptNow& Now){FS47ScriptPoint P;P.X=Now.Road.X;P.Z=Now.Road.Y;P.Up=Now.FloorUp;P.bSet=true;return P;}
+ const TCHAR* ModeName(ES47ScriptMode M){return M==ES47ScriptMode::Look?TEXT("look"):M==ES47ScriptMode::Leave?TEXT("leave"):TEXT("enter");}
 
  // ---------- the lint's words ----------
  // A word: letters (with the accented ones), digits, and a point or comma between two digits ("8.15").
@@ -141,7 +168,7 @@ const TArray<FString>& Paces(){static const TArray<FString> L={TEXT("slow"),TEXT
 const TArray<FString>& SoundWhere(){static const TArray<FString> L={TEXT("here"),TEXT("placed"),TEXT("radio"),TEXT("cb"),TEXT("walkie")};return L;}
 const TArray<FString>& FaultKinds(){static const TArray<FString> L={TEXT("omen"),TEXT("contact"),TEXT("power")};return L;}
 const TArray<FString>& Voices(){static const TArray<FString> L={TEXT("dale"),TEXT("radio"),TEXT("cb"),TEXT("voice")};return L;}
-const TArray<FString>& CondKinds(){static const TArray<FString> L={TEXT("finding"),TEXT("no_finding"),TEXT("case_open"),TEXT("case_closed"),TEXT("case_none"),TEXT("weather"),TEXT("moon_min"),TEXT("moon_max"),TEXT("moon_up"),TEXT("indoors"),TEXT("outdoors"),TEXT("in_truck"),TEXT("on_foot"),TEXT("near"),TEXT("far")};return L;}
+const TArray<FString>& CondKinds(){static const TArray<FString> L={TEXT("finding"),TEXT("no_finding"),TEXT("case_open"),TEXT("case_closed"),TEXT("case_none"),TEXT("weather"),TEXT("moon_min"),TEXT("moon_max"),TEXT("moon_up"),TEXT("indoors"),TEXT("outdoors"),TEXT("in_truck"),TEXT("on_foot"),TEXT("near"),TEXT("far"),TEXT("story_flag"),TEXT("no_story_flag")};return L;}
 const TArray<FString>& WeatherWords(){static const TArray<FString> L={TEXT("clear"),TEXT("cloudy"),TEXT("windy"),TEXT("calm"),TEXT("dust"),TEXT("shower"),TEXT("storm")};return L;}
 const TArray<FString>& SoundPresets(){static const TArray<FString> L={TEXT("thudSoft"),TEXT("doorCreak0"),TEXT("doorCreak1"),TEXT("doorMetal"),TEXT("gust"),TEXT("phoneRing"),TEXT("switch"),TEXT("engineIdle"),TEXT("printer")};return L;}
 
@@ -162,6 +189,12 @@ S47J::FObj ToJson(const FS47Script& S)
  if(!Tr.Place.IsEmpty())S47J::Set(T,TEXT("place"),Tr.Place);
  else if(Tr.Point.bSet)S47J::Set(T,TEXT("point"),PointJson(Tr.Point));
  if(Tr.HasWhere())S47J::Set(T,TEXT("radius"),Tr.Radius);
+ // DIRECTOR-MODE-01 (slice 3): the volume, each field only when it is not the default (an older file writes back as it was).
+ if(Tr.Shape==ES47ScriptShape::Box){S47J::Set(T,TEXT("shape"),TEXT("box"));S47J::Set(T,TEXT("half"),TArray<double>{Tr.HalfX,Tr.HalfZ});if(Tr.Yaw!=0)S47J::Set(T,TEXT("yaw"),Tr.Yaw);}
+ if(Tr.Height!=0)S47J::Set(T,TEXT("height"),Tr.Height);
+ if(Tr.Mode!=ES47ScriptMode::Enter)S47J::Set(T,TEXT("mode"),ModeName(Tr.Mode));
+ if(Tr.Mode==ES47ScriptMode::Look){S47J::Set(T,TEXT("degrees"),Tr.Degrees);S47J::Set(T,TEXT("range"),Tr.LookRange);}
+ if(Tr.Dwell!=0)S47J::Set(T,TEXT("dwell"),Tr.Dwell);
  TArray<TSharedPtr<FJsonValue>> Cs;
  for(const FS47ScriptCond& C:Tr.Conds)
  {
@@ -171,6 +204,7 @@ S47J::FObj ToJson(const FS47Script& S)
   else if(C.If==TEXT("weather"))S47J::Set(J,TEXT("is"),C.Arg);
   else if(C.If==TEXT("moon_min")||C.If==TEXT("moon_max"))S47J::Set(J,TEXT("lit"),C.Num);
   else if(C.If==TEXT("near")||C.If==TEXT("far")){S47J::Set(J,TEXT("place"),C.Arg);S47J::Set(J,TEXT("m"),C.Num);}
+  else if(StoryCond(C.If))S47J::Set(J,TEXT("flag"),C.Arg); // DIRECTOR-MODE-01, as the event scripts' (S47EventScript.cpp)
   Cs.Add(MakeShared<FJsonValueObject>(J));
  }
  if(Cs.Num())T->SetArrayField(TEXT("conditions"),Cs);
@@ -233,6 +267,19 @@ bool FromJson(const S47J::FObj& O,FS47Script& Out,FString& Why)
  if(H.Num()==2&&FMath::IsFinite(H[0])&&FMath::IsFinite(H[1])){Tr.HourFrom=FMath::Fmod(FMath::Max(0.,H[0]),24.);Tr.HourTo=FMath::Fmod(FMath::Max(0.,H[1]),24.);}
  Tr.Place=S47J::Str(T,TEXT("place"));Tr.Point=PointFrom(S47J::Obj(T,TEXT("point")));
  Tr.Radius=FMath::Max(1.,S47J::Num(T,TEXT("radius"),40));
+ // DIRECTOR-MODE-01 (slice 3): the volume; without these fields, the circle entered at once. Read as written: the lint judges them.
+ {
+  const FString Shape=S47J::Str(T,TEXT("shape"),TEXT("circle")),Mode=S47J::Str(T,TEXT("mode"),TEXT("enter"));
+  if(Shape==TEXT("box"))Tr.Shape=ES47ScriptShape::Box;
+  else if(Shape!=TEXT("circle")){Why=TEXT("trigger: shape is circle or box");return false;}
+  if(Mode==TEXT("look"))Tr.Mode=ES47ScriptMode::Look;
+  else if(Mode==TEXT("leave"))Tr.Mode=ES47ScriptMode::Leave;
+  else if(Mode!=TEXT("enter")){Why=TEXT("trigger: mode is enter, look or leave");return false;}
+  const TArray<double> Half=S47J::Nums(T,TEXT("half"));
+  if(Half.Num()==2){Tr.HalfX=Half[0];Tr.HalfZ=Half[1];}
+  Tr.Yaw=S47J::Num(T,TEXT("yaw"),0);Tr.Height=S47J::Num(T,TEXT("height"),0);
+  Tr.Degrees=S47J::Num(T,TEXT("degrees"),12);Tr.LookRange=S47J::Num(T,TEXT("range"),60);Tr.Dwell=S47J::Num(T,TEXT("dwell"),0);
+ }
  for(const TSharedPtr<FJsonValue>& V:S47J::Arr(T,TEXT("conditions")))
  {
   const S47J::FObj* J=nullptr;if(!V.IsValid()||!V->TryGetObject(J)||!J)continue;
@@ -242,6 +289,7 @@ bool FromJson(const S47J::FObj& O,FS47Script& Out,FString& Why)
   else if(C.If==TEXT("weather"))C.Arg=S47J::Str(*J,TEXT("is"));
   else if(C.If==TEXT("moon_min")||C.If==TEXT("moon_max"))C.Num=S47J::Num(*J,TEXT("lit"));
   else if(C.If==TEXT("near")||C.If==TEXT("far")){C.Arg=S47J::Str(*J,TEXT("place"));C.Num=S47J::Num(*J,TEXT("m"),100);}
+  else if(StoryCond(C.If))C.Arg=S47J::Str(*J,TEXT("flag")); // DIRECTOR-MODE-01
   Tr.Conds.Add(C);
  }
  for(const TSharedPtr<FJsonValue>& V:S47J::Arr(O,TEXT("actions")))
@@ -373,6 +421,23 @@ TArray<FString> Lint(const FS47Script& S,TArray<FString>* Warnings)
   else if((C.If==TEXT("finding")||C.If==TEXT("no_finding")||C.If==TEXT("near")||C.If==TEXT("far"))&&C.Arg.IsEmpty())E.Add(FString::Printf(TEXT("condition %s needs an id"),*C.If));
   else if(C.If==TEXT("weather")&&!WeatherWords().Contains(C.Arg))E.Add(FString::Printf(TEXT("condition weather: \"%s\" is not a weather word"),*C.Arg));
   else if(C.If.StartsWith(TEXT("case_"))&&(C.Num<0||C.Num>7))E.Add(TEXT("condition case: a case line is 0 to 7"));
+  else if(S47ScriptLocal::StoryCond(C.If)&&!S47ScriptLocal::FlagId(C.Arg))E.Add(FString::Printf(TEXT("condition %s needs a story flag's id (a to z, 0 to 9 and _)"),*C.If)); // DIRECTOR-MODE-01
+ }
+ // DIRECTOR-MODE-01 (slice 3): the volume's limits, written as what must hold so that a number that is not one fails.
+ {
+  const bool bOwnPoint=T.Point.bSet&&T.Place.IsEmpty();
+  if(T.Shape==ES47ScriptShape::Box)
+  {
+   if(!bOwnPoint)E.Add(TEXT("trigger: a box needs a point of its own (not a place)"));
+   if(!(T.HalfX>=.5&&T.HalfX<=500&&T.HalfZ>=.5&&T.HalfZ<=500))E.Add(TEXT("trigger: a box's half sizes are 0.5 to 500 m"));
+   if(!FMath::IsFinite(T.Yaw))E.Add(TEXT("trigger: a box's yaw is a number"));
+  }
+  if(!(T.Height>=0&&T.Height<=300))E.Add(TEXT("trigger: height is 0 to 300 m (0: any)"));
+  if(T.Mode!=ES47ScriptMode::Enter&&!bOwnPoint)E.Add(FString::Printf(TEXT("trigger: %s needs a point of its own (not a place)"),S47ScriptLocal::ModeName(T.Mode)));
+  if(T.Mode==ES47ScriptMode::Look&&!(T.Degrees>=1&&T.Degrees<=60))E.Add(TEXT("trigger: look within 1 to 60 degrees"));
+  if(T.Mode==ES47ScriptMode::Look&&!(T.LookRange>=1&&T.LookRange<=400))E.Add(TEXT("trigger: look from 1 to 400 m"));
+  if(!(T.Dwell>=0&&T.Dwell<=600))E.Add(TEXT("trigger: dwell is 0 to 600 s"));
+  if(!T.HasWhere()&&(T.Height!=0||T.Dwell!=0))E.Add(TEXT("trigger: height and dwell need a place or a point"));
  }
  if(S.Actions.IsEmpty())E.Add(TEXT("no actions"));
  // A figure is never only a hint; a glimpse is one that goes when it is looked at (TIERS-20261109).
@@ -480,6 +545,11 @@ bool CondHolds(const FS47ScriptCond& C,const FS47ScriptNow& Now)
  if(I==TEXT("outdoors"))return !Now.bIndoors;
  if(I==TEXT("in_truck"))return Now.bInTruck;
  if(I==TEXT("on_foot"))return !Now.bInTruck;
+ if(S47ScriptLocal::StoryCond(I)) // DIRECTOR-MODE-01: as FS47StoryDirector::CondHolds, no director no flag
+ {
+  const bool bHas=Now.HasStoryFlag&&Now.HasStoryFlag(C.Arg);
+  return I==TEXT("story_flag")?bHas:!bHas;
+ }
  if(I==TEXT("near")||I==TEXT("far"))
  {
   FVector2D At;double R=0;
@@ -520,13 +590,84 @@ bool Ready(const FS47Script& S,const FS47ScriptNow& Now,const FS47ScriptMemory& 
  if(!bAlienHours){Why=FString::Printf(TEXT("%s (%s) waits for %s"),S.HasFigure()?TEXT("a figure"):TEXT("its tier"),S47NightTiers::Name(S.Need()),*HourText(From));return false;}
  if(T.HasWhere())
  {
-  if(!Now.bHasRoad){Why=TEXT("no player on the land");return false;}
-  FVector2D At=T.Point.Road();double R=0;
-  if(!T.Place.IsEmpty()&&!(Now.PlaceAt&&Now.PlaceAt(T.Place,At,R))){Why=TEXT("its place is not on the list");return false;}
-  if(FVector2D::Distance(At,Now.Road)>T.Radius){Why=TEXT("not at its place");return false;}
+  // DIRECTOR-MODE-01 (slice 3): the volume's mode (the plain circle entered: within Radius, as before), then how long it has held.
+  // The player asks every 2 s (every 0.25 s for a script whose trigger HasVolume): a plain circle crossed between two asks is missed.
+  if(!ModeHolds(T,Now,&Why))return false;
+  if(!(Now.Held>=T.Dwell)){Why=FString::Printf(TEXT("held %.1f of its %.1f s"),Now.Held,T.Dwell);return false;}
  }
  for(const FS47ScriptCond& C:T.Conds)if(!CondHolds(C,Now)){Why=FString::Printf(TEXT("condition %s"),*C.If);return false;}
  if(Now.bBigEvent){Why=TEXT("waits: ")+Now.BigWhy;return false;}
  return true;
+}
+
+// ---------- DIRECTOR-MODE-01 (slice 3): the trigger volume ----------
+
+bool Inside(const FS47ScriptTrigger& T,const FS47ScriptPoint& P){return S47ScriptLocal::InsideAround(T,T.Point.Road(),P);}
+
+TArray<FS47ScriptPoint> Outline(const FS47ScriptTrigger& T,int32 Segments)
+{
+ TArray<FS47ScriptPoint> Out;
+ const bool bBox=T.Shape==ES47ScriptShape::Box;
+ const int32 N=FMath::Max(Segments,bBox?5:4),Open=N-1; // Open points, then the first again
+ // The box's own frame turned forward by its Yaw (InsideAround turns back by the same); a circle is not turned.
+ const double Turn=bBox?T.Yaw:0.,TC=FMath::Cos(Turn),TS=FMath::Sin(Turn);
+ const auto Add=[&Out,&T,TC,TS](double LX,double LZ)
+ {
+  FS47ScriptPoint P;P.X=T.Point.X+LX*TC-LZ*TS;P.Z=T.Point.Z+LX*TS+LZ*TC;P.Up=T.Point.Up;P.bSet=true;
+  Out.Add(P);
+ };
+ if(!bBox)for(int32 I=0;I<Open;++I){const double A=UE_TWO_PI*I/Open;Add(T.Radius*FMath::Cos(A),T.Radius*FMath::Sin(A));}
+ else
+ {
+  // Its four corners, and the other points shared out along the edges, the longest stretch first.
+  const double HX=T.HalfX,HZ=T.HalfZ;
+  const FVector2D Corner[4]={FVector2D(-HX,-HZ),FVector2D(HX,-HZ),FVector2D(HX,HZ),FVector2D(-HX,HZ)};
+  int32 On[4]={1,1,1,1};
+  for(int32 K=4;K<Open;++K)
+  {
+   int32 Best=0;double Most=-1;
+   for(int32 E=0;E<4;++E){const double Gap=(E%2==0?2*HX:2*HZ)/On[E];if(Gap>Most){Most=Gap;Best=E;}}
+   ++On[Best];
+  }
+  for(int32 E=0;E<4;++E)
+  {
+   const FVector2D A=Corner[E],B=Corner[(E+1)%4];
+   for(int32 K=0;K<On[E];++K){const FVector2D P=A+(B-A)*(double(K)/On[E]);Add(P.X,P.Y);}
+  }
+ }
+ if(Out.Num()){const FS47ScriptPoint First=Out[0];Out.Add(First);}
+ return Out;
+}
+
+bool InVolume(const FS47ScriptTrigger& T,const FS47ScriptNow& Now)
+{
+ FVector2D Mid;
+ return Now.bHasRoad&&T.HasWhere()&&S47ScriptLocal::MidOf(T,Now,Mid)&&S47ScriptLocal::InsideAround(T,Mid,S47ScriptLocal::PlayerPoint(Now));
+}
+
+bool ModeHolds(const FS47ScriptTrigger& T,const FS47ScriptNow& Now,FString* Why)
+{
+ using namespace S47ScriptLocal;
+ const auto No=[Why](const TCHAR* What){if(Why)*Why=What;return false;};
+ if(!T.HasWhere())return true;
+ if(!Now.bHasRoad)return No(TEXT("no player on the land"));
+ FVector2D Mid;
+ if(!MidOf(T,Now,Mid))return No(TEXT("its place is not on the list"));
+ const bool bIn=InsideAround(T,Mid,PlayerPoint(Now));
+ switch(T.Mode)
+ {
+ case ES47ScriptMode::Look:
+  // Seen from anywhere within its range (along the ground); the view's test itself is the player's (bLooking).
+  if(!(FVector2D::Distance(Mid,Now.Road)<=T.LookRange))return No(TEXT("too far to see its place"));
+  if(!Now.bLooking)return No(TEXT("its place is not looked at"));
+  return true;
+ case ES47ScriptMode::Leave:
+  if(!Now.bWasInside)return No(TEXT("not been at its place yet"));
+  if(bIn)return No(TEXT("still at its place"));
+  return true;
+ default:
+  if(!bIn)return No(TEXT("not at its place"));
+  return true;
+ }
 }
 }

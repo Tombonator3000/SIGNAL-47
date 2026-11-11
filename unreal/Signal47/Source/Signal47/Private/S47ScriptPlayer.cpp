@@ -18,8 +18,10 @@
 #include "S47PaleBody.h"
 #include "S47Radio.h"
 #include "S47Shot.h"
+#include "S47ScriptVolumeDev.h"
 #include "S47Sky.h"
 #include "S47SkyVisitors.h"
+#include "S47StoryDirector.h"
 #include "S47Taken.h"
 #include "S47Three.h"
 #include "S47TripoCreature.h"
@@ -49,6 +51,8 @@ namespace S47ScriptPlayerLocal
 {
  TMap<const US47Main*,FS47ScriptPlayer*>& Registry(){static TMap<const US47Main*,FS47ScriptPlayer*> R;return R;}
  constexpr double CheckEvery=2.,LookDegrees=14.,SeenSeconds=.3,SafetySeconds=180.;
+ // DIRECTOR-MODE-01 (slice 3): how often a volume trigger is asked (FS47ScriptTrigger::HasVolume), only while one is switched on.
+ constexpr double VolumeEvery=.25;
  FString Clean(const FString& Path){FString P=Path;FPaths::NormalizeDirectoryName(P);FPaths::CollapseRelativeDirectories(P);return P;}
  ES47SkyForm FormOf(const FString& Name)
  {
@@ -114,6 +118,7 @@ void FS47ScriptPlayer::Begin(const S47J::FObj& Saved)
  Memory.Load(S47J::Obj(Saved,TEXT("played")));
  Reload();
  CheckIn=4;
+ Watch.Reset();SincePoll=0; // DIRECTOR-MODE-01: the volume watches start fresh
  AddDevLines();
 }
 
@@ -185,6 +190,7 @@ void FS47ScriptPlayer::AddDevLines()
  if(Beats)Beats->AddDevLines();
  if(bLinesAdded||!M||!M->DevEvents||!DevAllowed(M))return;
  S47Shot::AddDevLine(M); // SHOT-BEAT-01: the F10 group "Director shot" (it looks for itself whether it is there)
+ S47ScriptVolumeDev::AddDevLine(M); // DIRECTOR-MODE-01 (slice 3): the F10 group "Director volume", the same way
  static const TCHAR* const Group=TEXT("Director scripts");
  bLinesAdded=true;
  // The menu outlives a session: its lines are added once.
@@ -227,6 +233,8 @@ FS47ScriptNow FS47ScriptPlayer::Now() const
  N.Clock=F->Clock();N.Day=F->Day();N.Night=FS47FreeformSession::NightOf(N.Clock);
  FS47ScriptPoint Here;
  if(HereRoad(Here)){N.bHasRoad=true;N.Road=Here.Road();}
+ // DIRECTOR-MODE-01 (slice 3): the feet's height over the ground there, as a point's Up (WorldOf) reads it.
+ if(N.bHasRoad&&M->Player)N.FloorUp=M->Player->FloorY-S47FarmWorld::FloorRoad(Here.X,Here.Z);
  if(M->Player&&M->World)N.bIndoors=M->World->Indoors(M->Player->Pos);
  N.bInTruck=M->World&&M->World->bDriving;
  // The weather and the moon as the world shows them now (SkyNow): the calendar day's, not the shift day's.
@@ -250,6 +258,43 @@ FS47ScriptNow FS47ScriptPlayer::Now() const
   At=FVector2D(P->X,P->Z);R=P->Radius;return true;
  };
  N.bBigEvent=BigEvent(M,N.BigWhy);
+ // DIRECTOR-MODE-01: story_flag and no_story_flag read the Story night's director when there is one (asked again at each test).
+ if(FS47StoryDirector::Of(M))
+ {
+  const US47Main* Main=M;
+  N.HasStoryFlag=[Main](const FString& Flag){const FS47StoryDirector* D=FS47StoryDirector::Of(Main);return D&&D->HasFlag(Flag);};
+ }
+ return N;
+}
+
+FS47ScriptNow FS47ScriptPlayer::NowFor(const FS47Script& S,const FS47ScriptNow& Base) const
+{
+ const FS47ScriptTrigger& T=S.Trigger;
+ if(!T.HasVolume())return Base;
+ FS47ScriptNow N=Base;
+ if(const FVolumeWatch* W=Watch.Find(S.Id)){N.Held=W->Held;N.bWasInside=W->bWasInside;}
+ // The look test: the volume's middle (half way up its height band) within its Degrees of the middle of the view. Not through walls:
+ // what stands in between is not asked.
+ if(T.Mode==ES47ScriptMode::Look&&T.Point.bSet&&N.bHasRoad)
+ {
+  FS47ScriptPoint Mid=T.Point;
+  if(T.Height>0)Mid.Up+=T.Height*.5;
+  N.bLooking=LookingAt(WorldOf(Mid),T.Degrees);
+ }
+ return N;
+}
+
+FS47ScriptNow FS47ScriptPlayer::Watched(const FS47Script& S,const FS47ScriptNow& Base,double Gap)
+{
+ // DIRECTOR-MODE-01 (slice 3): one ask of a volume trigger. Its test held at the last ask and holds now: it has held Gap longer;
+ // otherwise it starts again from 0 (a test first seen holding has held 0 s). Inside now is kept for leave after the test is read.
+ FS47ScriptNow N=NowFor(S,Base);
+ FVolumeWatch& W=Watch.FindOrAdd(S.Id);
+ const bool bHolds=S47Script::ModeHolds(S.Trigger,N);
+ W.Held=bHolds&&W.bHolding?W.Held+FMath::Max(0.,Gap):0;
+ W.bHolding=bHolds;
+ N.Held=W.Held;
+ W.bWasInside|=S47Script::InVolume(S.Trigger,N);
  return N;
 }
 
@@ -414,6 +459,7 @@ void FS47ScriptPlayer::Step(double Dt)
  FS47FreeformSession* F=Session();
  if(!F){if(bRun)StopRun(TEXT("left Freeform"));if(Beats&&Beats->Live())Beats->Stop();return;}
  if(F->Held()||Dt<=0)return; // a menu, a paper, a held scene: the timeline waits where it is
+ SincePoll+=Dt; // DIRECTOR-MODE-01: a menu stops the volume watches' time too
  if(Beats)Beats->Step(Dt); // D46-20261110: the beats of the night's events (S47EventScript.h)
  if(bRun)
  {
@@ -438,11 +484,25 @@ void FS47ScriptPlayer::Step(double Dt)
  bool bAnyOn=false;
  for(const FS47Script& S:Scripts)bAnyOn|=S.bEnabled;
  if(!bAnyOn)return;
+ // DIRECTOR-MODE-01 (slice 3): with a volume trigger switched on, every script is asked every 0.25 s instead of 2 s, so that a box,
+ // a height band, a look or a leave is not missed between two asks (a plain circle crossed in under 2 s still can be: as before).
+ // A longer gap than the slow ask (a script played, the tutorial) was not watched: every watch starts again.
+ bool bVolumes=false;
+ for(const FS47Script& S:Scripts)bVolumes|=S.bEnabled&&S.Trigger.HasVolume()&&!Bad.Contains(S.Id);
+ if(bVolumes)CheckIn=S47ScriptPlayerLocal::VolumeEvery;
+ const double Gap=SincePoll;SincePoll=0;
+ if(Gap>S47ScriptPlayerLocal::CheckEvery+.5||!bVolumes)Watch.Reset();
  const FS47ScriptNow N=Now();
  for(const FS47Script& S:Scripts)
  {
   FString Why;
-  if(!S.bEnabled||Bad.Contains(S.Id)||!S47Script::Ready(S,N,Memory,Why))continue;
+  if(!S.bEnabled||Bad.Contains(S.Id))continue;
+  if(S.Trigger.HasVolume())
+  {
+   if(!S47Script::Ready(S,Watched(S,N,Gap),Memory,Why))continue;
+   Watch.Remove(S.Id);
+  }
+  else if(!S47Script::Ready(S,N,Memory,Why))continue;
   if(Start(S,false,Why))break;
  }
 }

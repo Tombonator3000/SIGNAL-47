@@ -18,6 +18,7 @@
 #include "S47Night.h"
 #include "S47Glimpses.h"
 #include "S47Shot.h"
+#include "S47ScriptVolumeDev.h"
 #include "S47Sky.h"
 #include "S47SkyVisitors.h"
 #include "S47Flow.h"
@@ -387,6 +388,8 @@ void FS47DevEvents::ControlTest(double Dt)
  FString OnlyGroup; FParse::Value(FCommandLine::Get(),TEXT("S47DevEventsGroup="),OnlyGroup);
  // SHOT-BEAT-01: the director shot's own check, through its F10 line and the script player (S47Shot::Contract).
  if (OnlyGroup == TEXT("Director shot")) { if (S47Shot::Contract(M, Dt)) bTestDone = true; return; }
+ // DIRECTOR-MODE-01 (slice 3): the trigger volumes' own check, with the real session's moment (S47ScriptVolumeDev::Contract).
+ if (OnlyGroup == TEXT("Director volume")) { if (S47ScriptVolumeDev::Contract(M, Dt)) bTestDone = true; return; }
  // Opt-in extension of this contract: real menu actions and registered billboard
  // readback across ordinary world ticks, independent of the natural Data() getter.
  if (OnlyGroup == TEXT("Sky preview"))
