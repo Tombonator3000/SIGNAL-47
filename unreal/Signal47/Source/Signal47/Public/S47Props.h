@@ -99,6 +99,9 @@ public:
 	/** A placed prop by its id (Config/Props): its mesh and its node, for a system that uses it (FS47Tape: the recorder on the
 	 *  desk by the array's PC). Null and -1: not placed. */
 	static UStaticMeshComponent* PlacedMesh(const FString& Id);
+	/** GAS-STATION-LIFT-01: how lit a lit prop is now (its "lit": the flood slot's power times the photocell, 0 when off, dark by day
+	 *  or in a power cut); -1 when no lit prop has that id or it has not been stepped yet. */
+	static float LitLevel(const FString& Id);
 	static int32 PlacedNode(const FString& Id);
 	/** A native building's own floor or ramp (S47EastWing); bFirst takes precedence over existing floors. */
 	static void AddFloor(double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const FString& Axis, bool bFirst);
@@ -138,6 +141,7 @@ private:
 	TArray<FBeacon> Beacons;
 	struct FLit
 	{
+		FString Id; // the prop's id (LitLevel)
 		TWeakObjectPtr<UStaticMeshComponent> Comp;
 		int32 Node = -1, Set = -1, Slot = -1;
 		float Gain = 1.f, K = -1.f;

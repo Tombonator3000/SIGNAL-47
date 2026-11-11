@@ -335,7 +335,7 @@ void AS47Props::BuildFile(const TSharedPtr<FJsonObject>& File, const FString& Na
 		const TSharedPtr<FJsonObject>* Sub = nullptr;
 		if (P->TryGetObjectField(TEXT("swing"), Sub)) AddSwing(C, *Sub);
 		if (P->TryGetObjectField(TEXT("beacon"), Sub)) AddBeacon(C, *Sub);
-		if (P->TryGetObjectField(TEXT("lit"), Sub)) AddLit(C, Pl.Node, *Sub);
+		if (P->TryGetObjectField(TEXT("lit"), Sub)) { AddLit(C, Pl.Node, *Sub); if (Lits.Num() && Lits.Last().Comp == C) Lits.Last().Id = Id; }
 		if (P->TryGetObjectField(TEXT("door"), Sub)) AddDoor(C, *Sub, Str(P, TEXT("walk"), Walk), T);
 		if (P->HasField(TEXT("trim"))) ApplyTrim(Str(P, TEXT("trim")));
 		// unblock: the exported colliders of what it opens up (a building one walks into now), moved away
@@ -938,6 +938,14 @@ UStaticMeshComponent* AS47Props::PlacedMesh(const FString& Id)
 	if (!Instance.IsValid()) return nullptr;
 	const FPlaced* Found = Instance->Placed.FindByPredicate([&Id](const FPlaced& Pl) { return Pl.Id == Id; });
 	return Found ? Found->Comp.Get() : nullptr;
+}
+
+float AS47Props::LitLevel(const FString& Id)
+{
+	const AS47Props* P = Instance.Get();
+	if (!P) return -1.f;
+	for (const FLit& L : P->Lits) if (L.Id == Id) return L.Comp.IsValid() ? L.K : -1.f;
+	return -1.f;
 }
 
 int32 AS47Props::PlacedNode(const FString& Id)
