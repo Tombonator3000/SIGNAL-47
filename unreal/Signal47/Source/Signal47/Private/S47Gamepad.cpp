@@ -245,7 +245,9 @@ FKey S47Gamepad::Key(FName A)
  {TEXT("board"),EKeys::Gamepad_RightShoulder},{TEXT("pause"),EKeys::Gamepad_Special_Right},
  {TEXT("crouch"),EKeys::Gamepad_RightThumbstick},
  // On foot D-pad Down is the walkie; in the truck the radio takes it first (its handler is the earlier one, and says yes there).
- {TEXT("walkie"),EKeys::Gamepad_DPad_Down}};
+ {TEXT("walkie"),EKeys::Gamepad_DPad_Down},
+ // IGNITION-20261111: Y is only the jump on foot; in the cab it turns the key.
+ {TEXT("ignition"),EKeys::Gamepad_FaceButton_Top}};
  const FKey* K=Map.Find(A);return K?*K:EKeys::Invalid;
 }
 FString S47Gamepad::Label(FName A)
@@ -255,7 +257,7 @@ FString S47Gamepad::Label(FName A)
  {TEXT("use"),TEXT("A")},{TEXT("alt"),TEXT("B")},{TEXT("camera"),TEXT("X")},{TEXT("jump"),TEXT("Y")},
  {TEXT("run"),TEXT("LS CLICK")},{TEXT("zoom"),TEXT("LT")},{TEXT("shutter"),TEXT("RT")},{TEXT("light"),TEXT("DPAD UP")},
  {TEXT("radio"),TEXT("DPAD DOWN")},{TEXT("map"),TEXT("DPAD LEFT")},{TEXT("describe"),TEXT("DPAD RIGHT")},
- {TEXT("notebook"),TEXT("VIEW / LB")},{TEXT("board"),TEXT("RB")},{TEXT("pause"),TEXT("MENU")},{TEXT("crouch"),TEXT("RS CLICK")},{TEXT("walkie"),TEXT("DPAD DOWN")}};
+ {TEXT("notebook"),TEXT("VIEW / LB")},{TEXT("board"),TEXT("RB")},{TEXT("pause"),TEXT("MENU")},{TEXT("crouch"),TEXT("RS CLICK")},{TEXT("walkie"),TEXT("DPAD DOWN")},{TEXT("ignition"),TEXT("Y")}};
  const FString* S=Map.Find(A);return S?*S:FString();
 }
 bool S47Gamepad::Down(const FKey& K){if(!Pad.IsValid()||!Pad->AcceptInput())return false;Pad->SyncMenu(FSlateApplication::Get());return !Pad->Suppressed.Contains(K)&&!Pad->TriggerBlocked(K)&&Pad->Held.Contains(K);}

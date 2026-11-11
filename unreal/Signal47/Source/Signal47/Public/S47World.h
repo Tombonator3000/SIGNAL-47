@@ -186,6 +186,16 @@ public:
 	FS47DriveController* CabDrive() const;
 	/** Something holds the truck being driven back, m/s² (0: let go). */
 	void HoldTruck(double K) { if (FS47DriveController* D = CabDrive()) D->Held = K; }
+	/** IGNITION-20261111: the truck left running with the player out of it: idling, headlights on. */
+	bool EngineIdling() const { return bIdleOut; }
+	/** The idling truck goes quiet and dark: switched off, or (bDied) its tank ran dry. */
+	void EndIdle(bool bDied = false);
+	/** The key, stopped in the cab (the ignition action; F10's check). */
+	bool CabIgnition();
+	/** Getting out by hand, as Use does in the cab (the engine left as it is). */
+	bool CabGetOut();
+	/** The idling truck's headlights, 0..1 (0 when none idles). */
+	double IdleBeam() const;
 	/** The truck being driven, put down somewhere else on its area's ground, standing, the engine off
 	 *  and quiet (story/truckTaken.ts: where the player wakes in it). The trip goes on from there; it is
 	 *  where the truck stands now, for a save made in it (TruckSave) and for the player's body. */
@@ -347,6 +357,10 @@ private:
 	void StartEngine();
 	bool CabUse();
 	bool CabRadio();
+	void IdleStep();              // the idling truck heard by distance from the player
+	bool bIdleOut = false, bLeaveRunning = false;
+	FS47Truck* IdleTruck = nullptr;
+	FString IdleArea;
 	bool RadioAimed() const;
 	void Place(double X, double Z, double Yaw);
 	void PlaceAnchor(const FString& Path);

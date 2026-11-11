@@ -94,6 +94,30 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   });
  };
 
+ // IGNITION-20261111 (Tom, 11 November): the key off and on in the cab, then out with it running: it idles where it stands, lights on.
+ E.AddFreeform(TEXT("Truck (ignition)"),TEXT("Ignition and idling"),TEXT("22:00, in the truck on the highway: stop, key off and on, get out with it running"),[this,Road]
+ {
+  Road(22,4.5,false,[this]
+  {
+   if(M->World)M->World->TestInput=[this]{FS47DriveIn I;auto* D=M&&M->World?M->World->CabDrive():nullptr;I.Throttle=D&&D->Speed>.5?-1:0;return I;};
+   WaitFor([this]{auto* D=M->World?M->World->CabDrive():nullptr;return !D||FMath::Abs(D->Speed)<.4;},14,[this]
+   {
+    US47World* W=M->World;if(!W)return;W->TestInput=nullptr;
+    const FS47DriveController* D=W->CabDrive();const FS47Truck* T=W->CabTruck();
+    if(!D||!T){Tell(false,TEXT("not in the truck"));return;}
+    W->CabIgnition();const bool bOff=!D->bEngine&&T->Beam()<.01;
+    W->CabIgnition();const bool bOn=D->bEngine&&T->Beam()>.5;
+    if(!bOff||!bOn){UE_LOG(LogS47HappenDev,Error,TEXT("S47: ignition check FAIL: off %d on %d"),bOff,bOn);Tell(false,TEXT("the key did not turn the engine and lights off and on"));return;}
+    if(!W->CabGetOut()){Tell(false,TEXT("could not get out of the truck here"));return;}
+    WaitFor([this]{return M->World&&!M->World->bDriving&&!M->World->bBusy;},10,[this]
+    {
+     const bool bIdle=M->World->EngineIdling()&&M->World->IdleBeam()>.5;
+     UE_LOG(LogS47HappenDev,Display,TEXT("S47: ignition check %s: key off/on, out with it idling and lit"),bIdle?TEXT("PASS"):TEXT("FAIL"));
+     Tell(bIdle,bIdle?TEXT("Out of the truck with the engine running: it idles, headlights on. Walk off and it fades; get in and K turns it off."):TEXT("the truck did not stay running and lit"),8);
+    },[this]{Tell(false,TEXT("the truck did not let the player out"));});
+   },[this]{if(M->World)M->World->TestInput=nullptr;Tell(false,TEXT("the truck did not stop"));});
+  });
+ });
  E.AddFreeform(G,TEXT("Car dies: something goes over"),TEXT("01:30, in the truck at speed on the highway; lights, dash and radio out for seconds"),[this,Road,Haps]
  {
   Road(1.5,4.5,true,[this,Haps]

@@ -12,6 +12,7 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 Bygget, installert og kontrollert i koden; det eneste som gjenstår er at Tom spiller eller lytter. Full tekst for hvert punkt står i [TODO_FERDIG_2026-11-11](../Archive/TODO_FERDIG_2026-11-11.md). Når Tom har testet, meldes punktet ferdig eller flyttes tilbake hit som åpent funn. Bygg d46–d58 er installert; d58 (0.9.58) er gjeldende.
 
+- **IGNITION-20261111** – Tenningslås i bilen (K / Y): motor og lys av og på når bilen står; går du ut med motoren i gang, står den på tomgang med frontlysene på, lyden dempes med avstand, tomgang bruker litt drivstoff i Freeform. F10 «Truck (ignition)». Kodet på `claude/story-on-freeform`, ikke installert.
 - **D45-1** – CRT-båndet: den grønne streken er for stor, går hele tiden og hopper når man bytter meny; skal se ut som en… Installert i d46.
 - **D45-2** – Tracking array: grønt blink over hele skjermen når musa beveges skal bort. Installert i d46.
 - **D45-3** – Receiver-lappen: lappen øverst til venstre blafrer i takt med nedlastingen. Installert i d46.

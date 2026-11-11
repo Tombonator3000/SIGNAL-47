@@ -520,7 +520,9 @@ void FS47DevEvents::ControlTest(double Dt)
   }
   FScreenshotRequest::RequestScreenshot(TestDir / (ShotName + TEXT(".png")), false, false); ShotName.Reset();
  }
- if (TestT < 4 + TestStep * 2.5) return;
+ // -S47DevEventsHold=seconds: the last event's own sequence (a drive, a stop) runs out before the contract ends
+ double Hold = 0; FParse::Value(FCommandLine::Get(), TEXT("S47DevEventsHold="), Hold);
+ if (TestT < 4 + TestStep * 2.5 + (TestStep >= Events.Num() ? FMath::Clamp(Hold, 0.0, 120.0) : 0.0)) return;
  if (TestStep < Events.Num())
  {
   const FEvent& Ev = *Events[TestStep];

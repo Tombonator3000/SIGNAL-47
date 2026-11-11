@@ -66,6 +66,8 @@ namespace S47KeysLocal
 			// PHYSICS-20261108: loose things in the hand (S47Handling): hold to throw, tap to set down, and empty-handed a stone off the ground.
 			// STONE-POCKET-20261109: a tap puts a stone in the pocket (three fit); empty-handed, the key takes one out first.
 			A(TEXT("throw"), TEXT("Throw / set down"), Foot, TEXT("Hold to throw what you carry, harder the longer you hold. Tap to set it down; a stone goes in your pocket instead while there is room (three fit), and looking at bare ground you pick up the next. Empty-handed: a stone out of your pocket, or outdoors, looking at bare ground, one off it. The Use key picks up loose things."), EKeys::X, EKeys::MiddleMouseButton),
+			// IGNITION-20261111 (Tom, 11 November): the key in the truck's ignition, in Story and Freeform alike.
+			A(TEXT("ignition"), TEXT("Ignition"), Truck, TEXT("In the truck, stopped: turn the key off or on. Get out with the engine running and it idles where it stands, headlights on, using a little fuel."), EKeys::K),
 		};
 	}
 
@@ -421,7 +423,7 @@ bool S47Keys::SelfTest(TArray<FString>& Out)
 	Clear(TEXT("camera"), 0); Clear(TEXT("camera"), 1);
 	Check(Label(TEXT("camera")).IsEmpty() && Said(TEXT("camera")).IsEmpty(), TEXT("fully unbound keyboard hints stay empty rather than showing an Xbox alias"));
 	Check(Is(TEXT("camera"), EKeys::Gamepad_FaceButton_Left) && KeysOf(TEXT("camera")).Contains(EKeys::Gamepad_FaceButton_Left) && S47Gamepad::Label(TEXT("camera")) == TEXT("X"), TEXT("clearing keyboard slots preserves the fixed Xbox camera binding and label"));
-	Check(Bind(TEXT("camera"), 1, EKeys::K) == EBind::Done && Label(TEXT("camera")) == TEXT("K") && Said(TEXT("camera")) == TEXT("K"), TEXT("keyboard hints fall through an empty first slot to the second saved key"));
+	Check(Bind(TEXT("camera"), 1, EKeys::L) == EBind::Done && Label(TEXT("camera")) == TEXT("L") && Said(TEXT("camera")) == TEXT("L"), TEXT("keyboard hints fall through an empty first slot to the second saved key"));
 	// KEYS-HINT-20261109 (Tom plays with an Xbox controller): a hint in a sentence names the pad's button with a controller and the
 	// key with the keyboard, and no player's text has a fixed key in it.
 	ResetAll();

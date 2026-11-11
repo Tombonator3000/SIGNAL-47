@@ -2276,3 +2276,7 @@ Toms nattbestilling (TODO «Nattskift 10.–11. november»): studie av skrekk og
 - Toms d45-funn (D45-1..29) merket med byggene de kom i.
 - Disk: d52–d55-kandidater og `Saved/StagedBuilds` + `Saved/Cooked` ryddet; 122 GB ledig; beholdt d56 (tilbakerulling) og d57.
 - Etter d57 (ikke installert): oppmerksomhet som forklarer seg selv, sabotasje som varierer, pakkeslipp ved pumpa rettet (sveipvakten), journey/in-world/evidence grønne (59/77/114), Dale uten «don't», Dales 11 nye walkie-replikker samlet i TODO N1110-V.
+
+## 11. november, dag: Story steg 1 og tenningslås
+
+NEW STORY starter nå en Freeform-økt merket som Story (`storyDirector{v:1}`), med hele Freeform-verdenen; menypekertesten har `-S47MenuPointerStory`. Tenningslås (IGNITION-20261111): K/Y i førerhuset, tomgang med frontlys når man går ut, avstandsdempet motorlyd, drivstoff på tomgang i Freeform; F10 «Truck (ignition)» og `-S47DevEventsHold`. Kontroll: selvtest 4764 (st55), regresjon 251, journey 59, inworld 77, evidence 114, F10-tenningsprøven PASS. Ikke installert.
