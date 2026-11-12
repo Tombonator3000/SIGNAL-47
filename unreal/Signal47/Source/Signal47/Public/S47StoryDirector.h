@@ -94,6 +94,15 @@ public:
  // F10's group "Story (director)", shown on a Story night only (FS47DevEvents::AddStory).
  void AddDevLines();
 
+ // STORY-DRIVE-20261112 (Tom 12 Nov: Story still begins in the car on the way to SARO): where a new Story night begins. In the truck
+ // on the highway at the south end of Caliche, heading north for SARO: the old Story's drive start (US47World::BeginCommute: the road
+ // leg, x 8001.8, z TOWN.Z1+35, heading 0), driven on Freeform's own trip and truck. The evening act's evening_drive takes it from there.
+ struct FDrive{FString Leg,To;FVector At=FVector::ZeroVector;double Heading=0;};
+ static FDrive DriveStart();
+ // US47Flow::StartGame on a new Story night (not a Continue): starts that trip (US47World::StartTrip). False when it does not: the
+ // world is busy or driving already, or -S47StoryAtSaro (the night then starts at SARO, as before).
+ static bool BeginDrive(US47Main* Main);
+
  // Reads acts.json and takes the saved act and flags (Saved may be null: a new night at the first act).
  void Begin(const S47J::FObj& Saved);
  // Begin with the acts from this text in place of the file (Begin's own and the self-test's).

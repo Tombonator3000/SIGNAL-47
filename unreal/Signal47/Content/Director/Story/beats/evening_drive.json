@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "id": "evening_drive",
+  "name": "Story: the evening drive to SARO",
+  "notes": "STORY-DRIVE-20261112 (Tom 12 Nov: Story still begins in the car on the way to SARO). Started first by the evening act (acts.json). A new Story night begins in the truck on the highway at the south end of Caliche, heading north (FS47StoryDirector::BeginDrive, the old Story's drive start), on Freeform's own world and trip. The truck's radio plays I01_DRIVE as captions (S47StoryScene: the car radio). Arrival is the player on foot in SARO's area (parked on the pad, or got out and walked): then evening_handover starts, which commits I11_SARO_ARRIVAL and lets D01 ring at OPS. The optional diner stop is evening_diner. Without a drive (-S47StoryAtSaro, or the trip could not start) the in_truck wait is left out after 30 s and the night goes on at SARO as before.",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 0.5,
+      "do": "objective",
+      "text": "Drive north through Caliche to SARO for the evening shift. Supper at the Mesa Diner on the way is optional."
+    },
+    {
+      "at": 1,
+      "do": "flag",
+      "flag": "drive_begun",
+      "wait": ["in_truck"],
+      "max": 30
+    },
+    {
+      "at": 4,
+      "do": "scene",
+      "scene": "I01_DRIVE",
+      "if": ["in_truck"]
+    },
+    {
+      "at": 5,
+      "do": "flag",
+      "flag": "arrived_saro",
+      "wait": [
+        {
+          "if": "area",
+          "is": "saro"
+        },
+        "on_foot"
+      ],
+      "max": 7200
+    },
+    {
+      "at": 5,
+      "do": "start",
+      "script": "evening_handover"
+    }
+  ]
+}
