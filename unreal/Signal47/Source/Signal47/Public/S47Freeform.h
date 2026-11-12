@@ -558,7 +558,7 @@ public:
  // generator carries it or the remote feeder (ff:feeder) is mended (FS47FreeformWorld, the existing repair); the county line crew
  // restores it by itself SkyFaultMinutes game minutes later (SkyFaultUntil, saved), so nobody is left without a way on. Not on a
  // Story night: there the act's own feeder_fault owns the power_fault and power_restored flags.
- static constexpr double SkyFaultMinutes=90;
+ static constexpr double SkyFaultMinutes=180; // Tom 12 Nov: about 12 real minutes at night (night rate ~245 s per game hour)
  double SkyFaultClock() const { return SkyFaultUntil; }
  void SkyCutBegin(double Sag,double Out);
  bool SkySagging() const { return SkySag>0; }

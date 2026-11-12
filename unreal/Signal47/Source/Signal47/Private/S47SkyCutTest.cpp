@@ -16,7 +16,7 @@
 // FIX-20261110 (Tom, point 2), -S47SkyCutTest: a light that crosses over SARO takes the mains. The feeder sags first (dips, torn
 // screens), then the station is dark and the night goes on; the standby generator behind the control room carries it, the line
 // recorder's strip is kept as a record. FIX10-10 (12 Nov): the mains do not come back by themselves; the feeder locks out (an
-// ordinary saved feeder fault), the station is dark without the generator, and the county crew restores it 90 game minutes on.
+// ordinary saved feeder fault), the station is dark without the generator, and the county crew restores it SkyFaultMinutes (180) game minutes on.
 void FS47FreeformTest::StepSkyCut(double Dt)
 {
  Age+=FMath::Min(Dt,.2);if(Hold>0){Hold-=Dt;return;}
