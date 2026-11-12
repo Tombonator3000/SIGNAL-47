@@ -672,9 +672,9 @@ void FS47EventBeats::Fire(const FS47Beat& B,const FRun& R)
     // The spark sounds at the tube itself (AS47Web::TubeLocation): the wall switch's snap (Audio/Raw switch.wav) as the
     // arc goes, and the bought short radio crackle (Licensed/Raw radio_crackle_short.wav) as its fizz. Without that file
     // (a build without the bought library) the old synthesised crackle stands in, unplaced.
-    const FVector At=M->Web?M->Web->TubeLocation(K):FVector::ZeroVector;
-    M->Audio->Play(TEXT("switch"),.7f,At,.8f);
-    if(M->Audio->HasRecording(TEXT("radio_crackle_short")))M->Audio->Play(TEXT("radio_crackle_short"),.45f,At,1.15f);
+    const FVector TubeAt=M->Web?M->Web->TubeLocation(K):FVector::ZeroVector;
+    M->Audio->Play(TEXT("switch"),.7f,TubeAt,.8f);
+    if(M->Audio->HasRecording(TEXT("radio_crackle_short")))M->Audio->Play(TEXT("radio_crackle_short"),.45f,TubeAt,1.15f);
     else for(int32 J=0;J<10;++J)M->Audio->Beep(float(900+((J*7919+K*131)%1700)),float(.02+.01*(J%3)),.05f,float(J*.045+(J%2)*.03),TEXT("sawtooth"));
    }
    if(!R.Ctx.bKeep&&M->UI)M->UI->Toast(FString::Printf(TEXT("(F10: tube %d crackles but is not put out in a real game)"),K),3);

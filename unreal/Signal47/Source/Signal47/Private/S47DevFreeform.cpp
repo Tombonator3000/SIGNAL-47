@@ -1108,9 +1108,15 @@ void FS47DevFreeform::StepCards()
   }
   if(Card.Stage==J::Packet)
   {
-   const FVector At=S47Three::ToThree(M->Web->PropLocation(TEXT("binder")));M->Player->Place(At.X,At.Z+.8,UE_DOUBLE_PI);
+   // Walk to the binder, then file on a later frame (the player's floor and position settle a frame after Place).
+   if(!F->NearBinder()&&CardsTries<6)
+   {
+    const FVector At=S47Three::ToThree(M->Web->PropLocation(TEXT("binder")));
+    const double Off[6][2]={{0,.8},{.8,0},{-.8,0},{0,-.8},{.6,.6},{-.6,.6}};
+    M->Player->Place(At.X+Off[CardsTries][0],At.Z+Off[CardsTries][1],UE_DOUBLE_PI);++CardsTries;return;
+   }
    const bool bOk=F->FilePacket();
-   Say(FString::Printf(TEXT("packet filed %d"),bOk?1:0));
+   Say(FString::Printf(TEXT("packet filed %d after %d tries"),bOk?1:0,CardsTries));CardsTries=0;
    if(M->UI)M->UI->Close(true);
    if(!bOk){Give(TEXT("the packet could not be filed"));return;}
   }

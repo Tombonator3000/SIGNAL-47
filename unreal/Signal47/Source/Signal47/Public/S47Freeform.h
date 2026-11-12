@@ -508,6 +508,8 @@ public:
  bool CompareInstrument();
  bool RegisterComparison(const FString& Conclusion);
  bool FilePacket();
+ // The player stands at the records-room binder (where a packet can be filed); also read by the F10 card player.
+ bool NearBinder() const;
  bool Rest();
  bool Upgrade(int32 Index);
  bool HasUpgrade(int32 Index) const { return Upgrades.IsValidIndex(Index) && Upgrades[Index]; }
@@ -806,7 +808,6 @@ private:
  FString ControlSummary(const FJob& J) const;
  bool HasPower() const;
  bool RequirePower();
- bool NearBinder() const;
  double TargetAz() const;
  double TargetEl() const;
  double SourceSeconds() const;
