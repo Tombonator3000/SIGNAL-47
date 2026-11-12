@@ -1318,10 +1318,14 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		{
 			// The circle where to look: a question mark in it until it has been stood in, then a tick; the label just outside it.
 			const FVector2f Ctr = OnPage(Ring->X, Ring->Z);
-			const float Rp = FMath::Max(8.f, float(Ring->R * Sc));
-			Pen.Lines(Pen.Circle(Ctr, Rp, 48), Line, 1.7f, LPencil);
-			if (Ring->bChecked) Pen.Lines({ Ctr + FVector2f(-6, 0), Ctr + FVector2f(-2, 5), Ctr + FVector2f(8, -8) }, Line, 2.f, LPencil);
-			else Pen.Text(TEXT("?"), Ctr + FVector2f(0, 1), Pencil(Rp >= 14.f ? 26.f : 20.f), Line, LPencilWords, .5f, .5f);
+			const float Rp = FMath::Max(10.f, float(Ring->R * Sc));
+			// Tom 12 Nov: the area to search is marked in a clear red ring (a red grease pencil), drawn twice so it reads at a glance;
+			// once stood in it stays red but paler, with a tick.
+			const FLinearColor Red = Ring->bChecked ? FLinearColor(.62f, .16f, .12f, .75f) : FLinearColor(.86f, .07f, .05f, 1.f);
+			Pen.Lines(Pen.Circle(Ctr, Rp, 64), Red, 3.2f, LPencil);
+			Pen.Lines(Pen.Circle(Ctr, Rp + 2.5f, 64), Red, 1.4f, LPencil);
+			if (Ring->bChecked) Pen.Lines({ Ctr + FVector2f(-7, 0), Ctr + FVector2f(-2, 6), Ctr + FVector2f(9, -9) }, Red, 2.6f, LPencil);
+			else Pen.Text(TEXT("?"), Ctr + FVector2f(0, 1), Pencil(Rp >= 14.f ? 28.f : 22.f), Red, LPencilWords, .5f, .5f);
 			const FVector2f Size = FPen::Measure(Sec.Label, Pencil(24));
 			const float Out45 = Rp * .72f + 6.f;
 			static const FVector2f Sides[] = { FVector2f(1, -1), FVector2f(-1, -1), FVector2f(1, 1), FVector2f(-1, 1) };
@@ -1339,7 +1343,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 				const FVector2f TopLeft = Corner - FVector2f(Size.X * AlignX, Size.Y * AlignY);
 				Occupied.Add(FBox2f(TopLeft, TopLeft + Size));
 			}
-			Pen.Text(Sec.Label, Corner, Pencil(24), Line, LPencilWords, AlignX, AlignY, true);
+			Pen.Text(Sec.Label, Corner, Pencil(24), Red, LPencilWords, AlignX, AlignY, true);
 			continue;
 		}
 		// No circle (an older save, the truck's, the land's own bearings): on the centre line, on the land, drawn only if on the sheet.
