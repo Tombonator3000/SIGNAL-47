@@ -153,7 +153,13 @@ void FS47TripoNpcs::Build()
     RigRoot->SetupAttachment(W->GetRootComponent()); RigRoot->RegisterComponent();
     TSharedPtr<FS47TripoCreature> Rig = MakeShared<FS47TripoCreature>();
     if (Rig->Build(W, RigRoot, FString::Printf(TEXT("TripoNPCRig_%s"), Role), *Skin))
-     Rig->Clips = FS47ClipBank::For(SkinAsset, *Rig, *FString::Printf(TEXT("/Game/Licensed/TripoNPC/Rigged/A_Tripo_%s_"), Role));
+    {
+     // ANIM-TRY-20261112: -S47Free100=walk,idle (ClipFile names) wears those Free100 clips, retargeted by Tools/animtry/retarget.py,
+     // where this build has them; every other clip, and every clip without the flag, is the Tripo one as before.
+     static const TArray<FString> Free100 = [] { FString V; TArray<FString> Out; if (FParse::Value(FCommandLine::Get(), TEXT("S47Free100="), V, false)) V.ParseIntoArray(Out, TEXT(",")); return Out; }();
+     const FString Prefer = FString::Printf(TEXT("/Game/Licensed/Free100/Retargeted/%s/A_F100_%s_"), Role, Role);
+     Rig->Clips = FS47ClipBank::For(SkinAsset, *Rig, *FString::Printf(TEXT("/Game/Licensed/TripoNPC/Rigged/A_Tripo_%s_"), Role), Free100.Num() ? *Prefer : nullptr, &Free100);
+    }
     if (Rig->Ready() && Rig->Clips)
     {
      // Both the bake and the rig face +Y with their feet at the pivot under the pelvis: the rig takes the bake's transform as it is.

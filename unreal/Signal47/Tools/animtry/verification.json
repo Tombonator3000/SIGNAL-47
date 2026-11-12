@@ -1,0 +1,334 @@
+{
+ "bytes_on_disk": 190830997,
+ "checks": [
+  {
+   "detail": "/home/tom/scratch-bm/animtry/proj58/Content/Licensed/Free100",
+   "name": "packages on disk under Content/Licensed/Free100",
+   "pass": true
+  },
+  {
+   "detail": [],
+   "name": "every package saved by UE5 (legacy file version -8 or lower)",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Mannequins/Meshes/SK_Mannequin",
+   "name": "source skeleton loads",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Mannequins/Meshes/SKM_Manny_Simple",
+   "name": "source mesh loads on that skeleton",
+   "pass": true
+  },
+  {
+   "detail": {},
+   "name": "every chosen clip (walk, idle, run, sit) passes",
+   "pass": true
+  }
+ ],
+ "clips": {
+  "check_watch": {
+   "foot_l_travel_cm": [
+    0.6,
+    -1.3,
+    0.6
+   ],
+   "foot_r_travel_cm": [
+    0.1,
+    -6.9,
+    -1.0
+   ],
+   "frame_rate": null,
+   "frames": 368,
+   "length_s": 12.2667,
+   "path": "/Game/Licensed/Free100/Anims100/CityAnims/AS_CheckWatch",
+   "pelvis_travel_cm": [
+    0.2,
+    -2.3,
+    0.9
+   ],
+   "root_motion": false,
+   "root_travel_cm": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "clean_counter": {
+   "foot_l_travel_cm": [
+    0.7,
+    0.9,
+    -3.0
+   ],
+   "foot_r_travel_cm": [
+    -3.0,
+    6.9,
+    1.7
+   ],
+   "frame_rate": null,
+   "frames": 219,
+   "length_s": 7.3,
+   "path": "/Game/Licensed/Free100/Anims100/RPG-NPCAnims/AS_BartenderCleanCounter",
+   "pelvis_travel_cm": [
+    11.7,
+    6.2,
+    -0.0
+   ],
+   "root_motion": false,
+   "root_travel_cm": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "clean_mug": {
+   "foot_l_travel_cm": [
+    1.2,
+    -6.1,
+    -4.1
+   ],
+   "foot_r_travel_cm": [
+    2.4,
+    -0.3,
+    1.9
+   ],
+   "frame_rate": null,
+   "frames": 206,
+   "length_s": 6.8667,
+   "path": "/Game/Licensed/Free100/Anims100/RPG-NPCAnims/AS_BartenderCleanMug",
+   "pelvis_travel_cm": [
+    15.9,
+    2.0,
+    0.1
+   ],
+   "root_motion": false,
+   "root_travel_cm": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "idle": {
+   "foot_l_travel_cm": [
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "foot_r_travel_cm": [
+    0.0,
+    0.0,
+    -0.0
+   ],
+   "frame_rate": null,
+   "frames": 227,
+   "length_s": 7.5667,
+   "path": "/Game/Licensed/Free100/Mannequins/Anims/Unarmed/MM_Idle",
+   "pelvis_travel_cm": [
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "root_motion": false,
+   "root_travel_cm": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "inspect": {
+   "foot_l_travel_cm": [
+    -1.4,
+    -0.4,
+    0.5
+   ],
+   "foot_r_travel_cm": [
+    -7.2,
+    -0.8,
+    -1.8
+   ],
+   "frame_rate": null,
+   "frames": 125,
+   "length_s": 4.1667,
+   "path": "/Game/Licensed/Free100/Anims100/WorldInteractionAnims/AS_Inspect",
+   "pelvis_travel_cm": [
+    -10.1,
+    1.1,
+    0.2
+   ],
+   "root_motion": false,
+   "root_travel_cm": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "pour": {
+   "foot_l_travel_cm": [
+    -4.1,
+    -6.2,
+    0.9
+   ],
+   "foot_r_travel_cm": [
+    1.5,
+    -3.3,
+    -0.6
+   ],
+   "frame_rate": null,
+   "frames": 208,
+   "length_s": 6.9333,
+   "path": "/Game/Licensed/Free100/Anims100/RPG-NPCAnims/AS_BartenderPourDrink",
+   "pelvis_travel_cm": [
+    -6.4,
+    -5.8,
+    0.5
+   ],
+   "root_motion": false,
+   "root_travel_cm": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "run": {
+   "foot_l_travel_cm": [
+    1.2,
+    1060.1,
+    -1.4
+   ],
+   "foot_r_travel_cm": [
+    -0.2,
+    1024.9,
+    2.3
+   ],
+   "frame_rate": null,
+   "frames": 53,
+   "length_s": 1.7667,
+   "path": "/Game/Licensed/Free100/Mannequins/Anims/Unarmed/Jog/MF_Unarmed_Jog_Fwd",
+   "pelvis_travel_cm": [
+    0.2,
+    1038.5,
+    2.0
+   ],
+   "root_motion": true,
+   "root_travel_cm": [
+    0.0,
+    1038.8,
+    0.0
+   ]
+  },
+  "sit": {
+   "foot_l_travel_cm": [
+    -0.5,
+    5.7,
+    0.3
+   ],
+   "foot_r_travel_cm": [
+    -1.7,
+    7.5,
+    -0.3
+   ],
+   "frame_rate": null,
+   "frames": 358,
+   "length_s": 11.9333,
+   "path": "/Game/Licensed/Free100/Anims100/CityAnims/AS_SittingOnBench",
+   "pelvis_travel_cm": [
+    -0.3,
+    7.0,
+    -0.7
+   ],
+   "root_motion": false,
+   "root_travel_cm": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "talk_hands": {
+   "foot_l_travel_cm": [
+    -1.6,
+    0.5,
+    -0.3
+   ],
+   "foot_r_travel_cm": [
+    0.8,
+    -9.8,
+    -0.4
+   ],
+   "frame_rate": null,
+   "frames": 191,
+   "length_s": 6.3667,
+   "path": "/Game/Licensed/Free100/Anims100/CityAnims/AS_TalkingWithHands",
+   "pelvis_travel_cm": [
+    -3.5,
+    -4.7,
+    0.6
+   ],
+   "root_motion": false,
+   "root_travel_cm": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "walk": {
+   "foot_l_travel_cm": [
+    -0.1,
+    449.9,
+    -0.1
+   ],
+   "foot_r_travel_cm": [
+    0.2,
+    426.9,
+    3.5
+   ],
+   "frame_rate": null,
+   "frames": 45,
+   "length_s": 1.5,
+   "path": "/Game/Licensed/Free100/Mannequins/Anims/Unarmed/Walk/MF_Unarmed_Walk_Fwd",
+   "pelvis_travel_cm": [
+    -0.2,
+    440.7,
+    -1.5
+   ],
+   "root_motion": true,
+   "root_travel_cm": [
+    0.0,
+    440.0,
+    0.0
+   ]
+  },
+  "warm_hands": {
+   "foot_l_travel_cm": [
+    2.3,
+    -6.2,
+    1.0
+   ],
+   "foot_r_travel_cm": [
+    -1.8,
+    -3.7,
+    1.5
+   ],
+   "frame_rate": null,
+   "frames": 234,
+   "length_s": 7.8,
+   "path": "/Game/Licensed/Free100/Anims100/SurvivalAnims/AS_WarmHands",
+   "pelvis_travel_cm": [
+    2.0,
+    -0.9,
+    1.6
+   ],
+   "root_motion": false,
+   "root_travel_cm": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  }
+ },
+ "destination": "/Game/Licensed/Free100",
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "failed": {},
+ "mode": "verify",
+ "status": "PASS"
+}

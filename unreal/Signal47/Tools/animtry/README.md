@@ -1,10 +1,22 @@
 # Tools/animtry: Free100-klipp på byfolket (ANIM-TRY-20261112, → M4, M1)
 
-**Status:** Forberedt, ikke kjørt · **Gjelder:** UE 5.8.4, Linux, Free100Animations på Tripo-byfolket og MetaHuman-servitrisen · **Sist kontrollert:** 12. november 2026
+**Status:** Kjørt for deputy (walk, idle, run, sit) 13. november; walk og idle sett i spillet bak `-S47Free100=walk,idle`, venter på Toms godkjenning · **Gjelder:** UE 5.8.4, Linux, Free100Animations på Tripo-byfolket og MetaHuman-servitrisen · **Sist kontrollert:** 13. november 2026
 
 Første prøve etter [den faste regelen for animasjon](../../../../AGENTS.md) (Tom 12. november): gange, tomgang, jogg og sitting for mennesker skal komme fra ekte bevegelse, ikke håndlaget nøkkelramme. Free100Animations er første kilde. Her tas walk, idle, run (jogg) og sit fra UE5-mannekengen over til våre skjeletter med Unreals IK Retargeter, og spillet kan bruke dem på én figur av gangen uten ny mekanikk.
 
 Lisens: Tom 12. november: fri til bruk, laget av en privatperson på Epic-innhold (Manny/Quinn). Kan brukes i spillet og pakken. Råfiler og importerte uassets ligger bare i `Content/Licensed/Free100`, som Git ignorerer (`unreal/.gitignore`). Ingen lisensierte filer ligger i denne mappa, bare skript, navn og måltall.
+
+## Første kjøring (13. november 2026, deputy)
+
+- Import og retarget går gjennom i 5.8.4. Kroken er bygget inn (`FS47ClipBank::For` med foretrukket prefiks, `FS47TripoNpcs`), og `S47CreaturePreview` har fått `-S47CreatureStyle=npc:<rolle>` med `-S47CreatureCam=front|side|top`: stå 2 s, gå 8 m i 1,25 m/s, stå 3 s. Uten `-S47Free100=` brukes Tripo-klippene som før.
+- Fire ting måtte rettes i `retarget.py` (alle står forklart i koden):
+  1. Retargeteren skriver klippet for en root uten skinnets enhet og dreining (Tripo-root: skala 100, 90°). Bekkenet skrives derfor om under root i hvile for alle klipp (`to_skin_root`); ellers sto idle 96 m opp i lufta.
+  2. Standardstabelens «Run IK Rig» har ingen op som mater målene; den dro kroppen 20° forover med tærne i været. Den er slått av (`S47_ANIMTRY_IK=1` beholder den). Føttene plantes av spillet.
+  3. Bare armer og bein rettes inn mot kildens hvilepose. Rygg, nakke og hode beholder Tripo-figurens egen holdning (ellers 17° lut mot kildens 8°).
+  4. Malens gange er rask (3,08 m/s, 231 cm per steg-par). Spilt etter distanse i 1,25 m/s ble den et sakte utfall med dype knær. `shorten_stride` gjør stegene 0,6 ganger så lange (`selection.json` `stride`): 277 cm per runde, 1,85 m/s i klippet, 1,9 steg/s i 1,25 m/s (Tripo-gangen: 2,06).
+- `S47_ANIMTRY_FORCE=1` overskriver klipp; rigger og retargeter fra en tidligere kjøring gjenbrukes (slett fila for hånd for å lage dem på nytt). Sletting og ny opprettelse i samme prosess virker ikke uten bruker.
+- Målt i spillet (side, 8 m): plantet fot flytter seg 0,0–1,4 cm i jevn gange (Tripo-gangen 0,1–0,75 cm); første steg fra stillstand 4,3 cm (Tripo 4,7 cm). Spillets egen plantefeil 0,00 cm (Tripo 1,58 cm). Hoftehøyde 89,6–95,6 cm i gange.
+- Ikke gjort: `run` er 6,2 m/s i klippet (sprint, ikke jogg) og er ikke sett; `sit` er ikke sett (deputy sitter ikke; prøv på patron). Idle står med malens forskjøvne føtter og litt lut (10°).
 
 ## Kilden
 
@@ -39,9 +51,8 @@ python3 $Q ~/.local/opt/UnrealEngine-5.8.4/Engine/Binaries/Linux/UnrealEditor-Cm
   -run=pythonscript -script=$PWD/Tools/animtry/retarget.py -unattended -nullrhi -nosplash -NoSound -NoLiveCoding
 #    servitrisen etterpå: S47_ANIMTRY_TARGETS=waitress_mh S47_ANIMTRY_EXTRAS=1 (idle + tre diskgester)
 #    flere: S47_ANIMTRY_TARGETS=attendant,souvenir_man,... ; ny runde: S47_ANIMTRY_FORCE=1
-# 3. Kroken i spillet (ikke bygget ennå):
-git -C ~/SIGNAL-47 apply unreal/Signal47/Tools/animtry/cpp_hook.diff   # stiene i diffen går fra repo-roten
-#    bygg som vanlig, så hurtiginstallasjon
+# 3. Se i spillet (kroken er bygget inn): -S47CreaturePreview -S47Case=0 -S47CreatureStyle=npc:deputy -S47CreatureCam=side -S47Free100=walk,idle
+#    (med -S47CreatureCapture=/tmp/<ny mappe> -S47CreatureCaptureSeconds=11.4 for bilder)
 ```
 
 Rapportene `verification.json` (import) og `retarget-report.json` (retarget) har bare navn og tall og kan legges i Git. Se på dem før spillprøven: walk 0,6–2,2 m/s, hver fot plantet 25–75 % av syklusen, idle under 5 cm forflytning, sit senker hoftene 25–70 cm.
@@ -52,7 +63,7 @@ Rapportene `verification.json` (import) og `retarget-report.json` (retarget) har
 - `migrate.py` nekter å kjøre i `Signal47.uproject`. Den flytter mappene uten redirectorer, lagrer i 5.8-format og leser lengde, bilder, bildefrekvens, rotbevegelse og hvor langt root, bekken og føtter flytter seg i hvert valgt klipp.
 - `retarget.py` krever `Signal47.uproject` og skriver bare under `/Game/Licensed/Free100` (`Rigs/`, `Retargeted/<rolle>/`). Før lagring nekter den hvis en annen pakke er endret. Den lager IK Rig for kilde og mål med like kjedenavn (Spine, Neck, Head, Left/RightClavicle, Left/RightArm, Left/RightLeg, bekkenet som retarget-rot, fot- og håndmål, FBIK-løser når motoren gir den), IK Retargeter med standard op-stabel, kjeder koblet etter navn og målposen automatisk rettet inn mot kildens (T-pose mot A-pose). Ett batch-retarget per klipp, med navnet `A_F100_<rolle>_<klipp>` som `FS47ClipBank` leser.
 - Gange og jogg: klippspilleren leser forflytningen fra **bekkenet**, ikke fra root-beinet. Derfor flytter `retarget.py` all forflytning i root-sporet inn i bekkenet og holder root i hvile. Går klippet på stedet (malklippene gjør trolig det), legges forflytningen inn igjen fra føttene: den plantede fotens fart bakover er gangfarten. Da står en plantet fot stille i klippets eget rom, slik `ReadGait` venter.
-- `cpp_hook.diff` (ikke bygget): `FS47ClipBank::For` får et valgfritt foretrukket prefiks og en liste klippnavn. `FS47TripoNpcs` sender `/Game/Licensed/Free100/Retargeted/<rolle>/A_F100_<rolle>_` og listen fra `-S47Free100=walk,idle`. Uten flagget, eller der klippet mangler, brukes Tripo-klippet som før. Loggen sier hvilke klipp som kom fra Free100. Ingen ny mekanikk: `S47TownDay` flytter figuren som før, `FS47ClipMotion` spiller gangen etter faktisk avstand og planter føttene. Når Tom har godkjent et klipp, blir det standard (listen i koden) og flagget går bort.
+- Kroken (bygget inn 13. november): `FS47ClipBank::For` får et valgfritt foretrukket prefiks og en liste klippnavn. `FS47TripoNpcs` sender `/Game/Licensed/Free100/Retargeted/<rolle>/A_F100_<rolle>_` og listen fra `-S47Free100=walk,idle`. Uten flagget, eller der klippet mangler, brukes Tripo-klippet som før. Loggen sier hvilke klipp som kom fra Free100. Ingen ny mekanikk: `S47TownDay` flytter figuren som før, `FS47ClipMotion` spiller gangen etter faktisk avstand og planter føttene. Når Tom har godkjent et klipp, blir det standard (listen i koden) og flagget går bort.
 - Servitrisen (MetaHuman) er ikke med i diffen. Neste steg der er å la `S47Waitress` laste `A_F100_waitress_mh_idle` i stedet for `AS_Waitress_Idle` når flagget har `idle`, og senere legge en diskgest i den ubrukte `Gesture`-plassen i `US47PersonAnim` med lav vekt og sjelden.
 
 ## Prøveplan
@@ -72,5 +83,4 @@ Rapportene `verification.json` (import) og `retarget-report.json` (retarget) har
 - `selection.json`: hvilke mapper, klipp, ekstraklipp og målskjeletter.
 - `import.sh`, `migrate.py`: pakken inn i `Content/Licensed/Free100`.
 - `retarget.py`: IK Rigs, IK Retargeter, klipp, gangfiks og rapport.
-- `cpp_hook.diff`: kroken i spillkoden.
 - `verification.json`, `retarget-report.json`: lages av kjøringene.

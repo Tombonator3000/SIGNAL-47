@@ -1,0 +1,459 @@
+{
+ "checks": [
+  {
+   "detail": "/home/tom/SIGNAL-47/unreal/Signal47/Signal47.uproject",
+   "name": "runs in Signal47 (needs our target meshes)",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Mannequins/Meshes/SKM_Manny_Simple",
+   "name": "source mesh under Free100 (run import.sh first)",
+   "pass": true
+  },
+  {
+   "detail": [
+    "attendant",
+    "deputy",
+    "earl",
+    "nora",
+    "patron",
+    "radio_woman",
+    "souvenir_man",
+    "waitress",
+    "waitress_mh"
+   ],
+   "name": "known target deputy",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_deputy",
+   "name": "deputy: target mesh loads",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_walk",
+   "name": "writes only under /Game/Licensed/Free100: /Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_walk",
+   "pass": true
+  },
+  {
+   "detail": [
+    "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_walk"
+   ],
+   "name": "retarget A_F100_deputy_walk",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_walk: write pelvis track",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_walk: write root track",
+   "pass": true
+  },
+  {
+   "detail": 461.9774844497443,
+   "name": "A_F100_deputy_walk: a walk that travels, for the stride",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_walk: write pelvis track (stride)",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_walk: write thigh_l track (stride)",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_walk: write calf_l track (stride)",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_walk: write foot_l track (stride)",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_walk: write thigh_r track (stride)",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_walk: write calf_r track (stride)",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_walk: write foot_r track (stride)",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_idle",
+   "name": "writes only under /Game/Licensed/Free100: /Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_idle",
+   "pass": true
+  },
+  {
+   "detail": [
+    "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_idle"
+   ],
+   "name": "retarget A_F100_deputy_idle",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_idle: write pelvis track",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_idle: write root track",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_run",
+   "name": "writes only under /Game/Licensed/Free100: /Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_run",
+   "pass": true
+  },
+  {
+   "detail": [
+    "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_run"
+   ],
+   "name": "retarget A_F100_deputy_run",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_run: write pelvis track",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_run: write root track",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_sit",
+   "name": "writes only under /Game/Licensed/Free100: /Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_sit",
+   "pass": true
+  },
+  {
+   "detail": [
+    "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_sit"
+   ],
+   "name": "retarget A_F100_deputy_sit",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_sit: write pelvis track",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "A_F100_deputy_sit: write root track",
+   "pass": true
+  },
+  {
+   "detail": [],
+   "name": "nothing outside /Game/Licensed/Free100 is changed",
+   "pass": true
+  },
+  {
+   "detail": null,
+   "name": "save /Game/Licensed/Free100",
+   "pass": true
+  },
+  {
+   "detail": [
+    "attendant",
+    "deputy",
+    "earl",
+    "nora",
+    "patron",
+    "radio_woman",
+    "souvenir_man",
+    "waitress",
+    "waitress_mh"
+   ],
+   "name": "known target deputy",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_walk",
+   "name": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_walk loads on the target skeleton",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_idle",
+   "name": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_idle loads on the target skeleton",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_run",
+   "name": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_run loads on the target skeleton",
+   "pass": true
+  },
+  {
+   "detail": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_sit",
+   "name": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_sit loads on the target skeleton",
+   "pass": true
+  },
+  {
+   "detail": 1.848,
+   "name": "deputy: walk travels (0.6-3.5 m/s; the template walk is ~3 m/s, the game plays it by distance)",
+   "pass": true
+  },
+  {
+   "detail": {
+    "ball_l_z_cm": [
+     5.1,
+     18.3
+    ],
+    "ball_r_z_cm": [
+     5.3,
+     17.2
+    ],
+    "foot_l_stance_share": 0.41,
+    "foot_l_z_cm": [
+     12.9,
+     32.0
+    ],
+    "foot_r_stance_share": 0.43,
+    "foot_r_z_cm": [
+     13.2,
+     32.5
+    ],
+    "keys": 46,
+    "lean_deg": [
+     8.7,
+     7.2
+    ],
+    "length_s": 1.5,
+    "path": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_walk",
+    "pelvis_travel_cm": 277.2,
+    "pelvis_z_cm": [
+     89.5,
+     94.5
+    ],
+    "skeleton": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_deputy_Skeleton.SK_Tripo_deputy_Skeleton",
+    "speed_mps": 1.848,
+    "toe_under_ankle_cm": [
+     7.8,
+     15.8
+    ]
+   },
+   "name": "deputy: walk plants each foot (stance share 0.25-0.75)",
+   "pass": true
+  },
+  {
+   "detail": 0.0,
+   "name": "deputy: idle stays on the spot (< 5 cm)",
+   "pass": true
+  },
+  {
+   "detail": 37.900000000000006,
+   "name": "deputy: sit lowers the hips 25-70 cm",
+   "pass": true
+  }
+ ],
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "fixes": {
+  "deputy": {
+   "idle": [
+    "pelvis under the skin's root at rest (root travel 0 cm moved into it)"
+   ],
+   "run": [
+    "pelvis under the skin's root at rest (root travel 1089 cm moved into it)"
+   ],
+   "sit": [
+    "pelvis under the skin's root at rest (root travel 0 cm moved into it)"
+   ],
+   "walk": [
+    "pelvis under the skin's root at rest (root travel 462 cm moved into it)",
+    "stride x0.60: 277 cm a round instead of 462 (the leg at most 0.0 cm short of its reach)"
+   ]
+  }
+ },
+ "mode": "retarget",
+ "source": {
+  "kind": "mannequin",
+  "mesh": "/Game/Licensed/Free100/Mannequins/Meshes/SKM_Manny_Simple",
+  "reused": true
+ },
+ "status": "PASS",
+ "targets": {
+  "deputy": {
+   "clips": {
+    "idle": {
+     "ball_l_z_cm": [
+      5.9,
+      6.1
+     ],
+     "ball_r_z_cm": [
+      5.4,
+      5.6
+     ],
+     "foot_l_z_cm": [
+      13.7,
+      13.8
+     ],
+     "foot_r_z_cm": [
+      13.3,
+      13.4
+     ],
+     "keys": 228,
+     "lean_deg": [
+      9.8,
+      10.1
+     ],
+     "length_s": 7.567,
+     "path": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_idle",
+     "pelvis_travel_cm": 0.0,
+     "pelvis_z_cm": [
+      96.2,
+      96.6
+     ],
+     "skeleton": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_deputy_Skeleton.SK_Tripo_deputy_Skeleton",
+     "speed_mps": 0.0,
+     "toe_under_ankle_cm": [
+      7.8,
+      7.8
+     ]
+    },
+    "run": {
+     "ball_l_z_cm": [
+      5.7,
+      59.6
+     ],
+     "ball_r_z_cm": [
+      5.6,
+      55.0
+     ],
+     "foot_l_stance_share": 0.19,
+     "foot_l_z_cm": [
+      15.5,
+      66.3
+     ],
+     "foot_r_stance_share": 0.19,
+     "foot_r_z_cm": [
+      13.9,
+      64.5
+     ],
+     "keys": 54,
+     "lean_deg": [
+      23.3,
+      20.7
+     ],
+     "length_s": 1.767,
+     "path": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_run",
+     "pelvis_travel_cm": 1088.2,
+     "pelvis_z_cm": [
+      84.4,
+      93.5
+     ],
+     "skeleton": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_deputy_Skeleton.SK_Tripo_deputy_Skeleton",
+     "speed_mps": 6.16,
+     "toe_under_ankle_cm": [
+      10.3,
+      11.0
+     ]
+    },
+    "sit": {
+     "ball_l_z_cm": [
+      6.3,
+      7.2
+     ],
+     "ball_r_z_cm": [
+      6.9,
+      7.4
+     ],
+     "foot_l_z_cm": [
+      12.8,
+      13.9
+     ],
+     "foot_r_z_cm": [
+      14.2,
+      15.3
+     ],
+     "hip_drop_cm": 37.9,
+     "keys": 359,
+     "lean_deg": [
+      5.0,
+      24.5
+     ],
+     "length_s": 11.933,
+     "path": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_sit",
+     "pelvis_travel_cm": 7.0,
+     "pelvis_z_cm": [
+      58.3,
+      60.5
+     ],
+     "skeleton": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_deputy_Skeleton.SK_Tripo_deputy_Skeleton",
+     "speed_mps": 0.006,
+     "toe_under_ankle_cm": [
+      6.4,
+      7.5
+     ]
+    },
+    "walk": {
+     "ball_l_z_cm": [
+      5.1,
+      18.3
+     ],
+     "ball_r_z_cm": [
+      5.3,
+      17.2
+     ],
+     "foot_l_stance_share": 0.41,
+     "foot_l_z_cm": [
+      12.9,
+      32.0
+     ],
+     "foot_r_stance_share": 0.43,
+     "foot_r_z_cm": [
+      13.2,
+      32.5
+     ],
+     "keys": 46,
+     "lean_deg": [
+      8.7,
+      7.2
+     ],
+     "length_s": 1.5,
+     "path": "/Game/Licensed/Free100/Retargeted/deputy/A_F100_deputy_walk",
+     "pelvis_travel_cm": 277.2,
+     "pelvis_z_cm": [
+      89.5,
+      94.5
+     ],
+     "skeleton": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_deputy_Skeleton.SK_Tripo_deputy_Skeleton",
+     "speed_mps": 1.848,
+     "toe_under_ankle_cm": [
+      7.8,
+      15.8
+     ]
+    }
+   },
+   "mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_deputy",
+   "retargeter": {
+    "ops": {
+     "FK Chains": true,
+     "Pelvis Motion": true,
+     "Remap Curves": true,
+     "Root Motion": true,
+     "Run IK Rig": false
+    },
+    "reused": true
+   },
+   "rig": {
+    "kind": "tripo23",
+    "reused": true
+   }
+  }
+ }
+}

@@ -26,6 +26,7 @@
   "inspect": "/Game/Licensed/Free100/Anims100/WorldInteractionAnims/AS_Inspect"
  },
  "gaits": ["walk", "run"],
+ "stride": {"walk": 0.6},
  "targets": {
   "deputy": {"mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_deputy", "rig": "tripo23", "first": true},
   "attendant": {"mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_attendant", "rig": "tripo23"},
