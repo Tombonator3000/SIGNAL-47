@@ -799,7 +799,7 @@ void FS47Observing::OpenReceiver()
   S47FreeformTerminal::Knob(FString::Printf(TEXT("GAIN / %.0f-%.0f"),P.Gain[0],P.Gain[1]),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;}),
   S47FreeformTerminal::Knob(FString::Printf(TEXT("BANDWIDTH kHz / %.0f-%.0f"),P.Bw[0],P.Bw[1]),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})));
  Rows.Add(S47FreeformTerminal::Text(TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("RECEIVER BEARING %.1f / SAME COMMAND AS TRACKING PC"),M->Story->Rx.Azimuth);}),TAttribute<int32>(0)));
- Rows.Add(S47FreeformTerminal::ButtonLive(TAttribute<FString>::CreateLambda([this]{return ReceiverReady()?TEXT("READY / START ACQUISITION"):TEXT("START UNAVAILABLE / FOLLOW NEXT ACTION");}),[this]{if(!ReceiverReady()){M->Story->Rx.Status=ReceiverNextAction();return;}ConsoleAction();OpenReceiver();},true,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();})));
+ Rows.Add(S47FreeformTerminal::ButtonLive(TAttribute<FString>::CreateLambda([this]{return ReceiverReady()?TEXT("READY / START RECORDING"):TEXT("START UNAVAILABLE / FOLLOW NEXT ACTION");}),[this]{if(!ReceiverReady()){M->Story->Rx.Status=ReceiverNextAction();return;}ConsoleAction();OpenReceiver();},true,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();})));
  OpenTerminal(1,TEXT("RECEIVER / STORY ACQUISITION"),S47Kit::Col(Rows));
 }
 bool FS47Observing::RegisterScheduledData()

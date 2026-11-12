@@ -1098,7 +1098,7 @@ bool FS47FreeformDirector::TraceRaked() const
 }
 FString FS47FreeformDirector::TipLine() const
 {
- if(Event==TEXT("farm_lights")||Event==TEXT("town_lights"))return FString(TEXT("RADIO TIP: LIGHTS REPORTED LOW OVER "))+LightPlaceTitle(LightPlace).ToUpper();
+ if(Event==TEXT("farm_lights")||Event==TEXT("town_lights"))return FString(TEXT("RADIO TIP: LIGHTS REPORTED LOW OVER "))+LightPlaceTitle(LightPlace).ToUpper()+TEXT(". TAKE THE CAMERA AND GO LOOK.");
  return FString();
 }
 void FS47FreeformDirector::TestLightsTonight(){if(M&&M->Freeform){SeenDay=M->Freeform->Day();LightRollDay=ThreatRollDay=MajorRollDay=SeenDay;PendingThreatNight=PendingMajorNight=0;PendingLightNight=SeenDay;LightAfter=0;NextAt=0;RestUntil=0;}}
