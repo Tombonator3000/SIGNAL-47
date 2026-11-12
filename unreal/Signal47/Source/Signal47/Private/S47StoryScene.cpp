@@ -100,6 +100,14 @@ bool FS47StoryScene::UsePhone()
 void FS47StoryScene::Tick(double Dt)
 {
  if(!Pack.CurrentScene())return;
+ // A call nobody has answered yet, whose reason has gone (the power came back before the phone was picked up): it stops
+ // ringing and is taken back without its effects, so it does not ring on about something that is over.
+ if(!bOpen&&(bRing||bWantOpen)&&Pack.NextLine()==0&&!Pack.StillWanted()&&Pack.Withdraw())
+ {
+  UE_LOG(LogS47StoryScene,Display,TEXT("S47: story scene %s withdrawn: its reason has gone before it was answered"),*Active);
+  StopRing();bWantOpen=false;ReopenIn=0;Active.Reset();Channel.Reset();SpokenLine.Reset();
+  return;
+ }
  if(Channel==TEXT("phone"))return; // waits for the player at the telephone
  if(bOpen)return;
  if(ReopenIn>0){ReopenIn-=Dt;return;}
@@ -273,5 +281,13 @@ bool FS47StoryScene::SelfTest(TArray<FString>& Lines)
   T.Choose(Cs[0]->Id);
  }
  Check(!T.Busy()&&GotT.Contains(TEXT("handover_done"))&&GotT.Contains(TEXT("scene_d01_handover"))&&!T.bRing,TEXT("STORY-5: the handover plays to its end with a choice; handover_done and scene_d01_handover become story flags"));
+ // Step 6: Dale's signal call rings while there is a signal; the signal goes before anyone picks up: it stops ringing and is taken back.
+ T.SetContext({{TEXT("ctx_signal_present"),true}});
+ const bool bRang=T.Begin(TEXT("D21_SIGNAL_PHONE"),Why)&&T.bRing;
+ T.Tick(.1);
+ const bool bStill=T.Busy()&&T.bRing;
+ T.SetContext({{TEXT("ctx_signal_present"),false}});
+ T.Tick(.1);
+ Check(bRang&&bStill&&!T.Busy()&&!T.bRing&&!GotT.Contains(TEXT("dale_signal_call_done")),TEXT("STORY-6: a call whose reason goes before it is answered stops ringing and is taken back without its effects"));
  return bOk;
 }

@@ -63,6 +63,10 @@ public:
 	void ResetFollowupAttempt(); // only the actual physical new-attempt transaction calls this
 	bool CanStart(const FString& Id) const;
 	bool Start(const FString& Id);
+	// Story-on-Freeform: an active trigger scene not yet begun (first line unread, no choice made) whose requirements still hold.
+	bool StillWanted() const;
+	// Takes back such a scene without its effects (its reason has gone before anyone answered). False once it has begun.
+	bool Withdraw();
 	const FS47EveningScene* CurrentScene() const;
 	const FS47EveningScene* FindScene(const FString& Id) const { return Scenes.Find(Id); }
 	const FS47EveningLine* CurrentLine() const;
