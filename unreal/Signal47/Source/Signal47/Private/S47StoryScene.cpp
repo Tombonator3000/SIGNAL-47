@@ -6,6 +6,8 @@
 #include "S47Audio.h"
 #include "S47DaleVoice.h"
 #include "S47Freeform.h"
+#include "S47Fatigue.h"
+#include "S47World.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47StoryScene,Log,All);
 
@@ -109,10 +111,58 @@ void FS47StoryScene::Tick(double Dt)
   StopRing();bWantOpen=false;ReopenIn=0;Active.Reset();Channel.Reset();SpokenLine.Reset();
   return;
  }
+ // STORY-DRIVE-20261112: the drive's radio is captions in the truck, never a panel; a face-to-face talk ends when the player drives off.
+ if(CarRadio()){RadioStep(Dt);return;}
+ if(Channel==TEXT("physical")&&InCab()&&Pack.Abandon())
+ {
+  UE_LOG(LogS47StoryScene,Display,TEXT("S47: story scene %s left: the player drove off"),*Active);
+  Finish();
+  return;
+ }
  if(Channel==TEXT("phone"))return; // waits for the player at the telephone
  if(bOpen)return;
  if(ReopenIn>0){ReopenIn-=Dt;return;}
  if(bWantOpen&&M&&M->UI&&!M->ModalOpen())Show();
+}
+
+bool FS47StoryScene::InCab() const
+{
+ if(TestCab>=0)return TestCab>0;
+ return M&&IsValid(M->World)&&M->World->bDriving;
+}
+
+bool FS47StoryScene::CarRadio() const
+{
+ const FS47EveningScene* S=Pack.CurrentScene();
+ return S&&S->Channel==TEXT("radio")&&S->Phase==TEXT("commute")&&S->Choices.IsEmpty();
+}
+
+// The car radio: one caption per line, held for a reading time, while the player is in the truck and no panel is up. Out of the truck
+// the rest plays on in the cab unheard: the scene is over at once, so nothing at SARO waits behind it.
+void FS47StoryScene::RadioStep(double Dt)
+{
+ if(!InCab())
+ {
+  int32 Steps=0;
+  while(Pack.CurrentLine()&&Steps++<64)Pack.Advance();
+  if(const FS47EveningScene* S=Pack.CurrentScene();S&&!Pack.CurrentLine()&&S->Choices.IsEmpty())Pack.Advance();
+  UE_LOG(LogS47StoryScene,Display,TEXT("S47: story scene %s: out of the truck, the radio plays on unheard"),*Active);
+  RadioHold=0;SpokenLine.Reset();
+  AfterStep();
+  return;
+ }
+ if(M&&M->ModalOpen())return;
+ const FS47EveningLine* L=Pack.CurrentLine();
+ if(!L){Pack.Advance();RadioHold=0;SpokenLine.Reset();AfterStep();return;}
+ if(SpokenLine!=L->Id)
+ {
+  SpokenLine=L->Id;
+  RadioHold=FMath::Clamp(2.5+L->Text.Len()/20.0,4.0,11.0);
+  const FString Who=L->Speaker==TEXT("RADIO_HOST")?FString(TEXT("LOCAL EVENING HOST")):L->Speaker;
+  if(M&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Who+TEXT(" / ")+L->Text,float(RadioHold));
+ }
+ RadioHold-=Dt;
+ if(RadioHold<=0){SpokenLine.Reset();Continue();}
 }
 
 // After a step of the pack: the scene goes on (ring, or open), or it is over.
@@ -238,6 +288,15 @@ void FS47StoryScene::Finish()
  }
  if(!Was.IsEmpty())Set.Add(TEXT("scene_")+Was.ToLower());
  for(const FString& F:Set)if(OnFlag)OnFlag(F);
+ // Tom 12 Nov: supper at the Mesa on the Story drive is paid from Freeform's own cash, and the waitress's coffee counts as Freeform's
+ // diner cup (FS47Fatigue::AtDiner). A meal is $4; short of it, it goes on the station's tab like an essential requisition.
+ if((Was==TEXT("I06_EAT")||Was==TEXT("I07_TAKE"))&&M&&M->Freeform)
+ {
+  const bool bPaid=M->Freeform->Spend(MealPrice,true);
+  if(Was==TEXT("I06_EAT")&&M->Freeform->Fatigue)M->Freeform->Fatigue->AtDiner();
+  if(M->UI)M->UI->Toast(bPaid?FString::Printf(TEXT("Supper at the Mesa: $%d."),MealPrice):TEXT("Supper at the Mesa, on the station's tab."),3.f);
+  UE_LOG(LogS47StoryScene,Display,TEXT("S47: story scene %s: supper $%d %s"),*Was,MealPrice,bPaid?TEXT("paid"):TEXT("not paid"));
+ }
  UE_LOG(LogS47StoryScene,Display,TEXT("S47: story scene %s over; story flags %s"),*Was,*FString::Join(Set,TEXT(", ")));
 }
 
@@ -314,5 +373,39 @@ bool FS47StoryScene::SelfTest(TArray<FString>& Lines)
  T.SetContext({{TEXT("ctx_signal_present"),false}});
  T.Tick(.1);
  Check(bRang&&bStill&&!T.Busy()&&!T.bRing&&!GotT.Contains(TEXT("dale_signal_call_done")),TEXT("STORY-6: a call whose reason goes before it is answered stops ringing and is taken back without its effects"));
+ // STORY-DRIVE-20261112: the drive's radio, the diner's counter, and the arrival after them.
+ {
+  FS47StoryScene R(nullptr);
+  TArray<FString> GotR;
+  R.OnFlag=[&GotR](const FString& F){GotR.Add(F);};
+  R.TestCab=1;
+  const bool bRadio=R.Begin(TEXT("I01_DRIVE"),Why)&&R.CarRadio()&&R.Busy()&&!R.bRing;
+  R.Tick(.1);
+  const bool bHeld=R.Busy()&&R.Pack.NextLine()==0;
+  int32 Ticks=0;
+  while(R.Busy()&&Ticks++<1000)R.Tick(.5);
+  Check(bRadio&&bHeld&&!R.Busy()&&!R.bOpen&&GotR.Contains(TEXT("arrival_radio_heard"))&&GotR.Contains(TEXT("scene_i01_drive")),
+   TEXT("STORY-8: the drive's radio (I01_DRIVE) plays in the truck as captions, a line at a time with no panel, and ends with arrival_radio_heard"));
+  R.Tick(.1);
+  const bool bBack=R.Begin(TEXT("I10_BACK_ON_ROAD"),Why)&&R.CarRadio();
+  R.Tick(.1);
+  R.TestCab=0;
+  R.Tick(.1);
+  Check(bBack&&!R.Busy()&&GotR.Contains(TEXT("arrival_departure_radio_heard"))&&GotR.Contains(TEXT("scene_i10_back_on_road")),
+   TEXT("STORY-8: out of the truck the radio plays on unheard: the scene is over at once and its flags hold"));
+  const bool bDiner=R.Begin(TEXT("I02_DINER_HELLO"),Why)&&R.Busy()&&!R.CarRadio()&&!R.bRing;
+  R.Continue();
+  R.Tick(.1);
+  const bool bTalking=R.Busy();
+  R.TestCab=1;
+  R.Tick(.1);
+  Check(bDiner&&bTalking&&!R.Busy()&&GotR.Contains(TEXT("scene_i02_diner_hello")),
+   TEXT("STORY-8: the diner's counter talk (I02, physical) waits on foot and ends where it stands when the player drives off"));
+  R.TestCab=0;
+  const bool bArrived=R.Begin(TEXT("I11_SARO_ARRIVAL"),Why)&&!R.Busy()&&GotR.Contains(TEXT("intro_arrived"));
+  const bool bRings=R.Begin(TEXT("D01_HANDOVER"),Why)&&R.Busy()&&R.bRing;
+  R.Stop();
+  Check(bArrived&&bRings,TEXT("STORY-8: after the drive and the stop, the arrival (I11) is committed and the handover rings at OPS"));
+ }
  return bOk;
 }

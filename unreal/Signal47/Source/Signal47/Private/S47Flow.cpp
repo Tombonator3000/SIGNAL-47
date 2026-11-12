@@ -1064,7 +1064,8 @@ void US47Flow::StartGame(const FStart& O)
   if (M->Night && M->Night->Flashlight) M->Night->Flashlight->bHave=true;
   // A new operator arrives on foot at the visitor entrance, the station shut and the Jeep in its garage.
   // Tom 5 Nov. Saves and tests written for the old start keep theirs; the normal journey drives from the pad.
-  // Story's one night starts at SARO with the station open and the Jeep on its pad, as the normal journey does (no mailbox start).
+  // Story's one night starts with the station open and the Jeep on its pad, as the normal journey does (no mailbox start); the player
+  // drives it up from Caliche (FS47StoryDirector::BeginDrive, below).
   if(!O.State.IsValid()&&!bStoryNight&&!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney"))&&(!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))))
   {
    auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("saro"));S47J::Set(Pose,TEXT("x"),35.4);S47J::Set(Pose,TEXT("y"),0.);S47J::Set(Pose,TEXT("z"),-.4);S47J::Set(Pose,TEXT("h"),UE_DOUBLE_PI);
@@ -1109,6 +1110,9 @@ void US47Flow::StartGame(const FStart& O)
  {
   if(!M->StoryDirector)M->StoryDirector=MakeShared<FS47StoryDirector>(M);
   M->StoryDirector->Begin(S47J::Obj(O.State,TEXT("storyDirector")));
+  // STORY-DRIVE-20261112 (Tom 12 Nov): a new Story night begins in the truck on the highway, driving north to SARO (the old Story's
+  // opening), on Freeform's own trip; the evening act's evening_drive follows it to the handover. A Continue resumes where it was saved.
+  if(!O.State.IsValid())FS47StoryDirector::BeginDrive(M);
  }
  else if (M->StoryDirector) M->StoryDirector->Stop();
  // New Freeform operators collect the camera physically. Every legacy Freeform
@@ -1222,6 +1226,7 @@ void US47Flow::LeavePlay()
 
 void US47Flow::ToTitle()
 {
+ if (StoryEnding.IsValid()) { StoryEnding->Dispose(); StoryEnding.Reset(); } // STORY steg 6: a Story night's end cards
 	if (M->HighwayUfo) M->HighwayUfo->Stop();
 	if (M->Freeform) M->Freeform->Stop();
  if (M->RoomLights) M->RoomLights->Stop();
@@ -1329,6 +1334,95 @@ void US47Flow::Finale()
 			});
 		});
 	});
+}
+
+bool US47Flow::CompleteStoryNight()
+{
+ // STORY steg 6: as CompleteStoryTitle, for the new Story (a Freeform session marked as Story) at its end; never a developer's run.
+ if(!M || !M->IsFreeform() || !bStoryNight || bDevRun || CaseId<1 || M->Mode!=EMode::End) return false;
+ const bool Saved=Saves.MarkStoryCompleted();
+ UE_LOG(LogS47Flow,Display,TEXT("S47: story night completion reward %s"),Saved?TEXT("retained"):TEXT("write failed; will not overwrite unknown profile data"));
+ return Saved;
+}
+
+void US47Flow::StoryNightEnd()
+{
+ // STORY steg 6 (SC13, the old Story's end: Reyes' night is over and Reyes with it; Freeform takes place after). The night stops as
+ // Finale stops it, the screen goes black, and the old Story's end cards play: the title, the credits and the 1947 photograph.
+ if(!M || !M->IsFreeform() || !bStoryNight || M->Mode!=EMode::Play)
+ {
+  UE_LOG(LogS47Flow,Display,TEXT("S47: story night end left out: not a Story night in play"));
+  return;
+ }
+ M->Mode = EMode::End;
+ if (M->FieldCamera) M->FieldCamera->Raise(false);
+ M->UI->Viewfinder(false);
+ if (M->Player) M->Player->SetActive(false);
+ APlayerController* PC = M->Hud ? M->Hud->GetOwningPlayerController() : nullptr;
+ if (PC) PC->FlushPressedKeys();
+ M->UI->Close(true);
+ M->UI->ClearToasts();
+ M->UI->Objective(FString());
+ M->UI->Examine(FString());
+ M->UI->ClockSeconds(FString());
+ if (M->World) M->World->StopDriving();
+ if (M->Audio) M->Audio->CabRadio(FString());
+ if (M->CB) M->CB->Stop();
+ if (M->Audio) M->Audio->StopPhoneCalls();
+ if (M->Radio) M->Radio->Reset(0);
+ if (M->Audio) M->Audio->Silence(false);
+ if (M->Score) M->Score->Stop();
+ // Nothing of the night goes on under the cards: Freeform's session and the story's director stop here (ToTitle stops them again).
+ if (M->Freeform) M->Freeform->Stop();
+ if (M->StoryDirector) M->StoryDirector->Stop();
+ if (StoryEnding.IsValid()) StoryEnding->Dispose();
+ StoryEnding = SNew(SS47Ending).BoughtSfx(M->Audio && M->Audio->BoughtSfx()).LargeText(M->UI && M->UI->bLargeText);
+ if (GEngine && GEngine->GameViewport) GEngine->GameViewport->AddViewportWidgetContent(StoryEnding.ToSharedRef(), 90);
+ if (PC)
+ {
+  FInputModeUIOnly Mode;
+  Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+  Mode.SetWidgetToFocus(StoryEnding);
+  PC->SetInputMode(Mode);
+  PC->bShowMouseCursor = true;
+ }
+ StoryEnding->Black(true, 1400);
+ if (M->Audio)
+ {
+  FS47Sound O; O.DestNode = M->Audio->Music; O.Gain = 0.9f;
+  M->Audio->LoopSfx(TEXT("music"), TEXT("titleMusic"), O);
+ }
+ UE_LOG(LogS47Flow, Display, TEXT("S47: story night ending title"));
+ TWeakObjectPtr<US47Flow> Self = this;
+ TWeakPtr<SS47Ending> WeakEnd = StoryEnding;
+ // The cards' own timers (SS47Ending), in the order Finale has them.
+ StoryEnding->Title([Self, WeakEnd]
+ {
+  const TSharedPtr<SS47Ending> Ending = WeakEnd.Pin();
+  if (!Self.IsValid() || !Self->M || Self->M->Mode != EMode::End || !Ending.IsValid() || Ending->Disposed()) return;
+  UE_LOG(LogS47Flow, Display, TEXT("S47: story night ending credits"));
+  Ending->Credits([Self, WeakEnd]
+  {
+   const TSharedPtr<SS47Ending> CreditsEnd = WeakEnd.Pin();
+   if (!Self.IsValid() || !Self->M || Self->M->Mode != EMode::End || !CreditsEnd.IsValid() || CreditsEnd->Disposed()) return;
+   Self->StopMusic(2.5f);
+   UE_LOG(LogS47Flow, Display, TEXT("S47: story night ending photograph"));
+   // The old Story's last image (US47Chapter6::Photo draws it from the art alone; its default object is enough).
+   CreditsEnd->Photo(GetDefault<US47Chapter6>()->Photo(), [Self]
+   {
+    if (Self.IsValid() && Self->M && Self->M->Audio)
+    {
+     FS47Sound O; O.Gain = 0.9f; Self->M->Audio->Sfx(TEXT("paper0"), O);
+    }
+   }, [Self, WeakEnd]
+   {
+    const TSharedPtr<SS47Ending> PhotoEnd = WeakEnd.Pin();
+    if (!Self.IsValid() || !Self->M || Self->M->Mode != EMode::End || !PhotoEnd.IsValid() || PhotoEnd->Disposed()) return;
+    Self->CompleteStoryNight();
+    Self->ToTitle();
+   });
+  });
+ });
 }
 
 // ---------- pause and the settings ----------

@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "id": "morning_ward",
+  "name": "Story: what you can send, Ward on the OPS phone (SC12)",
+  "notes": "STORY steg 6, the morning act. Started by morning_telex when the search is over and the player was not taken. The old SC12 'What you can send' (S47Chapter5, Ward on the Mesa Diner payphone: Reyes reads the three sources and the first limit, Ward reads them back, the document sc12_warning) on Freeform's OPS phone at SARO (the old SC11 contract: Ward calls on the ordinary phone; Dale's line is silent). Ward has no recorded voice: her lines are text, as the phone in night_room6. Left out: the drive to the diner and its payphone, the deputy at the counter with his patrol sheet and the wall map P13 (the old chapter's own people and table; new characters would be a new mechanic), and the reply as a choice (the pack has no Ward scene).",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 0,
+      "do": "clock",
+      "at_least": "05:12"
+    },
+    {
+      "at": 0,
+      "do": "flag",
+      "flag": "ward_rang",
+      "wait": [
+        "in_saro"
+      ],
+      "max": 90
+    },
+    {
+      "at": 0,
+      "do": "toast",
+      "text": "The OPS phone rings once and you have it before the second. Dr. Ward, from her own office: I read the telex. All of it.",
+      "secs": 8
+    },
+    {
+      "at": 8,
+      "do": "toast",
+      "text": "You read her the three sources off the sheets: H-1, S-11, and ours, SARO-3. First limit for all three: 05:29:47.",
+      "secs": 8
+    },
+    {
+      "at": 16,
+      "do": "toast",
+      "text": "Ward: H-1, S-11, SARO-3. 05:29:47. I have it written down, with the time.",
+      "secs": 7
+    },
+    {
+      "at": 23,
+      "do": "toast",
+      "text": "Ward: Get the originals to the courier. Don't wait for me. She hangs up.",
+      "secs": 7
+    },
+    {
+      "at": 24,
+      "do": "evidence",
+      "key": "story_sc12_warning",
+      "text": "Read to Dr. Ward on the OPS phone: H-1 (Hondo), S-11 (Site 11), SARO-3 (ours). First limit for all three: 05:29:47. Read back correctly. She has the time of the call."
+    },
+    {
+      "at": 30,
+      "do": "start",
+      "script": "morning_road"
+    }
+  ]
+}

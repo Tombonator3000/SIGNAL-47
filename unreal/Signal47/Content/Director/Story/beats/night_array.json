@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "id": "night_array",
+  "name": "Story: they point at you, 04:00 (SC08)",
+  "notes": "STORY steg 6, the night act. Started by night_residual. The old SC08 'They point at you' (S47SC08: the stakes, the dishes following the player, the pale body in the field and the array gate) on Freeform's array_presence (a figure comes to the service cabinet among the dishes; it can cause a fault there), started for the story once the player is out at the array (or after the wait's most). The full tier holds: the clock is at 04:00 at least. The story waits for its end (ended_array_presence). Left out: Earl's reel in the lobby and the service sheet's stake test with the dishes following (Freeform has neither the stakes nor a follow the story can ask for; new mechanics), and the dishes going home to 026.",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 60,
+      "do": "clock",
+      "at_least": "04:00"
+    },
+    {
+      "at": 61,
+      "do": "toast",
+      "text": "04:00. The command log has nothing since midnight, and the dishes are not on their track. Something is in the field.",
+      "secs": 6
+    },
+    {
+      "at": 62,
+      "do": "objective",
+      "text": "Go out to the service cabinet among the dishes."
+    },
+    {
+      "at": 63,
+      "do": "flag",
+      "flag": "at_array",
+      "wait": [
+        {
+          "if": "near",
+          "place": "array",
+          "m": 35
+        },
+        "on_foot",
+        "outdoors"
+      ],
+      "max": 600
+    },
+    {
+      "at": 64,
+      "do": "flag",
+      "flag": "ended_array_presence",
+      "set": false
+    },
+    {
+      "at": 64,
+      "do": "silence",
+      "secs": 5
+    },
+    {
+      "at": 65,
+      "do": "start",
+      "event": "array_presence"
+    },
+    {
+      "at": 66,
+      "do": "flag",
+      "flag": "array_met",
+      "wait": [
+        {
+          "if": "story_flag",
+          "flag": "ended_array_presence"
+        }
+      ],
+      "max": 600
+    },
+    {
+      "at": 67,
+      "do": "objective",
+      "text": ""
+    },
+    {
+      "at": 67,
+      "do": "toast",
+      "text": "Behind the fence the dishes hold where you were, one breath, then go home, one drive after another. The command log has nothing.",
+      "secs": 7
+    },
+    {
+      "at": 68,
+      "do": "start",
+      "script": "night_room6"
+    }
+  ]
+}

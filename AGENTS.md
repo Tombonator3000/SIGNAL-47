@@ -55,3 +55,13 @@ Bestemt av Tom 12. november 2026. Gjelder alle nye og reviderte plansjer og bygg
 - Rolige rom og avgrensede blindveier kan brukes bevisst. Ikke legg obligatoriske spor i en felle uten en kjent løsning. Bygget skal støtte mulig jakt; dette pålegger ikke en jakt i alle bygg.
 
 Eksempel: [Caliche-skolen V2](Docs/Design/World/CalicheSchool_V2/BYGGESPESIFIKASJON_V2.md). Se også [designbibelen](Docs/DesignBible-2026-10-27/DESIGNBIBEL.md).
+
+## Fast regel: viktige gjenstander lages etter referansepakke (Tom 12. november 2026)
+
+Gjelder viktige gjenstander spilleren går tett på (telefonkiosk, pumper, SARO-konsoller, lekeplass, sentrale rekvisitter). Bygg følger i tillegg byggeregelen over.
+
+1. **Referansepakke først**, laget av ChatGPT: heltebilde, ortografisk firevinkelsark og et ark med trykte etiketter og skilt. Bare oppdiktede merker; aldri ekte merker, og aldri Cosmos-modeller eller -bilder som referanse.
+2. **Én gjenstand om gangen**, modellert av Fable etter arket: ekte avfasninger, kurver, bulker og slitasje i formen; trekantbudsjett etter bruk (omtrent 5 000–20 000 for en heltegjenstand).
+3. **Bakte PBR-kart** fra en detaljert modell: farge, normal og ruhet/metall/AO i 4K (2K for små ting); slitasje fra krumning og AO; etiketter som egen tekstur.
+4. **Kritikk i spillet:** bilder fra spillet side om side med referansen, høyst fire runder, og bilder til Tom underveis.
+5. **Tid:** sett av timer per gjenstand, ikke minutter, og bland ikke gjenstander inn i en byggerunde.

@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "id": "night_room6",
+  "name": "Story: room 6 at the Sierra Motor Court, 04:50 (SC10)",
+  "notes": "STORY steg 6, the night act. Started by night_array. The old SC10 'Room 6' (S47Chapter4: N. Vega in room 6, her last lines, SARO as the next goal; her call of SC09) on Freeform's motel and its room6_tv (the door of room 6 open a crack, the television inside on snow), started for the story once the player is at the motel (or after the wait's most). Freeform has no room 6 to walk into and nobody in it, so her lines come through the door, over the snow. The objective she leaves is the old SC10's: back to SARO, where the morning act (SC11) takes over. Left out: walking into room 6, the papers on its table, the walkie and Nora herself (the room is the old chapter engine's own area; bringing it into Freeform would be a new mechanic).",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 90,
+      "do": "clock",
+      "at_least": "04:50"
+    },
+    {
+      "at": 91,
+      "do": "toast",
+      "text": "The phone, once more. A woman's voice this time: This line still rings in the motel office. Room 6, Sierra Motor Court. Bring what the night gave you.",
+      "secs": 8
+    },
+    {
+      "at": 92,
+      "do": "objective",
+      "text": "Room 6 at the Sierra Motor Court, beside SARO."
+    },
+    {
+      "at": 93,
+      "do": "flag",
+      "flag": "at_motel",
+      "wait": [
+        {
+          "if": "near",
+          "place": "motel",
+          "m": 60
+        },
+        "on_foot"
+      ],
+      "max": 900
+    },
+    {
+      "at": 94,
+      "do": "start",
+      "script": "night_room6_door"
+    }
+  ]
+}

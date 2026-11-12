@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "id": "night_deputy",
+  "name": "Story: the help that came, 02:15 to 02:45 (SC03)",
+  "notes": "STORY steg 6, the night act. Started by night_hunt when the hunt is over. The old SC03 'The help that came' (SC03_DISPATCH_RECEIPT, SC03_RECEIVER_QUESTION; S47HorrorSC03) on Freeform's own county patrol (FS47DeputyRound): county dispatch takes the report, the county car is sent tonight (the start beat's happening deputy_round, FS47DeputyRound::ForStory) and goes by on the highway past SARO, slow, roof lights off, and does not stop, as Freeform's patrol always does. When it has gone (ended_deputy_round) dispatch asks for the receiver's log, SC03's question. Left out: the relief technician at the fuel stop, her wagon and her taking in a light, and a deputy who stops and talks (Freeform has no such person or meeting; a new character would be a new mechanic). The clock is held to 02:15 at least, as the old SC03 began.",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 1,
+      "do": "toast",
+      "text": "The search has moved away from the door. Whatever it was, it is not in the yard now.",
+      "secs": 5
+    },
+    {
+      "at": 2,
+      "do": "thought",
+      "text": "Call it in. Somebody in Caliche has a working phone and a car.",
+      "secs": 4
+    },
+    {
+      "at": 8,
+      "do": "clock",
+      "at_least": "02:15"
+    },
+    {
+      "at": 9,
+      "do": "toast",
+      "text": "COUNTY DISPATCH: SARO, we have your report. A tall pale person at the service front, moving while you watched. The night car will come by on the highway. Stay where you are.",
+      "secs": 8
+    },
+    {
+      "at": 10,
+      "do": "objective",
+      "text": "Watch the highway past SARO for the county car."
+    },
+    {
+      "at": 11,
+      "do": "flag",
+      "flag": "ended_deputy_round",
+      "set": false
+    },
+    {
+      "at": 12,
+      "do": "start",
+      "happening": "deputy_round",
+      "wait": [
+        {
+          "if": "area",
+          "is": "saro"
+        }
+      ],
+      "max": 600
+    },
+    {
+      "at": 13,
+      "do": "flag",
+      "flag": "deputy_passed",
+      "wait": [
+        {
+          "if": "story_flag",
+          "flag": "ended_deputy_round"
+        }
+      ],
+      "max": 420
+    },
+    {
+      "at": 14,
+      "do": "objective",
+      "text": ""
+    },
+    {
+      "at": 14,
+      "do": "thought",
+      "text": "It did not stop.",
+      "secs": 3
+    },
+    {
+      "at": 15,
+      "do": "toast",
+      "text": "COUNTY DISPATCH: The deputy has your report. Was the receiver on when it came? Then he wants its log and tonight's strip chart. Keep them at OPS until daylight.",
+      "secs": 8
+    },
+    {
+      "at": 16,
+      "do": "evidence",
+      "key": "story_sc03_report",
+      "text": "02:15. Reported the pale figure at the service front to county dispatch. The county car went by on the highway past SARO, slow, roof lights off, and did not stop. The deputy wants the receiver's log and tonight's strip chart."
+    },
+    {
+      "at": 17,
+      "do": "start",
+      "script": "night_residual"
+    }
+  ]
+}

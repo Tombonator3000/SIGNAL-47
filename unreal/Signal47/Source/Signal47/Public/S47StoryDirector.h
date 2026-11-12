@@ -80,9 +80,37 @@ public:
  // Seconds to push Clock forward to the night's hour AtLeast (8 to 32): 0 when tonight has passed it. Never back, never past the
  // night's end at 08:00.
  static double ClockPushFor(double Clock,double AtLeast);
+ // Step 6, the night act: the story flag a Freeform event's end sets, "ended_<id>", when Was was under way and Now is something else
+ // (none, or another). Empty when nothing ended, or the id would not be a flag's. The director asks it each tick of the Director's
+ // event, the happening on the ground and the county car (Ids: theirs, and DeputyRoundId); story scripts wait on the flags.
+ static FString EndedFlagOf(const FString& Was,const FString& Now);
+ // The start beat's happening that sends Freeform's county car tonight (FS47DeputyRound::ForStory), and its ended_ flag's id.
+ static constexpr const TCHAR* DeputyRoundId=TEXT("deputy_round");
+ // Step 6, the night act (SC05, Tom 12 Nov: the star hole is Story's and stays): the story flag that opens the old Story's patch with
+ // no stars where the dishes point (S47StarHole.h, the sky's own STAR_HOLE and its fade, FS47Sky::HoleFrom). Set by a flag beat; the
+ // first time, the hole is given its start (HoleFromAt the clock then), saved as holeFrom. Nothing else of the sky is touched: no
+ // meteor passage, no grade. Story nights only: StarHoleFrom is unset without a Story night's director, so never in Freeform.
+ static constexpr const TCHAR* StarHoleFlag=TEXT("star_hole");
+ // The sky's HoleFrom (seconds after midnight) for a hole opened at Clock: the dishes' moment and STAR_HOLE.After.
+ static double HoleFromAt(double Clock);
+ // US47WorldLife: the hole's start on a Story night once opened; unset otherwise.
+ static TOptional<double> StarHoleFrom(const US47Main* Main);
+ // STORY steg 6, the morning act (SC11, Tom: weave existing systems): the start beat's happening that brings Freeform's visit at SARO
+ // tonight (FS47Attention::StartForStory: the mains sag, then inside with power it holds and goes, inside in the dark or in the yard the
+ // light comes as being taken does). The director tells its end as ended_attention_visit (and at once when it could not begin, so the
+ // story goes on), and sets TakenFlag once the player has been taken this Story night (FS47FreeformSession::TimesTaken rose).
+ static constexpr const TCHAR* AttentionVisitId=TEXT("attention_visit");
+ static constexpr const TCHAR* TakenFlag=TEXT("taken");
+ // STORY steg 6 (SC13): the end beat. It is due at once; the end comes when EndMay holds (no panel, nobody being taken), then the flag
+ // EndFlag is set and US47Flow::StoryNightEnd plays the end cards, marks the Story completed and goes back to the title. Saved as
+ // "ending" while it is due (a save in between ends the night on Continue).
+ static constexpr const TCHAR* EndFlag=TEXT("story_end");
+ static bool EndMay(bool bModal,bool bTaking){return !bModal&&!bTaking;}
+ bool IsEndDue() const{return bEndDue;}
+ bool HasEnded() const{return bEnded;}
  // The longest a clock beat waits for a closed panel and the player out of the truck, in real seconds; then it is left out.
  static constexpr double ClockWaitMost=5;
- // A story-only beat (flag, start, clock, objective), with its text filled in; called by the runner. What it did, for the log.
+ // A story-only beat (flag, start, clock, objective, scene, telex, end), with its text filled in; called by the runner. What it did, for the log.
  FString Apply(const FS47Beat& B,const FString& Text);
  // Starts a story script on the next tick. False with why: not in the store, or already running or waiting.
  bool StartScript(const FString& Id,FString& Why);
@@ -93,6 +121,15 @@ public:
  int32 RunningCount() const;
  // F10's group "Story (director)", shown on a Story night only (FS47DevEvents::AddStory).
  void AddDevLines();
+
+ // STORY-DRIVE-20261112 (Tom 12 Nov: Story still begins in the car on the way to SARO): where a new Story night begins. In the truck
+ // on the highway at the south end of Caliche, heading north for SARO: the old Story's drive start (US47World::BeginCommute: the road
+ // leg, x 8001.8, z TOWN.Z1+35, heading 0), driven on Freeform's own trip and truck. The evening act's evening_drive takes it from there.
+ struct FDrive{FString Leg,To;FVector At=FVector::ZeroVector;double Heading=0;};
+ static FDrive DriveStart();
+ // US47Flow::StartGame on a new Story night (not a Continue): starts that trip (US47World::StartTrip). False when it does not: the
+ // world is busy or driving already, or -S47StoryAtSaro (the night then starts at SARO, as before).
+ static bool BeginDrive(US47Main* Main);
 
  // Reads acts.json and takes the saved act and flags (Saved may be null: a new night at the first act).
  void Begin(const S47J::FObj& Saved);
@@ -136,6 +173,11 @@ private:
  FString ObjectiveLine;
  double ClockAt=-1,ClockWaited=0;
  bool bHeld=false;            // FS47ScriptPlayer::Hold("story") is on
+ FString LastEvent,LastGround,LastPatrol; // step 6: what was under way at the last tick (EndedFlagOf); not saved
+ double HoleFrom=-1;          // step 6: the star hole's start (HoleFromAt), below zero: not opened; saved as holeFrom
+ FString LastVisit;           // step 6, the morning act: the Attention visit under way at the last tick (not saved)
+ int32 LastTaken=-1;          // the session's TimesTaken at the last tick; below zero: not read yet (not saved)
+ bool bEndDue=false,bEnded=false; // the end beat has come / the end has been played
  void QueueAct(int32 Index);
  void StartPending();
  void StepClock(double Dt);

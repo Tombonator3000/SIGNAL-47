@@ -1786,7 +1786,7 @@ namespace
      if(!D||S47J::Int(D,TEXT("v"))!=1||S47J::Str(State,TEXT("sessionMode"))!=TEXT("freeform")||!S47J::Obj(State,TEXT("freeform"))) return Fail(TEXT("a Story session saves as Freeform with storyDirector v1"));
      if(!S47FarmWorld::Enabled(M)) return Fail(TEXT("Story must have Freeform's world: relief, mountains, farm, road edges and nature"));
      // Step 2: one night, from the evening shift at SARO, with nothing to teach and no mailbox start.
-     if(FMath::Abs(FMath::Fmod(M->Freeform->Clock(),86400.)-18*3600)>1800||M->Freeform->InTutorial()||M->Freeform->bMailboxStart) return Fail(TEXT("a Story night starts at 18:00 at SARO without the tutorial or the mailbox start"));}
+     if(FMath::Abs(FMath::Fmod(M->Freeform->Clock(),86400.)-(17*3600+20*60))>1800||M->Freeform->InTutorial()||M->Freeform->bMailboxStart) return Fail(TEXT("a Story night starts at 18:00 at SARO without the tutorial or the mailbox start"));}
     else if(FMath::Fmod(M->Freeform->Clock(),86400.)>12*3600) return Fail(TEXT("NEW FREEFORM must still start in the morning"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));

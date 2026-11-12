@@ -93,3 +93,7 @@ Lagt til 6. november 2026 etter Toms tips om Mirages arbeidsflyt for 3D-scener. 
 3. Etter hver render sammenligner to uavhengige kritikeragenter renderen med referansen og leverer en rangert retteliste. De får bildene og referansen, ikke byggerens konklusjon.
 4. Byggeren retter listen. Stopp når kritikerne bare finner småting, eller etter et fast antall runder.
 5. Spillet stiller flere krav enn en filmscene: ekte kollisjon, dører og vinduer, LOD og spillbar skala. 2D-kort og forhåndsrendret bakgrunn teller ikke som ferdig bygg, bortsett fra ved vinduer eller horisont.
+
+## Viktige gjenstander (Tom 12. november 2026)
+
+Viktige gjenstander følger den faste regelen i [AGENTS.md](../../../AGENTS.md#fast-regel-viktige-gjenstander-lages-etter-referansepakke-tom-12-november-2026): referansepakke fra ChatGPT (helte-, firevinkels- og etikettark), én gjenstand om gangen modellert av Fable med ekte geometri, bakte 4K-kart og kritikk i spillet mot referansen.

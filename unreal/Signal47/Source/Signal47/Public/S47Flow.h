@@ -92,6 +92,9 @@ public:
 	void LeavePlay();
 	void ToTitle();
 	void Finale();                             // main.ts finale: the title, credits and 1947 photograph
+	/** STORY steg 6 (SC13): the end of a Story night (FS47StoryDirector's end beat). Black, then the old Story's end cards (SS47Ending: the
+	 *  title, the credits, the 1947 photograph), the Story marked completed for the title, and back to it. A Story night in play only. */
+	void StoryNightEnd();
 	void OpenPause();
 	FS47PauseOpts Settings();
 	/** main.ts stopNarration(except): readAloud, the narrator, Earl and the character voices stop, all but Except. */
@@ -157,6 +160,8 @@ private:
  float TitleEraseResume=0;
  void RememberTitleErasure();
  bool CompleteStoryTitle();
+ bool CompleteStoryNight(); // STORY steg 6: the new Story's completion (a Story night's end, not a developer's run)
+ TSharedPtr<class SS47Ending> StoryEnding; // STORY steg 6: the end cards of a Story night (StoryNightEnd)
  void StoryTitleTest(double Dt);
  int32 StoryTitleTestStage=0;
  double StoryTitleTestT=0;

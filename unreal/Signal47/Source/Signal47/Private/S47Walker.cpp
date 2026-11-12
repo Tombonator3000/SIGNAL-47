@@ -190,6 +190,7 @@ void AS47Walker::Resolve(bool bX, double Old)
 		if (bTruck && C.Id == TEXT("truck")) continue;
 		if (bPersonal && C.Id == TEXT("personalCar")) continue;
 		if (!C.bEnabled) continue; // (S47Props unblock: a building walked into now)
+		if (FloorY < C.MinY || FloorY > C.MaxY) continue; // (SCHOOL-V2: a wall of another floor of the building)
 		const double CrossMin=(bX?C.MinZ:C.MinX)-R, CrossMax=(bX?C.MaxZ:C.MaxX)+R;
 		if (Other<=CrossMin+E||Other>=CrossMax-E) continue;
 		const double Low=(bX?C.MinX:C.MinZ)-R, High=(bX?C.MaxX:C.MaxZ)+R;

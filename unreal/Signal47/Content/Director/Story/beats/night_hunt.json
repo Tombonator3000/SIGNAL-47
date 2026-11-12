@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "id": "night_hunt",
+  "name": "Story: two o'clock, something at the service front (SC02)",
+  "notes": "STORY steg 6, the night act (Content/Director/Story/acts.json, from 00:00). The old SC02 'Back to the truck' (Narrative/HorrorStory SC02_RETURN_WARNING, SC02_ESCAPE; S47Horror) on Freeform's own systems: the evening's power fault is let finish first, then one distant glimpse while the glimpse tier holds (horizon_figure, a night happening started for the story), then at 02:00, when the full tier begins, Freeform's service_presence (the Director's hunt in the SARO yard: a scrape at the service door, then it hunts; indoors with the door shut, or under the control-room desk or the archive table, FS47Hide). The story waits for its end (ended_service_presence, set by the director when Freeform's event is over) and goes on to night_deputy. The old route round the shed and the truck as the way out are Freeform's yard and door instead. Each wait is left out after its most, so the night goes on.",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 1,
+      "do": "flag",
+      "flag": "night_begun",
+      "wait": [
+        {
+          "if": "no_story_flag",
+          "flag": "power_fault"
+        }
+      ],
+      "max": 600
+    },
+    {
+      "at": 2,
+      "do": "objective",
+      "text": "After midnight. The receiver runs on passive until morning. Keep to the station."
+    },
+    {
+      "at": 20,
+      "do": "flag",
+      "flag": "glimpse_out",
+      "wait": [
+        "outdoors",
+        "on_foot"
+      ],
+      "max": 240
+    },
+    {
+      "at": 20,
+      "do": "start",
+      "happening": "horizon_figure",
+      "force": true,
+      "if": [
+        {
+          "if": "story_flag",
+          "flag": "glimpse_out"
+        }
+      ]
+    },
+    {
+      "at": 360,
+      "do": "clock",
+      "at_least": "02:00"
+    },
+    {
+      "at": 361,
+      "do": "flag",
+      "flag": "hunt_at_saro",
+      "wait": [
+        {
+          "if": "area",
+          "is": "saro"
+        },
+        "on_foot"
+      ],
+      "max": 900
+    },
+    {
+      "at": 362,
+      "do": "flag",
+      "flag": "ended_service_presence",
+      "set": false
+    },
+    {
+      "at": 362,
+      "do": "silence",
+      "secs": 6
+    },
+    {
+      "at": 364,
+      "do": "thought",
+      "text": "Two o'clock. Something pale between the service front and the truck. It turns towards a new sound.",
+      "secs": 5
+    },
+    {
+      "at": 366,
+      "do": "objective",
+      "text": "Get indoors and shut the door, or get under the control-room desk. The high-voltage yard is not an exit."
+    },
+    {
+      "at": 367,
+      "do": "start",
+      "event": "service_presence"
+    },
+    {
+      "at": 368,
+      "do": "flag",
+      "flag": "hunt_over",
+      "wait": [
+        {
+          "if": "story_flag",
+          "flag": "ended_service_presence"
+        }
+      ],
+      "max": 600
+    },
+    {
+      "at": 369,
+      "do": "objective",
+      "text": ""
+    },
+    {
+      "at": 369,
+      "do": "thought",
+      "text": "Out from under the desk. The floor still hums with the array.",
+      "secs": 4,
+      "if": [
+        {
+          "if": "story_flag",
+          "flag": "hid"
+        }
+      ]
+    },
+    {
+      "at": 370,
+      "do": "start",
+      "script": "night_deputy"
+    }
+  ]
+}

@@ -55,7 +55,8 @@ namespace S47TownSites
 		// SCHOOL-V2 stage 3: what the walker meets inside the model, in the site's metres (x east, z south, before the site is turned;
 		// only sites standing square use them). Walls: thin rectangles with the doors as gaps; they take the stand-in boxes' place in the
 		// walker's list while the model stands, and the model's own footprint (ModelFoot) the boxes' place for the truck and the plants.
-		struct FWall { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; };
+		// Lo, Hi: the heights of the walker's feet over the ground floor the wall holds at (a basement wall, a rail on the floor above).
+		struct FWall { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0, Lo = -1e9, Hi = 1e9; };
 		TArray<FWall> Walls;
 		FWall ModelFoot;
 		TArray<FWall> Yards; // more ground kept clear of plants and of the truck (the playground), beside ModelFoot
@@ -71,9 +72,14 @@ namespace S47TownSites
 		// floor), with banks sloping down to the land on the sides where it falls away (the east), so nothing floats and no tall
 		// foundation shows. Site metres; a pad when PadX1 > PadX0. The walker gets the pad and its banks as floors.
 		double PadX0 = 0, PadX1 = 0, PadZ0 = 0, PadZ1 = 0, PadBank = 5; uint32 PadColour = 0xb7a98c;
+		// The pad's top as drawn, in pieces (a ring that leaves the model's own apron, light wells and areaway open); empty: the whole rectangle.
+		TArray<FWall> PadTops;
 	};
 	// SCHOOL-V2 stage 3: the sites whose real model stands (set by Build; the walls, floors and footprint above count only then).
 	const TSet<FString>& ModelsUp();
+	// A box of the truck's list (world terms) that is a standing model's own ground or yard: the truck keeps off it, one on foot walks it
+	// (US47World::OnLand; d60: the school's pad stopped the walker all round as an invisible wall).
+	bool WalkOver(double MinX, double MaxX, double MinZ, double MaxZ);
 	// Every site, built once from Spots and the shapes below; fixed after that.
 	const TArray<FSite>& Sites();
 	const FSite* Find(const FString& Id);
@@ -115,7 +121,7 @@ private:
 	TWeakObjectPtr<AS47Web> Scene;
 	// bModel: the site's real model; bByModel: a stand-in hidden for good while the model stands.
 	// PadSide: the pad's top (-1) or one of its banks (0 east, 1 west, 2 south, 3 north); -2: not the pad.
-	struct FBuiltPart { FString Site; int32 Part = -1; bool bWords = false; int32 Words = -1; bool bModel = false, bByModel = false; int32 PadSide = -2; TWeakObjectPtr<USceneComponent> Comp; };
+	struct FBuiltPart { FString Site; int32 Part = -1; bool bWords = false; int32 Words = -1; bool bModel = false, bByModel = false; int32 PadSide = -2, PadPiece = 0; TWeakObjectPtr<USceneComponent> Comp; };
 	TArray<FBuiltPart> Parts;
 	TSet<FString> SeatedSites;
 	TArray<FS47Obstacle> Obstacles; // as added to the road's drive area, world terms
@@ -133,6 +139,10 @@ private:
 	struct FLamp { FString Site; TWeakObjectPtr<UPointLightComponent> L; double From = 19, To = 24; float Lumens = 0, Day = 0; };
 	TArray<FLamp> Lamps;
 	TMap<FString, double> ModelFloorY; // SCHOOL-V2 stage 3: a seated model's ground floor, world Y (its lights and floors stand on it)
+	// -S47SchoolWalkTest: the walker goes through the school by itself (in at E1, the rooms, S1 down and up, out E2, in by S2 and E4, out E3 and E1).
+	TSharedPtr<struct FS47SchoolWalk> SchoolWalk;
+	void StepSchoolWalk(double Dt);
+	void WallLevels(const S47TownSites::FSite& S);
 	void BuildLamps();
 	void StepLamps();
 	bool Build();

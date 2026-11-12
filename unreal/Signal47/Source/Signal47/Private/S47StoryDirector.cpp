@@ -10,6 +10,14 @@
 #include "S47ScriptPlayer.h"
 #include "S47UI.h"
 #include "S47World.h"
+#include "S47RoadShape.h"
+#include "S47DeputyRound.h"
+#include "S47Hide.h"
+#include "S47Attention.h"
+#include "S47Taken.h"
+#include "S47SkyEventSpec.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -164,7 +172,7 @@ void FS47StoryDirector::BeginWith(const FString& ActsText,const S47J::FObj& Save
 
 bool FS47StoryDirector::Load(const S47J::FObj& Saved)
 {
- ActIndex=0;Flags.Reset();ObjectiveLine.Reset();Pending.Reset();
+ ActIndex=0;Flags.Reset();ObjectiveLine.Reset();Pending.Reset();HoleFrom=-1;bEndDue=false;bEnded=false;
  if(!Saved.IsValid()||S47J::Int(Saved,TEXT("v"),0)!=1)return false; // no save, or one this version cannot read: the first act
  bool bAt=false;
  const FString At=S47J::Str(Saved,TEXT("act"));
@@ -187,6 +195,13 @@ bool FS47StoryDirector::Load(const S47J::FObj& Saved)
   if(S47Script::CleanId(Id)!=Id||Id.IsEmpty()||!FMath::IsFinite(T)||T<0||Played<0)continue;
   if(!Pending.ContainsByPredicate([&Id](const FPending& P){return P.Id==Id;}))Pending.Add(FPending{Id,T,Played});
  }
+ // Step 6 (absent in older saves: none): the star hole's start, once it has opened.
+ {
+  const double Hole=S47J::Num(Saved,TEXT("holeFrom"),-1);
+  if(FMath::IsFinite(Hole)&&Hole>=0&&Hole<86400.+STAR_HOLE.After)HoleFrom=Hole;
+ }
+ // Step 6, the morning act (absent in older saves: not due): the end beat had come and the end was not played yet.
+ bEndDue=S47J::Bool(Saved,TEXT("ending"),false)&&!Flags.Contains(EndFlag);
  // Step 5 (absent in older saves: no scene): the scene under way, taken up again.
  const S47J::FObj* SceneSaved=nullptr;
  if(Scene&&Saved->TryGetObjectField(TEXT("scene"),SceneSaved)&&SceneSaved)Scene->Load(*SceneSaved);
@@ -205,6 +220,8 @@ void FS47StoryDirector::Stop()
  ObjectiveLine.Reset();
  ClockAt=-1;ClockWaited=0;
  if(Scene)Scene->Stop();
+ LastEvent.Reset();LastGround.Reset();LastPatrol.Reset();HoleFrom=-1;
+ LastVisit.Reset();LastTaken=-1;bEndDue=false;bEnded=false; // step 6, the morning act
  SetHold(false);
 }
 
@@ -250,9 +267,45 @@ void FS47StoryDirector::Tick(double Dt)
   if(!bFault&&HasFlag(TEXT("power_fault"))){ClearFlag(TEXT("power_fault"));SetFlag(TEXT("power_restored"));}
   if(Scene)Scene->SetContext({{TEXT("ctx_power_available"),!bFault},{TEXT("ctx_trafo_service_ok"),HasFlag(TEXT("power_restored"))},{TEXT("ctx_room_quiet"),!M->ModalOpen()}});
  }
+ // Step 6, the night act: Freeform's own events told to the story as they end (EndedFlagOf): a Director event or a night happening on
+ // the ground that is over sets ended_<id>, the county car gone by sets ended_deputy_round; hid once the player has hidden (FS47Hide).
+ if(M&&M->Freeform)
+ {
+  const FS47FreeformSession& Ff=*M->Freeform;
+  const FString EventNow=Ff.Director?Ff.Director->ActiveEvent():FString();
+  const FString GroundNow=Ff.Happenings?Ff.Happenings->Ground():FString();
+  const FString PatrolNow=Ff.Deputy&&Ff.Deputy->Driving()?FString(DeputyRoundId):FString();
+  for(const FString& Ended:{EndedFlagOf(LastEvent,EventNow),EndedFlagOf(LastGround,GroundNow),EndedFlagOf(LastPatrol,PatrolNow)})
+  {
+   if(!Ended.IsEmpty()&&SetFlag(Ended)){UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story flag %s"),*Ended);}
+  }
+  LastEvent=EventNow;LastGround=GroundNow;LastPatrol=PatrolNow;
+  if(Ff.Hide&&Ff.Hide->Hidden()&&!HasFlag(TEXT("hid")))SetFlag(TEXT("hid"));
+  // The morning act (SC11): Freeform's visit at SARO told as it ends (ended_attention_visit), and the player taken this Story night.
+  const FString VisitNow=Ff.Attention&&Ff.Attention->Visiting()?FString(AttentionVisitId):FString();
+  const FString VisitEnded=EndedFlagOf(LastVisit,VisitNow);
+  if(!VisitEnded.IsEmpty()&&SetFlag(VisitEnded)){UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story flag %s"),*VisitEnded);}
+  LastVisit=VisitNow;
+  const int32 TakenNow=Ff.TimesTaken();
+  if(LastTaken>=0&&TakenNow>LastTaken&&!HasFlag(TakenFlag)){SetFlag(TakenFlag);UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story flag %s"),TakenFlag);}
+  LastTaken=TakenNow;
+ }
  if(Scene)Scene->Tick(Dt);
  StepClock(Dt);
  SetHold(M!=nullptr&&Busy());
+ // Step 6 (SC13): the end beat has come. Not under a panel or while the player is being taken; then the end, once. The director is
+ // stopped by the end itself (US47Flow::StoryNightEnd), so nothing of it runs after this.
+ if(bEndDue&&!bEnded&&M&&M->Flow)
+ {
+  const bool bTaking=M->Freeform&&M->Freeform->Taken&&M->Freeform->Taken->Busy();
+  if(EndMay(M->ModalOpen(),bTaking))
+  {
+   bEnded=true;bEndDue=false;
+   SetFlag(EndFlag);
+   UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story: the end (%s)"),*StateText());
+   M->Flow->StoryNightEnd();
+  }
+ }
 }
 
 S47J::FObj FS47StoryDirector::Save() const
@@ -263,6 +316,8 @@ S47J::FObj FS47StoryDirector::Save() const
  S47J::Set(O,TEXT("flags"),FlagList());
  // Step 4: the objective, and the story scripts under way (and those about to start) with how far they had come.
  if(!ObjectiveLine.IsEmpty())S47J::Set(O,TEXT("objective"),ObjectiveLine);
+ if(HoleFrom>=0)S47J::Set(O,TEXT("holeFrom"),HoleFrom); // step 6: the star hole
+ if(bEndDue)S47J::Set(O,TEXT("ending"),true); // step 6, the morning act: the end beat has come
  TArray<TSharedPtr<FJsonValue>> Under;
  const auto Keep=[&Under](const FString& Id,double T,int32 Played)
  {
@@ -358,6 +413,25 @@ FString FS47StoryDirector::ObjectiveOf(const US47Main* Main)
  return D?D->ObjectiveLine:FString();
 }
 
+double FS47StoryDirector::HoleFromAt(double Clock)
+{
+ const double Sec=FMath::IsFinite(Clock)?FMath::Fmod(FMath::Fmod(Clock,86400.)+86400.,86400.):0.;
+ return Sec+STAR_HOLE.After;
+}
+
+TOptional<double> FS47StoryDirector::StarHoleFrom(const US47Main* Main)
+{
+ const FS47StoryDirector* D=Of(Main);
+ return D&&D->HoleFrom>=0?TOptional<double>(D->HoleFrom):TOptional<double>();
+}
+
+FString FS47StoryDirector::EndedFlagOf(const FString& Was,const FString& Now)
+{
+ if(Was.IsEmpty()||Was==Now)return FString();
+ const FString Flag=TEXT("ended_")+Was;
+ return ValidId(Flag)?Flag:FString();
+}
+
 double FS47StoryDirector::ClockPushFor(double Clock,double AtLeast)
 {
  if(!FMath::IsFinite(Clock)||!FMath::IsFinite(AtLeast)||AtLeast<8.||AtLeast>=32.)return 0;
@@ -367,7 +441,7 @@ double FS47StoryDirector::ClockPushFor(double Clock,double AtLeast)
 
 bool FS47StoryDirector::Busy() const
 {
- return Pending.Num()>0||ClockAt>=0||(Runner&&Runner->Live()>0)||(Scene&&Scene->Busy());
+ return Pending.Num()>0||ClockAt>=0||bEndDue||(Runner&&Runner->Live()>0)||(Scene&&Scene->Busy());
 }
 
 int32 FS47StoryDirector::RunningCount() const
@@ -392,8 +466,29 @@ FString FS47StoryDirector::Apply(const FS47Beat& B,const FString& Text)
    if(!Dir)return TEXT("event not started: ")+B.Event+TEXT(" (no Freeform director)");
    return Dir->StartForStory(B.Event,Why)?TEXT("event starts: ")+B.Event:TEXT("event not started: ")+B.Event+TEXT(" (")+Why+TEXT(")");
   }
+  if(B.Happening==DeputyRoundId)
+  { // step 6, the night act (SC03): Freeform's county patrol sent tonight (FS47DeputyRound), the story's only call of that name
+   FS47DeputyRound* Patrol=M&&M->Freeform?M->Freeform->Deputy.Get():nullptr;
+   if(!Patrol)return TEXT("county car not sent (no patrol here)");
+   return Patrol->ForStory(Why)?FString(TEXT("county car sent")):TEXT("county car not sent (")+Why+TEXT(")");
+  }
+  if(B.Happening==AttentionVisitId)
+  { // step 6, the morning act (SC11): Freeform's visit at SARO tonight. When it cannot begin its end is told at once, so the story goes on.
+   FS47Attention* Att=M&&M->Freeform?M->Freeform->Attention.Get():nullptr;
+   if(Att&&Att->StartForStory(Why))return TEXT("the visit at SARO begins");
+   if(!Att)Why=TEXT("no attention here");
+   SetFlag(TEXT("ended_")+FString(AttentionVisitId));
+   UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story: the visit at SARO did not begin: %s"),*Why);
+   return TEXT("the visit at SARO did not begin (")+Why+TEXT("); its end is told at once");
+  }
   FS47Happenings* Haps=M&&M->Freeform?M->Freeform->Happenings.Get():nullptr;
   if(!Haps)return TEXT("happening not asked for: ")+B.Happening+TEXT(" (no night happenings here)");
+  if(B.bForce) // step 6, the night act: started for the story, past its day and the rhythm's draw (a first night has neither)
+  {
+   if(Haps->StartForStory(B.Happening,Why))return TEXT("happening starts for the story: ")+B.Happening;
+   UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story: happening %s not started: %s"),*B.Happening,*Why);
+   return TEXT("happening not started: ")+B.Happening+TEXT(" (")+Why+TEXT(")");
+  }
   // Asked as the night asks (not forced): its tier, the rhythm, the tutorial and its gates may say no; the reason goes to the log.
   if(Haps->Request(B.Happening,Why))return TEXT("happening starts: ")+B.Happening;
   UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story: happening %s refused: %s"),*B.Happening,*Why);
@@ -413,9 +508,41 @@ FString FS47StoryDirector::Apply(const FS47Beat& B,const FString& Text)
  case ES47Beat::Objective:
   ObjectiveLine=Text.TrimStartAndEnd();
   return ObjectiveLine.IsEmpty()?FString(TEXT("objective cleared")):TEXT("objective: ")+ObjectiveLine;
+ case ES47Beat::Telex:
+ { // step 6, the morning act (SC11): a sheet on Freeform's own telex in the control room, printed and torn off there as any other
+  FS47FreeformSession* Ff=M?M->Freeform.Get():nullptr;
+  if(!Ff)return TEXT("telex left out: no Freeform session");
+  return Ff->QueueTelex(B.Key,B.Name,B.Kind,Text)?TEXT("telex: ")+B.Key+TEXT(" prints"):TEXT("telex left out: ")+B.Key+TEXT(" (on the machine already, or the machine is full)");
+ }
+ case ES47Beat::End:
+  // Step 6 (SC13): due now; Tick plays it once the player is out of a panel and not being taken.
+  if(bEnded||bEndDue)return TEXT("the end is under way already");
+  bEndDue=true;
+  return TEXT("the story ends");
  default:
   return TEXT("not a story beat");
  }
+}
+
+FS47StoryDirector::FDrive FS47StoryDirector::DriveStart()
+{
+ FDrive D;
+ D.Leg=TEXT("road");D.To=TEXT("saro");
+ D.At=FVector(8001.8,0,S47RoadShape::TOWN().Z1+35);D.Heading=0;
+ return D;
+}
+
+bool FS47StoryDirector::BeginDrive(US47Main* Main)
+{
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryAtSaro"))){UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story night starts at SARO (-S47StoryAtSaro)"));return false;}
+ if(!Main||!IsValid(Main->World)||Main->World->bBusy||Main->World->bDriving){UE_LOG(LogS47StoryDirector,Warning,TEXT("S47: story night: the drive to SARO could not start; the night starts at SARO"));return false;}
+ const FDrive D=DriveStart();
+ FS47TripOpts O;
+ O.Leg=D.Leg;O.AtPos=D.At;O.AtHeading=D.Heading;
+ O.Hint=TEXT("SARO: leave the truck on its pad by the station and go in to OPS.");
+ Main->World->StartTrip(D.Leg,D.To,O);
+ UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story night starts in the truck on the %s leg at %.1f %.1f, heading for %s"),*D.Leg,D.At.X,D.At.Z,*D.To);
+ return true;
 }
 
 bool FS47StoryDirector::StartScript(const FString& Id,FString& Why)
@@ -519,6 +646,8 @@ bool FS47StoryDirector::SetFlag(const FString& Flag)
 {
  if(!ValidId(Flag))return false;
  Flags.Add(Flag);
+ // Step 6: the star hole opens with its flag, once (its start kept through a save).
+ if(Flag==StarHoleFlag&&HoleFrom<0){double Now=0;if(ClockNow(Now))HoleFrom=HoleFromAt(Now);}
  return true;
 }
 
@@ -766,6 +895,37 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
    Check(!S47EventScript::ReadDirs().Contains(StoryDir)&&!S47EventScript::Find(TEXT("evening_handover")),TEXT("STORY-4: Freeform's event folders do not read the story's scripts"));
   }
  }
+ { // STORY-DRIVE-20261112: a new Story night begins in the truck on the road to SARO, and the drive hands over to the handover
+  const FDrive D=DriveStart();
+  Check(D.Leg==TEXT("road")&&D.To==TEXT("saro")&&FMath::IsNearlyEqual(D.At.X,8001.8)&&FMath::IsNearlyEqual(D.At.Z,S47RoadShape::TOWN().Z1+35)&&D.Heading==0,
+   TEXT("STORY-8: a new Story night starts in the truck on the road leg at the old Story's drive start, heading north for SARO"));
+  const FS47EventScript* Drive=FindScript(TEXT("evening_drive"));
+  const FS47EventScript* Diner=FindScript(TEXT("evening_diner"));
+  if(!Drive||!Diner)Lines.Add(TEXT("NOTE story director: no evening_drive.json or evening_diner.json in Content/Director/Story/beats beside this build"));
+  else
+  {
+   const auto Has=[](const FS47EventScript& Sc,TFunction<bool(const FS47Beat&)> Fn){return Sc.Beats.ContainsByPredicate(Fn);};
+   const auto WaitsOn=[](const FS47Beat& Bt,const TCHAR* If,const TCHAR* Arg){return Bt.Wait.ContainsByPredicate([If,Arg](const FS47ScriptCond& C){return C.If==If&&(!Arg||C.Arg==Arg);});};
+   const int32 Arrive=Drive->Beats.IndexOfByPredicate([&WaitsOn](const FS47Beat& Bt){return Bt.Do==ES47Beat::Flag&&Bt.Flag==TEXT("arrived_saro")&&WaitsOn(Bt,TEXT("area"),TEXT("saro"))&&WaitsOn(Bt,TEXT("on_foot"),nullptr);});
+   const int32 Begun=Drive->Beats.IndexOfByPredicate([&WaitsOn](const FS47Beat& Bt){return Bt.Do==ES47Beat::Flag&&Bt.Flag==TEXT("drive_begun")&&WaitsOn(Bt,TEXT("in_truck"),nullptr);});
+   const int32 Hands=Drive->Beats.IndexOfByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Script==TEXT("evening_handover");});
+   const bool bRadio=Has(*Drive,[](const FS47Beat& Bt){return Bt.Do==ES47Beat::Scene&&Bt.Name==TEXT("I01_DRIVE");});
+   Check(S47EventScript::LintStory(*Drive).IsEmpty()&&S47EventScript::LintStory(*Diner).IsEmpty()&&S47EventScript::Lint(*Drive).Num()>0&&S47EventScript::Lint(*Diner).Num()>0,
+    TEXT("STORY-8: evening_drive and evening_diner pass the story's lint; Freeform's lint refuses them"));
+   Check(bRadio&&Begun>=0&&Arrive>Begun&&Hands>Arrive,TEXT("STORY-8: evening_drive waits for the truck, plays I01_DRIVE on its radio, waits for the player on foot at SARO, then starts evening_handover"));
+   Check(Has(*Diner,[](const FS47Beat& Bt){return Bt.Do==ES47Beat::Scene&&Bt.Name==TEXT("I02_DINER_HELLO");})&&Has(*Diner,[](const FS47Beat& Bt){return Bt.Do==ES47Beat::Scene&&Bt.Name==TEXT("I10_BACK_ON_ROAD");}),
+    TEXT("STORY-8: evening_diner greets a stop at the Mesa Diner (I02) and plays I10 back on the road"));
+   // The acts beside the build start the drive first, and a fresh director has it under way; a save in the evening act does not again.
+   FString Text;
+   TArray<FAct> Parsed;FString Why;
+   const bool bActs=FFileHelper::LoadFileToString(Text,*ActsPath())&&ParseActs(Text,Parsed,Why)&&Parsed.Num()>0&&Parsed[0].Scripts.Num()>0&&Parsed[0].Scripts[0]==TEXT("evening_drive")
+    &&Parsed[0].Scripts.Contains(TEXT("evening_diner"))&&!Parsed[0].Scripts.Contains(TEXT("evening_handover"));
+   FS47StoryDirector Fresh(nullptr);
+   Fresh.BeginWith(Text,S47J::FObj());
+   const bool bQueued=Fresh.Pending.ContainsByPredicate([](const FPending& P){return P.Id==TEXT("evening_drive");})&&!Fresh.Pending.ContainsByPredicate([](const FPending& P){return P.Id==TEXT("evening_handover");});
+   Check(bActs&&bQueued,TEXT("STORY-8: the evening act starts evening_drive and evening_diner (the handover comes from the drive, not the act)"));
+  }
+ }
  { // Step 5: the scene beat
   const FS47EventScript* Handover=FindScript(TEXT("evening_handover"));
   const bool bScenes=Handover&&Handover->Beats.ContainsByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Scene&&Bt.Name==TEXT("D01_HANDOVER");});
@@ -782,6 +942,211 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
   const FS47EventScript* Shift=FindScript(TEXT("evening_shift"));
   const bool bShift=Shift&&Shift->Beats.ContainsByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Event==TEXT("feeder_fault");})&&S47EventScript::LintStory(*Shift).IsEmpty();
   Check(S47EventScript::LintStory(Ev).IsEmpty()&&S47EventScript::LintStory(Two).Num()>0&&S47EventScript::Lint(Ev).Num()>0&&bShift,TEXT("STORY-6: start may name a Freeform Director event (one of script, happening, event); Freeform's lint refuses it; evening_shift starts feeder_fault"));
+ }
+ { // STORY steg 6, the night act: SC02, SC03, SC05, SC08 and SC10 on Freeform's own events, chained by their last beats
+  static const TCHAR* const NightChain[]={TEXT("night_hunt"),TEXT("night_deputy"),TEXT("night_residual"),TEXT("night_array"),TEXT("night_room6"),TEXT("night_room6_door")};
+  TArray<const FS47EventScript*> Chain;
+  for(const TCHAR* ChainId:NightChain)Chain.Add(FindScript(ChainId));
+  if(Chain.Contains(nullptr))Lines.Add(TEXT("NOTE story director: a night_*.json of the night act is missing in Content/Director/Story/beats beside this build"));
+  else
+  {
+   bool bLint=true;
+   for(const FS47EventScript* Sc:Chain)bLint&=S47EventScript::LintStory(*Sc).IsEmpty()&&S47EventScript::Lint(*Sc).Num()>0;
+   Check(bLint,TEXT("STORY-9: the night act's scripts (night_hunt, night_deputy, night_residual, night_array, night_room6) pass the story's lint; Freeform's lint refuses each"));
+   // Each starts the next as its last beat, and no other story script: one after another, never twice.
+   bool bOrder=true;
+   for(int32 I=0;I<Chain.Num();++I)
+   {
+    const FS47EventScript& Link=*Chain[I];
+    TArray<FString> Starts;
+    for(const FS47Beat& Bt:Link.Beats)if(Bt.Do==ES47Beat::Start&&!Bt.Script.IsEmpty())Starts.Add(Bt.Script);
+    if(I+1==Chain.Num())bOrder&=Starts.IsEmpty();
+    else bOrder&=Starts.Num()==1&&Starts[0]==NightChain[I+1]&&Link.Beats.Num()>0&&Link.Beats.Last().Do==ES47Beat::Start&&Link.Beats.Last().Script==NightChain[I+1];
+   }
+   FString NightText,NightWhy;
+   TArray<FAct> NightActs;
+   const bool bAct=FFileHelper::LoadFileToString(NightText,*ActsPath())&&ParseActs(NightText,NightActs,NightWhy)
+    &&NightActs.ContainsByPredicate([](const FAct& A){return A.Id==TEXT("night")&&A.Scripts.Num()==1&&A.Scripts[0]==TEXT("night_hunt");});
+   Check(bOrder&&bAct,TEXT("STORY-10: the night act starts night_hunt only; the hunt, the deputy, the residual, the array and room 6 follow one another by their last beats"));
+   // The full encounters wait for their tier (Tom: full encounters after 02:00): a clock beat to at least that hour comes first.
+   const auto ClockFirst=[](const FS47EventScript& Sc,const TCHAR* EventName,double Least)
+   {
+    const int32 StartIdx=Sc.Beats.IndexOfByPredicate([EventName](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Event==EventName;});
+    const int32 ClockIdx=Sc.Beats.IndexOfByPredicate([Least](const FS47Beat& Bt){return Bt.Do==ES47Beat::Clock&&Bt.AtLeast>=Least;});
+    return StartIdx>=0&&ClockIdx>=0&&ClockIdx<StartIdx;
+   };
+   Check(ClockFirst(*Chain[0],TEXT("service_presence"),26.)&&ClockFirst(*Chain[3],TEXT("array_presence"),28.),
+    TEXT("STORY-11: the full encounters wait for their tier: the hunt (service_presence) for 02:00, the array (array_presence) for 04:00"));
+   // Tom (11 Nov): never change the star sky. Nothing of the night act starts anything in the sky (SC05's star hole is left out).
+   static const TCHAR* const SkyIds[]={TEXT("flyover"),TEXT("close_pass"),TEXT("sky_formation"),TEXT("sky_high"),TEXT("landing"),TEXT("response_lights"),TEXT("dusk_orb"),TEXT("highway_ufo"),TEXT("farm_lights"),TEXT("town_lights")};
+   bool bNoSky=true;
+   for(const FS47EventScript* Sc:Chain)for(const FS47Beat& Bt:Sc->Beats)for(const TCHAR* SkyId:SkyIds)bNoSky&=!(Bt.Do==ES47Beat::Start&&(Bt.Event==SkyId||Bt.Happening==SkyId));
+   // Tom (12 Nov): the star hole is Story's and stays (SC05): night_residual opens it by its flag, after the dishes have been heard.
+   const FS47EventScript& Residual=*Chain[2];
+   const int32 HoleIdx=Residual.Beats.IndexOfByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Flag&&Bt.bSet&&Bt.Flag==StarHoleFlag;});
+   const int32 CreakIdx=Residual.Beats.IndexOfByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Event==TEXT("antenna_creak");});
+   Check(bNoSky&&CreakIdx>=0&&HoleIdx>CreakIdx,TEXT("STORY-12: no night script starts anything in the sky (no other change to the star sky); night_residual opens the star hole after the dishes are heard"));
+   // A wait on ended_<id> follows that id's own start in the same script, and the flag is cleared before it (a stale end never passes).
+   bool bEnds=true;int32 Waits=0;
+   for(const FS47EventScript* Sc:Chain)
+   {
+    for(int32 K=0;K<Sc->Beats.Num();++K)for(const FS47ScriptCond& C:Sc->Beats[K].Wait)
+    {
+     if(C.If!=TEXT("story_flag")||!C.Arg.StartsWith(TEXT("ended_")))continue;
+     ++Waits;
+     const FString EndedId=C.Arg.Mid(6);
+     bool bStarted=false,bCleared=false;
+     for(int32 J=0;J<K;++J)
+     {
+      const FS47Beat& Prev=Sc->Beats[J];
+      bStarted|=Prev.Do==ES47Beat::Start&&(Prev.Event==EndedId||Prev.Happening==EndedId);
+      bCleared|=Prev.Do==ES47Beat::Flag&&!Prev.bSet&&Prev.Flag==C.Arg;
+     }
+     bEnds&=bStarted&&bCleared;
+    }
+   }
+   Check(bEnds&&Waits>=6,TEXT("STORY-15: each wait on a Freeform event's end (ended_<id>) follows that event's start and a clearing of the flag in the same script"));
+  }
+  // The start beat's force, and the ended_ flags.
+  FS47EventScript Forced;Forced.Id=TEXT("story_force_probe");Forced.Name=TEXT("probe");
+  FS47Beat Fb;Fb.Do=ES47Beat::Start;Fb.Happening=TEXT("room6_tv");Fb.bForce=true;Forced.Beats.Add(Fb);
+  FS47EventScript ForcedScript=Forced;ForcedScript.Beats[0].Happening.Reset();ForcedScript.Beats[0].Script=TEXT("night_hunt");
+  FS47EventScript ReadForce;FString ForceWhy;
+  const bool bReadForce=S47EventScript::Read(TEXT("{\"version\":1,\"id\":\"story_force_read\",\"name\":\"probe\",\"beats\":[{\"at\":1,\"do\":\"start\",\"happening\":\"room6_tv\",\"force\":true}]}"),ReadForce,ForceWhy)
+   &&ReadForce.Beats.Num()==1&&ReadForce.Beats[0].bForce;
+  Check(bReadForce&&S47EventScript::LintStory(Forced).IsEmpty()&&S47EventScript::LintStory(ForcedScript).Num()>0&&S47EventScript::Lint(Forced).Num()>0,
+   TEXT("STORY-13: start's force is read; the story's lint takes it with a happening and refuses it with a script; Freeform's lint refuses it"));
+  Check(EndedFlagOf(TEXT("service_presence"),FString())==TEXT("ended_service_presence")&&EndedFlagOf(TEXT("room6_tv"),TEXT("taken"))==TEXT("ended_room6_tv")
+   &&EndedFlagOf(TEXT("wrong_source"),TEXT("wrong_source")).IsEmpty()&&EndedFlagOf(FString(),TEXT("array_presence")).IsEmpty()
+   &&EndedFlagOf(FString(DeputyRoundId),FString())==TEXT("ended_deputy_round")&&EndedFlagOf(TEXT("Not An Id"),FString()).IsEmpty(),
+   TEXT("STORY-14: a Freeform event's end is the story flag ended_<id> (the Director's event, the happening on the ground, the county car); nothing when nothing ended"));
+  // The star hole's start: set once with its flag at the clock then, kept through a save, and none without a Story night's director.
+  FS47StoryDirector HoleDir(nullptr);
+  HoleDir.BeginWith(ActsText,S47J::FObj());
+  HoleDir.TestClock(Day2+3*3600+20*60);
+  const bool bShut=HoleDir.HoleFrom<0;
+  HoleDir.SetFlag(StarHoleFlag);
+  const double Opened=HoleDir.HoleFrom;
+  HoleDir.TestClock(Day2+4*3600);
+  HoleDir.SetFlag(StarHoleFlag);
+  FS47StoryDirector HoleBack(nullptr);
+  HoleBack.BeginWith(ActsText,HoleDir.Save());
+  Check(bShut&&FMath::IsNearlyEqual(Opened,3*3600+20*60+STAR_HOLE.After)&&HoleDir.HoleFrom==Opened&&FMath::IsNearlyEqual(HoleBack.HoleFrom,Opened)
+   &&!StarHoleFrom(nullptr).IsSet()&&FMath::IsNearlyEqual(HoleFromAt(-60),86340+STAR_HOLE.After),
+   TEXT("STORY-16: the star hole opens once with its flag, at the clock then and STAR_HOLE.After; its start keeps through a save; none without a Story night's director (never in Freeform)"));
+ }
+ { // STORY steg 6, the morning act: SC11 (the telex, the visit at SARO), SC12 (Ward), SC13 (the last road and the end)
+  static const TCHAR* const MorningIds[]={TEXT("morning_saro"),TEXT("morning_telex"),TEXT("morning_ward"),TEXT("morning_road"),TEXT("morning_end")};
+  TArray<const FS47EventScript*> Morning;
+  for(const TCHAR* MorningId:MorningIds)Morning.Add(FindScript(MorningId));
+  const FS47EventScript* Room6=FindScript(TEXT("night_room6_door")); // the door half sets room6_done last (night_room6 starts it at the motel)
+  if(Morning.Contains(nullptr)||!Room6)Lines.Add(TEXT("NOTE story director: a morning_*.json of the morning act, or night_room6.json, is missing in Content/Director/Story/beats beside this build"));
+  else
+  {
+   bool bLint=true;
+   for(const FS47EventScript* Sc:Morning)bLint&=S47EventScript::LintStory(*Sc).IsEmpty()&&S47EventScript::Lint(*Sc).Num()>0;
+   Check(bLint,TEXT("STORY-17: the morning act's scripts (morning_saro, morning_telex, morning_ward, morning_road, morning_end) pass the story's lint; Freeform's lint refuses each"));
+   // The chain: night_room6 sets room6_done last; the morning act needs it and starts morning_saro; then telex, Ward or (taken) the end,
+   // the road, the end. Each script starts only the next ones; the end is the last beat of morning_end and of no other story script.
+   const auto StartsOf=[](const FS47EventScript& Sc){TArray<FString> Out;for(const FS47Beat& Bt:Sc.Beats)if(Bt.Do==ES47Beat::Start&&!Bt.Script.IsEmpty())Out.Add(Bt.Script);return Out;};
+   const bool bRoom6Last=Room6->Beats.Num()>0&&Room6->Beats.Last().Do==ES47Beat::Flag&&Room6->Beats.Last().bSet&&Room6->Beats.Last().Flag==TEXT("room6_done")&&StartsOf(*Room6).IsEmpty();
+   FString MorningText,MorningWhy;
+   TArray<FAct> MorningActs;
+   const bool bActOk=FFileHelper::LoadFileToString(MorningText,*ActsPath())&&ParseActs(MorningText,MorningActs,MorningWhy)&&MorningActs.Num()==3
+    &&MorningActs[2].Id==TEXT("morning")&&MorningActs[2].Needs.Num()==1&&MorningActs[2].Needs[0]==TEXT("room6_done")&&MorningActs[2].Scripts.Num()==1&&MorningActs[2].Scripts[0]==TEXT("morning_saro");
+   const TArray<FString> TelexNext=StartsOf(*Morning[1]);
+   const bool bChain=StartsOf(*Morning[0])==TArray<FString>({TEXT("morning_telex")})&&TelexNext.Num()==2&&TelexNext.Contains(TEXT("morning_ward"))&&TelexNext.Contains(TEXT("morning_end"))
+    &&StartsOf(*Morning[2])==TArray<FString>({TEXT("morning_road")})&&StartsOf(*Morning[3])==TArray<FString>({TEXT("morning_end")})&&StartsOf(*Morning[4]).IsEmpty();
+   // The branch is the visit's: Ward when the player was not taken, the end at once when they were.
+   const auto StartIf=[](const FS47EventScript& Sc,const TCHAR* To,const TCHAR* If){return Sc.Beats.ContainsByPredicate([To,If](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Script==To&&Bt.If.Num()==1&&Bt.If[0].If==If&&Bt.If[0].Arg==TakenFlag;});};
+   const bool bBranch=StartIf(*Morning[1],TEXT("morning_ward"),TEXT("no_story_flag"))&&StartIf(*Morning[1],TEXT("morning_end"),TEXT("story_flag"));
+   int32 Ends=0;
+   for(const FS47EventScript& Any:StoryScripts())for(const FS47Beat& Bt:Any.Beats)Ends+=Bt.Do==ES47Beat::End?1:0;
+   const bool bEndLast=Morning[4]->Beats.Num()>0&&Morning[4]->Beats.Last().Do==ES47Beat::End&&Ends==1;
+   Check(bRoom6Last&&bActOk,TEXT("STORY-18: night_room6 sets room6_done as its last beat; the morning act (from 04:00) needs room6_done and starts morning_saro only"));
+   Check(bChain&&bBranch&&bEndLast,TEXT("STORY-19: morning_saro, morning_telex, then Ward (not taken) or the end (taken), the road, the end; the end beat is morning_end's last and the only one"));
+   // The real acts: the night holds at 05:00 until room 6 is done, then the morning act starts morning_saro (Tick(0): the act moves,
+   // what it starts waits for the next real step).
+   FS47StoryDirector Night(nullptr);
+   Night.BeginWith(MorningText,S47J::Read(TEXT("{\"v\":1,\"act\":\"night\"}")));
+   Night.TestClock(Day2+5*3600.);Night.Tick(0);
+   const bool bHeldNight=Night.CurrentAct()&&Night.CurrentAct()->Id==TEXT("night")&&Night.Pending.IsEmpty();
+   Night.SetFlag(TEXT("room6_done"));Night.Tick(0);
+   const bool bMorning=Night.CurrentAct()&&Night.CurrentAct()->Id==TEXT("morning")&&Night.Pending.Num()==1&&Night.Pending[0].Id==TEXT("morning_saro");
+   Check(bHeldNight&&bMorning,TEXT("STORY-18: with the real acts the night stays at 05:00 until room6_done, then the morning act starts morning_saro"));
+   // SC11: the telex prints before the visit; the visit waits for the full tier (05:04 at least); its end and the taken flag are cleared first.
+   const FS47EventScript& Telex=*Morning[1];
+   const int32 PrintIdx=Telex.Beats.IndexOfByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Telex&&!Bt.Key.IsEmpty()&&Bt.Text.Contains(TEXT("05:29:47"))&&Bt.Text.Contains(TEXT("S-11"));});
+   const int32 VisitIdx=Telex.Beats.IndexOfByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Happening==AttentionVisitId;});
+   const int32 TierIdx=Telex.Beats.IndexOfByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Clock&&Bt.AtLeast>=29.;});
+   const int32 TakenClear=Telex.Beats.IndexOfByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Flag&&!Bt.bSet&&Bt.Flag==TakenFlag;});
+   Check(PrintIdx>=0&&VisitIdx>PrintIdx&&TierIdx>=0&&TierIdx<VisitIdx&&TakenClear>=0&&TakenClear<VisitIdx,
+    TEXT("STORY-20: morning_telex prints the remote sheets (H-1, S-11, 05:29:47) on Freeform's telex, then starts the visit at SARO after 05:04 with the taken flag cleared"));
+   // The waits on a Freeform end follow their start and a clearing of the flag, as in the night act; nothing in the sky, no Dale line.
+   bool bEnds=true,bQuiet=true;int32 Waits=0;
+   static const TCHAR* const MorningSky[]={TEXT("flyover"),TEXT("close_pass"),TEXT("sky_formation"),TEXT("sky_high"),TEXT("landing"),TEXT("response_lights"),TEXT("dusk_orb"),TEXT("highway_ufo"),TEXT("farm_lights"),TEXT("town_lights")};
+   for(const FS47EventScript* Sc:Morning)
+   {
+    for(int32 K=0;K<Sc->Beats.Num();++K)
+    {
+     const FS47Beat& Bt=Sc->Beats[K];
+     bQuiet&=!(Bt.Do==ES47Beat::Flag&&Bt.Flag==StarHoleFlag)&&!(Bt.Do==ES47Beat::Line&&Bt.Who==TEXT("dale"))&&Bt.Do!=ES47Beat::Scene;
+     for(const TCHAR* SkyId:MorningSky)bQuiet&=!(Bt.Do==ES47Beat::Start&&(Bt.Event==SkyId||Bt.Happening==SkyId));
+     for(const FS47ScriptCond& C:Bt.Wait)
+     {
+      if(C.If!=TEXT("story_flag")||!C.Arg.StartsWith(TEXT("ended_")))continue;
+      ++Waits;
+      const FString EndedId=C.Arg.Mid(6);
+      bool bStarted=false,bCleared=false;
+      for(int32 J=0;J<K;++J)
+      {
+       const FS47Beat& Prev=Sc->Beats[J];
+       bStarted|=Prev.Do==ES47Beat::Start&&(Prev.Event==EndedId||Prev.Happening==EndedId);
+       bCleared|=Prev.Do==ES47Beat::Flag&&!Prev.bSet&&Prev.Flag==C.Arg;
+      }
+      bEnds&=bStarted&&bCleared;
+     }
+    }
+   }
+   Check(bEnds&&Waits==1&&bQuiet,TEXT("STORY-21: the wait on the visit's end follows its start and a clearing of ended_attention_visit; the morning starts nothing in the sky, leaves the star hole as it is and gives Dale no line"));
+  }
+  // The end beat and the telex beat: story-only, read, linted; the end is due once, holds the night, keeps through a save.
+  {
+   FS47EventScript EndRead;FString EndWhy;
+   const bool bReadEnd=ReadScript(TEXT("{\"version\":1,\"id\":\"story_end_probe\",\"name\":\"probe\",\"beats\":[{\"at\":1,\"do\":\"telex\",\"key\":\"telex-probe\",\"title\":\"A sheet\",\"stamp\":\"TELEX\",\"text\":\"A page.\"},{\"at\":2,\"do\":\"end\"}]}"),EndRead,EndWhy)
+    &&EndRead.Beats.Num()==2&&EndRead.Beats[0].Do==ES47Beat::Telex&&EndRead.Beats[0].Name==TEXT("A sheet")&&EndRead.Beats[0].Kind==TEXT("TELEX")&&EndRead.Beats[1].Do==ES47Beat::End;
+   FS47EventScript NoTitle;FString NoTitleWhy;
+   const bool bRefuses=!ReadScript(TEXT("{\"version\":1,\"id\":\"story_end_probe\",\"name\":\"probe\",\"beats\":[{\"at\":1,\"do\":\"telex\",\"key\":\"telex-probe\",\"text\":\"A page.\"}]}"),NoTitle,NoTitleWhy)
+    &&!ReadScript(TEXT("{\"version\":1,\"id\":\"story_end_probe\",\"name\":\"probe\",\"beats\":[{\"at\":1,\"do\":\"telex\",\"title\":\"A sheet\",\"text\":\"A page.\"}]}"),NoTitle,NoTitleWhy);
+   Check(bReadEnd&&S47EventScript::Lint(EndRead).Num()>0&&S47EventScript::StoryOnlyBeat(ES47Beat::Telex)&&S47EventScript::StoryOnlyBeat(ES47Beat::End)&&bRefuses,
+    TEXT("STORY-22: telex and end are story-only beats: the story's lint takes them (telex with key, title and text), Freeform's refuses them"));
+   FS47StoryDirector EndDir(nullptr);
+   EndDir.BeginWith(ActsText,S47J::FObj());
+   EndDir.StartPending();
+   const bool bIdleFirst=!EndDir.Busy()&&!EndDir.IsEndDue();
+   FS47Beat EndBeat;EndBeat.Do=ES47Beat::End;
+   EndDir.Apply(EndBeat,FString());
+   const bool bDue=EndDir.IsEndDue()&&EndDir.Busy()&&!EndDir.HasEnded()&&EndDir.Apply(EndBeat,FString()).Contains(TEXT("already"));
+   EndDir.Tick(.1); // no game: the end waits, still due
+   const S47J::FObj EndSaved=S47J::Read(S47J::Write(EndDir.Save()));
+   FS47StoryDirector EndBack(nullptr);
+   EndBack.BeginWith(ActsText,EndSaved);
+   FS47StoryDirector Done(nullptr);
+   Done.BeginWith(ActsText,S47J::Read(TEXT("{\"v\":1,\"act\":\"morning\",\"ending\":true,\"flags\":[\"story_end\"]}")));
+   Check(bIdleFirst&&bDue&&EndDir.IsEndDue()&&S47J::Bool(EndSaved,TEXT("ending"),false)&&EndBack.IsEndDue()&&EndBack.Busy()&&!Done.IsEndDue(),
+    TEXT("STORY-23: the end beat is due once and holds the night until it is played; it keeps through a save, and not once the end has been played"));
+   Check(EndMay(false,false)&&!EndMay(true,false)&&!EndMay(false,true),TEXT("STORY-23: the end waits for a closed panel and for nobody being taken"));
+   // The visit for the story: refused without a Story night (never in Freeform), and its end told at once when it cannot begin.
+   FS47Attention NoNight(nullptr);
+   FString VisitWhy;
+   const bool bNoVisit=!NoNight.StartForStory(VisitWhy)&&!VisitWhy.IsEmpty()&&!NoNight.Visiting();
+   FS47StoryDirector VisitDir(nullptr);
+   VisitDir.BeginWith(ActsText,S47J::FObj());
+   FS47Beat VisitBeat;VisitBeat.Do=ES47Beat::Start;VisitBeat.Happening=AttentionVisitId;
+   const FString VisitSaid=VisitDir.Apply(VisitBeat,FString());
+   Check(bNoVisit&&VisitDir.HasFlag(TEXT("ended_attention_visit"))&&VisitSaid.Contains(TEXT("did not begin"))&&EndedFlagOf(AttentionVisitId,FString())==TEXT("ended_attention_visit"),
+    TEXT("STORY-24: the visit at SARO starts for the story only on a Story night; when it cannot begin its end is told at once, so the morning goes on"));
+  }
  }
  return OK;
 }

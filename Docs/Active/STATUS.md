@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 12. november kl. 17:10 (d60): versjon 0.9.60, `fc1e0fab` på `claude/story-on-freeform`
+## Installert 12. november kl. 19:05 (d61): versjon 0.9.61, `fd5a625b` på `claude/story-drive-20261112`
+
+Ikke merget (PR #513 åpen); rask levering (pakket, røyktestet, installert). Innhold: Story starter 17:20 i bilen mot SARO (radio, valgfri Mesa med Freeforms kasse, ankomst, overlevering) og har alle tre akter (natt: jakt, sheriff, spor og stjernehull, antennefelt, rom 6; morgen: telex, besøk, Ward, slutten); rettet at Story-startede hendelser ble avvist; d60-funn: rennende kran i løkke, tastene i bilen, 24-timersklokke; skolen: usynlig vegg fjernet, gåprøve 65/65, rekkverk ved trappa, kjellervinduer. Selvtest 4961, regresjon PASS 251. Tilbakerulling: d60 (`fc1e0fab`). Story-aktene er ikke spilt gjennom.
+
+## Tidligere: installert 12. november kl. 17:10 (d60): versjon 0.9.60, `fc1e0fab` på `claude/story-on-freeform`
 
 Ikke merget (PR #512 åpen); rask levering (pakket, røyktestet, installert). Innhold: natta 11.–12. og dagskiftet 12. november: saksløkken i naturlig natt, strømvalget (materen låses, aggregat eller reparasjon med risiko ved sabotert trafo, fylkets mannskap etter 180 spillminutter), 25 terminalhint, gårdshuset og stedene gir saksspor, skikkelse fra vinduet og egne notater, rørgnist, østfløyens bryter, stasjonsfiler, HUD-frekvens, Story steg 5–6, bensinstasjonen med fototeksturer, skolen V2 i Caliche med lekeplass. Selvtest 4934, regresjon PASS 251, naturlig natt med kortspilleren. Første pakkeprøve krasjet fordi grafikkminnet var fullt etter sju dager uten omstart (d59 krasjet likt); bestått etter omstart. Tilbakerulling: d59 (`381fc28c`). Ikke spilt av Tom.
 

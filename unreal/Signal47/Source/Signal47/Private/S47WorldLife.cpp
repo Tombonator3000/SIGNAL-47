@@ -28,6 +28,7 @@
 #include "S47SkyEventSpec.h"
 #include "S47Startup.h"
 #include "S47Story.h"
+#include "S47StoryDirector.h"
 #include "S47Three.h"
 #include "S47Picture.h"
 #include "S47Ultra.h"
@@ -334,7 +335,8 @@ void US47WorldLife::Step(double Dt)
 	const TOptional<double> Lift = Hooks.SkyLift ? Hooks.SkyLift() : TOptional<double>();
 	Sky->SetDawnLift(Lift.IsSet() ? *Lift : Area == TEXT("roswell") ? 1 : 0.7);
 	// A default EventClock alone cannot arm the hole: actual signal/Turning history is required.
-	Sky->HoleFrom = SignalHoleFrom().Get(TNumericLimits<double>::Max());
+	// STORY steg 6 (Tom 12 Nov): on a Story night (a Freeform session) the story director opens the same hole (SC05); never in Freeform.
+	Sky->HoleFrom = SignalHoleFrom().Get(FS47StoryDirector::StarHoleFrom(M).Get(TNumericLimits<double>::Max()));
 	const TOptional<double> SunElev = !bTitle && Hooks.SunElev ? Hooks.SunElev() : TOptional<double>();
 	// FX-01: the meteor passage follows the graphics menu's Effects (Low: fewer streaks), as the arc does
 	Sky->bPassageLow = M->Flow && M->Flow->Graphics.Effects == 0;

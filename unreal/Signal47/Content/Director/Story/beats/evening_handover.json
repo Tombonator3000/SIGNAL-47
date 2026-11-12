@@ -2,7 +2,7 @@
   "version": 1,
   "id": "evening_handover",
   "name": "Story: the evening handover is due",
-  "notes": "STORY-ON-FREEFORM-01 (steps 4-5). Started by the evening act (Content/Director/Story/acts.json). A story script: read only by the story director's store (S47StoryDirector), checked by S47EventScript::LintStory; Freeform's lint refuses its flag, objective and scene beats. Step 5: the arrival is committed (I11, a world scene: sets intro_arrived), then Dale's handover rings at OPS (D01_HANDOVER, S47StoryScene); the objective clears when the call is over (story flag handover_done).",
+  "notes": "STORY-ON-FREEFORM-01 (steps 4-5). Started by evening_drive when the player has arrived at SARO (STORY-DRIVE-20261112; before that by the evening act, Content/Director/Story/acts.json). A story script: read only by the story director's store (S47StoryDirector), checked by S47EventScript::LintStory; Freeform's lint refuses its flag, objective and scene beats. Step 5: the arrival is committed (I11, a world scene: sets intro_arrived), then Dale's handover rings at OPS (D01_HANDOVER, S47StoryScene); the objective clears when the call is over (story flag handover_done).",
   "enabled": true,
   "beats": [
     {

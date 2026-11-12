@@ -252,6 +252,13 @@ bool FS47EveningPack::Withdraw()
 	return true;
 }
 
+bool FS47EveningPack::Abandon()
+{
+	if (ActiveScene.IsEmpty()) return false;
+	ActiveScene.Reset(); Cursor = 0; PendingChoice.Reset();
+	return true;
+}
+
 const FS47EveningLine* FS47EveningPack::CurrentLine() const
 {
 	const auto* Scene = CurrentScene();

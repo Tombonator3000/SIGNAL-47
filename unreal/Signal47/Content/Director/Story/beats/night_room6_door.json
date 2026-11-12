@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "id": "night_room6_door",
+  "name": "Story: room 6, at the door (SC10)",
+  "notes": "STORY steg 6: the second half of night_room6, started once the player is at the motel (night_room6 waits for at_motel), so the lines through the door keep their spacing however long the walk took (Tom 12 Nov: the runner clock keeps running while a beat waits).",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 0,
+      "do": "start",
+      "happening": "room6_tv",
+      "force": true
+    },
+    {
+      "at": 7,
+      "do": "toast",
+      "text": "Through the door of room 6, over the snow: East from the station there is a survey bolt in the road. C crosses there.",
+      "secs": 7
+    },
+    {
+      "at": 15,
+      "do": "toast",
+      "text": "Tomas walked out to the closing point and did not walk back.",
+      "secs": 6
+    },
+    {
+      "at": 22,
+      "do": "toast",
+      "text": "Don't finish his observation. Get the originals out, and don't stop at C.",
+      "secs": 7
+    },
+    {
+      "at": 23,
+      "do": "evidence",
+      "key": "story_sc10_room6",
+      "text": "Room 6, Sierra Motor Court, before five. The door open a crack, the television on snow. A woman's voice through the door: a survey bolt in the road east of the station, where C crosses. Tomas did not walk back from the closing point. Don't stop at C."
+    },
+    {
+      "at": 29,
+      "do": "objective",
+      "text": "SARO. The remote sheets come in at 05:04. Get the originals out."
+    },
+    {
+      "at": 29,
+      "do": "flag",
+      "flag": "room6_done"
+    }
+  ]
+}

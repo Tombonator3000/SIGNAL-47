@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "id": "evening_diner",
+  "name": "Story: the optional supper stop at the Mesa Diner",
+  "notes": "STORY-DRIVE-20261112. Started beside evening_drive by the evening act. If the player stops on the way and walks into the Mesa Diner before arriving at SARO, the waitress greets them (I02_DINER_HELLO, a physical scene: the pack's menu, water and leave routes I03..I09 follow by its own choices). Driving off ends the talk where it stands (S47StoryScene). Back in the truck, the radio plays I10_BACK_ON_ROAD. Each wait is left out after its most, so a night without the stop goes on; nothing here plays once the player has arrived (intro_arrived).",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 1,
+      "do": "scene",
+      "scene": "I02_DINER_HELLO",
+      "wait": [
+        {
+          "if": "area",
+          "is": "diner"
+        },
+        "indoors",
+        "on_foot",
+        {
+          "if": "no_story_flag",
+          "flag": "intro_arrived"
+        }
+      ],
+      "max": 1200
+    },
+    {
+      "at": 2,
+      "do": "scene",
+      "scene": "I10_BACK_ON_ROAD",
+      "wait": [
+        "in_truck",
+        {
+          "if": "story_flag",
+          "flag": "scene_i02_diner_hello"
+        },
+        {
+          "if": "no_story_flag",
+          "flag": "intro_arrived"
+        }
+      ],
+      "max": 900
+    }
+  ]
+}
