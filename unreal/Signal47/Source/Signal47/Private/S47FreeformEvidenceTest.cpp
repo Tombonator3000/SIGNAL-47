@@ -472,7 +472,7 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==72){if(!Use(M,TEXT("binder")))return;Go(73,.5);return;}
   if(S.Stage==73)
   {
-   bool Found=false;for(const auto& Root:Roots(M))Found|=Text(Root,S.Ids[1]+TEXT("-original"),false)&&Text(Root,TEXT("SOURCE UNRESOLVED"),false)&&Text(Root,TEXT("FILED"),false);
+   bool Found=false;for(const auto& Root:Roots(M))Found|=Text(Root,S.Ids[1],false)&&Text(Root,TEXT("SOURCE UNRESOLVED"),false)&&Text(Root,TEXT("FILED"),false); // RECORDS-BINDER: the index lists it under LAST FILED by its reference
    if(!Check(M,Found&&ButtonCount(M,TEXT("FILE PACKET IN THIS BINDER"))==0,TEXT("actual restored binder archive displays the same original reference, unresolved conclusion and filed state")))return;
    Photo(TEXT("06-continued-filed-archive"));Go(74);return;
   }

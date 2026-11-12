@@ -276,6 +276,7 @@ void AS47HUD::Start()
 		bOk &= FS47FreeformSession::SelfTest(Lines);
 		bOk &= FS47FreeformJobs::SelfTest(Lines);
 		bOk &= FS47FreeformCases::SelfTest(Lines);
+		bOk &= S47Binder::SelfTest(Lines) & FS47FreeformSession::BinderSelfTest(Lines); // (RECORDS-BINDER: the records-room binder's dividers, order, filing and stamps)
 		bOk &= FS47EastWing::SelfTest(Lines);
 		bOk &= FS47FreeformDirector::SelfTest(Lines);
 		bOk &= FS47CaseFieldTests::SelfTest(Lines);

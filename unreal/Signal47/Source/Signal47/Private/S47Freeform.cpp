@@ -197,6 +197,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal,bool bOneNi
  JobSeed=M&&M->Flow&&!M->Flow->bDevRun?int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()):470047;
  Journal.Load(S47J::Obj(Saved,TEXT("journal")));
  Work.Reset();Findings.Reset();FindingDays.Reset();MysterySteps={0,0,0};Upgrades={false,false,false};SavedAngles.Reset();bRestoreAngles=false;Feedback.Empty();PhenomenonId.Empty();
+ LoadBinder(Saved); // RECORDS-BINDER: when each packet went in ("binderFiled"); a save from before has none
  if(Saved)
  {
   if(!JsonVersion(Saved)) { bActive=false;return; }
@@ -2770,6 +2771,8 @@ void FS47FreeformSession::OpenTapePanel()
 void FS47FreeformSession::OpenArchive()
 {
  if(!M||!M->UI)return;const bool Computer=TerminalOnGlass();TArray<S47Kit::FW> Rows;
+ // RECORDS-BINDER (-> M3): off the glass the records are the binder itself (S47FreeformBinder.cpp); what follows is the OPS page.
+ if(!Computer){OpenBinder();return;}
  auto Paper=[Computer](const FString& T){return Computer?S47FreeformTerminal::Paper(T):S47Kit::Paper(T);};
  auto Plain=[Computer](const FString& T){return Computer?S47FreeformTerminal::Small(T):S47Kit::Small(T);};
  // What needs doing comes first; the record itself is only read.
@@ -4797,6 +4800,7 @@ S47J::FObj FS47FreeformSession::Save()const
 {
  auto O=S47J::New();if(bStationLocked)S47J::Set(O,TEXT("stationLocked"),true);if(bMailboxStart)S47J::Set(O,TEXT("mailboxStart"),true);if(DriveCheckDay>0&&DriveCheckAt<0){auto Drive=S47J::New();S47J::Set(Drive,TEXT("day"),DriveCheckDay);S47J::Set(Drive,TEXT("tone"),DriveCheckTone);S47J::Set(Drive,TEXT("result"),DriveCheckResult);S47J::Set(O,TEXT("driveCheck"),Drive);}S47J::Set(O,TEXT("fieldFocus"),FieldFocus);S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);if(WokenNight>0)S47J::Set(O,TEXT("wokenNight"),WokenNight);if(RousedNight>0)S47J::Set(O,TEXT("rousedNight"),RousedNight);if(RulesLive()||ReviewWeek>0)S47J::Set(O,TEXT("reviewWeek"),ReviewWeek);if(Carried>0)S47J::Set(O,TEXT("carried"),Carried);if(StandbyTotal>0)S47J::Set(O,TEXT("standbyPaid"),StandbyTotal);if(SideWeek>0)S47J::Set(O,TEXT("sideWeek"),SideWeek);if(SidePaid>0)S47J::Set(O,TEXT("sidePaid"),SidePaid);if(Repairs>0)S47J::Set(O,TEXT("repairs"),Repairs);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);if(bPowerFault&&SkyFaultUntil>0)S47J::Set(O,TEXT("skyFaultUntil"),SkyFaultUntil);{TArray<FString> Seen;for(int32 I=0;I<S47StationFiles::Count()&&I<32;++I)if(StationFilesSeen&(1u<<I))Seen.Add(S47StationFiles::Get(I).Key);S47J::Set(O,TEXT("stationFilesSeen"),Seen);}S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
  S47J::Set(O,TEXT("journal"),Journal.Save());S47J::Set(O,TEXT("economyRevision"),2);
+ SaveBinder(O); // RECORDS-BINDER: "binderFiled", only when a packet has gone in
  S47J::Set(O,TEXT("selected"),Selected);S47J::Set(O,TEXT("audioSource"),AudioSourceIndex);S47J::Set(O,TEXT("audioCursor"),AudioCursor);S47J::Set(O,TEXT("settle"),Settle);if(!ArrayJob.IsEmpty())S47J::Set(O,TEXT("arrayJob"),ArrayJob);S47J::Set(O,TEXT("cross"),CrossPoint);S47J::Set(O,TEXT("crossSample"),CrossSample);S47J::Set(O,TEXT("crossRunning"),bCrossRunning);
  TArray<TSharedPtr<FJsonValue>> Jobs;
  for(const FJob& J:Work)
