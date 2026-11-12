@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 12. november kl. 19:05 (d61): versjon 0.9.61, `fd5a625b` på `claude/story-drive-20261112`
+## Installert 12. november kl. 20:04 (d62): versjon 0.9.62, `e63eea04` på `claude/story-drive-20261112`
+
+Ikke merget (PR #513 åpen); rask levering. Innhold i tillegg til d61: bakken flates og graves ut der et bygg ber om det (`S47GroundEdits`, bakt i terrengmeshen) – skolens kjellertrapp og lysgraver er åpne; Cosmos-lekeplassen ved skolen (ni deler, lastes hvis den finnes, aldri i Git). Gåprøve 65/65, selvtest 4965, regresjon PASS 251. Tilbakerulling: d61 (`fd5a625b`). Ikke spilt av Tom.
+
+## Tidligere: installert 12. november kl. 19:05 (d61): versjon 0.9.61, `fd5a625b` på `claude/story-drive-20261112`
 
 Ikke merget (PR #513 åpen); rask levering (pakket, røyktestet, installert). Innhold: Story starter 17:20 i bilen mot SARO (radio, valgfri Mesa med Freeforms kasse, ankomst, overlevering) og har alle tre akter (natt: jakt, sheriff, spor og stjernehull, antennefelt, rom 6; morgen: telex, besøk, Ward, slutten); rettet at Story-startede hendelser ble avvist; d60-funn: rennende kran i løkke, tastene i bilen, 24-timersklokke; skolen: usynlig vegg fjernet, gåprøve 65/65, rekkverk ved trappa, kjellervinduer. Selvtest 4961, regresjon PASS 251. Tilbakerulling: d60 (`fc1e0fab`). Story-aktene er ikke spilt gjennom.
 

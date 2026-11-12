@@ -1,5 +1,6 @@
 #include "S47RoadTerrain.h"
 #include "S47Relief.h"
+#include "S47GroundEdits.h"
 
 #include <limits>
 
@@ -259,7 +260,9 @@ double GridY(double X, double Z)
 	return U + V <= 1 ? A + (B - A) * U + (C - A) * V : D + (C - D) * (1 - U) + (B - D) * (1 - V);
 }
 
-double SurfaceY(double X, double Z)
+namespace
+{
+double SurfaceWith(double X, double Z, bool bEdits)
 {
 	const double Ax = FMath::Abs(X);
 	if (Ax <= HWY.Shoulder) return HLow(X, Z) + HwyLift(Ax);
@@ -272,10 +275,16 @@ double SurfaceY(double X, double Z)
 	// worked out from them (STATION_DY, the diner, the motel, the road meshes) stay as they were. 0 outside Freeform.
 	// The range's fans and aprons the same way (S47Relief::HillLift): what walks, drives or grows there stands on them.
 	double Y = GridY(X, Z) + S47Relief::Off(X, Z) + S47Relief::HillLift(X, Z);
+	// CALICHE-GROUND: a site's pad, its banks and its cuts (S47GroundEdits), on the desert alone and only while the relief is on.
+	if (bEdits) Y = S47GroundEdits::Apply(X, Z, Y);
 	if (Ax <= HWY.Margin) Y = FMath::Max(Y, HLow(X, Z) + DropY(Ax, HWY.Flat, HWY.Margin));
 	if (T.D <= TRK.Margin) Y = FMath::Max(Y, HLow(X, Z) + DropY(T.D, TRK.Flat, TRK.Margin));
 	return Y;
 }
+}
+
+double SurfaceY(double X, double Z) { return SurfaceWith(X, Z, true); }
+double NaturalY(double X, double Z) { return SurfaceWith(X, Z, false); }
 
 double RanchZ(double X) { return 196 + (X - 15) * 0.012 + FMath::Sin(X * 0.021) * 1.2; }
 

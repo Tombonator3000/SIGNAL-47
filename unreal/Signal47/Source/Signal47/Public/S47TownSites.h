@@ -29,6 +29,7 @@ namespace S47TownSites
 		bool bRound = false;                        // a cylinder (the tank, a pole) instead of a box
 		FString Use;                                // N1110: what a look at it picks (an interactable's id, FS47Breather's); empty: none
 		bool bKeep = false;                         // stays up beside the site's real model (a flagpole); the others are its stand-in
+		FString Group;                              // "merry": the piece of the outside it belongs to; a bought piece that replaces the group hides it (FDress)
 	};
 	// Words on a board or a wall: where, which way they face (degrees clockwise from north, before the site is turned), how big.
 	struct FWords { FString Text; double X = 0, Z = 0, Up = 2, Facing = 90, Size = 1; bool bLight = false; bool bKeep = false; }; // bLight: pale paint on a dark board; bKeep: as FPart's
@@ -74,6 +75,14 @@ namespace S47TownSites
 		double PadX0 = 0, PadX1 = 0, PadZ0 = 0, PadZ1 = 0, PadBank = 5; uint32 PadColour = 0xb7a98c;
 		// The pad's top as drawn, in pieces (a ring that leaves the model's own apron, light wells and areaway open); empty: the whole rectangle.
 		TArray<FWall> PadTops;
+		// CALICHE-GROUND: where the land is taken away (S47GroundEdits::FCut), down to GroundCutY over the ground floor.
+		TArray<FWall> GroundCuts; double GroundCutY = 0;
+		// SCHOOL-PLAYGROUND (Tom, 12 November): bought Cosmos pieces on the site (Tools/cosmosplayground, /Game/Licensed/CosmosPlayground,
+		// Git-ignored, loaded only if present), from Config/Props/<DressFile>: where the bottom centre of each piece's turned bounds goes
+		// in the site's metres, its yaw on top of the site's, a walk block, and the group of boxes it stands in for. Without the asset
+		// the boxes stay.
+		struct FDress { FString Id, Asset, Replaces; double X = 0, Z = 0, Yaw = 0, Scale = 1; bool bCollide = false; };
+		FString DressFile; TArray<FDress> Dress;
 	};
 	// SCHOOL-V2 stage 3: the sites whose real model stands (set by Build; the walls, floors and footprint above count only then).
 	const TSet<FString>& ModelsUp();
@@ -94,6 +103,8 @@ namespace S47TownSites
 	TArray<FBox2D> SolidFootprints();
 	// The catalogue's entries for these sites (S47EventPlaces appends them to its own list); a landmark is not one.
 	TArray<FS47EventPlace> EventPlaces();
+	/** A site's DressFile read (Config/Props): false when it is there and does not read. */
+	bool ReadDress(const FString& File, TArray<FSite::FDress>& Out, FString* Error = nullptr);
 	bool SelfTest(TArray<FString>& Lines);
 }
 
@@ -121,9 +132,10 @@ private:
 	TWeakObjectPtr<AS47Web> Scene;
 	// bModel: the site's real model; bByModel: a stand-in hidden for good while the model stands.
 	// PadSide: the pad's top (-1) or one of its banks (0 east, 1 west, 2 south, 3 north); -2: not the pad.
-	struct FBuiltPart { FString Site; int32 Part = -1; bool bWords = false; int32 Words = -1; bool bModel = false, bByModel = false; int32 PadSide = -2, PadPiece = 0; TWeakObjectPtr<USceneComponent> Comp; };
+	struct FBuiltPart { FString Site; int32 Part = -1; bool bWords = false; int32 Words = -1; bool bModel = false, bByModel = false; int32 PadSide = -2, PadPiece = 0, Dress = -1; TWeakObjectPtr<USceneComponent> Comp; };
 	TArray<FBuiltPart> Parts;
 	TSet<FString> SeatedSites;
+	TSet<FString> DressedGroups; // "school:merry": the boxes a bought piece stands in for
 	TArray<FS47Obstacle> Obstacles; // as added to the road's drive area, world terms
 	bool bBuilt = false, bActive = false, bDriveAdded = false;
 	double SeatIn = 0;

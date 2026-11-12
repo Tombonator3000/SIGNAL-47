@@ -1,4 +1,5 @@
 #include "S47GroundCover.h"
+#include "S47GroundEdits.h"
 #include "S47Relief.h"
 #include "S47FarmBuildings.h"
 #include "S47MotelV2.h"
@@ -235,6 +236,7 @@ void SetField(const TArray<FS47FloraRect>& Zones)
 double RoadCover(double X, double Z)
 {
 	using namespace S47RoadShape;
+	if (S47GroundEdits::Clears(X, Z, .4)) return 0;   // CALICHE-GROUND: a site's pad, bank or cut
 	const double Ax = FMath::Abs(X), J = Ragged(X, Z);
 	double D = 1;
 	if (Z > HWY.Z0 && Z < HWY.Z1)
