@@ -63,6 +63,7 @@ FS47FreeformSession::FTerminalIdle FS47FreeformSession::TerminalIdle(int32 Scree
  if(Screen==0)
  {
   // per dish: 0 on the line, 1 not answering remotely, 2 moving
+  I.Dish.Reserve(M->Web->DishCount());
   for(int32 D=0;D<M->Web->DishCount();++D)I.Dish.Add(M->Web->DishMoving(D)?2:M->Web->DishRemoteAvailable(D)?0:1);
  }
  else if(Screen==1)

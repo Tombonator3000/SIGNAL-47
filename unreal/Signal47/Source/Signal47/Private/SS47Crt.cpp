@@ -120,6 +120,7 @@ void SS47Crt::Tracking(const FGeometry& G, FSlateWindowElementList& Out, int32 L
 	auto Circle = [&](float Rad, const FLinearColor& C, float W)
 	{
 		TArray<FVector2f> Pts;
+		Pts.Reserve(49);
 		for (int32 i = 0; i <= 48; ++i) { const float A = i / 48.f * 2 * PI; Pts.Add(FVector2f(Cx + FMath::Cos(A) * Rad, Cy + FMath::Sin(A) * Rad)); }
 		FSlateDrawElement::MakeLines(Out, Layer + 1, G.ToPaintGeometry(), Pts, ESlateDrawEffect::None, C, true, W);
 	};
