@@ -95,9 +95,15 @@ namespace S47TownSitesLocal
 			S.PlaceX = -26; S.PlaceZ = 0; S.EntryX = -18.5; S.EntryZ = 0;
 			S.Parts.Add(Box(-12.5, 0, 11, 60, 4.2, Grey));          // the classroom wing: x 30 to 41, z 2215 to 2275
 			S.Parts.Add(Box(5, -2, 24, 30, 8, GreyDark));            // the gym: x 41 to 65
-			{ FPart Pole = Box(-21, 0, .14, .14, 9, Steel, false); Pole.bRound = true; S.Parts.Add(Pole); }
+			{ FPart Pole = Box(-25, 0, .14, .14, 9, Steel, false); Pole.bRound = true; Pole.bKeep = true; S.Parts.Add(Pole); }   // the flagpole: 4 m before the model's front steps (stage 2)
 			S.Words.Add({ S.Sign, -18.06, 0, 3.1, 270, .9 });
 			S.Words.Add({ TEXT("GYM (TEMP)"), -6.94, -2, 6.4, 270, .8 });
+			// SCHOOL-V2-20261112 stage 2: the real school (Docs/Design/World/CalicheSchool_V2, ~/Assets/signal47-free/own/caliche_school),
+			// 28 x 24 m, a basement under its north half. Its front door is in the middle of its south wall: turned a quarter clockwise it
+			// faces the highway, the front steps at x 25.5 and the flagpole before them. The mesh's pivot is the middle of its base, 3.6 m
+			// under the ground floor; the yard lies 0.6 m under the floor (the spec's Z_TERRAIN), so the pivot goes 3 m into the ground.
+			S.Model = TEXT("/Game/Free/Town/caliche_school/StaticMeshes/caliche_school.caliche_school");
+			S.ModelX = -8; S.ModelZ = 0; S.ModelYaw = 90; S.ModelLift = 3.0;
 		}
 		else if (S.Id == TEXT("baca"))
 		{
@@ -404,8 +410,25 @@ bool FS47TownSites::Build()
 		D->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(Hex)); D->SetScalarParameterValue(TEXT("Roughness"), .9f); D->SetScalarParameterValue(TEXT("NativeLighting"), 1);
 		return Mats.Add(Hex, D);
 	};
+	int32 Models = 0;
 	for (const FSite& S : Sites())
 	{
+		// The site's real model, when its asset is there (SCHOOL-V2 stage 2); the stand-in boxes and their words go unseen then.
+		UStaticMesh* Model = S.Model.IsEmpty() ? nullptr : LoadObject<UStaticMesh>(nullptr, *S.Model);
+		if (!S.Model.IsEmpty() && !Model) { UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites: %s has no model at %s (Tools/freemodels/import_free.sh): its boxes stand"), *S.Id, *S.Model); }
+		if (Model)
+		{
+			UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("S47Site_%s_Model"), *S.Id));
+			C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(W->GetRootComponent());
+			C->SetStaticMesh(Model); C->SetCastShadow(true);
+			// As the boxes: sight, camera and use rays stop at its walls (complex collision from the import); the walker and the truck are
+			// still held by the stand-in boxes' footprints until the walls get colliders of their own (stage 3).
+			C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetCollisionResponseToAllChannels(ECR_Ignore);
+			C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
+			C->RegisterComponent();
+			FBuiltPart B; B.Site = S.Id; B.bModel = true; B.Comp = C; Parts.Add(B);
+			++Models;
+		}
 		for (int32 I = 0; I < S.Parts.Num(); ++I)
 		{
 			const FPart& P = S.Parts[I];
@@ -417,7 +440,7 @@ bool FS47TownSites::Build()
 			C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetCollisionResponseToAllChannels(ECR_Ignore);
 			C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
 			C->RegisterComponent();
-			FBuiltPart B; B.Site = S.Id; B.Part = I; B.Comp = C; Parts.Add(B);
+			FBuiltPart B; B.Site = S.Id; B.Part = I; B.bByModel = Model && !P.bKeep; B.Comp = C; Parts.Add(B);
 		}
 		for (int32 I = 0; I < S.Words.Num(); ++I)
 		{
@@ -431,10 +454,11 @@ bool FS47TownSites::Build()
 			T->SetTextRenderColor(bOnBoard ? FColor(236, 232, 214) : FColor(32, 30, 28));
 			T->SetCollisionEnabled(ECollisionEnabled::NoCollision); T->SetCastShadow(false);
 			T->RegisterComponent();
-			FBuiltPart B; B.Site = S.Id; B.bWords = true; B.Words = I; B.Comp = T; Parts.Add(B);
+			FBuiltPart B; B.Site = S.Id; B.bWords = true; B.Words = I; B.bByModel = Model && !Wd.bKeep; B.Comp = T; Parts.Add(B);
 		}
 	}
 	for (const FSite& S : Sites()) Seat(S.Id, false);
+	ShowAll(true);
 	// Into the road's area, so that they come and go with it as the town does. A part with a use is what a look picks for it (N1110).
 	UseNodes.Reset();
 	for (const FBuiltPart& B : Parts)
@@ -449,7 +473,7 @@ bool FS47TownSites::Build()
 		if (!UseNodes.Contains(Use)) UseNodes.Add(Use, Node);
 	}
 	bBuilt = true;
-	UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites built: %d sites, %d parts and boards"), Sites().Num(), Parts.Num());
+	UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites built: %d sites, %d parts and boards, %d real models"), Sites().Num(), Parts.Num(), Models);
 	return true;
 }
 
@@ -477,7 +501,25 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 		if (B.Site != Site) continue;
 		USceneComponent* C = B.Comp.Get();
 		if (!C) continue;
-		if (!B.bWords)
+		if (B.bModel)
+		{
+			// The real model stands on the highest ground under its footprint (its floor 0.6 m over the yard at the front door, the
+			// foundation showing more where the land falls away), its pivot ModelLift under that.
+			const UStaticMeshComponent* SMC = Cast<UStaticMeshComponent>(C);
+			const FBox Bounds = SMC && SMC->GetStaticMesh() ? SMC->GetStaticMesh()->GetBoundingBox() : FBox(FVector(-100), FVector(100));
+			const double Yaw = FMath::DegreesToRadians(S->ModelYaw);
+			double Hi = -TNumericLimits<double>::Max();
+			for (const FVector2D& K : { FVector2D(0, 0), FVector2D(Bounds.Min.X, Bounds.Min.Y), FVector2D(Bounds.Max.X, Bounds.Min.Y), FVector2D(Bounds.Max.X, Bounds.Max.Y), FVector2D(Bounds.Min.X, Bounds.Max.Y) })
+			{
+				// a corner of the mesh (Unreal centimetres, x east, y south) turned by the model's own yaw, in the site's metres
+				const double LX = (K.X * FMath::Cos(Yaw) - K.Y * FMath::Sin(Yaw)) * .01, LZ = (K.X * FMath::Sin(Yaw) + K.Y * FMath::Cos(Yaw)) * .01;
+				const FVector2D At = ToRoad(*S, S->ModelX + LX, S->ModelZ + LZ);
+				Hi = FMath::Max(Hi, Ground(At.X, At.Y, bWithFloor));
+			}
+			const FVector2D At = ToRoad(*S, S->ModelX, S->ModelZ);
+			C->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + At.X, Hi - S->ModelLift, Road.Z + At.Y)), FRotator(0, S->Yaw + S->ModelYaw, 0));
+		}
+		else if (!B.bWords)
 		{
 			const FPart& P = S->Parts[B.Part];
 			const FVector2D At = ToRoad(*S, P.X, P.Z);
@@ -614,8 +656,10 @@ void FS47TownSites::ShowAll(bool bShow)
 	for (const FBuiltPart& B : Parts)
 		if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(B.Comp.Get()))
 		{
-			C->SetHiddenInGame(!bShow);
-			if (!B.bWords) C->SetCollisionEnabled(bShow ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+			// A stand-in the site's real model replaces stays unseen (and does not stop a ray) for good.
+			const bool bOn = bShow && !B.bByModel;
+			C->SetHiddenInGame(!bOn);
+			if (!B.bWords) C->SetCollisionEnabled(bOn ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 		}
 }
 

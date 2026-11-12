@@ -82,7 +82,10 @@ def folder_bytes(path):
 	return n
 
 
-def finish_mesh(sm, nanite, full_uv=False):
+def finish_mesh(sm, nanite, full_uv=False, complex_collision=False):
+	if complex_collision:
+		# a building the player walks into (the school): its own triangles are its collision, no convex hull round the whole
+		sm.get_editor_property('body_setup').set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
 	ns = sm.get_editor_property('nanite_settings')
 	if ns.get_editor_property('enabled') != nanite:
 		ns.set_editor_property('enabled', nanite)
@@ -152,7 +155,7 @@ for entry in plan:
 		if len(meshes) > 1:
 			log('WARN %s: %d meshes, not combined' % (part['asset'], len(meshes)))
 		for sm in meshes:
-			finish_mesh(sm, part['nanite'], entry.get('full_uv', False))
+			finish_mesh(sm, part['nanite'], entry.get('full_uv', False), entry.get('complex_collision', False))
 		sm = meshes[0]
 		box = sm.get_bounding_box()
 		lo, hi = box.min, box.max

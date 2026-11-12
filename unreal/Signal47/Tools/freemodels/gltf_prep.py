@@ -447,7 +447,8 @@ def prepare(work, report=False):
 		else:
 			parts.append({'name': name, 'roots': roots, 'lo': lo, 'hi': hi, 'tris': tris})
 		entry = dict(c, name=name, category=cfg['category'], scale=scale, alpha=alpha, meshes=meshes, masked=alpha_fix,
-			raw_size_m=[round(hi[k] - lo[k], 4) for k in range(3)], full_uv=bool(cfg.get('full_uv')), parts=[])
+			raw_size_m=[round(hi[k] - lo[k], 4) for k in range(3)], full_uv=bool(cfg.get('full_uv')),
+			complex_collision=bool(cfg.get('complex_collision')), parts=[])
 		# trim: the old building cut out of the exported town (trim_web.py), imported with the model
 		# S47_FREE_KEEP_TRIM=1: the model changes, the cut of the old town does not (import_free.py keeps the
 		# trim it already has); for when the web export the cut is made from is no longer on disk

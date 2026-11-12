@@ -28,9 +28,10 @@ namespace S47TownSites
 		bool bSolid = true;                         // stops the walker and the truck, and is drawn on the sheet
 		bool bRound = false;                        // a cylinder (the tank, a pole) instead of a box
 		FString Use;                                // N1110: what a look at it picks (an interactable's id, FS47Breather's); empty: none
+		bool bKeep = false;                         // stays up beside the site's real model (a flagpole); the others are its stand-in
 	};
 	// Words on a board or a wall: where, which way they face (degrees clockwise from north, before the site is turned), how big.
-	struct FWords { FString Text; double X = 0, Z = 0, Up = 2, Facing = 90, Size = 1; bool bLight = false; }; // bLight: pale paint on a dark board
+	struct FWords { FString Text; double X = 0, Z = 0, Up = 2, Facing = 90, Size = 1; bool bLight = false; bool bKeep = false; }; // bLight: pale paint on a dark board; bKeep: as FPart's
 	struct FSite
 	{
 		FString Id;        // "trailers": the place catalogue's id, the colliders' and components' names
@@ -46,6 +47,11 @@ namespace S47TownSites
 		TArray<FWords> Words;
 		// N1110: a landmark that is there for good (the Breather), not a temporary box: no "(TEMP)", and not a place for events.
 		bool bLandmark = false;
+		// SCHOOL-V2 stage 2: the site's real model (a static mesh from Tools/freemodels, /Game/Free; Content/Free is not in Git), stood
+		// up when the asset is there. The parts and words without bKeep are hidden while it stands (their footprints still hold the
+		// walker and the truck); without the asset the boxes stay as they were. ModelX/Z: the mesh's pivot (the middle of its base) in
+		// the site's metres; ModelYaw: turned on top of the site's; ModelLift: how far the pivot goes under the ground (a basement).
+		FString Model; double ModelX = 0, ModelZ = 0, ModelYaw = 0, ModelLift = 0;
 	};
 	// Every site, built once from Spots and the shapes below; fixed after that.
 	const TArray<FSite>& Sites();
@@ -84,7 +90,8 @@ private:
 	TMap<FString, int32> UseNodes; // a use's id to the first node of a part that carries it
 	US47Main* M = nullptr;
 	TWeakObjectPtr<AS47Web> Scene;
-	struct FBuiltPart { FString Site; int32 Part = -1; bool bWords = false; int32 Words = -1; TWeakObjectPtr<USceneComponent> Comp; };
+	// bModel: the site's real model; bByModel: a stand-in hidden for good while the model stands.
+	struct FBuiltPart { FString Site; int32 Part = -1; bool bWords = false; int32 Words = -1; bool bModel = false, bByModel = false; TWeakObjectPtr<USceneComponent> Comp; };
 	TArray<FBuiltPart> Parts;
 	TSet<FString> SeatedSites;
 	TArray<FS47Obstacle> Obstacles; // as added to the road's drive area, world terms
