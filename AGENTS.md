@@ -39,3 +39,19 @@ Under utvikling gjelder «Iterer først, test tungt mot slutten» i `unreal/AGEN
 ## Gjeldende dokumentasjon
 
 Start i [Docs/README.md](Docs/README.md). `Docs/Active/STATUS.md`, `TODO.md` og `DECISIONS.md` er de eneste samlede kildene til leveringsstatus, aktiv arbeidsliste og beslutninger. `unreal/OPPGAVER.md` fører koordinering, `unreal/log.md` historikk. Følg [dokumentreglene](Docs/AGENTS.md); ikke opprett parallelle «current»-filer eller kopier gamle statuspåstander inn i nye oversikter.
+
+## Fast regel: undersøkelse, sniking, jakt og flukt i bygg
+
+Bestemt av Tom 12. november 2026. Gjelder alle nye og reviderte plansjer og bygg i SIGNAL / 47, inkludert konsept, romplan, blokkering og ferdig miljø.
+
+- Planlegg bygget for at spilleren undersøker noe og kan bli oppdaget eller jaget. Vis formålet med rommene og veien inn, mellom spor og ut.
+- Viktige undersøkelsesområder skal ha minst to brukbare rutevalg: dører mellom rom, rundløyper, alternativ korridor eller troverdig ekstra utgang. Hovedkorridoren og samme trapp skal ikke være eneste vei ut av alle områder. Flere dører alene er ikke nok; tegn sammenhengende ruter gjennom faktiske åpninger.
+- Legg inn forbindelsesdører mellom naturlig tilstøtende rom. Unngå en serie rom med bare én dør tilbake til samme jaktkorridor. Behold troverdig funksjon og privatliv; ikke lag gjennomgang mellom toalett og klasserom bare for å få flere dører.
+- Lag siktbrudd, skjul og plass til å snike rundt møbler uten å sperre ganglinjene. Gjennomsiktig glass eller lav dekor gir ikke automatisk skjul. Skjul bryter sikt; det gir ikke automatisk immunitet mot en trussel som så spilleren gå inn.
+- Spre innganger og utganger slik at spilleren kan skifte retning og slippe unna. Når byggets størrelse tillater det, gi kjeller og andre utsatte etasjer en alternativ forbindelse til uteområdet. En liten enromsbygning kan løse dette med to utganger og utvendig rute.
+- Fluktruter skal fungere i begge retninger. En påkrevd flukt skal ikke plutselig kreve en ukjent nøkkel, en uvarslet interaksjon eller en mekanikk spillet ikke har. Marker eventuelle låser og enveispunkter, og bevar en lesbar alternativ rute når jakt kan starte.
+- Plansjer skal vise dørenes veggåpninger, forbindelser, etasjer/trapper, utganger, rundløyper, siktbrudd og foreslåtte skjul. Tekst og bilde må være enige. Angi presise forbindelser og mål i byggegrunnlaget hvis bildet er skjematisk.
+- Kontroller ruten med blokkert hovedinngang og blokkert hovedtrapp før detaljering. Test deretter med spillerens faktiske kollisjon, dører, trapp, sikt og eventuell fiende i Unreal. En romgraf er en designkontroll, ikke bevis på fungerende jakt eller AI.
+- Rolige rom og avgrensede blindveier kan brukes bevisst. Ikke legg obligatoriske spor i en felle uten en kjent løsning. Bygget skal støtte mulig jakt; dette pålegger ikke en jakt i alle bygg.
+
+Eksempel: [Caliche-skolen V2](Docs/Design/World/CalicheSchool_V2/BYGGESPESIFIKASJON_V2.md). Se også [designbibelen](Docs/DesignBible-2026-10-27/DESIGNBIBEL.md).
