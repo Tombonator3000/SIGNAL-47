@@ -1,7 +1,9 @@
 #include "S47Attention.h"
 #include "S47DevEvents.h"
 #include "S47DoorLoop.h"
+#include "S47EventPlaces.h"
 #include "S47EventScript.h"
+#include "S47FarmSite.h"
 #include "S47FieldCamera.h"
 #include "S47FieldRadio.h"
 #include "S47Flashlight.h"
@@ -39,6 +41,8 @@ namespace S47AttentionLocal
  const TCHAR* const VisitId=TEXT("attention_visit");
  const TCHAR* const VisitHeld=TEXT("attention_visit_held");
  const TCHAR* const VisitEscaped=TEXT("attention_visit_escaped");
+ const TCHAR* const FeederTrace=TEXT("attention_sab_feeder"); // POWER-CHOICE-20261112: at the panel, with the lockout the sabotage left
+ const TCHAR* const FeederPlace=TEXT("feeder"); // its place on the list (FS47EventPlaces, PT-FEEDER-20261109)
  // A sabotage on the mains: a short sag, then out long enough that the standby generator matters.
  constexpr double SabSag=20,SabOut=150;
  // Marks are walked into within this, and left beyond the second (so a step out and back is not a return).
@@ -113,6 +117,7 @@ void FS47Attention::Begin(const S47J::FObj& Saved)
  for(const FString& Id:S47J::Strs(Saved,TEXT("claims")))Claims.Add(Id);
  // An older save, or one from before anything counted: what is already recorded is not counted again on the first step.
  bBaseline=S47J::Has(Saved,TEXT("score"));
+ MarkNight=FeederNight=GenNight=0;GenFor=0;
  bDev=bTruckArmed=false;WarnWait=SabWait=VisitWait=StareFor=VisitT=0;ChaseDist=-1;SpareIn=-1;LearnNight=0;TellNight=0;bHintSaid=false;Visit=EVisit::None;Who=0;TakenBefore=0;
  Returns.Reset();NearMarks.Reset();ReturnNight=0;
 }
@@ -208,6 +213,19 @@ void FS47Attention::Gains(double Dt)
  }
  if(const FS47FreeformSession::FJob* Now=F->CurrentJob())if(Now->bAnomaly&&Now->Stage==FS47FreeformSession::EJobStage::Integrating&&F->HasPowerForReactiveLight())Add(TrackPerSec*Dt,TEXT("the array held on it"));
  if(F->Director)for(const auto& C:F->Director->PhotoClaims())if(!Claims.Contains(C.Id)){Claims.Add(C.Id);Add(PhotoGain(C.Quality),TEXT("a photograph of it"));}
+ // POWER-CHOICE-20261112: the standby generator is loud. Run in the dark hours it is heard out there, wherever the player is; said once a night at SARO.
+ if(F->Field&&F->Field->GeneratorRunning()&&WarnHours(FMath::Fmod(FMath::Max(0.,F->Clock()),86400.)/3600.))
+ {
+  Add(GenPerSec*Dt,TEXT("the standby generator running in the dark"));
+  GenFor+=Dt;
+  const int32 GenNow=FS47FreeformSession::NightOf(F->Clock());
+  if(GenNight!=GenNow&&GenFor>=GenWordAfter&&AtSaro()&&M->UI&&!M->ModalOpen())
+  {
+   GenNight=GenNow;
+   M->UI->Thought(TEXT("That generator is loud. Out here it carries for miles, and anything out there can hear where I am."),5.f);
+  }
+ }
+ else GenFor=0;
  // Out there, on foot: what the player does about what is near (FS47Omen's sources, the same the gear reads).
  if(!M->Player||!M->Omen||(M->World&&M->World->bDriving)){StareFor=0;ChaseDist=-1;return;}
  const FS47Cam Cam=FS47Cam::Of(M->Player.Get());
@@ -348,19 +366,25 @@ bool FS47Attention::SabOver() const
  switch(Sab)
  {
  case ESab::Relay:return !F->Field||!F->Field->HasArrayFault();
- case ESab::Mains:return !F->SkyCutLive();
+ case ESab::Mains:return !F->SkyCutLive()&&!F->PowerFault(); // POWER-CHOICE-20261112: the lockout it leaves is still its own
  case ESab::Lamp:return !L||!L->bHave||L->BatteryLevel()>=.5;
  case ESab::Truck:return !bTruckArmed&&!(M->World&&M->World->Trouble.WantsKey());
  default:return true;
  }
 }
 
-bool FS47Attention::DoSabotage(bool bForced)
+bool FS47Attention::FeederFault() const
+{
+ const FS47FreeformSession* F=S47AttentionLocal::Session(M);
+ return F&&FeederSabotaged(Sab,F->PowerFault(),F->SkyCutLive());
+}
+
+bool FS47Attention::DoSabotage(bool bForced,ESab Want)
 {
  using namespace S47AttentionLocal;
  FS47FreeformSession* F=Session(M);
  if(!F||Sab!=ESab::None)return false;
- const ESab K=PickSab(AtSaro(),F->Seed(),SabCount,LastSab,[this](ESab X){return CanSab(X);});
+ const ESab K=Want!=ESab::None?(CanSab(Want)?Want:ESab::None):PickSab(AtSaro(),F->Seed(),SabCount,LastSab,[this](ESab X){return CanSab(X);});
  bool bDone=false;
  switch(K)
  {
@@ -392,12 +416,49 @@ void FS47Attention::StepSabotage(double Dt,double Hour,int32 Night,int32 Day)
   if(M->World->bDriving&&M->World->Trouble.WantsKey())Play(SabScript(ESab::Truck,bSabB));
  }
  if(Sab!=ESab::None&&SabOver()){UE_LOG(LogS47Attention,Display,TEXT("S47: attention: the %s is put right"),SabName(Sab));Sab=ESab::None;}
+ StepFeeder(Night);
  if(Value<SabotageAt||Day<FirstDay||SabNight==Night||Sab!=ESab::None||!SabotageHours(Hour)){SabWait=0;return;}
  FString Why;
  if(FS47ScriptPlayer::BigEvent(M,Why))return;
  if((SabWait+=Dt)<SabotageDelay)return;
  SabWait=0;
  if(DoSabotage(false))SabNight=Night;
+}
+
+// POWER-CHOICE-20261112 (see the header): while the feeder's lockout is this sabotage's, the remote feeder is a place they have been at.
+void FS47Attention::StepFeeder(int32 Night)
+{
+ using namespace S47AttentionLocal;
+ FS47FreeformSession* F=Session(M);
+ if(!F||!FeederFault())return;
+ // The marks, once a night, as the lights leave them anywhere: what comes to them, and when, is the lights site's and the night's.
+ if(MarkNight!=Night){MarkNight=Night;ArmFeeder();}
+ // The trace, the first time the player is on foot at the panel tonight.
+ if(FeederNight==Night||!F->Field||!M->Web||M->Web->Area()!=TEXT("road")||!M->Player||!M->World||M->World->bDriving||M->ModalOpen())return;
+ const FVector Panel=F->Field->InteractionPoint(TEXT("ff:feeder"));
+ if(Panel.IsZero()||FVector2D(M->Player->Pos.X-Panel.X,M->Player->Pos.Z-Panel.Z).Size()>FeederNear)return;
+ FeederNight=Night;
+ UE_LOG(LogS47Attention,Display,TEXT("S47: attention: the player is at the feeder they opened (night %d)"),Night);
+ if(!Play(FeederTrace)&&M->UI)M->UI->Thought(TEXT("Nobody trips a feeder like that. The fuse is black from the inside."),5.f);
+}
+
+bool FS47Attention::ArmFeeder()
+{
+ using namespace S47AttentionLocal;
+ FS47FreeformSession* F=Session(M);
+ if(!F||!F->FarmSite||!F->EventPlaces||!F->Director)return false;
+ // Marks standing already (somewhere else tonight, or these after a Continue) are left as they are: one site at a time.
+ if((F->FarmSite->Armed()&&!F->FarmSite->Raked())||F->FarmSite->FieldVisit()||F->FarmSite->VisitWantsGround())
+ {
+  UE_LOG(LogS47Attention,Display,TEXT("S47: attention: marks already stand at %s; none put at the feeder"),*F->FarmSite->PlaceId());
+  return false;
+ }
+ const FS47EventPlace* P=F->EventPlaces->Find(FeederPlace);
+ const FVector At=P?F->Director->LightPlacePoint(FeederPlace):FVector::ZeroVector;
+ if(!P||At.IsZero()){UE_LOG(LogS47Attention,Display,TEXT("S47: attention: the feeder is not on the place list yet; no marks at it"));return false;}
+ F->FarmSite->Arm(F->Clock(),P->Id,P->Title,FS47EventPlaces::AreaOf(*P),At);
+ UE_LOG(LogS47Attention,Display,TEXT("S47: attention: marks at the feeder they opened (%s)"),*P->Title);
+ return true;
 }
 
 void FS47Attention::StepVisitDraw(double Dt,double Hour,int32 Night,int32 Day)
@@ -490,6 +551,8 @@ void FS47Attention::AddDevLines()
  Line(TEXT("Attention: calm (0)"),TEXT("nothing more comes of it"),[](FS47Attention& A){A.bDev=true;A.Value=0;return A.Status();});
  Line(TEXT("Attention: warnings (30)"),TEXT("a warning in about a minute, in its hours, whatever was warned tonight"),[](FS47Attention& A){A.bDev=true;A.Value=FMath::Max(A.Value,30.);A.WarnNight=0;A.WarnWait=WarnDelay;return A.Status();});
  Line(TEXT("Attention: sabotage now"),TEXT("one piece of equipment, now, past the hour (one at a time)"),[](FS47Attention& A){A.bDev=true;A.Value=FMath::Max(A.Value,55.);const bool bDone=A.DoSabotage(true);if(bDone&&A.M&&A.M->Freeform)A.SabNight=FS47FreeformSession::NightOf(A.M->Freeform->Clock());return bDone?A.Status():FString(TEXT("nothing to sabotage here now, or one is still out: "))+A.Status();});
+ // POWER-CHOICE-20261112: the transformer's one, with its 20 s sag and 150 s outage before the feeder locks out and the marks go out to it.
+ Line(TEXT("Attention: sabotage the mains now (feeder lockout)"),TEXT("at SARO: the sag, the mains out about three minutes, then the feeder locks out with marks at it"),[](FS47Attention& A){A.bDev=true;A.Value=FMath::Max(A.Value,55.);const bool bDone=A.DoSabotage(true,ESab::Mains);if(bDone&&A.M&&A.M->Freeform)A.SabNight=FS47FreeformSession::NightOf(A.M->Freeform->Clock());return bDone?A.Status():FString(TEXT("the mains cannot be taken now (a fault or a cut already, or one still out): "))+A.Status();});
  Line(TEXT("Attention: a visit (80)"),TEXT("a visit at SARO in half a minute once its hours and the rules allow"),[](FS47Attention& A){A.bDev=true;A.Value=FMath::Max(A.Value,80.);A.VisitNight=0;return A.Status();});
  Line(TEXT("Attention: a visit now (at SARO)"),TEXT("past the hour and the dice; at SARO, not driving"),[](FS47Attention& A){A.bDev=true;A.Value=FMath::Max(A.Value,80.);if(!A.AtSaro())return FString(TEXT("at SARO only"));A.BeginVisit();return A.Status();});
 }
@@ -558,6 +621,15 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
    int32 B=0;for(int32 N=1;N<=200;++N)B+=SabVariantB(7,N);
    Check(B>60&&B<140&&SabVariantB(7,5)==SabVariantB(7,5)&&SabScript(ESab::Relay,false)==TEXT("attention_sab_relay")&&SabScript(ESab::Truck,true)==TEXT("attention_sab_truck_b"),FString::Printf(TEXT("N1110 (sabvar): the wording is drawn per night, both about half the time (%d of 200 on b), and named attention_sab_<kind>[_b]"),B));
   }
+  // POWER-CHOICE-20261112: the transformer's fault, and the generator's noise against the county crew's hours.
+  Check(FeederSabotaged(ESab::Mains,true,false)&&!FeederSabotaged(ESab::Mains,true,true)&&!FeederSabotaged(ESab::Mains,false,false)&&!FeederSabotaged(ESab::Relay,true,false)&&!FeederSabotaged(ESab::None,true,false),
+   TEXT("POWER-CHOICE: a feeder fault is the sabotage's only once the mains it took have locked out, and only the mains'"));
+  {
+   const double DarkHour=45.*60./11.; // seconds of play in a game hour of the dark (11 hours in 45 minutes)
+   const double ToCrew=GenPerSec*DarkHour*FS47FreeformSession::SkyFaultMinutes/60.,AllNight=GenPerSec*DarkHour*11.;
+   Check(ToCrew>=10&&SabotageAt+ToCrew<VisitAt&&SabotageAt+AllNight>=VisitAt&&WarnHours(23.5)&&WarnHours(3)&&!WarnHours(12),
+    FString::Printf(TEXT("POWER-CHOICE: the generator is heard in the dark: run until the county crew comes it adds %.1f (from the sabotage's level near a visit, not to one by itself); a whole night of it, %.1f, brings one"),ToCrew,AllNight));
+  }
   bool bNames=true;for(ESab K:{ESab::Relay,ESab::Mains,ESab::Lamp,ESab::Truck})bNames&=SabFrom(SabName(K))==K;
   Check(bNames&&SabFrom(TEXT("printer"))==ESab::None,TEXT("each kind keeps its name in the save"));
  }
@@ -576,6 +648,7 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
   TArray<FString> Ids=WarnScripts();
   Ids.Append({S47AttentionLocal::TellId,S47AttentionLocal::HintRule,S47AttentionLocal::HintNeutral,S47AttentionLocal::HintVisit,S47AttentionLocal::VisitId,S47AttentionLocal::VisitHeld,S47AttentionLocal::VisitEscaped});
   for(ESab K:{ESab::Relay,ESab::Mains,ESab::Lamp,ESab::Truck}){Ids.Add(SabScript(K,false));Ids.Add(SabScript(K,true));} // N1110 (sabvar): both wordings
+  Ids.Add(S47AttentionLocal::FeederTrace); // POWER-CHOICE-20261112
   int32 Found=0;bool bClean=true;FString First;
   for(const FString& Id:Ids)
   {
@@ -614,6 +687,10 @@ bool FS47Attention::SelfTest(TArray<FString>& Lines)
     Check(!HintForced(2,3)&&!HintForced(3,1.9)&&!HintForced(3,20)&&HintForced(3,2)&&HintForced(3,5)&&!HintForced(3,5.6)&&HintForced(4,19),TEXT("N1110 (pace, critic 3): the day-3 hint cannot be skipped: after 02:00 on day 3, and at the first quiet moment from day 4"));
     Check(!HintQuietEnough(9,99)&&!HintQuietEnough(99,9)&&HintQuietEnough(10,10),TEXT("N1110 (pace, critic 2): the hint waits ten game minutes after the night's start and after Dale's last line"));
    }
+   // POWER-CHOICE-20261112: at the feeder the night goes still before anything is said, the trace is kept, and no tube is spent there.
+   if(const FS47EventScript* Fd=S47EventScript::Find(S47AttentionLocal::FeederTrace))
+    Check(Fd->Beats.Num()>0&&Fd->Beats[0].Do==ES47Beat::Silence&&Fd->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Evidence&&B.Key.StartsWith(TEXT("attention_feeder_d"));})&&!Fd->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Tube||B.Do==ES47Beat::CameraSnap;}),
+     TEXT("POWER-CHOICE: the feeder's trace starts in silence, keeps its record, and spends no tube and snaps no camera"));
    if(Hn)Check(Hn->Beats.Num()>0&&Hn->Beats[0].At>=10,TEXT("Dale's hint comes 10 s or more after the warning starts"));
    if(Hn)Check(Hn->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Line&&B.Text.Contains(TEXT("hold still"));}),TEXT("N1110 (pace): Dale's word gives the rule once: kill the lamp and hold still"));
    if(Dg)Check(Dg->Beats.ContainsByPredicate([](const FS47Beat& B){return B.Do==ES47Beat::Silence;}),TEXT("the dog warning goes quiet"));

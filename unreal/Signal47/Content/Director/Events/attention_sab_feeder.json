@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "id": "attention_sab_feeder",
+  "name": "The remote feeder they opened",
+  "notes": "POWER-CHOICE-20261112. Played by FS47Attention (S47Attention.cpp, StepFeeder) the first time a night the player is on foot within 14 m of the remote feeder's panel (ff:feeder, road) while the feeder's lockout is the mains sabotage's own. The marks, the haze, the arrival record and whatever may come to them are the lights site's (FS47FarmSite, armed at the place feeder). Plays at any hour from 23:30, so it stays deniable: no body, nothing seen, only the night going still and what the panel shows.",
+  "enabled": true,
+  "gates": {},
+  "beats": [
+    {
+      "at": 0,
+      "do": "silence",
+      "secs": 9,
+      "level": 0.04
+    },
+    {
+      "at": 1.5,
+      "do": "tone",
+      "hz": 44,
+      "secs": 7,
+      "gain": 0.025,
+      "wave": "sine"
+    },
+    {
+      "at": 3,
+      "do": "thought",
+      "text": "The crickets went quiet as I came up. The transformer is humming wrong, low and uneven.",
+      "secs": 5
+    },
+    {
+      "at": 8,
+      "do": "light",
+      "kind": "gear",
+      "strength": 0.3,
+      "secs": 2.5
+    },
+    {
+      "at": 9,
+      "do": "evidence",
+      "key": "attention_feeder_d{day}",
+      "text": "At {clock} at the remote feeder on the county road: the feeder had locked out with no storm and no load on it. The control fuse was black from the inside, and the fence wire was cold to the touch on a warm night. Nobody trips a feeder like that."
+    },
+    {
+      "at": 10,
+      "do": "thought",
+      "text": "Nobody trips a feeder like that. Fix it fast and get back in the truck.",
+      "secs": 5
+    }
+  ]
+}
