@@ -97,3 +97,7 @@ Lagt til 6. november 2026 etter Toms tips om Mirages arbeidsflyt for 3D-scener. 
 ## Viktige gjenstander (Tom 12. november 2026)
 
 Viktige gjenstander følger den faste regelen i [AGENTS.md](../../../AGENTS.md#fast-regel-viktige-gjenstander-lages-etter-referansepakke-tom-12-november-2026): referansepakke fra ChatGPT (helte-, firevinkels- og etikettark), én gjenstand om gangen modellert av Fable med ekte geometri, bakte 4K-kart og kritikk i spillet mot referansen.
+
+## Animasjon (Tom 12. november 2026)
+
+Animasjon av NPC-er, aliens og dyr følger den faste regelen i [AGENTS.md](../../../AGENTS.md#fast-regel-animasjon-av-npc-er-aliens-og-dyr-tom-12-november-2026): mekanisk bevegelse lages med kode eller nøkkelrammer; gange og kroppsbevegelse starter fra ekte bevegelse som Fable tilpasser og baker til vårt skjelett; alltid bilder og video fra flere vinkler, sjekk av føtter og løkker, og prøve i spillet.
