@@ -501,6 +501,7 @@ void FS47ScriptPlayer::Step(double Dt)
 {
  if(!M)return;
  AddDevLines();
+ if(Beats)Beats->TickShot(); // SHOT-BEAT-01: the event scripts' shot beat, the same
  if(Shot)Shot->Tick(); // SHOT-BEAT-01: a shot that is over gives the walker its camera back (outside the walker's frame)
  FS47FreeformSession* F=Session();
  if(!F){if(bRun)StopRun(TEXT("left Freeform"));if(Beats&&Beats->Live())Beats->Stop();return;}

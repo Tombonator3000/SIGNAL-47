@@ -15,6 +15,7 @@
 #include "S47Places.h"
 #include "S47Radio.h"
 #include "S47ScriptPlayer.h"
+#include "S47Shot.h"
 #include "S47StoryDirector.h"
 #include "S47StoryScene.h"
 #include "S47Town.h"
@@ -35,7 +36,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47EventScript,Log,All);
 
 namespace S47EventScriptLocal
 {
- const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake"),TEXT("camera_snap"),TEXT("silence"),TEXT("tube"),TEXT("flag"),TEXT("start"),TEXT("clock"),TEXT("objective"),TEXT("scene")};
+ const TCHAR* const Names[int32(ES47Beat::Count)]={TEXT("sound"),TEXT("tone"),TEXT("printer"),TEXT("light"),TEXT("tv"),TEXT("line"),TEXT("thought"),TEXT("toast"),TEXT("evidence"),TEXT("map"),TEXT("prop"),TEXT("show"),TEXT("hide"),TEXT("shake"),TEXT("camera_snap"),TEXT("silence"),TEXT("tube"),TEXT("flag"),TEXT("start"),TEXT("clock"),TEXT("objective"),TEXT("scene"),TEXT("shot")};
  // Besides the scripted events' conditions (S47Script::CondKinds): in the SARO building, and the scene's area by name.
  // STORY-ON-FREEFORM-01 (step 4): and the story's flags, read by every script but let through only by the story store's lint.
  bool OwnCond(const FString& If){return If==TEXT("in_saro")||If==TEXT("area")||S47EventScript::StoryOnlyCond(If);}
@@ -107,6 +108,14 @@ namespace S47EventScriptLocal
   {
    B.Fov=S47J::Num(J,TEXT("fov"),45);B.In=S47J::Num(J,TEXT("in"),.25);B.Hold=S47J::Num(J,TEXT("hold"),1.2);B.Out=S47J::Num(J,TEXT("out"),.9);
    B.Strength=S47J::Num(J,TEXT("shake"),0);B.Kind=S47J::Str(J,TEXT("scare"));
+  }
+  // SHOT-BEAT-01: shot's own words (see FS47Beat); a second eye and the point looked at as scene metres, node and point as for the others.
+  if(B.Do==ES47Beat::Shot)
+  {
+   B.Fov=S47J::Num(J,TEXT("fov"),55);B.Fov2=S47J::Num(J,TEXT("fov2"),0);B.Secs=S47J::Num(J,TEXT("secs"),4);B.In=S47J::Num(J,TEXT("in"),.6);B.Out=S47J::Num(J,TEXT("out"),.8);
+   FVector Eye2,Aim;
+   if(VecFrom(J,TEXT("pos2"),Eye2))B.Pos2=Eye2;
+   if(VecFrom(J,TEXT("look"),Aim))B.Look=Aim;
   }
   // N1110: silence's level (what is left of the night's sound, as strength) and the tube beat's tube.
   if(B.Do==ES47Beat::Silence)B.Strength=S47J::Num(J,TEXT("level"),.04);
@@ -266,6 +275,15 @@ static TArray<FString> LintAs(const FS47EventScript& S,TArray<FString>* Warnings
    Need(B.Fov>=S47CameraMoment::FovMin&&B.Fov<=S47CameraMoment::FovMax,TEXT("fov is 20 to 90 degrees"));
    Need(B.In>0&&B.Out>0&&B.Hold>=0&&B.In+B.Hold+B.Out>=S47CameraMoment::LeastSeconds&&B.In+B.Hold+B.Out<=S47CameraMoment::MostSeconds,TEXT("in and out above 0, hold 0 or more, in + hold + out 0.3 to 5 seconds"));
    Need(B.Kind.IsEmpty()||B.Kind==TEXT("soft")||B.Kind==TEXT("hard")||B.Kind==TEXT("braam")||B.Kind==TEXT("swell"),TEXT("scare is soft, hard, braam or swell"));
+   break;
+  case ES47Beat::Shot: // SHOT-BEAT-01: the limits of S47Shot.h
+   Need(B.Look.IsSet()||!B.Point.IsEmpty()||!B.Name.IsEmpty(),TEXT("needs look, point or node, what it looks at"));
+   Need(B.Fov>=S47Shot::FovMin&&B.Fov<=S47Shot::FovMax&&(B.Fov2==0||(B.Fov2>=S47Shot::FovMin&&B.Fov2<=S47Shot::FovMax)),TEXT("fov and fov2 are 20 to 90 degrees"));
+   Need(B.Secs>0&&B.Secs<=S47Shot::MaxSecs,TEXT("secs, the hold, is above 0 and at most 30"));
+   Need(B.In>=S47Shot::LeastFade&&B.In<=S47Shot::MostFade&&B.Out>=S47Shot::LeastFade&&B.Out<=S47Shot::MostFade,TEXT("in and out, the ease in and back, are 0.3 to 3 seconds (never a cut)"));
+   Need(!B.Pos2.IsSet()||B.Pos.IsSet(),TEXT("pos2, a second eye, needs pos, the first"));
+   Need(!B.Pos.IsSet()||!B.Pos2.IsSet()||FVector::Dist(B.Pos.GetValue(),B.Pos2.GetValue())<=S47Shot::MostTravel,TEXT("the two eyes are at most 200 m apart"));
+   Need(!B.Pos.IsSet()||!B.Look.IsSet()||FVector::Dist(B.Pos.GetValue(),B.Look.GetValue())>=S47Shot::LeastReach,TEXT("the eye is on the point it looks at"));
    break;
   case ES47Beat::Silence:Need(B.Secs>=.5&&B.Secs<=30,TEXT("needs secs, 0.5 to 30: how long the night holds still"));break; // N1110 (level is checked as strength)
   case ES47Beat::Flag:Need(FS47StoryDirector::ValidId(B.Flag),TEXT("needs flag, a story flag's id (a to z, 0 to 9 and _)"));break; // STORY-ON-FREEFORM-01 (step 4)
@@ -475,6 +493,7 @@ void FS47EventBeats::Stop()
 {
  Runs.Reset();
  if(Camera)Camera->Stop();
+ if(ShotCam)ShotCam->Stop(); // SHOT-BEAT-01: the camera as it was
  if(LampLeft>0&&M&&M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(0,S47EventScriptLocal::LampFrom);
  LampLeft=0;
 }
@@ -647,6 +666,27 @@ void FS47EventBeats::Fire(const FS47Beat& B,const FRun& R)
   Log(What+(Snap(S,Why)?FString::Printf(TEXT("the view to %.0f degrees for %.1f s"),B.Fov,B.In+B.Hold+B.Out):TEXT("the view stays: ")+Why));
   break;
  }
+ case ES47Beat::Shot:
+ {
+  // SHOT-BEAT-01: the same camera shot as the scripted events' (FS47ShotCamera: Camera moments and Head motion settings, no cut, the
+  // player never moved). No eye: the player's own head. A refused shot is one line and the beats go on.
+  FS47ShotSpec Spec;
+  FVector Aim=FVector::ZeroVector;
+  bool bAim=false;
+  if(B.Look.IsSet()){Aim=B.Look.GetValue();bAim=true;}
+  else if(!B.Point.IsEmpty()){FS47Beat Named=B;Named.Pos.Reset();bAim=PosOf(Named,R,Aim);} // (the named point; pos is the eye here)
+  else if(!Name.IsEmpty()&&M->Web){const FS47Obj O=M->Web->Obj(Name);if(O){Aim=O.WorldPosition();bAim=true;}}
+  if(!bAim||!M->Player){Log(TEXT("left out: nothing to look at"));break;}
+  Spec.EyeA=B.Pos.IsSet()?B.Pos.GetValue():FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+  Spec.EyeB=B.Pos2.IsSet()?B.Pos2.GetValue():Spec.EyeA;Spec.Target=Aim;
+  Spec.FovA=B.Fov;Spec.FovB=B.Fov2>0?B.Fov2:B.Fov;
+  Spec.Secs=B.Secs;Spec.In=B.In;Spec.Out=B.Out;
+  Spec.bMove=B.Pos2.IsSet()||Spec.FovB!=Spec.FovA;
+  if(!ShotCam)ShotCam=MakeShared<FS47ShotCamera>(M);
+  FString Why;
+  Log(ShotCam->Start(Spec,Why)?FString::Printf(TEXT("%.0f to %.0f degrees, %.1f s"),Spec.FovA,Spec.FovB,Spec.Secs):TEXT("the view stays: ")+Why);
+  break;
+ }
  case ES47Beat::Silence:
  {
   // N1110 (SOUNDSCAPE): the night's own bed (crickets, wind, the far-off ones) drops at once and comes back slowly after secs.
@@ -704,6 +744,8 @@ bool FS47EventBeats::Snap(const FS47CameraSnap& S,FString& Why)
  if(!Camera)Camera=MakeShared<FS47CameraMoment>(M);
  return Camera->Start(S,Why);
 }
+
+void FS47EventBeats::TickShot(){if(ShotCam)ShotCam->Tick();}
 
 bool FS47EventBeats::DevRun(const FString& Id,FString& Why)
 {
