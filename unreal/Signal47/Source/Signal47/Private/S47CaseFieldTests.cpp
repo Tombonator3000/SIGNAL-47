@@ -178,6 +178,18 @@ bool FS47CaseFieldTests::Window(double& Start,double& End)const
  if(Prepared()){Start=R.Start;End=R.End;}else PeakAfter(M->Freeform->Clock(),Start,End);
  return true;
 }
+bool FS47CaseFieldTests::MapSpot(FVector& OutSaro,FString& OutLabel)const
+{
+ const int32 Test=PlannedTest();if(Test<0||Test>2)return false;
+ OutSaro=Test==0?LadderAt:Test==1?GateAt:PostPoint(M);
+ OutLabel=MapLabel(Test,Prepared());
+ return true;
+}
+FString FS47CaseFieldTests::MapLabel(int32 Test,bool bSet)
+{
+ const TCHAR* What=Test==0?TEXT("roof plate"):Test==1?TEXT("gate seal"):TEXT("field post");
+ return FString::Printf(TEXT("case test: %s%s"),What,bSet?TEXT(" (set)"):TEXT(""));
+}
 bool FS47CaseFieldTests::OwnsRoofWindow()const
 {return Prepared()&&R.Test==0&&M->Freeform->Clock()>=R.Start&&M->Freeform->Clock()<R.End;}
 FString FS47CaseFieldTests::Objective()const
