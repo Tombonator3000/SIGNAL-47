@@ -60,8 +60,8 @@ bool FS47CameraMoment::Start(const FS47CameraSnap& S,FString& Why)
  if(!W){Why=TEXT("no walker");return false;}
  if(M->Flow&&!M->Flow->bCameraMoments){Why=TEXT("Camera moments is off");return false;}
  // (one left live while the cab or a screen held the camera, or with its layer taken off the walker, is over)
- if(bLive&&(W->CameraOverride||!W->ViewLayer))Stop();
- if(W->CameraOverride){Why=TEXT("the camera is held by something else");return false;}
+ if(bLive&&(W->bCameraHeld||!W->ViewLayer))Stop();
+ if(W->bCameraHeld){Why=TEXT("the camera is held by something else");return false;}
  if(bLive){Why=TEXT("one is on");return false;}
  if(!Sane(S)){Why=TEXT("outside the limits");return false;}
  Fov0=W->Fov;

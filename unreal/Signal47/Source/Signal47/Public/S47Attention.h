@@ -33,6 +33,17 @@ class US47Main;
 //               dark the light comes for the player as being taken always does (FS47Taken::Begin: steps on the roof, then
 //               the light through the windows, out of which the player can keep); in the yard the light stands over them
 //               first (FS47Taken::BeginOver). Elsewhere it finds nobody. Afterwards the number falls to AfterVisit.
+// POWER-CHOICE-20261112 (Tom 12 November: "nødaggregatet brukes når noe har skjedd med trafoen ... spilleren velger mellom å reparere
+// trafoen om natta med risiko, eller kjøre aggregatet"). The mains sabotage is the one on the transformer: when the mains it took come
+// back the feeder locks out (FS47FreeformSession::StepSky, FIX10-10), and while that fault stands it is still this sabotage (FeederFault;
+// "sab" stays "mains" in the save). Then the night's choice is made of what is already there:
+//   at the feeder  the lights site's marks are put at the remote feeder (FS47FarmSite::Arm at the place "feeder", once a night, never over
+//                  marks standing elsewhere): pressed ground, haze, a sound, the arrival record, and by the hour (S47NightTiers, the
+//                  rhythm) a figure far off past them, or the site's visit after two. The first time the player is on foot at the panel
+//                  the night goes still and the feeder's own trace is kept (attention_sab_feeder): not a normal trip.
+//   the generator  loud: while it runs in the warning hours it adds GenPerSec, heard out there as a long look is, and says so once a
+//                  night at SARO. Until the county crew comes (SkyFaultMinutes) that nears a visit from the sabotage's level, not past it.
+//   neither        the county crew restores the feeder as before.
 // Saved under "attention" (all keys optional; an older save starts at nothing). Nothing of a visit under way is saved.
 class SIGNAL47_API FS47Attention
 {
@@ -53,6 +64,9 @@ public:
  static constexpr double ReturnAgain=6,PhotoBase=1,PhotoClose=6,TrackRecorded=5,TrackAgain=5,TrackPerSec=.04;
  static constexpr double WarnDelay=15,SabotageDelay=90,VisitDelay=30,VisitSag=30,VisitOut=150,VisitLook=VisitSag+6;
  static constexpr int32 FirstDay=2,RepeatDays=3;
+ // POWER-CHOICE-20261112: the generator heard in the dark (a second of play), when its word is said (seconds running), and how near the
+ // panel the feeder's trace is met (metres).
+ static constexpr double GenPerSec=.03,GenWordAfter=20,FeederNear=14;
  // 0 calm, 1 warnings, 2 sabotage, 3 a visit.
  static int32 TierOf(double Score);
  static double Fall(double Score,double GameSeconds);
@@ -77,6 +91,8 @@ public:
  enum class ESab : uint8 { None, Relay, Mains, Lamp, Truck };
  static const TCHAR* SabName(ESab K);
  static ESab SabFrom(const FString& Name);
+ // POWER-CHOICE-20261112 (pure): a fault on the feeder is the sabotage's when the mains it took have locked out (the cut is over).
+ static bool FeederSabotaged(ESab K,bool bFault,bool bSkyLive){return K==ESab::Mains&&bFault&&!bSkyLive;}
  // N1110 (critic, sabvar): a draw from the kinds Can allows, never the kind Last: at SARO the relay, the mains, the lamp; away the truck, the lamp.
  // Drawn from the game's seed and the turn (the sabotages so far), so a Continue gives the same. None when nothing else can be done.
  static ESab PickSab(bool bAtSaro,int32 Seed,int32 Turn,ESab Last,TFunctionRef<bool(ESab)> Can);
@@ -90,6 +106,8 @@ public:
  double Score() const{return Value;}
  int32 Tier() const{return TierOf(Value);}
  ESab Sabotage() const{return Sab;}
+ // POWER-CHOICE-20261112: the feeder's lockout standing now is this sabotage's (FeederSabotaged).
+ bool FeederFault() const;
  bool Visiting() const{return Visit!=EVisit::None;}
  int32 Warnings() const{return WarnCount;}
  int32 Sabotages() const{return SabCount;}
@@ -110,6 +128,12 @@ private:
  int32 TellNight=0; // N1110 (pace): the night the tell was played (not saved)
  bool bHintSaid=false; // N1110 (pace): Dale's word has been played this session
  int32 LearnNight=0; // N1110 (critic): the night the weak gear flicker for a long stare was played (not saved)
+ // POWER-CHOICE-20261112 (none saved: the marks are FS47FarmSite's own, and a Continue finds them standing): the night the marks were
+ // put at the feeder, the night its trace was met, the night the generator's word was said, and how long it has run in the dark.
+ int32 MarkNight=0,FeederNight=0,GenNight=0;
+ double GenFor=0;
+ void StepFeeder(int32 Night);
+ bool ArmFeeder();
  EVisit Visit=EVisit::None;
  int32 Who=0;
  // What has been counted already: anomalous cards recorded, photo claims. Saved, so a Continue does not count them again.
@@ -127,7 +151,8 @@ private:
  void StepVisit(double Dt);
  bool Play(const FString& Id) const;
  bool Gated(const FString& Id) const;
- bool DoSabotage(bool bForced);
+ // Want: that kind only (F10), if it can be done; None: the draw.
+ bool DoSabotage(bool bForced,ESab Want=ESab::None);
  bool CanSab(ESab K) const;
  bool SabOver() const;
  void BeginVisit();

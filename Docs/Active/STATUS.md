@@ -4,6 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Installert 12. november kl. 17:10 (d60): versjon 0.9.60, `fc1e0fab` på `claude/story-on-freeform`
+
+Ikke merget (PR #512 åpen); rask levering (pakket, røyktestet, installert). Innhold: natta 11.–12. og dagskiftet 12. november: saksløkken i naturlig natt, strømvalget (materen låses, aggregat eller reparasjon med risiko ved sabotert trafo, fylkets mannskap etter 180 spillminutter), 25 terminalhint, gårdshuset og stedene gir saksspor, skikkelse fra vinduet og egne notater, rørgnist, østfløyens bryter, stasjonsfiler, HUD-frekvens, Story steg 5–6, bensinstasjonen med fototeksturer, skolen V2 i Caliche med lekeplass. Selvtest 4934, regresjon PASS 251, naturlig natt med kortspilleren. Første pakkeprøve krasjet fordi grafikkminnet var fullt etter sju dager uten omstart (d59 krasjet likt); bestått etter omstart. Tilbakerulling: d59 (`381fc28c`). Ikke spilt av Tom.
+
+## Tidligere: installert 11. november kl. 15:27 (d59): versjon 0.9.59, `381fc28c` på `claude/story-on-freeform`
+
+Ikke merget; rask levering (pakket, røyktestet, installert). Innhold: Story steg 1 (NEW STORY er en Freeform-økt med hele Freeform-verdenen, merket STORY, uten historie ennå) og tenningslås med tomgang og frontlys (K / Y). Selvtest 4764 (st55), regresjon PASS 251, journey 59, inworld 77, evidence 114. Tilbakerulling: d58 (`f16655f0`). Ikke spilt av Tom.
+
 ## Installert 11. november kl. 10:16 (d58): versjon 0.9.58, `f16655f0` på `claude/day-20261111`
 
 PR #510 merget til main av Tom. Pakket, røyktestet og installert. Innhold: arbeidet etter d57 (oppmerksomhet som forklarer seg selv, sabotasje som varierer, pakkeslipp med fall og dunk, Dales tekst). Selvtest 4764 (st53), regresjon PASS 251. Tilbakerulling: d57 (`168af36f`). Ikke spilt av Tom.

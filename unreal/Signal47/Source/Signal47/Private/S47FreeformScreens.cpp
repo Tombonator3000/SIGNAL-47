@@ -63,6 +63,7 @@ FS47FreeformSession::FTerminalIdle FS47FreeformSession::TerminalIdle(int32 Scree
  if(Screen==0)
  {
   // per dish: 0 on the line, 1 not answering remotely, 2 moving
+  I.Dish.Reserve(M->Web->DishCount());
   for(int32 D=0;D<M->Web->DishCount();++D)I.Dish.Add(M->Web->DishMoving(D)?2:M->Web->DishRemoteAvailable(D)?0:1);
  }
  else if(Screen==1)
@@ -135,8 +136,8 @@ FString FS47FreeformSession::OpsAccountLine(int32 Budget,int32 Requisition){retu
 FString FS47FreeformSession::QueueLine(int32 Remaining,int32 Today,int32 Earlier,int32 Rejected)
 {
  // CASES-OPS-20261109: one system line; how the queue works is on the SOP card by the terminal (SopCard).
- if(Remaining==0)return Rejected>0?TEXT("QUEUE / NO ACTIONABLE OBSERVATIONS / LEGACY ORIGINALS HELD, UNPAID / NEXT ISSUE 08:00"):TEXT("QUEUE / ALL OBSERVING WORK COMPLETE / NEXT ISSUE 08:00");
- return FString::Printf(TEXT("MORE WORK / %d OPEN TODAY / %d CARRIED / NEXT ISSUE 08:00"),Today,Earlier);
+ if(Remaining==0)return Rejected>0?TEXT("QUEUE / NO WORK LEFT / OLD ORIGINALS KEPT, UNPAID / NEW JOBS 08:00"):TEXT("QUEUE / ALL OBSERVING WORK COMPLETE / NEW JOBS 08:00");
+ return FString::Printf(TEXT("MORE WORK / %d OPEN TODAY / %d FROM EARLIER / NEW JOBS 08:00"),Today,Earlier);
 }
 FString FS47FreeformSession::TerminalStation(int32 Screen)
 {
@@ -156,7 +157,7 @@ TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
  if(Screen==0)
  {
   int32 Remote=0;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I))++Remote;
-  L={TEXT("SARO ARRAY / STATUS"),FString::Printf(TEXT("REMOTE %02d / %02d"),Remote,M->Web->DishCount()),!bPowerFault?TEXT("FEEDER / SUPPLY NORMAL"):HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("SUPPLY LOST / FIELD CHECK"),Field&&Field->HasArrayFault()?Field->ServiceDishId()+TEXT(" / LOCAL SERVICE DUE"):TEXT("ARRAY / REMOTE AVAILABLE"),MaintenanceLine(),TEXT("LOCAL TEST BEFORE RELEASE")};if(!PageLine.IsEmpty())L.Add(PageLine); // D45-20261110: the open faults and the next one, from across the room
+  L={TEXT("SARO ARRAY / STATUS"),FString::Printf(TEXT("REMOTE %02d / %02d"),Remote,M->Web->DishCount()),!bPowerFault?TEXT("FEEDER / SUPPLY NORMAL"):HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("SUPPLY LOST / NO POWER"),Field&&Field->HasArrayFault()?Field->ServiceDishId()+TEXT(" / NEEDS REPAIR"):TEXT("ARRAY / NO FAULT"),MaintenanceLine(),TEXT("REPAIRS: MOVEMENT TEST FIRST")};if(!PageLine.IsEmpty())L.Add(PageLine); // D45-20261110: the open faults and the next one, from across the room
  }
  else if(Screen==1)
  {
@@ -166,7 +167,7 @@ TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
  }
  else if(Screen==2)
  {
-  L={TEXT("TRACKING / ENCODERS"),J?J->Id:TEXT("NO JOB SELECTED"),FString::Printf(TEXT("TARGET AZ %.1f EL %.1f"),TargetAz(),TargetEl()),FString::Printf(TEXT("ACTUAL AZ %.1f EL %.1f"),M->Web->DishAz(0),M->Web->DishEl(0)),PointReady()?TEXT("ENCODERS / ON TARGET"):TEXT("WAIT / SLEW OR SERVICE"),TEXT("COMMAND SOURCE TO START"),PageLine.IsEmpty()?FString(TEXT("OBSERVATIONS NEED SETTLE")):PageLine};
+  L={TEXT("TRACKING / POINTING"),J?J->Id:TEXT("NO JOB SELECTED"),FString::Printf(TEXT("TARGET AZ %.1f EL %.1f"),TargetAz(),TargetEl()),FString::Printf(TEXT("ACTUAL AZ %.1f EL %.1f"),M->Web->DishAz(0),M->Web->DishEl(0)),PointReady()?TEXT("ARRAY / ON TARGET"):TEXT("WAIT / TURNING OR FAULT"),TEXT("POINT AT THE SOURCE TO START"),PageLine.IsEmpty()?FString(TEXT("LET THE ARRAY SETTLE FIRST")):PageLine};
  }
  else
  {
@@ -219,7 +220,7 @@ FString FS47FreeformSession::MeasurementRecord()const
   if(++Originals<=3)Rows+=FString::Printf(TEXT("\nDAY %02d / %s / %s%s"),J.Day,*J.Id,Runs.IsValidIndex(J.Source)?Runs[J.Source].Source:TEXT("UNKNOWN SOURCE"),IsBaseline(J)?TEXT(" / BASELINE"):TEXT(""));
  }
  FString Record=FString::Printf(TEXT("OLDER MEASUREMENTS / %d FILED ORIGINALS / %d REFERENCE BASELINES"),Originals,Baselines)+Rows;
- if(Baselines==0)Record+=TEXT("\nNo reference baseline retained yet. OPS / DAILY WORK offers an optional one once the day's work is done.");
+ if(Baselines==0)Record+=TEXT("\nNo reference baseline kept yet. Once the day's paid work is done, OPS / DAILY WORK offers a reference check (no pay).");
  return Record;
 }
 // ---- CASES-OPS-20261109: the procedure card by the OPS terminal ----------------------------------------------------------------
@@ -234,7 +235,7 @@ FS47Doc FS47FreeformSession::SopCard()
   TEXT("2. DAILY WORK: select the job. TRACKING (right-hand PC) points the array, RECEIVER (centre PC) tunes and records, the PRINTER gives the original. Register the result here.\n")
   TEXT("3. Finish a recording or a control before you switch jobs. Unfinished jobs keep. They pay in full on their day and the next, then less.\n")
   TEXT("4. EARLIER WORK shows what is done and what is carried over. RECORDS keeps originals, field findings, service and closed cases. Read only.\n")
-  TEXT("5. An unusual original is never registered on its own. Record its internal control at the receiver right after the take, compare both tapes at the reel deck (wall table), collect the original chart at the printer, then register the comparison as unresolved (that opens its case on CASE BOARD). Collect the packet at the printer and file it in the records-room binder. Payment follows the filing.\n") // D45-20261110
+  TEXT("5. An unusual original is never registered on its own. It needs its control first and a comparison at the reel deck (wall table); the NEXT line gives each step. Registered, it opens a case on CASE BOARD. Payment follows the filing in the records-room binder.\n") // D45-20261110
   TEXT("6. A quiet internal reference does not prove a sky source. Only a directional or independent control rules an explanation out.\n")
   TEXT("7. CASE BOARD. A trial case closes when your tests rule out all but one explanation; the records reply comes at once. An assessment can be filed when you choose; its reply prints on the telex next morning. Every test registered prints a result sheet: collect it at the printer.\n")
   TEXT("8. TELEX (by the corridor door). Replies and Dr. Ward's receipts print there. Tear them off at the machine; they go in the tray here. Send night logs from OVERVIEW.\n")

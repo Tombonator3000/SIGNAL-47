@@ -76,6 +76,8 @@ public:
 	void Hush(bool bOn);
 	/** The engine is off and quiet, found that way (no wind-down): the key starts it (Restart). */
 	void Still();
+	/** IGNITION-20261111: heard from outside, idling where it was left: 0..1 of the cab's level (1 in the cab). */
+	void Far(double K);
 	/** A misfire: the note drops out for a moment, with a dull pop in the exhaust. */
 	void Cough(double K = 1);
 	/** The starter turning the engine over for secs (it is dead). */
@@ -97,6 +99,7 @@ public:
 
 private:
 	US47Audio* Audio = nullptr;
+	double FarK = 1;
 	// the Web Audio graph's params (out, the engine bus, the two recordings' gains and rates, the
 	// engine's low-pass, the rumble's band and gain)
 	FS47EngineParam Out, Bus, Gi, Gd, IdleRate, DriveRate, Lp, Band, Noise;

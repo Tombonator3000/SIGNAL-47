@@ -62,6 +62,8 @@ flowchart LR
 
 **Plantegninger som mangler:** målrettet SARO-plan med faktiske innganger og rømningsruter; Caliche med virkelig rekkefølge og dører; målestasjonens oppstilling; motell med rom 6. Ingen av disse skal tegnes som målsatt kart uten oppmåling.
 
+**Bygg (Tom 12. november 2026):** alle bygg planlegges for undersøkelse, sniking, skjul og flukt gjennom alternative ruter: minst to rutevalg fra viktige områder, forbindelsesdører mellom naturlige naborom, siktbrudd og skjul, spredte utganger, og fluktruter som virker begge veier uten ukjente nøkler. Hele regelen står i [AGENTS.md](../../AGENTS.md#fast-regel-undersøkelse-sniking-jakt-og-flukt-i-bygg).
+
 ## 3. Visuell bibel og bilder
 
 **Utvidet visuelt grunnlag:** [Visuell designbibel med nye miljøbilder, materialer og fargepalett](visuell-retning/VISUELL-BIBEL.md).

@@ -1,4 +1,5 @@
 #include "S47DevEvents.h"
+#include "S47DirectorCam.h"
 #include "S47SaroWallWatch.h"
 #include "S47DevFreeform.h"
 #include "S47FloodProbe.h"
@@ -9,6 +10,7 @@
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
 #include "S47Story.h"
+#include "S47StoryDirector.h"
 #include "S47UI.h"
 #include "S47Audio.h"
 #include "S47Web.h"
@@ -16,6 +18,9 @@
 #include "S47World.h"
 #include "S47Night.h"
 #include "S47Glimpses.h"
+#include "S47Shot.h"
+#include "S47ShotStills.h"
+#include "S47ScriptVolumeDev.h"
 #include "S47Sky.h"
 #include "S47SkyVisitors.h"
 #include "S47Flow.h"
@@ -51,6 +56,11 @@ void FS47DevEvents::Add(const FString& Group, const FString& Label, const FStrin
 void FS47DevEvents::AddFreeform(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn)
 {
  List.Add({ Group, Label, Note, MoveTemp(Fn), true });
+}
+
+void FS47DevEvents::AddStory(const FString& Group, const FString& Label, const FString& Note, TFunction<void()> Fn)
+{
+ List.Add({ Group, Label, Note, MoveTemp(Fn), true, true });
 }
 
 void FS47DevEvents::Relabel(const FString& OldLabel, const FString& NewLabel)
@@ -178,6 +188,7 @@ void FS47DevEvents::Open()
  for (const FEvent& Ev : List)
  {
   if (Ev.bFreeform && !bFree) continue;
+  if (Ev.bStory && !FS47StoryDirector::Of(M)) continue; // STORY-ON-FREEFORM-01 (step 4): a Story night's lines only
   const TFunction<void()> Fn = Ev.Fn;
   const FString Group = Ev.Group;
   // A line that opens this menu again (a setting being cycled) comes back to its own group, not the front page.
@@ -374,9 +385,17 @@ void FS47DevEvents::Step(double Dt)
 void FS47DevEvents::ControlTest(double Dt)
 {
  if (ProofTest(Dt)) return;
+ // DIRECTOR-MODE-01 stills: -S47ShotStills=<dir>, a run of its own (S47ShotStills.h).
+ if (S47ShotStills::Wanted()) { if (!bTestDone && M && S47ShotStills::Step(M, Dt)) bTestDone = true; return; }
  if (!bTestInit) { bTestInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47DevEventsContract="), TestDir); }
  if (TestDir.IsEmpty() || bTestDone || !M || M->Mode != US47Main::EMode::Play) return;
  FString OnlyGroup; FParse::Value(FCommandLine::Get(),TEXT("S47DevEventsGroup="),OnlyGroup);
+ // SHOT-BEAT-01: the director shot's own check, through its F10 line and the script player (S47Shot::Contract).
+ if (OnlyGroup == TEXT("Director shot")) { if (S47Shot::Contract(M, Dt)) bTestDone = true; return; }
+ // DIRECTOR-MODE-01 (slice 3): the trigger volumes' own check, with the real session's moment (S47ScriptVolumeDev::Contract).
+ if (OnlyGroup == TEXT("Director volume")) { if (S47ScriptVolumeDev::Contract(M, Dt)) bTestDone = true; return; }
+ // DIRECTOR-MODE-01: the director's free camera (S47DirectorCam::Contract).
+ if (OnlyGroup == TEXT("Director mode")) { if (S47DirectorCam::Contract(M, Dt)) bTestDone = true; return; }
  // Opt-in extension of this contract: real menu actions and registered billboard
  // readback across ordinary world ticks, independent of the natural Data() getter.
  if (OnlyGroup == TEXT("Sky preview"))
@@ -520,7 +539,9 @@ void FS47DevEvents::ControlTest(double Dt)
   }
   FScreenshotRequest::RequestScreenshot(TestDir / (ShotName + TEXT(".png")), false, false); ShotName.Reset();
  }
- if (TestT < 4 + TestStep * 2.5) return;
+ // -S47DevEventsHold=seconds: the last event's own sequence (a drive, a stop) runs out before the contract ends
+ double Hold = 0; FParse::Value(FCommandLine::Get(), TEXT("S47DevEventsHold="), Hold);
+ if (TestT < 4 + TestStep * 2.5 + (TestStep >= Events.Num() ? FMath::Clamp(Hold, 0.0, 120.0) : 0.0)) return;
  if (TestStep < Events.Num())
  {
   const FEvent& Ev = *Events[TestStep];

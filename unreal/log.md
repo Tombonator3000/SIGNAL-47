@@ -2276,3 +2276,58 @@ Toms nattbestilling (TODO «Nattskift 10.–11. november»): studie av skrekk og
 - Toms d45-funn (D45-1..29) merket med byggene de kom i.
 - Disk: d52–d55-kandidater og `Saved/StagedBuilds` + `Saved/Cooked` ryddet; 122 GB ledig; beholdt d56 (tilbakerulling) og d57.
 - Etter d57 (ikke installert): oppmerksomhet som forklarer seg selv, sabotasje som varierer, pakkeslipp ved pumpa rettet (sveipvakten), journey/in-world/evidence grønne (59/77/114), Dale uten «don't», Dales 11 nye walkie-replikker samlet i TODO N1110-V.
+
+## 11. november, dag: Story steg 1 og tenningslås
+
+NEW STORY starter nå en Freeform-økt merket som Story (`storyDirector{v:1}`), med hele Freeform-verdenen; menypekertesten har `-S47MenuPointerStory`. Tenningslås (IGNITION-20261111): K/Y i førerhuset, tomgang med frontlys når man går ut, avstandsdempet motorlyd, drivstoff på tomgang i Freeform; F10 «Truck (ignition)» og `-S47DevEventsHold`. Kontroll: selvtest 4764 (st55), regresjon 251, journey 59, inworld 77, evidence 114, F10-tenningsprøven PASS. Ikke installert.
+
+## 2026-11-11 (Story steg 2)
+
+- 15:27 d59 installert fra `381fc28c` (Story steg 1 og tenningslås), rask levering ALL PASS.
+- 15:35 Story steg 2: `FS47FreeformSession::Begin` har et valgfritt flagg for én natt (dag 1 kl. 18:00, ingen opplæring); Flow gir det bare til en ny Story-økt og hopper over postkassestarten, så Story starter på SARO med stasjonen åpen og Jeepen på plassen. Freeform er uendret. Menypekertesten kontrollerer begge; begge PASS.
+
+## 2026-11-11 (Story steg 3)
+
+- Regissørens skjelett: `FS47StoryDirector` (`S47StoryDirector.h/.cpp`) med akter fra `Content/Director/Story/acts.json` (kveld 18:00, natt 00:00, morgen 04:00, nøytrale titler), historieflagg, lagring `storyDirector{v:1,act,flags}` og egen tekstsjekk `LintStory`; `S47Script::LintText` er uendret. Eies av `US47Main`, startes i `StartGame` bare på en Story-natt og tikkes bare da; Freeform er uendret. Akter stages som Events (Build.cs). Selvtest STORY-3 i Freeform-selvtesten. Ikke bygget her.
+
+## 2026-11-11 (Story steg 4)
+
+- Tilleggene i hendelseslaget, alle uvirksomme uten en Story-natts regissør (`FS47StoryDirector::Of`: regissøren finnes, er aktiv og `Flow->StoryNight()`). Vilkår `story_flag`/`no_story_flag` (`{"if":"story_flag","flag":"id"}`) i `GatesHold`-lambdaen og `FS47EventBeats::Holds`; beats `flag`, `start` (`script`, eller `happening` via `FS47Happenings::Request`, ikke tvunget), `clock` (`at_least` "HH:MM", bare framover via `SpendTime`, aldri inn i neste natt, venter høyst 5 s på lukket panel og at spilleren ikke kjører) og `objective` (øverst i `Objective()` og først i `Tasks()`). Beat-nøkkelen er `"do"`, som i resten av hendelsesskriptene.
+- Eget manuslager `Content/Director/Story/beats/*.json` (egen linje i `Signal47.Build.cs`) med `S47EventScript::LintStory`, der teksten sjekkes med `FS47StoryDirector::LintStory`. Freeforms `Lint` avviser de nye beatene og vilkårene ved navn («story-only»); `S47Script::LintText`, `CondKinds()` og `ReadDirs()` er uendret.
+- Manusene kjøres av regissørens egen `FS47EventBeats` (samme løper som Freeform, egen instans) med `Resume`/`Progress` for lagring. Akter kan ha `"scripts":[...]`; kveldsakten starter `evening_handover` (toast, flagg `handover_told`, mål «Take the evening handover call at OPS.»). Mens et manus går, holdes Freeforms terninger: `FS47ScriptPlayer::Hold("story")`, `Eligible` og `OneAtATime`.
+- Lagring: `storyDirector{v:1,act,flags,objective,scripts:[{id,t,next}]}`; de nye feltene er valgfrie. F10: gruppen «Story (director)» (`FS47DevEvents::AddStory`, bare synlig på en Story-natt). Selvtest `STORY-4:`. Ikke bygget her.
+
+## 2026-11-11 (DIRECTOR-MODE-01 del 4)
+
+- Redigeringsvinduet for opptak og utløsersoner. Skripteditorens handlingsrader er også opptakslista: hver SHOT-rad viser nummer blant opptakene, start, sekunder, fov og om den har øye 2, med SELECT og PREVIEW FROM HERE (spiller utkastet fra opptakets start via `S47DirectorCam::FromTime`; `PreviewIt()` uten tall og tast 4 spiller fra toppen som før). Utløseren har fått POINT HERE (punktet der spilleren står, fra hvilken som helst WHERE).
+- Valgt opptak delt mellom editoren og frikameraet (`S47ScriptEditor::SelectedShot`/`SelectShot`, sjekket ved hver bruk; rene funksjoner `ShotOrNone`, `ShotOrLast`, `CycleShot`, `AfterRemove`, `AfterSwap`, `ShotNumber`). Nye taster i flyging: `[`/`]` velger forrige/neste opptak, 2 gir det valgte øye 2, 5 flytter det valgte øyet hit og sikter på trådkorset, 6 sletter det valgte. Tegningen viser det valgte gult og tykkere, nummer ved hvert øye (`DrawDebugString`) og kamerabanen med 12 punkter fra `S47Shot::PoseAt`.
+- Selvtest `DIRECTOR-4:` (valg, sletting, bytte, nummerering, `FromTime`). Kontrakten «Director mode» flyr nå litt til høyre etter opptaket, setter øye 2 og sjekker at siste opptak har to øyne og er valgt, før bildet `director-mode-fly.png`. Ikke bygget her.
+
+## 2026-11-11 (DIRECTOR-MODE-01 merker)
+
+- Merker fra frikameraet (`S47DirectorMarks.h/.cpp`): Tom flyr og merker steder med øyet, og en forfatter uten syn på verdenen leser dem senere fra fila. Taster i flyging: 0 bytter type (place, view, path, avoid), 7 legger et merke, 8 et merke med bildet `mark-NNN.png` ved fila, 9 tar tilbake siste merke fra denne økta (aldri eldre økter, aldri bilder). Merket har kameraets posisjon, yaw/pitch/fov, veilokalt kamerapunkt med høyde over bakken, punktet under trådkorset med avstand (eller ingen), et punkt 20 m fram, `indoors` fra `US47World::Indoors` ved kameraet, klokke, dag, vær, nærmeste sted fra `S47EventPlaces`, utkastets id, løpenummer og tid. Ingen notatfelt (gangtastene flyr); feltet `note` leses og skrives om noen setter det.
+- Fila `<ProjectSavedDir>/Director/marks.json`, `{"v":1,"marks":[...]}`, lest, endret og skrevet via temp-fil og flytting; en fil som ikke kan leses overskrives aldri (merkene går da til `marks-<tid>.json`, sagt i teksten og loggen). Merkene tegnes magenta i verden mens man flyr (høyst 200 nærmeste). Skripteditoren har raden MARKS med SHOT FROM LAST MARK og TRIGGER FROM LAST MARK (`MarkToShot`, `MarkToTrigger`).
+- Selvtest `MARKS:` (rundtur, tillegg, uleselig fil, tilbaketaking, opptak og utløser fra merke). Kontrakten «Director mode» legger ett merke etter øye 2-steget i `<kontraktmappe>/director-marks.json` og leser det tilbake (kamerapunktet innen 0,5 m). Ikke bygget her.
+## 2026-11-11 (DIRECTOR-MODE-01 stills)
+
+- 18:25 Stillbilder for en skriptforfatter som ikke ser verden: `-S47Freeform -S47Director -S47ShotStills=<mappe> -S47ShotStillsScript=<id eller .json> [-S47ShotStillsClock=HH:MM]` slår på regissørmodus, skyver klokka fram (`TestAdvance`), setter kameraet nøyaktig i hvert opptaks første, midtre og siste positur (`S47Shot::PoseAt`) og tar `shot<NN>-a/b/c.png` uten tegning, så `trigger-top.png` og `trigger-side.png` med tegning. Avsluttes med `S47: shot stills COMPLETE PASS (<n> pictures)` eller `FAIL: <hvorfor>`.
+- Siktrapport fra linjesporing (blokkert av hva og hvor langt, høyde over bakken, under bakken, banen mellom øynene) og utløserens fakta (bakkehøyde, gangbar, nærmeste sted, nærmeste opptaksøye) i `sheet.md` og `sheet.json`; advarsler logges som `S47: shot stills warning: ...`. Nye filer `S47ShotStills.h/.cpp`; `S47DirectorCam` fikk `SetPose` og `SetOverlay`/`Overlay`. Selvtest `STILLS:`. Ikke bygget her.
+
+## 2026-11-11 (kveld og natt: bensinstasjon og Story steg 5)
+
+- 21:20 GAS-STATION-LIFT-01: nytt butikkinteriør i spillet, insektene virker (Niagara-systemet ventet ikke på kompilering i uferdig spill), Fable-løft av materialer og lys. `ee958345`, `89859227`.
+- 22:00 Cosmos-rekvisitter i butikken når de finnes (18 deler, `Tools/cosmosshop`), Blender-kassaapparatet tatt ut. Selvtest OK 4898 med og uten delene. `4cc874f3`.
+- 22:10 Tom: ekte 1980-tallsfoto som mål (tre målbilder utenfor Git); stjernehimmelen skal ikke endres.
+- 23:00 STORY-ON-FREEFORM-01 steg 5: `FS47StoryScene`, beat `scene`, D01 ringer på OPS-telefonen; ingen forgjenger på Story-natt (Tom: spilleren er Reyes). `S47StationLook` (bildetone, tegnes når `M_StationLook` finnes). Selvtest OK 4904. `c49017a8`. Regresjon avbrutt av samtidig motorjobb; kjøres på nytt.
+
+## 2026-11-12
+
+- 09:30 Dagskift til 16:00 (Tom). Køskriptet `q.py` venter på opptatt motor og Toms spill, holder 20 s pause mellom jobber og starter aldri en lang jobb på nytt.
+- 10:00 GAMEPLAY-LOOP-01: kortspilleren tar saksløkken gjennom en naturlig natt: to jobber, avvik, begge spolene, saken åpnet, pakken arkivert, kontrollforsøk kjørt og resultatark hentet, neste forsøk venter på sitt vindu.
+- 10:30 FIX10-10: strømbrudd låser materen (aggregat eller reparasjon, ellers fylkets mannskap etter 180 spillminutter, ca. 12 min om natta); stasjonsfiler forblir merket til de åpnes. POWER-CHOICE: sabotasjen gir spor og risiko ved trafoen, aggregatet bråker og trekker oppmerksomhet.
+- 11:00 PLAY-31-34 rørgnist, FIX10-3 terminalhint (25 funn), STORY steg 6 (ubesvart samtale trekkes tilbake, papirer til notatboka), SHOT-BEAT-01, HUD-frekvens, østfløyens bryter, FIX10-9 (skikkelse fra vinduet, egne notater sjekkes mot antenneloggen), T16-17 (gårdshuset, stedene gir saksspor), CRT-reserveringer.
+- 12:00 GAS-STATION-LIFT-01: ChatGPT-teksturer i stasjonen via `gs_photo.py` (modellkilde utenfor Git); gulvfargen tilpasset målbildet; Tom beholdt gammelt trepanel.
+- 12:10 Tom: fast byggeregel for undersøkelse, sniking, skjul og flukt (AGENTS.md); skolen V2 som plan, blokkmodell med rutesjekk 7/7.
+- 13:20 Selvtest 4934 OK, regresjon 251 PASS. To regresjoner falt på egen kø: vakten regner et ventende skall med byggeskript eller Blender i argumentene som tung jobb.
+- 15:40 Skolen V2 i Caliche (Fable): importert modell, gangsoner, to golvhøyder, taklys, tomt og lekeplass. Tom leverte 32 ChatGPT-teksturer (TEXTURES-PHOTO) og byggeregelen. Selvtest 4934 OK, regresjon 251 PASS på `abc6e124`. Ikke installert; d59 gjelder fortsatt.
+- 17:10 d60 installert (`fc1e0fab`, PR #512 åpen). Første forsøk krasjet på fullt grafikkminne (også d59); etter Toms omstart bestått. Ryddet for diskreserven: pakkemappene d43, d56, d57 og alien-20261106 (kvitteringer beholdt) og `Saved/Cooked`; 139 GB ledig.

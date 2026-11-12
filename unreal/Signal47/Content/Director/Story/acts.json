@@ -1,0 +1,8 @@
+{
+  "v": 1,
+  "acts": [
+    { "id": "evening", "title": "Evening", "from": "18:00", "scripts": ["evening_handover"] },
+    { "id": "night", "title": "Night", "from": "00:00" },
+    { "id": "morning", "title": "Morning", "from": "04:00" }
+  ]
+}

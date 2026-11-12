@@ -106,7 +106,7 @@ int32 SS47TapeScope::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
   Label(FString::FromInt(I),Px(I)-5,Top+TraceH+2,Pc.Cream,AxisSize);
  }
  Line({FVector2f(Left,Base),FVector2f(Right,Base)},Pc.Grid,1);
- const int32 N=FMath::Max(2,int32(W/2));TArray<FVector2f> Heard,Ahead;Heard.Reserve(N);Ahead.Reserve(N);
+ const int32 N=FMath::Max(2,int32(W/2));Heard.Reset();Ahead.Reset();Heard.Reserve(N);Ahead.Reserve(N);
  for(int32 I=0;I<=N;++I)
  {
   const double T=L*I/N;
@@ -207,9 +207,9 @@ int32 SS47TapeReels::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
  auto Label=[&](const FString& T,float X,float Y,const FLinearColor& C,int32 Size=15){FSlateDrawElement::MakeText(Out,Layer,G.ToPaintGeometry(FVector2f(320,26),FSlateLayoutTransform(FVector2f(X,Y))),T,S47Style::Mono(Size),ESlateDrawEffect::None,C);};
  auto Ring=[&](const FVector2f& C,float R,const FLinearColor& Col,float Thick)
  {
-  const int32 N=FMath::Clamp(int32(R*.9f),14,48);TArray<FVector2f> P;P.Reserve(N+1);
-  for(int32 I=0;I<=N;++I){const float A=2*PI*I/N;P.Add(C+FVector2f(FMath::Cos(A),FMath::Sin(A))*R);}
-  Line(P,Col,Thick);
+  const int32 N=FMath::Clamp(int32(R*.9f),14,48);RingPts.Reset();
+  for(int32 I=0;I<=N;++I){const float A=2*PI*I/N;RingPts.Add(C+FVector2f(FMath::Cos(A),FMath::Sin(A))*R);}
+  Line(RingPts,Col,Thick);
  };
  const double Now=FPlatformTime::Seconds(),Dt=FMath::Clamp(Now-Last,0.,.1);Last=Now;
  const double L=FMath::Max(1.,Length.Get(18.)),At=FMath::Clamp(Cursor.Get(0.),0.,L);const bool Run=Playing.Get(false),Load=Loading.Get(false);
@@ -297,8 +297,11 @@ int32 SS47TapeReels::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
  if(Now-RetainAt<1.&&FMath::Fmod(Now-RetainAt,.5)<.3)Label(TEXT("RETAINED"),Cx+5,Cy+(Small?3.f:5.f),Pc.Amber,Small?15:19);
  else for(int32 K=0;K<4;++K){const float Dx=Cx+7+K*Pitch;Label(TEXT("8"),Dx,Cy+1,Lift(Pc.Ghost,2.2f),Digit);Label(Count.Mid(K,1),Dx,Cy+1,K==3?Pc.Amber:Pc.Cream,Digit);}
  const float Sx=Mid+Cw*.5f+10;
- if(Rec){Box(Sx,Cy+(Small?7.f:10.f),10,10,Blink?Pc.Rec:Pc.Ghost);Label(State,Sx+16,Cy+(Small?3.f:5.f),Pc.Rec,Small?15:17);}
- else Label(State,Sx,Cy+(Small?3.f:5.f),Run||Wind||Load?Pc.Amber:Pc.Cream*FLinearColor(1,1,1,.7f),Small?15:17);
+ // FIX10-10: the state text must not run over the take-up reel; where there is not room for the words, the short form stands.
+ const float GlyphW=Small?9.f:10.5f,Room=CR.X-R-4-Sx-(Rec?16.f:0.f);
+ const FString Shown2=FString(State).Len()*GlyphW<=Room?FString(State):Rec?FString(TEXT("REC")):Load?FString(TEXT("LOAD")):Wind?(Gap<0?FString(TEXT("<<")):FString(TEXT(">>"))):Run?FString(TEXT(">")):FString(TEXT("STOP"));
+ if(Rec){Box(Sx,Cy+(Small?7.f:10.f),10,10,Blink?Pc.Rec:Pc.Ghost);Label(Shown2,Sx+16,Cy+(Small?3.f:5.f),Pc.Rec,Small?15:17);}
+ else Label(Shown2,Sx,Cy+(Small?3.f:5.f),Run||Wind||Load?Pc.Amber:Pc.Cream*FLinearColor(1,1,1,.7f),Small?15:17);
  if(Mid-Cw*.5f-118>CL.X+R+6)Label(FString::Printf(TEXT("%04.1f / %.0f s"),At,L),Mid-Cw*.5f-118,Cy+(Small?3.f:5.f),Pc.Cream,Small?15:17);
  if(Small)return Layer;
  // The deck's memory marks on the counter's window, the take's label, and the faceplate: four screws and the engraving.

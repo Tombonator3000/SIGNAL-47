@@ -6,6 +6,7 @@
 class US47Main;
 class FS47FreeformSession;
 class FS47EventBeats;
+class FS47ShotCamera;
 
 // DIRECTOR-TOOL-20261109: plays the scripted events (S47Script.h) in Freeform. It reads every script in Content/Director/scripted
 // (and the developer's own copies, WriteDir), asks each enabled one every two seconds whether its trigger holds (S47Script::Ready,
@@ -50,6 +51,9 @@ public:
  int32 PlayedCount(const FString& Id) const{return Memory.Count.FindRef(Id);}
  // The moment, as a trigger reads it.
  FS47ScriptNow Now() const;
+ // DIRECTOR-MODE-01 (slice 3): Base with what this script's trigger volume reads (FS47ScriptNow's bLooking, Held, bWasInside): its
+ // look test now, and what its watch has seen so far. Base itself for a trigger without a volume (FS47ScriptTrigger::HasVolume).
+ FS47ScriptNow NowFor(const FS47Script& S,const FS47ScriptNow& Base) const;
  // CRIT6-20261109: the weather and the moon a trigger reads, as the world shows them at Clock: the calendar day's (FS47WeatherLive,
  // the sky's moon), not the shift day's, whose morning is still "today" until 08:00. The night's storm is the evening's, the shift
  // day's (ShiftDay), held into the small hours. CalendarDate: that calendar day's date (FS47FreeformSession::DateOfDay).
@@ -58,6 +62,13 @@ public:
  // Where the player stands, or the ground they look at (within 400 m), road-local. False: no player on the land.
  bool HereRoad(FS47ScriptPoint& Out) const;
  bool LookRoad(FS47ScriptPoint& Out) const;
+ // DIRECTOR-MODE-01 (S47DirectorCam.h): LookRoad's trace from any eye (scene metres; the view's yaw and pitch, radians), Up over the
+ // ground and never below it; and a scene point as a road-local point with Up over the floor there as it is (below 0 under the ground:
+ // the caller decides). False: not on the land of the area the player is in (indoors), or nothing within 400 m.
+ static bool RayRoad(US47Main* InM,const FVector& Eye,double Yaw,double Pitch,FS47ScriptPoint& Out);
+ static bool RoadOfWorld(US47Main* InM,const FVector& Three,FS47ScriptPoint& Out);
+ // WorldOf for anyone: a road-local point in the area the player is in now, three-space, Up over its ground.
+ static FVector WorldOfRoad(US47Main* InM,const FS47ScriptPoint& P);
 
  // ---- for everyone else ----
  // The session's player, or null outside Freeform.
@@ -86,6 +97,13 @@ private:
  TMap<FString,FString> Bad;
  FS47ScriptMemory Memory;
  double CheckIn=4;
+ // DIRECTOR-MODE-01 (slice 3): each enabled volume trigger's watch, by script id: how long its mode's test has held and whether the
+ // player has been inside. Not saved: a Continue starts every watch fresh, and so does any gap in the asking (a script playing, the
+ // tutorial). SincePoll: the seconds since the last ask.
+ struct FVolumeWatch{double Held=0;bool bHolding=false,bWasInside=false;};
+ TMap<FString,FVolumeWatch> Watch;
+ double SincePoll=0;
+ FS47ScriptNow Watched(const FS47Script& S,const FS47ScriptNow& Base,double Gap);
  bool bLinesAdded=false;
  void AddDevLines();
  // The run.
@@ -133,4 +151,6 @@ private:
  bool LookingAt(const FVector& At,double Degrees) const;
  static TSet<FString>& Holders();
  TUniquePtr<FS47EventBeats> Beats;
+ // SHOT-BEAT-01: the shot action's camera (S47Shot.h), made on the first shot; stopped with the run's other effects (ClearEffects).
+ TSharedPtr<FS47ShotCamera> Shot;
 };

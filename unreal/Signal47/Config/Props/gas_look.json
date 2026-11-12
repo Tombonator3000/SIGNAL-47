@@ -1,0 +1,33 @@
+{
+ "_doc": "GAS-STATION-LIFT-01: the Caliche gas station shop's own picture (S47StationLook): a 1980s photograph under fluorescent tubes, as a bounded post-process volume on the shop's interior only (the station model's room, from its pivot in gas_cosmos.json). saturation, contrast: Unreal's global colour grading; gamma, gain: RGB; offset_shadows: lifted blacks; gain_highlights: soft highlights; grain, vignette, bloom: Unreal's intensities (grain_size only for the look material). blend_cm: the volume's blend outside the box; window_inset_cm: the box pulled in from the window and door wall (town x -17.2) so the blend stays off the pavement; priority: above the global volume (0). material: an optional post-process material after the tone pass with these as parameters, loaded if present. Every key optional: the code's defaults are these values. Read once when the station is built. Not read by S47Props.",
+ "enabled": true,
+ "saturation": 0.8,
+ "contrast": 0.86,
+ "gamma": [1.0, 1.0, 1.0],
+ "gain": [1.0, 0.95, 0.78],
+ "offset_shadows": [0.012, 0.012, 0.008],
+ "gain_highlights": [0.86, 0.86, 0.84],
+ "grain": 0.4,
+ "grain_size": 1.5,
+ "vignette": 0.45,
+ "bloom": 0.9,
+ "blend_cm": 70,
+ "window_inset_cm": 30,
+ "priority": 10,
+ "material": "/Game/Signal47/Look/M_StationLook.M_StationLook",
+ "exterior": {
+  "_doc": "The forecourt's own, much milder grade: a sphere round the canopy (centre: town metres from the station's pivot; radius_m) with a wide blend (blend_m) so no edge is ever seen; priority one under the shop's box, above the global volume. bloom is not overridden here. Off unless enabled.",
+  "enabled": true,
+  "centre": [6.4, 0.0, -9.9],
+  "radius_m": 42,
+  "blend_m": 28,
+  "saturation": 0.88,
+  "contrast": 0.94,
+  "gain": [1.0, 0.94, 0.82],
+  "offset_shadows": [0.008, 0.008, 0.007],
+  "gain_highlights": [0.95, 0.95, 0.95],
+  "grain": 0.25,
+  "vignette": 0.32,
+  "material": "/Game/Signal47/Look/M_StationLook.M_StationLook"
+ }
+}

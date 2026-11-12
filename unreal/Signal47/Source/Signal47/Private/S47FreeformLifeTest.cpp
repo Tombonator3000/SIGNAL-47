@@ -122,7 +122,7 @@ void FS47FreeformTest::StepFreeLife(double Dt)
  if(Stage==51)
  {
   const auto& Defs=FS47Places::Defs();
-  while(PlaceIndex<Defs.Num()&&FString(Defs[PlaceIndex].Id)==TEXT("motel"))++PlaceIndex;
+  while(PlaceIndex<Defs.Num()&&FS47Places::AtSaro(Defs[PlaceIndex].Id))++PlaceIndex; // (T16-17: the motel's desk and the old house's two are on SARO's ground)
   if(PlaceIndex>=Defs.Num()){Stage=60;At=Age;return;}
   double X=0,Z=0;if(!Check(F.Places->Spot(Defs[PlaceIndex].Id,X,Z),TEXT("the place has a spot")))return;
   const FVector Road=S47Legs::ORIGINS(TEXT("road"));

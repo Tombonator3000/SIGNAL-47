@@ -49,7 +49,8 @@ public:
  };
  explicit FS47FreeformSession(US47Main* Main);
  ~FS47FreeformSession();
- void Begin(const S47J::FObj& Saved,bool bLethal=false);
+ // bOneNight (STORY-ON-FREEFORM-01 step 2): a new Story night begins on day 1 at 18:00 with no first-shift tutorial. A saved game ignores it.
+ void Begin(const S47J::FObj& Saved,bool bLethal=false,bool bOneNight=false);
  void Stop();
  void Step(double Dt);
  S47J::FObj Save() const;
@@ -114,6 +115,7 @@ public:
  bool DriveCheckRunning() const { return DriveCheckAt>=0; }
  const FString& DriveCheckText() const { return DriveCheckResult; }
  bool DriveCheckedToday() const { return DriveCheckAt<0&&DriveCheckDay==DayNumber; }
+ const FString& DriveCheckResultText() const { return DriveCheckResult; }
  TArray<FString> TerminalLines(int32 Screen) const;
  // FIX-20261110: the live strip under an idle screen's lines (SS47Crt), and what is on the air
  // around the station (the gear's own level: the lamp, the walkie and the watch feel the same thing).
@@ -127,7 +129,9 @@ public:
  void OpenArchive();
  void OpenPhotos(); // FIX-20261110: OPS / PHOTOGRAPHS, the film record and the allowance desk
  int32 ArchiveTab=0,ArchivePage=0;FString ArchivePick; // presentation only, never saved
- uint32 StationFilesSeen=0;bool StationFileDue() const; // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS
+ // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS. FIX10-10 (12 Nov): the files opened are saved
+ // (stationFilesSeen, by key), so a released file stays marked until it is read, across days and Continue.
+ uint32 StationFilesSeen=0;bool StationFileDue() const;
  void OpenCaseBoard(int32 Line=-1,bool bNotes=false); // D48-20261110: bNotes opens it with the case notes (traces, leads, records) unfolded
  bool PlanCaseTest(int32 Line,int32 Test);
  bool FocusFieldTest(int32 Line);
@@ -453,6 +457,14 @@ public:
  // At SARO (asked from Step once a second, D46-20261110): every developed photograph from a night out there, trip camera frame and retrieved logger tape not
  // asked yet, the newest first, at most MostAskedAtOnce at a time. The number asked.
  int32 AskWhatCameBack();
+ // FIX10-9 (→ M3, "mer å merke for den som blir inne"): what the player logged by hand in the notebook in a night's dark hours
+ // (FS47NightLog::LogOwn, EVENTS) is a time too. Once that night is over (06:00) and the player is at SARO, OPS sets one of them against
+ // the array's log, the same question and the same telex as a photograph's: the first in the same minute as something the array
+ // caught, otherwise the night's first. Asked once a night ("own-N"), only for the night just over: a held night's notes, or an older
+ // save's, are never asked all at once. Pure: the index into Clocks, -1 none.
+ static int32 OwnNoteFor(const TArray<double>& Clocks,const TArray<FArrayMark>& Marks,int32 Night);
+ static FString OwnNoteId(int32 Night){return FString::Printf(TEXT("own-%d"),Night);}
+ static constexpr const TCHAR* OwnNoteWhat=TEXT("your own note in the notebook");
  double MinuteLook=0; // D46-20261110: seconds since AskWhatCameBack was last tried at SARO
  // OPS (FS47FreeformDirector::RegisterFieldRecord): a developed photograph from one of the night's happenings out there is a field
  // record the station pays for once, as field money under the week's cap (EarnSide, FieldRecordPay). -1: refused (not developed, not
@@ -504,6 +516,8 @@ public:
  bool CompareInstrument();
  bool RegisterComparison(const FString& Conclusion);
  bool FilePacket();
+ // The player stands at the records-room binder (where a packet can be filed); also read by the F10 card player.
+ bool NearBinder() const;
  bool Rest();
  bool Upgrade(int32 Index);
  bool HasUpgrade(int32 Index) const { return Upgrades.IsValidIndex(Index) && Upgrades[Index]; }
@@ -547,9 +561,15 @@ public:
  void SetPowerFault(bool bFault);
  bool PowerFault() const { return bPowerFault; }
  // FIX-20261110 (Tom, point 2): what passes over SARO takes the mains with it. Sag seconds of dips and torn screens first (time to
- // get to the standby generator), then the mains are out for Out seconds and come back by themselves. A running generator carries
- // the station through it, and the line recorder keeps writing (SkyRode: the record the passage leaves). Nothing of it is saved:
- // a passage is one sitting, and a save opened in the middle of one has its mains.
+ // get to the standby generator), then the mains are out for Out seconds. A running generator carries the station through it, and
+ // the line recorder keeps writing (SkyRode: the record the passage leaves). Nothing of the passage itself is saved.
+ // FIX10-10 (12 Nov, critics: "the power comes back by itself after barely two minutes"): when the mains try to come back, the
+ // feeder's protection locks out and leaves an ordinary feeder fault (bPowerFault, saved). The station stays dark until the
+ // generator carries it or the remote feeder (ff:feeder) is mended (FS47FreeformWorld, the existing repair); the county line crew
+ // restores it by itself SkyFaultMinutes game minutes later (SkyFaultUntil, saved), so nobody is left without a way on. Not on a
+ // Story night: there the act's own feeder_fault owns the power_fault and power_restored flags.
+ static constexpr double SkyFaultMinutes=180; // Tom 12 Nov: about 12 real minutes at night (night rate ~245 s per game hour)
+ double SkyFaultClock() const { return SkyFaultUntil; }
  void SkyCutBegin(double Sag,double Out);
  bool SkySagging() const { return SkySag>0; }
  bool SkyMainsOut() const { return SkySag<=0&&SkyOut>0; }
@@ -598,7 +618,7 @@ public:
  FString TerminalDate(double AtClock) const;
  // The procedure card taped to the desk by the OPS terminal: what the screens used to explain, to be read when wanted.
  static FS47Doc SopCard();
- // OPS's own system lines (S47FreeformScreens.cpp): the queue ("MORE WORK / 2 OPEN TODAY / 1 CARRIED / NEXT ISSUE 08:00") and the
+ // OPS's own system lines (S47FreeformScreens.cpp): the queue ("MORE WORK / 2 OPEN TODAY / 1 FROM EARLIER / NEW JOBS 08:00") and the
  // account on the glass ("BUDGET $31 / REQ $12"). REQUISITION, never debt.
  static FString QueueLine(int32 Remaining,int32 Today,int32 Earlier,int32 Rejected);
  static FString OpsAccountLine(int32 Budget,int32 Requisition);
@@ -642,6 +662,7 @@ private:
  US47Main* M=nullptr;
  bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false,bOldCalendar=false;
  double SkySag=0,SkySagAll=1,SkyOut=0,SkyDipAt=0,SkyDip=0,SkyDark=0;bool bSkyRode=false;int32 SkyTold=0;
+ double SkyFaultUntil=0; // FIX10-10: game clock at which the county restores a lockout left by a passage; 0 = none
  void StepSky(double Dt);
  FString ArchiveNote;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false,bTapePanel=false;
@@ -795,7 +816,6 @@ private:
  FString ControlSummary(const FJob& J) const;
  bool HasPower() const;
  bool RequirePower();
- bool NearBinder() const;
  double TargetAz() const;
  double TargetEl() const;
  double SourceSeconds() const;

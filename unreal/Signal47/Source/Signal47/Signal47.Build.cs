@@ -34,5 +34,9 @@ public class Signal47 : ModuleRules
 		RuntimeDependencies.Add("$(ProjectDir)/Content/Director/scripted/*.json", StagedFileType.UFS);
 		// D46-20261110: the night's events' own scripts (S47EventScript), one file each.
 		RuntimeDependencies.Add("$(ProjectDir)/Content/Director/Events/*.json", StagedFileType.UFS);
+		// STORY-ON-FREEFORM-01: the story director's acts (S47StoryDirector), kept apart from Freeform's events.
+		RuntimeDependencies.Add("$(ProjectDir)/Content/Director/Story/*.json", StagedFileType.UFS);
+		// STORY-ON-FREEFORM-01 (step 4): the story's own scripts (event-script grammar, the story store's lint), never in Director/Events.
+		RuntimeDependencies.Add("$(ProjectDir)/Content/Director/Story/beats/*.json", StagedFileType.UFS);
 	}
 }

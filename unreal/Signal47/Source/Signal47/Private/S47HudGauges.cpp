@@ -1,4 +1,5 @@
 #include "S47HudGauges.h"
+#include "S47FieldRadio.h"
 #include "S47Json.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -27,10 +28,13 @@ bool S47HudGauges::BatteryShown(bool bDrains, bool bHave, bool bOn, double Level
 	return bDrains && bHave && (bOn || Level < Low);
 }
 
-FString S47HudGauges::CbLine() { return TEXT("CB 19"); }
+// HUD-20261108: the frequency in use is shown with the set (CB channel 19 is 27.185 MHz; the walkie's three channels are
+// FS47FieldRadio::ChannelMHz: 49.830 + 0.015 per channel, kept in step by the self-test).
+FString S47HudGauges::CbLine() { return TEXT("CB 19  27.185"); }
 FString S47HudGauges::WalkieLine(int32 Channel, const FString& Who)
 {
-	const FString Line = FString::Printf(TEXT("WALKIE %d"), FMath::Clamp(Channel, 1, 3));
+	const int32 Ch = FMath::Clamp(Channel, 1, 3);
+	const FString Line = FString::Printf(TEXT("WALKIE %d  %.3f"), Ch, 49.830 + .015 * (Ch - 1));
 	const FString Name = Who.TrimStartAndEnd().ToUpper();
 	return Name.IsEmpty() ? Line : Line + TEXT(" \u00B7 ") + Name;
 }
@@ -477,8 +481,9 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	Check(BatteryShown(true, true, true, 1.0, 0.2) && BatteryShown(true, true, false, 0.1, 0.2) && !BatteryShown(true, true, false, 0.8, 0.2),
 		TEXT("shown while the lamp is on, or when it is low; hidden when it is off and well charged"));
 	Check(!BatteryShown(false, true, true, 0.1, 0.2) && !BatteryShown(true, false, true, 0.1, 0.2), TEXT("not shown in the Story, nor before the lamp is taken"));
-	Check(CbLine() == TEXT("CB 19") && WalkieLine(1, TEXT("Dale")) == FString(TEXT("WALKIE 1 \u00B7 DALE")) && WalkieLine(2) == TEXT("WALKIE 2") && WalkieLine(7) == WalkieLine(3),
-		TEXT("the radio line names the set, its channel and who is sending"));
+	Check(CbLine() == TEXT("CB 19  27.185") && WalkieLine(1, TEXT("Dale")) == FString(TEXT("WALKIE 1  49.830 \u00B7 DALE")) && WalkieLine(2) == TEXT("WALKIE 2  49.845") && WalkieLine(7) == WalkieLine(3)
+		&& WalkieLine(3) == FString::Printf(TEXT("WALKIE 3  %.3f"), FS47FieldRadio::ChannelMHz(3)),
+		TEXT("the radio line names the set, its channel, its frequency (the field radio's own) and who is sending"));
 	// HUD-D-20261109: one radio colour in every palette, so the CB and the walkie are told apart by their words alone
 	bool bApart = true;
 	for (const FString& Who : { FString(), FString(TEXT("DALE")), FString(TEXT("YOU")) })
@@ -601,11 +606,11 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	{
 		const FString Long = TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF 2 UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK. STATION GOAL: ARRAY 12 OF 27.");
 		const TCHAR* Tasks[] = {
-			TEXT("TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
-			TEXT("RECEIVER (centre PC): KEEP IT TUNED; COLLECT THE ORIGINAL AT THE PRINTER"),
-			TEXT("FIRST SHIFT 2/5 / TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
+			TEXT("TRACKING (right-hand PC): POINT THE ARRAY AT 3C 286"),
+			TEXT("RECEIVER (centre PC): KEEP TUNING; THEN THE ORIGINAL IS AT THE PRINTER"),
+			TEXT("FIRST SHIFT 2/5 / TRACKING (right-hand PC): POINT THE ARRAY AT 3C 286"),
 			TEXT("SERVICE TRUCK: TANK EMPTY. GET OUT AND USE THE TRUCK TO CALL ROADSIDE RETURN"),
-			TEXT("S-03 CABLE JUNCTION / LOCAL BOX: INSPECT, ISOLATE AND OPEN THE RELAY HATCH"),
+			TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SWITCH TO LOCAL AND OPEN THE RELAY HATCH"),
 			TEXT("EAST-WING GARAGE: THE ROLL-UP DOOR IS DOWN. PRESS THE GREEN UP BUTTON BY THE DOOR (OR USE THE HAND CHAIN), THEN TAKE THE PARCEL TO THE RECEIVING TABLE"),
 			TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road."),
 			TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT"),
@@ -614,12 +619,12 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 		bool bFits = CardLine(Long).Len() <= CardMost;
 		for (const TCHAR* Task : Tasks) bFits &= CardLine(Task).Len() <= CardMost && !CardLine(Task).IsEmpty();
 		Check(bFits && CardLine(FString()).IsEmpty(), TEXT("every task fits the card in seventy characters, however long it is"));
-		Check(CardLine(Tasks[0]) == TEXT("TRACKING PC // POINT THE ARRAY TO THE SELECTED SOURCE") && CardLine(Tasks[1]) == TEXT("RECEIVER PC // KEEP IT TUNED. COLLECT THE ORIGINAL AT THE PRINTER")
+		Check(CardLine(Tasks[0]) == TEXT("TRACKING PC // POINT THE ARRAY AT 3C 286") && CardLine(Tasks[1]) == TEXT("RECEIVER PC // KEEP TUNING. THEN THE ORIGINAL IS AT THE PRINTER")
 			&& CardLine(Tasks[3]).StartsWith(TEXT("SERVICE TRUCK // TANK EMPTY. GET OUT AND USE THE TRUCK")) && CardLine(Tasks[3]).EndsWith(TEXT("..."))
 			&& CardLine(Tasks[6]) == TEXT("MAILBOX // A letter from Dr. Ward's office is in the box at the road.")
 			&& CardLine(TEXT("FRAME 01 // INSPECT THE PRINT")) == TEXT("FRAME 01 // INSPECT THE PRINT"),
 			TEXT("the card names the place and then the task in whole sentences; a doctor's title is no end of one"));
-		Check(CardLine(Tasks[2]) == TEXT("FIRST SHIFT 2/5 // TRACKING PC: POINT THE ARRAY TO THE SELECTED SOURCE")
+		Check(CardLine(Tasks[2]) == TEXT("FIRST SHIFT 2/5 // TRACKING PC: POINT THE ARRAY AT 3C 286")
 			&& CardLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB")) == TEXT("FIRST SHIFT 1/5 // OPS: OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB")
 			&& CardLine(TEXT("FIRST SHIFT 3/5 / RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING")) == TEXT("RECEIVER PC 3/5 // TUNE THE CARD AND PRESS START RECORDING") && CardLine(Tasks[5]) == TEXT("EAST-WING GARAGE // THE ROLL-UP DOOR IS DOWN. PRESS THE GREEN UP...")
 			&& CardLine(Tasks[8]).EndsWith(TEXT("...")), TEXT("a sentence too long for the card is cut at a word and says so; the rest waits in the notebook and the pause menu"));
@@ -628,10 +633,10 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 			// JobNextAction), and the printer stays on it.
 			const TCHAR* Shift[] = {
 				TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB"),
-				TEXT("FIRST SHIFT 2/5 / TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE"),
+				TEXT("FIRST SHIFT 2/5 / TRACKING (right-hand PC): POINT THE ARRAY AT 3C 286"),
 				TEXT("FIRST SHIFT 3/5 / RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING"),
-				TEXT("FIRST SHIFT 3/5 / TRACKING (right-hand PC): WAIT FOR ENCODER AGREEMENT, THEN USE RECEIVER (centre PC)"),
-				TEXT("FIRST SHIFT 4/5 / RECEIVER (centre PC): KEEP IT TUNED; COLLECT THE ORIGINAL AT THE PRINTER"),
+				TEXT("FIRST SHIFT 3/5 / TRACKING (right-hand PC): WAIT FOR THE ARRAY TO SETTLE, THEN USE RECEIVER (centre PC)"),
+				TEXT("FIRST SHIFT 4/5 / RECEIVER (centre PC): KEEP TUNING; THEN THE ORIGINAL IS AT THE PRINTER"),
 				TEXT("FIRST SHIFT 4/5 / PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"),
 				TEXT("FIRST SHIFT 5/5 / OPS (corner PC): REGISTER THE ROUTINE RESULT"),
 				TEXT("FIRST SHIFT 6/6 / PRINTER: COLLECT THE LABELLED REGISTERED PACKET"),

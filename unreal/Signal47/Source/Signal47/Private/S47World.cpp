@@ -286,6 +286,7 @@ void US47World::Init(US47Main* InM)
 	M->OnAction(TEXT("use"), [this] { return CabUse(); });
 	M->OnKey(EKeys::LeftMouseButton, [this] { return CabUse(); });
 	M->OnAction(TEXT("radio"), [this] { return CabRadio(); });
+	M->OnAction(TEXT("ignition"), [this] { return CabIgnition(); });
 	// the truck where it stands: the yard's (Chapter3.bindSaroTruck) and the station's (bindSite);
 	// the chapter adds its own with the same ids when it is ported
 	if (M->Inter && M->Web)
@@ -1156,6 +1157,9 @@ void US47World::StartTrip(const FString& From, const FString& To, const FS47Trip
 		if (!O.bFree) { TruckAt.Reset(); for (const TCHAR* Id : TRUCKS) ParkAt(Id); SetGround(FString()); }
 		if (!O.bFree && !bCommuteVehicle && From == TEXT("saro")) OdoAtSaro = Odometer();
 		L->Drive->Place(O.AtPos ? *O.AtPos : G->Position, O.AtPos ? O.AtHeading : G->Rotation.Y);
+		// IGNITION-20261111: back in the truck that was left running (or another one: that one goes dark)
+		if (bIdleOut) { if (IdleTruck && IdleTruck != L->Truck) IdleTruck->SetHeadlights(false); bIdleOut = false; IdleTruck = nullptr; if (Engine) Engine->Far(1); }
+		L->Drive->bEngine = true;
 		LightsOn(*L->Truck);
 		Enter(AreaOf(Leg0));
 		StartEngine();
@@ -1271,9 +1275,15 @@ void US47World::Park(const FString& Place)
 	TFunction<void()> OnArrive = Trip ? Trip->OnArrive : nullptr;
 	Trouble.Reset(L.Truck, L.Drive.Get());
 	bDriving = false;
-	if (Engine) Engine->Stop();
+	// IGNITION-20261111: got out by hand with the engine running, it stays running: idling, lights on.
+	// Arriving parks it as before (the engine off); the key in the cab turns it off first.
+	const bool bKeep = bLeaveRunning && Engine && Engine->On() && !Engine->Stopping() && L.Drive->bEngine;
+	bLeaveRunning = false;
+	if (Engine && !bKeep) Engine->Stop();
+	if (Engine && bKeep) Engine->Set(L.Drive->Rpm, 0);
 	L.Truck->SetDriving(false);
-	L.Truck->SetHeadlights(false);
+	L.Truck->SetHeadlights(bKeep);
+	if (bKeep) { bIdleOut = true; IdleTruck = L.Truck; IdleArea = AreaOf(Place); }
 	TruckAt = Place; Leg.Reset(); Trip.Reset(); Autopilot.Reset();
 	ParkAt(Place);
 	if (bPersonalTransport) PersonalVehicle = TruckSave();
@@ -1823,6 +1833,7 @@ void US47World::StartEngine()
 
 void US47World::StopDriving()
 {
+	EndIdle();
 	const FString Id = Leg;
 	FLegRec* L = Id.IsEmpty() ? nullptr : Legs.Find(Id);
 	Trouble.Reset(L ? L->Truck : nullptr, L ? L->Drive.Get() : nullptr);
@@ -2056,8 +2067,68 @@ bool US47World::CabUse()
 	if (OnRadio && RadioAimed()) { OnRadio(); return true; }
 	// (not out in the middle of the truck's count on B, nor by Use in its warning on B: main.ts useCurrent)
 	if (CabStay && CabStay()) return true;
-	GetOutHere();
+	CabGetOut();
 	return true;
+}
+
+bool US47World::CabGetOut()
+{
+	bLeaveRunning = true;
+	const bool bOut = GetOutHere();
+	bLeaveRunning = false;
+	if (bOut && bIdleOut && FirstTime(TEXT("idle")))
+		Toast(FString::Printf(TEXT("You leave the engine running: it idles, headlights on, using a little fuel. %s in the cab turns the key."), *S47Keys::Said(TEXT("ignition"))), 6.f);
+	return bOut;
+}
+
+double US47World::IdleBeam() const { return bIdleOut && IdleTruck ? IdleTruck->Beam() : 0; }
+
+bool US47World::CabIgnition()
+{
+	if (!M || !bDriving || M->ModalOpen() || (M->Story && M->Story->IsCinematic())) return false;
+	if (Trouble.TurnKey()) return true;
+	FLegRec* L = Leg.IsEmpty() ? nullptr : Legs.Find(Leg);
+	if (!L || bBusy) return false;
+	if (FMath::Abs(L->Drive->Speed) > 0.6) { Toast(TEXT("Stop first."), 2.f); return true; }
+	if (L->Drive->bEngine)
+	{
+		L->Drive->bEngine = false;
+		if (Engine) Engine->Stop();
+		L->Truck->SetHeadlights(false); L->Truck->SetDashLevel(0.05);
+		UE_LOG(LogS47World, Display, TEXT("S47: ignition off"));
+		return true;
+	}
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Field && !M->Freeform->Field->HasVehicleFuel())
+	{
+		if (Engine) Engine->Crank(1.0);
+		Toast(TEXT("It turns over and will not catch: the tank is empty."), 3.f);
+		return true;
+	}
+	L->Drive->bEngine = true;
+	LightsOn(*L->Truck);
+	StartEngine();
+	UE_LOG(LogS47World, Display, TEXT("S47: ignition on"));
+	return true;
+}
+
+void US47World::EndIdle(bool bDied)
+{
+	if (!bIdleOut) return;
+	bIdleOut = false;
+	if (IdleTruck) IdleTruck->SetHeadlights(false);
+	IdleTruck = nullptr;
+	if (Engine) { if (bDied) Engine->Stall(); else Engine->Stop(); Engine->Far(1); }
+	UE_LOG(LogS47World, Display, TEXT("S47: the idling truck %s"), bDied ? TEXT("ran dry and died") : TEXT("is switched off"));
+}
+
+void US47World::IdleStep()
+{
+	if (!bIdleOut || bDriving || !Engine || !IdleTruck || !M || !M->Player) return;
+	// heard from where the player is: full by the door, gone some sixty metres off or in another area
+	const FVector P = M->Player->Pos, T = IdleTruck->Position;
+	const double D = FMath::Sqrt(FMath::Square(P.X - T.X) + FMath::Square(P.Z - T.Z));
+	const double K = Area == IdleArea ? FMath::Clamp(1 - (D - 3) / 55, 0.0, 1.0) : 0;
+	Engine->Far(0.8 * K * K);
 }
 
 bool US47World::CabRadio()
@@ -2174,6 +2245,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 {
 	if (!M || !bLegsMade) return false;
 	if (Engine) Engine->Tick();
+	IdleStep();
 	const bool bModal = M->ModalOpen();
 	// World.update: the road's cattle guard under the truck driven there (before the step, as there)
 	if (!bModal && (Area == TEXT("road") || Area == TEXT("diner")) && Road)

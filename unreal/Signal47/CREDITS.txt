@@ -128,6 +128,10 @@ These source credits describe the recordings, not the fictional instrument's acq
 STREET LAMPS (2026-11-09)
 Cobra-head street lamp, davit arm, tapered steel pole and wood-pole arm: original Blender geometry and procedural textures made for SIGNAL / 47 (unreal/ArtSource/StreetLamps). No third-party meshes or images.
 
+CALICHE PUBLIC SCHOOL (2026-11-12, SCHOOL-V2-20261112)
+Original Blender geometry and procedural textures (brick, stucco, block, VCT, acoustic tile, chalkboard) made for SIGNAL / 47
+(~/Assets/signal47-free/own/caliche_school, imported by Tools/freemodels). No third-party meshes or images.
+
 FEED SHED SOUNDS (2026-11-09, WEEKLY-CASE-20261109)
 Freesound, CC0 1.0 (public domain, https://creativecommons.org/publicdomain/zero/1.0/); credited by choice. Cut, levelled and
 staged by Tools/nightsounds (KILDER.md, sources.json "shed*"):

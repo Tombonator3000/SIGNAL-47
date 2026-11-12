@@ -57,6 +57,7 @@ Biler: trolig for nye for 1986, bare som bakgrunn. Fantasy, cyberpunk og tegnese
 |---|---|---|
 | Før 10. november | 17 klipp fra lydbiblioteket (`lic:`-lydene: dører, brytere, nøkler, radiosus, TV-brum, «pressure») | Se `sfx/MANIFEST.md` i den private klonen. |
 | 10. november | 9 klipp til uhyggen under et møte: `dread_low`, `dread_high` (Horror Ambience 18 og 26), `scare_soft_1`–`2` og `scare_hard_1`–`3` (Horror Screamers 21, 02, 27, 30, 26), `sky_braam` og `sky_swell` (Orchestral Braams 06 og 09). Stereo, målt, ikke hørt. | Grunnen toner inn på musikkbussen når noe er nær, laget over når det sees eller jakter; slaget ved første syn (hviler 75 s, ved jakt 40 s); braam for en landing eller storenatta, svell for lys og skikkelser på avstand. Nivåene samlet i `S47EncounterSound.cpp`; prøvelytting i F10 «Dread sound (T)». Uten filene låter spillet som før. |
+| 11. november | 17 rekvisitter i bensinstasjonens butikk fra Cosmos-pakkene Post Apocalyptic Coffee Shop (UE 5.3) og Abandoned Hospital (UE 4.22): kasseapparat med skuff, kaffetrakter, kjøleskap, søppelbøtte, brannalarm, «No smoking» og «Staff only», to takventiler og en veggrist, sikringsskap, pappesker og en trekasse. Tatt inn med `Tools/cosmosshop` (bare de pakkene meshene trenger, flyttet til `/Game/Licensed/CosmosShop` i et kasserbart 5.8-prosjekt, 0,43 GB). Plassert etter `Config/Props/gas_cosmos.json`; sett i spillbilder. | Butikken på bensinstasjonen i Caliche, bare i Freeform (`S47StationDressing`). Uten filene er butikken som før. |
 
 ## Åpne spørsmål til Tom
 

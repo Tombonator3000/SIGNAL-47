@@ -4,6 +4,7 @@
 #include "S47Weather.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include <limits>
 
 // DIRECTOR-TOOL-20261109: the scripted events' self-test, called from the HUD's (-S47SelfTest): the JSON both ways, the trigger,
 // the night's tiers (S47NightTiers: a figure waits for two, a glimpse for midnight, sooner in the fourth week, early only when set),
@@ -223,6 +224,220 @@ bool S47Script::SelfTest(TArray<FString>& Lines)
   Check(Lint(S).Num()==1&&!Ready(S,NightAt(23.75),Mem,Why)&&!Ready(S,NightAt(23.75),Mem,Why,true),TEXT("a script that says a spoiler is neither played nor previewed"));
   FS47Script Empty;Empty.Id=TEXT("Bad Id");
   Check(Lint(Empty).Num()>=2,TEXT("a bad id and no actions are refused"));
+ }
+
+ // ---- the shot (SHOT-BEAT-01) ----
+ {
+  FS47Script One;One.Id=TEXT("test_shot");One.Name=TEXT("A shot at the array");
+  FS47ScriptPoint Eye;Eye.X=36;Eye.Z=-318;Eye.Up=1.7;Eye.bSet=true;
+  FS47ScriptPoint Eye2=Eye;Eye2.X=28;Eye2.Z=-332;Eye2.Up=2.5;
+  FS47ScriptPoint Mark;Mark.X=18;Mark.Z=-370;Mark.Up=9;Mark.bSet=true;
+  {FS47ScriptAction A;A.Do=ES47ScriptAct::Shot;A.At=10;A.Path={Eye};A.Point=Mark;A.Fov=55;A.Secs=6;A.In=.6;A.Out=.8;One.Actions.Add(A);}
+  FS47Script Two=One;Two.Actions[0].Path.Add(Eye2);Two.Actions[0].Fov2=40;
+  FString Why;FS47Script R1,R2;
+  const FString T1=Write(One),T2=Write(Two);
+  const bool bR1=Read(T1,R1,Why),bR2=Read(T2,R2,Why);
+  Check(bR1&&Write(R1)==T1&&R1.Actions.Num()==1&&R1.Actions[0].Do==ES47ScriptAct::Shot&&R1.Actions[0].Path.Num()==1&&FMath::IsNearlyEqual(R1.Actions[0].Path[0].Up,1.7)
+   &&R1.Actions[0].Point.bSet&&FMath::IsNearlyEqual(R1.Actions[0].Point.Up,9.)&&FMath::IsNearlyEqual(R1.Actions[0].Fov,55.)&&R1.Actions[0].Fov2==0&&FMath::IsNearlyEqual(R1.Actions[0].Secs,6.)
+   &&T1.Contains(TEXT("\"eye\""))&&!T1.Contains(TEXT("eye2"))&&!T1.Contains(TEXT("fov2")),TEXT("SHOT: a shot with one eye is written, read and written again the same, without eye2 or fov2"));
+  Check(bR2&&Write(R2)==T2&&R2.Actions[0].Path.Num()==2&&FMath::IsNearlyEqual(R2.Actions[0].Path[1].X,28.)&&FMath::IsNearlyEqual(R2.Actions[0].Path[1].Up,2.5)&&FMath::IsNearlyEqual(R2.Actions[0].Fov2,40.)
+   &&FMath::IsNearlyEqual(R2.Actions[0].In,.6)&&FMath::IsNearlyEqual(R2.Actions[0].Out,.8),TEXT("SHOT: a shot with a second eye keeps both eyes, both lenses and its ease in and out"));
+  FS47Script Dflt;
+  Check(Read(TEXT("{\"version\":1,\"id\":\"x\",\"actions\":[{\"at\":0,\"do\":\"shot\",\"eye2\":{\"x\":1,\"z\":2},\"point\":{\"x\":9,\"z\":9}}]}"),Dflt,Why)&&Dflt.Actions.Num()==1&&Dflt.Actions[0].Path.IsEmpty()
+   &&FMath::IsNearlyEqual(Dflt.Actions[0].Fov,60.)&&FMath::IsNearlyEqual(Dflt.Actions[0].Secs,6.)&&FMath::IsNearlyEqual(Dflt.Actions[0].In,.6)&&Lint(Dflt).Num()>0,TEXT("SHOT: the defaults, and no second eye without a first (then refused: no eye)"));
+  Check(Lint(One).Num()==0&&Lint(Two).Num()==0,TEXT("SHOT: the lint takes a good shot with one eye and with two"));
+  Check(FMath::IsNearlyEqual(One.Length(),10+.6+6+.8),FString::Printf(TEXT("SHOT: the script lasts until the shot has eased back (%.1f s)"),One.Length()));
+  // Each rule refuses on its own.
+  struct FRule{const TCHAR* What;TFunction<void(FS47ScriptAction&)> Spoil;};
+  const TArray<FRule> Rules={
+   {TEXT("no eye"),[](FS47ScriptAction& X){X.Path.Reset();}},
+   {TEXT("three eyes"),[](FS47ScriptAction& X){const FS47ScriptPoint First=X.Path[0];X.Path.Add(First);}},
+   {TEXT("no point"),[](FS47ScriptAction& X){X.Point=FS47ScriptPoint();}},
+   {TEXT("held 0.5 s"),[](FS47ScriptAction& X){X.Secs=.5;}},
+   {TEXT("held 31 s"),[](FS47ScriptAction& X){X.Secs=31;}},
+   {TEXT("fov 15"),[](FS47ScriptAction& X){X.Fov=15;}},
+   {TEXT("fov 95"),[](FS47ScriptAction& X){X.Fov=95;}},
+   {TEXT("fov2 10"),[](FS47ScriptAction& X){X.Fov2=10;}},
+   {TEXT("in 0.2 s"),[](FS47ScriptAction& X){X.In=.2;}},
+   {TEXT("out 4 s"),[](FS47ScriptAction& X){X.Out=4;}},
+   {TEXT("an eye on the point"),[](FS47ScriptAction& X){X.Path[1]=X.Point;X.Path[1].X+=.2;}},
+   {TEXT("eyes 250 m apart"),[](FS47ScriptAction& X){X.Path[1].X=X.Path[0].X+250;}},
+   {TEXT("an eye under the ground"),[](FS47ScriptAction& X){X.Path[0].Up=-1;}},
+   {TEXT("a point 301 m up"),[](FS47ScriptAction& X){X.Point.Up=301;}}};
+  FString Let;
+  for(const FRule& Rule:Rules){FS47Script B=Two;Rule.Spoil(B.Actions[0]);if(Lint(B).Num()==0)Let+=FString(Rule.What)+TEXT(" | ");}
+  Check(Let.IsEmpty(),TEXT("SHOT: the lint refuses each rule on its own")+(Let.IsEmpty()?FString():TEXT(": let through ")+Let));
+  // An older file, without a shot: read and written as before, nothing of the shot's in it.
+  const FString Old=TEXT("{\"version\":1,\"id\":\"old\",\"name\":\"old\",\"enabled\":false,\"repeat\":\"once\",\"trigger\":{},\"actions\":[{\"at\":0,\"do\":\"look\",\"secs\":1.5,\"point\":{\"x\":4,\"z\":5}},{\"at\":2,\"do\":\"toast\",\"text\":\"Wind.\",\"secs\":4}]}");
+  FS47Script O1,O2;
+  const bool bOld=Read(Old,O1,Why)&&Read(Write(O1),O2,Why);
+  const FString W1=Write(O1);
+  Check(bOld&&Write(O2)==W1&&!W1.Contains(TEXT("\"fov\""))&&!W1.Contains(TEXT("\"eye\""))&&!W1.Contains(TEXT("\"in\""))&&!W1.Contains(TEXT("\"out\""))&&!Write(Sample()).Contains(TEXT("\"fov\""))
+   &&O1.Actions.Num()==2&&FMath::IsNearlyEqual(O1.Actions[0].Secs,1.5)&&FMath::IsNearlyEqual(O1.Length(),6.),TEXT("SHOT: an older file without a shot reads and writes as before, with nothing of the shot's in it"));
+  // The example that comes with the game: there, and switched off.
+  const FString Example=FPaths::ProjectContentDir()/TEXT("Director/scripted/example_shot_array.json");
+  FString Text;
+  if(FFileHelper::LoadFileToString(Text,*Example))
+  {
+   FS47Script E;
+   const bool bOk=Read(Text,E,Why);
+   Check(bOk&&!E.bEnabled&&Lint(E).Num()==0&&E.Actions.ContainsByPredicate([](const FS47ScriptAction& X){return X.Do==ES47ScriptAct::Shot&&X.Path.Num()==2;}),TEXT("SHOT: the shot example reads, keeps to the limits, has a moving shot, and is off"));
+  }
+  else Lines.Add(TEXT("NOTE scripts: the shot example is not in this build (Content/Director/scripted)"));
+ }
+
+ // ---- the trigger volumes (DIRECTOR-MODE-01, slice 3) ----
+ {
+  FString Why;
+  FS47ScriptMemory Mem;
+  // A hint (no figure, no sky) at a point of its own at 0, 0; NightAt has the player at 10, 10 and every other test holding.
+  const auto Vol=[]()
+  {
+   FS47Script S;S.Id=TEXT("test_volume");S.Name=TEXT("A volume");S.bEnabled=true;
+   S.Trigger.Point.bSet=true;
+   FS47ScriptAction A;A.Do=ES47ScriptAct::Toast;A.At=0;A.Text=TEXT("The wind drops.");A.Secs=3;S.Actions.Add(A);
+   return S;
+  };
+  const TCHAR* const NewKeys[]={TEXT("\"shape\""),TEXT("\"half\""),TEXT("\"yaw\""),TEXT("\"height\""),TEXT("\"mode\""),TEXT("\"degrees\""),TEXT("\"range\""),TEXT("\"dwell\"")};
+  const auto NoNewKeys=[&NewKeys](const FString& Text){for(const TCHAR* K:NewKeys)if(Text.Contains(K))return false;return true;};
+  // An older file with a point and a radius: read as the plain circle entered at once, written back without a new field, and it
+  // starts where it started and waits where it waited.
+  const FString Old=TEXT("{\"version\":1,\"id\":\"old_point\",\"name\":\"old\",\"enabled\":true,\"repeat\":\"once\",\"trigger\":{\"point\":{\"x\":0,\"z\":0},\"radius\":40},\"actions\":[{\"at\":0,\"do\":\"toast\",\"text\":\"Wind.\",\"secs\":4}]}");
+  FS47Script O1,O2;
+  const bool bOld=Read(Old,O1,Why)&&Read(Write(O1),O2,Why);
+  const FS47ScriptTrigger& OT=O1.Trigger;
+  FS47ScriptNow Near=NightAt(23.75),Far=NightAt(23.75);Far.Road=FVector2D(41,0);
+  Check(bOld&&Write(O2)==Write(O1)&&NoNewKeys(Write(O1))&&NoNewKeys(Write(Sample()))&&!OT.HasVolume()&&OT.Shape==ES47ScriptShape::Circle&&OT.Mode==ES47ScriptMode::Enter&&OT.Height==0&&OT.Dwell==0
+   &&Ready(O1,Near,Mem,Why)&&!Ready(O1,Far,Mem,Why)&&Why.Contains(TEXT("place")),TEXT("DIRECTOR-3: an older file reads as the plain circle, writes back without a new field, and starts and waits as before"));
+  // Every new field, written and read back.
+  const FString New=TEXT("{\"version\":1,\"id\":\"new_box\",\"trigger\":{\"point\":{\"x\":3,\"z\":4},\"radius\":40,\"shape\":\"box\",\"half\":[4,2],\"yaw\":0.5,\"height\":3,\"mode\":\"look\",\"degrees\":12,\"range\":60,\"dwell\":2},\"actions\":[{\"at\":0,\"do\":\"toast\",\"text\":\"Wind.\",\"secs\":4}]}");
+  FS47Script N1,N2;
+  const bool bNew=Read(New,N1,Why)&&Read(Write(N1),N2,Why);
+  const FS47ScriptTrigger& NT=N1.Trigger;
+  Check(bNew&&Write(N2)==Write(N1)&&NT.Shape==ES47ScriptShape::Box&&NT.HalfX==4&&NT.HalfZ==2&&NT.Yaw==.5&&NT.Height==3&&NT.Mode==ES47ScriptMode::Look&&NT.Degrees==12&&NT.LookRange==60&&NT.Dwell==2&&NT.HasVolume()&&Lint(N1).Num()==0,
+   TEXT("DIRECTOR-3: shape, half, yaw, height, mode, degrees, range and dwell are written and read back"));
+  FS47Script Junk;
+  Check(!Read(New.Replace(TEXT("\"box\""),TEXT("\"sphere\"")),Junk,Why)&&!Read(New.Replace(TEXT("\"look\""),TEXT("\"stare\"")),Junk,Why),TEXT("DIRECTOR-3: an unknown shape or mode is turned away"));
+  // The circle's edge.
+  {
+   FS47ScriptTrigger T;T.Point.bSet=true;T.Radius=40;
+   FS47ScriptPoint On;On.X=40;On.bSet=true;FS47ScriptPoint Off=On;Off.X=40.01;FS47ScriptPoint High=On;High.Up=500;
+   Check(Inside(T,On)&&!Inside(T,Off)&&Inside(T,High),TEXT("DIRECTOR-3: a circle holds its edge at Radius, not a centimetre past it, at any height"));
+  }
+  // The turned box: long along x unturned, along z turned a quarter.
+  {
+   FS47ScriptTrigger T;T.Point.bSet=true;T.Shape=ES47ScriptShape::Box;T.HalfX=10;T.HalfZ=1;
+   FS47ScriptTrigger Turned=T;Turned.Yaw=UE_HALF_PI;
+   FS47ScriptPoint South;South.Z=8;South.bSet=true;FS47ScriptPoint East;East.X=8;East.bSet=true;
+   Check(Inside(Turned,South)&&!Inside(T,South)&&Inside(T,East)&&!Inside(Turned,East),TEXT("DIRECTOR-3: a box turned by its yaw holds what the unturned one does not, and the reverse"));
+   FS47ScriptTrigger Off=Turned;Off.Point.X=100;Off.Point.Z=50;FS47ScriptPoint Moved=South;Moved.X+=100;Moved.Z+=50;
+   Check(Inside(Off,Moved)&&!Inside(Off,South),TEXT("DIRECTOR-3: the box is around its own point"));
+  }
+  // The height band.
+  {
+   FS47ScriptTrigger T;T.Point.bSet=true;T.Point.Up=2;T.Height=3;T.Radius=10;
+   FS47ScriptPoint P;P.bSet=true;
+   P.Up=3;const bool bIn=Inside(T,P);P.Up=6;const bool bOver=Inside(T,P);P.Up=1;const bool bUnder=Inside(T,P);
+   T.Height=0;P.Up=100;const bool bAny=Inside(T,P);
+   Check(bIn&&!bOver&&!bUnder&&bAny,TEXT("DIRECTOR-3: with a height the player's height over the ground is within [up, up+height]; with none, any height"));
+  }
+  // Look: only when looked at, and only within its range.
+  {
+   FS47Script S=Vol();S.Trigger.Mode=ES47ScriptMode::Look;
+   FS47ScriptNow N=NightAt(23.75);
+   const bool bNotLooked=!Ready(S,N,Mem,Why)&&Why.Contains(TEXT("looked"));
+   N.bLooking=true;const bool bLooked=Ready(S,N,Mem,Why);
+   N.Road=FVector2D(100,0);const bool bTooFar=!Ready(S,N,Mem,Why)&&Why.Contains(TEXT("far"));
+   N.Road=FVector2D(500,0);S.Trigger.LookRange=400;const bool bFar=!Ready(S,N,Mem,Why);
+   Check(bNotLooked&&bLooked&&bTooFar&&bFar,TEXT("DIRECTOR-3: a look trigger starts only when it is looked at, and only from within its range"));
+  }
+  // Leave: only after having been inside, and only once out.
+  {
+   FS47Script S=Vol();S.Trigger.Mode=ES47ScriptMode::Leave;S.Trigger.Shape=ES47ScriptShape::Box;S.Trigger.HalfX=5;S.Trigger.HalfZ=5;
+   FS47ScriptNow N=NightAt(23.75); // at 10, 10: outside
+   const bool bNever=!Ready(S,N,Mem,Why);
+   N.bWasInside=true;const bool bLeft=Ready(S,N,Mem,Why);
+   N.Road=FVector2D(1,1);const bool bStill=!Ready(S,N,Mem,Why)&&Why.Contains(TEXT("still"));
+   Check(bNever&&bLeft&&bStill&&!InVolume(S.Trigger,NightAt(23.75))&&InVolume(S.Trigger,N),TEXT("DIRECTOR-3: a leave trigger starts only once the player is out after having been inside"));
+  }
+  // Dwell: the test has to have held the time.
+  {
+   FS47Script S=Vol();S.Trigger.Dwell=2;
+   FS47ScriptNow N=NightAt(23.75);
+   N.Held=1;const bool bShort=!Ready(S,N,Mem,Why)&&Why.Contains(TEXT("held"));
+   N.Held=2;const bool bLong=Ready(S,N,Mem,Why);
+   N.Road=FVector2D(100,0);const bool bOut=!Ready(S,N,Mem,Why);
+   Check(bShort&&bLong&&bOut&&ModeHolds(S.Trigger,NightAt(23.75))&&S.Trigger.HasVolume(),TEXT("DIRECTOR-3: a dwell starts only once its test has held that long"));
+  }
+  // The lint, each rule on its own.
+  {
+   FS47Script Good=Vol();Good.Trigger.Shape=ES47ScriptShape::Box;Good.Trigger.Mode=ES47ScriptMode::Look;Good.Trigger.Height=4;Good.Trigger.Dwell=1;Good.Trigger.Yaw=.3;
+   FS47ScriptCond Flag;Flag.If=TEXT("story_flag");Flag.Arg=TEXT("met_dale");Good.Trigger.Conds.Add(Flag);
+   struct FRule{const TCHAR* What;TFunction<void(FS47ScriptTrigger&)> Spoil;};
+   const TArray<FRule> Rules={
+    {TEXT("half x 0.4"),[](FS47ScriptTrigger& T){T.HalfX=.4;}},
+    {TEXT("half z 501"),[](FS47ScriptTrigger& T){T.HalfZ=501;}},
+    {TEXT("yaw not a number"),[](FS47ScriptTrigger& T){T.Yaw=std::numeric_limits<double>::quiet_NaN();}},
+    {TEXT("yaw infinite"),[](FS47ScriptTrigger& T){T.Yaw=std::numeric_limits<double>::infinity();}},
+    {TEXT("height -1"),[](FS47ScriptTrigger& T){T.Height=-1;}},
+    {TEXT("height 301"),[](FS47ScriptTrigger& T){T.Height=301;}},
+    {TEXT("degrees 0.5"),[](FS47ScriptTrigger& T){T.Degrees=.5;}},
+    {TEXT("degrees 61"),[](FS47ScriptTrigger& T){T.Degrees=61;}},
+    {TEXT("range 0.5"),[](FS47ScriptTrigger& T){T.LookRange=.5;}},
+    {TEXT("range 401"),[](FS47ScriptTrigger& T){T.LookRange=401;}},
+    {TEXT("dwell -1"),[](FS47ScriptTrigger& T){T.Dwell=-1;}},
+    {TEXT("dwell 601"),[](FS47ScriptTrigger& T){T.Dwell=601;}},
+    {TEXT("a box with no point"),[](FS47ScriptTrigger& T){T.Mode=ES47ScriptMode::Enter;T.Point=FS47ScriptPoint();T.Place=TEXT("farm");}},
+    {TEXT("a look with no point"),[](FS47ScriptTrigger& T){T.Shape=ES47ScriptShape::Circle;T.Point=FS47ScriptPoint();T.Place=TEXT("farm");}},
+    {TEXT("a leave at a place"),[](FS47ScriptTrigger& T){T.Shape=ES47ScriptShape::Circle;T.Mode=ES47ScriptMode::Leave;T.Place=TEXT("farm");}},
+    {TEXT("a story flag with no id"),[](FS47ScriptTrigger& T){T.Conds[0].Arg.Reset();}},
+    {TEXT("a story flag that is not an id"),[](FS47ScriptTrigger& T){T.Conds[0].Arg=TEXT("Met Dale!");}},
+    {TEXT("no_story_flag with no id"),[](FS47ScriptTrigger& T){T.Conds[0].If=TEXT("no_story_flag");T.Conds[0].Arg.Reset();}}};
+   FString Let;
+   for(const FRule& Rule:Rules){FS47Script B=Good;Rule.Spoil(B.Trigger);if(Lint(B).Num()==0)Let+=FString(Rule.What)+TEXT(" | ");}
+   Check(Lint(Good).Num()==0&&Let.IsEmpty(),TEXT("DIRECTOR-3: the lint takes a good volume and refuses each rule on its own")+(Lint(Good).Num()?TEXT(": the good one is refused: ")+Lint(Good)[0]:FString())+(Let.IsEmpty()?FString():TEXT(": let through ")+Let));
+  }
+  // The story's flags.
+  {
+   FS47ScriptCond Has;Has.If=TEXT("story_flag");Has.Arg=TEXT("met_dale");
+   FS47ScriptCond Not=Has;Not.If=TEXT("no_story_flag");
+   FS47ScriptNow NoDirector=NightAt(23.75);
+   FS47ScriptNow Set=NightAt(23.75);Set.HasStoryFlag=[](const FString& F){return F==TEXT("met_dale");};
+   FS47ScriptNow Other=NightAt(23.75);Other.HasStoryFlag=[](const FString& F){return F==TEXT("other_flag");};
+   Check(CondKinds().Contains(TEXT("story_flag"))&&CondKinds().Contains(TEXT("no_story_flag"))&&!CondHolds(Has,NoDirector)&&CondHolds(Not,NoDirector)&&CondHolds(Has,Set)&&!CondHolds(Not,Set)&&!CondHolds(Has,Other)&&CondHolds(Not,Other),
+    TEXT("DIRECTOR-3: story_flag holds only with the flag set, no_story_flag only without; with no Story night's director no flag is set"));
+   FS47Script S=Vol();S.Trigger.Conds={Has};
+   FS47Script R;
+   const FString Text=Write(S);
+   Check(Text.Contains(TEXT("\"flag\": \"met_dale\""))||Text.Contains(TEXT("\"flag\":\"met_dale\"")),TEXT("DIRECTOR-3: a story flag is written as flag"));
+   Check(Read(Text,R,Why)&&R.Trigger.Conds.Num()==1&&R.Trigger.Conds[0].Arg==TEXT("met_dale")&&Ready(R,Set,Mem,Why)&&!Ready(R,NoDirector,Mem,Why),TEXT("DIRECTOR-3: a story flag reads back and holds a script back until it is set"));
+  }
+  // The outline: closed, the points asked for, every one on the boundary.
+  {
+   FS47ScriptTrigger C;C.Point.X=5;C.Point.Z=-3;C.Point.Up=2;C.Point.bSet=true;C.Radius=40;
+   const TArray<FS47ScriptPoint> Ring=Outline(C,24);
+   bool bOnRing=Ring.Num()==24;
+   for(const FS47ScriptPoint& P:Ring)bOnRing&=FMath::IsNearlyEqual(FVector2D::Distance(P.Road(),C.Point.Road()),40.,1e-6)&&P.Up==2&&P.bSet;
+   const bool bRingClosed=Ring.Num()>1&&Ring[0].X==Ring.Last().X&&Ring[0].Z==Ring.Last().Z;
+   Check(bOnRing&&bRingClosed,TEXT("DIRECTOR-3: a circle's outline is closed, has the points asked for and every one at Radius"));
+   FS47ScriptTrigger B=C;B.Shape=ES47ScriptShape::Box;B.HalfX=4;B.HalfZ=2;B.Yaw=.5;
+   bool bOnEdges=true;
+   for(const int32 Segs:{24,9,5})
+   {
+    const TArray<FS47ScriptPoint> Box=Outline(B,Segs);
+    bOnEdges&=Box.Num()==Segs&&Box[0].X==Box.Last().X&&Box[0].Z==Box.Last().Z;
+    const double Co=FMath::Cos(B.Yaw),Si=FMath::Sin(B.Yaw);
+    for(const FS47ScriptPoint& P:Box)
+    {
+     const FVector2D D=P.Road()-B.Point.Road();
+     const double LX=D.X*Co+D.Y*Si,LZ=-D.X*Si+D.Y*Co;
+     const bool bOnX=FMath::IsNearlyEqual(FMath::Abs(LX),4.,1e-6)&&FMath::Abs(LZ)<=2+1e-6;
+     const bool bOnZ=FMath::IsNearlyEqual(FMath::Abs(LZ),2.,1e-6)&&FMath::Abs(LX)<=4+1e-6;
+     bOnEdges&=bOnX||bOnZ;
+    }
+   }
+   Check(bOnEdges,TEXT("DIRECTOR-3: a turned box's outline is closed, has the points asked for (24, 9, 5) and every one on an edge"));
+  }
  }
  return bAll;
 }

@@ -139,7 +139,10 @@ private:
  // -S47NaturalCards=1: each evening the slot-1 card is run through the session as a player would (point, record, control, both
  // reels, register), so that a run over many nights shows what the card and the bearing slip said. Logs only.
  void StepCards();
- int32 CardsNight=0,CardsStage=0,CardsJob=-1;bool bCards=false;double CardsWait=0;
+ int32 CardsNight=0,CardsStage=0,CardsJob=-1,CardsTries=0;bool bCards=false;double CardsWait=0;
+ // GAMEPLAY-LOOP-01: the job followed (by id), what kind (0 reference, 1 pulsar, 2 case test), when it began and last spoke, the
+ // printer's older sheets and reel presses, tonight's refused case tests (line*10+test) and finished jobs, an instrument conclusion.
+ FString CardsId,CardsConclusion;int32 CardsKind=0,CardsOlder=0;double CardsFrom=0,CardsSaid=0;TSet<int32> CardsRefused;TSet<FString> CardsDone;
  int32 TourNight=0,TourLeg=-1;
  double ScheduleHeld=0; // a line has set the Director's schedule by itself for this long
  FString Holding;

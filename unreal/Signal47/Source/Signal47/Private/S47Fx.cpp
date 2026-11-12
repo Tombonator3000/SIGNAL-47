@@ -42,6 +42,10 @@ UNiagaraComponent* S47Fx::Make(AS47Web* W, USceneComponent* Parent, const TCHAR*
 	// A scoped failure injection exercises the same null-asset path in packaged checks.
 	const bool bMissingProbe = FParse::Param(FCommandLine::Get(), TEXT("S47ArcMissingAsset"));
 	UNiagaraSystem* S = bMissingProbe ? nullptr : LoadObject<UNiagaraSystem>(nullptr, Path);
+#if WITH_EDITOR
+	// A system made this session may still be compiling when the uncooked game first asks for it.
+	if (S && !S->IsReadyToRun()) { S->WaitForCompilationComplete(true); }
+#endif
 	if (!S || !S->IsValid() || !S->IsReadyToRun())
 	{ UE_LOG(LogS47Fx, Warning, TEXT("S47: fx %s absent or not ready (%s); inert"), Name, Path); return nullptr; }
 	UNiagaraComponent* C = NewObject<UNiagaraComponent>(W, Name);

@@ -853,12 +853,12 @@ void FS47FreeformTest::Step(double Dt)
    if(!Hint(TEXT("OPS"),TEXT("DAILY WORK"),TEXT("OPS")))return;
    Job.Phenomenon=TEXT("time_disagreement");Job.ControlAt=4;
    if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN COMPARE CLOCK READINGS AT OPS"),TEXT("Receiver rack")))return;
-   Job.ControlAt=8;Job.bClockMeasured=true;if(!Hint(TEXT("OPS"),TEXT("COMPARE AND REGISTER THE RETAINED"),TEXT("OPS")))return;
+   Job.ControlAt=8;Job.bClockMeasured=true;if(!Hint(TEXT("OPS"),TEXT("PRESS COMPARE AND REGISTER"),TEXT("OPS")))return;
    Job.Phenomenon=TEXT("duplicate_print");Job.ControlAt=4;
    if(!Hint(TEXT("RECEIVER RACK"),TEXT("AUTOMATIC REGISTER CHECK"),TEXT("Receiver rack")))return;
    Job.ControlAt=8;Job.DuplicateFeed=FS47FreeformSession::PrinterSeconds;
    if(!Hint(TEXT("PRINTER"),TEXT("WITHOUT ALTERING THE ORIGINAL"),TEXT("Printer")))return;
-   Job.bDuplicateCollected=true;if(!Hint(TEXT("OPS"),TEXT("COMPARE AND REGISTER THE RETAINED"),TEXT("OPS")))return;
+   Job.bDuplicateCollected=true;if(!Hint(TEXT("OPS"),TEXT("PRESS COMPARE AND REGISTER"),TEXT("OPS")))return;
    Job.Phenomenon=TEXT("extra_pulse");Job.ControlAt=4;
    if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN REVIEW BOTH RECORDINGS"),TEXT("Receiver rack")))return;
    Job.ControlAt=8;if(!Hint(TEXT("REEL DECK"),TEXT("MARK THE EXTRA TICKS"),TEXT("Reel deck")))return;
@@ -869,7 +869,7 @@ void FS47FreeformTest::Step(double Dt)
    auto Save=S47J::Read(S47J::Write(F.Save()));auto O=S47J::Arr(Save,TEXT("jobs"))[0]->AsObject();
    S47J::Set(O,TEXT("stage"),int32(J::Recorded));S47J::Set(O,TEXT("anomaly"),true);S47J::Set(O,TEXT("phenomenon"),TEXT("time_disagreement"));S47J::Set(O,TEXT("control"),true);S47J::Set(O,TEXT("controlAt"),8.);S47J::Set(O,TEXT("clockMeasured"),true);S47J::Set(O,TEXT("reviewed"),false);S47J::Set(Save,TEXT("selected"),0);F.Begin(Save);F.Director->Stop();
    GuidanceExpected=F.NextAction();
-   if(!Check(GuidanceExpected.StartsWith(TEXT("OPS (corner PC):"))&&GuidanceExpected.Contains(TEXT("COMPARE AND REGISTER THE RETAINED")),TEXT("selected completed clock-control fixture offers a concrete OPS comparison action")))return;
+   if(!Check(GuidanceExpected.StartsWith(TEXT("OPS (corner PC):"))&&GuidanceExpected.Contains(TEXT("PRESS COMPARE AND REGISTER")),TEXT("selected completed clock-control fixture offers a concrete OPS comparison action")))return;
    if(!Restore(TEXT("guidance-clock-comparison")))return;Go(8901,.3);return;
   }
   if(Stage==8901)

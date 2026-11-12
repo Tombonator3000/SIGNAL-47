@@ -63,6 +63,9 @@ public:
 	// (radians, as Look takes them; zero while the walker is not active), it says where the eye is
 	// and returns true; the walker then neither walks nor picks. False: the walker is itself.
 	TFunction<bool(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out)> CameraOverride;
+	// SHOT-BEAT-01: whether CameraOverride held the view in the last frame. US47World keeps its hook set for the whole session (it
+	// answers false on foot), so "is the camera taken" is this, not whether a hook is set.
+	bool bCameraHeld = false;
 	// N1110 (N1110-3): a layer on the walker's own view (FS47CameraMoment): given the frame's step and the look as the player has
 	// it (yaw, pitch, radians), it may turn what is rendered and scale the field of view (FovK times Fov) and return true. The
 	// player keeps walking, looking and picking underneath; false, or unset, is the view as it is. Not asked while CameraOverride holds.

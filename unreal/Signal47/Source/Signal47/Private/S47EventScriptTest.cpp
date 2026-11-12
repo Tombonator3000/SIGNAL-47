@@ -1,6 +1,7 @@
 #include "S47EventScript.h"
 #include "S47Freeform.h"
 #include "S47NightRhythm.h"
+#include "S47TubeFlicker.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -126,6 +127,20 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
    T=N;T.Beats[0].Next=7;Check(Lint(T).Num()>0,TEXT("tube beat: next 7 is refused (six tubes can go)"));
    T=N;T.Beats[0].Tube=3;Check(Lint(T).Num()>0,TEXT("tube beat: tube and next together are refused"));
   }
+  // PLAY-31-34: the breaking tube's sputter (FS47TubeFlicker::BreakLevel): at most three flashes, never faster than 3 a second,
+  // dark for good after; with calm flashes one fade that never brightens again.
+  {
+   int32 Flashes=0;double LastRise=-10,MinGap=10;float PrevLevel=0,CalmPrev=2;bool bCalmOk=true;
+   for(double Ts=0;Ts<2.;Ts+=.005)
+   {
+    const float Lv=FS47TubeFlicker::BreakLevel(Ts,false);
+    if(Lv>0&&PrevLevel<=0){++Flashes;MinGap=FMath::Min(MinGap,Ts-LastRise);LastRise=Ts;}
+    PrevLevel=Lv;
+    const float Cv=FS47TubeFlicker::BreakLevel(Ts,true);bCalmOk&=Cv<=CalmPrev;CalmPrev=Cv;
+   }
+   const bool bDarkAfter=FS47TubeFlicker::BreakLevel(FS47TubeFlicker::BreakSecs(false),false)==0&&FS47TubeFlicker::BreakLevel(FS47TubeFlicker::BreakSecs(true),true)==0;
+   Check(Flashes==3&&MinGap>=1./3.&&bCalmOk&&bDarkAfter&&FS47TubeFlicker::BreakLevel(0,true)>.9f,FString::Printf(TEXT("tube break: %d flashes at least %.2f s apart (3 a second at most), a calm fade, then dark for good"),Flashes,MinGap>9?0.:MinGap));
+  }
  }
  {
   FS47EventScript S;FString Why;
@@ -138,6 +153,24 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
   T=S;T.Beats[0].Kind=TEXT("loud");Check(Lint(T).Num()>0,TEXT("camera_snap: an unknown sting is refused"));
   T=S;T.Beats[0].Point.Reset();Check(Lint(T).Num()>0,TEXT("camera_snap: without a point or a pos it is refused"));
   T=S;T.Beats[0].In=0;Check(Lint(T).Num()>0,TEXT("camera_snap: no way in is refused"));}
+ }
+
+ // ---- SHOT-BEAT-01: the shot beat, in event scripts and in the story's ----
+ {
+  FS47EventScript S;FString Why;
+  const bool bRead=Read(TEXT("{\"version\":1,\"id\":\"x\",\"beats\":[{\"at\":1,\"do\":\"shot\",\"pos\":[2,1.7,3],\"pos2\":[4,2,3],\"look\":[10,1.2,-8],\"fov\":55,\"fov2\":38,\"secs\":5,\"in\":1,\"out\":1.2},{\"at\":9,\"do\":\"shot\",\"node\":\"room.objs.phone\"}]}"),S,Why);
+  Check(bRead&&S.Beats.Num()==2&&S.Beats[0].Do==ES47Beat::Shot&&S.Beats[0].Pos.IsSet()&&S.Beats[0].Pos2.IsSet()&&S.Beats[0].Look.IsSet()&&S.Beats[0].Fov==55&&S.Beats[0].Fov2==38&&S.Beats[0].Secs==5&&S.Beats[0].In==1&&S.Beats[0].Out==1.2,TEXT("shot: read with both eyes, the point, both lenses and the seconds"));
+  Check(bRead&&!S.Beats[1].Pos.IsSet()&&S.Beats[1].Name==TEXT("room.objs.phone")&&S.Beats[1].Fov==55&&S.Beats[1].Secs==4&&FMath::IsNearlyEqual(S.Beats[1].In,.6)&&FMath::IsNearlyEqual(S.Beats[1].Out,.8),TEXT("shot: as made, from the player's head to a scene node, 55 degrees, 4 s, in .6 s, out .8 s"));
+  Check(bRead&&Lint(S).IsEmpty()&&LintStory(S).IsEmpty(),TEXT("shot: both are clean, for Freeform's scripts and the story's"));
+  if(bRead)
+  {
+   const auto Spoiled=[&S](TFunctionRef<void(FS47Beat&)> Spoil){FS47EventScript T=S;Spoil(T.Beats[0]);return Lint(T).Num()>0;};
+   Check(Spoiled([](FS47Beat& B){B.Fov=10;})&&Spoiled([](FS47Beat& B){B.Fov2=95;}),TEXT("shot: a lens outside 20 to 90 degrees is refused"));
+   Check(Spoiled([](FS47Beat& B){B.Secs=0;})&&Spoiled([](FS47Beat& B){B.Secs=31;}),TEXT("shot: held for nothing or for more than 30 s is refused"));
+   Check(Spoiled([](FS47Beat& B){B.In=.1;})&&Spoiled([](FS47Beat& B){B.Out=0;})&&Spoiled([](FS47Beat& B){B.In=5;}),TEXT("shot: a cut in or out, or an ease over 3 s, is refused"));
+   Check(Spoiled([](FS47Beat& B){B.Look.Reset();B.Point.Reset();B.Name.Reset();}),TEXT("shot: without a point to look at it is refused"));
+   Check(Spoiled([](FS47Beat& B){B.Pos.Reset();})&&Spoiled([](FS47Beat& B){B.Pos2=B.Pos.GetValue()+FVector(300,0,0);})&&Spoiled([](FS47Beat& B){B.Look=B.Pos;}),TEXT("shot: a second eye without a first, eyes 300 m apart, or an eye on the point is refused"));
+  }
  }
 
  // ---- N1110-5: four more happenings in the script layer (horizon_figure, figure_near, landing, car_light) ----

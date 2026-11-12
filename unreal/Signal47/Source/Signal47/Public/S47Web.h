@@ -279,6 +279,8 @@ public:
 	int32 TubeCount() const { return TubeNodes.Num(); }
 	bool TubeLit(int32 K) const;
 	void SetTube(int32 K, bool bLit);
+	// PLAY-31-34: where tube K hangs (Unreal position, for its spark's sound); zero if there is no such tube
+	FVector TubeLocation(int32 K) const { return TubeNodes.IsValidIndex(K) ? WorldUE(TubeNodes[K]) : FVector::ZeroVector; }
 	// room.lights.hemi.intensity = hemiBase * k (main.ts: the starlight as the eyes open, story/saroDark.ts)
 	void SetHemiScale(float K);
 
@@ -459,6 +461,9 @@ private:
 		float Reference = 1, Lumens = 0, LastK = -1;
 		bool bDesk = false;
 		FS47TubeFlicker Flicker; // fluorescent strike / die-off on switching (not desk lamps)
+		// PLAY-31-34: a control room tube seen breaking for good sputters (FS47TubeFlicker::BreakLevel) from BrokeAt;
+		// the first update only notes the state, so a load or a change of area shows broken tubes already dark.
+		bool bBreakSeen = false, bBroken = false; double BrokeAt = -100.0;
 		FLinearColor Color = FLinearColor::White;
 		TWeakObjectPtr<URectLightComponent> Light;
 		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;

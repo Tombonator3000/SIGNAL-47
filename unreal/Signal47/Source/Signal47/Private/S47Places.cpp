@@ -2,8 +2,10 @@
 #include "S47Audio.h"
 #include "S47Calm.h"
 #include "S47Balloon.h"
+#include "S47FarmHouse.h"
 #include "S47FarmSite.h"
 #include "S47Freeform.h"
+#include "S47FreeformCases.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformObservation.h"
 #include "S47FreeformWorld.h"
@@ -96,6 +98,23 @@ namespace
   }
   // The Sierra Motor Court's office, as far as a player needs it: a bell and a key rack on the wall by the door.
   if(Kind==TEXT("motel"))return {{Cube,{0,1.05,0},{.5,.7,.06},Wood,0,0},{Cube,{0,1.5,0},{.14,.14,.14},Rust,0,0}};
+  // T16-17 (→ M1): the old house's two things, on its own floor (S47FarmHouse::PadY), x east and z south as ever: the plan's x runs
+  // west and its y north (S47FarmHouse.cpp). The tally book on the kitchen table where the imported house has its table (build_house.py:
+  // plan 1.55 to 2.55 by 6.75 to 7.75, top at .76), clear of its cup and paper; the block house has no table, so one in basic shapes.
+  if(Kind==TEXT("tally book"))
+  {
+   TArray<FPart> P={{Cube,{-.2,.775,.25},{.3,.03,.22},0x2f3a2c,8,0},{Cube,{-.21,.792,.25},{.27,.004,.19},Pale,8,0},{Cube,{-.02,.766,.34},{.14,.008,.008},Flag,32,0}};
+   if(!S47FarmHouse::HasModel()){P.Add({Cube,{0,.74,0},{1,.04,1},Wood,0,0});for(int32 I=0;I<4;++I)P.Add({Cube,{(I&1)?.45:-.45,.36,(I&2)?.45:-.45},{.045,.72,.045},Wood,0,0});}
+   return P;
+  }
+  // A kitchen chair carried into the back room and set square to the north window (road +z), between the steel shelves and clear of
+  // the hall door's swing; a coffee can beside it; a strip of pencilled times on the window ledge (the sill at .9, plan 8.0 by .35).
+  if(Kind==TEXT("chair at the window"))
+  {
+   TArray<FPart> P={{Cube,{0,.45,0},{.42,.04,.42},Wood,0,0},{Cube,{0,.72,-.2},{.42,.5,.04},Wood,0,0},{Cyl,{.4,.09,-.1},{.16,.18,.16},Rust,0,0},{Cube,{.3,.905,.65},{.3,.01,.06},Dark,0,0}};
+   for(int32 I=0;I<4;++I)P.Add({Cube,{(I&1)?.18:-.18,.22,(I&2)?.18:-.18},{.035,.44,.035},Wood,0,0});
+   return P;
+  }
   return {};
  }
  // D48-20261110 (D46-18, Tom: at the windmill and "nothing there"): what the first day shows there, from shapes the place already
@@ -143,12 +162,30 @@ const TArray<FS47Places::FDef>& FS47Places::Defs()
   {TEXT("cairn"),TEXT("the cairn on the rise"),TEXT("cairn"),-320,430,TEXT("A stack of stones with a post in the top, the kind a survey party leaves. From here you can see SARO and the farm both. The stones are newer than the post. Someone has rebuilt it recently, carefully, facing the array."),TEXT("A steady reading, nothing to speak of. It stays steady for longer than you would think a needle could.")},
   // PT-SAUCER-ROCK-20261109: on the souvenir man's map, and now on the land too, where he drew it (FS47TownUse::SaucerMap).
   {TEXT("saucer_rock"),TEXT("Saucer Rock"),TEXT("saucer rock"),-760,2240,TEXT("A pillar of pale rock taller than two men with a wide flat cap on it, a cup and saucer. Initials cut in the stem back to 1951, a fire ring, cans. Round its foot someone has set a ring of stones and swept the sand inside it smooth. Nothing has crossed it."),TEXT("The cap pulls the needle a few degrees. Walk round it and the pull follows the rock, as it should.")},
+  // T16-17 (→ M1, "the farmhouse is an empty shell"): two things inside the old house, at the plan's (2.05, 7.25) and (8.3, 1.0) in
+  // the land's metres (S47FarmHouse::Point; the self-test holds them to it). The kitchen near the front door, the back room by the back
+  // door: neither is a dead end with one way out (AGENTS.md, «Fast regel: undersøkelse, sniking, jakt og flukt i bygg»).
+  {TEXT("kitchen"),TEXT("the kitchen of the old house"),TEXT("tally book"),101.95,217.75,TEXT("A ranch tally book on the kitchen table, years of mornings in one careful hand: the windmill pumping or not, the level in the stock tank. In the last pages the hand gets smaller and the water is gone from them. Only the line shack and the tank, each with a clock time after dark, and nothing said of why."),TEXT("The stove and the icebox pull it about. Nothing of its own.")},
+  {TEXT("backroom"),TEXT("the back room of the old house"),TEXT("chair at the window"),95.7,224,TEXT("Someone carried a kitchen chair in here and set it square to the north window, looking out over the pasture. The seat has less dust on it than the shelves. Pencilled on the sill, a column of clock times, every one after midnight. Beside the chair, a coffee can of cigarette ends."),TEXT("Steel shelves on both walls. The needle sits between them and says nothing of its own.")},
   {Motel,TEXT("the Sierra Motor Court"),Motel,0,0,TEXT("Sierra Motor Court office. The night bell works and the key rack has more keys than the lot has cars. The card on the counter says rooms are eight dollars, and quiet."),TEXT("Nothing but the bell.")},
  };
  return Table;
 }
 const FS47Places::FDef* FS47Places::Def(const FString& Id){return Defs().FindByPredicate([&](const FDef& D){return Id==D.Id;});}
 bool FS47Places::bHasFound(const FString& Id) const{return M&&M->Freeform&&M->Freeform->HasFinding(TEXT("place_")+Id);}
+bool FS47Places::Checked(const FBearing& B) const
+{
+ if(B.bVisited)return true;
+ if(!Def(B.Target)||!bHasFound(B.Target))return false;
+ // T16-17 (→ M1): a place already found, pointed at for the trace the next morning leaves there: checked once that trace is kept
+ if(M&&M->Freeform&&!DayTrace(B.Target,M->Freeform->Seed(),B.Day+1).IsEmpty())return M->Freeform->HasFinding(FString::Printf(TEXT("place_trace_d%d"),B.Day+1));
+ return true;
+}
+FString FS47Places::TracePlace(int32 Seed,int32 Day)
+{
+ for(const FDef& D:Defs())if(FString(D.Id)!=Motel&&!DayTrace(D.Id,Seed,Day).IsEmpty())return D.Id;
+ return FString();
+}
 double FS47Places::AzimuthOf(double FromX,double FromZ,double ToX,double ToZ)
 {
  const double A=FMath::RadiansToDegrees(FMath::Atan2(ToX-FromX,-(ToZ-FromZ)));
@@ -243,7 +280,7 @@ void FS47Places::Hear(const FString& Id)
 }
 FString FS47Places::NextUnknown(int32 Salt) const
 {
- TArray<FString> Left;for(const FDef& D:Defs())if(FString(D.Id)!=Motel&&!bHasFound(D.Id)&&!HeardOf.Contains(D.Id))Left.Add(D.Id);
+ TArray<FString> Left;for(const FDef& D:Defs())if(!AtSaro(D.Id)&&!bHasFound(D.Id)&&!HeardOf.Contains(D.Id))Left.Add(D.Id);
  if(Left.IsEmpty())return FString();
  const int32 Seed=M&&M->Freeform?M->Freeform->Seed():47;
  return Left[int32(FS47NightRhythm::Roll(Seed,Salt,0x504c4143u)*Left.Num())%Left.Num()];
@@ -255,7 +292,7 @@ FString FS47Places::ArcPlace(int32 Seed)
  for(const FDef& D:Defs())
  {
   const FString Id=D.Id;
-  if(Id==Motel||Id==TEXT("cairn")||Id==TEXT("saucer_rock")||!S47OpenLand::InRim(D.X,D.Z,60))continue;
+  if(AtSaro(Id)||Id==TEXT("cairn")||Id==TEXT("saucer_rock")||!S47OpenLand::InRim(D.X,D.Z,60))continue;
   if(Id==TEXT("windmill"))return Id;
   Fit.Add(Id);
  }
@@ -279,6 +316,7 @@ bool FS47Places::Stand(const FString& Id,FVector& OutWorld,bool& bOutSeated) con
  // D48-20261110: where a built place stands with its ground (Seat), for what else is drawn there (FS47Balloon).
  const FBuilt* B=Built.FindByPredicate([&](const FBuilt& X){return X.Id==Id;});if(!B)return false;
  const FVector Road=S47Legs::ORIGINS(TEXT("road"));
+ if(InOldHouse(B->Id)){OutWorld=S47OpenLand::FromRoad(TEXT("saro"),B->X,B->Z);OutWorld.Y=B->Y;bOutSeated=B->bSeated;return true;} // T16-17: the land's metres on SARO's ground
  OutWorld=B->Id==Motel?FVector(B->X,B->Y,B->Z):FVector(Road.X+B->X,B->Y,Road.Z+B->Z);bOutSeated=B->bSeated;return true;
 }
 bool FS47Places::Build()
@@ -291,13 +329,14 @@ bool FS47Places::Build()
  for(const FDef& D:Defs())
  {
   FBuilt B;B.Id=D.Id;B.X=D.X;B.Z=D.Z;
-  const bool bMotel=FString(D.Id)==Motel;
+  const bool bMotel=FString(D.Id)==Motel,bSaro=AtSaro(D.Id);
+  // T16-17 (→ M1): the old house's two stand inside it, where the table says (Defs), on SARO's ground: neither branch below
   if(bMotel)
   {
    const FS47Box2& Park=S47Legs::MOTEL_PARK();const FVector At=FVector(Park.MinX-1.2,0,Park.MinZ+2);
    B.X=At.X;B.Z=At.Z;
   }
-  else
+  else if(!InOldHouse(D.Id))
   {
    // Off the slope and out of the sites, as near the planned spot as the land allows.
    bool bClear=false;
@@ -336,20 +375,20 @@ bool FS47Places::Build()
    if(bFirst)
    {
     C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
-    B.Hit=M->Web->ObjAt(M->Web->AdoptNode(C,bMotel?SaroRoot:RoadRoot,UseId(D.Id)));bFirst=false;
+    B.Hit=M->Web->ObjAt(M->Web->AdoptNode(C,bSaro?SaroRoot:RoadRoot,UseId(D.Id)));bFirst=false;
    }
    else if(FString(D.Kind)!=TEXT("cow"))
    {
     // The whole thing can be pointed at, not just its first leg.
     C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
-    const FS47Obj More=M->Web->ObjAt(M->Web->AdoptNode(C,bMotel?SaroRoot:RoadRoot,Name));if(More)M->Web->MarkUsable(More.I,UseId(D.Id));
+    const FS47Obj More=M->Web->ObjAt(M->Web->AdoptNode(C,bSaro?SaroRoot:RoadRoot,Name));if(More)M->Web->MarkUsable(More.I,UseId(D.Id));
    }
    B.Parts.Add(C);B.Local.Add(P.At);
   }
   if(B.Hit)
   {
    const FString Id=D.Id;
-   FS47Interactable I;I.Id=UseId(D.Id);I.Object=B.Hit;I.Range=bMotel?2.6:6;
+   FS47Interactable I;I.Id=UseId(D.Id);I.Object=B.Hit;I.Range=bSaro?2.6:6;
    // D48-20261110 (D46-18): the windmill on the first days says what to do, and is reached from well off (the whole wheel and tower and
    // the ground round it are the target)
    const bool bMill=Id==TEXT("windmill");if(bMill)I.Range=14;
@@ -367,6 +406,14 @@ bool FS47Places::Build()
 void FS47Places::Seat(FBuilt& B)
 {
  if(!M||!IsValid(M->Web.Get()))return;
+ // T16-17 (→ M1): the old house's floor is level and known (S47FarmHouse::PadY); its two things stand on it in SARO's area
+ if(InOldHouse(B.Id))
+ {
+  const FVector OnSaro=S47OpenLand::FromRoad(TEXT("saro"),B.X,B.Z);
+  B.Y=S47FarmHouse::PadY();B.bSeated=true;
+  for(int32 I=0;I<B.Parts.Num();++I)if(auto* C=B.Parts[I].Get())C->SetWorldLocation(S47Three::ToUE(FVector(OnSaro.X,B.Y,OnSaro.Z)+B.Local[I]));
+  return;
+ }
  const bool bMotel=B.Id==Motel;
  const FVector Road=S47Legs::ORIGINS(TEXT("road"));
  const FVector World=bMotel?FVector(B.X,0,B.Z):FVector(Road.X+B.X,0,Road.Z+B.Z);
@@ -402,6 +449,7 @@ void FS47Places::Step(double Dt)
  const FVector Road=S47Legs::ORIGINS(TEXT("road"));
  for(FBuilt& B:Built)
  {
+  if(InOldHouse(B.Id))continue; // T16-17: seated once, never moves
   const FVector World=B.Id==Motel?FVector(B.X,0,B.Z):FVector(Road.X+B.X,0,Road.Z+B.Z);
   const double Away=FVector2D(M->Player->Pos.X-World.X,M->Player->Pos.Z-World.Z).Size();
   if(!B.bSeated&&Away<300)Seat(B);
@@ -459,7 +507,7 @@ void FS47Places::StepNeedle(double Dt)
  double Best=90;FVector Toward=FVector::ZeroVector;FString What;
  for(const FBuilt& B:Built)
  {
-  if(bHasFound(B.Id)||B.Id==Motel)continue;
+  if(bHasFound(B.Id)||AtSaro(B.Id))continue;
   const FVector At(Road.X+B.X,Foot.Y,Road.Z+B.Z);const double D=FVector2D(At.X-Foot.X,At.Z-Foot.Z).Size();
   if(D<Best){Best=D;Toward=At;What=B.Id;}
  }
@@ -494,18 +542,18 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
    F->RestAt(Next,FS47FreeformSession::ERest::Motel);
   },true,TAttribute<bool>::CreateLambda([F]{return (F->MotelNight&&F->MotelNight->RoomPaid(F->Clock()))||F->Budget()>=F->MotelPrice();})));
  }
- else if(F->HasKit(TEXT("cot")))
+ else if(F->HasKit(TEXT("cot"))&&!InOldHouse(D.Id)) // T16-17: no cot, trip camera or salt in the old house
  {
   Rows.Add(S47Kit::Small(TEXT("The cot is in the truck. Out here, anything close by will wake you.")));
   Rows.Add(S47Kit::Button(TEXT("Put up the cot here until morning"),[this,F,Next]{if(M->UI)M->UI->Close(true);F->RestAt(Next,FS47FreeformSession::ERest::Field);},true));
  }
- if(F->TripCamera&&F->TripCamera->CanSet()&&FString(D.Id)!=Motel)
+ if(F->TripCamera&&F->TripCamera->CanSet()&&!AtSaro(D.Id))
  {
   const FString Where=D.Title;
   Rows.Add(S47Kit::Button(TEXT("Leave the trip camera here until morning"),[this,F,Where]{F->TripCamera->SetHere(Where,false);if(M->UI)M->UI->Close(true);}));
  }
  // Salt or range cubes from the Feed & Seed, set out here, and what came to them (TOWN-USE-20261108, S47TownUse).
- if(F->TownUse&&FString(D.Id)!=Motel)F->TownUse->LureRows(D.Id,Rows);
+ if(F->TownUse&&!AtSaro(D.Id))F->TownUse->LureRows(D.Id,Rows);
  M->UI->Open(S47Kit::Shell(M->UI,FString(D.Title).ToUpper(),S47Kit::Col(Rows),760));
 }
 bool FS47Places::Use(const FString& Id)
@@ -536,12 +584,34 @@ bool FS47Places::Use(const FString& Id)
   F.RecordEvidence(Moved,FString::Printf(TEXT("Not where I recorded it: %s, some paces off. No drag marks that I can see."),D->Title));
  }
 // N1110 (rhythm, item 12): by day, the place may carry the night's one unexplained trace; said once a day, kept once.
+ bool bNews=!Extra.IsEmpty();
  {
   const double Hd=FMath::Fmod(F.Clock(),86400.)/3600.;const FString Trace=DayTrace(Id,F.Seed(),F.Day());
   if(!Trace.IsEmpty()&&Hd>=6.&&Hd<19.)
   {
+   bNews=true;
    Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+Trace;
    F.RecordEvidence(FString::Printf(TEXT("place_trace_d%d"),F.Day()),FString::Printf(TEXT("At %s: %s"),D->Title,*Trace));
+  }
+ }
+ // T16-17 (→ M1): the tally book names two places out on the land, and puts them on the map as the radio's would (a question mark)
+ if(Id==TEXT("kitchen"))
+ {
+  int32 Marked=0;
+  for(const TCHAR* Named:{TEXT("tank"),TEXT("shack")})if(!bHasFound(Named)&&!HeardOf.Contains(Named)){Hear(Named);++Marked;}
+  if(Marked>0)Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+FString::Printf(TEXT("The book names %s out on the land. %s pencilled on your map (%s) with a question mark."),Marked==1?TEXT("a place"):TEXT("two places"),Marked==1?TEXT("It is"):TEXT("They are"),*FS47PlacesLocalMapKey());
+ }
+ // T16-17 (→ M1): the back room after something was near the farm in the last two nights (FS47Happenings::StirredNear, the needle's
+ // own history), by daylight and once looked at before: the dust says somebody sat there again. A record for the visitors' case
+ // (its key ends _daylight_dN: FS47FreeformCases::LineForFinding), kept once a day.
+ if(Id==TEXT("backroom")&&!bFirst)
+ {
+  const double Hd=FMath::Fmod(F.Clock(),86400.)/3600.;double Hx=0,Hz=0;
+  if(Hd>=6.&&Hd<19.&&F.Happenings&&Spot(Id,Hx,Hz)&&F.Happenings->StirredNear(Hx,Hz))
+  {
+   bNews=true;
+   Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+BackRoomAgain();
+   F.RecordEvidence(FString::Printf(TEXT("%s_daylight_d%d"),*Key,F.Day()),FString::Printf(TEXT("The back room of the old house, by daylight. %s"),*BackRoomAgain()));
   }
  }
  if(F.HasKit(TEXT("magnetometer")))
@@ -550,7 +620,7 @@ bool FS47Places::Use(const FString& Id)
   // nights it will not settle, whatever any bearing says; otherwise the place's own reading. The unsettled needle is a record of OUT
   // ON THE LAND, once a day a place (FS47FreeformCases::LineForFinding).
   double Px=0,Pz=0;const bool bStirred=F.Happenings&&Spot(Id,Px,Pz)&&F.Happenings->StirredNear(Px,Pz);
-  Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+TEXT("MAGNETOMETER / ")+NeedleReading(D->Needle,bStirred);
+  Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+TEXT("MAGNETOMETER / ")+NeedleReading(D->Needle,bStirred);bNews|=bStirred;
   F.RecordEvidence(Key+TEXT("_needle"),FString::Printf(TEXT("Magnetometer at %s. %s"),D->Title,D->Needle));
   if(bStirred)F.RecordEvidence(FString::Printf(TEXT("%s_unsettled_d%d"),*Key,F.Day()),FString::Printf(TEXT("Magnetometer at %s: the needle will not settle. It keeps swinging slowly across the heading long after I stand still, the way it does in a magnetic storm."),D->Title));
  }
@@ -567,13 +637,16 @@ bool FS47Places::Use(const FString& Id)
    if(Tier==2||Tier==3)F.RecordEvidence(FString::Printf(TEXT("%s_night%d_t%d"),*Key,FS47FreeformSession::NightOf(F.Clock()),Tier),FString::Printf(TEXT("Saucer Rock, after midnight. %s"),*Now));
   }
  }
+ // T16-17 (→ M1, "the places are reading stations"): a second look with nothing new says so, and what can change that (Saucer Rock
+ // always has its hour to tell)
+ if(!bFirst&&!bNews&&Id!=Motel&&Id!=TEXT("saucer_rock"))Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+NothingNew(InOldHouse(Id));
  Panel(*D,bFirst,Extra);return true;
 }
 FString FS47Places::DayTrace(const FString& Id,int32 Seed,int32 Day)
 {
  if(Day<2)return FString();
  TArray<const FDef*> Open;
- for(const FDef& D:Defs())if(FCString::Strcmp(D.Id,TEXT("cairn"))!=0&&FCString::Strcmp(D.Id,TEXT("saucer_rock"))!=0)Open.Add(&D);
+ for(const FDef& D:Defs())if(FCString::Strcmp(D.Id,TEXT("cairn"))!=0&&FCString::Strcmp(D.Id,TEXT("saucer_rock"))!=0&&!InOldHouse(D.Id))Open.Add(&D); // (T16-17: the house's two are not the land's, and the days' picks stay as they were)
  if(Open.IsEmpty())return FString();
  const int32 Pick=int32(FS47NightRhythm::Roll(Seed,Day,0x54524331u)*Open.Num())%Open.Num();
  if(Id!=Open[Pick]->Id)return FString();
@@ -586,6 +659,15 @@ FString FS47Places::DayTrace(const FString& Id,int32 Seed,int32 Day)
  case 4:return TEXT("A patch of sand has been fused glassy in a ring about the size of a plate. It is still smooth, and nothing else near it is burned.");
  default:return TEXT("A cow stands alone on the open ground, facing the station. She does not move when you come near.");
  }
+}
+FString FS47Places::BackRoomAgain()
+{
+ return TEXT("Since you were last here the dust has been walked through: from the hall door to the chair and back. The chair is turned a little further toward the window, and there is one more time pencilled on the sill.");
+}
+FString FS47Places::NothingNew(bool bHouse)
+{
+ return bHouse?TEXT("Nothing has changed here since you last looked. After a night with something near the farm, look again by daylight.")
+  :TEXT("Nothing new here since you last looked. A bearing slip, or a night's trace in daylight, can bring you back.");
 }
 FString FS47Places::NeedleReading(const FString& Needle,bool bStirred)
 {
@@ -712,7 +794,7 @@ TArray<TPair<FString,bool>> FS47Places::SlipRows(double Now) const
  for(int32 I=Fixes.Num()-1;I>=0&&Out.Num()<2;--I)
  {
   const FBearing& B=Fixes[I];if(B.bCar||B.Until<0||!Live(B,Now))continue;
-  const bool bDone=B.bVisited||(Def(B.Target)&&bHasFound(B.Target));
+  const bool bDone=Checked(B);
   Out.Add({B.bRing?FString::Printf(TEXT("BEARING SLIP / New circle on your map, %s. Drive out and look before noon."),*SlipWhere(B))
    :FString::Printf(TEXT("BEARING SLIP / New line on your map, %s. Drive out along it and look before noon."),*SlipWhere(B)),bDone});
  }
@@ -781,7 +863,7 @@ void FS47Places::FillMapAt(FS47MapView& View,double Now) const
  double SaroX=0,SaroZ=0;SaroRoad(SaroX,SaroZ);
  for(const FBuilt& B:Built)
  {
-  if(B.Id==Motel)continue;
+  if(AtSaro(B.Id))continue;
   const bool bKept=bHasFound(B.Id);
   if(!bKept&&!HeardOf.Contains(B.Id))continue;
   FS47MapPin P;P.East=B.X;P.South=B.Z-SaroZ;P.Label=Def(B.Id)?FString(Def(B.Id)->Kind):B.Id;P.bHeard=!bKept;
@@ -792,7 +874,8 @@ void FS47Places::FillMapAt(FS47MapView& View,double Now) const
  {
   const FBearing& B=Fixes[I];
   // D45-20261110: "Day 3 slip, 21:40", not "D3" (it read as a grid square). The pin board leaves out what starts with D: still so.
-  FS47MapSector S;S.Az=B.Az;S.Spread=B.Spread;S.Label=B.bCar?FString::Printf(TEXT("Day %d truck"),B.Day):FString::Printf(TEXT("Day %d slip"),B.Day);
+  // FIX10-9 (→ M3): a line pencilled from a SARO window (FS47Happenings, the figure on the rise; Target WindowTarget) is the eye's, not the truck's.
+  FS47MapSector S;S.Az=B.Az;S.Spread=B.Spread;S.Label=!B.bCar?FString::Printf(TEXT("Day %d slip"),B.Day):B.Target==WindowTarget?FString::Printf(TEXT("Day %d window"),B.Day):FString::Printf(TEXT("Day %d truck"),B.Day);
   // NIGHT-20261110: the pencilled wedge carries the hour the slip was taken (as the slip has it); an older bearing has none.
   if(B.Clock>=0)S.Label+=TEXT(", ")+SlipClock(B.Clock);
   S.bFrom=B.bCar;S.FromX=B.FromX;S.FromZ=B.FromZ;
@@ -803,7 +886,7 @@ void FS47Places::FillMapAt(FS47MapView& View,double Now) const
   if(!B.bCar&&B.bRing)
   {
    S47FieldMap::FSlipCircle Ring;Ring.X=B.RingX;Ring.Z=B.RingZ;Ring.R=B.RingR;Ring.Label=S.Label;Ring.Where=SlipWhere(B);Ring.Fade=S.Fade;
-   Ring.bChecked=B.bVisited||(Def(B.Target)&&bHasFound(B.Target));
+   Ring.bChecked=Checked(B);
    S47FieldMap::AddSlipCircle(View,Ring);
   }
  }
@@ -874,6 +957,11 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  bool bArc=false;
  if(!bHave&&Night==1){Target=ArcPlace(F.Seed());bHave=bArc=!Target.IsEmpty()&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
  if(!bHave){Target=NextUnknown(F.Day());bHave=!Target.IsEmpty()&&Spot(Target,ToX,ToZ);}
+ // T16-17 (→ M1, "the bearings run out"): every place found or heard of, the slip still points: at the place where the next
+ // morning's trace will stand (DayTrace; the day turns at 08:00, so whether it is taken before midnight or after, that is Day+1).
+ // The drive is the same as ever: be there by daylight before noon and look closer. Nothing new is saved.
+ bool bTrace=false;
+ if(!bHave){Target=TracePlace(F.Seed(),F.Day()+1);bHave=bTrace=!Target.IsEmpty()&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
  if(!bHave)return false;
  const double Spread=SpreadFor(Branches);
  FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x4245415au),Target,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));
@@ -888,7 +976,7 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  // The slip on the OPS printer, collected there like the result sheets (behind any job's paper).
  const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),SlipNote(B,Branches));
  if(M->UI)M->UI->Toast(FS47PlacesLocalSlipToast(B,bSlip),6);
- UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s (%s), %d branches, %s, night %d; circle %.0f %.0f r%.0f, on the land %d%s"),B.Az,Spread,*Target,SlipPoints(bMarks,bTonight,true)==1?TEXT("marks"):SlipPoints(bMarks,bTonight,true)==2?(bAhead?TEXT("tonight's, still to come"):TEXT("tonight's, out there now")):bArc?TEXT("the first night's line"):TEXT("a place not looked at"),Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night,B.RingX,B.RingZ,B.RingR,B.bRing&&S47OpenLand::InRim(B.RingX,B.RingZ,B.RingR)?1:0,bFree?TEXT("; the night's pointing-out left for the burst"):TEXT(""));
+ UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s (%s), %d branches, %s, night %d; circle %.0f %.0f r%.0f, on the land %d%s"),B.Az,Spread,*Target,SlipPoints(bMarks,bTonight,true)==1?TEXT("marks"):SlipPoints(bMarks,bTonight,true)==2?(bAhead?TEXT("tonight's, still to come"):TEXT("tonight's, out there now")):bArc?TEXT("the first night's line"):SlipPoints(false,false,false,bTrace)==4?TEXT("where the morning's trace will be"):TEXT("a place not looked at"),Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night,B.RingX,B.RingZ,B.RingR,B.bRing&&S47OpenLand::InRim(B.RingX,B.RingZ,B.RingR)?1:0,bFree?TEXT("; the night's pointing-out left for the burst"):TEXT(""));
  M->RequestAutosave();
  return true;
 }
@@ -919,7 +1007,19 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s places: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
  TSet<FString> Ids;bool bWords=true,bParts=true;
  for(const FDef& D:Defs()){Ids.Add(D.Id);bWords&=FCString::Strlen(D.Finding)>40&&FCString::Strlen(D.Finding)<320&&FCString::Strlen(D.Needle)>4&&!FString(D.Finding).Contains(TEXT("alien"));bParts&=PartsOf(D.Kind).Num()>0||(FString(D.Id)==TEXT("balloon")&&FS47Balloon::HaveModel());} // (D48: the balloon's model draws the place itself)
- Check(Ids.Num()==Defs().Num()&&Defs().Num()>=9&&Defs().Num()<=11,TEXT("eight to ten places besides the motel, each once"));
+ Check(Ids.Num()==Defs().Num()&&Defs().Num()>=9&&Defs().Num()<=13,TEXT("eight to ten places on the land besides the motel and the old house's two, each once"));
+ // T16-17 (→ M1, "the farmhouse is an empty shell"): two things inside the old house, where the plan has them, inside its walls, the
+ // kitchen's by the front door and the back room's by the back door, on SARO's ground; never on the map, never a slip's or a cot's.
+ {
+  const FDef* Kitchen=Def(TEXT("kitchen"));const FDef* BackRoom=Def(TEXT("backroom"));
+  const FVector Kp=S47FarmHouse::Point(2.05,7.25),Bp=S47FarmHouse::Point(8.3,1.);
+  bool bHouse=Kitchen&&BackRoom&&FMath::IsNearlyEqual(Kitchen->X,Kp.X,.01)&&FMath::IsNearlyEqual(Kitchen->Z,Kp.Z,.01)&&FMath::IsNearlyEqual(BackRoom->X,Bp.X,.01)&&FMath::IsNearlyEqual(BackRoom->Z,Bp.Z,.01)
+   &&S47FarmHouse::Inside(Kp.X,Kp.Z)&&S47FarmHouse::Inside(Bp.X,Bp.Z)&&InOldHouse(TEXT("kitchen"))&&InOldHouse(TEXT("backroom"))&&AtSaro(TEXT("motel"))&&!InOldHouse(TEXT("motel"))&&!AtSaro(TEXT("windmill"));
+  bool bOffLand=true;for(int32 Sd=1;Sd<=200;++Sd){const FString A=ArcPlace(Sd);bOffLand&=!AtSaro(A);for(int32 Day=1;Day<=12;++Day)bOffLand&=!InOldHouse(TracePlace(Sd,Day))&&DayTrace(TEXT("kitchen"),Sd,Day).IsEmpty()&&DayTrace(TEXT("backroom"),Sd,Day).IsEmpty();}
+  const FString AgainLine=BackRoomAgain(),OnLand=NothingNew(false),AtHome=NothingNew(true);
+  bool bHouseWords=true;for(const FString& W:{AgainLine,OnLand,AtHome,FString(Kitchen?Kitchen->Finding:TEXT("")),FString(BackRoom?BackRoom->Finding:TEXT(""))})bHouseWords&=!W.IsEmpty()&&S47Script::LintText(W).IsEmpty()&&!W.Contains(TEXT("47"))&&!W.ToLower().Contains(TEXT("taken"))&&!W.ToLower().Contains(TEXT("alien"));
+  Check(bHouse&&bOffLand&&bHouseWords&&OnLand!=AtHome,TEXT("T16-17: the old house has two things to look at, inside its walls where the plan has them, off the land's map and its traces, in plain words"));
+ }
  // PT-SAUCER-ROCK-20261109: Saucer Rock is on the land where the souvenir man's map has it, with something to see at any hour.
  {
   const FDef* Rock=Def(TEXT("saucer_rock"));
@@ -974,7 +1074,7 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   // D45-20261110 (Tom's d45 map, the mark far south of the land): every slip from SARO has a circle that holds its target, inside the
   // rim and with its middle in the sector; the more branches, the smaller. For every place, a few far out near the rim, every roll.
   {
-   TArray<FVector2D> Targets;for(const FDef& D:Defs())if(FString(D.Id)!=Motel)Targets.Add(FVector2D(D.X,D.Z));
+   TArray<FVector2D> Targets;for(const FDef& D:Defs())if(!AtSaro(D.Id))Targets.Add(FVector2D(D.X,D.Z));
    Targets.Append({FVector2D(S47OpenLand::RimX0+160,1500),FVector2D(S47OpenLand::RimX1-160,-1200),FVector2D(300,S47OpenLand::RimZ1-160),FVector2D(-560,1340)});
    bool bRinged=true,bHolds=true,bLand=true,bSector=true;
    for(const FVector2D& T:Targets)for(int32 Br=0;Br<=4;++Br)for(int32 K=0;K<=10;++K)
@@ -1033,6 +1133,15 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   const FString Calm=NeedleReading(TEXT("All steel; the needle follows the tower and nothing else."),false),Stirred=NeedleReading(TEXT("All steel; the needle follows the tower and nothing else."),true);
   Check(Calm==TEXT("All steel; the needle follows the tower and nothing else.")&&!Calm.Contains(TEXT("settle"))&&Stirred.StartsWith(Calm)&&Stirred.Contains(TEXT("will not settle"))&&!Stirred.ToLower().Contains(TEXT("alien")),
    TEXT("the needle is calm with nothing near and will not settle after something happened near"));
+  {
+   // FIX10-9 (→ M3): a figure seen from a SARO window is a line from SARO on the map, labelled as the window's, and it crosses a truck's.
+   FS47Places Pane(nullptr);Pane.Begin(nullptr);
+   const bool bPane=Pane.AddCarFix(Sx,Sz,110,WindowTarget,Clock,4)&&Pane.AddCarFix(Tx,Tz,45,TEXT("omen:a"),Clock+60,4);
+   FS47MapView PaneView;Pane.FillMapAt(PaneView,Clock+120);
+   const bool bLabel=PaneView.Sectors.ContainsByPredicate([](const FS47MapSector& X){return X.Label.StartsWith(TEXT("Day 4 window"));})&&PaneView.Sectors.ContainsByPredicate([](const FS47MapSector& X){return X.Label.StartsWith(TEXT("Day 4 truck"));});
+   Check(bPane&&bLabel&&Pane.Bearings()[0].bCar&&FMath::IsNearlyEqual(Pane.Bearings()[0].FromX,Sx,.11)&&!Dosed(Pane.Bearings()[0],Clock+60),
+    TEXT("FIX10-9: a figure seen from a SARO window is a line from SARO on the map, \"Day N window\", beside a truck's (no dose: no place)"));
+  }
   Check(Kept.Bearings().Num()==2&&K.bCar&&FMath::IsNearlyEqual(K.FromX,Tx+40,.11)&&FMath::IsNearlyEqual(K.FromZ,Tz-30,.11)&&FMath::IsNearlyEqual(K.Clock,Clock+120,.5)&&FMath::IsNearlyEqual(K.Until,ColdAt(Clock),.5),
    TEXT("a bearing's clock, its noon and the truck's place survive a Continue"));
  }
@@ -1054,6 +1163,19 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   // CHAIN-1-20261109: what the slip points at: marks first, then what is out there tonight, then a place nobody has looked at.
   Check(SlipPoints(true,true,true)==1&&SlipPoints(false,true,true)==2&&SlipPoints(false,false,true)==3&&SlipPoints(false,false,false)==0,
    TEXT("the bearing slip points at tonight's own thing before a place nobody has looked at, and at nothing when there is neither"));
+  // T16-17 (→ M1, "the bearings run out"): with every place known, the slip points where the next morning's trace stands: one place a
+  // day from day 2, the one DayTrace names, never the motel, the cairn or Saucer Rock; last in line, after a place nobody has looked at.
+  {
+   bool bOne=true,bSome=false;
+   for(int32 Sd=1;Sd<=60;++Sd)for(int32 Day=2;Day<=30;++Day)
+   {
+    const FString P=TracePlace(Sd,Day);
+    if(P.IsEmpty())continue;
+    bSome=true;bOne&=!DayTrace(P,Sd,Day).IsEmpty()&&P!=TEXT("motel")&&P!=TEXT("cairn")&&P!=TEXT("saucer_rock")&&Def(P)!=nullptr;
+   }
+   Check(bOne&&bSome&&TracePlace(5,1).IsEmpty()&&SlipPoints(false,false,false,true)==4&&SlipPoints(false,false,true,true)==3&&SlipPoints(false,true,false,true)==2,
+    TEXT("T16-17: once every place is known, the slip points at where the next morning's trace will be, after any place nobody has looked at"));
+  }
   // A slip toward an event place is a bearing like any other (its target a title, not one of the ten): it is kept over a Continue,
   // goes cold by noon, and gives the counter no dose of its own.
   double Sx=0,Sz=0;SaroRoad(Sx,Sz);

@@ -238,6 +238,20 @@ bool FS47EveningPack::Start(const FString& Id)
 
 const FS47EveningScene* FS47EveningPack::CurrentScene() const { return Scenes.Find(ActiveScene); }
 
+bool FS47EveningPack::StillWanted() const
+{
+	const auto* Scene = CurrentScene();
+	return Scene && Scene->Entry == TEXT("trigger") && Cursor == 0 && PendingChoice.IsEmpty() && Meets(Scene->Requires, Flags);
+}
+
+bool FS47EveningPack::Withdraw()
+{
+	const auto* Scene = CurrentScene();
+	if (!Scene || Scene->Entry != TEXT("trigger") || Cursor != 0 || !PendingChoice.IsEmpty()) return false;
+	ActiveScene.Reset(); Cursor = 0;
+	return true;
+}
+
 const FS47EveningLine* FS47EveningPack::CurrentLine() const
 {
 	const auto* Scene = CurrentScene();

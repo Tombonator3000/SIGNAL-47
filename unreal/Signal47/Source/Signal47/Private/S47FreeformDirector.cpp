@@ -1,4 +1,5 @@
 #include "S47FreeformDirector.h"
+#include "S47DirectorCam.h"
 #include <limits>
 #include "S47SmallHints.h"
 #include "S47Rhythm.h"
@@ -17,6 +18,7 @@
 #include "S47Happenings.h"
 #include "S47EventScript.h"
 #include "S47WeekCase.h"
+#include "S47StoryDirector.h"
 #include "S47CaseFieldTests.h"
 #include "S47RoomLights.h"
 #include "Misc/CommandLine.h"
@@ -669,6 +671,10 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  if(M&&M->Freeform&&((M->Freeform->Taken&&M->Freeform->Taken->Busy())||(M->Freeform->FarmSite&&M->Freeform->FarmSite->VisitWantsGround())))return false;
  // WEEKLY-CASE-20261109: nor on top of the week's case on the ground (no presence, so no small bodies out of the glimpses either).
  if(FS47WeekCase::Holds(M))return false;
+ // STORY-ON-FREEFORM-01 (step 4): nor while a Story night's script runs (false in any other night).
+ if(FS47StoryDirector::Holds(M))return false;
+ // DIRECTOR-MODE-01: nor while the developer flies the director's camera.
+ if(S47DirectorCam::On(M))return false;
  const auto* D=Definition(Id);if(!bEnabled||!D||!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!Event.IsEmpty()||M->Freeform->Held())return false;
  // CRIT9-20261109: from ten to two the night is the week's case's: no threat, major or presence on the ground before it begins.
  if(!Forced&&FS47WeekCase::HoldsFarm(M))
@@ -822,6 +828,15 @@ bool FS47FreeformDirector::Force(const FString& Id)
   UE_LOG(LogS47FreeformDirector,Display,TEXT("S47 reactive Force rejected: enabled=%d definition=%d valid=%d serial=%d inputSerial=%d room=%s age=%.6f left=%d applied=%d near25=%d distance=%.6f inView120=%d inRoom=%d power=%d held=%d active=%d event=%s area=%s loaded=%d ready=%d eligible=%d player=%s camera=%s forward=%s"),bEnabled,Definition(Id)!=nullptr,ReactiveValid(),ReactiveSerial,M&&M->RoomLights?M->RoomLights->InputSerial():-1,*ReactiveRoom,ReactiveAge,bReactiveLeft,bReactiveApplied,Near(At,25),FVector2D::Distance({Pos.X,Pos.Z},{At.X,At.Z}),InView(At,120),M&&M->RoomLights?M->RoomLights->PlayerInRoom(ReactiveRoom):false,M&&M->Freeform?M->Freeform->HasPowerForReactiveLight():false,M&&M->Freeform?M->Freeform->Held():true,M&&M->Freeform?M->Freeform->Active():false,*Event,M&&M->Web?*M->Web->Area():TEXT("missing"),M&&M->Web?M->Web->IsLoaded():false,ReactiveReady(),Eligible(Id,true),*Pos.ToString(),*Cam.ToString(),*Forward.ToString());
  }
  return Good;
+}
+bool FS47FreeformDirector::StartForStory(const FString& Id,FString& Why)
+{
+ if(!FS47StoryDirector::Of(M)){Why=TEXT("not a Story night");return false;}
+ if(!Definition(Id)){Why=TEXT("no event ")+Id;return false;}
+ if(!Event.IsEmpty()){Why=TEXT("event ")+Event+TEXT(" is under way");return false;}
+ if(!Start(Id,true)){Why=TEXT("the world cannot start it now (area, power, or a panel)");return false;}
+ UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform event %s started for the story"),*Id);
+ return true;
 }
 bool FS47FreeformDirector::TestBegin(const FString& Id)
 {
@@ -1083,7 +1098,7 @@ bool FS47FreeformDirector::TraceRaked() const
 }
 FString FS47FreeformDirector::TipLine() const
 {
- if(Event==TEXT("farm_lights")||Event==TEXT("town_lights"))return FString(TEXT("RADIO TIP: LIGHTS REPORTED LOW OVER "))+LightPlaceTitle(LightPlace).ToUpper();
+ if(Event==TEXT("farm_lights")||Event==TEXT("town_lights"))return FString(TEXT("RADIO TIP: LIGHTS REPORTED LOW OVER "))+LightPlaceTitle(LightPlace).ToUpper()+TEXT(". TAKE THE CAMERA AND GO LOOK.");
  return FString();
 }
 void FS47FreeformDirector::TestLightsTonight(){if(M&&M->Freeform){SeenDay=M->Freeform->Day();LightRollDay=ThreatRollDay=MajorRollDay=SeenDay;PendingThreatNight=PendingMajorNight=0;PendingLightNight=SeenDay;LightAfter=0;NextAt=0;RestUntil=0;}}

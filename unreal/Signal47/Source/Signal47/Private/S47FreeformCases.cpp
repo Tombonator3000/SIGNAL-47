@@ -172,7 +172,7 @@ namespace
   {TEXT("Feeder interference"),TEXT("Local intermittent transmitter"),TEXT("Follows the sky source")},
   {TEXT("Feeder"),TEXT("Transmitter"),TEXT("Sky")},
   {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole pulsar observation on generator power. One can of fuel runs it for six hours.")},
-   {TEXT("Off-source pointing"),EC::OffSource,TEXT("The tracking PC points the array 0.6 degrees beside the pulsar. Record the full observation there.")},
+   {TEXT("Off-source pointing"),EC::OffSource,TEXT("On TRACKING (right-hand PC), point the array as usual; for this test it aims 0.6 degrees beside the pulsar by itself. Record the full observation there.")},
    {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time of the first original.")}},
   // Generator, OffSource, Repeat
   {{false,true,true},   // feeder-borne ticks vanish on generator power
@@ -189,9 +189,9 @@ namespace
   FS47FreeformCases::EObservable::ClockDelta,
   {TEXT("Receiver timing relay fault"),TEXT("Mains-locked station clock"),TEXT("Someone uses the station at night")},
   {TEXT("Relay"),TEXT("Mains"),TEXT("Someone")},
-  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
+  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Have one spare relay when the recording starts; it goes into the receiver timing path and is used up. Spares are in PARTS STORAGE, or buy one at the Caliche gas station.")},
    {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole observation on generator power, off the mains.")},
-   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
+   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close the south and east outside doors and stay in the control room for the whole recording. Opening either spoils the test.")}},
   // RelaySwap, Generator, DoorsSealed
   {{false,true,true},   // a faulty timing relay is replaced
    {true,false,true},   // a mains-locked clock follows the feeder, not the generator
@@ -226,7 +226,7 @@ namespace
   {TEXT("Someone at the feeder"),TEXT("A failing line insulator"),TEXT("Not accounted for")},
   {TEXT("Someone"),TEXT("Insulator"),TEXT("Unaccounted")},
   {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole pulsar observation on generator power, off the feeder. One can of fuel runs it for six hours.")},
-   {TEXT("Off-source pointing"),EC::OffSource,TEXT("The tracking PC points the array 0.6 degrees beside the pulsar. Record the full observation there.")},
+   {TEXT("Off-source pointing"),EC::OffSource,TEXT("On TRACKING (right-hand PC), point the array as usual; for this test it aims 0.6 degrees beside the pulsar by itself. Record the full observation there.")},
    {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time the case was opened.")}},
   // Generator, OffSource, Repeat
   {{true,true,false},   // whoever it was has gone by the next night
@@ -241,9 +241,9 @@ namespace
   FS47FreeformCases::EObservable::ClockDelta,
   {TEXT("The station clocks were wrong"),TEXT("A lapse of my own"),TEXT("Not accounted for")},
   {TEXT("Clocks"),TEXT("A lapse"),TEXT("Unaccounted")},
-  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
+  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Have one spare relay when the recording starts; it goes into the receiver timing path and is used up. Spares are in PARTS STORAGE, or buy one at the Caliche gas station.")},
    {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole observation on generator power, off the mains.")},
-   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
+   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close the south and east outside doors and stay in the control room for the whole recording. Opening either spoils the test.")}},
   // RelaySwap, Generator, DoorsSealed
   {{false,true,true},    // a slipping relay: gone with the relay, whatever else is done
    {false,false,false},  // the clocks were never wrong
@@ -257,9 +257,9 @@ namespace
   FS47FreeformCases::EObservable::ClockDelta,
   {TEXT("They left on their own"),TEXT("Somebody came for them"),TEXT("Not accounted for")},
   {TEXT("Left"),TEXT("Somebody"),TEXT("Unaccounted")},
-  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
+  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Have one spare relay when the recording starts; it goes into the receiver timing path and is used up. Spares are in PARTS STORAGE, or buy one at the Caliche gas station.")},
    {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole observation on generator power, off the mains.")},
-   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
+   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close the south and east outside doors and stay in the control room for the whole recording. Opening either spoils the test.")}},
   // Never offered (UnavailableReason): kept separating, as every line's are, for the shared rules.
   {{false,true,true},
    {true,false,true},
@@ -274,7 +274,7 @@ namespace
   {TEXT("Somebody keying a set on time"),TEXT("A timer on the county line"),TEXT("Not accounted for")},
   {TEXT("Somebody"),TEXT("Timer"),TEXT("Unaccounted")},
   {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole pulsar observation on generator power, off the feeder. One can of fuel runs it for six hours.")},
-   {TEXT("Off-source pointing"),EC::OffSource,TEXT("The tracking PC points the array 0.6 degrees beside the pulsar. Record the full observation there.")},
+   {TEXT("Off-source pointing"),EC::OffSource,TEXT("On TRACKING (right-hand PC), point the array as usual; for this test it aims 0.6 degrees beside the pulsar by itself. Record the full observation there.")},
    {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time the case was opened.")}},
   // Generator, OffSource, Repeat
   {{true,true,false},   // a hand on a key keeps one appointment, not the next night's
@@ -289,9 +289,9 @@ namespace
   FS47FreeformCases::EObservable::ClockDelta,
   {TEXT("Something of theirs came down"),TEXT("Somebody cleaning up after themselves"),TEXT("Not accounted for")},
   {TEXT("Theirs"),TEXT("Cleaning up"),TEXT("Unaccounted")},
-  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Fit one spare relay from the depot into the receiver timing path when the recording starts. The relay is used up.")},
+  {{TEXT("Swap the timing relay"),EC::RelaySwap,TEXT("Have one spare relay when the recording starts; it goes into the receiver timing path and is used up. Spares are in PARTS STORAGE, or buy one at the Caliche gas station.")},
    {TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole observation on generator power, off the mains.")},
-   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close both SARO doors and stay in the control room for the whole recording. Opening a door spoils the test.")}},
+   {TEXT("Sealed station"),EC::DoorsSealed,TEXT("Close the south and east outside doors and stay in the control room for the whole recording. Opening either spoils the test.")}},
   // Never offered (UnavailableReason), as for the empty post.
   {{false,true,true},
    {true,false,true},
@@ -308,9 +308,9 @@ namespace
   FS47FreeformCases::EObservable::FieldTrace,
   {TEXT("Animals and weather"),TEXT("People and vehicles"),TEXT("Not accounted for")},
   {TEXT("Animals"),TEXT("People"),TEXT("Unaccounted")},
-  {{TEXT("Trip camera overnight"),EC::FieldWork,TEXT("Leave the trip camera out on the land, where the last record was kept, and read it in the morning. What its frames show is the result."),TEXT("the ground lit, or a shape on the frames"),TEXT("nothing on the frames but what lives out here")},
-   {TEXT("Magnetometer and the survey"),EC::FieldWork,TEXT("Take the magnetometer to a place out on the land and read it there. OPS sets the reading against the county survey sheet for that ground."),TEXT("a reading off the survey sheet"),TEXT("the reading the survey sheet gives")},
-   {TEXT("Field logger that night"),EC::FieldWork,TEXT("Run the loan field logger at the array through a full window at night, then retrieve its tape. OPS sets the tape against that night out on the land."),TEXT("a carrier on the tape that night"),TEXT("the tape quiet that night"),TEXT("access.fieldlogger")}},
+  {{TEXT("Trip camera overnight"),EC::FieldWork,TEXT("Build the trip camera at the workshop on the east wing bench. Leave it out on the land where the last record was kept, and read it in the morning. What its frames show is the result."),TEXT("the ground lit, or a shape on the frames"),TEXT("nothing on the frames but what lives out here")},
+   {TEXT("Magnetometer and the survey"),EC::FieldWork,TEXT("Buy the magnetometer on OPS / SUPPLIES, take it to a place out on the land and read it there. OPS sets the reading against the county survey sheet for that ground."),TEXT("a reading off the survey sheet"),TEXT("the reading the survey sheet gives")},
+   {TEXT("Field logger that night"),EC::FieldWork,TEXT("Take the loan field logger from the east wing, run it at the array through a full window at night, then bring its tape back. OPS sets the tape against that night out on the land."),TEXT("a carrier on the tape that night"),TEXT("the tape quiet that night"),TEXT("access.fieldlogger")}},
   // Camera, Needle, Logger (present = Yes)
   {{false,false,false},  // animals and weather: nothing strange on the frames, no iron left on the ground, nothing on the air
    {false,true,true},    // people: no lit ground, but iron dropped or dragged (wire, tools, a vehicle), and a set or an engine on the air
@@ -331,6 +331,9 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  // visit at them) is a lead on the land. The farm's own marks (farm_trace) share the station's ground and stay with the visitors.
  if(Id.StartsWith(TEXT("lights_trace_")))return LandLine;
  // Around the base: the station, its doors and rooms, the farm that shares its ground, a taking.
+ // T16-17 (→ M1): the old house's two things (FS47Places: the back room by daylight, and a needle there that will not settle) are
+ // the farm's, so the visitors', not the land's.
+ if((Id.StartsWith(TEXT("place_kitchen_"))||Id.StartsWith(TEXT("place_backroom_")))&&Id.Contains(TEXT("_unsettled_d")))return 2;
  if(Id.Contains(TEXT("_daylight_d"))||Id.StartsWith(TEXT("taken-"))||Id.EndsWith(TEXT("_visit"))||Id.StartsWith(TEXT("peek-"))||Id.StartsWith(TEXT("flood-room-"))||Id.StartsWith(TEXT("door-visit-"))||Id.StartsWith(TEXT("door-marks-")))return 2;
  // LOOP-WHOLE-20261109, step 2: out on the land. What the night's events leave there (FS47Happenings), a thing moved at a place, the
  // trip camera, a car on the road, Saucer Rock by the hour after midnight (FS47Places). Leads, not yet one cause.
@@ -338,6 +341,9 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  // LOOP-3-20261109: what comes home from out there as a question (the same minute on the array, FS47FreeformSession::AskSameMinute)
  // and a needle that will not settle where something happened in the last two nights (FS47Places::Use, LOOP-4).
  if(Id.StartsWith(TEXT("minute_yes_"))||Id.StartsWith(TEXT("minute_no_"))||(Id.StartsWith(TEXT("place_"))&&Id.Contains(TEXT("_unsettled_d"))))return LandLine;
+ // T16-17 (→ M1, "the places are reading stations"): the trace a place shows by day (FS47Places::DayTrace, kept as place_trace_dN) was
+ // read and filed under nothing; it is what the night left out there, a lead like the rest.
+ if(Id.StartsWith(TEXT("place_trace_d")))return LandLine;
  // WEEKLY-CASE-20261109: what the week's case leaves (S47WeekCase), a lead out on the land; never a night record (FS47Happenings).
  if(Id.StartsWith(TEXT("weekcase_")))return LandLine;
  // D48-20261110: the balloon's instrument box taken while lights were seen over that ground (FS47Balloon): the plain thing that would
@@ -950,6 +956,9 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
    for(const TCHAR* Id:Home)bLand&=LineForFinding(Id)==2;
    bLand&=LineForFinding(TEXT("place_windmill_needle"))==-1&&LineForFinding(TEXT("place_windmill"))==-1&&LineForFinding(TEXT("place_saucer_rock_night4_t1"))==-1;
    bLand&=LineForFinding(TEXT("place_balloon_box"))==-1&&LineForFinding(TEXT("place_balloon_school"))==-1; // (D48: the box itself and its errands are no lead)
+   // T16-17 (→ M1): a place's daylight trace is a lead out there; the old house's back room by daylight and its needle are the visitors'
+   bLand&=LineForFinding(TEXT("place_trace_d6"))==LandLine&&LineForFinding(TEXT("place_backroom_daylight_d5"))==2&&LineForFinding(TEXT("place_backroom_unsettled_d5"))==2
+    &&LineForFinding(TEXT("place_kitchen"))==-1&&LineForFinding(TEXT("place_kitchen_needle"))==-1&&LineForFinding(TEXT("place_tank_unsettled_d5"))==LandLine;
    // A record out there opens the land's case, not the visitors'.
    FS47FreeformCases K;K.Reset(5);K.AddLead(LineForFinding(TEXT("cattle_ring_d4")),TEXT("cattle_ring_d4"),4,23*3600.);
    bLand&=K.Get(LandLine)->bOpen&&!K.Get(2)->bOpen&&K.Get(LandLine)->Leads.Num()==1&&K.Get(LandLine)->LastLeadDay==4;

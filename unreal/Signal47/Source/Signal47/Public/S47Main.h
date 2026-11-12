@@ -62,6 +62,7 @@ public:
 	TSharedPtr<class FS47SkyVisitors> SkyVisitors; // optional world-space sky progression, separately saved
 	TSharedPtr<class FS47Horror> Horror;
 	TSharedPtr<class FS47FreeformSession> Freeform;
+	TSharedPtr<class FS47StoryDirector> StoryDirector; // STORY-ON-FREEFORM-01: only a Story night's (S47StoryDirector.h)
 	TSharedPtr<class FS47HighwayUfo> HighwayUfo; // shared, saved road encounter; no player driving override
 	TSharedPtr<class FS47HighwayUfoTest> HighwayUfoTest;
 	TSharedPtr<class FS47UfoVisualTest> UfoVisualTest;
@@ -77,6 +78,9 @@ public:
 	TSharedPtr<class FS47GearFlicker> Gear;
 	TSharedPtr<class FS47Soundscape> Soundscape;
 	TSharedPtr<class FS47Animals> Animals;
+	TSharedPtr<class FS47StationInsects> StationInsects; // GAS-STATION-LIFT-01: the canopy's moths and dust (S47StationInsects.h)
+	TSharedPtr<class FS47StationDressing> StationDressing; // GAS-STATION-LIFT-01: bought Cosmos props in the shop, if present (S47StationDressing.h)
+	TSharedPtr<class FS47StationLook> StationLook; // GAS-STATION-LIFT-01: the shop's own picture, a bounded post-process volume (S47StationLook.h)
 	TSharedPtr<class FS47DevEvents> DevEvents; // F10: developer events in a night (S47DevEvents.h)
 	TSharedPtr<class FS47Rhythm> Rhythm; // the rhythm of a Freeform night, as data (S47Rhythm.h)
 	TSharedPtr<class FS47HorrorTest> HorrorTest;

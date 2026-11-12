@@ -57,6 +57,8 @@ public:
 	int32 DogBarks() const { return BarkCount; }
 	int32 DogStops() const { return StopCount; }
 	bool CoyoteOut() const { return Coyote.Mode != ECoyote::None; }
+	/** T16-20: where the coyote is now (three-space), when one is out; the trip camera reads it. */
+	bool CoyoteWhere(FVector& Out) const { if (Coyote.Mode == ECoyote::None) return false; Out = Coyote.At; return true; }
 	bool CoveyHere() const { return Covey.Mode == ECovey::Sitting; }
 	/** The coyote and the dog are the rigged models (Tools/animals), not the boxes. */
 	bool RiggedCoyote() const { return CoyoteRig.bReady; }

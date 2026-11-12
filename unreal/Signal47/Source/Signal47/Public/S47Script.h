@@ -23,8 +23,11 @@
 // Points are road-local metres (x east, z south), the land's one frame (S47OpenLand, S47EventPlaces), so a script works whichever
 // area the player is in. Up is metres above the ground there.
 
-enum class ES47ScriptAct : uint8 { Figure, Sky, Sound, Dish, Fault, Line, Toast, Note, Evidence, Look, Wait, Count };
+enum class ES47ScriptAct : uint8 { Figure, Sky, Sound, Dish, Fault, Line, Toast, Note, Evidence, Look, Wait, Shot, Count };
 enum class ES47ScriptRepeat : uint8 { Once, Nightly, Always };
+// DIRECTOR-MODE-01 (slice 3): a trigger's volume, as the HPL editor's script areas: its ground shape, and what the player does with it.
+enum class ES47ScriptShape : uint8 { Circle, Box };
+enum class ES47ScriptMode : uint8 { Enter, Look, Leave };
 
 struct FS47ScriptPoint
 {
@@ -37,7 +40,8 @@ struct FS47ScriptCond
 {
  // finding, no_finding (Arg: a finding id, "*" at the end matches a prefix); case_open, case_closed, case_none (Num: the case line);
  // weather (Arg: clear, cloudy, windy, calm, dust, shower, storm); moon_min, moon_max (Num: the lit fraction 0 to 1); moon_up;
- // indoors, outdoors, in_truck, on_foot; near, far (Arg: a place id from S47EventPlaces, Num: metres).
+ // indoors, outdoors, in_truck, on_foot; near, far (Arg: a place id from S47EventPlaces, Num: metres); story_flag, no_story_flag (Arg:
+ // the flag; DIRECTOR-MODE-01: without a Story night's director no story flag is set).
  FString If,Arg;
  double Num=0;
 };
@@ -51,7 +55,18 @@ struct FS47ScriptTrigger
  FS47ScriptPoint Point;       // or a point of its own (bSet)
  double Radius=40;            // metres from the place or the point
  TArray<FS47ScriptCond> Conds;
+ // DIRECTOR-MODE-01 (slice 3): the volume around the place or the point. The defaults are a circle of Radius entered at any height,
+ // at once: what every trigger did before, and what a file without these fields reads as (they are written only when not these).
+ ES47ScriptShape Shape=ES47ScriptShape::Circle;
+ double HalfX=5,HalfZ=5;      // box: half its size, metres, along its own x and z
+ double Yaw=0;                // box: radians about up, turning its own x from east towards south (road-local)
+ double Height=0;             // 0: any height; above 0 the player's height over the ground is within [Point.Up, Point.Up+Height]
+ ES47ScriptMode Mode=ES47ScriptMode::Enter; // enter: inside it; look: its middle in view; leave: was inside, now outside
+ double Degrees=12,LookRange=60; // look: within Degrees of the middle of the view, from at most LookRange metres
+ double Dwell=0;              // seconds the mode's test must have held, continuously, before it starts
  bool HasWhere() const{return !Place.IsEmpty()||Point.bSet;}
+ // Anything of the volume that is not the plain circle entered at once: the player watches it more closely (FS47ScriptPlayer).
+ bool HasVolume() const{return Shape!=ES47ScriptShape::Circle||Height!=0||Mode!=ES47ScriptMode::Enter||Dwell!=0;}
 };
 
 struct FS47ScriptAction
@@ -70,10 +85,13 @@ struct FS47ScriptAction
  //   evidence  Kind the finding id; Text
  //   look      Point; Secs the turn takes
  //   wait      Secs; bFlag: until the player looks at Point instead, at most Secs
+ //   shot      SHOT-BEAT-01 (S47Shot.h): Path[0] the eye, Path[1] a second eye it moves to (optional); Point what it looks at; Fov
+ //             degrees, Fov2 at the end (0: the same); Secs held, In and Out the ease from and back onto the player's view
  FString Kind,Who,Text,Title;
  TArray<FS47ScriptPoint> Path;
  FS47ScriptPoint Point;
  double Secs=0,Speed=1,Gain=1,Az=26,El=40,Slew=9;
+ double Fov=60,Fov2=0,In=.6,Out=.8; // the shot's (SHOT-BEAT-01); not written for any other kind
  bool bFlag=false;
  int32 Index=-1;
 };
@@ -112,6 +130,13 @@ struct FS47ScriptNow
  TFunction<bool(const FString&)> HasFinding;
  TFunction<int32(int32)> CaseState; // 0 none, 1 open, 2 closed
  TFunction<bool(const FString&,FVector2D&,double&)> PlaceAt; // id: road-local middle and radius
+ // DIRECTOR-MODE-01 (slice 3): what a trigger volume reads. FloorUp is filled by Now; the rest is this one script's, filled by the
+ // player for a script whose trigger HasVolume (FS47ScriptPlayer::NowFor). The defaults are what every trigger read before.
+ double FloorUp=0;             // the player's height over the ground where they stand (as a point's Up)
+ bool bLooking=false;          // look: the volume's middle is within its Degrees of the middle of the view
+ double Held=0;                // seconds the mode's test has held, continuously, up to now
+ bool bWasInside=false;        // leave: the player has been inside the volume since it was last watched from the start
+ TFunction<bool(const FString&)> HasStoryFlag; // story_flag, no_story_flag; unset: no Story night's director (no flag is set)
  double Hour() const{return FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;}
 };
 
@@ -171,6 +196,21 @@ namespace S47Script
  // play-now), never the lint; the clock rule and the lock are then reported in Why but do not stop it.
  SIGNAL47_API bool Ready(const FS47Script& S,const FS47ScriptNow& Now,const FS47ScriptMemory& Mem,FString& Why,bool bPreview=false);
  SIGNAL47_API bool CondHolds(const FS47ScriptCond& C,const FS47ScriptNow& Now);
+
+ // DIRECTOR-MODE-01 (slice 3): the trigger volume. Pure.
+ // Whether P (road-local, P.Up the player's height over the ground) is inside T's volume around T.Point: the circle (Radius) or the
+ // turned box (HalfX, HalfZ, Yaw), and with Height above 0 the height band [Point.Up, Point.Up+Height] (HeightSlack either side).
+ inline constexpr double HeightSlack=.3;
+ SIGNAL47_API bool Inside(const FS47ScriptTrigger& T,const FS47ScriptPoint& P);
+ // The volume's outline on the ground around T.Point, road-local at T.Point.Up, closed: Segments points (at least 4, a box at least
+ // 5), the last the first again. A circle's points are at Radius; a box has its four corners and the rest along its edges. For the
+ // in-world drawing.
+ SIGNAL47_API TArray<FS47ScriptPoint> Outline(const FS47ScriptTrigger& T,int32 Segments=24);
+ // The player is inside the volume now (around its place's middle for a place); false with no player on the land or no place.
+ SIGNAL47_API bool InVolume(const FS47ScriptTrigger& T,const FS47ScriptNow& Now);
+ // The mode's test now, without the dwell: enter inside it; look within LookRange of its middle with bLooking; leave bWasInside and
+ // outside it. Why: what does not hold. True for a trigger with no place and no point.
+ SIGNAL47_API bool ModeHolds(const FS47ScriptTrigger& T,const FS47ScriptNow& Now,FString* Why=nullptr);
 
  // HUD's self-test: the JSON both ways, the triggers, the night's tiers and the lint (S47ScriptTest.cpp).
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);

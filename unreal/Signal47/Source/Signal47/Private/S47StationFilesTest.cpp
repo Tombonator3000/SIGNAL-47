@@ -56,7 +56,14 @@ void FS47FreeformTest::StepStationFiles(double Dt)
  if(Stage==10)
  {
   M->UI->Close(true);
-  if(!Check(!F.Save()->HasField(TEXT("stationFiles")),TEXT("nothing of it is in the save")))return;
+  if(!Check(!F.Save()->HasField(TEXT("stationFiles")),TEXT("no file text is in the save")))return;
+  // FIX10-10: a file released on an earlier day and never opened stays marked; what was opened is saved by key.
+  if(!Check(F.StationFileDue(),TEXT("the files released on day 2 and never opened still mark RECORDS on a later day")))return;
+  const TArray<FString> Seen=S47J::Strs(F.Save(),TEXT("stationFilesSeen"));
+  if(!Check(Seen.Contains(TEXT("station-03"))&&Seen.Contains(TEXT("station-01"))&&!Seen.Contains(TEXT("station-07")),TEXT("the files opened are in the save by key, the unopened are not")))return;
+  for(int32 I=0;I<S47StationFiles::Count();++I)if(S47StationFiles::Get(I).Day<=F.Day())Show(S47StationFiles::Get(I).Key,0);
+  M->UI->Close(true);
+  if(!Check(!F.StationFileDue(),TEXT("once every released file is opened RECORDS is no longer marked")))return;
   Finish(true,TEXT("Station files: nine of SARO's own papers under OPS / RECORDS and in the binder, released by day, paged, within the limits."));return;
  }
 }

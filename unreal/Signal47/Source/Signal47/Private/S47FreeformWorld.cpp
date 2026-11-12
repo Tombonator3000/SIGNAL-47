@@ -1640,6 +1640,12 @@ void FS47FreeformWorld::Step(double Dt)
   }
   else if(bFuelHeld){M->World->HoldTruck(0);bFuelHeld=false;}
  }
+ // IGNITION-20261111: left idling it drinks a little (about a gallon in three hours), and dies when the tank is dry
+ else if(M->World&&M->World->EngineIdling())
+ {
+  Fuel=FMath::Max(0.,Fuel-FMath::Min(Dt,.2)*.0001*FS47Outfit::TuneFor(M->Freeform.Get()).Burn);
+  if(Fuel<=.001){M->World->EndIdle(true);Change(TEXT("SERVICE TRUCK: Left idling, it ran the tank dry and died. Its lights are out."));}
+ }
  if((Service==7||Service==8)&&(!M->Freeform->PowerFault()||HasBackupPower()))
  {
   const int32 I=ServiceDishIndex();if(I>=0){const double Target=ServiceAz+(Service==7?5.:0.);

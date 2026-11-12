@@ -177,12 +177,13 @@ void FS47EastWing::Begin(const S47J::FObj& Saved)
  // control says so ("Lower garage door"), so it is up; before, it stood shut under a control that offered to lower it.
  DoorOpen=bDoorUp?1.:0.;
  bWasFree=M&&M->IsFreeform();
+ bTubesOn=Saved&&S47J::Bool(Saved,TEXT("tubes"),false); // FIX10-10: absent = off
 }
 S47J::FObj FS47EastWing::Save() const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("personnel"),LeafOpen[0]);S47J::Set(O,TEXT("service"),LeafOpen[1]);
  // Outside Freeform StepDoor holds the curtain at 0 without touching the Freeform state; what is kept is that state.
- S47J::Set(O,TEXT("garage"),bWasFree?DoorOpen:(bDoorUp?1.:0.));S47J::Set(O,TEXT("garageUp"),bDoorUp);return O;
+ S47J::Set(O,TEXT("garage"),bWasFree?DoorOpen:(bDoorUp?1.:0.));S47J::Set(O,TEXT("garageUp"),bDoorUp);S47J::Set(O,TEXT("tubes"),bTubesOn);return O;
 }
 void FS47EastWing::UseLeaf(int32 Index)
 {
@@ -206,6 +207,44 @@ bool FS47EastWing::LeafControls()
   It.Use=[this,I]{UseLeaf(I);};M->Inter->Add(It);
  }
  bLeafControls=true;return true;
+}
+
+void FS47EastWing::UseTubeSwitch()
+{
+ if(!M||!M->IsFreeform())return;
+ bTubesOn=!bTubesOn;
+ if(M->Audio){FS47Sound S;S.At=S47Three::ToUE(FVector(22.9,1.3,Z1-T));S.Gain=.45f;M->Audio->Sfx(M->Audio->Or(TEXT("small_switch"),TEXT("switch")),S);}
+ const bool Powered=M->Freeform&&M->Freeform->HasPowerForReactiveLight();
+ if(M->UI)M->UI->Toast(FString::Printf(TEXT("East wing ceiling lights %s.%s"),bTubesOn?TEXT("ON"):TEXT("OFF"),bTubesOn&&!Powered?TEXT(" No power: the tubes stay dark until the station has current."):TEXT("")),3);
+ M->RequestAutosave();
+}
+bool FS47EastWing::TubeSwitchControls()
+{
+ if(bTubeSwitch)return true;
+ if(!M||!M->Web||!M->Inter)return false;
+ const int32 Group=M->Web->Handle(TEXT("ext.group"));const auto* P=M->Web->Node(Group);if(!P||!P->Comp.IsValid())return false;
+ UStaticMesh* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
+ UMaterialInterface* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+ if(!Cube||!Base)return false;
+ auto Part=[&](const FString& Name,const FVector& Centre,const FVector& Size,uint32 Colour)->FS47Obj
+ {
+  auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web);Mat->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(Colour));Mat->SetScalarParameterValue(TEXT("Roughness"),.6f);
+  auto* C=NewObject<UStaticMeshComponent>(M->Web,*Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(P->Comp.Get());C->SetStaticMesh(Cube);C->SetMaterial(0,Mat);
+  C->SetWorldLocation(S47Three::ToUE(Centre));C->SetWorldScale3D(FVector(Size.X,Size.Z,Size.Y));
+  C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
+  C->RegisterComponent();return M->Web->ObjAt(M->Web->AdoptNode(C,Group,Name));
+ };
+ // Inside the lab on the south wall, 0.6 m along from the personnel door (hinge x 21.3), at hand height.
+ const double Face=Z1-T-.011;
+ FS47Obj Plate=Part(TEXT("EastWingTubeSwitchPlate"),FVector(22.9,1.3,Face),FVector(.09,.15,.022),0xc3baa5);
+ FS47Obj Lever=Part(TEXT("EastWingTubeSwitchLever"),FVector(22.9,1.3,Face-.02),FVector(.025,.055,.026),0xe0d8c5);
+ if(const auto* N=M->Web->Node(Lever.I))TubeLever=N->Comp.Get();
+ FS47Interactable It;It.Id=TEXT("eastwing:tube-switch");It.Object=Plate;It.Range=2.2;
+ It.Label=[this]{return M&&M->IsFreeform()?FString::Printf(TEXT("East wing ceiling lights / switch %s"),bTubesOn?TEXT("OFF"):TEXT("ON")):FString(TEXT("East wing ceiling lights (locked)"));};
+ It.Use=[this]{UseTubeSwitch();};
+ It.Examine=[]{return FString(TEXT("A wall switch for the wing's fluorescent tubes. They need the station's current."));};
+ M->Inter->Add(It);M->Web->MarkUsable(Lever.I,It.Id);
+ bTubeSwitch=true;return true;
 }
 
 bool FS47EastWing::DoorControls()
@@ -496,14 +535,15 @@ bool FS47EastWing::Step(float Dt)
   if(Shown!=bShown){bShown=Shown;for(const auto& P:Parts)if(USceneComponent* C=P.Get())C->SetVisibility(Shown,true);}
   const bool Free=M->IsFreeform();
   const bool Powered=Free?(M->Freeform&&M->Freeform->HasPowerForReactiveLight()):(M->Story&&M->Story->bPowered);
-  DoorControls();LeafControls();StepDoor(Dt,Free,Powered);
+  DoorControls();LeafControls();TubeSwitchControls();StepDoor(Dt,Free,Powered);
   for(int32 I=0;I<2;++I)LeafAmount[I]=FMath::FInterpConstantTo(LeafAmount[I],Free&&LeafOpen[I]?1.:0.,double(Dt),2.5);
   // Tubes strike on / die off individually (S47TubeFlicker); the diffuser glow follows their mean.
   {
    const double Now=M->Web->GetWorld()?M->Web->GetWorld()->GetTimeSeconds():0.;
-   const float Target=Shown&&Powered?1.f:0.f;float Sum=0;int32 N=0;
+   const float Target=TubeTarget(Shown,Free,Powered);float Sum=0;int32 N=0;
    for(int32 I=0;I<Tubes.Num();++I)if(URectLightComponent* L=Tubes[I].Get())
    {const float K=TubeFlicker[I].Apply(Now,Target,uint32(I+11));L->SetIntensity(TubeLumens[I]*K);L->SetVisibility(Shown&&K>1e-4f);Sum+=K;++N;}
+   if(USceneComponent* Lv=TubeLever.Get()){const FVector Rest=S47Three::ToUE(FVector(22.9,bTubesOn?1.325:1.275,Z1-T-.031));if(!Lv->GetComponentLocation().Equals(Rest,.01))Lv->SetWorldLocation(Rest);} // lever up = on
    if(PropsHelper){PropsHelper->SetLevel(N?Sum/N:Target);if(Shown)PropsHelper->UpdateCalendar(M);}
   }
   for(const auto& P:Parts)if(USceneComponent* C=P.Get())
@@ -673,6 +713,17 @@ bool FS47EastWing::SelfTest(TArray<FString>& Lines)
   // Out of Freeform and back: the lock holds it at 0 and lets it go again where it was.
   Start(Door(1.,true),Kept);W.StepDoor(1.f/60.f,false,true);Ok&=W.DoorOpen==0.;W.StepDoor(1.f/60.f,true,true);Ok&=W.DoorOpen==1.;
   Lines.Add(FString::Printf(TEXT("%s / East wing garage door: up at the start of Freeform after locked frames, a save under the lock keeps it up, a new game's shut door stays shut"),Ok?TEXT("PASS"):TEXT("FAIL")));
+  Good&=Ok;
+ }
+ // FIX10-10: the wing's tubes are off at the first start of Freeform (no saved key = off), saved when switched on, dark without power.
+ {
+  FS47EastWing W(nullptr);bool Ok=!W.bTubesOn&&W.TubeTarget(true,true,true)==0.f;
+  W.Begin(nullptr);Ok&=!W.bTubesOn&&!S47J::Bool(W.Save(),TEXT("tubes"),true);
+  auto Old=S47J::New();S47J::Set(Old,TEXT("garage"),1.);W.Begin(Old);Ok&=W.TubeTarget(true,true,true)==0.f; // an older save without the key
+  W.bTubesOn=true;const auto Kept=W.Save();Ok&=S47J::Bool(Kept,TEXT("tubes"),false);
+  W.Begin(Kept);Ok&=W.bTubesOn&&W.TubeTarget(true,true,true)==1.f&&W.TubeTarget(true,true,false)==0.f&&W.TubeTarget(false,true,true)==0.f;
+  Ok&=W.TubeTarget(true,false,true)==1.f; // Story keeps the wing lit by current alone
+  Lines.Add(FString::Printf(TEXT("%s / East wing tube switch: off at first start and in older saves, saved when on, dark without power"),Ok?TEXT("PASS"):TEXT("FAIL")));
   Good&=Ok;
  }
  Good&=FS47EastWingProps::SelfTest(Lines);

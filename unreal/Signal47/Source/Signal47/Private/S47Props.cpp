@@ -64,7 +64,8 @@ namespace
 		// malformed placement file merely because its required area/props is absent.
 		Out.RemoveAll([](const FString& Name)
 		{
-			return Name == TEXT("lookdev-bindings.json") || Name == TEXT("lookdev-environment.json");
+			return Name == TEXT("lookdev-bindings.json") || Name == TEXT("lookdev-environment.json")
+				|| Name == TEXT("gas_cosmos.json") || Name == TEXT("gas_look.json"); // (GAS-STATION-LIFT-01: the shop's Cosmos props, S47StationDressing; its picture, S47StationLook)
 		});
 		Out.Sort();
 		return Out;
@@ -335,7 +336,7 @@ void AS47Props::BuildFile(const TSharedPtr<FJsonObject>& File, const FString& Na
 		const TSharedPtr<FJsonObject>* Sub = nullptr;
 		if (P->TryGetObjectField(TEXT("swing"), Sub)) AddSwing(C, *Sub);
 		if (P->TryGetObjectField(TEXT("beacon"), Sub)) AddBeacon(C, *Sub);
-		if (P->TryGetObjectField(TEXT("lit"), Sub)) AddLit(C, Pl.Node, *Sub);
+		if (P->TryGetObjectField(TEXT("lit"), Sub)) { AddLit(C, Pl.Node, *Sub); if (Lits.Num() && Lits.Last().Comp == C) Lits.Last().Id = Id; }
 		if (P->TryGetObjectField(TEXT("door"), Sub)) AddDoor(C, *Sub, Str(P, TEXT("walk"), Walk), T);
 		if (P->HasField(TEXT("trim"))) ApplyTrim(Str(P, TEXT("trim")));
 		// unblock: the exported colliders of what it opens up (a building one walks into now), moved away
@@ -940,6 +941,14 @@ UStaticMeshComponent* AS47Props::PlacedMesh(const FString& Id)
 	return Found ? Found->Comp.Get() : nullptr;
 }
 
+float AS47Props::LitLevel(const FString& Id)
+{
+	const AS47Props* P = Instance.Get();
+	if (!P) return -1.f;
+	for (const FLit& L : P->Lits) if (L.Id == Id) return L.Comp.IsValid() ? L.K : -1.f;
+	return -1.f;
+}
+
 int32 AS47Props::PlacedNode(const FString& Id)
 {
 	if (!Instance.IsValid()) return -1;
@@ -947,15 +956,20 @@ int32 AS47Props::PlacedNode(const FString& Id)
 	return Found ? Found->Node : -1;
 }
 
-double AS47Props::FloorAt(double X, double Z)
+double AS47Props::FloorAt(double X, double Z) { return FloorAt(X, Z, std::numeric_limits<double>::quiet_NaN()); }
+
+double AS47Props::FloorAt(double X, double Z, double RefY)
 {
+	double First = std::numeric_limits<double>::quiet_NaN();
 	for (const FFloor& F : Floors)
 	{
 		if (X < F.MinX || X > F.MaxX || Z < F.MinZ || Z > F.MaxZ) continue;
 		const double K = F.Axis == TEXT("z") ? (Z - F.MinZ) / FMath::Max(F.MaxZ - F.MinZ, 1e-6) : (X - F.MinX) / FMath::Max(F.MaxX - F.MinX, 1e-6);
-		return F.Y0 + (F.Y1 - F.Y0) * K;
+		const double Y = F.Y0 + (F.Y1 - F.Y0) * K;
+		if (FMath::IsNaN(RefY) || Y <= RefY + 1.0) return Y;
+		if (FMath::IsNaN(First)) First = Y;
 	}
-	return std::numeric_limits<double>::quiet_NaN();
+	return First;
 }
 
 float AS47Props::TubeAt(double T)
@@ -1306,8 +1320,13 @@ void AS47Props::TestPlace(US47Main* M)
 	}, 1.5f, false);
 }
 
-void AS47Props::AddFloor(double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const FString& Axis, bool bFirst)
+void AS47Props::AddFloor(double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const FString& Axis, bool bFirst, const FString& Tag)
 {
-	FFloor F; F.MinX = MinX; F.MaxX = MaxX; F.MinZ = MinZ; F.MaxZ = MaxZ; F.Y0 = Y0; F.Y1 = Y1; F.Axis = Axis;
+	FFloor F; F.MinX = MinX; F.MaxX = MaxX; F.MinZ = MinZ; F.MaxZ = MaxZ; F.Y0 = Y0; F.Y1 = Y1; F.Axis = Axis; F.Tag = Tag;
 	if (bFirst) Floors.Insert(F, 0); else Floors.Add(F);
+}
+
+void AS47Props::RemoveFloors(const FString& Tag)
+{
+	if (!Tag.IsEmpty()) Floors.RemoveAll([&Tag](const FFloor& F) { return F.Tag == Tag; });
 }

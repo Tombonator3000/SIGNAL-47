@@ -45,11 +45,16 @@ public:
 	FString Stats() const;
 	/** The lamps' strengths as the moths' material reads them (uK): a row of floats, made with them. */
 	static UTexture2D* LampRow(const TArray<float>& K);
+	/** GAS-STATION-LIFT-01: the hour's activity as last stepped (Moth: how many moths are about, by the night's cooling and the dawn). */
+	const FS47LifeActivity& Activity() const { return Act; }
+	/** GAS-STATION-LIFT-01: the lamps of an area's cloud within Radius metres of At (three-space, world) go dark for the moths here:
+	 *  another system draws the life round them (S47StationInsects under the gas station's canopy). How many lamps were ceded. */
+	int32 Cede(const FString& Area, const FVector& At, double Radius);
 	/** The lamps' row, the hour's activity (-S47SelfTest). */
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
-	struct FLamp { FVector P, W; FLinearColor Col; bool bBig = false; double H = 0; int32 GlowNode = -1, GlowIndex = -1; double K0 = 1; };
+	struct FLamp { FVector P, W; FLinearColor Col; bool bBig = false; double H = 0; int32 GlowNode = -1, GlowIndex = -1; double K0 = 1; bool bCeded = false; };
 	struct FMoths
 	{
 		int32 Node = -1;

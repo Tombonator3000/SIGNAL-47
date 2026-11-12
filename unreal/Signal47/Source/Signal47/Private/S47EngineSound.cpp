@@ -117,7 +117,7 @@ FS47EngineSound::~FS47EngineSound()
 	if (Audio && bRough) Audio->Stop(ROUGH_KEY, 0.1f);
 }
 
-double FS47EngineSound::Master() const { return bHushed ? 0 : MASTER; }
+double FS47EngineSound::Master() const { return bHushed ? 0 : MASTER * FarK; }
 double FS47EngineSound::Now() const { return FPlatformTime::Seconds(); }
 
 void FS47EngineSound::EngineNodes()
@@ -244,7 +244,18 @@ void FS47EngineSound::Hush(bool bOn)
 	bHushed = bOn;
 	const double T = Now();
 	Out.CancelScheduledValues(T);
-	Out.SetTargetAtTime(bOn ? 0 : bEng ? MASTER : 0, T, bOn ? 0.012 : 0.3);
+	Out.SetTargetAtTime(bOn ? 0 : bEng ? MASTER * FarK : 0, T, bOn ? 0.012 : 0.3);
+}
+
+void FS47EngineSound::Far(double K)
+{
+	K = FMath::Clamp(K, 0.0, 1.0);
+	if (FMath::Abs(K - FarK) < 0.01) return;
+	FarK = K;
+	if (!bEng || Stopping() || bHushed) return;
+	const double T = Now();
+	Out.CancelScheduledValues(T);
+	Out.SetTargetAtTime(Master(), T, 0.12);
 }
 
 void FS47EngineSound::Still()

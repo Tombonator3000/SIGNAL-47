@@ -154,7 +154,7 @@ namespace
   TWeakObjectPtr<US47Main> Main;
   int32 Stage=0;
   double Elapsed=0,StageAt=0;
-  bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false;
+  bool bLethal=false,bQuit=false,bFullCases=false,bAlbum=false,bStory=false;
   int32 LeftBefore=0,SkyBefore=0,TownAt=0;
   double DreadFrom=0,DreadAt=0,DreadFirst=0,DreadClock=0,DreadLevels[3]={0,0,0};int32 DreadRound=0,DreadSample=0;FString DreadPlace;FVector DreadPos=FVector::ZeroVector;
   FString TownPlace;
@@ -1746,7 +1746,7 @@ namespace
    if(Stage>=500&&Stage<530)return StepAfter(M);
    if(Stage>=540&&Stage<560)return StepDoor(M);
    if(Stage>=560&&Stage<590)return StepAttention(M);
-   const FString Label=bQuit?TEXT("QUIT"):TEXT("NEW FREEFORM");
+   const FString Label=bQuit?TEXT("QUIT"):bStory?TEXT("NEW STORY"):TEXT("NEW FREEFORM");
    if(Stage==0)
    {
     FSlateApplication::Get().ProcessApplicationActivationEvent(true);
@@ -1780,6 +1780,14 @@ namespace
    {
     if(M->Mode!=US47Main::EMode::Play) return true;
     if(!M->IsFreeform() || !M->Freeform || !M->Freeform->Active()) return Fail(TEXT("menu started a non-Freeform session"));
+    // -S47MenuPointerStory (STORY-ON-FREEFORM-01): NEW STORY is Freeform's world and systems, marked as Story in the save.
+    if(M->Flow->StoryNight()!=bStory) return Fail(TEXT("NEW STORY must start a Freeform session marked as Story, NEW FREEFORM one without the mark"));
+    if(bStory){const S47J::FObj State=M->Flow->GameState();const S47J::FObj D=S47J::Obj(State,TEXT("storyDirector"));
+     if(!D||S47J::Int(D,TEXT("v"))!=1||S47J::Str(State,TEXT("sessionMode"))!=TEXT("freeform")||!S47J::Obj(State,TEXT("freeform"))) return Fail(TEXT("a Story session saves as Freeform with storyDirector v1"));
+     if(!S47FarmWorld::Enabled(M)) return Fail(TEXT("Story must have Freeform's world: relief, mountains, farm, road edges and nature"));
+     // Step 2: one night, from the evening shift at SARO, with nothing to teach and no mailbox start.
+     if(FMath::Abs(FMath::Fmod(M->Freeform->Clock(),86400.)-18*3600)>1800||M->Freeform->InTutorial()||M->Freeform->bMailboxStart) return Fail(TEXT("a Story night starts at 18:00 at SARO without the tutorial or the mailbox start"));}
+    else if(FMath::Fmod(M->Freeform->Clock(),86400.)>12*3600) return Fail(TEXT("NEW FREEFORM must still start in the morning"));
     if(M->Freeform->Lethal()!=bLethal || M->Freeform->Day()!=1 || M->Freeform->Jobs().Num()==0 || M->ModalOpen())
      return Fail(TEXT("Freeform consequences, daily work or closed-menu state is incorrect"));
     // -S47MenuPointerRelief: Freeform's rolling land from an ordinary game (S47ReliefProbe.h says what it does and when it passes).
@@ -2023,7 +2031,7 @@ namespace
      DreadFrom=Elapsed;Stage=440;StageAt=Elapsed;return true;
     }
     if(bAlbum){GiveAlbum(M);M->UI->NotebookAt(TEXT("photos"));M->Flow->OpenNotebook();Stage=10;StageAt=Elapsed;return true;}
-    UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> NEW FREEFORM -> %s -> active day 1 with %d jobs"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
+    UE_LOG(LogTemp,Display,TEXT("S47: menu pointer PASS: title -> %s -> %s -> active day 1 with %d jobs"),bStory?TEXT("NEW STORY"):TEXT("NEW FREEFORM"),bLethal?TEXT("death"):TEXT("local recovery"),M->Freeform->Jobs().Num());
     FPlatformMisc::RequestExitWithStatus(false,0);
     return false;
    }
@@ -3041,6 +3049,7 @@ void S47MenuPointerTest::Start(US47Main* Main)
  const auto Run=MakeShared<FRun>();Run->Main=Main;
  Run->bLethal=FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerLethal"));
  Run->bQuit=FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerQuit"));
+ Run->bStory=FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerStory"));
  Run->bFullCases=FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerFullCases"));
  Run->bAlbum=FParse::Param(FCommandLine::Get(),TEXT("S47MenuPointerAlbum"));
  FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Run](float Dt){return Run->Step(Dt);}));

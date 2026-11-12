@@ -1,0 +1,30 @@
+{
+ "_doc": "GAS-STATION-LIFT-01: the Cosmos meshes taken out of the packs for the Caliche gas-station shop (extract.py), moved to /Game/Licensed/CosmosShop/<dest> in a throwaway 5.8 project (migrate.py). Candidates: what is placed is Config/Props/gas_cosmos.json; what was turned down and why is in README.md.",
+ "packs": {
+  "coffee": {
+   "zip": "PostApocalypticCoffeeShop.zip",
+   "root": "PostApocCoffeeShop",
+   "dest": "CoffeeShop",
+   "meshes": [
+    "Meshes/SM_CashRegister", "Meshes/SM_Cash_Register_Body", "Meshes/SM_Cash_Register_Drawer",
+    "Meshes/SM_Coffee_Machine", "Meshes/SM_Coffee_Caraff", "Meshes/SM_Coffee_Box", "Meshes/SM_Big_Cup_Stacked", "Meshes/SM_Medium_Cup_Stacked",
+    "Meshes/SM_Fire_Extinguisher", "Meshes/SM_Fire_Alarm", "Meshes/SM_Signs_No_Smoking", "Meshes/SM_Signs_Staff_only",
+    "Meshes/SM_Small_Trash_Bin", "Meshes/SM_Vent", "Meshes/SM_Vent_02", "Meshes/SM_AC_Unit_Ceiling",
+    "Meshes/SM_Fridge", "Meshes/SM_Fridge_02", "Meshes/SM_Fridge_03",
+    "Meshes/SM_Box_01", "Meshes/SM_Box_02", "Meshes/SM_Safe", "Meshes/SM_Safe_Door",
+    "Meshes/SM_Small_Cable_Box", "Meshes/SM_Interruttore_Luce", "Meshes/SM_Cigarette_Box", "Meshes/SM_Tissue_Box",
+    "Meshes/SM_Stool", "Meshes/SM_Cans_Lattina", "Meshes/SM_Secchio_con_manico", "Meshes/SM_Notice_Board"
+   ]
+  },
+  "hospital": {
+   "zip": "AbandonedHospital.zip",
+   "root": "AbandonedHospital",
+   "dest": "Hospital",
+   "meshes": [
+    "Meshes/SM_CardboardBox01", "Meshes/SM_CardboardBox02", "Meshes/SM_CardboardBox03", "Meshes/SM_CardboardBox04", "Meshes/SM_CardboardBox05",
+    "Meshes/SM_Bottle01", "Meshes/SM_Bottle02", "Meshes/SM_Bottle03", "Meshes/SM_Can01", "Meshes/SM_Can02",
+    "Meshes/SM_VendingMachine01", "Meshes/SM_WallBox01", "Meshes/SM_Crate01", "Meshes/SM_Bucket01"
+   ]
+  }
+ }
+}

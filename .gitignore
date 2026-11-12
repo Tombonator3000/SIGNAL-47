@@ -18,3 +18,7 @@ __pycache__/
 
 # Selected original Fab assets are installed locally, never in the public repo.
 unreal/Signal47/Content/Northwood/
+
+# GPT-teksturer (Tom 12. nov): bildene ligger også i ~/scratch-bm/refs/textures-20261112, ikke i Git
+Docs/Design/World/Textures_20261112/**/*.png
+Docs/Design/World/Textures_20261112/*.zip

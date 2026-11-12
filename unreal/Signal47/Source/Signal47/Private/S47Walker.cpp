@@ -255,7 +255,7 @@ double AS47Walker::FloorAt(double X, double Z) const
 	{ double Y; if (S47SubstationDetail::FloorAt(X, Z, Y)) return Y; }
 	// a prop's own floor first (Unreal only: the gas station one walks into, S47Props), then the open
 	// land's ground (US47World), then Player.floor, supplied by World.enter for SARO and Caliche
-	{ const double Y = AS47Props::FloorAt(X, Z); if (!FMath::IsNaN(Y)) return Y; }
+	{ const double Y = AS47Props::FloorAt(X, Z, FloorY); if (!FMath::IsNaN(Y)) return Y; }
 	if (LandFloor) { const double Y = LandFloor(X, Z); if (!FMath::IsNaN(Y)) return Y; }
 	if (Floor) { const double Y = Floor(X, Z); if (!FMath::IsNaN(Y)) return Y; }
 	// the highest surface under the player, up to a stair step over the current floor (a desk
@@ -344,7 +344,8 @@ void AS47Walker::Tick(float DeltaSeconds)
 	}
 	// the camera held by something else (the truck's cab): its eye, no walking and no picking
 	FS47View View;
-	if (CameraOverride && CameraOverride(Dt, VehicleMove, FVector2D(LookX, LookY), View))
+	bCameraHeld = CameraOverride && CameraOverride(Dt, VehicleMove, FVector2D(LookX, LookY), View);
+	if (bCameraHeld)
 	{
 		if (bAir) Land(true); // (no jump goes on in the truck)
 		bCrouch = false; CrouchK = 0; bHideLock = false; HideK = 0; // (nor keeping low)

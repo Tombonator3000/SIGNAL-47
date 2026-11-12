@@ -137,8 +137,13 @@ public:
  static constexpr double BodyReach=18,LightReach=60;
  // TOWN-USE-20261108: with a roll of the Feed & Seed's fence wire in stock the trip line runs further out: it catches a body this far.
  static constexpr double WireBodyReach=30;
- // 0 nothing, 1 an animal (ordinary life, from the night's seed), 2 a light from above, 3 something standing in the frame.
- static int32 Reading(ECatch Got,int32 Seed,int32 Night);
+ // 0 nothing, 1 an animal (a coyote that really came by within its reach and sight, not a die), 2 a light from above, 3 something standing in the frame.
+ static int32 Reading(ECatch Got,bool bAnimal);
+ // T16-20: the night's window is 19:00 to dawn; a camera that was watching less than this (loaded world, player in it) proved nothing.
+ static constexpr double EnoughCover=7200;
+ bool CoveredEnough() const{return Covered>=EnoughCover;}
+ bool SawAnimal() const{return AnimalClock>=0;}
+ void TestCover(double Secs){Covered=Secs;} // self-tests only
  static FString ReadingText(int32 Read,const FString& Place,int32 Seed,int32 Night,double When=-1,bool bFrame=false);
  ECatch CaughtTonight() const{return Caught;}
  bool Collect();
@@ -151,6 +156,7 @@ private:
  FString Area,Title,PhotoId;
  FVector At=FVector::ZeroVector;
  double SetClock=0,CaughtClock=-1,LookIn=0,Yaw=0;
+ double Covered=0,AnimalClock=-1,LastWatch=-1; // game seconds it actually watched; when a coyote crossed its view; the last clock it watched at (not saved)
  ECatch Caught=ECatch::None;
  TWeakObjectPtr<UStaticMeshComponent> PropSaro,PropRoad;
  // What is in front of it now, looked for a few times a second while it is out and the world it stands in is the loaded one.

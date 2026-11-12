@@ -1845,7 +1845,7 @@ bool US47Chapter1::SelfTest(TArray<FString>& Lines)
 		const FString SecondBefore = C->Objective();
 		const FString CameraBefore = S47Keys::Said(TEXT("camera")).ToUpper(), ShutterBefore = S47Keys::Said(TEXT("shutter")).ToUpper();
 		Expect(FirstBefore.Contains(CameraBefore + TEXT(": CAMERA")) && FirstBefore.Contains(ShutterBefore + TEXT(": EXPOSE")) && SecondBefore.Contains(ShutterBefore + TEXT(": RECORD")), TEXT("both exposure objectives use the active input's camera and shutter names"));
-		S47Keys::Bind(TEXT("camera"), 0, EKeys::K); S47Keys::Bind(TEXT("shutter"), 0, EKeys::G);
+		S47Keys::Bind(TEXT("camera"), 0, EKeys::L); S47Keys::Bind(TEXT("shutter"), 0, EKeys::G);
 		const FString CameraAfter = S47Keys::Said(TEXT("camera")).ToUpper(), ShutterAfter = S47Keys::Said(TEXT("shutter")).ToUpper();
 		C->S.Stage = TEXT("first-exposure");
 		const FString FirstAfter = C->Objective();

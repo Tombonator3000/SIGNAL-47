@@ -42,14 +42,21 @@ class FS47CameraMoment;
 //            Continue and a change of area; the working light, tubes 0 and 1, is never touched). Not kept in an F10 run.
 //   camera_snap  N1110: the view snaps toward pos/point and closes in to fov degrees over in seconds, holds hold seconds and eases
 //            back over out (FS47CameraMoment); shake 0 to 1 as it lands; scare: a bought hit with it (soft, hard, braam, swell).
+// Story only (STORY-ON-FREEFORM-01, step 4; Content/Director/Story/beats, S47StoryDirector.h): Freeform's lint (Lint) refuses them,
+// and the story store's (LintStory) lets them through; they do nothing without a Story night's director.
+//   flag       flag (a story flag's id), set: true (the default) or false
+//   start      script: another story script, or happening: a night happening asked for as the night asks (not forced)
+//   clock      at_least "HH:MM": the Freeform clock is pushed forward to that hour of tonight, never back, never into the next night
+//   objective  text: the story's line on top of the HUD's objective and the task list; empty clears it
 // Any beat: "if": conditions that must hold when its time comes (else it is left out); "wait": conditions it waits for, at most
-// "max" seconds (else it is left out). Conditions are the scripted events' (S47Script::CondKinds), and in_saro, area.
+// "max" seconds (else it is left out). Conditions are the scripted events' (S47Script::CondKinds), and in_saro, area;
+// in the story store also story_flag and no_story_flag ({"if":"story_flag","flag":"<id>"}).
 // Gates (all optional): from_day, to_day, hours [from, to] (clock hours, from > to past midnight), tier (hint, glimpse, full: the
 // least the night's tier must allow at that hour, S47NightTiers), early, areas (the scene's area names), odds (0 to 1, the game's
 // seed, the same each night it is asked), if (conditions). Asked by the night's happenings (FS47Happenings::StartEvent) before the
 // rhythm, never for an F10 start.
 
-enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Silence, Tube, Count };
+enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Silence, Tube, Flag, Start, Clock, Objective, Scene, Shot, Count };
 
 struct FS47Beat
 {
@@ -62,9 +69,20 @@ struct FS47Beat
  bool bTo=false;
  double Gain=1,Rate=1,Lp=0,Delay=0,Stop=0,Secs=0,Hz=1200,Every=0,Strength=.5,Max=0;
  double Fov=45,In=.25,Hold=1.2,Out=.9; // N1110: camera_snap's degrees and seconds (its shake is Strength, its scare is Kind)
+ // SHOT-BEAT-01: the shot beat (S47Shot.h): pos is the first eye (none: the player's own head), pos2 a second eye it moves to, look the
+ // point it looks at (or point, a named one, or node, a scene key); Fov and Fov2 the lens (Fov2 0: the same), Secs the hold, In and Out
+ // the ease (its defaults are the shot's: 55 degrees, 4 s, .6 s and .8 s).
+ TOptional<FVector> Pos2,Look;
+ double Fov2=0;
  int32 Repeat=1;
  int32 Tube=-1;                 // N1110: the tube beat's index into the control room's ceiling tubes (2 to 7)
  int32 Next=0;                  // N1110: or, instead of a tube, how many of the next still-working ones go out (1 to 6): {"beat":"tube","next":2}
+ // STORY-ON-FREEFORM-01 (step 4), the story-only beats: flag's id and set; start's script or happening; clock's at_least as the
+ // night's hour (8 to 32, FS47StoryDirector::ParseFrom; below zero: not given or not HH:MM).
+ FString Flag,Script,Happening;
+ FString Event; // step 6: start's Freeform Director event (director.json), started for the story (FS47FreeformDirector::StartForStory)
+ bool bSet=true;
+ double AtLeast=-1;
  TArray<FS47ScriptCond> If,Wait;
 };
 
@@ -108,7 +126,13 @@ namespace S47EventScript
  SIGNAL47_API bool Read(const FString& Text,FS47EventScript& Out,FString& Why);
  // Everything wrong with it (its words, its numbers, what a beat needs). Warnings: what is not wrong but will not do what it says
  // (a word the event does not give, an id no event's code plays: it runs from F10 only).
+ // Freeform's: a story-only beat or condition is refused by name (it plays only from the story store).
  SIGNAL47_API TArray<FString> Lint(const FS47EventScript& S,TArray<FString>* Warnings=nullptr);
+ // STORY-ON-FREEFORM-01 (step 4): the story store's (FS47StoryDirector): the same checks, the story-only beats and conditions allowed,
+ // and the player's text by FS47StoryDirector::LintStory in place of S47Script::LintText.
+ SIGNAL47_API TArray<FString> LintStory(const FS47EventScript& S,TArray<FString>* Warnings=nullptr);
+ SIGNAL47_API bool StoryOnlyBeat(ES47Beat B);
+ SIGNAL47_API bool StoryOnlyCond(const FString& If);
  // {word} by the words; unknown ones are left as written.
  SIGNAL47_API FString Fill(const FString& Text,const TMap<FString,FString>& Words);
  // Pure: whether the gates hold. Roll: this game's 0 to 1 for this event and night (odds); Area: the scene's area.
@@ -144,6 +168,7 @@ namespace S47EventScript
 
 // Plays the beats. Owned by the session's script player (FS47ScriptPlayer, which steps it); a menu or a paper holds it where it is.
 // Nothing of a run is saved: what a beat records is (a finding, a place heard of), what it shows for a while is not.
+class FS47ShotCamera;
 class SIGNAL47_API FS47EventBeats
 {
 public:
@@ -156,13 +181,22 @@ public:
  void AddDevLines();
  // F10: this script now, with sample words where the event's code would give them. Why: what it did, or what stopped it.
  bool DevRun(const FString& Id,FString& Why);
+ // STORY-ON-FREEFORM-01 (step 4): a run taken up where it was (T seconds in, Next beats played), for the story director's save;
+ // Start is Resume at 0. Progress: the runs under way, by id.
+ struct FProgress{FString Id;double T=0;int32 Next=0;};
+ bool Resume(const FS47EventScript& S,const FS47EventCtx& Ctx,double At,int32 Played);
+ TArray<FProgress> Progress() const;
+ bool Running(const FString& Id) const{return Runs.ContainsByPredicate([&Id](const FRun& R){return R.S.Id==Id;});}
  // N1110: the camera moment (S47CameraMoment.h), the beat's and the hook's; made when first asked for, stopped with the runs.
  bool Snap(const FS47CameraSnap& S,FString& Why);
+ // SHOT-BEAT-01: gives the walker's camera back once a shot beat is over; asked every frame by the script player, outside the walker's frame.
+ void TickShot();
 private:
  US47Main* M=nullptr;
  struct FRun{FS47EventScript S;FS47EventCtx Ctx;double T=0,Waited=0;int32 Next=0;};
  TArray<FRun> Runs;
  TSharedPtr<FS47CameraMoment> Camera;
+ TSharedPtr<FS47ShotCamera> ShotCam; // SHOT-BEAT-01
  // The flashlight's flicker, given back after its seconds.
  double LampLeft=0;
  TSet<FString> LinesFor;

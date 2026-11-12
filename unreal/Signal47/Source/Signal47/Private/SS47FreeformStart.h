@@ -11,6 +11,7 @@ public:
  SLATE_BEGIN_ARGS(SS47FreeformStart) {}
   SLATE_ARGUMENT(TFunction<void(bool)>, OnChoose)
   SLATE_ARGUMENT(TFunction<void()>, OnBack)
+  SLATE_ARGUMENT(bool, Story) // NEW STORY: the same choice, with the story's heading
  SLATE_END_ARGS()
  void Construct(const FArguments& Args);
  virtual bool SupportsKeyboardFocus() const override { return true; }

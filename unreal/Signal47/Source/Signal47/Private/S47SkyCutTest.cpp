@@ -15,7 +15,8 @@
 
 // FIX-20261110 (Tom, point 2), -S47SkyCutTest: a light that crosses over SARO takes the mains. The feeder sags first (dips, torn
 // screens), then the station is dark and the night goes on; the standby generator behind the control room carries it, the line
-// recorder's strip is kept as a record, and the mains come back by themselves.
+// recorder's strip is kept as a record. FIX10-10 (12 Nov): the mains do not come back by themselves; the feeder locks out (an
+// ordinary saved feeder fault), the station is dark without the generator, and the county crew restores it SkyFaultMinutes (180) game minutes on.
 void FS47FreeformTest::StepSkyCut(double Dt)
 {
  Age+=FMath::Min(Dt,.2);if(Hold>0){Hold-=Dt;return;}
@@ -77,8 +78,14 @@ void FS47FreeformTest::StepSkyCut(double Dt)
   if(!Check(F.HasFinding(TEXT("mains-ride")),TEXT("the line recorder's strip is kept as a record of the passage")))return;
   M->Player->Place(4.9,9.2,0);Listen(true);M->Player->OnUse(TEXT("ff:generator"));Listen(false);
   if(bSound&&!Check(Heard.Contains(TEXT("engineOff"))&&!Au->InspectLoop(TEXT("ffGenerator")).IsSet(),TEXT("stopping it is heard, and its running loop is gone")))return;
-  if(!Check(!F.Field->GeneratorRunning()&&F.HasPowerForReactiveLight(),TEXT("the mains came back by themselves: the generator is stopped and the station stays lit")))return;
-  if(!Check(!F.Save()->HasField(TEXT("skySag"))&&!F.Save()->HasField(TEXT("skyOut")),TEXT("nothing of it is in the save")))return;
-  Finish(true,TEXT("Sky cut: the feeder sags, the mains go under the passage, the generator carries the station and leaves a record, the mains return by themselves."));return;
+  if(!Check(!F.Field->GeneratorRunning()&&F.PowerFault()&&!F.HasPowerForReactiveLight(),TEXT("the mains did not come back by themselves: the feeder locked out, and with the generator stopped the station is dark")))return;
+  const S47J::FObj Saved=F.Save();
+  if(!Check(!Saved->HasField(TEXT("skySag"))&&!Saved->HasField(TEXT("skyOut"))&&S47J::Bool(Saved,TEXT("powerFault"))&&S47J::Num(Saved,TEXT("skyFaultUntil"))>F.Clock(),TEXT("the passage itself is not in the save; the lockout and the county's restore time are")))return;
+  RescueClock=F.SkyFaultClock();F.TestAdvance(FMath::Max(0.,RescueClock-F.Clock())+60.);Go(8,.5);return;
+ }
+ if(Stage==8)
+ {
+  if(!Check(!F.PowerFault()&&F.HasPowerForReactiveLight()&&F.SkyFaultClock()<=0&&!F.Save()->HasField(TEXT("skyFaultUntil")),TEXT("nobody mended it: the county line crew restores the feeder in the end")))return;
+  Finish(true,TEXT("Sky cut: the feeder sags, the mains go under the passage, the generator carries the station and leaves a record, the feeder locks out until mended or restored by the county."));return;
  }
 }

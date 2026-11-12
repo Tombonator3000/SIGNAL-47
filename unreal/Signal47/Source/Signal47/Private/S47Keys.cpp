@@ -53,6 +53,8 @@ namespace S47KeysLocal
 			A(TEXT("board"), TEXT("Case board"), Panels, TEXT("The case board, once there is one."), EKeys::B),
 			A(TEXT("devevents"), TEXT("Developer events"), Panels, TEXT("Make something happen now: aliens, sky, weather, time. Nothing is saved."), EKeys::F10),
 			A(TEXT("devstart"), TEXT("Developer start point"), Panels, TEXT("Keep a start point here for the title's Developer screen. Your cases are not touched."), EKeys::F9),
+			// DIRECTOR-MODE-01: the director's free camera (S47DirectorCam.h), a developer's run only, as the two above
+			A(TEXT("director"), TEXT("Director mode"), Panels, TEXT("Developer: fly a free camera and place shots and trigger points into the script being edited. The night waits meanwhile."), EKeys::F8),
 			A(TEXT("pause"), TEXT("Pause"), Panels, TEXT("Pause: settings, save and load. Escape always pauses, and lowers the camera first when it is raised."), EKeys::Escape, EKeys::P, true),
 			// SNEAK-20261108 and WALKIE-USE-20261108 (Tom, 8 November): keep low, and the walkie in the player's own hand. Last, so that a
 			// key a player has already given to something else stays theirs (Normalize keeps the first).
@@ -66,6 +68,8 @@ namespace S47KeysLocal
 			// PHYSICS-20261108: loose things in the hand (S47Handling): hold to throw, tap to set down, and empty-handed a stone off the ground.
 			// STONE-POCKET-20261109: a tap puts a stone in the pocket (three fit); empty-handed, the key takes one out first.
 			A(TEXT("throw"), TEXT("Throw / set down"), Foot, TEXT("Hold to throw what you carry, harder the longer you hold. Tap to set it down; a stone goes in your pocket instead while there is room (three fit), and looking at bare ground you pick up the next. Empty-handed: a stone out of your pocket, or outdoors, looking at bare ground, one off it. The Use key picks up loose things."), EKeys::X, EKeys::MiddleMouseButton),
+			// IGNITION-20261111 (Tom, 11 November): the key in the truck's ignition, in Story and Freeform alike.
+			A(TEXT("ignition"), TEXT("Ignition"), Truck, TEXT("In the truck, stopped: turn the key off or on. Get out with the engine running and it idles where it stands, headlights on, using a little fuel."), EKeys::K),
 		};
 	}
 
@@ -421,7 +425,7 @@ bool S47Keys::SelfTest(TArray<FString>& Out)
 	Clear(TEXT("camera"), 0); Clear(TEXT("camera"), 1);
 	Check(Label(TEXT("camera")).IsEmpty() && Said(TEXT("camera")).IsEmpty(), TEXT("fully unbound keyboard hints stay empty rather than showing an Xbox alias"));
 	Check(Is(TEXT("camera"), EKeys::Gamepad_FaceButton_Left) && KeysOf(TEXT("camera")).Contains(EKeys::Gamepad_FaceButton_Left) && S47Gamepad::Label(TEXT("camera")) == TEXT("X"), TEXT("clearing keyboard slots preserves the fixed Xbox camera binding and label"));
-	Check(Bind(TEXT("camera"), 1, EKeys::K) == EBind::Done && Label(TEXT("camera")) == TEXT("K") && Said(TEXT("camera")) == TEXT("K"), TEXT("keyboard hints fall through an empty first slot to the second saved key"));
+	Check(Bind(TEXT("camera"), 1, EKeys::L) == EBind::Done && Label(TEXT("camera")) == TEXT("L") && Said(TEXT("camera")) == TEXT("L"), TEXT("keyboard hints fall through an empty first slot to the second saved key"));
 	// KEYS-HINT-20261109 (Tom plays with an Xbox controller): a hint in a sentence names the pad's button with a controller and the
 	// key with the keyboard, and no player's text has a fixed key in it.
 	ResetAll();

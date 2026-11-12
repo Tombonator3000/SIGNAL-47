@@ -2,6 +2,10 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## Dagskift 12. november til 16:00, Claude Code
+
+Kopier: `~/SIGNAL-47` (Claude, `claude/story-on-freeform`, koordinator, bygg og prøver) og `~/SIGNAL-47-cosmic` (Codex). Skriveagenter i egne worktrees, én om gangen med motor. Lærdom: legg ikke en kommando i kø mens en vaktet kjøring går, og kjør Blender gjennom `q.py`; begge stopper prøver med «contention». Ferdig å rydde: ingen agent-worktrees står igjen.
+
 ## Dagskift 9. november til 20:00, Claude Code
 
 Tom ca. 08:30: fortsett til kl. 20 med ultracode og agenter (kvoten nullstilles da). Kopier: `~/SIGNAL-47` (Claude, `claude/day-20261109`, koordinator, bygg og installasjon), `~/SIGNAL-47-cosmic` (Codex), og to agent-worktrees (øyeglimt på alle aliens; UFO-lys med skimring). Seks patch-agenter uten egen kopi tar M7-pakkene A, B1, B2, C, D og E fra gjennomgangen (planen og funnene i scratchpad `m7plan.md` og `m7audit.json`), med faste fileiere. Én tung motorjobb om gangen via `q.py`.
@@ -616,3 +620,5 @@ Codex eier `codex/alien-interference-20261106` i cosmic-kopien fra oppdatert mai
 11. november 04:10 Claude, nattskift: kandidatpakken d51 ryddet før d55; d52–d54 står.
 - 11. nov 05:20 (Claude): d52-kandidaten fjernet før d56 (beholdt d53, d54, d55); ledig før: 127 GB.
 - 11. nov 06:06 (Claude): d53- og d54-kandidatene fjernet før d57 for diskreserven (beholdt d55, d56).
+- 11. nov 21:40 (Claude): nattskift til 08:00 12. november (Toms bestilling): først GAS-STATION-LIFT-01, så ledige TODO-punkter etter prioritet. Arbeidskopier: hovedkopi (`claude/story-on-freeform`) og cosmic (Codex, urørt); insekt-worktree avviklet. Disk 127 GB ledig; ingen ny rydderunde i natt uten konkret plassbehov. Codex' TODO-punkter 23–08 røres ikke.
+- 12. nov 07:00 (Claude): arbeidskopier: hovedkopi, cosmic (Codex) og agent-worktree `agent-adbf0ced36edc6a8f` (GAMEPLAY-LOOP-01, ucommittet kortspiller-patch, aldri bygget; kopi i scratchpad `gl01/naturalcards-caseloop.patch`; LFS-filer reflinket fra hovedkopien, ikke commit dem). Motell- og feltliv-worktrees avviklet etter fletting. Disk 112 GB. Lærdom: `q.py` venter ikke på «Guard BLOCKED», og en jobb som starter midt i regresjonen får den til å starte på nytt; i natt sto motoren i kø i timevis med fire agenter.

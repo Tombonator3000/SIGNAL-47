@@ -14,7 +14,7 @@ F.OWNER='S47TripoPump_v1'
 STATION_DEST=F.DEST+'/Station'
 def station_import(contract,report):
  import unreal
- S=unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem);E=unreal.EditorAssetLibrary
+ S=unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) or unreal.new_object(unreal.StaticMeshEditorSubsystem);E=unreal.EditorAssetLibrary
  R=module('s47_pump_recipe',HERE.parent/'fieldintegration/import_recipe.py')
  data=json.loads(contract.read_text());source=unreal.load_asset(data['originalAsset']);assert isinstance(source,unreal.StaticMesh)
  original_slots=list(source.get_editor_property('static_materials'));materials={str(v.material_slot_name):v.material_interface for v in original_slots}

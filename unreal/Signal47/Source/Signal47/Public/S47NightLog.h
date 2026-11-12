@@ -77,6 +77,9 @@ public:
  // possible now (no game, a number out of range, the same entry again within the minute).
  bool LogOwn(int32 Kind,int32 Phrase);
  int32 OwnCount() const{return Own.Num();}
+ // FIX10-9 (→ M3): when each entry logged by hand was made (game clock), oldest first: OPS sets one a night against the array's own log
+ // (FS47FreeformSession::AskWhatCameBack, OwnNoteFor).
+ TArray<double> OwnClocks() const{TArray<double> Out;for(const FOwn& E:Own)Out.Add(E.Clock);return Out;}
  // F10 and tests: type tonight's sheet now with what it has so far; a stretch of lost time; open the last sheet.
  bool DevTypeNow();
  void DevLostTime(double Minutes);

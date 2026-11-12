@@ -96,3 +96,10 @@ Ved faktisk import registreres opphav, kildelenke, lisensfil, nedlastingsdato og
 **I bruk, CC0 1.0, i Git via LFS:** Wolf og Husky av Quaternius fra Poly Pizza, riggede og animerte. De brukes som coyoten og hundene, farget og skalert i spillet. Se [`unreal/Signal47/Tools/animals/KILDER.md`](../../unreal/Signal47/Tools/animals/KILDER.md). Importert til `/Game/Free/Animals`.
 
 **Vurdert, ikke brukt:** Coyote og Mourning dove fra Poly by Google (CC-BY 3.0, statiske), Pigeon fra Quaternius (CC0, tegneseriefigur uten flygeklipp). Ingen gratis CC0-vaktel med flygeklipp ble funnet.
+
+## Tillegg 11. november 2026: animasjoner (Tom)
+
+Kilde: beskrivelsen til en Epic-sponset video Tom sendte bilde av. Ingenting herfra er tatt inn i spillet ennå.
+
+- **MetaHuman Animator Markerless Motion Capture (plugin, Unreal 5.8):** gjør vanlig video om til animasjon uten mocap-utstyr. Fab: <https://www.fab.com/listings/4095b8e0-3eff-44f1-acb4-cb40b99228b9>. Ikke lastet ned: Fab krever innlogging med Toms Epic-konto, og det er ikke kontrollert om pluginen finnes for Linux-editoren. Aktuelt for betjenten på bensinstasjonen, byfolk og romvesenenes bevegelser.
+- **Free100Animations.zip (73 MB, Unreal-prosjekt, 515 filer):** <https://drive.google.com/file/d/1GUjf3mOJFUsqgvegQhdpgup9Axh5Ne3W/view>. Lastet ned 11. november til `~/Assets/signal47-free/_inbox/free100animations-20261111/` (utenfor Git, ikke pakket ut). Innhold etter fillista: mannequin-animasjoner (Manny/Quinn-skjelett) for ubevæpnet gange og jogg i åtte retninger, hopp, fall, landing, tomgang, slag, død (6), treffreaksjoner (8), pistol og rifle. **Lisens er ikke oppgitt i pakken;** videoen sier bare «free». Avklar vilkår før noe går i en utgivelse, og hold filene utenfor Git til da. Mest nyttig for oss: gange/jogg/tomgang og treffreaksjoner; krever retarget til våre skjeletter.

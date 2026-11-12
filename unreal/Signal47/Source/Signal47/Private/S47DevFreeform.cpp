@@ -45,6 +45,7 @@
 #include "S47Walker.h"
 #include "S47WeatherLive.h"
 #include "S47Web.h"
+#include "S47Three.h"
 #include "S47World.h"
 #include "S47Legs.h"
 #include "Engine/Engine.h"
@@ -870,103 +871,268 @@ void FS47DevFreeform::StepStand()
 
 void FS47DevFreeform::StepCards()
 {
+ // GAMEPLAY-LOOP-01: the evening as a player works it. The day's reference card and pulsar card, and the case board: what each open
+ // receiver case asks for (a test to plan, its condition met by hand, the case test recorded and registered, its result sheet
+ // collected, the conclusion registered). Nothing is forced or armed: only what a player can press, at x1. Logs what each step said.
  auto* F=Session();
  if(!bCards||!F||!M->Player||!M->Web||!M->World||!M->Story||M->World->bBusy||M->World->bDriving||M->Web->Area()!=TEXT("saro"))return;
  if(F->Taken&&F->Taken->Busy())return;
  using J=FS47FreeformSession::EJobStage;
+ using ES=FS47FreeformSession::ECaseStep;
+ using EC=FS47FreeformCases::ECondition;
  const double H0=FMath::Fmod(F->Clock(),86400.)/3600.,H=H0<12?H0+24:H0;
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
- const auto Say=[&](const TCHAR* What){UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: %s [%s]"),Night,*ClockText(F->Clock()),What,*F->FeedbackText().Left(160));};
- if(CardsNight!=Night){if(H<19.5||H>=23.)return;CardsNight=Night;CardsStage=0;CardsJob=-1;}
+ const auto Say=[&](const FString& What){UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: %s [%s]"),Night,*ClockText(F->Clock()),*What,*F->FeedbackText().Left(220));};
+ const auto CaseText=[&](int32 Line)
+ {
+  const auto* C=F->CaseFile().Get(Line);if(!C||!C->bOpen)return FString(TEXT("closed"));
+  FString R;for(int32 T=0;T<FS47FreeformCases::TestCount;++T)if(C->Results[T].bDone)R+=FString::Printf(TEXT(" t%d=%s"),T,C->Results[T].bPresent?TEXT("present"):TEXT("absent"));
+  return FString::Printf(TEXT("open day %d, left %d, planned %d (%s), concluded %d (cause %d),%s"),C->OpenDay,F->CaseFile().Remaining(Line),C->Planned,*C->PlannedJob,C->bConcluded?1:0,C->Conclusion,R.IsEmpty()?TEXT(" no results"):*R);
+ };
+ if(CardsNight!=Night)
+ {
+  if(H<19.5||H>=23.)return;
+  CardsNight=Night;CardsStage=0;CardsJob=-1;CardsId.Empty();CardsRefused.Reset();CardsDone.Reset();
+  const FString Stock=FString::Printf(TEXT("stock fuel %d relay %d fuse %d, generator %.1f h, cash $%d"),F->InventoryCount(TEXT("fuel")),F->InventoryCount(TEXT("relay")),F->InventoryCount(TEXT("fuse")),F->Field?F->Field->GeneratorHours():0.,F->Budget());
+  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: evening: tutorial %d, %s; case 1 %s; case 2 %s; access.fieldlogger %d"),Night,*ClockText(F->Clock()),F->InTutorial()?1:0,*Stock,*CaseText(0),*CaseText(1),F->CaseFile().HasAccess(TEXT("access.fieldlogger"))?1:0);
+ }
  if(CardsStage<0)return;
- if(H>=27.&&CardsStage<90){Say(TEXT("GAVE UP, the card was not through by 03:00"));CardsStage=-1;return;}
  const auto& Jobs=F->Jobs();
+ const auto Give=[&](const TCHAR* Why){Say(FString(TEXT("GAVE UP: "))+Why);if(!CardsId.IsEmpty())CardsDone.Add(CardsId);CardsStage=0;CardsJob=-1;CardsId.Empty();};
+ if(H>=27.&&CardsStage!=0){Give(TEXT("the work was not through by 03:00"));return;}
  if(CardsStage==0)
  {
-  CardsJob=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Day==F->Day()&&X.Slot==1&&X.CaseTest<0&&X.Stage==J::New;});
-  if(CardsJob<0){Say(TEXT("no new slot-1 card today"));CardsStage=-1;return;}
-   if(F->EveningGated(Jobs[CardsJob]))return; // the card is not up yet; a player would wait too
-  const bool bOut=F->OutThereTonight();
-  FString Event,Title;double X=0,Z=0;bool bAhead=false;const bool bAny=F->Happenings&&F->Happenings->OutTonight(Night,Event,Title,X,Z,bAhead);
-  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: before the card: out there tonight %d (lead %s at %s%s), director anomaly %d"),Night,*ClockText(F->Clock()),bOut?1:0,bAny?*Event:TEXT("none"),bAny?*Title:TEXT("-"),bAhead?TEXT(", still to come"):TEXT(""),F->Anomaly()?1:0);
-  if(F->PowerFault()){F->SetPowerFault(false);UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d: the feeder was out; restored here as a player would have done at the substation"),Night);}
-  if(M->UI)M->UI->Close(true);
-  if(!F->SelectJob(CardsJob)){Say(TEXT("could not select the card"));CardsStage=-1;return;}
-  const auto* P=F->ConsoleProfile();if(!P){Say(TEXT("no receiver profile"));CardsStage=-1;return;}
-  auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
-  if(!F->PointSelected()){const auto* CJ=F->CurrentJob();UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards: pointing refused: job %d stage %d, web %d, power %d"),CJ?1:0,CJ?int32(CJ->Stage):-1,M->Web?1:0,F->HasPowerForReactiveLight()?1:0);Say(TEXT("the array would not take the pointing command"));CardsStage=-1;return;}
-   F->OpenTracking();CardsStage=1;return;
- }
- if(!Jobs.IsValidIndex(CardsJob)){CardsStage=-1;return;}
- const auto& Card=Jobs[CardsJob];
- if(CardsStage==1)
- {
-  if(M->UI)M->UI->Close(true);
-  if(!F->StartAcquisition())return;
-  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: recording %s, discrepancy %d, phenomenon '%s'"),Night,*ClockText(F->Clock()),*Card.Id,Card.bAnomaly?1:0,*Card.Phenomenon);
-  CardsStage=2;return;
- }
- if(CardsStage==2)
- {
-  if(Card.Stage!=J::Chart||F->PrinterProgress()<1)
+  if(H>=27.)
   {
-   // A recording that never reaches the printer is the finding: said every half hour of the clock, and left after ninety minutes.
-   static double StallSaid=0,StallFrom=0;static int32 StallNight=0;
-   if(StallNight!=Night){StallNight=Night;StallFrom=F->Clock();StallSaid=F->Clock();}
-   if(F->Clock()-StallSaid>=1800){StallSaid=F->Clock();UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: still no chart: stage %d, printer %.2f, power %d [%s]"),Night,*ClockText(F->Clock()),int32(Card.Stage),F->PrinterProgress(),F->HasPowerForReactiveLight()?1:0,*F->NextAction().Left(200));}
-   if(F->Clock()-StallFrom>=5400){Say(TEXT("GAVE UP, the recording never reached the printer"));CardsStage=-1;}
-   return;
+   UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: night done: case 1 %s; case 2 %s; plan [%s]"),Night,*ClockText(F->Clock()),*CaseText(0),*CaseText(1),*F->TonightPlan().Replace(TEXT("\n"),TEXT(" | ")).Left(300));
+   CardsStage=-1;return;
   }
-  if(!F->CollectChart()){Say(TEXT("could not collect the chart"));CardsStage=-1;return;}
-  if(M->UI)M->UI->Close(true);
-  // The printer hands over the oldest waiting sheet first (last night's packet): a player takes the next one, so this does too.
-  static int32 Older=0;
-  if(Card.Stage==J::Chart&&++Older<6){UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d: the printer gave an older sheet first; taking the next"),Night);F->SelectJob(CardsJob);return;}
-  Older=0;
-  if(!Card.bAnomaly){CardsStage=9;return;}
-  F->SelectJob(CardsJob);
-  CardsStage=25;return;
- }
- if(CardsStage==25)
- {
-  // The array settles for a second first; a player presses again, so this does too (it gives up at 03:00 with the rest).
-  if(F->StartControl()){CardsStage=3;return;}
-  static double TriedFrom=0;static int32 TriedNight=0;
-  if(TriedNight!=Night){TriedNight=Night;TriedFrom=F->Clock();}
-  if(F->Clock()-TriedFrom>=600)
+  if(M->ModalOpen())return;
+  // The case board first: what each of the two receiver cases asks for now.
+  for(int32 Line=0;Line<2;++Line)
   {
-   const auto* CJ=F->CurrentJob();
-   UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: control never started: job %s (card %s) stage %d, discrepancy %d, control %d, power %d [%s]"),Night,*ClockText(F->Clock()),CJ?*CJ->Id:TEXT("-"),*Card.Id,CJ?int32(CJ->Stage):-1,CJ&&CJ->bAnomaly?1:0,CJ&&CJ->bControl?1:0,F->HasPowerForReactiveLight()?1:0,*F->NextAction().Left(200));
-   Say(TEXT("GAVE UP, the control would not start"));CardsStage=-1;
+   const auto* C=F->CaseFile().Get(Line);if(!C||!C->bOpen||C->bConcluded)continue;
+   const auto Step=F->CaseStep(Line);
+   if(Step.Step==ES::Conclude)
+   {
+    int32 Cause=-1;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(!F->CaseFile().Excluded(Line,I))Cause=I;
+    const int32 Truth=C->Truth;
+    const bool bOk=Cause>=0&&F->ConcludeCase(Line,Cause);
+    if(M->UI)M->UI->Close(true);
+    const bool bTelex=M->Story->Docs().ContainsByPredicate([&](const FS47Doc& D){return D.Id==FString::Printf(TEXT("freeform-case%d-records"),Line+1);});
+    Say(FString::Printf(TEXT("case %d CONCLUDE cause %d (hidden %d): %d; access.fieldlogger %d, relay %d, fuse %d, records telex %d"),Line+1,Cause,Truth,bOk?1:0,F->CaseFile().HasAccess(TEXT("access.fieldlogger"))?1:0,F->InventoryCount(TEXT("relay")),F->InventoryCount(TEXT("fuse")),bTelex?1:0));
+    return;
+   }
+   if(Step.Step==ES::ChooseTest)
+   {
+    // As a player reads the predictions: a test the station can meet tonight with what it has, the one needing least first.
+    static const int32 Order[2][3]={{1,2,0},{2,0,1}};
+    for(int32 K=0;K<3;++K)
+    {
+     const int32 T=Order[Line][K];
+     if(C->Results[T].bDone||CardsRefused.Contains(Line*10+T))continue;
+     const EC Cond=FS47FreeformCases::Def(Line).Tests[T].Condition;
+     if(Cond==EC::Generator&&F->InventoryCount(TEXT("fuel"))<=0&&(!F->Field||F->Field->GeneratorHours()<=0))continue;
+     if(Cond==EC::RelaySwap&&F->InventoryCount(TEXT("relay"))<=0)continue;
+     const bool bOk=F->PlanCaseTest(Line,T);
+     if(M->UI)M->UI->Close(true);
+     Say(FString::Printf(TEXT("case %d PLAN test %d '%s': %d; prediction %s; plan [%s]"),Line+1,T,FS47FreeformCases::Def(Line).Tests[T].Name,bOk?1:0,*FS47FreeformCases::Prediction(Line,T),*F->TonightPlan().Replace(TEXT("\n"),TEXT(" | ")).Left(260)));
+     if(!bOk)CardsRefused.Add(Line*10+T);
+     return;
+    }
+    if(!CardsRefused.Contains(Line*10+9)){CardsRefused.Add(Line*10+9);Say(FString::Printf(TEXT("case %d: no test the station can meet tonight (%s)"),Line+1,*Step.Next));}
+    continue;
+   }
+   if(Step.Step==ES::RunPlan||Step.Step==ES::WaitWindow)
+   {
+    const int32 Index=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==C->PlannedJob&&X.CaseLine==Line&&!X.bCaseRecorded;});
+    if(Index<0||CardsDone.Contains(C->PlannedJob))continue;
+    const auto& Test=Jobs[Index];
+    if(F->EveningGated(Test)||F->CaseTestWaits(Test))
+    {
+     if(!CardsRefused.Contains(Line*10+8)){CardsRefused.Add(Line*10+8);Say(FString::Printf(TEXT("case %d: test job %s waits: gated %d, window %d, %s"),Line+1,*Test.Id,F->EveningGated(Test)?1:0,F->CaseTestWaits(Test)?1:0,*Step.Next));}
+     continue;
+    }
+    // The condition, met by hand as the plan says.
+    const EC Cond=FS47FreeformCases::Def(Line).Tests[C->Planned].Condition;
+    if(Cond==EC::Generator&&F->Field&&!F->Field->GeneratorRunning())
+    {
+     const FVector P=F->Field->InteractionPoint(TEXT("ff:generator"));M->Player->Place(P.X+1.,P.Z,0);
+     F->Field->Use(TEXT("ff:generator"));
+     Say(FString::Printf(TEXT("case %d: at the generator: running %d, tank %.1f h, fuel cans %d"),Line+1,F->Field->GeneratorRunning()?1:0,F->Field->GeneratorHours(),F->InventoryCount(TEXT("fuel"))));
+     if(!F->Field->GeneratorRunning()){CardsRefused.Add(Line*10+C->Planned);const bool bCancel=F->CancelCaseJob(Line);Say(FString::Printf(TEXT("case %d: the generator would not run; plan cancelled %d"),Line+1,bCancel?1:0));return;}
+    }
+    if(Cond==EC::RelaySwap&&F->InventoryCount(TEXT("relay"))<=0){CardsRefused.Add(Line*10+C->Planned);const bool bCancel=F->CancelCaseJob(Line);Say(FString::Printf(TEXT("case %d: no relay for the swap; plan cancelled %d"),Line+1,bCancel?1:0));return;}
+    CardsJob=Index;CardsId=Jobs[Index].Id;CardsKind=2;CardsStage=1;CardsFrom=F->Clock();
+    Say(FString::Printf(TEXT("case %d RUN test %d job %s (condition %d)"),Line+1,C->Planned,*Test.Id,int32(Cond)));
+    return;
+   }
+  }
+  // Then the day's paid cards: the reference (slot 0), then the pulsar (slot 1).
+  for(int32 Slot=0;Slot<2;++Slot)
+  {
+   const int32 Index=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Day==F->Day()&&X.Slot==Slot&&X.CaseTest<0&&X.Stage==J::New&&!CardsDone.Contains(X.Id);});
+   if(Index<0||F->EveningGated(Jobs[Index]))continue;
+   CardsJob=Index;CardsId=Jobs[Index].Id;CardsKind=Slot;CardsStage=1;CardsFrom=F->Clock();
+   const bool bOut=F->OutThereTonight();
+   FString Event,Title;double X=0,Z=0;bool bAhead=false;const bool bAny=F->Happenings&&F->Happenings->OutTonight(Night,Event,Title,X,Z,bAhead);
+   Say(FString::Printf(TEXT("card %s (slot %d): out there tonight %d (lead %s at %s%s), director anomaly %d"),*Jobs[Index].Id,Slot,bOut?1:0,bAny?*Event:TEXT("none"),bAny?*Title:TEXT("-"),bAhead?TEXT(", still to come"):TEXT(""),F->Anomaly()?1:0));
+   return;
   }
   return;
  }
+ // The job is followed by its id: the list can shrink or grow under it (a cancelled plan, a test planned again, old cards lapsing).
+ CardsJob=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==CardsId;});
+ if(!Jobs.IsValidIndex(CardsJob)){Say(FString::Printf(TEXT("job %s is gone from the work list"),*CardsId));CardsStage=0;return;}
+ const auto& Card=Jobs[CardsJob];
+ const bool bCase=CardsKind==2;
+ if(F->Clock()-CardsFrom>=3*3600.){Give(TEXT("three hours on one job"));return;}
+ if(CardsStage==1)
+ {
+  if(F->PowerFault()){F->SetPowerFault(false);Say(TEXT("the feeder was out; restored here as a player would have done at the substation"));}
+  if(M->UI)M->UI->Close(true);
+  if(!F->SelectJob(CardsJob)){Give(TEXT("could not select the job"));return;}
+  const auto* P=F->ConsoleProfile();if(!P){Give(TEXT("no receiver profile"));return;}
+  auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
+  if(!F->PointSelected()){const auto* CJ=F->CurrentJob();Say(FString::Printf(TEXT("pointing refused: job %s stage %d, power %d"),CJ?*CJ->Id:TEXT("-"),CJ?int32(CJ->Stage):-1,F->HasPowerForReactiveLight()?1:0));Give(TEXT("the array would not take the pointing command"));return;}
+  F->OpenTracking();CardsStage=2;CardsWait=F->Clock();return;
+ }
+ if(CardsStage==2)
+ {
+  if(M->UI)M->UI->Close(true);
+  // A sealed-station test: both outside doors shut and the player in the control room, through the whole take.
+  if(bCase&&FS47FreeformCases::Def(Card.CaseLine).Tests[Card.CaseTest].Condition==EC::DoorsSealed)
+  {M->Web->SetDoorOpen(TEXT("doorSouth"),false);M->Web->SetDoorOpen(TEXT("doorEast"),false);M->Player->Place(0,-1.2,UE_DOUBLE_PI);}
+  if(!F->StartAcquisition())
+  {
+   if(F->Clock()-CardsWait>=600){Say(FString::Printf(TEXT("recording would not start: %s"),*F->NextAction().Left(200)));Give(TEXT("the recording would not start"));}
+   return;
+  }
+  Say(FString::Printf(TEXT("recording %s, discrepancy %d, phenomenon '%s'%s"),*Card.Id,Card.bAnomaly?1:0,*Card.Phenomenon,bCase?*FString::Printf(TEXT(", case %d test %d"),Card.CaseLine+1,Card.CaseTest):TEXT("")));
+  CardsStage=3;CardsWait=F->Clock();CardsSaid=F->Clock();CardsOlder=0;return;
+ }
  if(CardsStage==3)
+ {
+  if(bCase&&!Card.bCaseValid&&Card.Stage<=J::Pointed){Say(FString::Printf(TEXT("case test SPOILED: %s"),*F->NextAction().Left(200)));CardsStage=1;return;}
+  if(Card.Stage!=J::Chart||F->PrinterProgress()<1)
+  {
+   if(F->Clock()-CardsSaid>=1800){CardsSaid=F->Clock();Say(FString::Printf(TEXT("still no chart: stage %d, printer %.2f, power %d, next %s"),int32(Card.Stage),F->PrinterProgress(),F->HasPowerForReactiveLight()?1:0,*F->NextAction().Left(160)));}
+   if(F->Clock()-CardsWait>=5400)Give(TEXT("the recording never reached the printer"));
+   return;
+  }
+  if(!F->CollectChart()){Give(TEXT("could not collect the chart"));return;}
+  if(M->UI)M->UI->Close(true);
+  // The printer hands over the oldest waiting sheet first: a player takes the next one, so this does too.
+  if(Card.Stage==J::Chart&&++CardsOlder<6){Say(TEXT("the printer gave an older sheet first; taking the next"));F->SelectJob(CardsJob);return;}
+  if(!Card.bAnomaly){CardsStage=9;return;}
+  F->SelectJob(CardsJob);
+  const bool bInstrument=Card.Phenomenon==TEXT("wrong_source")||Card.Phenomenon==TEXT("time_disagreement")||Card.Phenomenon==TEXT("duplicate_print");
+  CardsStage=bInstrument?40:25;CardsWait=F->Clock();return;
+ }
+ if(CardsStage==25)
+ {
+  // The array settles for a second first; a player presses again, so this does too.
+  if(F->StartControl()){CardsStage=26;return;}
+  if(F->Clock()-CardsWait>=600){Say(FString::Printf(TEXT("control never started: stage %d, control %d, power %d, next %s"),int32(Card.Stage),Card.bControl?1:0,F->HasPowerForReactiveLight()?1:0,*F->NextAction().Left(200)));Give(TEXT("the control would not start"));}
+  return;
+ }
+ if(CardsStage==26)
  {
   if(Card.ControlAt<8)return;
   if(F->AudioDesk){const FVector P=F->AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(P.X,P.Z-1.2,0);}
-  F->OpenAudio();F->AudioAction(TEXT("original"));F->AudioAction(TEXT("play"));CardsStage=4;return;
+  F->OpenAudio();F->AudioAction(TEXT("original"));F->AudioAction(TEXT("play"));CardsStage=27;CardsOlder=0;return;
  }
- if(CardsStage==4){if(F->AudioPlaying())return;F->AudioAction(TEXT("control"));F->AudioAction(TEXT("play"));CardsStage=5;return;}
- if(CardsStage==5)
+ if(CardsStage==27||CardsStage==28)
  {
-  if(F->AudioPlaying())return;
+  // Each reel heard through: a tape still loading, or stopped short, is pressed again (at most three times).
+  const bool bOriginal=CardsStage==27;
+  if(F->AudioPlaying()||F->AudioPreparing())return;
+  const double Heard=bOriginal?Card.OriginalCovered:Card.ControlCovered,Full=bOriginal?18.:8.;
+  if(Heard<Full-.05&&++CardsOlder<4){F->AudioAction(bOriginal?TEXT("original"):TEXT("control"));F->AudioAction(TEXT("play"));return;}
+  if(Heard<Full-.05)Say(FString::Printf(TEXT("the %s reel stopped at %.1f of %.0f s: %s"),bOriginal?TEXT("original"):TEXT("control"),Heard,Full,*F->AudioStopReason()));
+  CardsOlder=0;
+  if(bOriginal){F->AudioAction(TEXT("control"));F->AudioAction(TEXT("play"));CardsStage=28;return;}
   F->AudioAction(TEXT("original"));F->SeekAudio(9.1);F->AudioAction(TEXT("mark_start"));F->SeekAudio(13.0);F->AudioAction(TEXT("mark_end"));
   const bool bOk=F->AudioAction(TEXT("confirm"));
-  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: both reels heard (original %.0f s, control %.0f s), interval confirmed %d [%s]"),Night,*ClockText(F->Clock()),Card.OriginalCovered,Card.ControlCovered,bOk?1:0,*F->FeedbackText().Left(160));
+  Say(FString::Printf(TEXT("both reels heard (original %.0f s, control %.0f s), interval confirmed %d"),Card.OriginalCovered,Card.ControlCovered,bOk?1:0));
   if(M->UI)M->UI->Close(true);
-  if(!bOk){CardsStage=-1;return;}
+  if(!bOk){Give(TEXT("the reel deck would not retain the comparison"));return;}
+  CardsStage=9;return;
+ }
+ if(CardsStage==40)
+ {
+  // An instrument discrepancy: its own control (clock readback, master register, beam samples), then the measured comparison at OPS.
+  if(!Card.bControl&&!F->StartControl())
+  {
+   if(F->Clock()-CardsWait>=600){Say(FString::Printf(TEXT("instrument control never started: stage %d, next %s"),int32(Card.Stage),*F->NextAction().Left(200)));Give(TEXT("the instrument control would not start"));}
+   return;
+  }
+  if(Card.ControlAt<8)return;
+  if(Card.Phenomenon==TEXT("duplicate_print")&&!Card.bDuplicateCollected)
+  {
+   if(F->PrinterProgress()>=1)F->CollectChart();
+   if(M->UI)M->UI->Close(true);
+   F->SelectJob(CardsJob);
+   if(!Card.bDuplicateCollected){if(F->Clock()-CardsWait>=1800)Give(TEXT("the duplicate never came off the printer"));return;}
+  }
+  const bool bCompared=F->CompareInstrument();
+  Say(FString::Printf(TEXT("instrument comparison %s: compared %d"),*Card.Phenomenon,bCompared?1:0));
+  if(M->UI)M->UI->Close(true);
+  if(!bCompared){Give(TEXT("the instrument comparison was refused"));return;}
+  CardsConclusion=Card.Phenomenon==TEXT("time_disagreement")?TEXT("timing_path"):Card.Phenomenon==TEXT("duplicate_print")?TEXT("duplicate_mismatch"):TEXT("off_source");
   CardsStage=9;return;
  }
  if(CardsStage==9)
  {
   const int32 Before=F->Places?F->Places->Bearings().Num():0;
-  const bool bOk=F->RegisterComparison(Card.bAnomaly?TEXT("unresolved"):TEXT("normal"));
+  const FString Conclusion=!Card.bAnomaly?FString(TEXT("normal")):CardsConclusion.IsEmpty()?FString(TEXT("unresolved")):CardsConclusion;
+  CardsConclusion.Empty();
+  const bool bWasAnomaly=Card.bAnomaly;
+  // (Card is not read after this: registering a spoiled case test plans it again, which adds to the work list)
+  const bool bOk=F->RegisterComparison(Conclusion);
+  const auto* Now=F->Jobs().FindByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==CardsId;});
   const auto* B=F->Places&&F->Places->Bearings().Num()>Before?&F->Places->Bearings().Last():nullptr;
-  UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: registered %d, discrepancy %d, bearing slip %s%s [%s]"),Night,*ClockText(F->Clock()),bOk?1:0,Card.bAnomaly?1:0,B?TEXT("toward "):TEXT("NONE"),B?*B->Target:TEXT(""),*F->FeedbackText().Left(160));
+  Say(FString::Printf(TEXT("registered %d as %s, discrepancy %d, stage %d, bearing slip %s%s"),bOk?1:0,*Conclusion,bWasAnomaly?1:0,Now?int32(Now->Stage):-1,B?TEXT("toward "):TEXT("NONE"),B?*B->Target:TEXT("")));
   if(M->UI)M->UI->Close(true);
-  CardsStage=90;return;
+  if(!bOk){Give(TEXT("registration refused"));return;}
+  CardsWait=F->Clock();
+  CardsStage=Now&&(Now->Stage==J::Registered||Now->Stage==J::Packet)?10:bCase?11:50;return;
  }
+ if(CardsStage==10)
+ {
+  // The registered discrepancy's packet: collected at the printer and filed in the records-room binder.
+  if(Card.Stage==J::Registered)
+  {
+   if(F->PrinterProgress()<1){if(F->Clock()-CardsWait>=3600)Give(TEXT("the packet never printed"));return;}
+   F->SelectJob(CardsJob);F->CollectChart();if(M->UI)M->UI->Close(true);return;
+  }
+  if(Card.Stage==J::Packet)
+  {
+   // Walk to the binder, then file on a later frame (the player's floor and position settle a frame after Place).
+   if(!F->NearBinder()&&CardsTries<6)
+   {
+    const FVector At=S47Three::ToThree(M->Web->PropLocation(TEXT("binder")));
+    const double Off[6][2]={{0,.8},{.8,0},{-.8,0},{0,-.8},{.6,.6},{-.6,.6}};
+    M->Player->Place(At.X+Off[CardsTries][0],At.Z+Off[CardsTries][1],UE_DOUBLE_PI);++CardsTries;return;
+   }
+   const bool bOk=F->FilePacket();
+   Say(FString::Printf(TEXT("packet filed %d after %d tries"),bOk?1:0,CardsTries));CardsTries=0;
+   if(M->UI)M->UI->Close(true);
+   if(!bOk){Give(TEXT("the packet could not be filed"));return;}
+  }
+  CardsStage=bCase?11:50;return;
+ }
+ if(CardsStage==11)
+ {
+  // A case test's result sheet comes off the printer: collected, as a player takes it for the case file.
+  const int32 Sheets=F->ResultSheets().Num();
+  if(Sheets>0&&F->PrinterProgress()<1&&F->Clock()-CardsWait<1200)return;
+  const bool bOk=Sheets>0&&F->CollectChart();
+  if(M->UI)M->UI->Close(true);
+  Say(FString::Printf(TEXT("case %d result sheet collected %d (sheets %d -> %d); case %s; next %s"),Card.CaseLine+1,bOk?1:0,Sheets,F->ResultSheets().Num(),*CaseText(Card.CaseLine),*F->CaseStep(Card.CaseLine).Next.Left(160)));
+  CardsStage=50;return;
+ }
+ if(CardsStage==50){CardsDone.Add(CardsId);CardsStage=0;CardsJob=-1;CardsId.Empty();return;}
 }
 
 void FS47DevFreeform::StepTour()

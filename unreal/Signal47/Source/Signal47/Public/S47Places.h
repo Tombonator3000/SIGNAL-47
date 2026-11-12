@@ -19,6 +19,11 @@ public:
  static const TArray<FDef>& Defs();
  static const FDef* Def(const FString& Id);
  static FString UseId(const FString& Id){return TEXT("ff:place:")+Id;}
+ // T16-17 (→ M1): the two things to look at inside the old farmhouse (the kitchen table's tally book, the back room's chair at the
+ // window). They stand on SARO's ground like the motel's desk, but their X and Z are the land's (the house's own frame), so Spot,
+ // the needle's history and the counter read them as any place. Never on the map, never what a slip points at, no cot, no trip camera.
+ static bool InOldHouse(const FString& Id){return Id==TEXT("kitchen")||Id==TEXT("backroom");}
+ static bool AtSaro(const FString& Id){return Id==TEXT("motel")||InOldHouse(Id);}
  void Begin(const S47J::FObj& Saved);
  void Stop();
  void Step(double Dt);
@@ -69,7 +74,11 @@ public:
  static bool Gives(bool bAnomaly,int32 Branches){return bAnomaly||Branches>0;}
  // CHAIN-1-20261109: what the slip points at, in this order: 1 marks standing at a place, 2 what is out there tonight
  // (FS47Happenings::OutTonight: what has come, or tonight's lead), 3 a place on the land nobody has looked at, 0 nothing (no slip).
- static int32 SlipPoints(bool bMarks,bool bTonight,bool bUnknown){return bMarks?1:bTonight?2:bUnknown?3:0;}
+ // T16-17 (→ M1, "the bearings run out"): 4, once every place has been found or heard of, the place where tomorrow's daylight trace
+ // stands (TracePlace), so that a registration still points somewhere worth the drive.
+ static int32 SlipPoints(bool bMarks,bool bTonight,bool bUnknown,bool bTrace=false){return bMarks?1:bTonight?2:bUnknown?3:bTrace?4:0;}
+ // T16-17 (→ M1): the place carrying DayTrace on Day (never the motel); empty when none. Pure.
+ static FString TracePlace(int32 Seed,int32 Day);
  // D45-20261110 (D45-26): the first night's line. One place on the land for the noon slip and the night's burst to share (inside the
  // rim, never the cairn, which landed off the map in d45): the windmill, which Ward's case paper already puts on the map, while it
  // stands there; otherwise one of the others with a survey tag, by the seed. And the one bearing to it from SARO, off the true line by
@@ -111,6 +120,10 @@ public:
  // LOOP-4-20261109: the magnetometer at a place, with its history (FS47Happenings::StirredNear): the place's own reading, and when
  // something happened near it in the last two nights, a needle that will not settle. Pure.
  static FString NeedleReading(const FString& Needle,bool bStirred);
+ // T16-17 (→ M1): the back room after a night with something near the farm, and the line for a second look that finds nothing new
+ // (bHouse: the old house's own). Pure.
+ static FString BackRoomAgain();
+ static FString NothingNew(bool bHouse);
  // Where the middle lines of two bearings from different places meet, ahead of both (road-local); false when they do not.
  static bool Cross(const FBearing& A,const FBearing& B,FVector2D& Out);
  // Whether a road-local point is inside a bearing's sector.
@@ -119,6 +132,9 @@ public:
  // from the truck toward the same thing replaces it; a few kept per target. True when it is a new line on the map.
  static constexpr double CarSpread=8,CarApart=300;
  static constexpr int32 MaxFixes=12;
+ // FIX10-9 (→ M3): the same kind of line from SARO itself, pencilled from a control room window toward a figure seen on the rise
+ // (FS47Happenings): its target, so that the map says "Day N window" and never doses the counter (no place).
+ static constexpr const TCHAR* WindowTarget=TEXT("window:figure");
  bool AddCarFix(double FromX,double FromZ,double Az,const FString& Target,double Clock,int32 Day);
  // FillMap with a clock: what is live, faded as it cools, the known places inside a sector marked, and where lines cross.
  void FillMapAt(FS47MapView& View,double Now) const;
@@ -159,6 +175,9 @@ private:
  void StepSlips(double Dt); // D45-20261110: the player inside a live slip's circle checks it
  static void SaroRoad(double& X,double& Z);
  bool bHasFound(const FString& Id) const;
+ // T16-17 (→ M1): a slip is ticked off once its circle is stood in, or its place found; a slip toward a place already found for the
+ // trace the next morning leaves there (TracePlace), once that trace is kept.
+ bool Checked(const FBearing& B) const;
  bool Build();
  void Seat(FBuilt& B);
  void StepNeedle(double Dt);

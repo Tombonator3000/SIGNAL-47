@@ -1,0 +1,2982 @@
+{
+ "bytes_on_disk": 451567567,
+ "checks": [
+  {
+   "detail": "Content/Licensed/CosmosShop",
+   "name": "packages on disk under Content/Licensed/CosmosShop",
+   "pass": true
+  },
+  {
+   "detail": [],
+   "name": "every package saved by UE5 (legacy file version -8 or lower)",
+   "pass": true
+  },
+  {
+   "detail": {
+    "SM_Fire_Extinguisher": [
+     "slot lambert2: material None",
+     "slot lambert3: material None"
+    ]
+   },
+   "name": "at least ten meshes pass",
+   "pass": true
+  }
+ ],
+ "destination": "/Game/Licensed/CosmosShop",
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "failed": {
+  "SM_Fire_Extinguisher": [
+   "slot lambert2: material None",
+   "slot lambert3: material None"
+  ]
+ },
+ "materials": {
+  "MI_Ac_unit_Ceiling": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Ac_unit_Ceiling.MI_Ac_unit_Ceiling",
+   "scalars": {
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 0.9573,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AB)": 0.5747,
+    "Roughness (AG)": 0.66,
+    "Roughness (AR)": 0.724,
+    "Slot_1) Roughness": 0.1427,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_2) Roughness": 0.8573
+   },
+   "textures": {
+    "Mask_Asset": "T_Ceiling_Unit_Mask"
+   },
+   "vectors": {
+    "BaseColor (AB)": [
+     0.5,
+     0.5,
+     0.5
+    ],
+    "BaseColor (AG)": [
+     0.406,
+     0.406,
+     0.406
+    ],
+    "BaseColor (AR)": [
+     0.913,
+     0.913,
+     0.913
+    ],
+    "Slot_1) Basecolor": [
+     0.628,
+     0.628,
+     0.628
+    ],
+    "Slot_2) Basecolor": [
+     0.271,
+     0.271,
+     0.271
+    ]
+   }
+  },
+  "MI_Assets01": {
+   "base": "/Game/Licensed/CosmosShop/Hospital/Materials/MM_Master.MM_Master",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets01.MI_Assets01",
+   "scalars": {
+    "RefractionDepthBias": 0.0
+   },
+   "textures": {
+    "AORM": "T_Assets01_ORM",
+    "Base Color": "T_Assets01_B",
+    "Normal": "T_Assets01_N"
+   },
+   "vectors": {}
+  },
+  "MI_Assets02": {
+   "base": "/Game/Licensed/CosmosShop/Hospital/Materials/MM_Master.MM_Master",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets02.MI_Assets02",
+   "scalars": {
+    "RefractionDepthBias": 0.0
+   },
+   "textures": {
+    "AORM": "T_Assets02_ORM",
+    "Base Color": "T_Assets02_B",
+    "Normal": "T_Assets02_N"
+   },
+   "vectors": {}
+  },
+  "MI_Assets03": {
+   "base": "/Game/Licensed/CosmosShop/Hospital/Materials/MM_Master.MM_Master",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets03.MI_Assets03",
+   "scalars": {
+    "RefractionDepthBias": 0.0
+   },
+   "textures": {
+    "AORM": "T_Assets03_ORM",
+    "Base Color": "T_Assets03_B",
+    "Normal": "T_Assets03_N"
+   },
+   "vectors": {}
+  },
+  "MI_Assets05": {
+   "base": "/Game/Licensed/CosmosShop/Hospital/Materials/MM_Opacity.MM_Opacity",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets05.MI_Assets05",
+   "scalars": {
+    "RefractionDepthBias": 0.0
+   },
+   "textures": {
+    "AORM": "T_Assets05_ORM",
+    "Base Color": "T_Assets05_B",
+    "Normal": "T_Assets05_N"
+   },
+   "vectors": {}
+  },
+  "MI_Cable_Small_Box": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Cable_Small_Box.MI_Cable_Small_Box",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "Macro_Normal_Intensity": 1.0,
+    "Mask Grunge Contrast (AA)": 1.0,
+    "Mask Grunge Tile (AA)": 1.0,
+    "Mask_Asset_Rotation": 0.0,
+    "Mask_Asset_Tile": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Rough Tweak (AA)": 1.1598,
+    "Roughness (AA)": 0.5,
+    "Roughness (AB)": 0.708,
+    "Roughness (AG)": 0.308,
+    "Roughness (AR)": 0.668,
+    "Slot_1) Normal Intensity": 0.05,
+    "Slot_1) Roughness": 0.224,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_1) Tile": 10.7894,
+    "Slot_2) Normal Intensity": 0.05,
+    "Slot_2) Roughness": 0.15,
+    "Slot_2) SpecularLevel": 1.0,
+    "Slot_2) Tile": 0.8855,
+    "Slot_3) Roughness": 0.14,
+    "Tile (AA)": 4.0009
+   },
+   "textures": {
+    "BaseColor TX (AA)": "T_Plane_Utility_BaseColor",
+    "Grunge_Mask (AA)": "T_Grunge001",
+    "Macro Normal TXT": "T_Cable_Box_Mask_N",
+    "Mask_Asset": "T_Cable_Box_Mask_Asset",
+    "Normal TXT (AA)": "T_Plane_Utility_N_02",
+    "ORM (AA)": "T_Plane_Utility_OcclusionRoughnessMetallic",
+    "Slot_1) Normal": "T_Detail_N_Noise_N",
+    "Slot_2) Normal": "T_Detail_N_Noise_N"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.5,
+     0.5,
+     0.5
+    ],
+    "BaseColor (AB)": [
+     0.052,
+     0.052,
+     0.052
+    ],
+    "BaseColor (AG)": [
+     0.589,
+     0.205,
+     0.205
+    ],
+    "BaseColor (AR)": [
+     0.078,
+     0.078,
+     0.078
+    ],
+    "Slot_1) Basecolor": [
+     0.254,
+     0.339,
+     0.339
+    ],
+    "Slot_2) Basecolor": [
+     0.865,
+     0.836,
+     0.784
+    ],
+    "Slot_3) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ]
+   }
+  },
+  "MI_Carboard_Boxes": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Standard_Textures.MM_Standard_Textures",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Carboard_Boxes.MI_Carboard_Boxes",
+   "scalars": {
+    "Normal_intensity": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Roughness_multiply": 1.0,
+    "Saturation": 0.2,
+    "Specular": 1.0,
+    "Subsurface_Color_Multiply": 0.0,
+    "Tile": 1.0
+   },
+   "textures": {
+    "BaseColor": "T_Cardboard_Box_BC",
+    "Masks": "T_Cardboard_Box_ORM",
+    "Normal": "T_Cardboard_Box_N"
+   },
+   "vectors": {}
+  },
+  "MI_Cash_Register": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Standard_Textures.MM_Standard_Textures",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Cash_Register.MI_Cash_Register",
+   "scalars": {
+    "Normal_intensity": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Specular": 1.0,
+    "Texture_Coordinates": 0.0,
+    "Tile": 1.0
+   },
+   "textures": {
+    "BaseColor": "T_CashRegister_BC",
+    "Masks": "T_CashRegister_ORM",
+    "Normal": "T_CashRegister_N"
+   },
+   "vectors": {}
+  },
+  "MI_Coffee_Bag_Box": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Coffee_Bag_Box.MI_Coffee_Bag_Box",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 0.8373,
+    "AssetR_Global_Opacity": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AA)": 0.3133,
+    "Roughness (AB)": 0.7507,
+    "Roughness (AG)": 0.6173,
+    "Roughness (AR)": 0.8093,
+    "Slot_1) BaseColor Hue AD": 0.0,
+    "Slot_1) Grunge Contrast AD": 1.3705,
+    "Slot_1) Grunge Tile AD": 3.3011,
+    "Slot_1) Grunge_Mask_AD_Opacity": 0.288,
+    "Slot_1) Normal Intensity": 1.062,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_1) Tile": 3.6268,
+    "Slot_1) Uv_Channel AD": 2.0,
+    "Slot_2) Normal Intensity": 0.5,
+    "Slot_2) Roughness": 0.1867,
+    "Slot_2) SpecularLevel": 1.0,
+    "Slot_2) Tile": 0.2747,
+    "Slot_2_)UV_TIle_AD": 2.0,
+    "Slot_3) Grunge Contrast AD": 0.7858,
+    "Slot_3) Grunge Tile AD": 4.4301,
+    "Slot_3) Grunge_Mask_AD_Opacity": -0.28,
+    "Slot_3) Roughness": 0.6387,
+    "Slot_3) SpecularLevel": 1.0,
+    "Slot_3) Uv_Channel AD": 2.0
+   },
+   "textures": {
+    "BaseColor TX (AG)": "T_Packed_grunge_Ivy_BC",
+    "Mask_Asset": "T_Coffee_bag_Box_Mask_Asset",
+    "Normal TXT (AG)": "T_Packed_grunge_Ivy_N",
+    "ORM (AG)": "T_Packed_grunge_Ivy_ORM",
+    "Slot_1) Color TXT AD": "T_Coffee_Logo",
+    "Slot_1) Grunge Mask AD": "T_Grunge001",
+    "Slot_1) Normal": "T_Cardboard_N",
+    "Slot_2) Color TXT AD": "T_Coffee_Logo",
+    "Slot_2) Normal": "T_Detail_N_Noise_N",
+    "Slot_3) Color TXT AD": "T_Mug_And_Coffee_Additional_ColorOUT",
+    "Slot_3) Grunge Mask AD": "T_Grunge001"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.703,
+     0.703,
+     0.703
+    ],
+    "BaseColor (AB)": [
+     0.179,
+     0.179,
+     0.179
+    ],
+    "BaseColor (AG)": [
+     0.325,
+     0.246,
+     0.194
+    ],
+    "BaseColor (AR)": [
+     0.036,
+     0.036,
+     0.036
+    ],
+    "Slot_1) Basecolor": [
+     0.719,
+     0.712,
+     0.664
+    ],
+    "Slot_2) Basecolor": [
+     0.436,
+     0.338,
+     0.337
+    ],
+    "Slot_3) Basecolor": [
+     0.74,
+     0.74,
+     0.74
+    ]
+   }
+  },
+  "MI_Coffee_Caraff": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Coffee_Caraff.MI_Coffee_Caraff",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 0.9733,
+    "AssetR_Global_Opacity": 0.5627,
+    "Detail Normal Intensity": 0.1,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AA)": 0.904,
+    "Roughness (AB)": 0.676,
+    "Roughness (AG)": 0.6493,
+    "Roughness (AR)": 0.7507,
+    "Slot_1) Roughness": 0.5907,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_2) Roughness": 0.1373,
+    "Slot_2) SpecularLevel": 0.0,
+    "Slot_2) Uv_Channel AD": 2.0
+   },
+   "textures": {
+    "Detail Normal TXT": "T_Detail_N_Noise_N",
+    "Mask_Asset": "T_SM_Coffee_Caraff_Masks",
+    "Slot_2) Normal AD": "T_Cardboard_N"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.17,
+     0.17,
+     0.17
+    ],
+    "BaseColor (AB)": [
+     0.069,
+     0.052,
+     0.049
+    ],
+    "BaseColor (AG)": [
+     0.33,
+     0.33,
+     0.33
+    ],
+    "BaseColor (AR)": [
+     0.347,
+     0.347,
+     0.347
+    ],
+    "Slot_1) Basecolor": [
+     0.031,
+     0.031,
+     0.031
+    ],
+    "Slot_2) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ]
+   }
+  },
+  "MI_Coffee_Machine": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Coffee_Machine.MI_Coffee_Machine",
+   "scalars": {
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "Macro_Normal_Intensity": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AB)": 0.396,
+    "Roughness (AG)": 0.5667,
+    "Roughness (AR)": 0.6733,
+    "Slot_1) Normal Intensity": 0.09,
+    "Slot_1) Roughness": 0.2867,
+    "Slot_1) Tile": 0.088,
+    "Slot_2) Roughness": 0.2627,
+    "Slot_2) SpecularLevel": 1.0,
+    "Slot_3) Normal Intensity": 0.2,
+    "Slot_3) Roughness": 0.1973,
+    "Slot_3) SpecularLevel": 1.0,
+    "Slot_3) Texture_Coordinates": 2.0,
+    "Slot_3) Tile": 9.0533,
+    "Slot_3) Uv_Channel AD": 2.0,
+    "Slot_4) Roughness": 0.1587,
+    "Slot_4) SpecularLevel": 1.0
+   },
+   "textures": {
+    "Macro Normal TXT": "T_CoffeeMaker_Mask_N",
+    "Mask_Asset": "T_CoffeeMaker_Mask",
+    "Slot_1) Normal": "T_Detail_N_Noise_N",
+    "Slot_3) Color TXT AD": "T_CoffeeMaker_Stickers",
+    "Slot_3) Normal": "T_Detail_N_Noise_N"
+   },
+   "vectors": {
+    "BaseColor (AB)": [
+     0.161,
+     0.067,
+     0.067
+    ],
+    "BaseColor (AG)": [
+     0.307,
+     0.307,
+     0.307
+    ],
+    "BaseColor (AR)": [
+     0.141,
+     0.141,
+     0.141
+    ],
+    "Slot_1) Basecolor": [
+     0.927,
+     0.927,
+     0.927
+    ],
+    "Slot_2) Basecolor": [
+     0.036,
+     0.036,
+     0.036
+    ],
+    "Slot_3) Basecolor": [
+     0.688,
+     0.688,
+     0.688
+    ],
+    "Slot_4) Basecolor": [
+     0.646,
+     0.037,
+     0.037
+    ]
+   }
+  },
+  "MI_Counter_06": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Counter_06.MI_Counter_06",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "Macro_Normal_Intensity": 0.7,
+    "Mask Grunge Contrast (AB)": 1.0711,
+    "Mask Grunge Tile (AB)": 2.6516,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AA)": 0.664,
+    "Roughness (AB)": 0.616,
+    "Roughness (AG)": 0.5,
+    "Roughness (AR)": 0.708,
+    "Slot_1) Anisotropy_Level": 0.0,
+    "Slot_1) Normal Intensity": 0.03,
+    "Slot_1) Roughness": 0.2507,
+    "Slot_1) Tile": 0.3239,
+    "Slot_2) Roughness": 0.1693,
+    "Slot_2) Uv_Channel AD": 2.0,
+    "Slot_2)Anisotropy_Level": 0.0,
+    "Slot_3) Normal Intensity": 0.288,
+    "Slot_3) Roughness": 0.1893,
+    "Slot_3) SpecularLevel": 1.0,
+    "Slot_3) Tile": 22.4853,
+    "Slot_3)Anisotropy_level": 0.0,
+    "Slot_4) Normal Intensity": 0.136,
+    "Slot_4) Roughness": 0.292,
+    "Slot_4) SpecularLevel": 1.0,
+    "Slot_4) Tile": 24.6079,
+    "Tile (AG)": 5.2244
+   },
+   "textures": {
+    "BaseColor TX (AG)": "T_Plane_Utility_BaseColor",
+    "Grunge_Mask (AB)": "T_Grunge001",
+    "Macro Normal TXT": "T_Register_N",
+    "Mask_Asset": "T_Register_Mask",
+    "Normal TXT (AG)": "T_Plane_Utility_N_02",
+    "ORM (AG)": "T_Plane_Utility_OcclusionRoughnessMetallic",
+    "Slot_1) Normal": "T_Detail_N_Noise_N",
+    "Slot_2) Normal AD": "T_Plane_Utility_N_03",
+    "Slot_3) Normal": "T_Detail_N_Noise_N",
+    "Slot_4) Normal": "T_Detail_N_Noise_N"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.089,
+     0.023,
+     0.01
+    ],
+    "BaseColor (AB)": [
+     0.63,
+     0.63,
+     0.63
+    ],
+    "BaseColor (AG)": [
+     0.172,
+     0.172,
+     0.172
+    ],
+    "BaseColor (AR)": [
+     0.276,
+     0.276,
+     0.276
+    ],
+    "Slot_1) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ],
+    "Slot_2) Basecolor": [
+     0.531,
+     0.512,
+     0.496
+    ],
+    "Slot_3) Basecolor": [
+     0.094,
+     0.094,
+     0.094
+    ],
+    "Slot_4) Basecolor": [
+     0.078,
+     0.078,
+     0.078
+    ]
+   }
+  },
+  "MI_Cups": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Standard_Textures.MM_Standard_Textures",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Cups.MI_Cups",
+   "scalars": {
+    "RefractionDepthBias": 0.0,
+    "Roughness_multiply": 0.6107,
+    "Specular": 1.0
+   },
+   "textures": {
+    "BaseColor": "T_Cups_lambert1_BC",
+    "Masks": "T_Cups_lambert1_OcclusionRoughnessMetallic",
+    "Normal": "T_Cups_lambert1_N"
+   },
+   "vectors": {}
+  },
+  "MI_Fire_Alarm": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Fire_Alarm.MI_Fire_Alarm",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "Macro_Normal_Intensity": 1.9878,
+    "Metallic_Shrink": 0.4077,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AA)": 0.804,
+    "Roughness (AB)": 0.58,
+    "Roughness (AG)": 0.5,
+    "Roughness (AR)": 0.604,
+    "Slot_1) Normal Intensity": 0.2,
+    "Slot_1) Roughness": 0.26,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_1) Tile": 2.1409,
+    "Slot_2) Roughness": 0.228,
+    "Slot_2) SpecularLevel": 1.0,
+    "Slot_3) Roughness": 0.184
+   },
+   "textures": {
+    "Macro Normal TXT": "T_Fire_alarm_Mask_N",
+    "Mask_Asset": "T_Fire_alarm_Mask_Asset",
+    "Slot_1) Normal": "T_Detail_N_Noise_N"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "BaseColor (AB)": [
+     0.484,
+     0.484,
+     0.484
+    ],
+    "BaseColor (AG)": [
+     0.5,
+     0.099,
+     0.099
+    ],
+    "BaseColor (AR)": [
+     0.781,
+     0.781,
+     0.781
+    ],
+    "Slot_1) Basecolor": [
+     0.49,
+     0.054,
+     0.054
+    ],
+    "Slot_2) Basecolor": [
+     0.693,
+     0.693,
+     0.693
+    ],
+    "Slot_3) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ]
+   }
+  },
+  "MI_Food_Glass_Exhibitor": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Food_Glass_Exhibitor.MI_Food_Glass_Exhibitor",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 0.6507,
+    "AssetR_Global_Opacity": 1.0,
+    "Detail Normal Intensity": 0.1,
+    "Detail Normal Rotate": 0.0,
+    "Detail Normal Tile": 22.2817,
+    "Macro_Normal_Intensity": 31.5525,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AA)": 0.5,
+    "Roughness (AB)": 0.736,
+    "Roughness (AG)": 0.836,
+    "Roughness (AR)": 0.88,
+    "Slot_1) Normal Intensity": 0.1,
+    "Slot_1) Roughness": 0.224,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_1) Tile": 10.3981,
+    "Slot_1) Uv_Channel AD": 2.0,
+    "Slot_2) Roughness": 0.6387,
+    "Slot_2) SpecularLevel": 1.0,
+    "Slot_2) Uv_Channel AD": 2.0,
+    "Slot_3) Roughness": 0.3453,
+    "Slot_3) SpecularLevel": 1.0,
+    "Slot_4) Roughness": 0.2613,
+    "Slot_4) SpecularLevel": 1.0
+   },
+   "textures": {
+    "Detail Normal TXT": "T_Detail_N_Noise_N",
+    "Macro Normal TXT": "T_Food_Glass_Exhibitor_Mask_N",
+    "Mask_Asset": "T_Food_Glass_Exhibitor_Mask_Asset",
+    "Slot_1) Color TXT AD": "T_Cartellini",
+    "Slot_1) Normal": "T_Detail_N_Noise_N",
+    "Slot_2) Color TXT AD": "T_Cartellini"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.5,
+     0.5,
+     0.5
+    ],
+    "BaseColor (AB)": [
+     0.5,
+     0.5,
+     0.5
+    ],
+    "BaseColor (AG)": [
+     0.373,
+     0.373,
+     0.373
+    ],
+    "BaseColor (AR)": [
+     0.062,
+     0.062,
+     0.062
+    ],
+    "Slot_1) Basecolor": [
+     0.465,
+     0.455,
+     0.409
+    ],
+    "Slot_2) Basecolor": [
+     0.156,
+     0.156,
+     0.156
+    ],
+    "Slot_3) Basecolor": [
+     0.491,
+     0.153,
+     0.161
+    ],
+    "Slot_4) Basecolor": [
+     0.892,
+     0.896,
+     0.896
+    ]
+   }
+  },
+  "MI_Fridge": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Fridge.MI_Fridge",
+   "scalars": {
+    "AssetA_Global_Opacity": 0.712,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 0.584,
+    "Macro_Normal_Intensity": 1.5,
+    "Mask_Asset_Tile": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Rough Tweak (AB)": 0.64,
+    "Roughness (AA)": 0.5853,
+    "Roughness (AB)": 0.76,
+    "Roughness (AG)": 0.82,
+    "Roughness (AR)": 0.3747,
+    "Slot_1) Normal Intensity": 0.0773,
+    "Slot_1) Roughness": 0.1427,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_1) Tile": 0.08,
+    "Slot_2) Roughness": 0.644,
+    "Slot_2) SpecularLevel": 1.0,
+    "Slot_2) Uv_Channel AD": 2.0,
+    "Slot_2)Roughness_Intensity AD": 0.25,
+    "Slot_3) Normal Intensity": 0.056,
+    "Slot_3) Roughness": 0.25,
+    "Slot_3) Tile": 0.1425,
+    "Slot_4) Roughness": 0.612,
+    "Slot_4) SpecularLevel": 1.0,
+    "Tile (AB)": 4.3259,
+    "Tile (AG)": 9.4867
+   },
+   "textures": {
+    "BaseColor TX (AB)": "T_Packed_grunge_Ivy_BC",
+    "BaseColor TX (AG)": "T_Plane_Utility_BaseColor",
+    "Macro Normal TXT": "T_Fridge_Mask_N",
+    "Mask_Asset": "T_Fridge_Mask",
+    "Normal TXT (AB)": "T_Packed_grunge_Ivy_N",
+    "Normal TXT (AG)": "T_Plane_Utility_N_02",
+    "ORM (AB)": "T_Packed_grunge_Ivy_ORM",
+    "ORM (AG)": "T_Plane_Utility_OcclusionRoughnessMetallic",
+    "Slot_1) Normal": "T_Detail_N_Noise_N",
+    "Slot_2) Color TXT AD": "T_Fridge_BC",
+    "Slot_2) Normal AD": "T_Fridge_N",
+    "Slot_2) Roughness AD Text": "T_Fridge_ORM",
+    "Slot_3) Normal": "T_Detail_N_Noise_N"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.583,
+     0.583,
+     0.583
+    ],
+    "BaseColor (AB)": [
+     0.743,
+     0.743,
+     0.743
+    ],
+    "BaseColor (AG)": [
+     0.469,
+     0.469,
+     0.469
+    ],
+    "BaseColor (AR)": [
+     0.125,
+     0.125,
+     0.125
+    ],
+    "Slot_1) Basecolor": [
+     0.479,
+     0.479,
+     0.479
+    ],
+    "Slot_2) Basecolor": [
+     0.792,
+     0.792,
+     0.792
+    ],
+    "Slot_3) Basecolor": [
+     0.531,
+     0.512,
+     0.496
+    ],
+    "Slot_4) Basecolor": [
+     0.448,
+     0.086,
+     0.086
+    ]
+   }
+  },
+  "MI_Fridge_02": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Standard_Textures.MM_Standard_Textures",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Fridge_02.MI_Fridge_02",
+   "scalars": {
+    "Normal_intensity": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Roughness_multiply": 1.0,
+    "Specular": 1.0
+   },
+   "textures": {
+    "BaseColor": "T_Fridge_02_BC",
+    "Masks": "T_Fridge_02_ORM",
+    "Normal": "T_Fridge_02_N"
+   },
+   "vectors": {}
+  },
+  "MI_NoticeBoard": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_NoticeBoard.MI_NoticeBoard",
+   "scalars": {
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "Macro_Normal_Intensity": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AB)": 0.8307,
+    "Roughness (AG)": 0.4147,
+    "Roughness (AR)": 0.8,
+    "Slot_1) Roughness": 0.2653,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_1) Uv_Channel AD": 2.0,
+    "Slot_2) Roughness": 0.244,
+    "Slot_3) Roughness": 0.1907,
+    "Slot_3) SpecularLevel": 1.0,
+    "Slot_4) Roughness": 0.2173,
+    "Slot_4) SpecularLevel": 1.0,
+    "Specular (AR)": 1.0
+   },
+   "textures": {
+    "Macro Normal TXT": "T_NoticeBoard_N",
+    "Mask_Asset": "T_NoticeBoard_Mask",
+    "Slot_1) Color TXT AD": "T_NoticeBoard_BC"
+   },
+   "vectors": {
+    "BaseColor (AB)": [
+     0.905,
+     0.905,
+     0.905
+    ],
+    "BaseColor (AG)": [
+     0.418,
+     0.418,
+     0.418
+    ],
+    "BaseColor (AR)": [
+     0.075,
+     0.075,
+     0.075
+    ],
+    "Slot_1) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ],
+    "Slot_2) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ],
+    "Slot_3) Basecolor": [
+     0.858,
+     0.042,
+     0.078
+    ],
+    "Slot_4) Basecolor": [
+     0.16,
+     0.16,
+     0.16
+    ]
+   }
+  },
+  "MI_Placca_Interruttore": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Placca_Interruttore.MI_Placca_Interruttore",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "Macro_Normal_Intensity": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AB)": 0.7173,
+    "Roughness (AG)": 0.66,
+    "Roughness (AR)": 0.692,
+    "Slot_1) Roughness": 0.2547,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_2) Roughness": 0.244,
+    "Slot_2) SpecularLevel": 1.0,
+    "Slot_3) Roughness": 0.196,
+    "Slot_3) Uv_Channel AD": 2.0
+   },
+   "textures": {
+    "Macro Normal TXT": "T_Placca_Interruttore_Mask_N",
+    "Mask_Asset": "T_Placca_Interruttore_Mask_Asset",
+    "Slot_3) Normal AD": "T_Plane_Utility_N_03"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "BaseColor (AB)": [
+     0.741,
+     0.741,
+     0.741
+    ],
+    "BaseColor (AG)": [
+     0.321,
+     0.321,
+     0.321
+    ],
+    "BaseColor (AR)": [
+     0.078,
+     0.078,
+     0.078
+    ],
+    "Slot_1) Basecolor": [
+     0.899,
+     0.858,
+     0.782
+    ],
+    "Slot_2) Basecolor": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "Slot_3) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ]
+   }
+  },
+  "MI_Safe": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Safe.MI_Safe",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "Macro_Normal_Intensity": 1.2,
+    "Mask Grunge Contrast (AB)": 0.7547,
+    "Mask Grunge Tile (AB)": 2.8399,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AA)": 0.8987,
+    "Roughness (AB)": 1.0,
+    "Roughness (AG)": 0.824,
+    "Roughness (AR)": 0.864,
+    "Slot_1) Grunge Contrast AD": 1.3803,
+    "Slot_1) Grunge Tile AD": 136.147,
+    "Slot_1) Roughness": 0.2613,
+    "Slot_1) SpecularLevel": 0.8,
+    "Slot_1) Uv_Channel AD": 2.0,
+    "Slot_1)Roughness_Intensity AD": 1.0,
+    "Slot_2) Normal Intensity": 0.05,
+    "Slot_2) Roughness": 0.112,
+    "Slot_2) SpecularLevel": 0.4,
+    "Slot_2) Tile": 2.4537,
+    "Slot_3) Roughness": 0.3453,
+    "Slot_3) SpecularLevel": 1.0,
+    "Slot_4) Roughness": 0.276,
+    "Slot_4) Uv_Channel AD": 2.0,
+    "Specular (AA)": 0.0,
+    "Specular (AB)": 0.2,
+    "Specular (AG)": 0.2,
+    "Specular (AR)": 0.0,
+    "Tile (AA)": 3.7036
+   },
+   "textures": {
+    "BaseColor TX (AA)": "T_Plane_Utility_BaseColor",
+    "Grunge_Mask (AB)": "T_Grunge001",
+    "Macro Normal TXT": "T_Safe_N",
+    "Mask_Asset": "T_Safe_Mask",
+    "ORM (AA)": "T_Plane_Utility_OcclusionRoughnessMetallic",
+    "Slot_1) Color TXT AD": "T_Safe_BC",
+    "Slot_1) Grunge Mask AD": "T_Grunge001",
+    "Slot_2) Normal": "T_Detail_N_Noise_N",
+    "Slot_4) Normal AD": "T_Plane_Utility_N_03"
+   },
+   "vectors": {
+    "BaseColor (AB)": [
+     0.76,
+     0.76,
+     0.76
+    ],
+    "BaseColor (AG)": [
+     0.354,
+     0.354,
+     0.354
+    ],
+    "BaseColor (AR)": [
+     0.118,
+     0.118,
+     0.118
+    ],
+    "Slot_1) Basecolor": [
+     0.153,
+     0.153,
+     0.153
+    ],
+    "Slot_1) Colour_AD": [
+     0.961,
+     0.965,
+     0.965
+    ],
+    "Slot_2) Basecolor": [
+     0.403,
+     0.408,
+     0.46
+    ],
+    "Slot_3) Basecolor": [
+     0.835,
+     0.094,
+     0.11
+    ],
+    "Slot_4) Basecolor": [
+     0.912,
+     0.914,
+     0.92
+    ]
+   }
+  },
+  "MI_Secchio": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Secchio.MI_Secchio",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 0.712,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "BC Brightness (AA)": 0.0,
+    "BC_Saturation (AA)": 0.0,
+    "Detail Normal Intensity": 0.3093,
+    "Detail Normal Tile": 9.5412,
+    "Macro_Normal_Intensity": 1.0,
+    "Mask Grunge Contrast (AA)": 2.6527,
+    "Mask Grunge Contrast (AB)": 1.6987,
+    "Mask Grunge Contrast (AG)": 0.9785,
+    "Mask Grunge Contrast (AR)": 0.7205,
+    "Mask Grunge Tile (AA)": 1.2844,
+    "Mask Grunge Tile (AB)": 1.599,
+    "Mask Grunge Tile (AG)": 1.2116,
+    "Mask Grunge Tile (AR)": 5.2574,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AB)": 1.0,
+    "Roughness (AG)": 0.8627,
+    "Roughness (AR)": 0.8787,
+    "Slot_1) Roughness": 0.25,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_2) Roughness": 0.0787,
+    "Specular (AA)": 1.0,
+    "Specular (AB)": 0.0,
+    "Specular (AG)": 0.0,
+    "Specular (AR)": 0.0,
+    "Tile (AA)": 2.3862
+   },
+   "textures": {
+    "BaseColor TX (AA)": "T_Packed_grunge_Ivy_BC",
+    "Detail Normal TXT": "T_Detail_N_Noise_N",
+    "Grunge_Mask (AA)": "T_Grunge001",
+    "Grunge_Mask (AB)": "T_Grunge001",
+    "Grunge_Mask (AG)": "T_Grunge001",
+    "Grunge_Mask (AR)": "T_Grunge001",
+    "Macro Normal TXT": "T_Scatola_Plastica_Mask_N",
+    "Mask_Asset": "T_Secchio_Mask_Asset",
+    "Normal TXT (AA)": "T_Packed_grunge_Ivy_N",
+    "ORM (AA)": "T_Packed_grunge_Ivy_ORM"
+   },
+   "vectors": {
+    "BaseColor (AB)": [
+     0.311,
+     0.137,
+     0.029
+    ],
+    "BaseColor (AG)": [
+     0.194,
+     0.194,
+     0.194
+    ],
+    "BaseColor (AR)": [
+     0.132,
+     0.132,
+     0.132
+    ],
+    "Slot_1) Basecolor": [
+     0.681,
+     0.665,
+     0.62
+    ],
+    "Slot_2) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ]
+   }
+  },
+  "MI_Signs": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Standard_Textures.MM_Standard_Textures",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Signs.MI_Signs",
+   "scalars": {
+    "Normal_intensity": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Roughness_multiply": 0.8,
+    "Saturation": 0.4853,
+    "Specular": 1.0
+   },
+   "textures": {
+    "BaseColor": "T_Signs_surfaceShader1_BC",
+    "Masks": "T_Signs_surfaceShader1_OcclusionRoughnessMetallic",
+    "Normal": "T_Signs_surfaceShader1_N"
+   },
+   "vectors": {}
+  },
+  "MI_Stool": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Stool.MI_Stool",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 0.992,
+    "BC Brightness (AA)": 1.7248,
+    "BC Brightness (AR)": 1.8375,
+    "BC_Saturation (AA)": 0.664,
+    "BC_Saturation (AR)": 0.624,
+    "Macro_Normal_Intensity": 2.0,
+    "RefractionDepthBias": 0.0,
+    "Rotation (AR)": 0.0,
+    "Rough Tweak (AA)": 1.2561,
+    "Rough Tweak (AG)": 1.4151,
+    "Rough Tweak (AR)": 1.266,
+    "Roughness (AA)": 0.724,
+    "Roughness (AB)": 0.708,
+    "Slot_1) Normal Intensity": 0.02,
+    "Slot_1) Roughness": 0.16,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_1) Tile": 3.0,
+    "Slot_2) Roughness": 0.604,
+    "Slot_2) SpecularLevel": 1.0,
+    "Slot_3) Normal Intensity": 0.5,
+    "Slot_3) Roughness Intensity": 1.4184,
+    "Slot_3) SpecularLevel": 1.0,
+    "Slot_3) Tile": 2.0,
+    "Slot_4) Roughness": 0.276,
+    "Specular (AR)": 1.0,
+    "Tile (AA)": 2.1669,
+    "Tile (AG)": 15.717,
+    "Tile (AR)": 5.0424
+   },
+   "textures": {
+    "BaseColor TX (AA)": "T_Plane_Utility_BC_02",
+    "BaseColor TX (AG)": "T_Plane_Utility_BaseColor",
+    "BaseColor TX (AR)": "T_Plane_Utility_BC_02",
+    "Macro Normal TXT": "T_Stool_Mask_N",
+    "Mask_Asset": "T_Stool_Mask",
+    "Normal TXT (AA)": "T_Plane_Utility_N_04",
+    "Normal TXT (AG)": "T_Plane_Utility_N_02",
+    "Normal TXT (AR)": "T_Plane_Utility_N_04",
+    "ORM (AA)": "T_Plane_Utility_OcclusionRoughnessMetallic_02",
+    "ORM (AG)": "T_Plane_Utility_OcclusionRoughnessMetallic",
+    "ORM (AR)": "T_Plane_Utility_OcclusionRoughnessMetallic_02",
+    "Slot_1) Normal": "T_Detail_N_Noise_N",
+    "Slot_3) Basecolor TXT": "T_Plane_Utility_BC_02",
+    "Slot_3) Normal": "T_Plane_Utility_N_04",
+    "Slot_3) ORM": "T_Plane_Utility_OcclusionRoughnessMetallic_02"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.094,
+     0.094,
+     0.094
+    ],
+    "BaseColor (AB)": [
+     0.057,
+     0.016,
+     0.016
+    ],
+    "BaseColor (AG)": [
+     0.5,
+     0.5,
+     0.5
+    ],
+    "BaseColor (AR)": [
+     0.057,
+     0.057,
+     0.057
+    ],
+    "Slot_1) Basecolor": [
+     0.153,
+     0.153,
+     0.153
+    ],
+    "Slot_2) Basecolor": [
+     0.156,
+     0.156,
+     0.156
+    ],
+    "Slot_3) Basecolor": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "Slot_4) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ]
+   }
+  },
+  "MI_Tissue_Box": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Tissue_Box.MI_Tissue_Box",
+   "scalars": {
+    "AssetA_Global_Opacity": 0.872,
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "Detail Normal Intensity": 0.2,
+    "Detail Normal Rotate": 0.0,
+    "Detail Normal Texture Coordinates": 0.0,
+    "Detail Normal Tile": 3.0,
+    "Normal Intensity (AA)": 3.8145,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AA)": 0.6853,
+    "Roughness (AB)": 0.4187,
+    "Roughness (AG)": 0.804,
+    "Slot_1) Normal Intensity": 0.05,
+    "Slot_1) Roughness": 0.2653,
+    "Slot_1) Tile": 0.7,
+    "Slot_1) Uv_Channel AD": 2.0,
+    "Slot_1)Normal Intensity AD": -0.5307,
+    "Slot_2) Grunge Contrast AD": 3.6469,
+    "Slot_2) Grunge Tile AD": 1.9606,
+    "Slot_2) Grunge_mask_AD_Opacity": 0.44,
+    "Slot_2) Normal Intensity": 0.2388,
+    "Slot_2) Roughness": 0.4,
+    "Slot_2) Roughness AD": 0.6,
+    "Slot_2) SpecularLevel": 1.0,
+    "Slot_2) Tile": 0.6907,
+    "Slot_2) Uv_Channel AD": 2.0,
+    "Specular (AA)": 1.0,
+    "Tile (AA)": 4.3191,
+    "Tile (AR)": 2.9943
+   },
+   "textures": {
+    "BaseColor TX (AA)": "T_Packed_grunge_Ivy_BC",
+    "BaseColor TX (AR)": "T_Plane_Utility_BaseColor",
+    "Detail Normal TXT": "T_Detail_N_Noise_N",
+    "Mask_Asset": "T_Tissue_Box_Masks",
+    "Normal TXT (AA)": "T_Packed_grunge_Ivy_N",
+    "Normal TXT (AR)": "T_Plane_Utility_N_02",
+    "ORM (AA)": "T_Packed_grunge_Ivy_ORM",
+    "ORM (AR)": "T_Plane_Utility_OcclusionRoughnessMetallic",
+    "Slot_1) Normal": "T_Detail_N_Noise_N",
+    "Slot_1) Normal AD": "T_Cardboard_N",
+    "Slot_2) Color TXT AD": "T_Coffee_Logo",
+    "Slot_2) Grunge Mask AD": "T_Grunge001",
+    "Slot_2) Normal": "T_Carpet_Ruston_N"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.467,
+     0.467,
+     0.467
+    ],
+    "BaseColor (AB)": [
+     0.753,
+     0.753,
+     0.753
+    ],
+    "BaseColor (AG)": [
+     0.257,
+     0.257,
+     0.257
+    ],
+    "BaseColor (AR)": [
+     0.403,
+     0.403,
+     0.403
+    ],
+    "Slot_1) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ],
+    "Slot_2) Basecolor": [
+     0.917,
+     0.889,
+     0.761
+    ]
+   }
+  },
+  "MI_Trash": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Standard_Textures.MM_Standard_Textures",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Trash.MI_Trash",
+   "scalars": {
+    "Normal_intensity": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Saturation": 0.136,
+    "Specular": 1.0,
+    "Subsurface_Color_Multiply": 0.0,
+    "Tile": 1.0
+   },
+   "textures": {
+    "BaseColor": "T_Trash_lambert3_BC",
+    "Masks": "T_Trash_lambert3_OcclusionRoughnessMetallic",
+    "Normal": "T_Trash_lambert3_N"
+   },
+   "vectors": {}
+  },
+  "MI_Trash_Bin": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Trash_Bin.MI_Trash_Bin",
+   "scalars": {
+    "AssetA_Global_Opacity": 1.0,
+    "AssetB_Global_Opacity": 0.144,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "Mask Grunge Contrast (AG)": 1.1428,
+    "Mask Grunge Tile (AG)": 4.0898,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AA)": 0.5,
+    "Roughness (AB)": 0.708,
+    "Roughness (AG)": 0.4787,
+    "Roughness (AR)": 0.436,
+    "Slot_1) Roughness": 0.224,
+    "Slot_1) SpecularLevel": 1.0,
+    "Slot_2) Roughness": 0.1053,
+    "Slot_2) SpecularLevel": 0.5
+   },
+   "textures": {
+    "Grunge_Mask (AG)": "T_Grunge001",
+    "Mask_Asset": "T_Small_Trash_Bin_Mask"
+   },
+   "vectors": {
+    "BaseColor (AA)": [
+     0.641,
+     0.641,
+     0.641
+    ],
+    "BaseColor (AB)": [
+     0.634,
+     0.634,
+     0.634
+    ],
+    "BaseColor (AG)": [
+     0.09,
+     0.09,
+     0.09
+    ],
+    "BaseColor (AR)": [
+     0.167,
+     0.167,
+     0.167
+    ],
+    "Slot_1) Basecolor": [
+     0.153,
+     0.153,
+     0.153
+    ],
+    "Slot_2) Basecolor": [
+     0.477,
+     0.469,
+     0.438
+    ]
+   }
+  },
+  "MI_VendingMachine01": {
+   "base": "/Game/Licensed/CosmosShop/Hospital/Materials/MM_Master.MM_Master",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_VendingMachine01.MI_VendingMachine01",
+   "scalars": {
+    "Emissive amount": 0.6,
+    "RefractionDepthBias": 0.0
+   },
+   "textures": {
+    "AORM": "T_VendingMachine01_ORM",
+    "Base Color": "T_VendingMachine01_B",
+    "Custom Emmissive": "T_VendingMachine01_E",
+    "Normal": "T_VendingMachine01_N"
+   },
+   "vectors": {
+    "Emmisive Color": [
+     0.0,
+     0.392,
+     0.557
+    ]
+   }
+  },
+  "MI_Vent": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Vent.MI_Vent",
+   "scalars": {
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AB)": 0.8827,
+    "Roughness (AG)": 0.516,
+    "Roughness (AR)": 0.832,
+    "Slot_1) Normal Intensity": 0.168,
+    "Slot_1) Roughness": 0.148,
+    "Slot_1) Tile": 2.3352,
+    "Slot_2) Normal Intensity": 1.0,
+    "Slot_2) Roughness": 0.8093,
+    "Slot_2) SpecularLevel": 0.0,
+    "Slot_2) Tile": 1.0
+   },
+   "textures": {
+    "Mask_Asset": "T_Vent_Low_Mask_Asset",
+    "Slot_1) Normal": "T_Detail_N_Noise_N",
+    "Slot_2) Normal": "T_Detail_N_Noise_N"
+   },
+   "vectors": {
+    "BaseColor (AB)": [
+     0.5,
+     0.5,
+     0.5
+    ],
+    "BaseColor (AG)": [
+     0.795,
+     0.795,
+     0.795
+    ],
+    "BaseColor (AR)": [
+     0.443,
+     0.443,
+     0.443
+    ],
+    "Slot_1) Basecolor": [
+     0.961,
+     0.965,
+     0.965
+    ],
+    "Slot_2) Basecolor": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "MI_Vents": {
+   "base": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MM/MM_Master_Material_Assets.MM_Master_Material_Assets",
+   "base_pixel_instructions": 0,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Vents.MI_Vents",
+   "scalars": {
+    "AssetB_Global_Opacity": 1.0,
+    "AssetG_Global_Opacity": 1.0,
+    "AssetR_Global_Opacity": 1.0,
+    "Macro_Normal_Intensity": 0.7172,
+    "Mask Grunge Contrast (AG)": 0.9655,
+    "Mask Grunge Tile (AG)": 8.0483,
+    "RefractionDepthBias": 0.0,
+    "Roughness (AB)": 0.9333,
+    "Roughness (AG)": 0.8307,
+    "Roughness (AR)": 0.8133,
+    "Slot_1) Normal Intensity": 0.2267,
+    "Slot_1) Roughness": 0.3293,
+    "Slot_1) Tile": 0.136,
+    "Tile (AG)": 3.6824
+   },
+   "textures": {
+    "BaseColor TX (AG)": "T_Plane_Utility_BaseColor",
+    "Grunge_Mask (AG)": "T_Grunge001",
+    "Macro Normal TXT": "T_Vents_Mask_N",
+    "Mask_Asset": "T_Vents_Mask_Asset",
+    "Normal TXT (AG)": "T_Plane_Utility_N_02",
+    "ORM (AG)": "T_Plane_Utility_OcclusionRoughnessMetallic",
+    "Slot_1) Normal": "T_Detail_N_Noise_N"
+   },
+   "vectors": {
+    "BaseColor (AB)": [
+     0.066,
+     0.023,
+     0.023
+    ],
+    "BaseColor (AG)": [
+     0.5,
+     0.5,
+     0.5
+    ],
+    "BaseColor (AR)": [
+     0.144,
+     0.144,
+     0.144
+    ],
+    "Slot_1) Basecolor": [
+     0.531,
+     0.512,
+     0.496
+    ]
+   }
+  }
+ },
+ "meshes": {
+  "SM_AC_Unit_Ceiling": {
+   "bounds_cm": [
+    [
+     0.0,
+     0.0,
+     -2.1
+    ],
+    [
+     80.0,
+     80.0,
+     0.0
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 19,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_AC_Unit_Ceiling",
+   "size_cm": [
+    80.0,
+    80.0,
+    2.1
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Ac_unit_Ceiling.MI_Ac_unit_Ceiling",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 206
+  },
+  "SM_Big_Cup_Stacked": {
+   "bounds_cm": [
+    [
+     -4.4,
+     -4.4,
+     0.1
+    ],
+    [
+     4.4,
+     4.4,
+     25.5
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 8,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Big_Cup_Stacked",
+   "size_cm": [
+    8.8,
+    8.8,
+    25.4
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Cups.MI_Cups",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 7040
+  },
+  "SM_Bottle01": {
+   "bounds_cm": [
+    [
+     -4.4,
+     -4.4,
+     -0.0
+    ],
+    [
+     4.4,
+     4.4,
+     29.1
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 10,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_Bottle01",
+   "size_cm": [
+    8.8,
+    8.8,
+    29.1
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets05.MI_Assets05",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1472
+  },
+  "SM_Bottle02": {
+   "bounds_cm": [
+    [
+     -4.0,
+     -4.0,
+     -0.0
+    ],
+    [
+     4.0,
+     4.0,
+     14.1
+    ]
+   ],
+   "lods": 2,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_Bottle02",
+   "size_cm": [
+    8.0,
+    8.0,
+    14.1
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets01.MI_Assets01",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 416
+  },
+  "SM_Bottle03": {
+   "bounds_cm": [
+    [
+     -18.2,
+     -18.2,
+     -0.0
+    ],
+    [
+     18.2,
+     18.2,
+     56.6
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 10,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_Bottle03",
+   "size_cm": [
+    36.4,
+    36.4,
+    56.6
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets05.MI_Assets05",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1328
+  },
+  "SM_Box_01": {
+   "bounds_cm": [
+    [
+     -0.0,
+     -0.8,
+     -0.6
+    ],
+    [
+     22.9,
+     41.2,
+     26.5
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Box_01",
+   "size_cm": [
+    22.9,
+    42.1,
+    27.1
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Carboard_Boxes.MI_Carboard_Boxes",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1418
+  },
+  "SM_Box_02": {
+   "bounds_cm": [
+    [
+     -0.1,
+     -0.8,
+     -0.0
+    ],
+    [
+     30.2,
+     40.3,
+     32.4
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Box_02",
+   "size_cm": [
+    30.3,
+    41.1,
+    32.4
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Carboard_Boxes.MI_Carboard_Boxes",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1418
+  },
+  "SM_Bucket01": {
+   "bounds_cm": [
+    [
+     -12.9,
+     -12.2,
+     0.0
+    ],
+    [
+     12.9,
+     12.2,
+     24.1
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 10,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_Bucket01",
+   "size_cm": [
+    25.7,
+    24.4,
+    24.1
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets05.MI_Assets05",
+     "slot": "lambert38"
+    }
+   ],
+   "triangles_lod0": 1548
+  },
+  "SM_Can01": {
+   "bounds_cm": [
+    [
+     -4.3,
+     -4.3,
+     0.0
+    ],
+    [
+     4.3,
+     4.3,
+     13.2
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_Can01",
+   "size_cm": [
+    8.6,
+    8.6,
+    13.2
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets03.MI_Assets03",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1024
+  },
+  "SM_Can02": {
+   "bounds_cm": [
+    [
+     -3.5,
+     -3.5,
+     0.0
+    ],
+    [
+     3.5,
+     3.5,
+     12.6
+    ]
+   ],
+   "lods": 2,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_Can02",
+   "size_cm": [
+    7.0,
+    7.0,
+    12.6
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets03.MI_Assets03",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1510
+  },
+  "SM_Cans_Lattina": {
+   "bounds_cm": [
+    [
+     -2.9,
+     -2.9,
+     0.0
+    ],
+    [
+     2.9,
+     2.9,
+     14.6
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Cans_Lattina",
+   "size_cm": [
+    5.9,
+    5.9,
+    14.6
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Trash.MI_Trash",
+     "slot": "lambert3"
+    }
+   ],
+   "triangles_lod0": 4688
+  },
+  "SM_CardboardBox01": {
+   "bounds_cm": [
+    [
+     -17.9,
+     -12.5,
+     -0.2
+    ],
+    [
+     17.8,
+     12.5,
+     26.0
+    ]
+   ],
+   "lods": 2,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_CardboardBox01",
+   "size_cm": [
+    35.6,
+    24.9,
+    26.3
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets02.MI_Assets02",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 444
+  },
+  "SM_CardboardBox02": {
+   "bounds_cm": [
+    [
+     -32.0,
+     -19.8,
+     -0.6
+    ],
+    [
+     32.6,
+     20.2,
+     26.4
+    ]
+   ],
+   "lods": 2,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_CardboardBox02",
+   "size_cm": [
+    64.6,
+    39.9,
+    27.0
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets02.MI_Assets02",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 552
+  },
+  "SM_CardboardBox03": {
+   "bounds_cm": [
+    [
+     -26.8,
+     -21.2,
+     -0.3
+    ],
+    [
+     26.7,
+     21.3,
+     38.3
+    ]
+   ],
+   "lods": 2,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_CardboardBox03",
+   "size_cm": [
+    53.5,
+    42.5,
+    38.6
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets02.MI_Assets02",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 444
+  },
+  "SM_CardboardBox04": {
+   "bounds_cm": [
+    [
+     -40.2,
+     -40.2,
+     -0.0
+    ],
+    [
+     40.2,
+     40.2,
+     0.7
+    ]
+   ],
+   "lods": 1,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 10,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_CardboardBox04",
+   "size_cm": [
+    80.5,
+    80.5,
+    0.7
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets05.MI_Assets05",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 180
+  },
+  "SM_CardboardBox05": {
+   "bounds_cm": [
+    [
+     -28.5,
+     -23.4,
+     -0.4
+    ],
+    [
+     28.4,
+     23.5,
+     50.0
+    ]
+   ],
+   "lods": 2,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_CardboardBox05",
+   "size_cm": [
+    56.9,
+    46.9,
+    50.4
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets02.MI_Assets02",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 444
+  },
+  "SM_CashRegister": {
+   "bounds_cm": [
+    [
+     -69.2,
+     -65.5,
+     -2.2
+    ],
+    [
+     2.1,
+     0.0,
+     15.6
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 24,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_CashRegister",
+   "size_cm": [
+    71.3,
+    65.5,
+    17.8
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Counter_06.MI_Counter_06",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1508
+  },
+  "SM_Cash_Register_Body": {
+   "bounds_cm": [
+    [
+     -0.1,
+     0.0,
+     0.0
+    ],
+    [
+     39.4,
+     48.0,
+     39.6
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Cash_Register_Body",
+   "size_cm": [
+    39.5,
+    48.0,
+    39.6
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Cash_Register.MI_Cash_Register",
+     "slot": "blinn1"
+    }
+   ],
+   "triangles_lod0": 12193
+  },
+  "SM_Cash_Register_Drawer": {
+   "bounds_cm": [
+    [
+     10.8,
+     0.9,
+     0.9
+    ],
+    [
+     39.8,
+     47.1,
+     9.7
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Cash_Register_Drawer",
+   "size_cm": [
+    29.0,
+    46.2,
+    8.8
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Cash_Register.MI_Cash_Register",
+     "slot": "blinn1"
+    }
+   ],
+   "triangles_lod0": 26952
+  },
+  "SM_Cigarette_Box": {
+   "bounds_cm": [
+    [
+     -4.3,
+     -7.1,
+     -0.1
+    ],
+    [
+     4.5,
+     6.6,
+     3.2
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Cigarette_Box",
+   "size_cm": [
+    8.8,
+    13.7,
+    3.3
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Trash.MI_Trash",
+     "slot": "lambert3"
+    }
+   ],
+   "triangles_lod0": 3760
+  },
+  "SM_Coffee_Box": {
+   "bounds_cm": [
+    [
+     -11.5,
+     -0.1,
+     -0.1
+    ],
+    [
+     0.1,
+     9.7,
+     15.5
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 26,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Coffee_Box",
+   "size_cm": [
+    11.5,
+    9.7,
+    15.7
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Coffee_Bag_Box.MI_Coffee_Bag_Box",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 360
+  },
+  "SM_Coffee_Caraff": {
+   "bounds_cm": [
+    [
+     -8.7,
+     -4.1,
+     0.0
+    ],
+    [
+     6.0,
+     4.1,
+     24.2
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 20,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Coffee_Caraff",
+   "size_cm": [
+    14.7,
+    8.3,
+    24.2
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Coffee_Caraff.MI_Coffee_Caraff",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 2252
+  },
+  "SM_Coffee_Machine": {
+   "bounds_cm": [
+    [
+     0.0,
+     -3.7,
+     0.0
+    ],
+    [
+     46.9,
+     39.8,
+     46.3
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 22,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Coffee_Machine",
+   "size_cm": [
+    46.9,
+    43.5,
+    46.3
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Coffee_Machine.MI_Coffee_Machine",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 20188
+  },
+  "SM_Crate01": {
+   "bounds_cm": [
+    [
+     -16.4,
+     -20.3,
+     -0.1
+    ],
+    [
+     16.4,
+     20.3,
+     26.4
+    ]
+   ],
+   "lods": 2,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_Crate01",
+   "size_cm": [
+    32.8,
+    40.7,
+    26.5
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets03.MI_Assets03",
+     "slot": "lambert35"
+    }
+   ],
+   "triangles_lod0": 956
+  },
+  "SM_Fire_Alarm": {
+   "bounds_cm": [
+    [
+     -5.0,
+     0.0,
+     0.0
+    ],
+    [
+     5.0,
+     2.2,
+     10.0
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 21,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Fire_Alarm",
+   "size_cm": [
+    10.0,
+    2.2,
+    10.0
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Fire_Alarm.MI_Fire_Alarm",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1314
+  },
+  "SM_Fire_Extinguisher": {
+   "bounds_cm": [
+    [
+     0.0,
+     1.2,
+     0.0
+    ],
+    [
+     21.3,
+     32.1,
+     116.0
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 1,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Fire_Extinguisher",
+   "size_cm": [
+    21.3,
+    30.9,
+    115.9
+   ],
+   "slots": [
+    {
+     "material": null,
+     "slot": "lambert2"
+    },
+    {
+     "material": null,
+     "slot": "lambert3"
+    }
+   ],
+   "triangles_lod0": 8822
+  },
+  "SM_Fridge": {
+   "bounds_cm": [
+    [
+     0.0,
+     -1.7,
+     0.8
+    ],
+    [
+     100.1,
+     81.2,
+     198.2
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 29,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Fridge",
+   "size_cm": [
+    100.1,
+    82.9,
+    197.5
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Fridge.MI_Fridge",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 13003
+  },
+  "SM_Fridge_02": {
+   "bounds_cm": [
+    [
+     -203.3,
+     -19.0,
+     0.0
+    ],
+    [
+     3.3,
+     100.6,
+     155.0
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 22,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Fridge_02",
+   "size_cm": [
+    206.6,
+    119.6,
+    155.0
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Food_Glass_Exhibitor.MI_Food_Glass_Exhibitor",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 14268
+  },
+  "SM_Fridge_03": {
+   "bounds_cm": [
+    [
+     -100.8,
+     -100.2,
+     -0.0
+    ],
+    [
+     0.4,
+     0.0,
+     173.9
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Fridge_03",
+   "size_cm": [
+    101.2,
+    100.2,
+    173.9
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Fridge_02.MI_Fridge_02",
+     "slot": "lambert2"
+    }
+   ],
+   "triangles_lod0": 4742
+  },
+  "SM_Interruttore_Luce": {
+   "bounds_cm": [
+    [
+     -16.6,
+     -3.0,
+     0.0
+    ],
+    [
+     0.2,
+     0.4,
+     10.1
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 21,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Interruttore_Luce",
+   "size_cm": [
+    16.8,
+    3.4,
+    10.1
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Placca_Interruttore.MI_Placca_Interruttore",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 652
+  },
+  "SM_Medium_Cup_Stacked": {
+   "bounds_cm": [
+    [
+     -4.4,
+     -4.4,
+     0.0
+    ],
+    [
+     4.4,
+     4.4,
+     26.1
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 8,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Medium_Cup_Stacked",
+   "size_cm": [
+    8.8,
+    8.8,
+    26.1
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Cups.MI_Cups",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 10560
+  },
+  "SM_Notice_Board": {
+   "bounds_cm": [
+    [
+     -75.2,
+     -1.8,
+     -36.7
+    ],
+    [
+     75.2,
+     0.4,
+     50.5
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 21,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Notice_Board",
+   "size_cm": [
+    150.4,
+    2.3,
+    87.2
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_NoticeBoard.MI_NoticeBoard",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 2514
+  },
+  "SM_Safe": {
+   "bounds_cm": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     80.0,
+     82.6,
+     100.0
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 24,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Safe",
+   "size_cm": [
+    80.0,
+    82.6,
+    100.0
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Safe.MI_Safe",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1870
+  },
+  "SM_Safe_Door": {
+   "bounds_cm": [
+    [
+     -75.1,
+     -17.0,
+     -0.2
+    ],
+    [
+     1.2,
+     3.1,
+     89.2
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 24,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Safe_Door",
+   "size_cm": [
+    76.4,
+    20.2,
+    89.4
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Safe.MI_Safe",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 7029
+  },
+  "SM_Secchio_con_manico": {
+   "bounds_cm": [
+    [
+     -15.8,
+     -16.7,
+     0.0
+    ],
+    [
+     15.6,
+     16.7,
+     35.0
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 24,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Secchio_con_manico",
+   "size_cm": [
+    31.4,
+    33.5,
+    35.0
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Secchio.MI_Secchio",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 4944
+  },
+  "SM_Signs_No_Smoking": {
+   "bounds_cm": [
+    [
+     -54.2,
+     -39.2,
+     -0.1
+    ],
+    [
+     0.0,
+     0.0,
+     0.3
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Signs_No_Smoking",
+   "size_cm": [
+    54.2,
+    39.2,
+    0.4
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Signs.MI_Signs",
+     "slot": "surfaceShader1"
+    }
+   ],
+   "triangles_lod0": 170
+  },
+  "SM_Signs_Staff_only": {
+   "bounds_cm": [
+    [
+     -35.7,
+     -25.9,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.4
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Signs_Staff_only",
+   "size_cm": [
+    35.7,
+    25.9,
+    0.4
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Signs.MI_Signs",
+     "slot": "surfaceShader1"
+    }
+   ],
+   "triangles_lod0": 90
+  },
+  "SM_Small_Cable_Box": {
+   "bounds_cm": [
+    [
+     0.0,
+     -0.1,
+     0.0
+    ],
+    [
+     20.8,
+     31.2,
+     40.0
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 23,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Small_Cable_Box",
+   "size_cm": [
+    20.8,
+    31.3,
+    40.0
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Cable_Small_Box.MI_Cable_Small_Box",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 5733
+  },
+  "SM_Small_Trash_Bin": {
+   "bounds_cm": [
+    [
+     -19.8,
+     -20.8,
+     0.0
+    ],
+    [
+     19.9,
+     20.3,
+     52.9
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 19,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Small_Trash_Bin",
+   "size_cm": [
+    39.7,
+    41.1,
+    52.9
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Trash_Bin.MI_Trash_Bin",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 22612
+  },
+  "SM_Stool": {
+   "bounds_cm": [
+    [
+     -23.6,
+     -23.5,
+     -0.0
+    ],
+    [
+     24.2,
+     24.3,
+     77.2
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 26,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Stool",
+   "size_cm": [
+    47.8,
+    47.8,
+    77.2
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Stool.MI_Stool",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 5598
+  },
+  "SM_Tissue_Box": {
+   "bounds_cm": [
+    [
+     -5.0,
+     -8.1,
+     0.0
+    ],
+    [
+     5.0,
+     6.3,
+     15.0
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 28,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Tissue_Box",
+   "size_cm": [
+    10.0,
+    14.4,
+    15.0
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Tissue_Box.MI_Tissue_Box",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 2144
+  },
+  "SM_VendingMachine01": {
+   "bounds_cm": [
+    [
+     -66.4,
+     -49.7,
+     0.0
+    ],
+    [
+     66.4,
+     46.8,
+     209.1
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 12,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_VendingMachine01",
+   "size_cm": [
+    132.8,
+    96.5,
+    209.1
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_VendingMachine01.MI_VendingMachine01",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1026
+  },
+  "SM_Vent": {
+   "bounds_cm": [
+    [
+     -15.6,
+     -49.6,
+     -15.6
+    ],
+    [
+     17.5,
+     0.4,
+     15.6
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 23,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Vent",
+   "size_cm": [
+    33.1,
+    50.0,
+    31.1
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Vents.MI_Vents",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 1164
+  },
+  "SM_Vent_02": {
+   "bounds_cm": [
+    [
+     -40.0,
+     -0.9,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     20.5
+    ]
+   ],
+   "lods": 3,
+   "nanite": false,
+   "pack": "coffee",
+   "packages": 20,
+   "path": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Vent_02",
+   "size_cm": [
+    40.0,
+    0.9,
+    20.5
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/CoffeeShop/Materials/MI/MI_Vent.MI_Vent",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 440
+  },
+  "SM_WallBox01": {
+   "bounds_cm": [
+    [
+     -24.1,
+     0.0,
+     -29.9
+    ],
+    [
+     23.4,
+     11.9,
+     29.9
+    ]
+   ],
+   "lods": 2,
+   "nanite": false,
+   "pack": "hospital",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosShop/Hospital/Meshes/SM_WallBox01",
+   "size_cm": [
+    47.4,
+    11.9,
+    59.8
+   ],
+   "slots": [
+    {
+     "material": "/Game/Licensed/CosmosShop/Hospital/Materials/MI_Assets01.MI_Assets01",
+     "slot": "lambert1"
+    }
+   ],
+   "triangles_lod0": 828
+  }
+ },
+ "mode": "verify",
+ "passed": [
+  "SM_AC_Unit_Ceiling",
+  "SM_Big_Cup_Stacked",
+  "SM_Bottle01",
+  "SM_Bottle02",
+  "SM_Bottle03",
+  "SM_Box_01",
+  "SM_Box_02",
+  "SM_Bucket01",
+  "SM_Can01",
+  "SM_Can02",
+  "SM_Cans_Lattina",
+  "SM_CardboardBox01",
+  "SM_CardboardBox02",
+  "SM_CardboardBox03",
+  "SM_CardboardBox04",
+  "SM_CardboardBox05",
+  "SM_CashRegister",
+  "SM_Cash_Register_Body",
+  "SM_Cash_Register_Drawer",
+  "SM_Cigarette_Box",
+  "SM_Coffee_Box",
+  "SM_Coffee_Caraff",
+  "SM_Coffee_Machine",
+  "SM_Crate01",
+  "SM_Fire_Alarm",
+  "SM_Fridge",
+  "SM_Fridge_02",
+  "SM_Fridge_03",
+  "SM_Interruttore_Luce",
+  "SM_Medium_Cup_Stacked",
+  "SM_Notice_Board",
+  "SM_Safe",
+  "SM_Safe_Door",
+  "SM_Secchio_con_manico",
+  "SM_Signs_No_Smoking",
+  "SM_Signs_Staff_only",
+  "SM_Small_Cable_Box",
+  "SM_Small_Trash_Bin",
+  "SM_Stool",
+  "SM_Tissue_Box",
+  "SM_VendingMachine01",
+  "SM_Vent",
+  "SM_Vent_02",
+  "SM_WallBox01"
+ ],
+ "status": "PASS"
+}

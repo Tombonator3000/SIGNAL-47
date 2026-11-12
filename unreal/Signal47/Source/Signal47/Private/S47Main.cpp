@@ -1,4 +1,5 @@
 #include "S47Main.h"
+#include "S47DirectorCam.h"
 #include "S47CarPaint.h"
 #include "S47TripoCreature.h"
 #include "S47EyeGlint.h"
@@ -10,6 +11,9 @@
 #include "S47GearFlicker.h"
 #include "S47Soundscape.h"
 #include "S47Animals.h"
+#include "S47StationInsects.h"
+#include "S47StationDressing.h"
+#include "S47StationLook.h"
 #include "S47FreeformTest.h"
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
@@ -58,6 +62,7 @@
 #include "S47FinaleMovie.h"
 
 #include "S47Flow.h"
+#include "S47StoryDirector.h"
 #include "S47Radio.h"
 #include "S47NightLine.h"
 #include "S47TripRadio.h"
@@ -96,7 +101,7 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
-bool US47Main::OneAtATime() const { if (HighwayUfo && HighwayUfo->Busy()) return true; if (IsFreeform()) return Freeform && Freeform->Director && Freeform->Director->Busy(); return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
+bool US47Main::OneAtATime() const { if (HighwayUfo && HighwayUfo->Busy()) return true; if (IsFreeform()) return (Freeform && Freeform->Director && Freeform->Director->Busy()) || FS47StoryDirector::Holds(this) || S47DirectorCam::On(this); /* STORY-ON-FREEFORM-01 (step 4): a Story night's script; false in any other night. DIRECTOR-MODE-01: the director's camera */ return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
 
 void US47Main::RequestAutosave(bool bMilestone)
 {
@@ -115,6 +120,7 @@ void US47Main::Step(double Dt)
 	}
 	const bool bFree = IsFreeform();
 	if (Freeform && bFree) Freeform->Step(Dt);
+	if (bFree && StoryDirector && Flow && Flow->StoryNight() && StoryDirector->Active()) StoryDirector->Tick(Dt); // STORY-ON-FREEFORM-01: nothing outside a Story night
 	if (!bFree && Evening) Evening->Step(Dt);
 	if (Office) Office->Step(Dt); // Doors, drawers and room visibility also update in Freeform.
 	if (!bFree && Observing) Observing->Step(Dt);
@@ -125,6 +131,7 @@ void US47Main::Step(double Dt)
 	if (HighwayUfoTest) HighwayUfoTest->Step(Dt);
 	if (UfoVisualTest) UfoVisualTest->Step(Dt);
 	if (DevEvents) { DevEvents->Step(Dt); DevEvents->ControlTest(Dt); }
+	S47DirectorCam::Tick(this, Dt); // DIRECTOR-MODE-01: the director's free camera (its keys, its text, leaving by itself)
 	if (Rhythm) Rhythm->Observe(Dt);
 	if (Spine) Spine->ControlTest(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);
@@ -199,6 +206,13 @@ void US47Main::Step(double Dt)
 	Gear->Step(Dt);
 	Soundscape->Step(Dt);
 	Animals->Step(Dt);
+	// GAS-STATION-LIFT-01: the moths under the gas station's tubes (after the night's sounds: they leave in its hush)
+	if (!StationInsects) StationInsects = MakeShared<FS47StationInsects>(this);
+	StationInsects->Step(Dt);
+	if (!StationDressing) StationDressing = MakeShared<FS47StationDressing>(this);
+	StationDressing->Step();
+	if (!StationLook) StationLook = MakeShared<FS47StationLook>(this);
+	StationLook->Step();
 	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)
 	if (Night) Night->FlashlightStep(Dt);
 	// the player's strain (after the flashlight: a lit lamp is one thing it reads)

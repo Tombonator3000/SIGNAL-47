@@ -434,7 +434,7 @@ void FS47NightLife::MothsUpdate(FMoths& Mo, double InT, bool bOn, bool bLow, con
 	{
 		const FLamp& L = Mo.Lamps[i];
 		const FS47GlowPoints* G = W ? W->Glow(L.GlowNode) : nullptr;
-		const float K = G && G->Col.IsValidIndex(L.GlowIndex) ? float(FMath::Clamp(G->Col[L.GlowIndex].R / FMath::Max(L.K0, 1e-6), 0.0, 1.0)) : 1.f;
+		const float K = L.bCeded ? 0.f : G && G->Col.IsValidIndex(L.GlowIndex) ? float(FMath::Clamp(G->Col[L.GlowIndex].R / FMath::Max(L.K0, 1e-6), 0.0, 1.0)) : 1.f;
 		if (Mo.K[i] != K) { Mo.K[i] = K; bChanged = true; }
 	}
 	UTexture2D* Kt = Mo.KTex.Get();
@@ -443,6 +443,18 @@ void FS47NightLife::MothsUpdate(FMoths& Mo, double InT, bool bOn, bool bLow, con
 	for (int32 i = 0; i < Mo.K.Num(); ++i) Px[i] = Mo.K[i];
 	Kt->GetPlatformData()->Mips[0].BulkData.Unlock();
 	Kt->UpdateResource();
+}
+
+int32 FS47NightLife::Cede(const FString& Area, const FVector& At, double Radius)
+{
+	// GAS-STATION-LIFT-01: the web export's two lamps at the old canopy (the road area's lamps 8 and 9, glows 16 and 17 of the
+	// town's glow points, x -10.25, z 2052 and 2058) keep their glow's colour whatever the power does, so their moths stayed in a
+	// power cut. The Niagara swarm under the new tubes (S47StationInsects) follows the tubes instead; these lamps go dark here.
+	FArea* A = Find(Area);
+	if (!A || !A->Moths) return 0;
+	int32 N = 0;
+	for (FLamp& L : A->Moths->Lamps) if (!L.bCeded && FVector::Dist(L.W, At) < Radius) { L.bCeded = true; ++N; }
+	return N;
 }
 
 // ---------- the car on the county road ----------

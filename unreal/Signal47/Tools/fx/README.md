@@ -41,3 +41,11 @@ Materialmodus bygger materialgrafene på eksisterende asset-objekter, slik at Ni
 - `NS_S47_Orb` har kjerne og glød i lokalt rom, og støv som blir liggende igjen i verden, så en kule i bevegelse får et svakt spor.
 - HDR-fargen i partikkelen driver bloom. Over cirka 10 blir lynet hvitt og uldent; hold fargen lav og bredden smal.
 
+
+## Insekter under bensinstasjonens tak (GAS-STATION-LIFT-01)
+
+`bash unreal/Signal47/Tools/fx/import.sh import_station.py` bygger `NS_S47_Insects` og `M_S47_FxInsect`. `S47_FX_VERIFY_ONLY=1` leser bare tilbake. Skriptet nekter å bygge når systemet finnes: slett `NS_S47_Insects` først og kjør på nytt (samme krasjregel som over).
+
+- To CPU-emittere i lokalt rom med faste bounds (1600 cm hver vei), deterministiske og med faste partikkel-id-er: `Insects` (møll og mygg i rask, ujevn bane rundt et hjem under rørene; møllene stiger mot rørlinjen) og `Motes` (få, store, svært svake støvkorn som vinden fører gjennom lyset). Banen er analytisk HLSL fra id og alder; ingen kollisjon, kraftmodul eller GPU.
+- `User.Count` (insekter per sekund, 0 til 48), `User.Motes` (0 til 3), `User.Extent` (halv boks i cm: 225 x 810 x 150), `User.Wind` (lokal cm/s, høyst 120), `User.Tint` (lyset de fanger; lav, varm).
+- `S47StationInsects.cpp` henger komponenten 30 cm under rørene med takets rotasjon, og styrer alt: bare i Freeform, i Caliche, nærmere enn 120 m og mens rørene faktisk lyser (`AS47Props::LitLevel`; strømbrudd og dag slår av med en gang). Antallet følger nattlivets møll (time og avkjøling), tynnes av vind og regn, halveres på Low og går til null i nattens stillhet (`FS47Soundscape::Hushed`). Nattlivets gamle møll ved de to eksporterte taklampene overlates til svermen (`FS47NightLife::Cede`). `s47.insects.Gain` justerer lysstyrken direkte.

@@ -4,6 +4,7 @@
 #include "S47EventPlaces.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
+#include "S47Glimpses.h"
 #include "S47Happenings.h"
 #include "S47Legs.h"
 #include "S47Main.h"
@@ -94,6 +95,30 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   });
  };
 
+ // IGNITION-20261111 (Tom, 11 November): the key off and on in the cab, then out with it running: it idles where it stands, lights on.
+ E.AddFreeform(TEXT("Truck (ignition)"),TEXT("Ignition and idling"),TEXT("22:00, in the truck on the highway: stop, key off and on, get out with it running"),[this,Road]
+ {
+  Road(22,4.5,false,[this]
+  {
+   if(M->World)M->World->TestInput=[this]{FS47DriveIn I;auto* D=M&&M->World?M->World->CabDrive():nullptr;I.Throttle=D&&D->Speed>.5?-1:0;return I;};
+   WaitFor([this]{auto* D=M->World?M->World->CabDrive():nullptr;return !D||FMath::Abs(D->Speed)<.4;},14,[this]
+   {
+    US47World* W=M->World;if(!W)return;W->TestInput=nullptr;
+    const FS47DriveController* D=W->CabDrive();const FS47Truck* T=W->CabTruck();
+    if(!D||!T){Tell(false,TEXT("not in the truck"));return;}
+    W->CabIgnition();const bool bOff=!D->bEngine&&T->Beam()<.01;
+    W->CabIgnition();const bool bOn=D->bEngine&&T->Beam()>.5;
+    if(!bOff||!bOn){UE_LOG(LogS47HappenDev,Error,TEXT("S47: ignition check FAIL: off %d on %d"),bOff,bOn);Tell(false,TEXT("the key did not turn the engine and lights off and on"));return;}
+    if(!W->CabGetOut()){Tell(false,TEXT("could not get out of the truck here"));return;}
+    WaitFor([this]{return M->World&&!M->World->bDriving&&!M->World->bBusy;},10,[this]
+    {
+     const bool bIdle=M->World->EngineIdling()&&M->World->IdleBeam()>.5;
+     UE_LOG(LogS47HappenDev,Display,TEXT("S47: ignition check %s: key off/on, out with it idling and lit"),bIdle?TEXT("PASS"):TEXT("FAIL"));
+     Tell(bIdle,bIdle?TEXT("Out of the truck with the engine running: it idles, headlights on. Walk off and it fades; get in and K turns it off."):TEXT("the truck did not stay running and lit"),8);
+    },[this]{Tell(false,TEXT("the truck did not let the player out"));});
+   },[this]{if(M->World)M->World->TestInput=nullptr;Tell(false,TEXT("the truck did not stop"));});
+  });
+ });
  E.AddFreeform(G,TEXT("Car dies: something goes over"),TEXT("01:30, in the truck at speed on the highway; lights, dash and radio out for seconds"),[this,Road,Haps]
  {
   Road(1.5,4.5,true,[this,Haps]
@@ -378,6 +403,27 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
   if(Id==TEXT("horizon_figure"))
    E.AddFreeform(R,D.Label,D.Note,[this,Body,Id,Want,Hour]{ToLandPlace(TEXT("windmill"),40,Hour,4.5,[Body,Id,Want](double,double){Body(Id,Want,true);});});
  }
+ // FIX10-9 (→ M3): the figure on the rise for one who stays in: at the control room's east window, looking out (FS47Glimpses' pane
+ // spot, the north wall), at 02:30 (F10 puts it 110 m off: in the glimpse tier it would be gone at once). Seen through the glass it is gone after a long look; the record has its bearing from SARO, the map a
+ // "Day N window" line, and the needle at a place near where it stood will not settle.
+ E.AddFreeform(R,TEXT("14c. A figure on the rise, from a control room window"),TEXT("02:30, at the control room's window looking out; watch it: gone after a long look, a bearing in the record and a line on the map (M)"),[this,Haps]
+ {
+  const TArray<FVector2D> Panes=FS47Glimpses::SaroWindowSpots();
+  if(Panes.IsEmpty()){Tell(false,TEXT("no SARO window spot"));return;}
+  const FVector2D Pane=Panes.Last();
+  FStage Stage;Stage.From=2.5;Stage.To=4.5;Stage.Area=TEXT("saro");Stage.Where=[Pane]{return FVector2D(Pane.X,Pane.Y+1.5);};
+  Go(Stage,[this,Haps,Pane]
+  {
+   AimAt(FVector(Pane.X,M->Player?M->Player->FloorY+M->Player->Eye:1.6,Pane.Y-80));
+   After(1,[this,Haps]
+   {
+    FS47Happenings* H=Haps();FString Why;
+    if(!H||!H->DevStart(TEXT("horizon_figure"),FString(),Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+    FVector At;if(H->LiveAt(At))AimAt(At+FVector(0,1.2,0));
+    Tell(H->Live(TEXT("horizon_figure")),TEXT("horizon_figure from the window: started. Watch it; it is gone after a long look."),6);
+   });
+  });
+ });
  // Without F10's shortcut: the light over the truck takes a player who gets out under it, in the real game's rules, and the hood is
  // warm for one who walks away from the truck and comes back.
  E.AddFreeform(R,TEXT("20b. The hood, walked back to"),TEXT("the truck parked on the road; away fifty metres for twenty-five minutes, back to it, and the night itself asked"),[this,Haps,OutOfTruck]
