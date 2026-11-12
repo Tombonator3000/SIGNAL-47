@@ -2330,3 +2330,4 @@ NEW STORY starter nå en Freeform-økt merket som Story (`storyDirector{v:1}`), 
 - 12:10 Tom: fast byggeregel for undersøkelse, sniking, skjul og flukt (AGENTS.md); skolen V2 som plan, blokkmodell med rutesjekk 7/7.
 - 13:20 Selvtest 4934 OK, regresjon 251 PASS. To regresjoner falt på egen kø: vakten regner et ventende skall med byggeskript eller Blender i argumentene som tung jobb.
 - 15:40 Skolen V2 i Caliche (Fable): importert modell, gangsoner, to golvhøyder, taklys, tomt og lekeplass. Tom leverte 32 ChatGPT-teksturer (TEXTURES-PHOTO) og byggeregelen. Selvtest 4934 OK, regresjon 251 PASS på `abc6e124`. Ikke installert; d59 gjelder fortsatt.
+- 17:10 d60 installert (`fc1e0fab`, PR #512 åpen). Første forsøk krasjet på fullt grafikkminne (også d59); etter Toms omstart bestått. Ryddet for diskreserven: pakkemappene d43, d56, d57 og alien-20261106 (kvitteringer beholdt) og `Saved/Cooked`; 139 GB ledig.
