@@ -38,6 +38,11 @@
 #include "S47Flow.h"
 #include "S47OpenLand.h"
 #include "S47Visitors.h"
+#include "S47IdleLure.h"
+#include "S47NightTiers.h"
+#include "S47Attention.h"
+#include "S47Truck.h"
+#include "S47EngineSound.h"
 #include "S47WeekCase.h"
 #include "S47Happenings.h"
 #include "S47NightTiers.h"
@@ -299,6 +304,8 @@ void FS47FarmSite::Stop()
  if(bLive&&Visit>=1&&Visit<=3)LetAttentionGo();
  if(bLive&&bStallSet&&M->World)M->World->bKeyStall=false;
  bStallSet=false;
+ if(bLive)EndLure();
+ FrostTruck=nullptr;Lure.Reset();
  if(bLive)HideBody();
  bBodyOut=false;
  RestoreHome();
@@ -376,6 +383,7 @@ bool FS47FarmSite::WakeCall()
 
 void FS47FarmSite::Step(double Dt)
 {
+ StepFrost(Dt);
  if(!bActive||!M||!M->Freeform)return;
  if(ClearAt>0&&M->Freeform->Clock()>=ClearAt){ClearAt=0;if(bField)Home.Visit=4;Show(false);UE_LOG(LogTemp,Display,TEXT("S47: lights site cleared by morning"));return;}
  // MILITARY-20261108: they went over this ground first (S47Visitors): the marks are gone, and the raked circle stands where they were.
@@ -500,7 +508,7 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
  // Held by a lamp or a sound: it faces that, and its only way of moving is back from it.
  const bool bHeldNow=Attention.Holding();
- const FVector FaceAt=bHeldNow?Attention.LookAt():Feet;
+ const FVector FaceAt=bHeldNow?Attention.LookAt():LureFace?*LureFace:Feet; // (IDLE-LURE: at the truck it looks where it goes, or at the truck)
  if(bHeldNow)Speed=Attention.BackSpeed();
  const double Face=FMath::Atan2(FaceAt.Z-BodyAt.Z,FaceAt.X-BodyAt.X);
  if(!((VisitWho==1||VisitWho==2)&&RuleBreak.Facing()))BodyYaw+=FMath::UnwindRadians(Face-BodyYaw)*FMath::Min(1.,Dt*2.5); // (N1110-6: stopped, it faces away until it turns)
@@ -534,7 +542,7 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
   if(ShhLeft>0||FreezeLeft>0)Speed=0;
  }
  // D45-20261110: walking at the player and near, not held back by a lamp: the music hears that as being come at (FS47FieldRadio).
- bBodyComing=Speed>0&&!bHeldNow&&FVector::Dist(BodyAt,Feet)<13.;
+ bBodyComing=Speed>0&&!bHeldNow&&!LureGoal.IsSet()&&FVector::Dist(BodyAt,Feet)<13.;
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SiteBodyWay),true);
  for(const auto& Part:VisitBody->All)if(auto* C=Part.Get())Q.AddIgnoredComponent(C);
  // Straight for the player, a little round what is in the way. Walls hold it, and doors give time.
@@ -608,7 +616,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  {
   bShhTried=false;ShhLeft=0;bFreezeTried=false;FreezeLeft=0;bSatLogged=false;
   bSitsFar=(SitRoll>=0?SitRoll:FMath::FRand())<SitChance;SitRoll=-1;
-  VisitRounds=0;VisitHunt=0;VisitPatience=120;RuleBreak.Reset();StillHeld=0;LetAttentionGo();Attention.Reset();bAttentionFeet=false;bWasDriving=bDriving;bWasRunning=false;bSawTurn=false;bSawSetTurn=false;
+  VisitRounds=0;VisitHunt=0;VisitPatience=120;RuleBreak.Reset();StillHeld=0;LetAttentionGo();Attention.Reset();EndLure();Lure.Reset();LureNoiseIn=0;bAttentionFeet=false;bWasDriving=bDriving;bWasRunning=false;bSawTurn=false;bSawSetTurn=false;
   RadioSeen=M->FieldRadio?M->FieldRadio->MessagesHeard():0;
   // Sometimes the set speaks up while it is out there, whether the player wants it to or not.
   RadioIn=!bTestHoldHunt&&FMath::FRand()<.35f?FMath::FRandRange(10.f,30.f):-1.;
@@ -648,12 +656,14 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
  }
  bool bNothingToGoOn=false;
  StepAttention(Dt,bDriving,bNothingToGoOn);
+ // IDLE-LURE-20261112: the truck left running near it may draw the body away for a while (S47IdleLure.h).
+ StepLure(Dt);
  // A lamp on it buys a moment. A player with the lamp out, standing still, gives it nothing to go on: no hunt comes of
  // that, and it lets go in half the time. Moving, or with the lamp on, it goes as it always has.
  // SNEAK-20261108: low, with the lamp out, it has less to go on while the player moves too (S47Sneak.h): slower, not stopped.
  const bool bLampLit=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->Intensity()>0;
  const double LowK=M->Player?M->Player->Sneak():0.;
- VisitHunt+=Attention.Holding()||bTestHoldHunt||bNothingToGoOn?0.:Dt*S47Sneak::HuntPace(LowK,bLampLit);
+ VisitHunt+=Attention.Holding()||bTestHoldHunt||bNothingToGoOn||Lure.Active()?0.:Dt*S47Sneak::HuntPace(LowK,bLampLit);
  VisitPatience-=Dt*(bNothingToGoOn&&!Tk->Busy()?2.:1.);
  if(VisitWho==0)
  {
@@ -678,7 +688,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   const double To=FVector::Dist(BodyAt,Feet);
   // N1110 (N1110-6): once in the game, from night 4 and after two, the Pale One does not pass the player who has learned to stand still in the dark
   // (S47RuleBreak.h): it stops, turns its head, and comes on at a walk. The record is the log and spends it.
-  if((VisitWho==1||VisitWho==2)&&M->Freeform) // N1110 (pace): the Tall One may break the rule too, not only the crab
+  if((VisitWho==1||VisitWho==2)&&M->Freeform&&!Lure.Active()) // IDLE-LURE: not while it is at the truck. N1110 (pace): the Tall One may break the rule too, not only the crab
   {
    FS47RuleBreak::FIn Rule;
    const double Clock=M->Freeform->Clock();
@@ -705,6 +715,8 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   // The tall one first stands still and lets itself be found, then walks, slower as it nears. Its light goes before it.
   double Speed=(VisitWho==1?(BodyClock<1.6?0.:To<13?3.2:1.2):(BodyClock<TallStands?0.:To>30?1.35:.75))*S47Sneak::ApproachPace(LowK,bLampLit);
   if(VisitWho==1||VisitWho==2)Speed=RuleBreak.Speed(Speed);
+  // IDLE-LURE-20261112: at the truck it walks to where the lure wants it, at a curious walk, and stands there.
+  if(Lure.Active())Speed=LureGoal&&FVector2D::Distance(FVector2D(BodyAt.X,BodyAt.Z),FVector2D(LureGoal->X,LureGoal->Z))>FS47IdleLure::Reached*.6?FS47IdleLure::WalkMps*(Lure.Part()==FS47IdleLure::EPart::Drawn?1.4:1.):0.;
   StepBody(Dt,Speed);
   // A lamp reaches 25 m. Held on it for the first time it gets to freeze before their light comes on, not under it.
   const bool bLampFirst=VisitWho==2&&!bFreezeTried&&M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn;
@@ -760,7 +772,7 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
  const bool bSetSpoke=RadioNow!=RadioSeen&&See.BodyDist<30;
  if(bSetSpoke){See.bNoise=true;See.Sound=In.Cam.Pos-FVector(0,.4,0);}
  // PHYSICS-20261108: something thrown or dropped that it can hear (S47Noise), each one once: it turns to where it fell
- {static uint32 NoiseSeen=0;if(const auto Fell=S47Noise::Latest(.4);Fell&&Fell->Serial!=NoiseSeen&&FVector::Dist(Fell->At,*Eye)<=S47Noise::Reach(Fell->Loudness)*1.5){NoiseSeen=Fell->Serial;See.bNoise=true;See.Sound=Fell->At;}}
+ {static uint32 NoiseSeen=0;if(const auto Fell=S47Noise::Latest(.4);Fell&&Fell->Serial!=NoiseSeen&&Fell->What!=FS47IdleLure::NoiseName&&FVector::Dist(Fell->At,*Eye)<=S47Noise::Reach(Fell->Loudness)*1.5){NoiseSeen=Fell->Serial;See.bNoise=true;See.Sound=Fell->At;}}
  bWasRunning=bRunning;bWasDriving=bDriving;RadioSeen=RadioNow;
  const auto Before=Attention.Doing();
  // Frozen, it is still only looking: what comes after the look waits until it can move again.
@@ -798,6 +810,7 @@ void FS47FarmSite::EndVisit(bool bTaken)
  const bool bWas=Visit>=2;
  Visit=4;VisitDwell=0;bVisitTaken=false;
  LetAttentionGo();
+ EndLure();
  // Over: the lamp steadies, and a truck not yet tried starts again.
  if(M&&M->Night&&M->Night->Flashlight)M->Night->Flashlight->Flicker(0,TEXT("visit"));
  if(bStallSet&&M&&M->World)M->World->bKeyStall=false;
@@ -817,6 +830,8 @@ void FS47FarmSite::EndVisit(bool bTaken)
   if(Attention.bDidBlink)Did+=TEXT(" My lamp went out for a moment while it looked at me.");
   if(bSawTurn)Did+=TEXT(" It turned toward a noise I made.");
   if(bSawSetTurn)Did+=TEXT(" It turned toward my field set when a voice came over it.");
+  if(Lure.bDidStrike)Did+=TEXT(" It went to my truck, where I had left it running with the lights on, and struck the hood. The engine died.");
+  else if(Lure.bDidTouch)Did+=TEXT(" It went to my truck, where I had left it running with the lights on, and put its hand on the hood. The lights stuttered.");
   FString Page=FString::Printf(TEXT("%s, after dark%s. Something came toward me.%s Then it was gone."),*Title,bField?TEXT(""):TEXT(", the night of the lights"),*Did);Page[0]=FChar::ToUpper(Page[0]);
   M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),Page);
  }
@@ -979,4 +994,144 @@ void FS47FarmSite::StepFigure(double Dt,double Dist)
  bFigureAsked=true;
  FString Why;const bool bCame=F.Happenings&&F.Happenings->Request(TEXT("horizon_figure"),Why);
  UE_LOG(LogTemp,Display,TEXT("S47: lights site %s: a figure far off past the marks: %s"),*Place,bCame?TEXT("it stands there"):*(TEXT("not tonight, ")+Why));
+}
+
+// IDLE-LURE-20261112 (Tom, 12 Nov): the truck left idling near a visit (US47World::IdleTruckNow) draws the body out now to it for a
+// while: round it, into its lamps, a hand on the hood (the lamps falter, the engine coughs, a hand in the frost), and left alone
+// there some visits it strikes the hood and the engine stalls. FS47IdleLure decides; this measures and carries it out.
+void FS47FarmSite::StepLure(double Dt)
+{
+ LureGoal.Reset();LureFace.Reset();
+ if(!M||!M->World||!M->Player||!M->Freeform||Lure.Over())return;
+ auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();
+ FS47Truck* Truck=M->World->IdleTruckNow();
+ // The body out now: the small one's own brain, or the moved one.
+ TOptional<FVector> Body;int32 SmallId=INDEX_NONE;bool bHunting=false;
+ if(VisitWho==0){if(G){const auto V=G->Individuals();if(!V.IsEmpty()){Body=V[0].Pos;SmallId=V[0].Id;bHunting=V[0].Mode==FS47RoswellBrain::EMode::Hunt;}}}
+ else if(bBodyOut)Body=BodyAt;
+ const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
+ const auto Flat=[](const FVector& From,const FVector& To){return FVector2D::Distance(FVector2D(From.X,From.Z),FVector2D(To.X,To.Z));};
+ const double Clock=M->Freeform->Clock();
+ FVector Mid=FVector::ZeroVector,Fwd(0,0,-1),Lamps=FVector::ZeroVector;
+ if(Truck)
+ {
+  // (the drive's heading: forward is -sin, -cos, as FS47DriveController moves it)
+  Mid=Truck->Position;const double Heading=Truck->Rotation.Y;Fwd=FVector(-FMath::Sin(Heading),0,-FMath::Cos(Heading));
+  LureHood=Mid+Fwd*(Truck->HalfLength()+.55);Lamps=Mid+Fwd*(Truck->HalfLength()+3.2);
+ }
+ using EL=FS47IdleLure::EPart;
+ const auto GoalOf=[&](EL Part)->TOptional<FVector>
+ {
+  if(!Truck||!Body)return {};
+  switch(Part)
+  {
+  case EL::Drawn:{FVector Side=FVector(Body->X-Mid.X,0,Body->Z-Mid.Z).GetSafeNormal();if(Side.IsNearlyZero())Side=-Fwd;return Mid+Side*FS47IdleLure::RingRadius;}
+  case EL::Circle:{const double Round=LureRingFrom+Lure.RingTurn();return Mid+FVector(FMath::Cos(Round),0,FMath::Sin(Round))*FS47IdleLure::RingRadius;}
+  case EL::Beam:return Lamps;
+  case EL::Touch:case EL::Wait:case EL::Irked:return LureHood;
+  default:return {};
+  }
+ };
+ FS47IdleLure::FIn In;
+ In.bIdling=Truck!=nullptr;
+ // Inside a visit already in their hours; this says so again by the tiers (a developer's test visit is let through).
+ In.bHours=bTestNoticed||S47NightTiers::Allows(ES47Allowed::Full,FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.,FS47FreeformSession::NightOf(Clock));
+ In.bFree=Body.IsSet()&&Visit==2&&!bHunting&&!RuleBreak.Active()&&(VisitWho==0||BodyClock>=(VisitWho==2?TallStands:1.6));
+ In.bPlayerNear=M->World->bDriving||(Truck&&Flat(Feet,Mid)<FS47IdleLure::PlayerNear);
+ In.BodyToTruck=Truck&&Body?Flat(*Body,Mid):100.;
+ {const TOptional<FVector> Now=GoalOf(Lure.Part());In.ToGoal=Now&&Body?Flat(*Body,*Now):100.;}
+ const EL Was=Lure.Part();
+ Lure.Step(Dt,In,LureRoll>=0?LureRoll:FMath::FRand());
+ if(Lure.Part()!=Was)
+ {
+  if(Was==EL::None)LureRoll=-1;
+  if(Lure.Part()==EL::Circle&&Body)LureRingFrom=FMath::Atan2(Body->Z-Mid.Z,Body->X-Mid.X);
+  UE_LOG(LogTemp,Display,TEXT("S47: idle lure: part %d, kind %d, %.1f m from the truck, player %.1f m from it"),int32(Lure.Part()),VisitWho,In.BodyToTruck,Truck?Flat(Feet,Mid):-1.);
+ }
+ // The hand on the hood: a handprint in the frost on the glass, the engine coughs twice, the lamps falter (below), a soft knock.
+ if(Lure.TakeTouched()&&Truck)
+ {
+  Truck->SetFrost(FMath::Max(Truck->Frosted(),.6));Truck->SetFrostHand(true);FrostTruck=Truck;FrostDriven=0;
+  if(FS47EngineSound* Eng=M->World->EngineSound())Eng->Cough(.9);
+  LureCoughIn=1.4;
+  if(M->Audio)M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.3f,.Rate=.6f,.At=LureHood+FVector(0,1,0)});
+  if(M->Freeform->Attention)M->Freeform->Attention->Add(3,TEXT("a visit's body at the idling truck"));
+  if(M->UI&&Flat(Feet,Mid)<90)M->UI->Thought(TEXT("Something is at the truck. The lights just stuttered."),4.f);
+  UE_LOG(LogTemp,Display,TEXT("S47: idle lure: a hand on the hood, frost hand, the lamps falter"));
+ }
+ if(LureCoughIn>0)
+ {
+  LureCoughIn-=Dt;
+  if(LureCoughIn<=0&&Truck)if(FS47EngineSound* Eng=M->World->EngineSound())Eng->Cough(.6);
+ }
+ const bool bCalm=M->Flow&&M->Flow->bCalmFlash;
+ if(Truck&&Lure.Part()==EL::Touch){Truck->SetLightLevel(Lure.LampLevel(bCalm));bLureLamp=true;}
+ else if(bLureLamp){bLureLamp=false;if(Truck)Truck->SetLightLevel(1);}
+ // Left alone at it: a heavy bang, a dent, and the engine stalls, dark. The key starts it again, not the first time (bKeyStall,
+ // kept past the visit's end: bStallSet no longer clears it). Never more than that.
+ if(Lure.TakeStruck()&&Truck)
+ {
+  if(M->Audio)
+  {
+   const FVector Bang=LureHood+FVector(0,.9,0);
+   M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.95f,.Rate=.55f,.At=Bang});
+   M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.5f,.Rate=.45f,.At=Bang,.When=.04f});
+   M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.8f,.Rate=.5f,.At=Bang,.When=.32f});
+  }
+  if(bLureLamp){bLureLamp=false;Truck->SetLightLevel(1);}
+  M->World->bKeyStall=true;bStallSet=false;
+  M->World->EndIdle(true);
+  if(M->Freeform->Attention)M->Freeform->Attention->Add(6,TEXT("a visit's body struck the idling truck"));
+  if(M->UI&&Flat(Feet,Mid)<90)M->UI->Thought(TEXT("A bang from the truck. The engine has stopped, and the lights with it."),5.f);
+  M->Freeform->RecordEvidence(FindingId()+TEXT("_dent"),FString::Printf(TEXT("%s, %s. I had left the truck running with the lights on. Something came to it, went round it and stood in the lights, then struck the hood. The engine died. There is a dent in the hood the size of a hand, and a handprint in the frost on the glass."),*S47Text::ClockText(Clock,false),*Title));
+  UE_LOG(LogTemp,Display,TEXT("S47: idle lure: it struck the hood, the engine stalled (the key wants turning)"));
+ }
+ if(Lure.TakeLetGo()){EndLure();UE_LOG(LogTemp,Display,TEXT("S47: idle lure: over, touched %d, struck %d"),Lure.bDidTouch,Lure.bDidStrike);return;}
+ if(!Lure.Active()||!Body)return;
+ const TOptional<FVector> Goal=GoalOf(Lure.Part());
+ if(VisitWho!=0)
+ {
+  // The moved body: StepBody walks it there and turns it (it looks where it goes, then at the truck).
+  if(Goal){LureGoal=*Goal;LureFace=Flat(*Body,*Goal)>FS47IdleLure::Reached*.6?*Goal:(Lure.Part()==EL::Beam?LureHood:Mid);}
+  else{LureGoal=*Body;LureFace=LureHood;}
+  return;
+ }
+ if(!G)return;
+ // The small one has its own brain: it hears the engine (S47Noise) and goes to look, a stretch at a time; there, it stands and faces
+ // the truck as if it heard something in it.
+ const double Far=Goal?Flat(*Body,*Goal):0.;
+ if(Goal&&Far>FS47IdleLure::Reached)
+ {
+  if(bLureHeld){bLureHeld=false;G->HoldAttention({},0,false);}
+  LureNoiseIn-=Dt;
+  if(LureNoiseIn<=0)
+  {
+   LureNoiseIn=1.;
+   FVector Crumb=*Goal;
+   if(Far>14)Crumb=*Body+FVector(Goal->X-Body->X,0,Goal->Z-Body->Z)/Far*14.;
+   Crumb.Y=GroundAt(Crumb.X,Mid.Y,Crumb.Z);
+   S47Noise::Make(Crumb+FVector(0,.3,0),2.,FS47IdleLure::NoiseName);
+  }
+ }
+ else if(!Attention.Holding())
+ {
+  G->HoldAttention((Lure.Part()==EL::Beam?LureHood:Mid)+FVector(0,.9,0),0,true,SmallId);bLureHeld=true;
+ }
+}
+
+void FS47FarmSite::EndLure()
+{
+ if(bLureLamp){bLureLamp=false;if(M&&M->World)if(FS47Truck* Truck=M->World->IdleTruckNow())Truck->SetLightLevel(1);}
+ if(bLureHeld){bLureHeld=false;if(M&&M->Night&&M->Night->Glimpses)M->Night->Glimpses->HoldAttention({},0,false);}
+ LureGoal.Reset();LureFace.Reset();LureCoughIn=-1;
+}
+
+// The hand stays in the frost until the truck is driven again; then the defroster takes it in a few seconds.
+void FS47FarmSite::StepFrost(double Dt)
+{
+ if(!FrostTruck||!M||!IsValid(M->World)||!M->World->bDriving)return;
+ FrostDriven+=Dt;
+ const double K=FMath::Clamp(.6*(1.-(FrostDriven-4.)/6.),0.,.6);
+ if(M->World->CabTruck()==FrostTruck)FrostTruck->SetFrost(K);
+ if(K<=0){FrostTruck->SetFrost(0);FrostTruck->SetFrostHand(false);FrostTruck=nullptr;}
 }
