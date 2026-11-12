@@ -45,7 +45,9 @@ class FS47CameraMoment;
 // Story only (STORY-ON-FREEFORM-01, step 4; Content/Director/Story/beats, S47StoryDirector.h): Freeform's lint (Lint) refuses them,
 // and the story store's (LintStory) lets them through; they do nothing without a Story night's director.
 //   flag       flag (a story flag's id), set: true (the default) or false
-//   start      script: another story script, or happening: a night happening asked for as the night asks (not forced)
+//   start      script: another story script, or happening: a night happening asked for as the night asks (not forced; with
+//              "force": true started for the story, past its day and the rhythm's draw, FS47Happenings::StartForStory; the
+//              happening "deputy_round" sends the county car, FS47DeputyRound::ForStory), or event: a Freeform Director event
 //   clock      at_least "HH:MM": the Freeform clock is pushed forward to that hour of tonight, never back, never into the next night
 //   objective  text: the story's line on top of the HUD's objective and the task list; empty clears it
 // Any beat: "if": conditions that must hold when its time comes (else it is left out); "wait": conditions it waits for, at most
@@ -82,6 +84,7 @@ struct FS47Beat
  FString Flag,Script,Happening;
  FString Event; // step 6: start's Freeform Director event (director.json), started for the story (FS47FreeformDirector::StartForStory)
  bool bSet=true;
+ bool bForce=false; // step 6 (night act): "force": true, start's happening is started for the story (FS47Happenings::StartForStory)
  double AtLeast=-1;
  TArray<FS47ScriptCond> If,Wait;
 };

@@ -74,6 +74,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "NiagaraComponent.h"
+#include "S47StoryDirector.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Happen,Log,All);
 
@@ -2289,6 +2290,11 @@ void FS47Happenings::PutAway(const FString& Id)
  if(Id==TEXT("room6_tv")&&M&&IsValid(M->Audio))M->Audio->TvHiss({});
 }
 
+bool FS47Happenings::StartForStory(const FString& Id,FString& Why)
+{
+ if(!FS47StoryDirector::Of(M)){Why=TEXT("not a Story night");return false;}
+ return StartEvent(Id,FString(),true,Why);
+}
 bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bForced,FString& Why)
 {
  auto* F=M?M->Freeform.Get():nullptr;

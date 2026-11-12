@@ -80,6 +80,21 @@ public:
  // Seconds to push Clock forward to the night's hour AtLeast (8 to 32): 0 when tonight has passed it. Never back, never past the
  // night's end at 08:00.
  static double ClockPushFor(double Clock,double AtLeast);
+ // Step 6, the night act: the story flag a Freeform event's end sets, "ended_<id>", when Was was under way and Now is something else
+ // (none, or another). Empty when nothing ended, or the id would not be a flag's. The director asks it each tick of the Director's
+ // event, the happening on the ground and the county car (Ids: theirs, and DeputyRoundId); story scripts wait on the flags.
+ static FString EndedFlagOf(const FString& Was,const FString& Now);
+ // The start beat's happening that sends Freeform's county car tonight (FS47DeputyRound::ForStory), and its ended_ flag's id.
+ static constexpr const TCHAR* DeputyRoundId=TEXT("deputy_round");
+ // Step 6, the night act (SC05, Tom 12 Nov: the star hole is Story's and stays): the story flag that opens the old Story's patch with
+ // no stars where the dishes point (S47StarHole.h, the sky's own STAR_HOLE and its fade, FS47Sky::HoleFrom). Set by a flag beat; the
+ // first time, the hole is given its start (HoleFromAt the clock then), saved as holeFrom. Nothing else of the sky is touched: no
+ // meteor passage, no grade. Story nights only: StarHoleFrom is unset without a Story night's director, so never in Freeform.
+ static constexpr const TCHAR* StarHoleFlag=TEXT("star_hole");
+ // The sky's HoleFrom (seconds after midnight) for a hole opened at Clock: the dishes' moment and STAR_HOLE.After.
+ static double HoleFromAt(double Clock);
+ // US47WorldLife: the hole's start on a Story night once opened; unset otherwise.
+ static TOptional<double> StarHoleFrom(const US47Main* Main);
  // The longest a clock beat waits for a closed panel and the player out of the truck, in real seconds; then it is left out.
  static constexpr double ClockWaitMost=5;
  // A story-only beat (flag, start, clock, objective), with its text filled in; called by the runner. What it did, for the log.
@@ -145,6 +160,8 @@ private:
  FString ObjectiveLine;
  double ClockAt=-1,ClockWaited=0;
  bool bHeld=false;            // FS47ScriptPlayer::Hold("story") is on
+ FString LastEvent,LastGround,LastPatrol; // step 6: what was under way at the last tick (EndedFlagOf); not saved
+ double HoleFrom=-1;          // step 6: the star hole's start (HoleFromAt), below zero: not opened; saved as holeFrom
  void QueueAct(int32 Index);
  void StartPending();
  void StepClock(double Dt);

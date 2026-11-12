@@ -2,7 +2,7 @@
   "v": 1,
   "acts": [
     { "id": "evening", "title": "Evening", "from": "17:00", "scripts": ["evening_drive", "evening_diner"] },
-    { "id": "night", "title": "Night", "from": "00:00" },
+    { "id": "night", "title": "Night", "from": "00:00", "scripts": ["night_hunt"] },
     { "id": "morning", "title": "Morning", "from": "04:00" }
   ]
 }

@@ -105,6 +105,13 @@ void FS47DeputyRound::End()
  if(!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&Car){Car->Show(false);Car->Sound(M,At,false);}
 }
 void FS47DeputyRound::Stop(){bEnabled=false;End();}
+bool FS47DeputyRound::ForStory(FString& Why)
+{
+ if(!bEnabled||!M||!M->Freeform){Why=TEXT("the county patrol is not running");return false;}
+ if(bRun){Why=TEXT("the county car is on the road already");return false;}
+ bTestNow=true;LastNight=0;
+ return true;
+}
 bool FS47DeputyRound::Start()
 {
  if(!M||!M->Web||!M->World||!Car->Prepare(M))return false;

@@ -11,6 +11,9 @@
 #include "S47UI.h"
 #include "S47World.h"
 #include "S47RoadShape.h"
+#include "S47DeputyRound.h"
+#include "S47Hide.h"
+#include "S47SkyEventSpec.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "HAL/FileManager.h"
@@ -167,7 +170,7 @@ void FS47StoryDirector::BeginWith(const FString& ActsText,const S47J::FObj& Save
 
 bool FS47StoryDirector::Load(const S47J::FObj& Saved)
 {
- ActIndex=0;Flags.Reset();ObjectiveLine.Reset();Pending.Reset();
+ ActIndex=0;Flags.Reset();ObjectiveLine.Reset();Pending.Reset();HoleFrom=-1;
  if(!Saved.IsValid()||S47J::Int(Saved,TEXT("v"),0)!=1)return false; // no save, or one this version cannot read: the first act
  bool bAt=false;
  const FString At=S47J::Str(Saved,TEXT("act"));
@@ -190,6 +193,11 @@ bool FS47StoryDirector::Load(const S47J::FObj& Saved)
   if(S47Script::CleanId(Id)!=Id||Id.IsEmpty()||!FMath::IsFinite(T)||T<0||Played<0)continue;
   if(!Pending.ContainsByPredicate([&Id](const FPending& P){return P.Id==Id;}))Pending.Add(FPending{Id,T,Played});
  }
+ // Step 6 (absent in older saves: none): the star hole's start, once it has opened.
+ {
+  const double Hole=S47J::Num(Saved,TEXT("holeFrom"),-1);
+  if(FMath::IsFinite(Hole)&&Hole>=0&&Hole<86400.+STAR_HOLE.After)HoleFrom=Hole;
+ }
  // Step 5 (absent in older saves: no scene): the scene under way, taken up again.
  const S47J::FObj* SceneSaved=nullptr;
  if(Scene&&Saved->TryGetObjectField(TEXT("scene"),SceneSaved)&&SceneSaved)Scene->Load(*SceneSaved);
@@ -208,6 +216,7 @@ void FS47StoryDirector::Stop()
  ObjectiveLine.Reset();
  ClockAt=-1;ClockWaited=0;
  if(Scene)Scene->Stop();
+ LastEvent.Reset();LastGround.Reset();LastPatrol.Reset();HoleFrom=-1;
  SetHold(false);
 }
 
@@ -253,6 +262,21 @@ void FS47StoryDirector::Tick(double Dt)
   if(!bFault&&HasFlag(TEXT("power_fault"))){ClearFlag(TEXT("power_fault"));SetFlag(TEXT("power_restored"));}
   if(Scene)Scene->SetContext({{TEXT("ctx_power_available"),!bFault},{TEXT("ctx_trafo_service_ok"),HasFlag(TEXT("power_restored"))},{TEXT("ctx_room_quiet"),!M->ModalOpen()}});
  }
+ // Step 6, the night act: Freeform's own events told to the story as they end (EndedFlagOf): a Director event or a night happening on
+ // the ground that is over sets ended_<id>, the county car gone by sets ended_deputy_round; hid once the player has hidden (FS47Hide).
+ if(M&&M->Freeform)
+ {
+  const FS47FreeformSession& Ff=*M->Freeform;
+  const FString EventNow=Ff.Director?Ff.Director->ActiveEvent():FString();
+  const FString GroundNow=Ff.Happenings?Ff.Happenings->Ground():FString();
+  const FString PatrolNow=Ff.Deputy&&Ff.Deputy->Driving()?FString(DeputyRoundId):FString();
+  for(const FString& Ended:{EndedFlagOf(LastEvent,EventNow),EndedFlagOf(LastGround,GroundNow),EndedFlagOf(LastPatrol,PatrolNow)})
+  {
+   if(!Ended.IsEmpty()&&SetFlag(Ended)){UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story flag %s"),*Ended);}
+  }
+  LastEvent=EventNow;LastGround=GroundNow;LastPatrol=PatrolNow;
+  if(Ff.Hide&&Ff.Hide->Hidden()&&!HasFlag(TEXT("hid")))SetFlag(TEXT("hid"));
+ }
  if(Scene)Scene->Tick(Dt);
  StepClock(Dt);
  SetHold(M!=nullptr&&Busy());
@@ -266,6 +290,7 @@ S47J::FObj FS47StoryDirector::Save() const
  S47J::Set(O,TEXT("flags"),FlagList());
  // Step 4: the objective, and the story scripts under way (and those about to start) with how far they had come.
  if(!ObjectiveLine.IsEmpty())S47J::Set(O,TEXT("objective"),ObjectiveLine);
+ if(HoleFrom>=0)S47J::Set(O,TEXT("holeFrom"),HoleFrom); // step 6: the star hole
  TArray<TSharedPtr<FJsonValue>> Under;
  const auto Keep=[&Under](const FString& Id,double T,int32 Played)
  {
@@ -361,6 +386,25 @@ FString FS47StoryDirector::ObjectiveOf(const US47Main* Main)
  return D?D->ObjectiveLine:FString();
 }
 
+double FS47StoryDirector::HoleFromAt(double Clock)
+{
+ const double Sec=FMath::IsFinite(Clock)?FMath::Fmod(FMath::Fmod(Clock,86400.)+86400.,86400.):0.;
+ return Sec+STAR_HOLE.After;
+}
+
+TOptional<double> FS47StoryDirector::StarHoleFrom(const US47Main* Main)
+{
+ const FS47StoryDirector* D=Of(Main);
+ return D&&D->HoleFrom>=0?TOptional<double>(D->HoleFrom):TOptional<double>();
+}
+
+FString FS47StoryDirector::EndedFlagOf(const FString& Was,const FString& Now)
+{
+ if(Was.IsEmpty()||Was==Now)return FString();
+ const FString Flag=TEXT("ended_")+Was;
+ return ValidId(Flag)?Flag:FString();
+}
+
 double FS47StoryDirector::ClockPushFor(double Clock,double AtLeast)
 {
  if(!FMath::IsFinite(Clock)||!FMath::IsFinite(AtLeast)||AtLeast<8.||AtLeast>=32.)return 0;
@@ -395,8 +439,20 @@ FString FS47StoryDirector::Apply(const FS47Beat& B,const FString& Text)
    if(!Dir)return TEXT("event not started: ")+B.Event+TEXT(" (no Freeform director)");
    return Dir->StartForStory(B.Event,Why)?TEXT("event starts: ")+B.Event:TEXT("event not started: ")+B.Event+TEXT(" (")+Why+TEXT(")");
   }
+  if(B.Happening==DeputyRoundId)
+  { // step 6, the night act (SC03): Freeform's county patrol sent tonight (FS47DeputyRound), the story's only call of that name
+   FS47DeputyRound* Patrol=M&&M->Freeform?M->Freeform->Deputy.Get():nullptr;
+   if(!Patrol)return TEXT("county car not sent (no patrol here)");
+   return Patrol->ForStory(Why)?FString(TEXT("county car sent")):TEXT("county car not sent (")+Why+TEXT(")");
+  }
   FS47Happenings* Haps=M&&M->Freeform?M->Freeform->Happenings.Get():nullptr;
   if(!Haps)return TEXT("happening not asked for: ")+B.Happening+TEXT(" (no night happenings here)");
+  if(B.bForce) // step 6, the night act: started for the story, past its day and the rhythm's draw (a first night has neither)
+  {
+   if(Haps->StartForStory(B.Happening,Why))return TEXT("happening starts for the story: ")+B.Happening;
+   UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story: happening %s not started: %s"),*B.Happening,*Why);
+   return TEXT("happening not started: ")+B.Happening+TEXT(" (")+Why+TEXT(")");
+  }
   // Asked as the night asks (not forced): its tier, the rhythm, the tutorial and its gates may say no; the reason goes to the log.
   if(Haps->Request(B.Happening,Why))return TEXT("happening starts: ")+B.Happening;
   UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story: happening %s refused: %s"),*B.Happening,*Why);
@@ -543,6 +599,8 @@ bool FS47StoryDirector::SetFlag(const FString& Flag)
 {
  if(!ValidId(Flag))return false;
  Flags.Add(Flag);
+ // Step 6: the star hole opens with its flag, once (its start kept through a save).
+ if(Flag==StarHoleFlag&&HoleFrom<0){double Now=0;if(ClockNow(Now))HoleFrom=HoleFromAt(Now);}
  return true;
 }
 
@@ -837,6 +895,98 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
   const FS47EventScript* Shift=FindScript(TEXT("evening_shift"));
   const bool bShift=Shift&&Shift->Beats.ContainsByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Event==TEXT("feeder_fault");})&&S47EventScript::LintStory(*Shift).IsEmpty();
   Check(S47EventScript::LintStory(Ev).IsEmpty()&&S47EventScript::LintStory(Two).Num()>0&&S47EventScript::Lint(Ev).Num()>0&&bShift,TEXT("STORY-6: start may name a Freeform Director event (one of script, happening, event); Freeform's lint refuses it; evening_shift starts feeder_fault"));
+ }
+ { // STORY steg 6, the night act: SC02, SC03, SC05, SC08 and SC10 on Freeform's own events, chained by their last beats
+  static const TCHAR* const NightChain[]={TEXT("night_hunt"),TEXT("night_deputy"),TEXT("night_residual"),TEXT("night_array"),TEXT("night_room6")};
+  TArray<const FS47EventScript*> Chain;
+  for(const TCHAR* ChainId:NightChain)Chain.Add(FindScript(ChainId));
+  if(Chain.Contains(nullptr))Lines.Add(TEXT("NOTE story director: a night_*.json of the night act is missing in Content/Director/Story/beats beside this build"));
+  else
+  {
+   bool bLint=true;
+   for(const FS47EventScript* Sc:Chain)bLint&=S47EventScript::LintStory(*Sc).IsEmpty()&&S47EventScript::Lint(*Sc).Num()>0;
+   Check(bLint,TEXT("STORY-9: the night act's scripts (night_hunt, night_deputy, night_residual, night_array, night_room6) pass the story's lint; Freeform's lint refuses each"));
+   // Each starts the next as its last beat, and no other story script: one after another, never twice.
+   bool bOrder=true;
+   for(int32 I=0;I<Chain.Num();++I)
+   {
+    const FS47EventScript& Link=*Chain[I];
+    TArray<FString> Starts;
+    for(const FS47Beat& Bt:Link.Beats)if(Bt.Do==ES47Beat::Start&&!Bt.Script.IsEmpty())Starts.Add(Bt.Script);
+    if(I+1==Chain.Num())bOrder&=Starts.IsEmpty();
+    else bOrder&=Starts.Num()==1&&Starts[0]==NightChain[I+1]&&Link.Beats.Num()>0&&Link.Beats.Last().Do==ES47Beat::Start&&Link.Beats.Last().Script==NightChain[I+1];
+   }
+   FString NightText,NightWhy;
+   TArray<FAct> NightActs;
+   const bool bAct=FFileHelper::LoadFileToString(NightText,*ActsPath())&&ParseActs(NightText,NightActs,NightWhy)
+    &&NightActs.ContainsByPredicate([](const FAct& A){return A.Id==TEXT("night")&&A.Scripts.Num()==1&&A.Scripts[0]==TEXT("night_hunt");});
+   Check(bOrder&&bAct,TEXT("STORY-10: the night act starts night_hunt only; the hunt, the deputy, the residual, the array and room 6 follow one another by their last beats"));
+   // The full encounters wait for their tier (Tom: full encounters after 02:00): a clock beat to at least that hour comes first.
+   const auto ClockFirst=[](const FS47EventScript& Sc,const TCHAR* EventName,double Least)
+   {
+    const int32 StartIdx=Sc.Beats.IndexOfByPredicate([EventName](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Event==EventName;});
+    const int32 ClockIdx=Sc.Beats.IndexOfByPredicate([Least](const FS47Beat& Bt){return Bt.Do==ES47Beat::Clock&&Bt.AtLeast>=Least;});
+    return StartIdx>=0&&ClockIdx>=0&&ClockIdx<StartIdx;
+   };
+   Check(ClockFirst(*Chain[0],TEXT("service_presence"),26.)&&ClockFirst(*Chain[3],TEXT("array_presence"),28.),
+    TEXT("STORY-11: the full encounters wait for their tier: the hunt (service_presence) for 02:00, the array (array_presence) for 04:00"));
+   // Tom (11 Nov): never change the star sky. Nothing of the night act starts anything in the sky (SC05's star hole is left out).
+   static const TCHAR* const SkyIds[]={TEXT("flyover"),TEXT("close_pass"),TEXT("sky_formation"),TEXT("sky_high"),TEXT("landing"),TEXT("response_lights"),TEXT("dusk_orb"),TEXT("highway_ufo"),TEXT("farm_lights"),TEXT("town_lights")};
+   bool bNoSky=true;
+   for(const FS47EventScript* Sc:Chain)for(const FS47Beat& Bt:Sc->Beats)for(const TCHAR* SkyId:SkyIds)bNoSky&=!(Bt.Do==ES47Beat::Start&&(Bt.Event==SkyId||Bt.Happening==SkyId));
+   // Tom (12 Nov): the star hole is Story's and stays (SC05): night_residual opens it by its flag, after the dishes have been heard.
+   const FS47EventScript& Residual=*Chain[2];
+   const int32 HoleIdx=Residual.Beats.IndexOfByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Flag&&Bt.bSet&&Bt.Flag==StarHoleFlag;});
+   const int32 CreakIdx=Residual.Beats.IndexOfByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Event==TEXT("antenna_creak");});
+   Check(bNoSky&&CreakIdx>=0&&HoleIdx>CreakIdx,TEXT("STORY-12: no night script starts anything in the sky (no other change to the star sky); night_residual opens the star hole after the dishes are heard"));
+   // A wait on ended_<id> follows that id's own start in the same script, and the flag is cleared before it (a stale end never passes).
+   bool bEnds=true;int32 Waits=0;
+   for(const FS47EventScript* Sc:Chain)
+   {
+    for(int32 K=0;K<Sc->Beats.Num();++K)for(const FS47ScriptCond& C:Sc->Beats[K].Wait)
+    {
+     if(C.If!=TEXT("story_flag")||!C.Arg.StartsWith(TEXT("ended_")))continue;
+     ++Waits;
+     const FString EndedId=C.Arg.Mid(6);
+     bool bStarted=false,bCleared=false;
+     for(int32 J=0;J<K;++J)
+     {
+      const FS47Beat& Prev=Sc->Beats[J];
+      bStarted|=Prev.Do==ES47Beat::Start&&(Prev.Event==EndedId||Prev.Happening==EndedId);
+      bCleared|=Prev.Do==ES47Beat::Flag&&!Prev.bSet&&Prev.Flag==C.Arg;
+     }
+     bEnds&=bStarted&&bCleared;
+    }
+   }
+   Check(bEnds&&Waits>=6,TEXT("STORY-15: each wait on a Freeform event's end (ended_<id>) follows that event's start and a clearing of the flag in the same script"));
+  }
+  // The start beat's force, and the ended_ flags.
+  FS47EventScript Forced;Forced.Id=TEXT("story_force_probe");Forced.Name=TEXT("probe");
+  FS47Beat Fb;Fb.Do=ES47Beat::Start;Fb.Happening=TEXT("room6_tv");Fb.bForce=true;Forced.Beats.Add(Fb);
+  FS47EventScript ForcedScript=Forced;ForcedScript.Beats[0].Happening.Reset();ForcedScript.Beats[0].Script=TEXT("night_hunt");
+  FS47EventScript ReadForce;FString ForceWhy;
+  const bool bReadForce=S47EventScript::Read(TEXT("{\"version\":1,\"id\":\"story_force_read\",\"name\":\"probe\",\"beats\":[{\"at\":1,\"do\":\"start\",\"happening\":\"room6_tv\",\"force\":true}]}"),ReadForce,ForceWhy)
+   &&ReadForce.Beats.Num()==1&&ReadForce.Beats[0].bForce;
+  Check(bReadForce&&S47EventScript::LintStory(Forced).IsEmpty()&&S47EventScript::LintStory(ForcedScript).Num()>0&&S47EventScript::Lint(Forced).Num()>0,
+   TEXT("STORY-13: start's force is read; the story's lint takes it with a happening and refuses it with a script; Freeform's lint refuses it"));
+  Check(EndedFlagOf(TEXT("service_presence"),FString())==TEXT("ended_service_presence")&&EndedFlagOf(TEXT("room6_tv"),TEXT("taken"))==TEXT("ended_room6_tv")
+   &&EndedFlagOf(TEXT("wrong_source"),TEXT("wrong_source")).IsEmpty()&&EndedFlagOf(FString(),TEXT("array_presence")).IsEmpty()
+   &&EndedFlagOf(FString(DeputyRoundId),FString())==TEXT("ended_deputy_round")&&EndedFlagOf(TEXT("Not An Id"),FString()).IsEmpty(),
+   TEXT("STORY-14: a Freeform event's end is the story flag ended_<id> (the Director's event, the happening on the ground, the county car); nothing when nothing ended"));
+  // The star hole's start: set once with its flag at the clock then, kept through a save, and none without a Story night's director.
+  FS47StoryDirector HoleDir(nullptr);
+  HoleDir.BeginWith(ActsText,S47J::FObj());
+  HoleDir.TestClock(Day2+3*3600+20*60);
+  const bool bShut=HoleDir.HoleFrom<0;
+  HoleDir.SetFlag(StarHoleFlag);
+  const double Opened=HoleDir.HoleFrom;
+  HoleDir.TestClock(Day2+4*3600);
+  HoleDir.SetFlag(StarHoleFlag);
+  FS47StoryDirector HoleBack(nullptr);
+  HoleBack.BeginWith(ActsText,HoleDir.Save());
+  Check(bShut&&FMath::IsNearlyEqual(Opened,3*3600+20*60+STAR_HOLE.After)&&HoleDir.HoleFrom==Opened&&FMath::IsNearlyEqual(HoleBack.HoleFrom,Opened)
+   &&!StarHoleFrom(nullptr).IsSet()&&FMath::IsNearlyEqual(HoleFromAt(-60),86340+STAR_HOLE.After),
+   TEXT("STORY-16: the star hole opens once with its flag, at the clock then and STAR_HOLE.After; its start keeps through a save; none without a Story night's director (never in Freeform)"));
  }
  return OK;
 }

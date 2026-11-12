@@ -672,7 +672,8 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  // WEEKLY-CASE-20261109: nor on top of the week's case on the ground (no presence, so no small bodies out of the glimpses either).
  if(FS47WeekCase::Holds(M))return false;
  // STORY-ON-FREEFORM-01 (step 4): nor while a Story night's script runs (false in any other night).
- if(FS47StoryDirector::Holds(M))return false;
+ // STORY steg 6: the start a story beat asks for (StartForStory) is the one that may: the beat itself is the story's script running.
+ if(FS47StoryDirector::Holds(M)&&!bForStory)return false;
  // DIRECTOR-MODE-01: nor while the developer flies the director's camera.
  if(S47DirectorCam::On(M))return false;
  const auto* D=Definition(Id);if(!bEnabled||!D||!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!Event.IsEmpty()||M->Freeform->Held())return false;
@@ -834,7 +835,10 @@ bool FS47FreeformDirector::StartForStory(const FString& Id,FString& Why)
  if(!FS47StoryDirector::Of(M)){Why=TEXT("not a Story night");return false;}
  if(!Definition(Id)){Why=TEXT("no event ")+Id;return false;}
  if(!Event.IsEmpty()){Why=TEXT("event ")+Event+TEXT(" is under way");return false;}
- if(!Start(Id,true)){Why=TEXT("the world cannot start it now (area, power, or a panel)");return false;}
+ bForStory=true;
+ const bool bStarted=Start(Id,true);
+ bForStory=false;
+ if(!bStarted){Why=TEXT("the world cannot start it now (area, power, or a panel)");return false;}
  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform event %s started for the story"),*Id);
  return true;
 }

@@ -202,6 +202,7 @@ private:
  bool bEnabled=false,bApplied=false,bEffectsApplied=false,bChoiceStored=false,bSeen=false,bPhoto=false,bControlled=false,bCompared=false;
  // Started by Force: a test fixture, which keeps the older life of an event across a change of area. Never in a real game.
  bool bForcedEvent=false,bTestSaveFails=false;
+ bool bForStory=false; // STORY steg 6 (night act): StartForStory's own start goes past the story's hold on the dice (Eligible)
  // A fault lives in the equipment, not in Event. Its finding is written when the equipment says it is mended.
  bool bOwedArray=false,bOwedFeeder=false;
  void StepOwed();

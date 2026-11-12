@@ -18,6 +18,9 @@ public:
  FVector CarAt() const{return At;}
  // Test: tonight, as soon as the player can see the road.
  void TestNow(){bTestNow=true;}
+ // STORY steg 6 (night act, SC03): a Story night's beat sends the county car tonight, as soon as the player can see the road (as
+ // TestNow, also on a night it has been by already). False with why: the patrol is not running, or the car is out already.
+ bool ForStory(FString& Why);
  // Whether the patrol comes tonight, and the hour (past midnight it runs on from 24) that it reaches this stretch.
  static bool Comes(int32 Seed,int32 Night,int32 Trust);
  static double DueHour(int32 Seed,int32 Night);

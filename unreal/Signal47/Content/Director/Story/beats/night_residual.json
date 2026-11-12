@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "id": "night_residual",
+  "name": "Story: the residual on the console, 03:15 (SC05)",
+  "notes": "STORY steg 6, the night act. Started by night_deputy. The old SC05 'The conversation ahead' (S47Story: the residual near 1420.4, the voiceless phone, the forty-seven seconds, the dishes moving without a command, and the patch of sky with no stars where they point) on Freeform's own station: the residual is Freeform's wrong_source (the next reading's extra component does not follow the sky source), the call is phone_one_ring (the control-room telephone rings once) and the dishes are antenna_creak (metal turning slowly among the dishes), each one of the Director's events at SARO started for the story (StartForStory); the story waits for each one's end (ended_<id>). Then the story flag star_hole opens the old Story's star hole (S47StarHole.h: az 026, el 32, the sky's own STAR_HOLE field and fade, FS47StoryDirector::StarHoleFrom; Story nights only, never in Freeform), and once the player is out under the sky it is told as the old notice told it. Nothing else of the sky is touched (Tom: no other change to the star sky): the old meteor passage stays out. Also left out: every dish turning to az 026 together (Freeform has no story hold on the array's drives; a new mechanic) and the old chapter card.",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 90,
+      "do": "clock",
+      "at_least": "03:15"
+    },
+    {
+      "at": 91,
+      "do": "toast",
+      "text": "03:15. The residual is still there under the hydrogen line. The console.",
+      "secs": 6
+    },
+    {
+      "at": 92,
+      "do": "objective",
+      "text": "Take a reading at OPS and compare it at the receiver."
+    },
+    {
+      "at": 93,
+      "do": "flag",
+      "flag": "ended_wrong_source",
+      "set": false
+    },
+    {
+      "at": 94,
+      "do": "start",
+      "event": "wrong_source",
+      "wait": [
+        {
+          "if": "in_saro"
+        }
+      ],
+      "max": 600
+    },
+    {
+      "at": 95,
+      "do": "flag",
+      "flag": "residual_read",
+      "wait": [
+        {
+          "if": "story_flag",
+          "flag": "ended_wrong_source"
+        }
+      ],
+      "max": 900
+    },
+    {
+      "at": 96,
+      "do": "objective",
+      "text": ""
+    },
+    {
+      "at": 96,
+      "do": "evidence",
+      "key": "story_sc05_residual",
+      "text": "After 03:15. Unlogged residual on the spectrum near 1420.4. It does not follow the sky source. The survey schedule says nothing should be there."
+    },
+    {
+      "at": 97,
+      "do": "flag",
+      "flag": "ended_phone_one_ring",
+      "set": false
+    },
+    {
+      "at": 97,
+      "do": "start",
+      "event": "phone_one_ring",
+      "wait": [
+        {
+          "if": "in_saro"
+        }
+      ],
+      "max": 300
+    },
+    {
+      "at": 98,
+      "do": "flag",
+      "flag": "phone_rang",
+      "wait": [
+        {
+          "if": "story_flag",
+          "flag": "ended_phone_one_ring"
+        }
+      ],
+      "max": 120
+    },
+    {
+      "at": 99,
+      "do": "toast",
+      "text": "The phone. At this hour. One ring, then the line stays open: static, then a room. A printer running somewhere in it.",
+      "secs": 6
+    },
+    {
+      "at": 100,
+      "do": "toast",
+      "text": "A deep thud. Somebody catches their breath. Something ceramic breaks. Forty-seven seconds, and nobody speaks. Click.",
+      "secs": 7
+    },
+    {
+      "at": 101,
+      "do": "evidence",
+      "key": "story_sc05_call",
+      "text": "Outside line, after 03:15. No voice. Room tone, a printer, a heavy thud, a gasp, something ceramic breaking. Forty-seven seconds, then nothing."
+    },
+    {
+      "at": 102,
+      "do": "flag",
+      "flag": "ended_antenna_creak",
+      "set": false
+    },
+    {
+      "at": 102,
+      "do": "start",
+      "event": "antenna_creak"
+    },
+    {
+      "at": 103,
+      "do": "flag",
+      "flag": "dishes_heard",
+      "wait": [
+        {
+          "if": "story_flag",
+          "flag": "ended_antenna_creak"
+        }
+      ],
+      "max": 180
+    },
+    {
+      "at": 104,
+      "do": "thought",
+      "text": "Metal turning out among the dishes. Nobody sent a command.",
+      "secs": 4
+    },
+    {
+      "at": 105,
+      "do": "flag",
+      "flag": "star_hole"
+    },
+    {
+      "at": 125,
+      "do": "flag",
+      "flag": "star_hole_seen",
+      "wait": [
+        "outdoors",
+        "on_foot"
+      ],
+      "max": 600
+    },
+    {
+      "at": 126,
+      "do": "toast",
+      "text": "There are no stars up there, north-northeast, a third of the way up the sky.",
+      "secs": 5,
+      "if": [
+        {
+          "if": "story_flag",
+          "flag": "star_hole_seen"
+        }
+      ]
+    },
+    {
+      "at": 127,
+      "do": "evidence",
+      "key": "story_sc05_star_hole",
+      "text": "Az 026, el 32: a round patch about fourteen degrees across, more than a fist at arm's length, with nothing in it. Not a cloud. The sky is the same colour all the way through it. Only the stars are gone, as if something were standing in front of them.",
+      "if": [
+        {
+          "if": "story_flag",
+          "flag": "star_hole_seen"
+        }
+      ]
+    },
+    {
+      "at": 128,
+      "do": "start",
+      "script": "night_array"
+    }
+  ]
+}

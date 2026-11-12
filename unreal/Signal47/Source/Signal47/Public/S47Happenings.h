@@ -88,6 +88,10 @@ public:
  // PT-FEEDER-20261109: asked for by a place the player has come out to (FS47FarmSite: a figure far off past the marks), with every
  // condition asked as the night itself would ask it: the rhythm, the tier, the player's situation. Why: what stopped it.
  bool Request(const FString& Id,FString& Why){return StartEvent(Id,FString(),false,Why);}
+ // STORY steg 6 (night act): a Story night's start beat with force (S47EventScript.h): this one here and now, past its day and the
+ // rhythm's draw (as F10's start), not past the world: the place, the player's situation. Only with a Story night's director. Why: what
+ // stopped it.
+ bool StartForStory(const FString& Id,FString& Why);
  int32 DangersMet() const{return MetTotal;}
  // Whatever is on the ground is over at once; with bSites the lasting ones go too. Test runs only.
  void DevClear(bool bSites);
