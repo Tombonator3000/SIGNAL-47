@@ -944,7 +944,7 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
   Check(S47EventScript::LintStory(Ev).IsEmpty()&&S47EventScript::LintStory(Two).Num()>0&&S47EventScript::Lint(Ev).Num()>0&&bShift,TEXT("STORY-6: start may name a Freeform Director event (one of script, happening, event); Freeform's lint refuses it; evening_shift starts feeder_fault"));
  }
  { // STORY steg 6, the night act: SC02, SC03, SC05, SC08 and SC10 on Freeform's own events, chained by their last beats
-  static const TCHAR* const NightChain[]={TEXT("night_hunt"),TEXT("night_deputy"),TEXT("night_residual"),TEXT("night_array"),TEXT("night_room6")};
+  static const TCHAR* const NightChain[]={TEXT("night_hunt"),TEXT("night_deputy"),TEXT("night_residual"),TEXT("night_array"),TEXT("night_room6"),TEXT("night_room6_door")};
   TArray<const FS47EventScript*> Chain;
   for(const TCHAR* ChainId:NightChain)Chain.Add(FindScript(ChainId));
   if(Chain.Contains(nullptr))Lines.Add(TEXT("NOTE story director: a night_*.json of the night act is missing in Content/Director/Story/beats beside this build"));
@@ -1039,7 +1039,7 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
   static const TCHAR* const MorningIds[]={TEXT("morning_saro"),TEXT("morning_telex"),TEXT("morning_ward"),TEXT("morning_road"),TEXT("morning_end")};
   TArray<const FS47EventScript*> Morning;
   for(const TCHAR* MorningId:MorningIds)Morning.Add(FindScript(MorningId));
-  const FS47EventScript* Room6=FindScript(TEXT("night_room6"));
+  const FS47EventScript* Room6=FindScript(TEXT("night_room6_door")); // the door half sets room6_done last (night_room6 starts it at the motel)
   if(Morning.Contains(nullptr)||!Room6)Lines.Add(TEXT("NOTE story director: a morning_*.json of the morning act, or night_room6.json, is missing in Content/Director/Story/beats beside this build"));
   else
   {

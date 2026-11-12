@@ -38,42 +38,7 @@
     {
       "at": 94,
       "do": "start",
-      "happening": "room6_tv",
-      "force": true
-    },
-    {
-      "at": 101,
-      "do": "toast",
-      "text": "Through the door of room 6, over the snow: East from the station there is a survey bolt in the road. C crosses there.",
-      "secs": 7
-    },
-    {
-      "at": 109,
-      "do": "toast",
-      "text": "Tomas walked out to the closing point and did not walk back.",
-      "secs": 6
-    },
-    {
-      "at": 116,
-      "do": "toast",
-      "text": "Don't finish his observation. Get the originals out, and don't stop at C.",
-      "secs": 7
-    },
-    {
-      "at": 117,
-      "do": "evidence",
-      "key": "story_sc10_room6",
-      "text": "Room 6, Sierra Motor Court, before five. The door open a crack, the television on snow. A woman's voice through the door: a survey bolt in the road east of the station, where C crosses. Tomas did not walk back from the closing point. Don't stop at C."
-    },
-    {
-      "at": 123,
-      "do": "objective",
-      "text": "SARO. The remote sheets come in at 05:04. Get the originals out."
-    },
-    {
-      "at": 123,
-      "do": "flag",
-      "flag": "room6_done"
+      "script": "night_room6_door"
     }
   ]
 }
