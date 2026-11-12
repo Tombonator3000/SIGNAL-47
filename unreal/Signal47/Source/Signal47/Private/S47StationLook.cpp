@@ -7,7 +7,12 @@
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "Camera/PlayerCameraManager.h"
+#include "GameFramework/PlayerController.h"
+#include "Materials/Material.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "MaterialShared.h"
+#include "RHI.h"
 #include "Materials/MaterialInterface.h"
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
@@ -145,6 +150,12 @@ namespace S47StationLookLocal
 }
 namespace SSL = S47StationLookLocal;
 
+// (11 Nov, while the look did not show in the game's pictures) a one-time report some seconds after the build: whether the look
+// material's shaders are ready for this platform, and whether the shop's volume holds the camera; one Display line, no behaviour.
+static TWeakObjectPtr<UMaterialInstanceDynamic> GS47LookMid;
+static double GS47LookBuiltAt = -1.0;
+static bool GS47LookReported = false;
+
 bool FS47StationLook::ReadFile(FLook& Out, FOutside& Outside, FString* Error)
 {
 	auto Fail = [&](const FString& Why) { if (Error) *Error = Why; return false; };
@@ -223,10 +234,13 @@ void FS47StationLook::Build(UStaticMeshComponent* Station)
 		Box->SetBoxExtent(FVector((Max - Min) * .5), false);
 		UPostProcessComponent* P = SSL::Volume(A, Box, Station, (Min + Max) * .5, L.Priority, L.BlendCm);
 		SSL::Grade(P->Settings, L, true);
-		const UMaterialInstanceDynamic* Mid = SSL::LookMaterial(A, P->Settings, L);
+		UMaterialInstanceDynamic* Mid = SSL::LookMaterial(A, P->Settings, L);
 		P->RegisterComponent();
 		Actor = A;
 		Volume = P;
+		GS47LookMid = Mid;
+		GS47LookBuiltAt = FPlatformTime::Seconds();
+		GS47LookReported = false;
 		UE_LOG(LogS47StationLook, Display,
 			TEXT("S47: station look: saturation %.2f contrast %.2f gamma %s gain %s shadows +%s highlights %s grain %.2f (size %.2f) vignette %.2f bloom %.2f, blend %.0f cm, priority %.0f; box x %.0f..%.0f y %.0f..%.0f z %.0f..%.0f cm from the station's pivot (window wall pulled in %.0f cm); %s"),
 			L.Saturation, L.Contrast, *SSL::V3(L.Gamma), *SSL::V3(L.Gain), *SSL::V3(L.OffsetShadows), *SSL::V3(L.GainHighlights), L.Grain, L.GrainSize, L.Vignette, L.Bloom,
@@ -261,6 +275,24 @@ void FS47StationLook::Step()
 	if (bFree)
 		if (UStaticMeshComponent* Station = AS47Props::PlacedMesh(SSL::StationId); Station && BuiltFor.Get() != Station) Build(Station);
 	SetOn(bFree);
+	if (!GS47LookReported && GS47LookBuiltAt > 0 && FPlatformTime::Seconds() - GS47LookBuiltAt > 25.0)
+	{
+		GS47LookReported = true;
+		UMaterialInstanceDynamic* Mid = GS47LookMid.Get();
+		UPostProcessComponent* P = Volume.Get();
+		UMaterial* Base = Mid ? Mid->GetMaterial() : nullptr;
+		// (game-thread safe: the render proxy is not touched here; the first try did and crashed)
+		const bool bReady = Base && Base->IsComplete();
+		const bool bBusy = Base && Base->IsCompilingOrHadCompileError(GMaxRHIShaderPlatform);
+		FVector Eye = FVector::ZeroVector;
+		if (const APlayerController* PC = W->GetWorld()->GetFirstPlayerController()) if (PC->PlayerCameraManager) Eye = PC->PlayerCameraManager->GetCameraLocation();
+		float Dist = -1.f;
+		const bool bIn = P && P->EncompassesPoint(Eye, 0.f, &Dist);
+		UE_LOG(LogS47StationLook, Display, TEXT("S47: station look check: material %s, shaders %s (%s), domain post process %s, location %d; volume %s, eye %s %s the box (distance %.0f cm), enabled %s, %d blendables"),
+			Mid ? TEXT("here") : TEXT("missing"), bReady ? TEXT("ready") : TEXT("NOT ready"), bBusy ? TEXT("compiling or errored") : TEXT("not compiling"),
+			Base && Base->MaterialDomain == MD_PostProcess ? TEXT("yes") : TEXT("no"), Base ? int32(Base->BlendableLocation.GetValue()) : -1,
+			P ? TEXT("here") : TEXT("missing"), *Eye.ToString(), bIn ? TEXT("inside") : TEXT("outside"), Dist, P && P->bEnabled ? TEXT("yes") : TEXT("no"), P ? P->Settings.WeightedBlendables.Array.Num() : 0);
+	}
 }
 
 bool FS47StationLook::SelfTest(TArray<FString>& Lines)
