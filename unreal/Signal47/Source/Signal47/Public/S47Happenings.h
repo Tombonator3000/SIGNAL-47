@@ -152,6 +152,21 @@ public:
  static double FirstBurstHour(int32 Seed);
  static double FirstUneaseHour(int32 Seed);
  bool FirstBurstOwed(int32 Night) const;
+ // M1-FLOOR-20261112 (TODO «Milepæler for Freeform», M1: something every night that the player notices). If by three on the night's
+ // clock nothing the player noticed has happened tonight (Noticed, the night's tally), the rhythm loosens (FS47Rhythm::Loosens) for one
+ // small thing where the player is now: one of FloorOrder's events or a piece of unease (FloorUneaseFits), each asked by its own
+ // conditions as the night would ask them, tiers and hours included. Never a danger, never on a Story night, the big night's night or
+ // the first night (each is authored). Once a night at most, saved ("floorNight"; and "noticedNight", so that a Continue knows
+ // something was noticed already). Until half past five; after that nothing more is made up for.
+ static constexpr double FloorFrom=27.,FloorUntil=29.5;
+ static bool FloorOpen(double Hour,int32 Night,bool bNoticedTonight,int32 FloorDone,bool bAuthored);
+ // The events the floor may offer where the player is (SituationNow's bits), in tonight's order (the seed's): those heard or felt at
+ // the player as they start first (FloorHeard), then those that must be seen. A calm night: only the small ones.
+ static TArray<FString> FloorOrder(uint32 Sit,bool bQuiet,int32 Seed,int32 Night);
+ static bool FloorHeard(const FString& Id);
+ // The unease the floor may offer: heard or seen at the player at once (not the strong once-a-game ones, nor those that wait for a moment).
+ static bool FloorUneaseFits(int32 I);
+ static bool FloorSelfTest(TArray<FString>& Lines);
  // The magnetometer's history (FS47Places::Use): something has happened near a place in the last two nights, whether or not anyone
  // saw it (what stands out there now, and what stood there and has gone). Road-local metres; Day as FS47FreeformSession::Day. Not a
  // bearing's sector: a needle that swung wherever a bearing points would be a metal detector.
@@ -360,6 +375,11 @@ private:
  void StepEvent(double Dt);
  void StepSites(double Dt);
  void StepLate();
+ // M1-FLOOR-20261112: the night's floor (FloorOpen). FloorNight: the night it offered (saved); NoticedNight: the last night something
+ // was noticed (saved); FloorWarned: the event the animals went ahead of for it, let through loosened when it comes; bFloorTry: the
+ // rhythm is asked loosened (MayStart) while the floor tries.
+ void StepFloor();
+ int32 FloorNight=0,NoticedNight=0,FloorNoneNight=0;double FloorTryClock=0;bool bFloorTry=false;FString FloorWarned;
  // Drawing to where the player is (coordinator, 8 November): a draw that cannot happen there gives its place to one that can.
  uint32 SituationNow() const;
  static uint32 NeedMask(const FString& Id);

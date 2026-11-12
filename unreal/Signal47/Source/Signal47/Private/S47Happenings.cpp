@@ -994,6 +994,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
  Now=FActive();Sites.Reset();Past.Reset();LastDays.Reset();Deeds.Reset();Plan.Reset();Says.Reset();GeigerNoted.Reset();TryAt.Reset();LateTryClock=0;
  SitHeld.Reset();SitHeldClock=-1; // LEAD-FIX-20261110
  LeadNow=FLead();WordNight=0;WordTry=0; // CHAIN-5B-20261109
+ FloorNight=NoticedNight=FloorNoneNight=0;FloorTryClock=0;bFloorTry=false;FloorWarned.Empty(); // M1-FLOOR-20261112
  HoodNight=0;Uneasy=FUneasy();UneaseOnce.Reset();UneaseDone.Reset();UneasePool.Reset();UneaseAt.Reset();UneaseNight=UneaseWant=DangerSeen=0;DangerClock=-1e9;UneaseTry=0;OutsideSince=TruckAwaySince=-1;bWasDriving=bWasIndoors=bChairUp=false;
  Serial=0;HumorNight=-100;EchoFrom=0;LateNight=0;PlanNight=0;AheadNight=0;AheadSeconds=0;bLate=false;bEchoArmed=false;HumorKind.Empty();LastArea.Empty();
  MetTotal=0;HumorSeen.Reset();GhostNight=0;UneaseLast.Reset();Cues.Reset();LateAt=24.5;bLateHush=false;ReturnedAt=-1e9;ReturnedAway=0;
@@ -1032,6 +1033,8 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    }
   }
   WordNight=FMath::Clamp(S47J::Int(Saved,TEXT("wordNight")),0,100000); // CHAIN-5B-20261109: an older save has none (0)
+  // M1-FLOOR-20261112: an older save has neither (0): the floor may come tonight, as before it would have been asked.
+  FloorNight=FMath::Clamp(S47J::Int(Saved,TEXT("floorNight")),0,100000);NoticedNight=FMath::Clamp(S47J::Int(Saved,TEXT("noticedNight")),0,100000);
   // LOOP-4-20261109: what stood out there and has gone, x, z and night in threes.
   {const TArray<double> P=S47J::Nums(Saved,TEXT("past"));for(int32 I=0;I+2<P.Num()&&Past.Num()<MostPast;I+=3)if(FMath::IsFinite(P[I])&&FMath::IsFinite(P[I+1])&&FMath::Abs(P[I])<1e5&&FMath::Abs(P[I+1])<1e5&&P[I+2]>=1&&P[I+2]<100000)Past.Add({P[I],P[I+1],int32(P[I+2])});}
   for(const auto& V:S47J::Arr(Saved,TEXT("sites")))
@@ -1100,6 +1103,8 @@ S47J::FObj FS47Happenings::Save() const
  if(const S47J::FObj Big=SaveBig())S47J::Set(O,TEXT("big"),Big);
  if(LeadNow.IsSet()){auto L=S47J::New();S47J::Set(L,TEXT("night"),LeadNow.Night);S47J::Set(L,TEXT("kind"),LeadNow.Kind);S47J::Set(L,TEXT("place"),LeadNow.Place);if(LeadNow.bPointed)S47J::Set(L,TEXT("pointed"),true);S47J::Set(O,TEXT("lead"),L);} // CHAIN-1-20261109
  if(WordNight>0)S47J::Set(O,TEXT("wordNight"),WordNight); // CHAIN-5B-20261109
+ if(FloorNight>0)S47J::Set(O,TEXT("floorNight"),FloorNight); // M1-FLOOR-20261112
+ if(NoticedNight>0)S47J::Set(O,TEXT("noticedNight"),NoticedNight);
  if(!Past.IsEmpty()){TArray<double> P;for(const FStir& X:Past){P.Add(FMath::RoundToDouble(X.X*10)/10);P.Add(FMath::RoundToDouble(X.Z*10)/10);P.Add(X.Night);}S47J::Set(O,TEXT("past"),P);} // LOOP-4-20261109
  if(!Now.Id.IsEmpty()&&!Now.bForced&&S47Hap::Resumable(Now.Id,Now.Variant))
  {
@@ -1884,6 +1889,7 @@ void FS47Happenings::PlanTonight(int32 Night)
 {
  CloseTally(Night);
  Plan.Reset();PlanNight=Night;bLate=false;HumorKind.Empty();DangerAt=-1;RefusedSaid.Reset();LateDrawSaid.Reset();
+ FloorWarned.Empty();FloorTryClock=0; // M1-FLOOR-20261112
  SitHeld.Reset();SitHeldClock=-1; // LEAD-FIX-20261110
  auto* F=M?M->Freeform.Get():nullptr;if(!F)return;
  const int32 Seed=F->Seed();
@@ -2071,7 +2077,9 @@ bool FS47Happenings::Due(const FString& Id) const
 }
 bool FS47Happenings::MayStart(const FString& Id)
 {
- return !M||!M->Rhythm||M->Rhythm->Allow(FName(*Id));
+ if(!M||!M->Rhythm)return true;
+ // M1-FLOOR-20261112: the night's floor asks it loosened (FS47Rhythm::Loosens), only while it tries.
+ return bFloorTry?M->Rhythm->AllowFloor(FName(*Id)):M->Rhythm->Allow(FName(*Id));
 }
 void FS47Happenings::Say(const FString& Text,double In,float Secs){FSay S;S.Text=Text;S.In=In;S.Secs=Secs;Says.Add(S);}
 void FS47Happenings::StepSays(double Dt)
@@ -2154,7 +2162,7 @@ void FS47Happenings::Noticed(const FString& Id,double Dist,const TCHAR* How,int3
   if(Scare>=0)M->FieldRadio->Scare(Scare,Dist<0?1.:FMath::Clamp(1.-Dist/600.,.3,1.));
  }
  const bool bForced=Ser<=0&&Now.bForced;
- if(!bForced){++Tally.NNoticed;if(bNear)++Tally.NNear;if(Dist<1e5)Tally.Nearest=FMath::Min(Tally.Nearest,FMath::Max(0.,Dist));}
+ if(!bForced){++Tally.NNoticed;NoticedNight=FS47FreeformSession::NightOf(M->Freeform->Clock());if(bNear)++Tally.NNear;if(Dist<1e5)Tally.Nearest=FMath::Min(Tally.Nearest,FMath::Max(0.,Dist));}
  UE_LOG(LogS47Happen,Display,TEXT("S47: happening %s noticed day %d %s %s by %s%s"),Id.IsEmpty()?*Now.Id:*Id,M->Freeform->Day(),*S47Hap::ClockText(M->Freeform->Clock()),Dist<0?TEXT("at the player"):Dist>=1e5?TEXT("far off"):*FString::Printf(TEXT("at %.0f m"),Dist),How?How:TEXT("here"),bForced?TEXT(", F10"):TEXT(""));
 }
 void FS47Happenings::CloseTally(int32 NewNight)
@@ -2444,6 +2452,7 @@ void FS47Happenings::Step(double Dt)
    TryAt.Add(Id,Paced+3.);
   }
   StepLate();
+  StepFloor(); // M1-FLOOR-20261112
   StepCues();
   // CHAIN-5B-20261109: the word of tonight on the CB (WordOfTonight), now and then while the player sits at it and the channel is quiet.
   if(CanHearCb()&&Now.Id.IsEmpty()&&HeldTips.IsEmpty()&&WordNight!=Night&&Paced>=WordTry&&!(M->CB.IsValid()&&M->CB->bBusy)&&!FS47FieldRadio::DaleOnAir(M))
@@ -2458,7 +2467,8 @@ void FS47Happenings::Step(double Dt)
  StepGeiger(Dt);
  StepFirstDay(); // D46-20261110 (D46-3): the first day's script (S47FirstDay.cpp)
  // N1110 (ANIMALS-20261108): an event the animals went ahead of, its few seconds up
- if(AnimalWarn){FString WId,WVar;while(AnimalWarn->Due(WId,WVar)){FString WWhy;if(!StartEvent(WId,WVar,false,WWhy))Refused(WId,WWhy);}}
+ // M1-FLOOR-20261112: the one the floor offered is let through as loosened as it was asked.
+ if(AnimalWarn){FString WId,WVar;while(AnimalWarn->Due(WId,WVar)){FString WWhy;bFloorTry=!FloorWarned.IsEmpty()&&WId==FloorWarned;if(bFloorTry)FloorWarned.Empty();const bool bWent=StartEvent(WId,WVar,false,WWhy);bFloorTry=false;if(!bWent)Refused(WId,WWhy);}}
  // N1110 (rhythm): a false alarm in the evening, the ease eight to ten minutes after a danger
  if(!Calm)Calm=MakeShared<FS47Calm>(M);
  Calm->Step(Dt);
@@ -2520,6 +2530,110 @@ void FS47Happenings::StepLate()
   if(FireUnease(I,false,Why)){LateNight=Night;UE_LOG(LogS47Happen,Display,TEXT("S47: happenings: nothing near between 23:00 and 00:30 on night %d, so unease %d"),Night,I+1);return;}
  }
  if(H>=24.8)UE_LOG(LogS47Happen,Display,TEXT("S47: happenings: nothing between 23:00 and 01:00 on night %d, and nothing fits here"),Night);
+}
+// M1-FLOOR-20261112 (TODO «Milepæler for Freeform», M1). The 12 November natural tour of 24 nights: nights 7 and 12 started nothing,
+// nights 4 and 11 nothing the player noticed. By three, a night that has had nothing noticed is given one small thing where the player
+// is, by the event's own conditions; the rhythm gives way only on its cooldowns, budgets and draws (FS47Rhythm::Loosens).
+bool FS47Happenings::FloorOpen(double Hour,int32 Night,bool bNoticedTonight,int32 FloorDone,bool bAuthored)
+{
+ return !bAuthored&&Night>=2&&FloorDone!=Night&&!bNoticedTonight&&Hour>=FloorFrom&&Hour<FloorUntil;
+}
+namespace S47HapFloor
+{
+ // Where (all of these bits of SituationNow) and whether it is heard or felt at the player as it starts (Noticed at once in
+ // StartEvent: the truck's electrics, the dogs, the rabbits past, the lamps, the phone, the radio and the CB). Never a danger, the
+ // camera moments' scares (eyes at the window, the figure in the beam), humour or the crossing ahead, nor what stands kilometres off.
+ struct FFit{const TCHAR* Id;uint32 Where;bool bHeard;};
+ const FFit Fits[]={
+  {TEXT("car_dies"),S47Hap::NeedDrive,true},{TEXT("cb_stranded"),S47Hap::NeedDrive,true},
+  {TEXT("array_burst"),S47Hap::NeedSaro|S47Hap::NeedIndoors,true},
+  {TEXT("animals_flee"),S47Hap::NeedFoot,true},{TEXT("dogs_hush"),S47Hap::NeedFoot,true},
+  {TEXT("town_blackout"),S47Hap::NeedTown,true},{TEXT("phone_empty"),S47Hap::NeedTown,true},
+  {TEXT("horizon_figure"),S47Hap::NeedFoot,false},{TEXT("horizon_figure"),S47Hap::NeedSaro|S47Hap::NeedIndoors,false},
+  {TEXT("cattle_ring"),S47Hap::NeedFoot,false},{TEXT("dish_lights"),S47Hap::NeedSaro,false},
+  {TEXT("cinema_film"),S47Hap::NeedTown,false},{TEXT("room6_tv"),S47Hap::NeedMotel,false},
+ };
+}
+bool FS47Happenings::FloorHeard(const FString& Id)
+{
+ for(const S47HapFloor::FFit& Fit:S47HapFloor::Fits)if(Id==Fit.Id)return Fit.bHeard;
+ return false;
+}
+TArray<FString> FS47Happenings::FloorOrder(uint32 Sit,bool bQuiet,int32 Seed,int32 Night)
+{
+ TArray<FString> ByEar,ByEye;
+ for(const S47HapFloor::FFit& Fit:S47HapFloor::Fits)
+ {
+  const FString Id=Fit.Id;
+  if((Sit&Fit.Where)!=Fit.Where||IsDanger(Id))continue;
+  // A calm night has no lights, no bodies and no calls that lead anywhere: only the small ones (as StepSwap and StepLate).
+  if(bQuiet&&!(NeedMask(Id)&S47Hap::NeedSmall))continue;
+  if(Fit.bHeard)ByEar.AddUnique(Id);else ByEye.AddUnique(Id);
+ }
+ const auto ByNight=[Seed,Night](const FString& A,const FString& B){return FS47NightRhythm::Roll(Seed,Night,S47Hap::SaltOf(A)^0x464c4f52u)<FS47NightRhythm::Roll(Seed,Night,S47Hap::SaltOf(B)^0x464c4f52u);};
+ ByEar.Sort(ByNight);ByEye.Sort(ByNight);
+ ByEar.Append(ByEye);
+ return ByEar;
+}
+bool FS47Happenings::FloorUneaseFits(int32 I)
+{
+ // The truck's alarm, knocks, steps, the dog cut off, the tap, the radio's song, the phone's breathing, the laugh far out, the hum
+ // stopping, the shadow under the door, Caliche's lamps, the birds: each at the player, by ear or in plain sight.
+ static const int32 Fit[]={0,1,3,4,5,6,7,8,9,13,22,24};
+ for(const int32 K:Fit)if(K==I)return true;
+ return false;
+}
+void FS47Happenings::StepFloor()
+{
+ auto* F=M->Freeform.Get();
+ const double Clock=F->Clock();
+ const int32 Night=FS47FreeformSession::NightOf(Clock);
+ const double H=HourOfNight(Clock);
+ // A Story night, the big night's own night and the first night are authored: left as they are.
+ const bool bAuthored=FS47StoryDirector::Of(M)!=nullptr||BigOwns(Night)||BigLive();
+ const bool bNoticed=NoticedNight==Night||(Tally.Night==Night&&Tally.NNoticed>0);
+ if(!FloorOpen(H,Night,bNoticed,FloorNight,bAuthored)||Clock<FloorTryClock)return;
+ // Asked again every minute and a half of the clock: what holds the ground now, or a rest, may let go.
+ FloorTryClock=Clock+90;
+ if(!Now.Id.IsEmpty()||Uneasy.I>=0||!FloorWarned.IsEmpty())return;
+ const uint32 Sit=SituationNow();
+ const TArray<FString> Order=FloorOrder(Sit,F->QuietNight(Night),F->Seed(),Night);
+ TArray<FString> Tried;
+ const auto Offer=[&](const FString& What,const TCHAR* How)
+ {
+  FloorNight=Night;
+  UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d: quiet so far, the floor offers %s (%s, day %d %s in %s)"),Night,*What,How,F->Day(),*S47Hap::ClockText(Clock),*M->Web->Area());
+  M->RequestAutosave();
+ };
+ const auto TryEvent=[&](const FString& Id)
+ {
+  if(LastDays.FindRef(Id)==F->Day()){Tried.Add(Id+TEXT(": today already"));return false;}
+  FString Why;
+  bFloorTry=true;const bool bWent=StartEvent(Id,FString(),false,Why);bFloorTry=false;
+  if(bWent){Offer(Id,FloorHeard(Id)?TEXT("heard at the player"):TEXT("to be seen"));return true;}
+  // The animals go first (S47AnimalWarn): that is the thing noticed, and the event follows, let through as loosened (Step).
+  if(Why==TEXT("the animals first")){FloorWarned=Id;Offer(Id,TEXT("the animals first"));return true;}
+  Tried.Add(Id+TEXT(": ")+Why);return false;
+ };
+ int32 K=0;
+ for(;K<Order.Num()&&FloorHeard(Order[K]);++K)if(TryEvent(Order[K]))return;
+ // Then a piece of unease at the player, in tonight's order. Unease is not counted by the tally of its own (it has no serial):
+ // the floor's is, so that the night's summary says what the player met.
+ for(const int32 I:UneasePool)
+ {
+  if(UneaseDone.Contains(I)||!FloorUneaseFits(I))continue;
+  FString Why;
+  bFloorTry=true;const bool bWent=FireUnease(I,false,Why);bFloorTry=false;
+  if(bWent){Noticed(UneaseId(I),-1,TEXT("unease"),++Serial);Offer(FString::Printf(TEXT("unease %d %s"),I+1,UneaseId(I)),TEXT("at the player"));return;}
+  Tried.Add(FString::Printf(TEXT("unease %d: %s"),I+1,*Why));
+ }
+ for(;K<Order.Num();++K)if(TryEvent(Order[K]))return;
+ // Said once a night: what was asked and why each could not.
+ if(FloorNoneNight!=Night)
+ {
+  FloorNoneNight=Night;
+  UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d: quiet so far, and nothing the floor has fits here yet (%s): %s"),Night,*S47Hap::ClockText(Clock),Tried.IsEmpty()?TEXT("nothing for this place"):*FString::Join(Tried,TEXT("; ")));
+ }
 }
 // Where the player is, as the events ask for it: at the wheel, on foot outside, under a roof, at SARO, in Caliche, at the motel.
 uint32 FS47Happenings::SituationNow() const
@@ -5232,6 +5346,83 @@ void FS47Happenings::DevClear(bool bSites)
 }
 
 // ---------------------------------------------------------------- self-test
+// M1-FLOOR-20261112: the night's floor by itself (FloorOpen, FloorOrder, the rhythm's Loosens), a night walked minute by minute.
+bool FS47Happenings::FloorSelfTest(TArray<FString>& Lines)
+{
+ bool OK=true;
+ const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s happenings floor: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
+ const uint32 SaroIn=S47Hap::NeedIndoors|S47Hap::NeedSaro,InTruck=S47Hap::NeedDrive,OnFoot=S47Hap::NeedFoot,InTown=S47Hap::NeedFoot|S47Hap::NeedTown;
+ const auto FitsHere=[](const FString& Id,uint32 Where){for(const S47HapFloor::FFit& Fit:S47HapFloor::Fits)if(Id==Fit.Id&&(Where&Fit.Where)==Fit.Where)return true;return false;};
+ Check(!FloorOpen(26.99,5,false,0,false)&&FloorOpen(27.,5,false,0,false)&&FloorOpen(29.4,5,false,0,false)&&!FloorOpen(29.5,5,false,0,false),TEXT("it opens at 03:00 on the night's clock and closes at half past five"));
+ Check(!FloorOpen(27.5,5,true,0,false)&&!FloorOpen(27.5,5,false,5,false)&&FloorOpen(27.5,5,false,4,false)&&!FloorOpen(27.5,5,false,0,true)&&!FloorOpen(27.5,1,false,0,false),
+  TEXT("not on a night with something noticed, not twice in a night, not on an authored night (Story, the big night) nor the first"));
+ Check(FloorFrom>=S47NightTiers::FullHour(2)&&FloorFrom>=S47NightTiers::FullHour(S47NightTiers::LateFromNight),TEXT("it never opens before the night's full tier, in any week"));
+ // Where the player is decides what it offers; nothing in it is a danger, a scare at the window or in the beam, humour or the crossing.
+ {
+  bool bClean=true,bHeardFirst=true,bSmall=true;
+  for(const uint32 Sit:{SaroIn,InTruck,OnFoot,InTown,S47Hap::NeedFoot|S47Hap::NeedSaro,S47Hap::NeedFoot|S47Hap::NeedMotel})for(const bool bCalm:{false,true})for(int32 Night=2;Night<=9;++Night)
+  {
+   bool bSeenYet=false;
+   for(const FString& Id:FloorOrder(Sit,bCalm,47,Night))
+   {
+    bClean&=!IsDanger(Id)&&FitsHere(Id,Sit)&&Id!=TEXT("eyes_window")&&Id!=TEXT("beam_figure")&&Id!=TEXT("humor")&&Id!=TEXT("road_glimpse")&&Id!=TEXT("landing");
+    if(!FloorHeard(Id))bSeenYet=true;else bHeardFirst&=!bSeenYet;
+    if(bCalm)bSmall&=(NeedMask(Id)&S47Hap::NeedSmall)!=0;
+   }
+  }
+  Check(bClean,TEXT("what the floor offers fits where the player is, and is never a danger, a scare, humour or something far off"));
+  Check(bHeardFirst,TEXT("what is heard or felt at the player as it starts comes before what must be seen"));
+  Check(bSmall,TEXT("on a calm night only the small ones"));
+  const TArray<FString> Saro=FloorOrder(SaroIn,false,47,5),Cab=FloorOrder(InTruck,false,47,5),Out=FloorOrder(OnFoot,false,47,5),Town=FloorOrder(InTown,false,47,5);
+  Check(Saro.Contains(TEXT("array_burst"))&&!Saro.Contains(TEXT("car_dies"))&&Cab.Contains(TEXT("car_dies"))&&Cab.Contains(TEXT("cb_stranded"))&&!Cab.Contains(TEXT("array_burst"))
+   &&Out.Contains(TEXT("animals_flee"))&&Out.Contains(TEXT("dogs_hush"))&&!Out.Contains(TEXT("cb_stranded"))&&Town.Contains(TEXT("town_blackout"))&&Town.Contains(TEXT("phone_empty")),
+   TEXT("indoors at SARO the array, in the truck its electrics and the CB, on foot the animals, in Caliche its lamps and the phone"));
+  Check(FloorOrder(SaroIn,true,47,5).IsEmpty()&&FloorUneaseFits(1)&&FloorUneaseFits(9)&&!FloorUneaseFits(2)&&!FloorUneaseFits(19)&&!FloorUneaseFits(11)&&!FloorUneaseFits(12)&&!FloorUneaseFits(14),
+   TEXT("a calm night indoors at SARO falls to a piece of unease at the player (knocks, the hum), never your name, the note, or one that waits for a moment"));
+ }
+ // A night walked minute by minute from seven to six: nothing noticed by three gets exactly one offer, at three, that fits the place;
+ // something noticed at 01:10 gets none.
+ {
+  int32 Nights=0,Once=0,Never=0;bool bFits=true;
+  const uint32 Places[]={SaroIn,InTruck,OnFoot,InTown};
+  for(const int32 Seed:{1,47,123456})for(int32 Night=2;Night<=30;++Night)
+  {
+   const uint32 Sit=Places[(Seed+Night)%4];
+   const bool bCalm=FS47NightRhythm::Quiet(Seed,Night);
+   int32 Offers=0,Done=0,Later=0,LaterDone=0;double First=-1;
+   for(int32 Minute=19*60;Minute<30*60;++Minute)
+   {
+    const double Hr=Minute/60.;
+    if(FloorOpen(Hr,Night,false,Done,false))
+    {
+     ++Offers;Done=Night;if(First<0)First=Hr;
+     const TArray<FString> Order=FloorOrder(Sit,bCalm,Seed,Night);
+     // The first of tonight's order where it is (the world's own refusals aside), or a piece of unease.
+     bFits&=Order.IsEmpty()||FitsHere(Order[0],Sit);
+    }
+    if(FloorOpen(Hr,Night,Minute>=25*60+10,LaterDone,false)){++Later;LaterDone=Night;}
+   }
+   ++Nights;
+   Once+=Offers==1&&FMath::IsNearlyEqual(First,FloorFrom)?1:0;
+   Never+=Later==0?1:0;
+  }
+  Check(Once==Nights&&bFits,TEXT("a night with nothing noticed by 03:00 gets exactly one floor offer, at 03:00, that fits where the player is"));
+  Check(Never==Nights,TEXT("a night with something noticed (01:10) gets no floor offer"));
+ }
+ // What the rhythm gives way on, and what it never does.
+ Check(FS47Rhythm::Loosens(TEXT("cooldown"))&&FS47Rhythm::Loosens(TEXT("budget"))&&FS47Rhythm::Loosens(TEXT("not_drawn_tonight"))
+  &&!FS47Rhythm::Loosens(TEXT("tier"))&&!FS47Rhythm::Loosens(TEXT("outside_hours"))&&!FS47Rhythm::Loosens(TEXT("rest"))&&!FS47Rhythm::Loosens(TEXT("spacing"))
+  &&!FS47Rhythm::Loosens(TEXT("slot_taken:peek"))&&!FS47Rhythm::Loosens(TEXT("danger_night"))&&!FS47Rhythm::Loosens(TEXT("not_here"))&&!FS47Rhythm::Loosens(TEXT("tutorial")),
+  TEXT("the rhythm loosens only its cooldowns, budgets and draws: never the tier, the hours, the rest, the spacing or what holds the ground"));
+ // Saved: a Continue after the floor does not offer it again, nor after something was noticed; an older save has neither.
+ {
+  FS47Happenings A(nullptr);A.Begin(nullptr);A.FloorNight=6;A.NoticedNight=5;
+  FS47Happenings B(nullptr);B.Begin(S47J::Read(S47J::Write(A.Save())));
+  FS47Happenings C(nullptr);C.Begin(nullptr);FS47Happenings D(nullptr);D.Begin(S47J::Read(S47J::Write(C.Save())));
+  Check(B.FloorNight==6&&B.NoticedNight==5&&D.FloorNight==0&&D.NoticedNight==0,TEXT("the floor's night and the last night noticed survive a Continue; an older save has neither"));
+ }
+ return OK;
+}
 bool FS47Happenings::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;
@@ -5573,5 +5764,7 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
  OK&=BigSelfTest(Lines);
  // D46-20261110 (D46-3): the first day's script (S47FirstDay.cpp).
  OK&=FirstDaySelfTest(Lines);
+ // M1-FLOOR-20261112: the night's floor.
+ OK&=FloorSelfTest(Lines);
  return OK;
 }
