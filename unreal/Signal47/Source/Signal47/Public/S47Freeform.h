@@ -115,6 +115,7 @@ public:
  bool DriveCheckRunning() const { return DriveCheckAt>=0; }
  const FString& DriveCheckText() const { return DriveCheckResult; }
  bool DriveCheckedToday() const { return DriveCheckAt<0&&DriveCheckDay==DayNumber; }
+ const FString& DriveCheckResultText() const { return DriveCheckResult; }
  TArray<FString> TerminalLines(int32 Screen) const;
  // FIX-20261110: the live strip under an idle screen's lines (SS47Crt), and what is on the air
  // around the station (the gear's own level: the lamp, the walkie and the watch feel the same thing).
