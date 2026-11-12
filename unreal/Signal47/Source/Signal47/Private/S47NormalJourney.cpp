@@ -260,7 +260,8 @@ namespace
    {
     if(!J->CaptureOriginal.Failure.IsEmpty())return Finish(false,J->CaptureOriginal.Failure);
     if(J->Elapsed>=6&&!ChangedDials){const auto* P=F.ConsoleProfile();M->Story->Rx.Gain=P->Gain[1];M->Story->Rx.Bandwidth=P->Bw[1];ChangedDials=true;}
-    if(J->Stage!=FS47FreeformSession::EJobStage::Chart||F.PrinterProgress()<1)return true;
+    // GAMEPLAY-LOOP-01: the unusual take is kept as it ends (Recorded, no chart); an older chart step would wait at the printer
+    if(J->Stage!=FS47FreeformSession::EJobStage::Recorded&&(J->Stage!=FS47FreeformSession::EJobStage::Chart||F.PrinterProgress()<1))return true;
     if(!Check(J->CaptureOriginal.Playable()&&ChangedDials&&J->CaptureOriginal.Frames[0].Gain!=J->CaptureOriginal.Frames.Last().Gain,TEXT("actual full-rate capture retains real mid-recording dial change")))return false;
     const auto State=F.CaptureSoundState();if(S47J::Num(State,TEXT("liveRendered"))<18*M->Audio->Ctx->SampleRate)return true;
     Evidence.Add(MakeShared<FJsonValueObject>(State));Original=S47J::Write(J->CaptureOriginal.Save());Ticks=J->TraceTicks;

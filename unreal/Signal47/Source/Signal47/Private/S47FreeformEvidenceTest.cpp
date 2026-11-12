@@ -334,8 +334,14 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==13)
   {
    if(!S.Job)CrossSample(M);
-   if(J->Stage!=EJob::Chart)return;
+   // GAMEPLAY-LOOP-01: the unusual pulsar take is kept as it ends (no chart, no control) and goes straight to the reel deck
+   if(J->Stage!=(S.Job?EJob::Recorded:EJob::Chart))return;
    if(!Check(M,S.Job?J->Elapsed==18:S.Cross==5,TEXT("actual timed acquisition completes; normal reference includes all five settled cross positions")))return;
+   if(S.Job)
+   {
+    if(!Check(M,J->bPrinted&&!J->bControl&&!F.CanRecordControl()&&F.PrinterJobId()!=J->Id&&F.JobNextAction(*J).StartsWith(TEXT("REEL DECK")),TEXT("the unusual take keeps its original at once, prints no chart and names the reel deck: ")+F.JobNextAction(*J))||!Document(M,J->Id+TEXT("-original"),true))return;
+    Close(M);const FVector A=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original"));WalkTo(M,{{0,-1.7},{3.8,-1.7},{4.4,-1.3},{3.8,1.2},{A.X,1.2},{A.X,A.Z-1.2}},20);return;
+   }
    Close(M);WalkTo(M,{{0,-1.7},{3.8,-1.7},{4.8,-.4}},14);return;
   }
   if(S.Stage==14){Aim(M,Target(M,TEXT("printer")));Go(15);return;}
@@ -364,24 +370,15 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==20){if(!Check(M,F.AudioDesk->ListeningPosition(),TEXT("actual walking reaches the powered physical tape listening position")))return;Aim(M,Target(M,TEXT("ff:audio:original")));Go(21);return;}
   if(S.Stage==21){if(!Use(M,TEXT("ff:audio:original")))return;Aim(M,Target(M,TEXT("ff:audio:play")));Go(22);return;}
   if(S.Stage==22){if(!Use(M,TEXT("ff:audio:play"))||!Check(M,F.AudioPlaying()&&!M->ModalOpen(),TEXT("physical PLAY begins the original recording while world remains active")))return;Go(23,0);return;}
+  // GAMEPLAY-LOOP-01: one listen confirms it: no marks to set, no control reel; the deck keeps it by itself past the last tick
   if(S.Stage==23)
-  {if(F.AudioPosition()<8.7)return;Aim(M,Target(M,TEXT("ff:audio:mark_start")));Go(24,.15);return;}
-  if(S.Stage==24)
-  {if(F.AudioPosition()<9.1)return;if(!Use(M,TEXT("ff:audio:mark_start"))||!Check(M,J->MarkStart>=9.1&&J->MarkStart<=9.3,TEXT("physical MARK IN captures actual original cursor near9.1s")))return;Go(25,0);return;}
-  if(S.Stage==25)
-  {if(F.AudioPosition()<12.2)return;Aim(M,Target(M,TEXT("ff:audio:mark_end")));Go(26,.15);return;}
-  if(S.Stage==26)
-  {if(F.AudioPosition()<12.8)return;if(!Use(M,TEXT("ff:audio:mark_end"))||!Check(M,J->MarkEnd>=12.6&&J->MarkEnd<=13.1,TEXT("physical MARK OUT captures both extra tick groups")))return;Go(27,0);return;}
-  if(S.Stage==27)
-  {if(F.AudioPlaying())return;if(!Check(M,J->OriginalCovered==18,TEXT("original is actually heard in full; no seek/coverage injection")))return;Aim(M,Target(M,TEXT("ff:audio:control")));Go(28);return;}
-  if(S.Stage==28){if(!Use(M,TEXT("ff:audio:control")))return;Aim(M,Target(M,TEXT("ff:audio:play")));Go(29);return;}
-  if(S.Stage==29){if(!Use(M,TEXT("ff:audio:play")))return;Go(290,0);return;}
-  if(S.Stage==290)
-  {if(F.AudioPlaying())return;if(!Check(M,J->ControlCovered==8&&!J->bAudioReviewed,TEXT("independent negative control is actually heard for8s before interpretation")))return;Aim(M,Target(M,TEXT("ff:audio:retain")));Go(291);return;}
+  {if(F.AudioPlaying()||F.AudioPreparing())return;if(!Check(M,J->OriginalCovered==18&&J->ControlCovered==0,TEXT("original is actually heard in full; no seek/coverage injection, no control")))return;
+   if(!Check(M,J->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.Budget()==S.InitialCash+20&&J->MarkStart<=9.3&&J->MarkEnd>=12.6,TEXT("one listen confirms the anomaly and marks the ticks, without payment or origin claim")))return;
+   Aim(M,Target(M,TEXT("ff:audio:retain")));Go(291);return;}
   if(S.Stage==291)
-  {if(!Use(M,TEXT("ff:audio:retain"))||!Check(M,J->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.Budget()==S.InitialCash+20,TEXT("physical RETAIN secures comparison without payment or origin claim")))return;
-   // Tom, 9 November: RETAIN opens no case; it says the next step, the registration at OPS.
-   if(!Check(M,!(F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen)&&F.FeedbackText().Contains(TEXT("Register comparison: source unresolved"))&&!F.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("RETAIN opens no case and says only the next step: register at OPS")))return;Photo(TEXT("03-physical-original-control"));Go(292);return;}
+  {if(!Use(M,TEXT("ff:audio:retain"))||!Check(M,J->bAudioReviewed&&F.Budget()==S.InitialCash+20,TEXT("physical RETAIN after the listen keeps it, without payment")))return;
+   // Tom, 9 November: the check opens no case; it says the next step, the confirmation at OPS.
+   if(!Check(M,!(F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen)&&F.FeedbackText().Contains(TEXT("Confirm anomaly: source unresolved"))&&!F.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("the tape check opens no case and says only the next step: confirm at OPS")))return;Photo(TEXT("03-physical-original-control"));Go(292);return;}
   if(S.Stage==292){WalkTo(M,{{.42,1.2},{-4.2,1.2},{-4.2,2.49}},30);return;}
   if(S.Stage==30){Aim(M,Target(M,TEXT("opsTerminal")));Go(31);return;}
   if(S.Stage==31){if(!Use(M,TEXT("opsTerminal")))return;Go(32,.6);return;}
@@ -396,7 +393,7 @@ namespace S47FreeformEvidenceTest
   }
   if(S.Stage==33)
   {
-   if(!Click(M,TEXT("Register comparison: source unresolved"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;
+   if(!Click(M,TEXT("Confirm anomaly: source unresolved"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;
    // Tom, 9 November: the registration is what opens the case, and says so.
    if(!Check(M,F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen&&F.FeedbackText().StartsWith(TEXT("CASE OPENED: THE REPEATED INTERVAL")),TEXT("registering the comparison opens THE REPEATED INTERVAL: CASE OPENED")))return;
    Go(330,.6);return;
@@ -465,7 +462,7 @@ namespace S47FreeformEvidenceTest
    if(!Check(M,M->Flow->CaseId==1&&!M->Flow->bDevRun&&M->World->Area==TEXT("saro")&&FVector::Dist(M->Player->Pos,S.SavedFoot)<.03&&!M->ModalOpen()&&!F.TerminalOnGlass(),TEXT("ordinary title/disk Continue restores actual records-room pose, Freeform mode and no orphan modal")))return;
    // Filed work moves to EARLIER WORK and loses active focus, so look the job up by its identity.
    const auto* Kept=F.Jobs().FindByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==S.Ids[1];});
-   if(!Check(M,Kept&&Kept->Stage==EJob::Filed&&Kept->bPaid&&Kept->bAudioReviewed&&Kept->OriginalCovered==18&&Kept->ControlCovered==8&&Kept->MarkStart<=9.3&&Kept->MarkEnd>=12.6&&F.Budget()==S.InitialCash+40&&F.Debt()==S.InitialDebt,TEXT("disk Continue preserves measured comparison, original marks and exactly-once filing credit")))return;
+   if(!Check(M,Kept&&Kept->Stage==EJob::Filed&&Kept->bPaid&&Kept->bAudioReviewed&&Kept->OriginalCovered==18&&Kept->ControlCovered==0&&Kept->MarkStart<=9.3&&Kept->MarkEnd>=12.6&&F.Budget()==S.InitialCash+40&&F.Debt()==S.InitialDebt,TEXT("disk Continue preserves measured comparison, original marks and exactly-once filing credit")))return;
    if(!Check(M,F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen&&F.CaseFile().Get(0)->Planned==0&&F.Jobs().ContainsByPredicate([](const FS47FreeformSession::FJob& X){return X.CaseTest==0&&!X.bCaseRecorded;}),TEXT("disk Continue keeps the open case and its planned generator test job")))return;
    for(const auto& Doc:S.Originals)if(!Document(M,Doc.Id,false))return;++S.Restores;Aim(M,Target(M,TEXT("binder")));Go(72);return;
   }

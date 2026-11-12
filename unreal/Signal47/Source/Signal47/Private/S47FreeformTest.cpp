@@ -859,10 +859,10 @@ void FS47FreeformTest::Step(double Dt)
    Job.ControlAt=8;Job.DuplicateFeed=FS47FreeformSession::PrinterSeconds;
    if(!Hint(TEXT("PRINTER"),TEXT("WITHOUT ALTERING THE ORIGINAL"),TEXT("Printer")))return;
    Job.bDuplicateCollected=true;if(!Hint(TEXT("OPS"),TEXT("PRESS COMPARE AND REGISTER"),TEXT("OPS")))return;
-   Job.Phenomenon=TEXT("extra_pulse");Job.ControlAt=4;
-   if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN REVIEW BOTH RECORDINGS"),TEXT("Receiver rack")))return;
-   Job.ControlAt=8;if(!Hint(TEXT("REEL DECK"),TEXT("MARK THE EXTRA TICKS"),TEXT("Reel deck")))return;
-   Job.bAudioReviewed=true;if(!Hint(TEXT("OPS"),TEXT("REGISTER THE COMPARISON"),TEXT("OPS")))return;
+   // GAMEPLAY-LOOP-01: the extra-tick take asks for no control: the reel deck, then OPS's one button
+   Job.Phenomenon=TEXT("extra_pulse");Job.bControl=false;Job.ControlAt=0;Job.bDuplicateCollected=false;
+   if(!Hint(TEXT("REEL DECK"),TEXT("PLAY THE TAKE ONCE"),TEXT("Reel deck")))return;
+   Job.bAudioReviewed=true;if(!Hint(TEXT("OPS"),TEXT("CONFIRM THE ANOMALY"),TEXT("OPS")))return;
    Job.Stage=J::Registered;Job.PacketFeed=FS47FreeformSession::PrinterSeconds;if(!Hint(TEXT("PRINTER"),TEXT("COLLECT"),TEXT("Printer")))return;
    Job.Stage=J::Packet;if(!Hint(TEXT("RECORDS ROOM"),TEXT("BINDER"),TEXT("binder")))return;
    Job.Stage=J::Filed;if(!Check(F.JobNextAction(Job).Contains(TEXT("DAILY WORK OR RECORDS")),TEXT("filed work directs to further work or retained archive")))return;
@@ -1396,7 +1396,8 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(M->Flow->bDevRun&&M->Flow->CaseId==0&&M->IsFreeform()&&M->World&&M->World->Area==TEXT("saro")&&!M->World->bDriving&&!M->World->bBusy&&F.Director&&F.Field&&F.Field->ParcelStage()==0,TEXT("isolated fresh SARO Freeform case, no cargo or competing trip")))return;
    M->UI->Close(true);F.Director->Stop();
    if(!Check(F.SelectJob(1)&&F.CurrentJob()&&F.CurrentJob()->Source==1,TEXT("existing generated pulsar work order selected")))return;
-   F.SetAnomaly(true);const auto P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("actual selected work card supplies explicit tuning fixture")))return;
+   // GAMEPLAY-LOOP-01: the extra-tick take has no control to run any more; the clock discrepancy's eight-second control is the timed one
+   F.SetAnomaly(true);F.SetPhenomenon(TEXT("time_disagreement"));const auto P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("actual selected work card supplies explicit tuning fixture")))return;
    auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
    if(!Check(F.PointSelected(),TEXT("production pointing command accepted; no encoder snap or job-stage injection")))return;Go(9001);return;
   }
@@ -1662,15 +1663,20 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(Stage==4)
  {
+  // GAMEPLAY-LOOP-01: the unusual take is kept as it ends, with no chart to fetch and no control to record
+  if(JobIndex==1)
+  {
+   if(F.CurrentJob()->Stage!=J::Recorded)return;
+   if(!Check(F.CurrentJob()->bAnomaly&&F.CurrentJob()->bPrinted&&!F.CurrentJob()->OriginalPage.IsEmpty()&&!F.CanRecordControl()&&F.JobNextAction(*F.CurrentJob()).StartsWith(TEXT("REEL DECK")),TEXT("the unusual take is kept at once and sends the player to the reel deck: ")+F.JobNextAction(*F.CurrentJob())))return;
+   M->UI->Close(true);Go(5);return;
+  }
   if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
   if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Recorded,TEXT("completed measurement retains an original chart")))return;
   M->UI->Close(true);
-  if(JobIndex==1){if(!Check(F.StartControl(),TEXT("physical receiver control starts a separate timed reference")))return;Go(5);return;}
   Go(9);return;
  }
  if(Stage==5)
  {
-  if(F.CurrentJob()->ControlAt<8)return;
   if(F.AudioDesk) { const FVector P=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original")); M->Player->Place(P.X,P.Z-1.2,0); }
   F.OpenAudio();if(!Check(!F.AudioAction(TEXT("confirm")),TEXT("comparison cannot be granted before actual playback")))return;
   F.AudioAction(TEXT("original"));F.AudioAction(TEXT("play"));Go(6);return;
@@ -1679,13 +1685,9 @@ void FS47FreeformTest::Step(double Dt)
  {
   if(F.AudioPlaying())return;
   if(!Check(F.CurrentJob()->OriginalCovered>=18,TEXT("original recording really played through")))return;
-  F.AudioAction(TEXT("control"));F.AudioAction(TEXT("play"));Go(7);return;
- }
- if(Stage==7)
- {
-  if(F.AudioPlaying())return;
-  if(!Check(F.CurrentJob()->ControlCovered>=8,TEXT("independent control recording really played through")))return;
-  F.AudioAction(TEXT("original"));F.SeekAudio(9.1);F.AudioAction(TEXT("mark_start"));F.SeekAudio(13.0);F.AudioAction(TEXT("mark_end"));Shot(TEXT("audio-comparison"));Go(FParse::Param(FCommandLine::Get(),TEXT("S47ReelShots"))?71:8,.3);return;
+  // GAMEPLAY-LOOP-01: one listen confirms it; the marks come by themselves, and no control is asked for
+  if(!Check(F.CurrentJob()->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.CurrentJob()->ControlCovered==0&&F.CurrentJob()->MarkStart>=0&&F.CurrentJob()->MarkEnd>F.CurrentJob()->MarkStart,TEXT("one listen at the reel deck confirms the anomaly")))return;
+  F.AudioAction(TEXT("original"));Shot(TEXT("audio-comparison"));Go(FParse::Param(FCommandLine::Get(),TEXT("S47ReelShots"))?71:8,.3);return;
  }
  // FIX-20261110: -S47ReelShots stops here with the reel deck panel open, still and then running (pictures only).
  if(Stage==71){F.OpenTapePanel();Go(72,1.2);return;}
@@ -1694,7 +1696,7 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==74){Finish(true,TEXT("Reel deck panel pictures taken; the journey was not continued."));return;}
  if(Stage==8)
  {
-  if(!Check(F.AudioAction(TEXT("confirm"))&&F.CurrentJob()->bAudioReviewed,TEXT("supported interval is retained only after both recordings")))return;
+  if(!Check(F.AudioAction(TEXT("confirm"))&&F.CurrentJob()->bAudioReviewed&&F.FeedbackText().Contains(TEXT("Confirm anomaly")),TEXT("RETAIN after the one listen keeps it and names OPS")))return;
   M->UI->Close(true);if(!Restore(TEXT("reviewed-recordings")))return;F.Director->Stop();Go(9);return;
  }
  if(Stage==9)

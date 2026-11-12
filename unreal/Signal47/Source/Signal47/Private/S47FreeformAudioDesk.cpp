@@ -207,7 +207,7 @@ bool FS47FreeformAudioDesk::Use(const FString& Id)
  if(IsValid(M->UI))
  {
   const FString Feedback=Free?M->Freeform->FeedbackText():M->Observing->AudioFeedbackText();
-  if(!Accepted)M->UI->Toast(Feedback.IsEmpty()?TEXT("Retain an anomalous original and complete its independent control before comparing."):Feedback,4);
+  if(!Accepted)M->UI->Toast(Feedback.IsEmpty()?(Free?TEXT("Nothing unusual on tape yet. An unusual take is recorded at the receiver first."):TEXT("Retain an anomalous original and complete its independent control before comparing.")):Feedback,4);
   // (Freeform's RETAIN says its one next step itself, FS47FreeformSession::AudioAction: Tom, 9 November, the case opens at OPS)
  }
  return true;
@@ -234,9 +234,11 @@ void FS47FreeformAudioDesk::Step(double Dt)
  else if(Powered()&&Control<8)Line=FString::Printf(TEXT("INDEPENDENT CONTROL REQUIRED\nUSE RECEIVER RACK / %.1f OF 8 s\nORIGINAL WILL REMAIN INTACT"),Control);
  if(Powered()&&M->IsFreeform()&&M->Freeform)
  {
+  // GAMEPLAY-LOOP-01: the extra-tick take is on the deck from the end of the take; one listen confirms it, no control asked for
   const auto* J=M->Freeform->CurrentJob();
-  if(!J||!J->bAnomaly||J->Stage<FS47FreeformSession::EJobStage::Chart||J->ControlAt<8||J->Phenomenon==TEXT("wrong_source")||J->Phenomenon==TEXT("time_disagreement")||J->Phenomenon==TEXT("duplicate_print"))Line=M->Freeform->NextAction();
-  else if(J->bLegacyTrace)Line+=TEXT("\nLEGACY AUDIO RECONSTRUCTION");
+  if(!J||!FS47FreeformSession::PlainAnomaly(*J)||J->Stage<FS47FreeformSession::EJobStage::Chart)Line=M->Freeform->NextAction();
+  else Line=FString::Printf(TEXT("%s / %s / %04.1f s\nHEARD %.1f/18\n%s"),Source==0?TEXT("ORIGINAL"):TEXT("CONTROL"),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),Cursor,HeardO,Reviewed?TEXT("ANOMALY CONFIRMED / TO OPS"):TEXT("PLAY THE TAKE ONCE"));
+  if(J&&FS47FreeformSession::PlainAnomaly(*J)&&J->bLegacyTrace)Line+=TEXT("\nLEGACY AUDIO RECONSTRUCTION");
   const FString CaptureStatus=M->Freeform->AudioCaptureStatus();if(!CaptureStatus.IsEmpty())Line+=TEXT("\n")+CaptureStatus;
 
  }

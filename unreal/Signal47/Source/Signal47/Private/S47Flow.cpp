@@ -2360,7 +2360,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 				case FS47FreeformSession::EJobStage::Pointed: Why = TEXT("Match frequency, gain and bandwidth to this work card. Start when reception reaches 100%."); break;
 				case FS47FreeformSession::EJobStage::Integrating: Why = TEXT("The recording keeps valid seconds. Automatic reference scans move the dishes between samples; wait for them to settle."); break;
 				case FS47FreeformSession::EJobStage::Chart: Why = TEXT("The measurement is finished. Collect its paper original before registering the result."); break;
-				case FS47FreeformSession::EJobStage::Recorded: Why = J.bAnomaly ? TEXT("The original is already retained. Complete the independent comparison requested by this work order.") : TEXT("The original is already retained. A routine result needs no comparison; register it for payment."); break;
+				case FS47FreeformSession::EJobStage::Recorded: Why = FS47FreeformSession::PlainAnomaly(J) ? (J.bAudioReviewed ? TEXT("The take is checked on tape. Confirm the anomaly at OPS; the packet prints for the binder.") : TEXT("The take is kept. Play it once at the reel deck: one listen confirms the anomaly.")) : J.bAnomaly ? TEXT("The original is already retained. Complete the independent comparison requested by this work order.") : TEXT("The original is already retained. A routine result needs no comparison; register it for payment."); break;
 				case FS47FreeformSession::EJobStage::Registered: Why = TEXT("Registration is complete. Collect the labeled paper packet before filing it."); break;
 				default: Why = TEXT("The packet is already collected. Place it in the records-room binder to finish this order."); break;
 				}

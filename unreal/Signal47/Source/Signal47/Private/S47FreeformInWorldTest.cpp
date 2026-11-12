@@ -292,16 +292,14 @@ void FS47FreeformInWorldTest::Step(double Dt)
  }
  if(Stage==22)
  {
-  if(F.CurrentJob()->Stage!=FS47FreeformSession::EJobStage::Chart)return;
-  M->UI->Close(true); // A modal document would pause the physical paper feed.
-  if(F.PrinterJobId()!=F.CurrentJob()->Id||F.PrinterProgress()<1.)return;
-  if(!Check(F.CurrentJob()->Elapsed==18&&F.CollectChart(),TEXT("real eighteen-second pulsar acquisition produces retained original chart")))return;
-  M->UI->Close(true);if(!Check(F.StartControl(),TEXT("independent eight-second control starts after original chart")))return;
+  // GAMEPLAY-LOOP-01: the unusual take is kept as it ends: no chart to fetch, no control to record, the reel deck next
+  if(F.CurrentJob()->Stage!=FS47FreeformSession::EJobStage::Recorded)return;
+  M->UI->Close(true);
+  if(!Check(F.CurrentJob()->Elapsed==18&&F.CurrentJob()->bPrinted&&!F.CurrentJob()->OriginalPage.IsEmpty()&&!F.CanRecordControl()&&F.PrinterJobId()!=F.CurrentJob()->Id,TEXT("real eighteen-second pulsar acquisition keeps its original with no chart at the printer")))return;
   Go(23);return;
  }
  if(Stage==23)
  {
-  if(F.CurrentJob()->ControlAt<8)return;
   const FVector A=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(A.X,A.Z-1.2,0);Go(24);return;
  }
  if(Stage==24)
@@ -333,16 +331,12 @@ void FS47FreeformInWorldTest::Step(double Dt)
   if(F.AudioPlaying())return;
   if(!Check(bMarkedIn&&bMarkedOut&&F.CurrentJob()->OriginalCovered==18&&F.CurrentJob()->MarkStart<=9.3&&F.CurrentJob()->MarkEnd>=12.6,TEXT("actual original playback covers eighteen seconds and physical keys retain measured marks")))return;
   if(!Check(F.Clock()>ClockBefore&&!M->ModalOpen(),TEXT("world time advances throughout physical listening")))return;
-  F.AudioDesk->Use(TEXT("ff:audio:control"));F.AudioDesk->Use(TEXT("ff:audio:play"));
-  if(!Check(F.AudioSource()==1&&F.AudioPlaying(),TEXT("physical CONTROL and PLAY keys select quiet independent tape")))return;
-  Go(28);return;
- }
- if(Stage==28)
- {
-  if(F.AudioPlaying())return;
-  if(!Check(F.CurrentJob()->ControlCovered==8,TEXT("actual independent control is heard for all eight seconds")))return;
+  // GAMEPLAY-LOOP-01: the one listen has confirmed it; with no control on this take its key plays nothing
+  if(!Check(F.CurrentJob()->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.CurrentJob()->ControlCovered==0,TEXT("one listen to the original confirms the anomaly by itself")))return;
+  F.AudioDesk->Use(TEXT("ff:audio:control"));
+  if(!Check(F.AudioSource()==0&&!F.AudioPlaying(),TEXT("physical CONTROL key selects nothing on a take with no control")))return;
   F.AudioDesk->Use(TEXT("ff:audio:retain"));
-  if(!Check(F.CurrentJob()->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&!M->ModalOpen()&&F.Budget()==CashBefore-3,TEXT("physical RETAIN accepts actual heard/marked comparison without modal or payment")))return;
+  if(!Check(F.CurrentJob()->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&!M->ModalOpen()&&F.Budget()==CashBefore-3,TEXT("physical RETAIN keeps the heard take without modal or payment")))return;
   const FVector P=F.AudioDesk->InteractionPoint(TEXT("ff:audio:retain"));AimAt(P+FVector(0,.17,0));Go(29);return;
  }
  if(Stage==29)

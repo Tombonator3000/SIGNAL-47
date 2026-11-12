@@ -194,7 +194,7 @@ public:
  // what cannot be paid is waived (standby) or carried, capped, to the next review, and never touches the requisition.
  // M7 (Tom, 9 November): less for a card, more for a card done well. The base by how old the card is, and on top of it $2 for a card
  // registered on its day or the next, $3 for a recording that reads (CleanRecordQuality), and $1 for an anomaly carried through its
- // control. A good card pays $19 against the old $20; a sloppy late one $10 or less. Quality pays better than quantity.
+ // check (the reel deck's one listen, or an instrument's control: GAMEPLAY-LOOP-01). A good card pays $19 against the old $20; a sloppy late one $10 or less. Quality pays better than quantity.
  static int32 PayAfterDays(int32 Days){return Days<=1?14:Days==2?10:Days==3?7:4;}
  static constexpr int32 OnTimeBonus=2,CleanBonus=3,ControlBonus=1;
  static constexpr double CleanRecordQuality=.6;
@@ -506,9 +506,17 @@ public:
  double PrinterProgress() const; // -1 empty, otherwise paper fraction 0..1
  bool PrinterFeedbackActive() const { return bPrinterFeedback; }
  bool StartControl();
- // D45-20261110 (Tom: record the control at the receiver right after the take): an unusual take that is on tape (its chart may
- // still be at the printer) and has no control yet can have its 8-second control recorded now. The old order stays legal.
+ // The receiver offers a control only for the instrument discrepancies now (GAMEPLAY-LOOP-01). An extra-tick take has none to
+ // record: its 8-second control stays possible at the physical rack, optional and never asked for.
  bool CanRecordControl() const;
+ // GAMEPLAY-LOOP-01 (Tom, 12 November): the unusual pulsar take, extra ticks off the card, goes straight through six steps, each one
+ // thing at one place: ANOMALY DETECTED on the receiver, record it there, one listen at the reel deck, confirm at OPS, the packet at
+ // the printer, the binder. No control to record, no second reel, no chart to fetch: the original is kept as the take ends.
+ static bool PlainAnomaly(const FJob& J);
+ // One listen at the reel deck: the original heard from the start past its last extra tick.
+ static bool TapeHeard(const FJob& J);
+ // The selected job, tuned and ready, would be an extra-tick take if recorded now (StartAcquisition decides the same way).
+ bool AnomalyAhead() const;
  bool AudioAction(const FString& Action);
  void SeekAudio(double At);
  // Marks by a place on the tape, without moving it: first click is MARK IN, second MARK OUT, a third starts over.
@@ -835,7 +843,12 @@ private:
  // its gate keep ReceiverReception, PointReady and Settle.
  double ReceiverApproach() const;
  double ArrayErrorDeg() const;
- void PrintJob(bool bPacket);
+ void PrintJob(bool bPacket,bool bShow=true);
+ // GAMEPLAY-LOOP-01: what StartAcquisition decides, without deciding it (Phen: the phenomenon it would carry; bOutThere: from the land).
+ bool TakeAnomalous(const FJob& J,FString& Phen,bool& bOutThere) const;
+ void RetainOriginal(FJob& J); // the original page kept as the take ends, with no chart to fetch
+ bool ConfirmOnTape(FJob& J); // the reel deck's one listen: marks the ticks if they are not, keeps the review, names OPS
+ FString DetectedJob; // the job whose ANOMALY DETECTED was last said aloud (once a take; not saved)
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);
  void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false);
  void OpenWaitConfirmation(double Target);
