@@ -4,6 +4,7 @@
 #include "S47Obj.h"
 #include "S47VisitAttention.h"
 #include "S47RuleBreak.h"
+#include "S47IdleLure.h"
 class US47Main;
 class AS47Web;
 class FS47FreeformSession;
@@ -11,6 +12,7 @@ class UStaticMeshComponent;
 class UPrimitiveComponent;
 class ULocalFogVolumeComponent;
 struct FS47EventPlace;
+struct FS47Truck;
 enum class ES47Clip : uint8;
 
 // Freeform only: what the lights leave behind until the next morning, at the farm or a place in town. Pressed
@@ -137,6 +139,10 @@ public:
  void TestArm(double Until){ClearAt=Until;Visit=0;bNudged=false;bFalseCall=false;bYielded=false;bCheckedEmpty=false;}
  // Test: the next field draw, in place of the game's own.
  void TestFieldRoll(float Roll){FieldRoll=Roll;}
+ // IDLE-LURE-20261112 (Tom, 12 Nov): the truck left idling near a visit draws its body (S47IdleLure.h). Tests: what it is doing, and
+ // its next draw (under FS47IdleLure::IrkChance it strikes the hood when left alone) in place of the dice.
+ const FS47IdleLure& IdleLure() const{return Lure;}
+ void TestLureRoll(float Roll){LureRoll=Roll;}
 private:
  US47Main* M=nullptr;
  TWeakObjectPtr<AS47Web> Scene;
@@ -197,6 +203,18 @@ private:
  double HushIn=0;
  float TestRoll=-1,AttentionRoll=-1;
  FS47VisitAttention Attention;
+ // IDLE-LURE-20261112: the body at the idling truck. Goal/Face: where the moved body walks and looks this frame instead of the player;
+ // RingFrom: the angle round the truck it came to it at; the truck whose frost has the hand in it, and how long it has been driven since.
+ FS47IdleLure Lure;
+ float LureRoll=-1;
+ TOptional<FVector> LureGoal,LureFace;
+ FVector LureHood=FVector::ZeroVector; // where it stands to touch the truck (kept for the moment after the stall)
+ double LureRingFrom=0,LureNoiseIn=0,LureCoughIn=-1,FrostDriven=0;
+ bool bLureLamp=false,bLureHeld=false;
+ FS47Truck* FrostTruck=nullptr;
+ void StepLure(double Dt);
+ void EndLure();
+ void StepFrost(double Dt);
  // N1110 (N1110-6): the rule taught (lamp off and still, they pass) and broken once by the Pale One (S47RuleBreak.h); StillHeld: seconds
  // the small one has lost the player so far this visit.
  FS47RuleBreak RuleBreak;

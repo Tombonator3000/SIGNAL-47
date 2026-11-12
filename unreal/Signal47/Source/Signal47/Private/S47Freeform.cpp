@@ -4,6 +4,7 @@
 #include "S47GoalLine.h"
 #include "S47StoryDirector.h"
 #include "S47RuleBreak.h"
+#include "S47IdleLure.h"
 #include "S47Balloon.h"
 #include "S47SaroSave.h"
 #include "S47SaroNight.h"
@@ -4969,6 +4970,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  OK&=S47GoalLine::SelfTest(Lines); // N1110 (N1110-9): the three goal lines on NOW
  OK&=FS47StoryDirector::SelfTest(Lines); // STORY-ON-FREEFORM-01 (step 3): the story director's acts, flags, save and own text check
  OK&=FS47RuleBreak::SelfTest(Lines); // N1110 (N1110-6): the rule taught, and broken once
+ OK&=FS47IdleLure::SelfTest(Lines); // IDLE-LURE-20261112 (Tom): a visit drawn to the truck left idling: its touch, its strike, and what ends it
  { // N1110 (PLAY-31-34): broken ceiling tubes keep through a save; nonsense is dropped; 0 and 1 (the working light) never break
   FS47FreeformSession Tubes(nullptr);
   const bool bFirst=Tubes.BreakTube(3),bAgain=Tubes.BreakTube(3),bWork=Tubes.BreakTube(0)||Tubes.BreakTube(1)||Tubes.BreakTube(8);
