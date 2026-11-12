@@ -956,15 +956,20 @@ int32 AS47Props::PlacedNode(const FString& Id)
 	return Found ? Found->Node : -1;
 }
 
-double AS47Props::FloorAt(double X, double Z)
+double AS47Props::FloorAt(double X, double Z) { return FloorAt(X, Z, std::numeric_limits<double>::quiet_NaN()); }
+
+double AS47Props::FloorAt(double X, double Z, double RefY)
 {
+	double First = std::numeric_limits<double>::quiet_NaN();
 	for (const FFloor& F : Floors)
 	{
 		if (X < F.MinX || X > F.MaxX || Z < F.MinZ || Z > F.MaxZ) continue;
 		const double K = F.Axis == TEXT("z") ? (Z - F.MinZ) / FMath::Max(F.MaxZ - F.MinZ, 1e-6) : (X - F.MinX) / FMath::Max(F.MaxX - F.MinX, 1e-6);
-		return F.Y0 + (F.Y1 - F.Y0) * K;
+		const double Y = F.Y0 + (F.Y1 - F.Y0) * K;
+		if (FMath::IsNaN(RefY) || Y <= RefY + 1.0) return Y;
+		if (FMath::IsNaN(First)) First = Y;
 	}
-	return std::numeric_limits<double>::quiet_NaN();
+	return First;
 }
 
 float AS47Props::TubeAt(double T)
@@ -1315,8 +1320,13 @@ void AS47Props::TestPlace(US47Main* M)
 	}, 1.5f, false);
 }
 
-void AS47Props::AddFloor(double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const FString& Axis, bool bFirst)
+void AS47Props::AddFloor(double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const FString& Axis, bool bFirst, const FString& Tag)
 {
-	FFloor F; F.MinX = MinX; F.MaxX = MaxX; F.MinZ = MinZ; F.MaxZ = MaxZ; F.Y0 = Y0; F.Y1 = Y1; F.Axis = Axis;
+	FFloor F; F.MinX = MinX; F.MaxX = MaxX; F.MinZ = MinZ; F.MaxZ = MaxZ; F.Y0 = Y0; F.Y1 = Y1; F.Axis = Axis; F.Tag = Tag;
 	if (bFirst) Floors.Insert(F, 0); else Floors.Add(F);
+}
+
+void AS47Props::RemoveFloors(const FString& Tag)
+{
+	if (!Tag.IsEmpty()) Floors.RemoveAll([&Tag](const FFloor& F) { return F.Tag == Tag; });
 }

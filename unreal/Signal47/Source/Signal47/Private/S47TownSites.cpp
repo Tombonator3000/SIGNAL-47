@@ -8,6 +8,7 @@
 #include "S47Legs.h"
 #include "S47Main.h"
 #include "S47OpenLand.h"
+#include "S47Props.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47Walker.h"
@@ -20,6 +21,7 @@
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
+#include <limits>
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47TownSites, Log, All);
 
@@ -49,6 +51,92 @@ namespace S47TownSitesLocal
 	S47TownSites::FPart Box(double X, double Z, double W, double D, double H, uint32 Colour, bool bSolid = true)
 	{
 		S47TownSites::FPart P; P.X = X; P.Z = Z; P.W = W; P.D = D; P.H = H; P.Colour = Colour; P.bSolid = bSolid; return P;
+	}
+	// SCHOOL-V2 stage 3: the school's inside from its plan (~/Assets/signal47-free/own/caliche_school/src/school_plan.py: centimetres, x east,
+	// y north, the south-west corner at 0,0; the model turned a quarter clockwise on the site, so the plan's north is the site's +x and the
+	// plan's east the site's +z (south)). Walls with the doors as gaps, the floors and the stair, the lights.
+	void SchoolInside(S47TownSites::FSite& S)
+	{
+		using namespace S47TownSites;
+		// plan centimetres to the site's metres: py 1200 at ModelX, px 1400 at ModelZ
+		const auto PX = [&S](double Py) { return S.ModelX + (Py - 1200) * .01; };
+		const auto PZ = [&S](double Px) { return S.ModelZ + (Px - 1400) * .01; };
+		constexpr double Door = 1.1, Wide = 2.0, T = .2;
+		// a wall along the plan's y (at px, py from A to B) with gaps at the given py; as site rectangles
+		const auto AlongY = [&](double Px, double A, double B, std::initializer_list<double> Gaps, double GapW = Door)
+		{
+			double From = A;
+			TArray<double> G(Gaps);
+			G.Sort();
+			for (double Gy : G) { if (Gy - GapW * 50 > From) S.Walls.Add({ PX(From), PX(Gy - GapW * 50), PZ(Px) - T * .5, PZ(Px) + T * .5 }); From = Gy + GapW * 50; }
+			if (B > From) S.Walls.Add({ PX(From), PX(B), PZ(Px) - T * .5, PZ(Px) + T * .5 });
+		};
+		const auto AlongX = [&](double Py, double A, double B, std::initializer_list<double> Gaps, double GapW = Door)
+		{
+			double From = A;
+			TArray<double> G(Gaps);
+			G.Sort();
+			for (double Gx : G) { if (Gx - GapW * 50 > From) S.Walls.Add({ PX(Py) - T * .5, PX(Py) + T * .5, PZ(From), PZ(Gx - GapW * 50) }); From = Gx + GapW * 50; }
+			if (B > From) S.Walls.Add({ PX(Py) - T * .5, PX(Py) + T * .5, PZ(From), PZ(B) });
+		};
+		// the outer walls: E1 in the south (2 m), E2 west and E3 east at py 2100 (and E4 under E3)
+		AlongX(0, 0, 2800, { 1400 }, Wide);
+		AlongX(2400, 0, 2800, {});
+		AlongY(0, 0, 2400, { 2100 });
+		AlongY(2800, 0, 2400, { 2100 });
+		// the corridor's walls, K1..K8 (K9..K12 under K3/K4 and K7/K8 at py 1400 and 1700: the same rectangles serve both floors; the
+		// basement's doors at py 1400 are given as gaps too, which costs the ground floor nothing but a gap in the classrooms' wall)
+		AlongY(1200, 0, 2400, { 200, 600, 1100, 1400, 1700 });
+		AlongY(1600, 0, 2400, { 200, 600, 1100, 1400, 1700 });
+		// the wings' cross walls: D1 (px 300), D2 (800), D3 (300), D4 (2400); the basement's D5 under D3 and D6 under D4
+		AlongX(400, 0, 1200, { 300 });
+		AlongX(800, 0, 1200, { 800 });
+		AlongX(1600, 0, 1200, { 300 });
+		AlongX(400, 1600, 2800, {});
+		AlongX(800, 1600, 2800, {});
+		AlongX(1600, 1600, 2800, { 2400 });
+		// the stair's door S1a/S1b across the corridor at py 1800 and the spine wall between the flights. (The walls are one list for
+		// both floors: a rail across the well or a wall closing the nook under the upper flight would also block the flights, so the
+		// floors below sort the levels out instead: from the top landing the east half drops one onto the lower flight.)
+		AlongX(1800, 1200, 1600, { 1400 });
+		constexpr double TopY = 1800 + 7.5 + 150, MidY = TopY + 28 * 9;   // the top landing's end, the mid landing (caliche_school.py)
+		S.Walls.Add({ PX(TopY), PX(MidY), PZ(1400) - .08, PZ(1400) + .08 });
+		// floors: the flights and the mid landing first (they win over the ground floor's rectangle), then the ground floor over the
+		// whole plan, the basement under its north half, and ramps outside the exits from the land up to the doors
+		S.Floors.Add({ PX(TopY), PX(MidY), PZ(1200), PZ(1400), 0, -1.7, TEXT("x") });
+		S.Floors.Add({ PX(TopY), PX(MidY), PZ(1400), PZ(1600), -3.4, -1.7, TEXT("x") });
+		S.Floors.Add({ PX(MidY), PX(2400), PZ(1200), PZ(1600), -1.7, -1.7, TEXT("x") });
+		S.Floors.Add({ PX(0), PX(2400), PZ(0), PZ(2800), 0, 0, TEXT("x") });
+		S.Floors.Add({ PX(1200), PX(2400), PZ(0), PZ(2800), -3.4, -3.4, TEXT("x") });
+		// The yard: the pad's level (0.6 m under the ground floor, the spec's Z_TERRAIN) from py -600 to 2600, px -200 to 3000, with
+		// banks 5 m wide down to the land beyond; the exits' steps end on the pad, and the walker has the pad and its banks as floors.
+		const double Yard = S.ModelLift - S.ModelFloorUp;
+		S.PadX0 = PX(-600); S.PadX1 = PX(2600); S.PadZ0 = PZ(-200); S.PadZ1 = PZ(3000); S.PadBank = 5;
+		const auto Pad = [&S](double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const TCHAR* Axis, bool bToLand = false)
+		{
+			FSite::FFloorPad R; R.MinX = MinX; R.MaxX = MaxX; R.MinZ = MinZ; R.MaxZ = MaxZ; R.Y0 = Y0; R.Y1 = Y1; R.Axis = Axis; R.bToLand = bToLand; S.Floors.Add(R);
+		};
+		Pad(PX(-270), PX(0), PZ(1300), PZ(1500), Yard, 0, TEXT("x"));          // E1's front steps
+		Pad(PX(2045), PX(2155), PZ(-250), PZ(0), Yard, 0, TEXT("z"));          // E2
+		Pad(PX(2045), PX(2155), PZ(2800), PZ(2950), 0, Yard, TEXT("z"));       // E3's landing and steps
+		Pad(PX(2045), PX(2155), PZ(2800), PZ(3400), -3.4, Yard, TEXT("z"));    // E4's areaway and S2 up to the yard (the basement's way out; under E3's)
+		Pad(S.PadX0, S.PadX1, S.PadZ0, S.PadZ1, Yard, Yard, TEXT("x"));
+		const double NaN = std::numeric_limits<double>::quiet_NaN(), Bk = S.PadBank;
+		Pad(S.PadX1, S.PadX1 + Bk, S.PadZ0, S.PadZ1, Yard, NaN, TEXT("x"), true);   // the banks: east
+		Pad(S.PadX0 - Bk, S.PadX0, S.PadZ0, S.PadZ1, NaN, Yard, TEXT("x"), true);   // west
+		Pad(S.PadX0, S.PadX1, S.PadZ1, S.PadZ1 + Bk, Yard, NaN, TEXT("z"), true);   // south
+		Pad(S.PadX0, S.PadX1, S.PadZ0 - Bk, S.PadZ0, NaN, Yard, TEXT("z"), true);   // north
+		S.ModelFoot = { S.PadX0, S.PadX1, S.PadZ0, S.PadZ1 };
+		// lights: two fluorescent fixtures in each classroom, one in the office, the staff room, each WC and the stair, three down the
+		// corridor; the basement rooms one each; and the lamp over E1 (the stand-in's stood 1.2 m inside the wall)
+		// (modest: a night school lit by a few tubes left on, not a showroom; the first night run at 22:00 was twice this)
+		const auto In = [&](double Px, double Py, double Over, float Lm = 210.f) { FSite::FLight L; L.X = PX(Py); L.Z = PZ(Px); L.Up = Over; L.Lumens = Lm; L.Reach = 7; S.Lights.Add(L); };
+		for (const double Px : { 600.0, 2200.0 }) for (const double Py : { 1000.0, 1400.0, 1800.0, 2200.0 }) In(Px, Py, 3.3);
+		In(600, 200, 3.3); In(600, 600, 3.3); In(2200, 200, 3.3, 130.f); In(2200, 600, 3.3, 130.f); In(1400, 2100, 3.3, 130.f);
+		for (const double Py : { 300.0, 900.0, 1500.0 }) In(1400, Py, 3.3, 150.f);
+		for (const double Px : { 600.0, 2200.0 }) for (const double Py : { 1400.0, 2000.0 }) In(Px, Py, -.7, 150.f);
+		In(1400, 1500, -.7, 150.f);   // the basement corridor (dark in the first night run)
+		{ FSite::FLight L; L.X = PX(-60); L.Z = PZ(1400); L.Up = 3.0; L.Lumens = 700.f; L.Reach = 16; L.bOutside = true; S.Lights.Add(L); }
 	}
 	// The shapes on each site's own ground, before it is turned: x east, z south from the middle given in Spots.
 	void Shape(S47TownSites::FSite& S)
@@ -103,7 +191,48 @@ namespace S47TownSitesLocal
 			// faces the highway, the front steps at x 25.5 and the flagpole before them. The mesh's pivot is the middle of its base, 3.6 m
 			// under the ground floor; the yard lies 0.6 m under the floor (the spec's Z_TERRAIN), so the pivot goes 3 m into the ground.
 			S.Model = TEXT("/Game/Free/Town/caliche_school/StaticMeshes/caliche_school.caliche_school");
-			S.ModelX = -8; S.ModelZ = 0; S.ModelYaw = 90; S.ModelLift = 3.0;
+			S.ModelX = -8; S.ModelZ = 0; S.ModelYaw = 90; S.ModelLift = 3.0; S.ModelFloorUp = 3.6;
+			SchoolInside(S);
+			// Stage 3 (Tom): the school's outside, from the same boxes the sites are made of, kept beside the model. A footpath from the
+			// highway's shoulder to the pad's front; the playground of the eighties south-west of the building, off the pad (swings, a
+			// merry-go-round, a see-saw, monkey bars), inside a chain-link frame (posts and a top rail: the mesh itself is not drawn) with
+			// gaps on the pad side and the south, so the way round the building (E2, the yard, E3 and E4) stays open; two benches; a bike
+			// rack by the front steps. Nothing with a maker's name.
+			{
+				constexpr uint32 Galv = 0x9a9d99, Rubber = 0x2a2a2a, Concrete = 0xa9a498, Wood = 0x7a5a3c, Paint = 0x9c3b2e;
+				S.Yards.Add({ -28, -5, 16, 30 });   // the playground's ground: no shrubs through the swings, and the truck keeps off
+				const auto Keep = [&S](FPart P, double Lift = 0, bool bRound = false) { P.Lift = Lift; P.bRound = bRound; P.bKeep = true; S.Parts.Add(P); };
+				const auto Post = [&](double X, double Z, double H, double Dia = .06, uint32 C = Galv) { Keep(Box(X, Z, Dia, Dia, H, C, true), 0, true); };
+				// the footpath: 1.5 m of concrete from x -42 (the highway's shoulder) to the pad's edge at -26
+				Keep(Box(-34, 0, 16, 1.5, .08, Concrete, false));
+				// swings: two frames' posts, a top bar, two seats on their chains (x -20, z 19 to 25)
+				for (const double Z : { 19.0, 25.0 }) Post(-20, Z, 2.5, .09);
+				Keep(Box(-20, 22, .09, 6.2, .09, Galv, false), 2.42);
+				for (const double Z : { 20.8, 23.2 }) { Keep(Box(-20, Z, .5, .22, .05, Rubber, false), .5); for (const double DZ : { -.2, .2 }) Keep(Box(-20, Z + DZ, .03, .03, 1.85, Galv, false), .55); }
+				// the merry-go-round: a disc on a centre post, four bars (x -14, z 22)
+				Keep(Box(-14, 22, 3, 3, .08, Paint, false), .32, true); Post(-14, 22, 1.1, .1);
+				Keep(Box(-14, 22, 2.6, .04, .04, Galv, false), .9); Keep(Box(-14, 22, .04, 2.6, .04, Galv, false), .9);
+				// the see-saw: a plank over its fulcrum (x -9, z 19)
+				Keep(Box(-9, 19, 3, .25, .06, Wood, false), .55); Keep(Box(-9, 19, .3, .5, .5, Galv, true));
+				// monkey bars: four posts, two rails and the rungs (x -24, z 24 to 27)
+				for (const double X : { -25.5, -22.5 }) for (const double Z : { 24.0, 27.0 }) Post(X, Z, 2.1, .06);
+				for (const double Z : { 24.0, 27.0 }) Keep(Box(-24, Z, 3.1, .04, .04, Galv, false), 2.05);
+				for (int32 I = 0; I < 7; ++I) Keep(Box(-25.5 + I * .5, 25.5, .03, 3.0, .03, Galv, false), 2.05);
+				// the fence frame: posts every 3 m with a top rail, along z 29 (x -27 to -6) and x -6 (z 17 to 29), gaps at z 20 to 23
+				// and x -15 to -12 (the way in and the way out), the pad's side open
+				for (double X = -27; X <= -6.01; X += 3) if (X < -15.5 || X > -11.5) Post(X, 29, 1.25);
+				Keep(Box(-21.5, 29, 11, .04, .04, Galv, false), 1.2); Keep(Box(-8.5, 29, 5, .04, .04, Galv, false), 1.2);
+				for (double Z = 17; Z <= 29.01; Z += 3) if (Z < 19.5 || Z > 23.5) Post(-6, Z, 1.25);
+				Keep(Box(-6, 18.5, .04, 3, .04, Galv, false), 1.2); Keep(Box(-6, 26.5, .04, 5, .04, Galv, false), 1.2);
+				// two benches facing the playground (x -26, z 20 and -10, z 26.5), and the bike rack by the steps' north side
+				for (const FVector2D& At : { FVector2D(-26, 20), FVector2D(-10, 26.5) })
+				{
+					Keep(Box(At.X, At.Y, .4, 1.8, .06, Wood, false), .44);
+					for (const double DZ : { -.75, .75 }) Keep(Box(At.X, At.Y + DZ, .35, .06, .44, Galv, true));
+				}
+				for (int32 I = 0; I < 6; ++I) Keep(Box(-23.5, -4.5 + I * .5, .04, .04, .8, Galv, false), 0, true);
+				Keep(Box(-23.5, -3.25, .04, 2.6, .04, Galv, false), .78);
+			}
 		}
 		else if (S.Id == TEXT("baca"))
 		{
@@ -200,6 +329,9 @@ namespace S47TownSitesLocal
 	bool Square(double YawDeg) { const double R = FMath::Fmod(FMath::Abs(YawDeg), 90.0); return R < 1e-6 || R > 90 - 1e-6; }
 }
 
+namespace S47TownSitesLocal { TSet<FString> ModelsUpSet; }
+const TSet<FString>& S47TownSites::ModelsUp() { return S47TownSitesLocal::ModelsUpSet; }
+
 const TArray<S47TownSites::FSite>& S47TownSites::Sites()
 {
 	using namespace S47TownSitesLocal;
@@ -259,10 +391,23 @@ TArray<FBox2D> S47TownSites::Footprint(const FSite& S, const FPart& P)
 	return Out;
 }
 
+FBox2D S47TownSites::ModelRect(const FSite& S, const FSite::FWall& R)
+{
+	// a rectangle of the site's metres in the road's (the site standing square: its corners turned, then the box round them)
+	FBox2D Out(ForceInit);
+	Out += ToRoad(S, R.MinX, R.MinZ); Out += ToRoad(S, R.MaxX, R.MaxZ);
+	return Out;
+}
+
 TArray<FBox2D> S47TownSites::SolidFootprints()
 {
 	TArray<FBox2D> Out;
-	for (const FSite& S : Sites()) for (const FPart& P : S.Parts) if (P.bSolid) Out.Append(Footprint(S, P));
+	for (const FSite& S : Sites())
+	{
+		const bool bModel = ModelsUp().Contains(S.Id);
+		for (const FPart& P : S.Parts) if (P.bSolid && (!bModel || P.bKeep)) Out.Append(Footprint(S, P));
+		if (bModel) { Out.Add(ModelRect(S, S.ModelFoot)); for (const FSite::FWall& Y : S.Yards) Out.Add(ModelRect(S, Y)); }
+	}
 	return Out;
 }
 
@@ -411,6 +556,7 @@ bool FS47TownSites::Build()
 		return Mats.Add(Hex, D);
 	};
 	int32 Models = 0;
+	S47TownSitesLocal::ModelsUpSet.Reset();
 	for (const FSite& S : Sites())
 	{
 		// The site's real model, when its asset is there (SCHOOL-V2 stage 2); the stand-in boxes and their words go unseen then.
@@ -428,6 +574,20 @@ bool FS47TownSites::Build()
 			C->RegisterComponent();
 			FBuiltPart B; B.Site = S.Id; B.bModel = true; B.Comp = C; Parts.Add(B);
 			++Models;
+			if (S47TownSitesLocal::Square(S.Yaw)) S47TownSitesLocal::ModelsUpSet.Add(S.Id);
+			if (S.PadX1 > S.PadX0)
+				for (int32 Side = -1; Side < 4; ++Side)
+				{
+					UStaticMeshComponent* PC = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("S47Site_%s_Pad%d"), *S.Id, Side + 1));
+					PC->SetMobility(EComponentMobility::Movable); PC->SetupAttachment(W->GetRootComponent());
+					PC->SetStaticMesh(Cube); PC->SetMaterial(0, Mat(S.PadColour)); PC->SetCastShadow(true);
+					PC->SetCollisionEnabled(ECollisionEnabled::QueryOnly); PC->SetCollisionResponseToAllChannels(ECR_Ignore);
+					PC->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); PC->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
+					PC->RegisterComponent();
+					FBuiltPart PB; PB.Site = S.Id; PB.PadSide = Side; PB.Comp = PC; Parts.Add(PB);
+				}
+			const FBox MB = Model->GetBoundingBox();
+			UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites: %s stands as its model (bounds x %.0f..%.0f y %.0f..%.0f z %.0f..%.0f cm; %d walls, %d floors, %d lights)"), *S.Id, MB.Min.X, MB.Max.X, MB.Min.Y, MB.Max.Y, MB.Min.Z, MB.Max.Z, S.Walls.Num(), S.Floors.Num(), S.Lights.Num());
 		}
 		for (int32 I = 0; I < S.Parts.Num(); ++I)
 		{
@@ -518,7 +678,67 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 			}
 			const FVector2D At = ToRoad(*S, S->ModelX, S->ModelZ);
 			C->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + At.X, Hi - S->ModelLift, Road.Z + At.Y)), FRotator(0, S->Yaw + S->ModelYaw, 0));
+			// SCHOOL-V2 stage 3: the walker's floors inside, over the ground floor (Hi - ModelLift + ModelFloorUp), laid down again at
+			// each seating; the exits' steps run down to the land at their far end.
+			const double FloorY = Hi - S->ModelLift + S->ModelFloorUp;
+			ModelFloorY.Add(S->Id, FloorY);
+			if (S->PadX1 > S->PadX0)
+			{
+				// the pad's top level with the yard (Hi), 2 m thick; a bank on each side where the land is more than a step lower
+				const bool bQuarter = FMath::IsNearlyEqual(FMath::Fmod(FMath::Abs(S->Yaw), 180.0), 90.0, 1e-6);
+				for (FBuiltPart& PB : Parts)
+				{
+					UStaticMeshComponent* PC = PB.Site == Site && PB.PadSide > -2 ? Cast<UStaticMeshComponent>(PB.Comp.Get()) : nullptr;
+					if (!PC) continue;
+					const double CX = (S->PadX0 + S->PadX1) * .5, CZ = (S->PadZ0 + S->PadZ1) * .5, WX = S->PadX1 - S->PadX0, WZ = S->PadZ1 - S->PadZ0;
+					if (PB.PadSide < 0)
+					{
+						const FVector2D PAt = ToRoad(*S, CX, CZ);
+						PC->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + PAt.X, Hi - 1.0, Road.Z + PAt.Y)), FRotator(0, S->Yaw, 0));
+						PC->SetWorldScale3D(FVector(bQuarter ? WZ : WX, bQuarter ? WX : WZ, 2.0));
+						PC->SetHiddenInGame(false);
+						continue;
+					}
+					// the bank: outward along the side, from the pad's edge down to the land PadBank out (the land sampled there)
+					const double OutX = PB.PadSide == 0 ? 1 : PB.PadSide == 1 ? -1 : 0, OutZ = PB.PadSide == 2 ? 1 : PB.PadSide == 3 ? -1 : 0;
+					const double EdgeX = OutX > 0 ? S->PadX1 : OutX < 0 ? S->PadX0 : CX, EdgeZ = OutZ > 0 ? S->PadZ1 : OutZ < 0 ? S->PadZ0 : CZ;
+					const double L = S->PadBank;
+					const FVector2D Far = ToRoad(*S, EdgeX + OutX * L, EdgeZ + OutZ * L);
+					const double Drop = Hi - Ground(Far.X, Far.Y, bWithFloor);
+					if (Drop < .25) { PC->SetHiddenInGame(true); PC->SetCollisionEnabled(ECollisionEnabled::NoCollision); continue; }
+					PC->SetCollisionEnabled(ECollisionEnabled::QueryOnly); PC->SetHiddenInGame(false);
+					const FVector2D Mid = ToRoad(*S, EdgeX + OutX * L * .5, EdgeZ + OutZ * L * .5);
+					const FVector2D OutDir = S47TownSitesLocal::Turn(OutX, OutZ, S->Yaw);
+					const FVector Along = S47Three::DirToUE(FVector(OutDir.X * L, -Drop, OutDir.Y * L)).GetSafeNormal();
+					FVector Up = FVector::CrossProduct(FVector::CrossProduct(Along, FVector::UpVector), Along).GetSafeNormal();
+					if (Up.Z < 0) Up = -Up;
+					const FRotator Rot = FRotationMatrix::MakeFromXZ(Along, Up).Rotator();
+					const double Len = FMath::Sqrt(L * L + Drop * Drop) + .4, Wide = OutX != 0 ? WZ + 2 * L : WX + 2 * L;
+					PC->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + Mid.X, Hi - Drop * .5 - .35, Road.Z + Mid.Y)), Rot);
+					PC->SetWorldScale3D(FVector(Len, Wide, .7));
+				}
+			}
+			const FString Tag = TEXT("site:") + S->Id;
+			AS47Props::RemoveFloors(Tag);
+			for (int32 FI = S->Floors.Num() - 1; FI >= 0; --FI)
+			{
+				const FSite::FFloorPad& F = S->Floors[FI];
+				const FBox2D FB = ModelRect(*S, { F.MinX, F.MaxX, F.MinZ, F.MaxZ });
+				const bool bZ = F.Axis == TEXT("z");
+				double Y0 = F.Y0, Y1 = F.Y1;
+				if (F.bToLand)
+				{
+					const FVector2D Lo(bZ ? FB.GetCenter().X : FB.Min.X, bZ ? FB.Min.Y : FB.GetCenter().Y), HiEnd(bZ ? FB.GetCenter().X : FB.Max.X, bZ ? FB.Max.Y : FB.GetCenter().Y);
+					if (FMath::IsNaN(Y0)) Y0 = Ground(Lo.X, Lo.Y, bWithFloor) - FloorY;
+					if (FMath::IsNaN(Y1)) Y1 = Ground(HiEnd.X, HiEnd.Y, bWithFloor) - FloorY;
+				}
+				// (the site turned: the rectangle's low end of its axis may have swapped with its high end)
+				const bool bFlip = S47TownSitesLocal::Square(S->Yaw) && (bZ ? ToRoad(*S, F.MinX, F.MinZ).Y > ToRoad(*S, F.MaxX, F.MaxZ).Y : ToRoad(*S, F.MinX, F.MinZ).X > ToRoad(*S, F.MaxX, F.MaxZ).X);
+				if (bFlip) Swap(Y0, Y1);
+				AS47Props::AddFloor(Road.X + FB.Min.X, Road.X + FB.Max.X, Road.Z + FB.Min.Y, Road.Z + FB.Max.Y, FloorY + Y0, FloorY + Y1, bZ ? TEXT("z") : TEXT("x"), true, Tag);
+			}
 		}
+		else if (B.PadSide > -2) {} // the pad and its banks: placed with the model above
 		else if (!B.bWords)
 		{
 			const FPart& P = S->Parts[B.Part];
@@ -569,7 +789,37 @@ void FS47TownSites::SetColliders(bool bOn)
 	// The walker's list (the diner's area walks the road's): world terms, the road's land at x + 8000.
 	for (const FSite& S : Sites()) for (int32 I = 0; I < S.Parts.Num(); ++I)
 	{
-		if (!S.Parts[I].bSolid) continue;
+		const bool bModel = ModelsUp().Contains(S.Id);
+		if (bModel && I == 0)
+		{
+			// SCHOOL-V2 stage 3: the model's walls, the doors as gaps, in the stand-in boxes' place
+			int32 KW = 0;
+			for (const FSite::FWall& Wl : S.Walls)
+			{
+				const FBox2D B = ModelRect(S, Wl);
+				FS47Rect R; R.MinX = Road.X + B.Min.X; R.MaxX = Road.X + B.Max.X; R.MinZ = Road.Z + B.Min.Y; R.MaxZ = Road.Z + B.Max.Y;
+				R.Id = FString::Printf(TEXT("temp:%s:wall:%d"), *S.Id, KW++); R.bEnabled = true;
+				Walk.Add(R);
+			}
+		}
+		if (bModel && I == 0 && S.Id == TEXT("school"))
+		{
+			// Evidence for the log: the walker's own lists at the school's key spots (the ground floor stands FloorUp over the yard at E1).
+			const auto Free = [&Walk, &Road](const FVector2D& P) { for (const FS47Rect& R : Walk) if (R.bEnabled && Road.X + P.X >= R.MinX && Road.X + P.X <= R.MaxX && Road.Z + P.Y >= R.MinZ && Road.Z + P.Y <= R.MaxZ) return false; return true; };
+			const double* FY = ModelFloorY.Find(S.Id);
+			const auto Spot = [&](const TCHAR* Name, double Py, double Px, double RefOver)
+			{
+				const FVector2D At = ToRoad(S, S.ModelX + (Py - 1200) * .01, S.ModelZ + (Px - 1400) * .01);
+				const double X = Road.X + At.X, Z = Road.Z + At.Y;
+				const double F = FY ? AS47Props::FloorAt(X, Z, *FY + RefOver) : TNumericLimits<double>::Max();
+				return FString::Printf(TEXT("%s %s floor %+.2f"), Name, Free(At) ? TEXT("free") : TEXT("WALLED"), FY ? F - *FY : 99.0);
+			};
+			UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites: school inside: %s; %s; %s; %s; %s; %s; %s; wall test %s"),
+				*Spot(TEXT("E1"), 0, 1400, 0), *Spot(TEXT("corridor"), 900, 1400, 0), *Spot(TEXT("K3"), 1100, 1200, 0), *Spot(TEXT("class1"), 1200, 600, 0),
+				*Spot(TEXT("S1 mid-flight"), 2080, 1275, 0), *Spot(TEXT("S1 landing"), 2300, 1400, -1.7), *Spot(TEXT("basement corridor"), 1500, 1400, -3.4),
+				Free(ToRoad(S, S.ModelX + (900 - 1200) * .01, S.ModelZ + (1200 - 1400) * .01)) ? TEXT("FAILED (the corridor wall is not there)") : TEXT("ok"));
+		}
+		if (!S.Parts[I].bSolid || (bModel && !S.Parts[I].bKeep)) continue;
 		int32 K = 0;
 		for (const FBox2D& B : Footprint(S, S.Parts[I]))
 		{
@@ -692,24 +942,28 @@ void FS47TownSites::BuildLamps()
 	using namespace S47TownSites;
 	AS47Web* W = M ? M->Web.Get() : nullptr;
 	if (!IsValid(W) || !Lamps.IsEmpty()) return;
-	const auto Add = [&](const FString& Site, double LocalX, double LocalZ, double Up, float Lumens, double Reach, double From, double To)
+	const auto Add = [&](const FString& Site, double LocalX, double LocalZ, double Up, float Lumens, double Reach, double From, double To, const FLinearColor& Colour = FLinearColor(1.f, .78f, .52f), const double* OverY = nullptr, float Day = 0.f)
 	{
 		const FSite* S = Find(Site);
 		if (!S) return;
 		const FVector2D At = ToRoad(*S, LocalX, LocalZ);
 		UPointLightComponent* C = NewObject<UPointLightComponent>(W, *FString::Printf(TEXT("S47TempLamp_%s_%d"), *Site, Lamps.Num()));
 		C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(W->GetRootComponent());
-		C->SetIntensityUnits(ELightUnits::Lumens); C->SetIntensity(Lumens); C->SetAttenuationRadius(float(Reach * 100.)); C->SetLightColor(FLinearColor(1.f, .78f, .52f)); C->SetCastShadows(false);
+		C->SetIntensityUnits(ELightUnits::Lumens); C->SetIntensity(Lumens); C->SetAttenuationRadius(float(Reach * 100.)); C->SetLightColor(Colour); C->SetCastShadows(false);
 		C->RegisterComponent(); C->SetVisibility(false);
-		C->SetWorldLocation(S47Three::ToUE(FVector(8000 + At.X, S47FarmWorld::FloorRoad(At.X, At.Y) + Up, At.Y)));
-		FLamp L; L.Site = Site; L.L = C; L.From = From; L.To = To; Lamps.Add(L);
+		C->SetWorldLocation(S47Three::ToUE(FVector(8000 + At.X, (OverY ? *OverY : S47FarmWorld::FloorRoad(At.X, At.Y)) + Up, At.Y)));
+		FLamp L; L.Site = Site; L.L = C; L.From = From; L.To = To; L.Lumens = Lumens; L.Day = Day; Lamps.Add(L);
 	};
+	// SCHOOL-V2 stage 3: a site standing as its model lights its rooms from the plan (cool fluorescent tubes under the ceilings, the lamp
+	// over the door warm), at heights over its ground floor; its stand-in lamps are left out.
+	for (const FSite& S : Sites()) if (const double* FloorY = ModelFloorY.Find(S.Id))
+		for (const FSite::FLight& Lt : S.Lights) Add(S.Id, Lt.X, Lt.Z, Lt.Up, Lt.Lumens, Lt.Reach, 19, 31, Lt.bOutside ? FLinearColor(1.f, .78f, .52f) : FLinearColor(.86f, .92f, 1.f), FloorY, Lt.bOutside ? 0.f : .45f);
 	// The trailers' porch lights at the lane ends (north row, and two of the south row), until midnight; the court's yard light under
 	// the tank and the school's over its front door, all night.
 	for (const double X : { 38.0, 20.0, 2.0, -16.0 }) Add(TEXT("trailers"), X + 1.4, -6.4, 2.4, 260.f, 7, 19, 24);
 	for (const double X : { 38.0, 2.0 }) Add(TEXT("trailers"), X - 1.4, 6.4, 2.4, 260.f, 7, 19, 24);
 	Add(TEXT("trailers"), -40, 3.6, 13.2, 900.f, 26, 19, 31);
-	Add(TEXT("school"), -18.8, 0, 3.6, 700.f, 16, 19, 31);
+	if (!ModelFloorY.Contains(TEXT("school"))) Add(TEXT("school"), -18.8, 0, 3.6, 700.f, 16, 19, 31);
 }
 
 void FS47TownSites::StepLamps()
@@ -729,7 +983,9 @@ void FS47TownSites::StepLamps()
 		if (!C) continue;
 		// Out where something big came tonight: nobody switches it on again.
 		const bool bDark = F.EventPlaces && F.EventPlaces->LastNight(L.Site) == Night && FS47Visitors::Big(F.EventPlaces->LastKind(L.Site));
-		C->SetVisibility(bHere && !bDark && H >= L.From && H < L.To);
+		const bool bHours = H >= L.From && H < L.To;
+		C->SetVisibility(bHere && !bDark && (bHours || L.Day > 0.f));
+		if (L.Day > 0.f && L.Lumens > 0.f) C->SetIntensity(L.Lumens * (bHours ? 1.f : L.Day));
 	}
 }
 

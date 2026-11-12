@@ -96,6 +96,9 @@ public:
 	/** The floor a prop lays down there (its "floors": a building one walks into, its steps), NaN
 	 *  where it has none (AS47Walker::FloorAt asks first). Three's world terms. */
 	static double FloorAt(double X, double Z);
+	/** SCHOOL-V2 stage 3: the same with the walker's present floor: where floors lie over one another (a basement under a ground floor,
+	 *  a stair's flights), the first one the walker can be on from RefY (not over a metre up); the first of them when none is. */
+	static double FloorAt(double X, double Z, double RefY);
 	/** A placed prop by its id (Config/Props): its mesh and its node, for a system that uses it (FS47Tape: the recorder on the
 	 *  desk by the array's PC). Null and -1: not placed. */
 	static UStaticMeshComponent* PlacedMesh(const FString& Id);
@@ -104,7 +107,9 @@ public:
 	static float LitLevel(const FString& Id);
 	static int32 PlacedNode(const FString& Id);
 	/** A native building's own floor or ramp (S47EastWing); bFirst takes precedence over existing floors. */
-	static void AddFloor(double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const FString& Axis, bool bFirst);
+	static void AddFloor(double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const FString& Axis, bool bFirst, const FString& Tag = FString());
+	/** Every floor laid down with that tag (a site seated again). */
+	static void RemoveFloors(const FString& Tag);
 
 private:
 	struct FPlaced
@@ -163,7 +168,7 @@ private:
 		FS47Rect Closed;
 	};
 	TArray<FDoor> Doors;
-	struct FFloor { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0, Y0 = 0, Y1 = 0; FString Axis; };
+	struct FFloor { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0, Y0 = 0, Y1 = 0; FString Axis; FString Tag; };
 	static TArray<FFloor> Floors;
 	static TWeakObjectPtr<AS47Props> Instance;
 	TSharedPtr<FJsonObject> Trims;
