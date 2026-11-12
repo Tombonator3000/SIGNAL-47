@@ -53,6 +53,8 @@ public:
  bool Continue();
  bool Choose(const FString& ChoiceId);
  static bool SelfTest(TArray<FString>& Lines);
+ // Supper at the Mesa on the Story drive, from Freeform's cash (Tom 12 Nov).
+ static constexpr int32 MealPrice=4;
  // The scene under way is the truck's radio on the drive (see above).
  bool CarRadio() const;
 private:

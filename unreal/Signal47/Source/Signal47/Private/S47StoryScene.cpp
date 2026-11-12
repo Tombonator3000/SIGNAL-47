@@ -6,6 +6,7 @@
 #include "S47Audio.h"
 #include "S47DaleVoice.h"
 #include "S47Freeform.h"
+#include "S47Fatigue.h"
 #include "S47World.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47StoryScene,Log,All);
@@ -287,6 +288,15 @@ void FS47StoryScene::Finish()
  }
  if(!Was.IsEmpty())Set.Add(TEXT("scene_")+Was.ToLower());
  for(const FString& F:Set)if(OnFlag)OnFlag(F);
+ // Tom 12 Nov: supper at the Mesa on the Story drive is paid from Freeform's own cash, and the waitress's coffee counts as Freeform's
+ // diner cup (FS47Fatigue::AtDiner). A meal is $4; short of it, it goes on the station's tab like an essential requisition.
+ if((Was==TEXT("I06_EAT")||Was==TEXT("I07_TAKE"))&&M&&M->Freeform)
+ {
+  const bool bPaid=M->Freeform->Spend(MealPrice,true);
+  if(Was==TEXT("I06_EAT")&&M->Freeform->Fatigue)M->Freeform->Fatigue->AtDiner();
+  if(M->UI)M->UI->Toast(bPaid?FString::Printf(TEXT("Supper at the Mesa: $%d."),MealPrice):TEXT("Supper at the Mesa, on the station's tab."),3.f);
+  UE_LOG(LogS47StoryScene,Display,TEXT("S47: story scene %s: supper $%d %s"),*Was,MealPrice,bPaid?TEXT("paid"):TEXT("not paid"));
+ }
  UE_LOG(LogS47StoryScene,Display,TEXT("S47: story scene %s over; story flags %s"),*Was,*FString::Join(Set,TEXT(", ")));
 }
 
