@@ -50,6 +50,10 @@ private:
  double DoorOpen=1;bool bDoorUp=true,bDoorMoving=false,bDoorHand=false,bDoorControls=false,bWasFree=false;
  bool bLeafControls=false; bool LeafOpen[2]={true,true}; double LeafAmount[2]={1.,1.};
  bool LeafControls(); void UseLeaf(int32 Index); void DoorTest(); int32 DoorTestStage=0; double DoorTestAt=0;
+ // FIX10-10: the ceiling tubes have a wall switch inside the lab door; Freeform starts with it off (no saved key = off).
+ bool bTubesOn=false,bTubeSwitch=false;TWeakObjectPtr<class USceneComponent> TubeLever;
+ bool TubeSwitchControls();void UseTubeSwitch();
+ float TubeTarget(bool bShown,bool bFree,bool bPowered) const{return bShown&&bPowered&&(!bFree||bTubesOn)?1.f:0.f;}
  bool DoorControls();void StepDoor(float Dt,bool bFree,bool bPowered);
  FString DoorLabel() const;void UseDoor();
  TArray<TWeakObjectPtr<class URectLightComponent>> Tubes; TArray<float> TubeLumens; TArray<FS47TubeFlicker> TubeFlicker; // photo pass: deferred-decal dirt bands, floor dust, jamb scuffs, run-off streaks
