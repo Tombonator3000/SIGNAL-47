@@ -530,7 +530,11 @@ void FS47FreeformSession::StepSky(double Dt)
    // FIX10-10: the mains try to come back and the feeder's protection locks out. An ordinary feeder fault from here: the remote
    // feeder (ff:feeder, road) is mended as any other, the generator carries the station meanwhile, and the county crew gets to it in the end.
    SetPowerFault(true);SkyFaultUntil=WorldClock+SkyFaultMinutes*60;
-   Tell(Backup?TEXT("Relays clatter through the rack, catch and drop out again: the feeder has locked out. The standby generator carries the station on its tank; the remote feeder out on the county road needs mending.")
+   // POWER-CHOICE-20261112: the mains the sabotage took (FS47Attention): the same lockout, said as what it is, with the night's choice in it.
+   if(Attention&&Attention->Sabotage()==FS47Attention::ESab::Mains)
+    Tell(Backup?TEXT("Relays clatter through the rack, catch and drop out again: the feeder has locked out, and the protection names no fault. No storm, no load. Something was done to it out at the remote feeder on the county road. The standby generator carries the station, loud, for as long as its tank lasts.")
+     :TEXT("Relays clatter through the rack, catch and drop out again. The feeder has locked out and the protection names no fault: no storm, no load. Something was done to it out at the remote feeder on the county road. Mend it out there in the dark, or start the loud standby generator behind the control room."),9);
+   else Tell(Backup?TEXT("Relays clatter through the rack, catch and drop out again: the feeder has locked out. The standby generator carries the station on its tank; the remote feeder out on the county road needs mending.")
     :TEXT("Relays clatter through the rack, catch and drop out again. The feeder has locked out and the station stays dark. Mend the remote feeder on the county road, or start the standby generator behind the control room."),9);
    UE_LOG(LogTemp,Display,TEXT("S47: sky cut: the feeder locks out (dark for %.0f s, standby %s); the county restores it at clock %.0f"),SkyDark,Backup?TEXT("running"):TEXT("off"),SkyFaultUntil);
   }
