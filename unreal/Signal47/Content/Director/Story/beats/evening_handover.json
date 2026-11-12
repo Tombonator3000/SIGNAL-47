@@ -32,6 +32,19 @@
       "scene": "D01_HANDOVER"
     },
     {
+      "at": 3.2,
+      "do": "shot",
+      "node": "room.objs.phone",
+      "fov": 55,
+      "fov2": 44,
+      "secs": 3,
+      "in": 0.8,
+      "out": 1,
+      "if": [
+        "in_saro"
+      ]
+    },
+    {
       "at": 4,
       "do": "objective",
       "text": "",

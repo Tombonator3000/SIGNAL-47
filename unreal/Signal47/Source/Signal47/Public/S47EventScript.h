@@ -56,7 +56,7 @@ class FS47CameraMoment;
 // seed, the same each night it is asked), if (conditions). Asked by the night's happenings (FS47Happenings::StartEvent) before the
 // rhythm, never for an F10 start.
 
-enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Silence, Tube, Flag, Start, Clock, Objective, Scene, Count };
+enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Silence, Tube, Flag, Start, Clock, Objective, Scene, Shot, Count };
 
 struct FS47Beat
 {
@@ -69,6 +69,11 @@ struct FS47Beat
  bool bTo=false;
  double Gain=1,Rate=1,Lp=0,Delay=0,Stop=0,Secs=0,Hz=1200,Every=0,Strength=.5,Max=0;
  double Fov=45,In=.25,Hold=1.2,Out=.9; // N1110: camera_snap's degrees and seconds (its shake is Strength, its scare is Kind)
+ // SHOT-BEAT-01: the shot beat (S47Shot.h): pos is the first eye (none: the player's own head), pos2 a second eye it moves to, look the
+ // point it looks at (or point, a named one, or node, a scene key); Fov and Fov2 the lens (Fov2 0: the same), Secs the hold, In and Out
+ // the ease (its defaults are the shot's: 55 degrees, 4 s, .6 s and .8 s).
+ TOptional<FVector> Pos2,Look;
+ double Fov2=0;
  int32 Repeat=1;
  int32 Tube=-1;                 // N1110: the tube beat's index into the control room's ceiling tubes (2 to 7)
  int32 Next=0;                  // N1110: or, instead of a tube, how many of the next still-working ones go out (1 to 6): {"beat":"tube","next":2}
@@ -163,6 +168,7 @@ namespace S47EventScript
 
 // Plays the beats. Owned by the session's script player (FS47ScriptPlayer, which steps it); a menu or a paper holds it where it is.
 // Nothing of a run is saved: what a beat records is (a finding, a place heard of), what it shows for a while is not.
+class FS47ShotCamera;
 class SIGNAL47_API FS47EventBeats
 {
 public:
@@ -183,11 +189,14 @@ public:
  bool Running(const FString& Id) const{return Runs.ContainsByPredicate([&Id](const FRun& R){return R.S.Id==Id;});}
  // N1110: the camera moment (S47CameraMoment.h), the beat's and the hook's; made when first asked for, stopped with the runs.
  bool Snap(const FS47CameraSnap& S,FString& Why);
+ // SHOT-BEAT-01: gives the walker's camera back once a shot beat is over; asked every frame by the script player, outside the walker's frame.
+ void TickShot();
 private:
  US47Main* M=nullptr;
  struct FRun{FS47EventScript S;FS47EventCtx Ctx;double T=0,Waited=0;int32 Next=0;};
  TArray<FRun> Runs;
  TSharedPtr<FS47CameraMoment> Camera;
+ TSharedPtr<FS47ShotCamera> ShotCam; // SHOT-BEAT-01
  // The flashlight's flicker, given back after its seconds.
  double LampLeft=0;
  TSet<FString> LinesFor;
