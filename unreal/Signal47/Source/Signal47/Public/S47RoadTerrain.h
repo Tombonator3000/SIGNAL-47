@@ -63,6 +63,8 @@ namespace S47RoadTerrain
 	inline constexpr double RUT[3] = { 0.28, 0.14, 0.045 };
 	/** Height of whatever is on top at (x, z): road, track, verge or desert. */
 	SIGNAL47_API double SurfaceY(double X, double Z);
+	/** The same without the sites' pads, banks and cuts (S47GroundEdits): what a site measures to decide where its pad goes. */
+	SIGNAL47_API double NaturalY(double X, double Z);
 
 	// ---------- the ranch's road ----------
 	SIGNAL47_API double RanchZ(double X);

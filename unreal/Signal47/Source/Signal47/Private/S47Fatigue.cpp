@@ -10,6 +10,7 @@
 #include "S47RoswellBrain.h"
 #include "S47Sneak.h"
 #include "S47Stress.h"
+#include "S47Thoughts.h"
 #include "S47Townsfolk.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -93,11 +94,10 @@ void FS47Fatigue::RollDay()
 void FS47Fatigue::TiredThought()
 {
 	// D46-20261110: now and then, in a heavy spell, the player's own thought (one through the queue; never twice in four minutes)
-	static const TCHAR* Lines[] = { TEXT("Read that line again. It did not go in."), TEXT("Coffee. There has to be a pot somewhere."), TEXT("Eyes keep closing on their own."),
-		TEXT("Just rest them a second. No."), TEXT("A cot would do. Anything flat.") };
+	// UI-20261112 (Tom: more occasions): its lines are S47Thoughts' pools now, "tired" and, from ExhaustedFrom, "exhausted", under
+	// the thoughts' own cooldown as well (one in 90 real seconds), so a tired thought never comes on top of another.
 	if (!M || !M->UI || T - ThoughtAt < 240) return;
-	ThoughtAt = T;
-	M->UI->Thought(Lines[(ThoughtNo++) % int32(UE_ARRAY_COUNT(Lines))], 4.f);
+	if (S47Thoughts::Think(M, S47Thoughts::TiredKey(Level()))) { ThoughtAt = T; ++ThoughtNo; }
 }
 
 double FS47Fatigue::RunScaleOf(double Tired, double InWind)

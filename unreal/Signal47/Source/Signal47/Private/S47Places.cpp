@@ -45,6 +45,15 @@ static FString FS47PlacesLocalMapKey()
  const FString Map=S47Keys::Said(TEXT("map"));
  return Map.IsEmpty()?S47Keys::Said(TEXT("notebook")):Map;
 }
+// MAP-D62-20261112 (Tom, d62: a slip printed at 11:36 had its circle gone from the map at 12:00, when its line went cold): a slip's circle
+// that has not been stood in stays on the sheet a day past the line's noon, so it is there every time the map opens until it is looked
+// at. Its line still goes at noon, as the slip says. A slip with no time (an older save's) is never cold anyway.
+static bool FS47PlacesLocalCircleOnSheet(const FS47Places::FBearing& B,double Now)
+{
+ if(B.bCar||!B.bRing)return false;
+ if(FS47Places::Live(B,Now))return true;
+ return !B.bVisited&&B.Until>=0&&Now<B.Until+86400.;
+}
 
 namespace
 {
@@ -489,7 +498,7 @@ void FS47Places::StepSlips(double Dt)
  if(!S47FieldMap::Me(M,Px,Pz,Facing,Area,bWheel))return;
  const double Now=M->Freeform->Clock();
  for(FBearing& B:Fixes)
-  if(!B.bCar&&B.bRing&&!B.bVisited&&Live(B,Now)&&FVector2D::Distance(FVector2D(Px,Pz),FVector2D(B.RingX,B.RingZ))<B.RingR)
+  if(!B.bCar&&B.bRing&&!B.bVisited&&FS47PlacesLocalCircleOnSheet(B,Now)&&FVector2D::Distance(FVector2D(Px,Pz),FVector2D(B.RingX,B.RingZ))<B.RingR)
   {
    B.bVisited=true;
    if(M->UI)M->UI->Toast(TEXT("BEARING SLIP / You are inside the circle on your map. Look around here."),5);
@@ -870,6 +879,19 @@ void FS47Places::FillMapAt(FS47MapView& View,double Now) const
   for(const int32 I:Shown)P.bInSector|=InSector(Fixes[I],B.X,B.Z);
   View.Pins.Add(P);
  }
+ // MAP-D62-20261112: a slip's circle not yet stood in, its line gone cold, stays on the sheet (FS47PlacesLocalCircleOnSheet), paler,
+ // without its wedge; at most two, older than the live ones, so the newest unlooked circle is still the last.
+ {
+  TArray<int32> Kept;
+  for(int32 I=Fixes.Num()-1;I>=0&&Kept.Num()<2;--I)if(!Shown.Contains(I)&&!Live(Fixes[I],Now)&&FS47PlacesLocalCircleOnSheet(Fixes[I],Now)&&!Checked(Fixes[I]))Kept.Insert(I,0);
+  for(const int32 I:Kept)
+  {
+   const FBearing& B=Fixes[I];
+   S47FieldMap::FSlipCircle Ring;Ring.X=B.RingX;Ring.Z=B.RingZ;Ring.R=B.RingR;Ring.Where=SlipWhere(B);Ring.Fade=.3f;
+   Ring.Label=FString::Printf(TEXT("Day %d slip"),B.Day);if(B.Clock>=0)Ring.Label+=TEXT(", ")+SlipClock(B.Clock);
+   S47FieldMap::AddSlipCircle(View,Ring);
+  }
+ }
  for(const int32 I:Shown)
  {
   const FBearing& B=Fixes[I];
@@ -1090,7 +1112,17 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
    // The circle on the sheet with the wedge's label; the old sheet's label is "Day 4 slip, 19:52", never "D4" (read as a grid square).
    const TArray<S47FieldMap::FSlipCircle> Circles=S47FieldMap::SlipCircles(Fresh);
    Check(B.bRing&&Circles.Num()==1&&Circles[0].Label==Fresh.Sectors[0].Label&&Fresh.Sectors[0].Label==TEXT("Day 4 slip, 19:52")&&FMath::IsNearlyEqual(Circles[0].R,B.RingR)&&!Circles[0].bChecked&&Circles[0].Where.EndsWith(TEXT("of SARO"))
-    &&S47FieldMap::SlipCircles(Bare).IsEmpty()&&S47FieldMap::SlipCircles(Cold).IsEmpty(),TEXT("the map carries the live slip's circle with its day and hour; an older bearing has none and a cold one is off the map"));
+    &&S47FieldMap::SlipCircles(Bare).IsEmpty(),TEXT("the map carries the live slip's circle with its day and hour; an older bearing has none"));
+   // MAP-D62-20261112 (Tom, d62: the circle gone when the map was opened again after noon): the circle not yet stood in stays on the
+   // sheet without its wedge, paler, for a day past the line's noon, and every opening builds it again; stood in, it goes with the line.
+   {
+    const TArray<S47FieldMap::FSlipCircle> Stays=S47FieldMap::SlipCircles(Cold);
+    FS47MapView Again,Gone,Done;Map.FillMapAt(Again,ColdAt(Clock)+3600);Map.FillMapAt(Gone,ColdAt(Clock)+86400+1);
+    FS47Places Looked(nullptr);Looked.Begin(nullptr);FBearing Seen=B;Seen.bVisited=true;Looked.Fixes.Add(Seen);Looked.FillMapAt(Done,ColdAt(Clock)+1);
+    Check(Cold.Sectors.IsEmpty()&&Stays.Num()==1&&Stays[0].Label==Circles[0].Label&&!Stays[0].bChecked&&Stays[0].Fade<Circles[0].Fade&&FMath::IsNearlyEqual(Stays[0].R,B.RingR)
+     &&S47FieldMap::SlipCircles(Again).Num()==1&&S47FieldMap::SlipCircles(Gone).IsEmpty()&&S47FieldMap::SlipCircles(Done).IsEmpty()&&Done.Sectors.IsEmpty(),
+     TEXT("a slip's circle not yet looked at stays on the map after its line goes cold at noon, on every opening, for a day; looked at, it goes with the line"));
+   }
    // The slip on NOW: one row, plain words, ticked once stood in, the same words either way, gone at noon; the truck's line is no slip.
    FS47Places Rows(nullptr);Rows.Begin(nullptr);Rows.Fixes.Add(B);
    FBearing Truck=B;Truck.bCar=true;Truck.bRing=false;Rows.Fixes.Add(Truck);

@@ -1,5 +1,6 @@
 // Original roadside composition using a private, bounded native nature kit.
 #include "S47RouteNature.h"
+#include "S47GroundEdits.h"
 #include "S47SaroClip.h"
 #include "S47Web.h"
 #include "S47Geo.h"
@@ -93,6 +94,7 @@ namespace
   }
   const FNear Track=TrackNearest(X,Z);
   if(Track.D<TrackHalf(Track.S)+TRK.Soft+2+Radius)return false;
+  if(S47GroundEdits::Clears(X,Z,Radius))return false; // CALICHE-GROUND: a site's pad, bank or cut
   if(OldNearest(X,Z).D<17+Radius || OnRanchRoad(X,Z))return false;
   // Story footprints and their views/approaches. These are deliberately wider
   // than the small meshes: cattle, wreck, motel, deputy, diner and all Caliche doors.

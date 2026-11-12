@@ -1,4 +1,5 @@
 #include "S47HUD.h"
+#include "S47GroundEdits.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "S47StreetLamps.h"
@@ -19,6 +20,7 @@
 #include "S47FreeformTerminal.h"
 #include "S47MessageQueue.h"
 #include "S47Thoughts.h"
+#include "S47LocationCards.h"
 #include "S47TonightNote.h"
 #include "S47SaroSave.h"
 #include "S47Stress.h"
@@ -141,6 +143,7 @@
 #include "S47Chapter3.h"
 #include "S47Chapters.h"
 #include "S47Flow.h"
+#include "S47DevFreeform.h"
 #include "S47FieldCamera.h"
 #include "S47Drive.h"
 #include "S47Chapter1.h"
@@ -276,6 +279,7 @@ void AS47HUD::Start()
 		bOk &= FS47FreeformSession::SelfTest(Lines);
 		bOk &= FS47FreeformJobs::SelfTest(Lines);
 		bOk &= FS47FreeformCases::SelfTest(Lines);
+		bOk &= S47Binder::SelfTest(Lines) & FS47FreeformSession::BinderSelfTest(Lines); // (RECORDS-BINDER: the records-room binder's dividers, order, filing and stamps)
 		bOk &= FS47EastWing::SelfTest(Lines);
 		bOk &= FS47FreeformDirector::SelfTest(Lines);
 		bOk &= FS47CaseFieldTests::SelfTest(Lines);
@@ -291,6 +295,7 @@ void AS47HUD::Start()
 		bOk &= FS47FieldRadio::SelfTest(Lines);
 		bOk &= FS47MessageQueue::SelfTest(Lines); // MSG-ONE-20261109, TRUCK-HINT-20261109
 		bOk &= S47Thoughts::SelfTest(Lines); // D46-5-20261110
+		bOk &= S47LocationCards::SelfTest(Lines); // UI-20261112 (Tom): the location cards
 		bOk &= FS47DaleVoice::SelfTest(Lines); // (DALE-WIRE-20261109: Dale's own takes on the walkie and the service line)
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
 		bOk &= S47FreeformTerminal::SelfTest(Lines); // (D45-20261110: the tubes' rare, faint hum bar)
@@ -312,6 +317,7 @@ void AS47HUD::Start()
 		bOk &= FS47Predecessor::SelfTest(Lines);
 		bOk &= FS47Mail::SelfTest(Lines); // (the post, the Ledger and the weather and almanac it prints: S47Weather)
 		bOk &= FS47RadioTips::SelfTest(Lines);
+		bOk &= S47GroundEdits::SelfTest(Lines);
 		bOk &= S47TownSites::SelfTest(Lines) & FS47TownUse::SelfTest(Lines) & FS47Townsfolk::SelfTest(Lines) & FS47Visitors::SelfTest(Lines) & FS47MotelNight::SelfTest(Lines); // (M4: the temporary boxes, Caliche's counters and its regulars)
 		bOk &= S47CalicheNewHomes::SelfTest(Lines); // (CALICHE-HOMES: no house in the road or in another, a home for each of the town's people)
 		bOk &= FS47Openings::SelfTest(Lines);
@@ -327,6 +333,7 @@ void AS47HUD::Start()
 		bOk &= S47EyeGlint::SelfTest(Lines); // (ALIEN-EYES: the faint dot in the aliens' eyes, only in the dark and within 50 m)
 		bOk &= S47TripoNew::SelfTest(Lines); // (TRIPO-NEW: Tom's nine Tripo models of 9 November, private, with stand-ins when missing)
 		bOk &= FS47TruckCare::SelfTest(Lines);
+		bOk &= FS47DevFreeform::SelfTest(Lines); // (F10-CLOSES-20261112: a sheet is put down unread only when nobody plays)
 		bOk &= FS47Outfit::SelfTest(Lines); // (M7: the truck's upgrades and the gear that opens the night)
 		bOk &= FS47TripCamera::SelfTest(Lines);
 		bOk &= FS47DayRound::SelfTest(Lines);

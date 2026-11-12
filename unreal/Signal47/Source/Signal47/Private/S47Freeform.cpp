@@ -4,6 +4,7 @@
 #include "S47GoalLine.h"
 #include "S47StoryDirector.h"
 #include "S47RuleBreak.h"
+#include "S47IdleLure.h"
 #include "S47Balloon.h"
 #include "S47SaroSave.h"
 #include "S47SaroNight.h"
@@ -85,6 +86,7 @@
 #include "S47Inter.h"
 #include "S47Keys.h"
 #include "S47Three.h"
+#include "S47Thoughts.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SScaleBox.h"
 #include "Widgets/Layout/SBorder.h"
@@ -197,6 +199,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal,bool bOneNi
  JobSeed=M&&M->Flow&&!M->Flow->bDevRun?int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()):470047;
  Journal.Load(S47J::Obj(Saved,TEXT("journal")));
  Work.Reset();Findings.Reset();FindingDays.Reset();MysterySteps={0,0,0};Upgrades={false,false,false};SavedAngles.Reset();bRestoreAngles=false;Feedback.Empty();PhenomenonId.Empty();
+ LoadBinder(Saved); // RECORDS-BINDER: when each packet went in ("binderFiled"); a save from before has none
  if(Saved)
  {
   if(!JsonVersion(Saved)) { bActive=false;return; }
@@ -260,6 +263,9 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal,bool bOneNi
    J.DuplicateFeed=FMath::Clamp(SafeNum(O,TEXT("duplicateFeed"),LegacyKind==2?PrinterSeconds:0),0.,PrinterSeconds);
    J.CaseLine=FMath::Clamp(SafeInt(O,TEXT("caseLine"),-1),-1,FS47FreeformCases::CaseCount-1);J.CaseTest=J.CaseLine<0?-1:FMath::Clamp(SafeInt(O,TEXT("caseTest"),-1),-1,FS47FreeformCases::TestCount-1);if(J.CaseTest<0)J.CaseLine=-1;
    J.bDocked=S47J::Bool(O,TEXT("docked"));J.PaidAmount=FMath::Clamp(int32(S47J::Num(O,TEXT("paidAmt"),-1)),-1,10000);J.bCaseValid=S47J::Bool(O,TEXT("caseValid"),true);J.bCaseRecorded=S47J::Bool(O,TEXT("caseRecorded"));if(J.CaseTest>=0){J.bAnomaly=false;J.Phenomenon.Empty();}
+   // GAMEPLAY-LOOP-01: an extra-tick take saved at the printer (the old chart step) is on the reel deck now; nothing is lost. Its
+   // original page is kept when it is confirmed at OPS (RetainOriginal); a control half done (optional now) runs on to its end.
+   if(J.Stage==EJobStage::Chart&&PlainAnomaly(J)){J.Stage=EJobStage::Recorded;J.ChartFeed=PrinterSeconds;}
    const auto ValidSamples=[](const TArray<double>& A){if(A.Num()>3)return false;for(double V:A)if(!FMath::IsFinite(V))return false;return true;};
    if(!ValidSamples(J.BeamAz)||!ValidSamples(J.BeamEl)||!ValidSamples(J.BeamAmplitude)){J.BeamAz.Reset();J.BeamEl.Reset();J.BeamAmplitude.Reset();J.bBeamVerified=false;J.bControl=false;J.ControlAt=0;}
    if(const auto C=S47J::Obj(O,TEXT("card"));C&&S47J::Int(C,TEXT("v"))==1)
@@ -978,6 +984,7 @@ void FS47FreeformSession::StepWork(double Dt)
  S47CaptureSound::FFrame CaptureInput;
  if(M&&M->Story){CaptureInput.Frequency=M->Story->Rx.Frequency;CaptureInput.Gain=M->Story->Rx.Gain;CaptureInput.Bandwidth=M->Story->Rx.Bandwidth;CaptureInput.Quality=M->Story->Rx.Quality(EffectiveProfile(*J))*ReceiverReception();}
  if(J->Stage==EJobStage::Integrating&&J->CaptureOriginal.Eligible()&&(!PointReady()||Settle<1||!M||!M->Story||!M->Story->Rx.Pass(EffectiveProfile(*J))))InterruptCapture(TEXT("Receiver lock interrupted; retained measurements use compatible reference sound."));
+ if(J->Stage==EJobStage::Pointed&&DetectedJob!=J->Id&&ReceiverReady()&&AnomalyAhead()){DetectedJob=J->Id;Changed(TEXT("ANOMALY DETECTED. RECEIVER (centre PC): Press START RECORDING."));if(M)S47Thoughts::Later(TEXT("anomaly"),1.5);} // UI-20261112: the player's own thought as the anomaly shows
  if(J->Stage==EJobStage::Pointed||J->Stage==EJobStage::Integrating)
  {
   Settle=PointReady()?FMath::Min(1.,Settle+Dt):0;
@@ -1003,13 +1010,14 @@ void FS47FreeformSession::StepWork(double Dt)
     for(double At:J->TraceTicks)if(Was<At&&J->Elapsed>=At)M->Audio->Beep(1240,.008f,.1f,0,TEXT("square"));
     for(double At=PulsarPeriod;At<=SourceSeconds();At+=PulsarPeriod)if(Was<At&&J->Elapsed>=At)M->Audio->Beep(820,.012f,.16f,0,TEXT("square"));
    }
+   // GAMEPLAY-LOOP-01: the receiver says it as soon as the first extra tick is on tape (once a take)
+   if(PlainAnomaly(*J)&&!J->TraceTicks.IsEmpty()&&Was<J->TraceTicks[0]&&J->Elapsed>=J->TraceTicks[0]&&M->UI)M->UI->Toast(TEXT("ANOMALY DETECTED / extra ticks off the work card. Let the take run."),4);
    if(J->Elapsed>=SourceSeconds()&&!bCrossRunning)
    {
-    J->Stage=EJobStage::Chart;
-    // D45-20261110 (Tom: record the control right after the take, then analyse at the reel deck): an unusual take says so here,
-    // on the receiver, and its control is the next thing; the chart prints meanwhile and is collected on the way to OPS.
-    if(J->bAnomaly&&!Specialized(J->Phenomenon))Changed(TEXT("RECEIVER (centre PC): This take has extra ticks that are not on the work card. Record the 8-second control now, right here. The chart prints by itself; collect it on your way to OPS."));
-    else Changed(TEXT("PRINTER: Recording complete; paper feed queued. Wait for the printer to finish, then collect the original chart."));
+    // GAMEPLAY-LOOP-01 (Tom, 12 November): the unusual take is kept as it ends, its original page in the notebook; no control to
+    // record and no chart to fetch. The reel deck is next. The instrument discrepancies and routine work keep their chart.
+    if(PlainAnomaly(*J)){J->Stage=EJobStage::Recorded;RetainOriginal(*J);Changed(TEXT("ANOMALY ON TAPE. NEXT: REEL DECK (wall table), play the take once."));}
+    else {J->Stage=EJobStage::Chart;Changed(TEXT("PRINTER: Recording complete; paper feed queued. Wait for the printer to finish, then collect the original chart."));}
    }
   }
  }
@@ -1045,6 +1053,7 @@ void FS47FreeformSession::StepWork(double Dt)
     J->ControlReferenceClock=WorldClock;J->ControlReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);J->bClockMeasured=J->Phenomenon==TEXT("time_disagreement");
     if(J->bClockMeasured)Changed(TEXT("OPS (corner PC): DAILY WORK / Select this job and press Compare and register the retained instrument measurements to compare original and control clock offsets."));
     else if(J->Phenomenon==TEXT("duplicate_print"))Changed(TEXT("PRINTER: Register check complete; duplicate feed queued. Wait for the printer to finish, then collect and compare it with the retained original at OPS (corner PC)."));
+    else if(PlainAnomaly(*J))Changed(TEXT("RECEIVER RACK: Control done; the reel deck's CONTROL key plays it. The job needs only the take."));
     else Changed(TEXT("REEL DECK (wall table): Review the original and control recordings; the internal control is complete."));
     // (D45-20261110: a control recorded before the chart was collected says the same; the chart waits at the printer for OPS)
     if(Director)Director->Use(TEXT("ff:control"));
@@ -1129,13 +1138,15 @@ FString FS47FreeformSession::ReceiverNextAction() const
   if(!M||!M->Story||!M->Story->Rx.Pass(EffectiveProfile(*J)))return TEXT("RECEIVER (centre PC): Restore the work card tuning to resume recording; valid seconds are retained.");
   if(!PointReady()||Settle<1)return bCrossRunning?TEXT("TRACKING (right-hand PC): Automatic reference scan in progress. Wait for the samples; collect the original at the PRINTER when recording finishes."):TEXT("TRACKING (right-hand PC): Restore array pointing to resume recording; valid seconds are retained.");
  }
+ // GAMEPLAY-LOOP-01: the unusual take says so for as long as it is written
+ if(J->Stage==EJobStage::Integrating&&PlainAnomaly(*J))return TEXT("RECEIVER (centre PC): ANOMALY DETECTED. Let the take run to the end; then the reel deck.");
  // D45-20261110 (Tom: the task card flickered with the count): the line names the step, the receiver's own readout counts.
  if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECEIVER (centre PC): Recording at the receiver (%d/27 antennas). Keep the tuning, pointing and power valid until the take ends."),AvailableDishCount());
  if(J->Stage!=EJobStage::Pointed)return JobNextAction(*J);
  if(!PointReady())return TEXT("TRACKING (right-hand PC): Wait for the commanded direction. If movement stops, inspect isolated elements at ARRAY STATUS (left-hand PC).");
  if(Settle<1)return TEXT("RECEIVER (centre PC): Wait one second for the array to settle, then tune the work card.");
  const auto P=EffectiveProfile(*J);const auto& R=M->Story->Rx;
- if(R.Pass(P))return TEXT("RECEIVER (centre PC): Press START RECORDING to record this source.");
+ if(R.Pass(P))return AnomalyAhead()?TEXT("RECEIVER (centre PC): ANOMALY DETECTED. Press START RECORDING."):TEXT("RECEIVER (centre PC): Press START RECORDING to record this source.");
  if(FMath::Abs(R.Frequency-P.F)>P.FTol)return FString::Printf(TEXT("RECEIVER (centre PC): Tune FREQUENCY to %.3f MHz (now %.3f). Watch the carrier peak and received percentage."),P.F,R.Frequency);
  if(R.Gain<P.Gain[0]||R.Gain>P.Gain[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set GAIN between %.0f and %.0f (now %.0f)."),P.Gain[0],P.Gain[1],R.Gain);
  if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set BANDWIDTH between %.0f and %.0f kHz (now %.0f)."),P.Bw[0],P.Bw[1],R.Bandwidth);
@@ -1160,11 +1171,9 @@ bool FS47FreeformSession::StartAcquisition()
   if(CaseCondition(J->CaseLine,J->CaseTest)==ECaseCondition::RelaySwap&&!Consume(TEXT("relay"))){Feedback=TEXT("Case test: no spare relay in the depot. Buy one at Caliche.");Changed(Feedback);return false;}
  }
  FieldFocus=-1;bGuideFocus=false;
- const bool bFirst=FirstPulseDue(*J);
- // CHAIN-1-20261109: what is out on the land tonight unsettles the pulsar card (no instrument fault of the Director's needed): the
- // plain discrepancy, extra ticks outside the reference period, with no instrument cause to find.
- const bool bOut=J->Slot==1&&J->CaseTest<0&&!bAnomaly&&!bFirst&&OutThereTonight();
- J->Stage=EJobStage::Integrating;J->Elapsed=0;J->bAnomaly=(J->Slot==1&&bAnomaly&&J->CaseTest<0)||bFirst||bOut;J->Phenomenon=J->bAnomaly&&!bOut&&!(bFirst&&!bAnomaly)?PhenomenonId:FString();
+ FString TakePhenomenon;bool bOut=false;
+ const bool bOdd=TakeAnomalous(*J,TakePhenomenon,bOut); // GAMEPLAY-LOOP-01: the receiver said ANOMALY DETECTED by the same rule
+ J->Stage=EJobStage::Integrating;J->Elapsed=0;J->bAnomaly=bOdd;J->Phenomenon=TakePhenomenon;
  if(bOut)UE_LOG(LogTemp,Display,TEXT("S47: freeform: the pulsar card %s shows a discrepancy from what is out there tonight"),*J->Id);
  J->TraceTicks.Reset();J->bLegacyTrace=false;if(J->bAnomaly&&!Specialized(J->Phenomenon))for(double At:Ticks)J->TraceTicks.Add(At);
  J->ReferenceClock=WorldClock;J->ReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);
@@ -1183,9 +1192,54 @@ bool FS47FreeformSession::StartAcquisition()
  if(!FParse::Param(FCommandLine::Get(),TEXT("NoSound"))&&J->Source==1&&J->Day==1&&J->Slot==1&&J->CaseTest<0&&FMath::IsNearlyEqual(SourceSeconds(),18.,1e-6))
  {J->CaptureOriginal.Begin(J->Id+TEXT("/original"),false,J->TraceTicks);if(LiveCapture)LiveCapture->Stop();}
  bCrossRunning=J->Source==0;CrossPoint=0;IntegrationPulse=0;if(bCrossRunning)PointCross();
+ if(PlainAnomaly(*J)){DetectedJob=J->Id;Changed(TEXT("ANOMALY DETECTED. RECEIVER (centre PC): Recording. Let the take run to the end."));return true;}
  Changed(TEXT("RECEIVER (centre PC): Recording started. Keep tuning, pointing and power valid until the take ends."));return true; // D45-20261110: the end of the take says what comes next
 }
-void FS47FreeformSession::PrintJob(bool bPacket)
+bool FS47FreeformSession::TakeAnomalous(const FJob& J,FString& Phen,bool& bOutThere)const
+{
+ const bool bFirstPulse=FirstPulseDue(J);
+ // CHAIN-1-20261109: what is out on the land tonight unsettles the pulsar card (no instrument fault of the Director's needed): the
+ // plain discrepancy, extra ticks outside the reference period, with no instrument cause to find.
+ bOutThere=J.Slot==1&&J.CaseTest<0&&!bAnomaly&&!bFirstPulse&&OutThereTonight();
+ const bool bOdd=(J.Slot==1&&bAnomaly&&J.CaseTest<0)||bFirstPulse||bOutThere;
+ Phen=bOdd&&!bOutThere&&!(bFirstPulse&&!bAnomaly)?PhenomenonId:FString();
+ return bOdd;
+}
+bool FS47FreeformSession::AnomalyAhead()const
+{
+ const FJob* J=CurrentJob();if(!J||J->Stage!=EJobStage::Pointed||J->CaseTest>=0||Tutorial==1)return false;
+ FString Phen;bool bOutThere=false;
+ return TakeAnomalous(*J,Phen,bOutThere)&&!Specialized(Phen);
+}
+bool FS47FreeformSession::PlainAnomaly(const FJob& J){return J.bAnomaly&&J.CaseTest<0&&!Specialized(J.Phenomenon);}
+bool FS47FreeformSession::TapeHeard(const FJob& J)
+{
+ const double Last=J.TraceTicks.IsEmpty()?Ticks[UE_ARRAY_COUNT(Ticks)-1]:J.TraceTicks.Last();
+ return J.OriginalCovered>=FMath::Min(18.,Last+.3)-1e-6;
+}
+void FS47FreeformSession::RetainOriginal(FJob& J)
+{
+ // The page is the one the chart would have carried (PrintJob), kept in the notebook as the take ends; it goes into the packet.
+ if(J.bPrinted||!M||!M->Story)return;
+ const int32 Was=Selected;const int32 Index=Work.IndexOfByPredicate([&](const FJob& X){return &X==&J;});if(Index==INDEX_NONE)return;
+ Selected=Index;J.bPrinted=true;J.ChartFeed=PrinterSeconds;PrintJob(false,false);Selected=Was;
+}
+bool FS47FreeformSession::ConfirmOnTape(FJob& J)
+{
+ if(!PlainAnomaly(J)||J.Stage<EJobStage::Chart||J.Stage>=EJobStage::Registered)return false;
+ if(!TapeHeard(J)){Feedback=TEXT("REEL DECK: Play the take from the start, past the extra ticks. One listen confirms it.");return false;}
+ // the operator's own marks are kept where they cover; what is missing is filled in, from just before the first tick to past the last
+ if(!MarkCoversTicks(J.MarkStart,J.MarkEnd)){if(J.MarkStart<0||J.MarkStart>9.3)J.MarkStart=9.;if(J.MarkEnd<12.6)J.MarkEnd=12.9;if(!MarkCoversTicks(J.MarkStart,J.MarkEnd)){J.MarkStart=9.;J.MarkEnd=12.9;}}
+ const bool bFirstTime=!J.bAudioReviewed;J.bAudioReviewed=true;
+ Feedback=TEXT("ANOMALY CONFIRMED ON TAPE. NEXT: OPS (corner PC) / DAILY WORK, Confirm anomaly: source unresolved.");
+ if(!bFirstTime)return true;
+ RecordEvidence(TEXT("pulse-review"),TEXT("Original heard at the reel deck. Extra ticks outside the reference period; source unresolved."));
+ // Tom, 9 November: the check says the next step, nothing more. The case opens when the job is confirmed at OPS (FirstCaseHeld,
+ // OpenFirstCase), and its repeat window still goes from this original's own clock. The reel stands in for the old control here.
+ if(Director){Director->Use(TEXT("ff:control"));Director->Use(TEXT("ff:compare"));}
+ Changed(Feedback);return true;
+}
+void FS47FreeformSession::PrintJob(bool bPacket,bool bShow)
 {
  FJob* J=Job();if(!J||!M||!M->Story)return;
  FS47Doc D;D.Id=J->Id+(bPacket?TEXT("-packet"):TEXT("-original"));D.Title=(bPacket?TEXT("Registered packet: "):TEXT("Original observation: "))+J->Id;D.Kind=TEXT("printout");D.Stamp=Reference(*J)+FString::Printf(TEXT(" / ORIGINAL COUNTER %.3f"),J->ReferenceClock);
@@ -1212,9 +1266,10 @@ void FS47FreeformSession::PrintJob(bool bPacket)
  {
   if(Specialized(J->Phenomenon))D.Page+=ControlSummary(*J)+TEXT("\nREGISTERED / PHYSICAL FILING PENDING.");
   else if(!J->bAnomaly)D.Page+=TEXT("FIRST SHIFT TRAINING COPY / ROUTINE RESULT REGISTERED AND PAID.\nTake this labelled packet to the records-room binder. Later routine work is registered digitally; discrepancies require retained originals.\nPHYSICAL FILING PENDING.");
-  else D.Page+=FString::Printf(TEXT("REGISTERED / INTERNAL CONTROL %.1f SECONDS\nMARK %.1f TO %.1f SECONDS / CONCLUSION: SOURCE UNRESOLVED\nPHYSICAL FILING PENDING."),J->ControlAt,J->MarkStart,J->MarkEnd);
+  else D.Page+=(J->bControl?FString::Printf(TEXT("REGISTERED / INTERNAL CONTROL %.1f SECONDS\n"),J->ControlAt):FString(TEXT("REGISTERED / CHECKED ON TAPE AT THE REEL DECK\n")))
+   +FString::Printf(TEXT("EXTRA TICKS %.1f TO %.1f SECONDS / CONCLUSION: SOURCE UNRESOLVED\nPHYSICAL FILING PENDING."),J->MarkStart,J->MarkEnd); // GAMEPLAY-LOOP-01
  }
- D.Transcript=D.Page;M->Story->AddDoc(D);if(M->UI)M->UI->Document(D);
+ D.Transcript=D.Page;M->Story->AddDoc(D);if(bShow&&M->UI)M->UI->Document(D);
 }
 bool FS47FreeformSession::CollectChart()
 {
@@ -1230,11 +1285,17 @@ bool FS47FreeformSession::CollectChart()
  if(Kind==0)
  {
   J->Stage=EJobStage::Recorded;J->bPrinted=true;PrintJob(false);
+  // (the anomaly thought now comes as ANOMALY DETECTED shows, GAMEPLAY-LOOP-01; the plain anomaly has no chart)
   // CHAIN-5B-20261109: under the chart, once a night, a line of the array's own log about what is out there tonight (WordOfTonight).
   if(Happenings){const FString Said=Happenings->WordOfTonight(TEXT("printer"));if(!Said.IsEmpty()&&M&&M->UI)M->UI->Toast(Said,8);}
  }
  else if(Kind==2){CollectDuplicate();if(!J->bDuplicateCollected)return false;}
- else {J->Stage=EJobStage::Packet;PrintJob(true);}
+ else
+ {
+  J->Stage=EJobStage::Packet;PrintJob(true);
+  // GAMEPLAY-LOOP-01: an extra-tick take has no chart to collect; the array's line of tonight comes under its packet instead
+  if(PlainAnomaly(*J)&&Happenings){const FString Said=Happenings->WordOfTonight(TEXT("printer"));if(!Said.IsEmpty()&&M&&M->UI)M->UI->Toast(Said,8);}
+ }
  FieldFocus=-1;bGuideFocus=false;StopPrinterFeedback();StepPrinter(0);Changed();return true;
 }
 
@@ -1298,35 +1359,42 @@ bool FS47FreeformSession::CanRecordControl()const
 {
  // D45-20261110: the extra-tick take is on tape the moment it ends (Chart); its chart is only the paper copy, collected later.
  // The instrument discrepancies keep their own order (printer first; their controls are compared at OPS).
+ // GAMEPLAY-LOOP-01: never for the extra-tick take; the receiver asks nothing of it after the take.
  const FJob* J=CurrentJob();
- return J&&J->bAnomaly&&!J->bControl&&HasPower()&&(J->Stage==EJobStage::Recorded?J->Phenomenon!=TEXT("wrong_source"):J->Stage==EJobStage::Chart&&!Specialized(J->Phenomenon));
+ return J&&J->bAnomaly&&!PlainAnomaly(*J)&&!J->bControl&&HasPower()&&J->Stage==EJobStage::Recorded&&J->Phenomenon!=TEXT("wrong_source");
 }
 bool FS47FreeformSession::StartControl()
 {
- // D45-20261110: also straight after the take (Chart), for the extra-tick take; the old order (chart collected first) stays legal.
+ // GAMEPLAY-LOOP-01: an extra-tick take may still have one recorded at the physical rack (optional; Use("rack")), never asked for.
  FJob* J=Job();if(!J||!(J->Stage==EJobStage::Recorded||(J->Stage==EJobStage::Chart&&!Specialized(J->Phenomenon)))||!J->bAnomaly||J->bControl||!HasPower())return false;
  FieldFocus=-1;bGuideFocus=false;J->bControl=true;J->ControlAt=0;
  if(!FParse::Param(FCommandLine::Get(),TEXT("NoSound"))&&J->CaptureOriginal.Enabled()&&J->Source==1&&!Specialized(J->Phenomenon)&&J->CaseTest<0)
  {J->CaptureControl.Begin(J->Id+TEXT("/control"),true,{});if(LiveCapture)LiveCapture->Stop();}
  if(J->Phenomenon==TEXT("wrong_source")){J->BeamPoint=0;J->BeamAz.Reset();J->BeamEl.Reset();J->BeamAmplitude.Reset();J->bBeamVerified=false;PointBeamControl();Changed(TEXT("TRACKING (right-hand PC): West, east and centre are measured automatically. Wait for completion, then open DAILY WORK at OPS (corner PC), select this job and press Compare and register the retained instrument measurements."));}
- else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("RECEIVER RACK: Checking the master register automatically. When complete, collect the duplicate at the PRINTER; the original is retained."):TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. When complete, follow the job hint to OPS for clock measurements or the REEL DECK on the wall table for audio comparison."));return true;
+ else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("RECEIVER RACK: Checking the master register automatically. When complete, collect the duplicate at the PRINTER; the original is retained."):PlainAnomaly(*J)?TEXT("RECEIVER RACK: Optional 8-second control running. The job does not need it; the reel deck is next.")
+  :TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. When complete, follow the job hint to OPS for clock measurements or the REEL DECK on the wall table for audio comparison."));
+ return true;
 }
 void FS47FreeformSession::SeekAudio(double At){if(!FMath::IsFinite(At))return;CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();AudioCursor=FMath::Clamp(At,0.,AudioSourceIndex==0?18.:8.);bAudioPlaying=false;Changed();}
 bool FS47FreeformSession::MarkAudioAt(double At)
 {
- FJob* J=Job();if(!J||!J->bAnomaly||J->ControlAt<8||!FMath::IsFinite(At))return false;
+ FJob* J=Job();if(!J||!J->bAnomaly||!(PlainAnomaly(*J)?J->Stage>=EJobStage::Chart:J->ControlAt>=8)||!FMath::IsFinite(At))return false;
  if(J->Stage>=EJobStage::Registered){Feedback=TEXT("Registered comparison is sealed. Playback is available; its marks cannot be changed.");return false;}
  if(Specialized(J->Phenomenon)){Feedback=TEXT("This is an instrument comparison. Use its measured control at OPS; no extra-tick marks are required.");return false;}
  if(AudioSourceIndex!=0){Feedback=TEXT("Mark the original recording, not the quiet internal control.");return false;}
  At=FMath::Clamp(At,0.,18.);
  if(J->MarkStart<0||J->MarkEnd>=0){J->MarkStart=At;J->MarkEnd=-1;}
  else{J->MarkEnd=FMath::Max(J->MarkStart,At);J->MarkStart=FMath::Min(J->MarkStart,At);}
- J->bAudioReviewed=false;Changed();return true;
+ if(!PlainAnomaly(*J))J->bAudioReviewed=false; // GAMEPLAY-LOOP-01: the extra-tick take's marks are notes; its one listen stands
+ Changed();return true;
 }
 bool FS47FreeformSession::AudioAction(const FString& Action)
 {
  if((Action==TEXT("play")||Action==TEXT("confirm"))&&!RequirePower())return false;
- FJob* J=Job();if(!J||!J->bAnomaly||J->ControlAt<8)return false;
+ // GAMEPLAY-LOOP-01: the extra-tick take is on the deck from the end of the take, with or without a control; the instrument
+ // discrepancies still need theirs.
+ FJob* J=Job();if(!J||!J->bAnomaly||!(PlainAnomaly(*J)?J->Stage>=EJobStage::Chart:J->ControlAt>=8))return false;
+ if(Action==TEXT("control")&&(!J->bControl||J->ControlAt<8)){Feedback=TEXT("No control on this take. The job needs only the original: press PLAY.");return false;}
  if(Action==TEXT("original")||Action==TEXT("control")||Action==TEXT("pause"))CaptureStartStage=0;
  if(TapeCapture&&(Action==TEXT("original")||Action==TEXT("control")||Action==TEXT("pause")||(Action==TEXT("play")&&(!bAudioPlaying||AudioCursor>=(AudioSourceIndex==0?18.:8.)))))TapeCapture->Stop();
  if(Action==TEXT("original")||Action==TEXT("control")){AudioSourceIndex=Action==TEXT("original")?0:1;AudioCursor=0;bAudioPlaying=false;}
@@ -1342,19 +1410,15 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
   if(J->Stage>=EJobStage::Registered){Feedback=TEXT("Registered comparison is sealed. Playback is available; its marks cannot be changed.");return false;}
   if(Specialized(J->Phenomenon)){Feedback=TEXT("This is an instrument comparison. Use its measured control at OPS; no extra-tick marks are required.");return false;}
   if(AudioSourceIndex!=0){Feedback=TEXT("Mark the original recording, not the quiet internal control.");return false;}
-  if(Action==TEXT("mark_start"))J->MarkStart=AudioCursor;else J->MarkEnd=AudioCursor;J->bAudioReviewed=false;
+  if(Action==TEXT("mark_start"))J->MarkStart=AudioCursor;else J->MarkEnd=AudioCursor;if(!PlainAnomaly(*J))J->bAudioReviewed=false;
  }
  else if(Action==TEXT("confirm"))
  {
   if(J->Stage>=EJobStage::Registered){Feedback=TEXT("This comparison is already registered and retained.");return false;}
   if(Specialized(J->Phenomenon))return CompareInstrument();
-  if(J->OriginalCovered<18||J->ControlCovered<8){Feedback=TEXT("Play both recordings through. Seeking does not play skipped audio.");return false;}
-  if(!MarkCoversTicks(J->MarkStart,J->MarkEnd)){Feedback=TEXT("Mark the original from just before the first extra ticks to just after the last ones, about 9 to 13 seconds.");return false;}
-  J->bAudioReviewed=true;RecordEvidence(TEXT("pulse-review"),TEXT("Original and internal reference reviewed. Extra ticks are absent from the short control; source remains unresolved."));
-  if(Director)Director->Use(TEXT("ff:compare"));
-  // Tom, 9 November: RETAIN keeps the comparison and says the next step, nothing more. The case opens when the job is registered at
-  // OPS (FirstCaseHeld, OpenFirstCase), and its repeat window still goes from this original's own clock.
-  Feedback=J->Stage==EJobStage::Chart?TEXT("RETAINED. NEXT: collect the original chart at the PRINTER, then register the comparison at OPS / DAILY WORK: source unresolved."):TEXT("RETAINED. NEXT: OPS / DAILY WORK, Register comparison: source unresolved.");Changed(Feedback); // D45-20261110
+  // GAMEPLAY-LOOP-01: RETAIN is the same one listen the deck takes by itself (ConfirmOnTape); no second reel, no marks asked for.
+  // Seeking does not play skipped audio.
+  if(!ConfirmOnTape(*J))return false;
  }
  else return false;
  Changed();return true;
@@ -1417,6 +1481,7 @@ void FS47FreeformSession::StepAudio(double Dt)
  const double Was=AudioCursor,Duration=AudioSourceIndex==0?18.:8.;AudioCursor=FMath::Min(Duration,Was+Dt);
  const bool Listening=AudioDesk->ListeningPosition();
  double& Covered=AudioSourceIndex==0?J->OriginalCovered:J->ControlCovered;if(Listening&&Was<=Covered+1e-7)Covered=FMath::Max(Covered,AudioCursor);
+ if(AudioSourceIndex==0&&!J->bAudioReviewed&&PlainAnomaly(*J)&&TapeHeard(*J))ConfirmOnTape(*J); // GAMEPLAY-LOOP-01: one listen confirms the anomaly
  if(M->Audio&&Listening)
  {
   const auto& Capture=AudioSourceIndex==0?J->CaptureOriginal:J->CaptureControl;
@@ -1445,12 +1510,15 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
 {
  if(!RequirePower())return false;
  FJob* J=Job();
- // D45-20261110: a comparison made before the chart was collected is registered with its paper: say where it is, never refuse silently.
+ // GAMEPLAY-LOOP-01: an extra-tick take left at the printer by an older build has no chart to fetch any more; its original is kept here.
+ if(J&&J->Stage==EJobStage::Chart&&PlainAnomaly(*J))J->Stage=EJobStage::Recorded;
+ // D45-20261110: an instrument discrepancy is registered with its paper: say where it is, never refuse silently.
  if(J&&J->Stage==EJobStage::Chart&&J->bAnomaly){Feedback=J->ChartFeed<PrinterSeconds?PrinterHint():FString::Printf(TEXT("PRINTER: Collect the original chart of %s first. The comparison is registered together with its paper."),*J->Id);Changed(Feedback);return false;}
  if(!J||J->Stage!=EJobStage::Recorded)return false;
  if(J->bDuplicateRejected){Feedback=ControlSummary(*J);return false;}
  if(J->bAnomaly&&Specialized(J->Phenomenon)&&!CompareInstrument())return false;
- if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=(Specialized(J->Phenomenon)?InstrumentConclusion(J->Phenomenon):FString(TEXT("unresolved"))))){Feedback=Specialized(J->Phenomenon)?TEXT("Complete the measured comparison and register its instrumental finding. The controls do not prove an alien origin."):TEXT("A quiet short control does not establish a sky source. Review both recordings and retain the unresolved conclusion.");return false;}
+ if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=(Specialized(J->Phenomenon)?InstrumentConclusion(J->Phenomenon):FString(TEXT("unresolved"))))){Feedback=Specialized(J->Phenomenon)?TEXT("Complete the measured comparison and register its instrumental finding. The controls do not prove an alien origin."):!J->bAudioReviewed?TEXT("REEL DECK (wall table): Play the take once first. One listen confirms the anomaly."):TEXT("The tape shows extra ticks, not where they came from. Confirm it as source unresolved.");return false;}
+ if(PlainAnomaly(*J)){RetainOriginal(*J);if(!MarkCoversTicks(J->MarkStart,J->MarkEnd)){J->MarkStart=9.;J->MarkEnd=12.9;}} // GAMEPLAY-LOOP-01: the packet carries both
  const bool AlreadyPaid=J->bPaid;
  J->Stage=EJobStage::Registered;
  // Tom, 9 November: the reviewed pulsar comparison, registered as unresolved, is what opens THE REPEATED INTERVAL.
@@ -1499,7 +1567,7 @@ bool FS47FreeformSession::FilePacket()
  J->Stage=EJobStage::Filed;if(!J->bPaid){J->bPaid=true;LastPay=JobPay(*J);J->PaidAmount=LastPay;Earn(LastPay);DeskWork(*J);}
  if(J->bAnomaly)
  {
-  RecordEvidence(TEXT("pulse-archive"),TEXT("Original, internal control and registered conclusion physically filed under one reference."));
+  RecordEvidence(TEXT("pulse-archive"),TEXT("Original, tape check and registered conclusion physically filed under one reference."));
   if(Director)Director->Use(TEXT("ff:archive"));
  }
  const bool WasTutorial=InTutorial();StepTutorial();ClearCompletedSelection();
@@ -1555,7 +1623,7 @@ void FS47FreeformSession::SetAnomaly(bool bValue)
    if(CurrentJob()&&CurrentJob()->Stage==EJobStage::Filed)Selected=Work.Num()-1;
   }
  }
- Changed(bValue?TEXT("Pulsar monitor discrepancy. Select the pulsar or incident job at OPS, retain an original, then compare an independent control."):FString());
+ Changed(bValue?TEXT("Pulsar monitor discrepancy. Select the pulsar or incident job at OPS, then record it at the receiver."):FString());
 }
 void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
 {
@@ -1563,6 +1631,7 @@ void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
  // (a magnetometer reading at a place already read is kept once, but it is read again: the land's control takes it, LandRecord)
  if(Findings.Contains(Id)){LandRecord(Id);return;}
  Findings.Add(Id,Text);FindingDays.Add(Id,DayNumber);TakenCount+=Id.StartsWith(TEXT("taken-"))?1:0;
+ if(M)S47Thoughts::Later(S47Thoughts::FindKey(Id)); // UI-20261112 (Tom): a new find out on the land: the player's own thought (empty key: none)
  if(LessonRecordKey(Id)&&RulesLive())
  {
   const int32 Paid=EarnSide(FieldRecordPay,TEXT("field record, a lesson"));
@@ -1713,8 +1782,8 @@ namespace
   using E=FS47FreeformSession::EJobStage;
   if(J.CaseTest>=0&&!J.bCaseValid&&J.Stage<E::Filed)return TEXT("TEST SPOILED"); // stays on the row, not only in a toast
   if(J.Stage==E::New)return bSelected?TEXT("READY"):J.Slot==2?TEXT("OPTIONAL"):TEXT("QUEUED");
-  if(J.Stage==E::Pointed)return TEXT("POINTED");if(J.Stage==E::Integrating)return TEXT("RECORDING");if(J.Stage==E::Chart)return J.bAnomaly&&!Specialized(J.Phenomenon)?TEXT("INVESTIGATE"):TEXT("AT PRINTER"); // D45-20261110
-  if(J.Stage==E::Recorded)return J.bAnomaly?TEXT("INVESTIGATE"):TEXT("REGISTER");if(J.Stage==E::Registered)return TEXT("PACKET");if(J.Stage==E::Packet)return TEXT("FILE");return TEXT("FILED");
+  if(J.Stage==E::Pointed)return TEXT("POINTED");if(J.Stage==E::Integrating)return TEXT("RECORDING");if(J.Stage==E::Chart)return J.bAnomaly&&!Specialized(J.Phenomenon)?TEXT("ANOMALY"):TEXT("AT PRINTER"); // GAMEPLAY-LOOP-01
+  if(J.Stage==E::Recorded)return J.bAnomaly&&!Specialized(J.Phenomenon)?(J.bAudioReviewed?TEXT("CONFIRM"):TEXT("ANOMALY")):J.bAnomaly?TEXT("INVESTIGATE"):TEXT("REGISTER");if(J.Stage==E::Registered)return TEXT("PACKET");if(J.Stage==E::Packet)return TEXT("FILE");return TEXT("FILED");
  }
 }
 // A station file as pages: whole paragraphs where they fit, a long one broken between two sentences.
@@ -1798,17 +1867,18 @@ void FS47FreeformSession::OpenOperations()
     }
     else
     {
-     A.Add(T::Small(TEXT("REEL DECK (WALL TABLE) FIRST / SOURCE UNRESOLVED UNTIL A FIELD CONTROL")));
-     A.Add(T::Button(TEXT("Register comparison: source unresolved"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
+     // GAMEPLAY-LOOP-01: one button, once the reel deck has heard it
+     A.Add(T::Small(J->bAudioReviewed?TEXT("ANOMALY CHECKED ON TAPE / CONFIRM IT HERE"):TEXT("ANOMALY DETECTED / PLAY THE TAKE AT THE REEL DECK (WALL TABLE) FIRST")));
+     A.Add(T::Button(TEXT("Confirm anomaly: source unresolved"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
     }
    }
    else A.Add(T::Button(J->CaseTest>=0&&!J->bCaseRecorded?FString::Printf(TEXT("Register observation and case test result / $%d"),JobPay(*J)):J->bPaid?FString(TEXT("Register retained reference / no additional payment")):FString::Printf(TEXT("Register routine result / $%d"),JobPay(*J)),[this]{RegisterComparison(TEXT("normal"));OpenOperations();},true));
   }
-  // D45-20261110: compared before its chart came off the printer: the register says what is still missing, and its button says why
-  else if(J->Stage==EJobStage::Chart&&J->bAnomaly&&!Specialized(J->Phenomenon)&&J->bAudioReviewed)
+  // GAMEPLAY-LOOP-01: an extra-tick take from an older build, still at Chart: the same one button (RegisterComparison keeps its original)
+  else if(J->Stage==EJobStage::Chart&&PlainAnomaly(*J)&&J->bAudioReviewed)
   {
-   A.Add(T::Small(TEXT("COMPARISON RETAINED / THE ORIGINAL CHART IS STILL AT THE PRINTER: COLLECT IT, THEN REGISTER HERE")));
-   A.Add(T::Button(TEXT("Register comparison: source unresolved"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
+   A.Add(T::Small(TEXT("ANOMALY CHECKED ON TAPE / CONFIRM IT HERE")));
+   A.Add(T::Button(TEXT("Confirm anomaly: source unresolved"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
   }
   return S47Kit::Col(A);
  };
@@ -2495,7 +2565,7 @@ void FS47FreeformSession::OpenReceiver()
    if(J->Stage==EJobStage::Integrating)return FString(TEXT("RECORDING..."));
    if(J->bControl&&J->ControlAt<8&&J->Phenomenon!=TEXT("wrong_source"))return FString::Printf(TEXT("CONTROL %.1f / 8 s"),J->ControlAt);
    if(CanRecordControl())return FString(TEXT("RECORD CONTROL / 8 s"));
-   if(J->bAnomaly&&!Specialized(J->Phenomenon)&&J->bControl&&J->Stage<=EJobStage::Recorded&&!J->bAudioReviewed)return FString(TEXT("TAPES READY / REEL DECK"));
+   if(PlainAnomaly(*J)&&J->Stage>=EJobStage::Chart&&J->Stage<=EJobStage::Recorded&&!J->bAudioReviewed)return FString(TEXT("ON TAPE / REEL DECK")); // GAMEPLAY-LOOP-01
    return J->Stage>=EJobStage::Chart?FString(TEXT("RECORDING RETAINED")):FString(TEXT("START RECORDING"));
   }),[this]{if(CanRecordControl())StartControl();else StartAcquisition();},1,TAttribute<bool>::CreateLambda([this]{return ReceiverReady()||CanRecordControl();}));
   Rows.Add(T::Split({
@@ -2551,7 +2621,7 @@ void FS47FreeformSession::OpenReceiver()
  else if(ReceiverTab==3)
  {
   const FJob* J=CurrentJob();
-  const bool ControlPanel=J->bAnomaly&&(J->Stage==EJobStage::Recorded||(J->Stage==EJobStage::Chart&&!Specialized(J->Phenomenon))); // D45-20261110: also before the chart is collected
+  const bool ControlPanel=J->bAnomaly&&!PlainAnomaly(*J)&&J->Stage==EJobStage::Recorded; // GAMEPLAY-LOOP-01: the extra-tick take asks for no control
   // D48-20261110 (D46-14): the tape strip of the last take, the levels it was written at and the take list. The job's own facts stand in two
   // columns. While an unusual take waits for its control the page keeps to the control (the strip and the job), as it always did.
   const bool OnCtl=J->bControl&&J->Phenomenon!=TEXT("wrong_source");
@@ -2579,7 +2649,7 @@ void FS47FreeformSession::OpenReceiver()
   TArray<S47Kit::FW> JobRows={
    T::Columns({{1.f,T::Value(TEXT("JOB"),J->Id,true)},{1.4f,T::Value(TEXT("STAGE"),TAttribute<FString>::CreateLambda([this]{return CurrentJob()?StageText(CurrentJob()->Stage):FString();}),true)}},10),
    T::Columns({{1.f,T::Value(TEXT("RECORDED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%.1f / %.0f s"),X?X->Elapsed:0.,SourceSeconds());}),true)},
-    {1.4f,T::Value(TEXT("ORIGINAL"),J->bPrinted?FString(TEXT("COLLECTED / IN NOTEBOOK")):J->Stage==EJobStage::Chart?FString(TEXT("WAITING AT PRINTER")):FString(TEXT("NOT YET RECORDED")),true)}},10)};
+    {1.4f,T::Value(TEXT("ORIGINAL"),J->bPrinted?FString(PlainAnomaly(*J)?TEXT("KEPT / IN NOTEBOOK"):TEXT("COLLECTED / IN NOTEBOOK")):J->Stage==EJobStage::Chart?FString(TEXT("WAITING AT PRINTER")):FString(TEXT("NOT YET RECORDED")),true)}},10)};
   if(!ControlPanel)JobRows.Add(T::Small(TEXT("Originals print at the table by the service-yard door. Valid recorded seconds are retained if tuning or pointing is lost.")));
   Rows.Add(T::Panel(FString(),S47Kit::Col(JobRows)));
   if(ControlPanel)
@@ -2676,20 +2746,21 @@ void FS47FreeformSession::OpenTapePanel()
  // FIX-20261110: this is a machine, not a terminal: its keys are heavy and nothing beeps (the motor is heard in TransportSound)
  {const TWeakObjectPtr<US47Main> Main=M;T::SetSound([Main](int32 Kind){if(Main.IsValid()&&Main->Audio&&Main->Freeform&&Main->Freeform->TapePanelOpen()&&Kind<3)Main->Audio->Play(Kind==1?TEXT("rack_switch"):TEXT("small_switch"),Kind==1?.42f:.38f,FVector::ZeroVector,Kind==2?1.1f:.95f);});}
  auto Press=[this](const TCHAR* Action){return [this,Action]{if(AudioDesk)AudioDesk->Use(FString(TEXT("ff:audio:"))+Action);};};
- // D45-20261110 (Tom: record the control right after the take, then analyse at the reel deck): the take is on tape from the end of
- // the take (Chart); its chart is only the paper copy, collected on the way to OPS.
- auto CanCompare=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Chart&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon);});
- auto Marking=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Chart&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon)&&AudioSourceIndex==0;});
+ // GAMEPLAY-LOOP-01 (Tom, 12 November): the extra-tick take is on the deck from the end of the take; one listen to it confirms the
+ // anomaly. A control, if one was recorded at the rack, plays on its own key; nothing waits for it.
+ auto CanCompare=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&PlainAnomaly(*J)&&J->Stage>=EJobStage::Chart;});
+ auto HasControl=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&PlainAnomaly(*J)&&J->Stage>=EJobStage::Chart&&J->bControl&&J->ControlAt>=8;});
+ auto Marking=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&PlainAnomaly(*J)&&J->Stage>=EJobStage::Chart&&J->Stage<EJobStage::Registered&&AudioSourceIndex==0;});
  auto Pick=[this](int32 Index){return TAttribute<bool>::CreateLambda([this,Index]{return AudioSourceIndex==Index;});};
  TArray<S47Kit::FW> Rows;
- auto Ready=[this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Chart&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon);};
+ auto Ready=[this]{const auto* J=CurrentJob();return J&&PlainAnomaly(*J)&&J->Stage>=EJobStage::Chart;};
  // D45-20261110 (Tom: a 1980s high-tech deck that fits one screen without scrolling): one fixed faceplate, every row its own height.
  // A: the four steps as lamps (amber now, green done, dark to come), or the one line that says why there is nothing to compare yet.
  const FLinearColor LampOff=S47Kit::Css(0x3a3e2b),LampOn=S47Kit::Css(0xf0b040),LampDone=S47Kit::Css(0xa4d890),Cream=S47Kit::Css(0xf1e8cf);
  auto StepNow=[this]
  {
-  const auto* J=CurrentJob();if(!J)return 0;if(J->Stage>=EJobStage::Registered||J->bAudioReviewed)return 5;
-  return J->OriginalCovered<18?1:!MarkCoversTicks(J->MarkStart,J->MarkEnd)?2:J->ControlCovered<8?3:4;
+  const auto* J=CurrentJob();if(!J)return 0;if(J->Stage>=EJobStage::Registered||J->bAudioReviewed)return 3;
+  return 1;
  };
  auto StepCell=[StepNow,LampOff,LampOn,LampDone,Cream](int32 N,TFunction<FString()> Says)
  {
@@ -2699,16 +2770,13 @@ void FS47FreeformSession::OpenTapePanel()
    +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[T::Note(TAttribute<FString>::CreateLambda(Says),16,TAttribute<FLinearColor>::CreateLambda([Tone,LampOff,Cream]{const FLinearColor C=Tone();return C==LampOff?Cream*FLinearColor(1,1,1,.6f):C;}),false)]);
  };
  const S47Kit::FW Lamps=T::Columns({
-  {1.55f,StepCell(1,[this]{const auto* J=CurrentJob();return FString::Printf(TEXT("1 LISTEN TO THE WHOLE ORIGINAL %02.0f/18"),J?FMath::Min(18.,J->OriginalCovered):0.);})},
-  {1.f,StepCell(2,[this]{const auto* J=CurrentJob();return FString(J&&J->MarkStart>=0&&J->MarkEnd>=0&&!MarkCoversTicks(J->MarkStart,J->MarkEnd)?TEXT("2 MARK THE TICKS AGAIN"):TEXT("2 MARK THE EXTRA TICKS"));})},
-  {1.f,StepCell(3,[this]{const auto* J=CurrentJob();return FString::Printf(TEXT("3 PLAY THE CONTROL %.0f/8"),J?FMath::Min(8.,J->ControlCovered):0.);})},
-  {1.15f,StepCell(4,[this]{const auto* J=CurrentJob();return FString(!J||(!J->bAudioReviewed&&J->Stage<EJobStage::Registered)?TEXT("4 RETAIN"):J->Stage==EJobStage::Chart?TEXT("RETAINED: CHART, THEN OPS"):TEXT("RETAINED: REGISTER AT OPS"));})}});
+  {1.55f,StepCell(1,[this]{const auto* J=CurrentJob();return FString::Printf(TEXT("1 PLAY THE TAKE ONCE %02.0f/18"),J?FMath::Min(18.,J->OriginalCovered):0.);})},
+  {1.15f,StepCell(2,[this]{const auto* J=CurrentJob();return FString(J&&J->Stage>=EJobStage::Registered?TEXT("2 CONFIRMED AT OPS"):TEXT("2 CONFIRMED: TO OPS"));})}});
  const S47Kit::FW Why=T::Note(TAttribute<FString>::CreateLambda([this]
  {
   const auto* J=CurrentJob();
   if(!J||!J->bAnomaly||J->Stage<EJobStage::Chart)return FString(TEXT("Nothing unusual on tape yet. An unusual take is recorded at the receiver (centre PC) first."));
   if(Specialized(J->Phenomenon))return FString(TEXT("This observation is compared at OPS (corner PC), DAILY WORK, not on tape."));
-  if(!J->bControl||J->ControlAt<8)return FString(TEXT("The control is missing. Record it at the receiver (centre PC), right after the take."));
   return FString();
  }),20,TAttribute<FLinearColor>(LampOn));
  Rows.Add(SNew(SBox).HeightOverride(46).VAlign(VAlign_Center)[SNew(SOverlay)
@@ -2743,15 +2811,15 @@ void FS47FreeformSession::OpenTapePanel()
  };
  Rows.Add(SNew(SBox).HeightOverride(76)[T::Columns({
   {1.5f,Keyed([this]{return AudioSourceIndex==0;},T::Toggle(TEXT("ORIGINAL 18 s"),Pick(0),Press(TEXT("original")),CanCompare))},
-  {1.35f,Keyed([this]{return AudioSourceIndex==1;},T::Toggle(TEXT("CONTROL 8 s"),Pick(1),Press(TEXT("control")),CanCompare))},
+  {1.35f,Keyed([this]{return AudioSourceIndex==1;},T::Toggle(TEXT("CONTROL 8 s"),Pick(1),Press(TEXT("control")),HasControl))},
   {1.f,Keyed(nullptr,T::Button(TEXT("REWIND"),Press(TEXT("rewind")),false,CanCompare))},
   {1.f,Keyed([this]{return bAudioPlaying||CaptureStartStage!=0;},T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(bAudioPlaying||CaptureStartStage?TEXT("STOP"):TEXT("PLAY"));}),Press(TEXT("play")),true,CanCompare))},
   {1.05f,Keyed([this]{const auto* J=CurrentJob();return J&&J->MarkStart>=0;},T::Button(TEXT("MARK IN"),Press(TEXT("mark_start")),false,Marking))},
   {1.1f,Keyed([this]{const auto* J=CurrentJob();return J&&J->MarkEnd>=0;},T::Button(TEXT("MARK OUT"),Press(TEXT("mark_end")),false,Marking))},
-  {1.1f,Keyed([this]{const auto* J=CurrentJob();return J&&J->bAudioReviewed;},T::Filled(TEXT("RETAIN"),Press(TEXT("retain")),TAttribute<bool>::CreateLambda([this,Ready]{const auto* J=CurrentJob();return Ready()&&J->Stage<EJobStage::Registered&&!J->bAudioReviewed&&J->OriginalCovered>=18&&J->ControlCovered>=8&&MarkCoversTicks(J->MarkStart,J->MarkEnd);})))}},10)]);
+  {1.1f,Keyed([this]{const auto* J=CurrentJob();return J&&J->bAudioReviewed;},T::Filled(TEXT("RETAIN"),Press(TEXT("retain")),TAttribute<bool>::CreateLambda([this,Ready]{const auto* J=CurrentJob();return Ready()&&J->Stage<EJobStage::Registered&&!J->bAudioReviewed&&TapeHeard(*J);})))}},10)]);
  // E: what the mark covers and what the deck last said, in two lines at most.
  Rows.Add(SNew(SBox).HeightOverride(56)[T::Columns({
-  {1.f,T::Note(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("MARK: NOT SET. Click the trace where the extra ticks begin, then where they end."));if(J->MarkEnd<0)return FString(TEXT("MARK: the end is still missing"));return MarkCoversTicks(J->MarkStart,J->MarkEnd)?FString(TEXT("MARK COVERS THE TICKS")):FString(TEXT("MARK MISSES TICKS: from before the first to after the last"));}),20,TAttribute<FLinearColor>(LampOn))},
+  {1.f,T::Note(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("MARK: optional. The take is checked by playing it once."));if(J->MarkEnd<0)return FString(TEXT("MARK: the end is still missing"));return MarkCoversTicks(J->MarkStart,J->MarkEnd)?FString(TEXT("MARK COVERS THE TICKS")):FString(TEXT("MARK MISSES TICKS: from before the first to after the last"));}),20,TAttribute<FLinearColor>(LampOn))},
   {1.3f,T::Note(TAttribute<FString>::CreateLambda([this]{const FString Status=AudioCaptureStatus();return Status.IsEmpty()?FeedbackText():Status;}),20,TAttribute<FLinearColor>(Cream))}},14)]);
  // F: the listening references. The chip says what they are for, in plain words (D45-20261110).
  Rows.Add(SNew(SBox).HeightOverride(60)[T::Columns({
@@ -2770,6 +2838,8 @@ void FS47FreeformSession::OpenTapePanel()
 void FS47FreeformSession::OpenArchive()
 {
  if(!M||!M->UI)return;const bool Computer=TerminalOnGlass();TArray<S47Kit::FW> Rows;
+ // RECORDS-BINDER (-> M3): off the glass the records are the binder itself (S47FreeformBinder.cpp); what follows is the OPS page.
+ if(!Computer){OpenBinder();return;}
  auto Paper=[Computer](const FString& T){return Computer?S47FreeformTerminal::Paper(T):S47Kit::Paper(T);};
  auto Plain=[Computer](const FString& T){return Computer?S47FreeformTerminal::Small(T):S47Kit::Small(T);};
  // What needs doing comes first; the record itself is only read.
@@ -2806,7 +2876,7 @@ void FS47FreeformSession::OpenArchive()
  }
  for(const FJob& J:Work)if(J.bPrinted||!J.OriginalPage.IsEmpty())
  {
-  const FString Control=J.bControl?FString::Printf(TEXT("INDEPENDENT CONTROL %.1f/8 s"),J.ControlAt):FString(TEXT("CONTROL NOT RECORDED"));
+  const FString Control=J.bControl?FString::Printf(TEXT("INDEPENDENT CONTROL %.1f/8 s"),J.ControlAt):J.bAnomaly&&!Specialized(J.Phenomenon)?FString(J.bAudioReviewed?TEXT("CHECKED ON TAPE"):TEXT("TAPE CHECK PENDING")):FString(TEXT("CONTROL NOT RECORDED"));
   const FString Mark=J.MarkStart>=0&&J.MarkEnd>J.MarkStart?FString::Printf(TEXT(" / MARK %.2f–%.2f s"),J.MarkStart,J.MarkEnd):FString();
   const FString Conclusion=!J.bAnomaly?TEXT("ROUTINE RESULT"):!J.bAudioReviewed?TEXT("COMPARISON PENDING"):J.Phenomenon==TEXT("wrong_source")?TEXT("OFF-SOURCE RESPONSE"):J.Phenomenon==TEXT("time_disagreement")?TEXT("CLOCK DISAGREEMENT"):J.Phenomenon==TEXT("duplicate_print")?TEXT("DUPLICATE ORIGINAL"):TEXT("SOURCE UNRESOLVED");
   Tabs[0].Add({J.Id,FString::Printf(TEXT("%s / ORIGINAL %s-original"),*J.Id,*J.Id),Conclusion+TEXT(" / ")+StageText(J.Stage),FString::Printf(TEXT("%s%s\n%s / %s"),*Control,*Mark,*Conclusion,*StageText(J.Stage))});
@@ -3563,7 +3633,7 @@ int32 FS47FreeformSession::JobBonus(const FJob& J,FString* Why)const
  if(DayNumber-J.Day<=1){B+=OnTimeBonus;For.Add(TEXT("being on time"));}
  // a recording made with the newer sound (version 2) is judged by its quality; an older one has nothing to judge it by
  if(J.Stage>=EJobStage::Recorded&&(J.RecordingSoundVersion<2||J.RecordingQuality>=CleanRecordQuality)){B+=CleanBonus;For.Add(TEXT("a clean recording"));}
- if(J.bAnomaly&&J.bControl){B+=ControlBonus;For.Add(TEXT("controlling the anomaly"));}
+ if(J.bAnomaly&&(J.bControl||J.bAudioReviewed)){B+=ControlBonus;For.Add(TEXT("checking the anomaly"));} // GAMEPLAY-LOOP-01: the reel check is the extra-tick take's
  if(Why)*Why=B>0?FString::Printf(TEXT(" ($%d of it for %s)"),B,*JoinAnd(For)):FString(TEXT(" (no bonus: late, and the recording does not read)"));
  return B;
 }
@@ -4545,7 +4615,7 @@ FString FS47FreeformSession::Label(const FString& Id)const
  if(Id==TEXT("telex")||Id==TEXT("logbook")||Id==TEXT("workOrder")||Id==TEXT("anomaly:shiftlog"))return TEXT("Read the daily work order and incoming messages");
  if(Id==TEXT("phone")||Id==TEXT("recPhone"))return TEXT("Check the operations line");
  if(Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk"))return TEXT("Reel deck / compare recordings");
- if(Id==TEXT("rack"))return TEXT("Record an independent receiver control");
+ if(Id==TEXT("rack")){const FJob* RJ=CurrentJob();return RJ&&PlainAnomaly(*RJ)?TEXT("Receiver rack / optional control; the job does not need it"):TEXT("Record an independent receiver control");}
  if(Id==TEXT("printer"))return PrinterHint();
  if(Id==TEXT("binder")||Id==TEXT("excBinder")||Id==TEXT("serviceRecord"))return TEXT("File originals and read the station's records");
  if(Fatigue){const FString L=Fatigue->Label(Id);if(!L.IsEmpty())return L;}
@@ -4685,20 +4755,15 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
  switch(J->Stage)
  {
   case EJobStage::New:return FS47Observing::Runs().IsValidIndex(J->Source)?FString(TEXT("TRACKING (right-hand PC): POINT THE ARRAY AT "))+FString(FS47Observing::Runs()[J->Source].Source).ToUpper():FString(TEXT("TRACKING (right-hand PC): POINT THE ARRAY AT THE SELECTED SOURCE"));
-  case EJobStage::Pointed:if(&JobValue!=CurrentJob())return TEXT("TRACKING (right-hand PC): FOLLOW THIS JOB AND VERIFY ITS ACTUAL POINTING BEFORE RECORDING");return PointReady()&&Settle>=1?TEXT("RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING"):TEXT("TRACKING (right-hand PC): WAIT FOR THE ARRAY TO SETTLE, THEN USE RECEIVER (centre PC)");
-  case EJobStage::Integrating:return TEXT("RECEIVER (centre PC): KEEP TUNING; THEN THE ORIGINAL IS AT THE PRINTER"); // the printer stays on the card (critic round 5)
+  case EJobStage::Pointed:if(&JobValue!=CurrentJob())return TEXT("TRACKING (right-hand PC): FOLLOW THIS JOB AND VERIFY ITS ACTUAL POINTING BEFORE RECORDING");return PointReady()&&Settle>=1?(ReceiverReady()&&AnomalyAhead()?TEXT("RECEIVER (centre PC): ANOMALY DETECTED. PRESS START RECORDING"):TEXT("RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING")):TEXT("TRACKING (right-hand PC): WAIT FOR THE ARRAY TO SETTLE, THEN USE RECEIVER (centre PC)");
+  case EJobStage::Integrating:return PlainAnomaly(*J)?TEXT("RECEIVER (centre PC): ANOMALY DETECTED. LET THE TAKE RUN; THEN THE REEL DECK"):TEXT("RECEIVER (centre PC): KEEP TUNING; THEN THE ORIGINAL IS AT THE PRINTER"); // the printer stays on the card (critic round 5)
   case EJobStage::Chart:
-   // D45-20261110 (Tom): the extra-tick take goes control, reel deck, then the chart on the way to OPS. Its chart prints meanwhile.
-   if(J->bAnomaly&&!Specialized(J->Phenomenon))
-   {
-    if(!HasPower()&&(!J->bControl||J->ControlAt<8)&&J->ChartFeed>=PrinterSeconds)return TEXT("PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"); // no power to record: the printed chart can still be had
-    if(!J->bControl)return TEXT("RECEIVER (centre PC): RECORD THE CONTROL TAKE NOW");
-    if(J->ControlAt<8)return TEXT("RECEIVER (centre PC): THE CONTROL IS RECORDING; THEN REVIEW BOTH TAPES AT THE REEL DECK ON THE WALL TABLE");
-    if(!J->bAudioReviewed)return TEXT("REEL DECK (wall table): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
-    return J->ChartFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE ORIGINAL CHART, THEN REGISTER THE COMPARISON AT OPS"));
-   }
+   // GAMEPLAY-LOOP-01 (Tom, 12 November): ANOMALY DETECTED, record, reel deck, OPS, printer, binder. An extra-tick take has no chart
+   // to fetch (an older save's waits here until OPS keeps it).
+   if(PlainAnomaly(*J))return J->bAudioReviewed?TEXT("OPS (corner PC): CONFIRM THE ANOMALY IN DAILY WORK"):TEXT("REEL DECK (wall table): ANOMALY ON TAPE. PLAY THE TAKE ONCE TO CONFIRM IT");
    return J->ChartFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"));
   case EJobStage::Recorded:
+   if(PlainAnomaly(*J))return J->bAudioReviewed?TEXT("OPS (corner PC): CONFIRM THE ANOMALY IN DAILY WORK"):TEXT("REEL DECK (wall table): ANOMALY ON TAPE. PLAY THE TAKE ONCE TO CONFIRM IT");
    if(J->bDuplicateRejected)return TEXT("OPS / DAILY WORK: SELECT ANOTHER OBSERVATION. THE OLD ORIGINAL IS KEPT; ITS UNCHECKED DUPLICATE WAS DROPPED, NO PAY.");
    if(!J->bAnomaly)return J->CaseTest>=0&&!J->bCaseRecorded?TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT AND ITS CASE TEST"):TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT");
    if(!J->bControl)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): MEASURE WEST, EAST AND CENTRE OF THE SOURCE"):TEXT("RECEIVER (centre PC), RECORD TAB: RECORD THE INTERNAL CONTROL");
@@ -4707,12 +4772,12 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
     if(J->Phenomenon==TEXT("wrong_source"))return TEXT("TRACKING (right-hand PC): WAIT FOR AUTOMATIC WEST, EAST AND CENTRE READINGS; THEN COMPARE AT OPS (corner PC), DAILY WORK");
     if(J->Phenomenon==TEXT("time_disagreement"))return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN COMPARE CLOCK READINGS AT OPS (corner PC), DAILY WORK");
     if(J->Phenomenon==TEXT("duplicate_print"))return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC REGISTER CHECK; THEN WAIT FOR THE DUPLICATE TO FINISH AT THE PRINTER");
-    return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN REVIEW BOTH RECORDINGS AT THE REEL DECK ON THE WALL TABLE");
+    return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL");
    }
    if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return J->DuplicateFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL; THEN COMPARE AT OPS (corner PC), DAILY WORK"));
    if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPS (corner PC): DAILY WORK / SELECT THIS JOB AND PRESS COMPARE AND REGISTER");
-   return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE COMPARISON: SOURCE UNRESOLVED"):TEXT("REEL DECK (wall table): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
-  case EJobStage::Registered:return J->PacketFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE LABELLED REGISTERED PACKET"));
+   return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE COMPARISON: SOURCE UNRESOLVED"):TEXT("REEL DECK (wall table): PLAY THE TAKE ONCE TO CONFIRM IT");
+  case EJobStage::Registered:return J->PacketFeed<PrinterSeconds?PrinterHint():FString(PlainAnomaly(*J)?TEXT("PRINTER: COLLECT THE ANOMALY PACKET"):TEXT("PRINTER: COLLECT THE LABELLED REGISTERED PACKET"));
   case EJobStage::Packet:return TEXT("RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER");
   default:return TEXT("OPS (corner PC): SELECT DAILY WORK OR RECORDS");
  }
@@ -4736,8 +4801,8 @@ FString FS47FreeformSession::JobLocation(const FJob& J)const
  if(J.Stage==EJobStage::New)return TEXT("Tracking PC / right-hand screen");
  if(J.Stage==EJobStage::Pointed)return &J==CurrentJob()&&PointReady()&&Settle>=1?TEXT("Receiver / centre screen"):TEXT("Tracking PC / right-hand screen");
  if(J.Stage==EJobStage::Integrating)return TEXT("Receiver / centre screen");
- // D45-20261110: the extra-tick take's control and review come before its chart
- if(J.Stage==EJobStage::Chart&&J.bAnomaly&&!Specialized(J.Phenomenon)&&!J.bAudioReviewed)return J.bControl&&J.ControlAt>=8?TEXT("Reel deck / wall table"):TEXT("Receiver / centre screen");
+ // GAMEPLAY-LOOP-01: the extra-tick take goes from the receiver to the reel deck, then OPS; it has no chart to fetch
+ if((J.Stage==EJobStage::Chart||J.Stage==EJobStage::Recorded)&&PlainAnomaly(J))return J.bAudioReviewed?TEXT("OPS / corner PC / DAILY WORK"):TEXT("Reel deck / wall table");
  if(J.Stage==EJobStage::Chart||J.Stage==EJobStage::Registered)return TEXT("Printer / table by SERVICE YARD door, beneath the binder shelf");
  if(J.Stage==EJobStage::Packet)return TEXT("Binder / records room");
  if(J.bDuplicateRejected)return TEXT("OPS / DAILY WORK: retained legacy observation; select another job");
@@ -4797,6 +4862,7 @@ S47J::FObj FS47FreeformSession::Save()const
 {
  auto O=S47J::New();if(bStationLocked)S47J::Set(O,TEXT("stationLocked"),true);if(bMailboxStart)S47J::Set(O,TEXT("mailboxStart"),true);if(DriveCheckDay>0&&DriveCheckAt<0){auto Drive=S47J::New();S47J::Set(Drive,TEXT("day"),DriveCheckDay);S47J::Set(Drive,TEXT("tone"),DriveCheckTone);S47J::Set(Drive,TEXT("result"),DriveCheckResult);S47J::Set(O,TEXT("driveCheck"),Drive);}S47J::Set(O,TEXT("fieldFocus"),FieldFocus);S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);if(WokenNight>0)S47J::Set(O,TEXT("wokenNight"),WokenNight);if(RousedNight>0)S47J::Set(O,TEXT("rousedNight"),RousedNight);if(RulesLive()||ReviewWeek>0)S47J::Set(O,TEXT("reviewWeek"),ReviewWeek);if(Carried>0)S47J::Set(O,TEXT("carried"),Carried);if(StandbyTotal>0)S47J::Set(O,TEXT("standbyPaid"),StandbyTotal);if(SideWeek>0)S47J::Set(O,TEXT("sideWeek"),SideWeek);if(SidePaid>0)S47J::Set(O,TEXT("sidePaid"),SidePaid);if(Repairs>0)S47J::Set(O,TEXT("repairs"),Repairs);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);if(bPowerFault&&SkyFaultUntil>0)S47J::Set(O,TEXT("skyFaultUntil"),SkyFaultUntil);{TArray<FString> Seen;for(int32 I=0;I<S47StationFiles::Count()&&I<32;++I)if(StationFilesSeen&(1u<<I))Seen.Add(S47StationFiles::Get(I).Key);S47J::Set(O,TEXT("stationFilesSeen"),Seen);}S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
  S47J::Set(O,TEXT("journal"),Journal.Save());S47J::Set(O,TEXT("economyRevision"),2);
+ SaveBinder(O); // RECORDS-BINDER: "binderFiled", only when a packet has gone in
  S47J::Set(O,TEXT("selected"),Selected);S47J::Set(O,TEXT("audioSource"),AudioSourceIndex);S47J::Set(O,TEXT("audioCursor"),AudioCursor);S47J::Set(O,TEXT("settle"),Settle);if(!ArrayJob.IsEmpty())S47J::Set(O,TEXT("arrayJob"),ArrayJob);S47J::Set(O,TEXT("cross"),CrossPoint);S47J::Set(O,TEXT("crossSample"),CrossSample);S47J::Set(O,TEXT("crossRunning"),bCrossRunning);
  TArray<TSharedPtr<FJsonValue>> Jobs;
  for(const FJob& J:Work)
@@ -4905,6 +4971,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  OK&=S47GoalLine::SelfTest(Lines); // N1110 (N1110-9): the three goal lines on NOW
  OK&=FS47StoryDirector::SelfTest(Lines); // STORY-ON-FREEFORM-01 (step 3): the story director's acts, flags, save and own text check
  OK&=FS47RuleBreak::SelfTest(Lines); // N1110 (N1110-6): the rule taught, and broken once
+ OK&=FS47IdleLure::SelfTest(Lines); // IDLE-LURE-20261112 (Tom): a visit drawn to the truck left idling: its touch, its strike, and what ends it
  { // N1110 (PLAY-31-34): broken ceiling tubes keep through a save; nonsense is dropped; 0 and 1 (the working light) never break
   FS47FreeformSession Tubes(nullptr);
   const bool bFirst=Tubes.BreakTube(3),bAgain=Tubes.BreakTube(3),bWork=Tubes.BreakTube(0)||Tubes.BreakTube(1)||Tubes.BreakTube(8);
@@ -5044,23 +5111,43 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Check(NextFits,TEXT("Every stage of a job gives every workstation a NEXT line that fits the glass"));
  }
  {
-  // D45-20261110 (Tom): an unusual take goes control at the receiver, then the reel deck, then its chart on the way to OPS; each
-  // step's NEXT line fits the glass, OPS says the chart is still missing, a control half done survives Continue, and the instrument
-  // discrepancies keep their printer-first order.
+  // GAMEPLAY-LOOP-01 (Tom, 12 November): an unusual take goes ANOMALY DETECTED, record, reel deck, OPS, printer, binder. After the take
+  // the reel deck is next (no control, no chart to fetch), one listen confirms it, OPS's one button registers it and the packet prints;
+  // a save from the old chart step lands on the reel deck, and the instrument discrepancies keep their printer-first order.
   const bool D45Anomaly=WJ->bAnomaly;const EJobStage D45Stage=WJ->Stage;bool D45Order=true;
   WJ->bAnomaly=true;WJ->Stage=EJobStage::Chart;WJ->ChartFeed=PrinterSeconds;WJ->bControl=WJ->bAudioReviewed=false;WJ->ControlAt=0;
-  auto D45Next=[&](){return TerminalNextLine(Workflow.JobNextAction(*WJ),3);};
-  D45Order&=D45Next()==TEXT("NEXT / RECEIVER (CENTRE PC)")&&TerminalNextLine(Workflow.JobNextAction(*WJ),1)==TEXT("NEXT / USE THIS PC")&&Workflow.CanRecordControl()&&Workflow.JobLocation(*WJ).StartsWith(TEXT("Receiver"))&&StatusWord(*WJ,true)==TEXT("INVESTIGATE");
-  D45Order&=Workflow.StartControl()&&WJ->bControl&&WJ->ControlAt==0&&WJ->Stage==EJobStage::Chart&&!Workflow.CanRecordControl()&&!Workflow.StartControl();
-  WJ->ControlAt=4;
-  {FS47FreeformSession D45Again(nullptr);D45Again.Begin(Workflow.Save());const FJob* D45J=D45Again.CurrentJob();
-   D45Order&=D45J&&D45J->Stage==EJobStage::Chart&&D45J->bAnomaly&&D45J->bControl&&FMath::IsNearlyEqual(D45J->ControlAt,4.)&&D45Again.JobNextAction(*D45J).Contains(TEXT("CONTROL IS RECORDING"));D45Again.Stop();}
-  WJ->ControlAt=8;D45Order&=D45Next()==TEXT("NEXT / REEL DECK (WALL TABLE)")&&Workflow.JobLocation(*WJ).StartsWith(TEXT("Reel deck"));
-  WJ->bAudioReviewed=true;D45Order&=D45Next()==TEXT("NEXT / PRINTER")&&!Workflow.RegisterComparison(TEXT("unresolved"))&&Workflow.FeedbackText().Contains(TEXT("PRINTER"))&&WJ->Stage==EJobStage::Chart;
-  WJ->Phenomenon=TEXT("time_disagreement");WJ->bControl=WJ->bAudioReviewed=false;WJ->ControlAt=0;
+  {
+   // the old chart step, saved: on Continue it is on the reel deck, its control (optional now) not asked for
+   FS47FreeformSession D45Again(nullptr);D45Again.Begin(Workflow.Save());const FJob* D45J=D45Again.CurrentJob();
+   D45Order&=D45J&&D45J->Stage==EJobStage::Recorded&&D45J->bAnomaly&&!D45J->bControl&&TerminalNextLine(D45Again.JobNextAction(*D45J),3)==TEXT("NEXT / REEL DECK (WALL TABLE)")
+    &&D45Again.JobLocation(*D45J).StartsWith(TEXT("Reel deck"))&&!D45Again.CanRecordControl()&&D45Again.PrinterProgress()<0;D45Again.Stop();
+  }
+  WJ->Phenomenon=TEXT("time_disagreement");
   D45Order&=!Workflow.CanRecordControl()&&!Workflow.StartControl()&&Workflow.JobNextAction(*WJ).StartsWith(TEXT("PRINTER"))&&StatusWord(*WJ,true)==TEXT("AT PRINTER");
   WJ->Phenomenon.Empty();WJ->bAnomaly=D45Anomaly;WJ->Stage=D45Stage;WJ->ChartFeed=0;Workflow.Feedback.Empty();
-  Check(D45Order,TEXT("D45: an unusual take is controlled at the receiver, compared at the reel deck, then its chart; OPS asks for the chart"));
+  Check(D45Order,TEXT("GAMEPLAY-LOOP-01: an old save's extra-tick take at the printer is on the reel deck on Continue; the instrument discrepancies keep their chart"));
+  FS47FreeformSession Loop(nullptr);Loop.Begin(nullptr);Loop.Tutorial=0;
+  const int32 LoopI=Loop.Work.IndexOfByPredicate([](const FJob& X){return X.Source==1&&X.CaseTest<0;});
+  bool LoopOrder=LoopI!=INDEX_NONE;
+  if(LoopOrder)
+  {
+   Loop.Selected=LoopI;FJob& LJ=Loop.Work[LoopI];
+   LJ.Stage=EJobStage::Integrating;LJ.bAnomaly=true;LJ.Phenomenon=TEXT("extra_pulse");for(double At:Ticks)LJ.TraceTicks.Add(At);
+   LoopOrder&=Loop.JobNextAction(LJ).Contains(TEXT("ANOMALY DETECTED"))&&TerminalNextLine(Loop.JobNextAction(LJ),1)==TEXT("NEXT / USE THIS PC");
+   LJ.Stage=EJobStage::Recorded;LJ.Elapsed=18;LJ.bPrinted=true;LJ.ChartFeed=PrinterSeconds;
+   LoopOrder&=TerminalNextLine(Loop.JobNextAction(LJ),3)==TEXT("NEXT / REEL DECK (WALL TABLE)")&&Loop.JobLocation(LJ).StartsWith(TEXT("Reel deck"))&&!Loop.CanRecordControl()
+    &&StatusWord(LJ,true)==TEXT("ANOMALY")&&Loop.PrinterProgress()<0;
+   LoopOrder&=!Loop.RegisterComparison(TEXT("unresolved"))&&Loop.FeedbackText().StartsWith(TEXT("REEL DECK"))&&LJ.Stage==EJobStage::Recorded;
+   LJ.OriginalCovered=8;LoopOrder&=!Loop.AudioAction(TEXT("confirm"))&&!LJ.bAudioReviewed; // the ticks are not heard yet
+   LJ.OriginalCovered=13;LoopOrder&=Loop.AudioAction(TEXT("confirm"))&&LJ.bAudioReviewed&&LJ.ControlCovered==0&&MarkCoversTicks(LJ.MarkStart,LJ.MarkEnd)&&Loop.HasFinding(TEXT("pulse-review"))
+    &&Loop.FeedbackText().Contains(TEXT("Confirm anomaly: source unresolved"));
+   LoopOrder&=TerminalNextLine(Loop.JobNextAction(LJ),1)==TEXT("NEXT / OPS (CORNER PC)")&&TerminalNextLine(Loop.JobNextAction(LJ),3)==TEXT("NEXT / USE THIS PC")&&StatusWord(LJ,true)==TEXT("CONFIRM");
+   LoopOrder&=Loop.RegisterComparison(TEXT("unresolved"))&&LJ.Stage==EJobStage::Registered&&TerminalNextLine(Loop.JobNextAction(LJ),3)==TEXT("NEXT / PRINTER");
+   LJ.PacketFeed=PrinterSeconds;LoopOrder&=Loop.JobNextAction(LJ).Contains(TEXT("COLLECT THE ANOMALY PACKET"));
+   LJ.Stage=EJobStage::Packet;LoopOrder&=Loop.JobNextAction(LJ).Contains(TEXT("BINDER"));
+  }
+  Check(LoopOrder,TEXT("GAMEPLAY-LOOP-01: ANOMALY DETECTED on the receiver, then the reel deck (no control, no chart), one listen, OPS's one button, the packet, the binder"));
+  Loop.Stop();
   Check(Workflow.ReceiverApproach()==0&&Workflow.ArrayErrorDeg()==0,TEXT("D45: with no array loaded the receiver shows nothing of the source and no slew"));
  }
  Check(TerminalNextLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB"),3)==TEXT("NEXT / USE THIS PC"),TEXT("NEXT line reads past the first-shift counter"));
@@ -5409,13 +5496,14 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   {
    Fc.Selected=FcI;
    {
-    FJob& FcJ=Fc.Work[FcI];FcJ.Stage=EJobStage::Recorded;FcJ.bPrinted=true;FcJ.bAnomaly=true;FcJ.bControl=true;FcJ.ControlAt=8;
-    FcJ.OriginalCovered=18;FcJ.ControlCovered=8;FcJ.MarkStart=9.2;FcJ.MarkEnd=12.8;FcJ.ReferenceClock=21.5*3600.;
+    // GAMEPLAY-LOOP-01: the take heard once at the reel deck; no control, no marks set by hand
+    FJob& FcJ=Fc.Work[FcI];FcJ.Stage=EJobStage::Recorded;FcJ.bPrinted=true;FcJ.bAnomaly=true;FcJ.bControl=false;FcJ.ControlAt=0;
+    FcJ.OriginalCovered=18;FcJ.ControlCovered=0;FcJ.ReferenceClock=21.5*3600.;
    }
    const bool bRetained=Fc.AudioAction(TEXT("confirm"));
    Fc.RecordEvidence(TEXT("extra_pulse"),TEXT("An extra pulse group survives a separate receiver check. The source is unresolved.")); // the event's own, as the Director keeps it
    Check(bRetained&&Fc.Work[FcI].bAudioReviewed&&Fc.HasFinding(TEXT("pulse-review"))&&!Fc.CaseFile().Get(0)->bOpen&&Fc.CaseStep(0).Step==ECaseStep::Closed&&Fc.CaseAwaitingChoice()<0
-    &&Fc.FeedbackText().Contains(TEXT("Register comparison: source unresolved"))&&!Fc.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("First case: RETAIN keeps the comparison, opens no case and says only the next step, the registration at OPS"));
+    &&Fc.FeedbackText().Contains(TEXT("Confirm anomaly: source unresolved"))&&!Fc.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("First case: one listen at the reel deck keeps the take, opens no case and says only the next step, the confirmation at OPS"));
    const auto Between=S47J::Read(S47J::Write(Fc.Save()));
    FS47FreeformSession Fc2(nullptr);Fc2.Begin(Between);Fc2.Tutorial=0;
    Check(!Fc2.CaseFile().Get(0)->bOpen&&Fc2.Work[FcI].bAudioReviewed&&Fc2.Work[FcI].Stage==EJobStage::Recorded,TEXT("First case: a Continue between RETAIN and the registration opens no case either"));
@@ -5707,10 +5795,11 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   // every task the jobs and the first shift can give fits the card
   bool bFits=true;FString Longest;
   auto Try=[&](const FString& Task){const FString C=S47HudGauges::CardLine(Task);if(C.Len()>S47HudGauges::CardMost||(C.IsEmpty()&&!Task.IsEmpty())){bFits=false;Longest=C;}};
-  for(int32 Stage=0;Stage<=int32(EJobStage::Filed);++Stage)for(int32 Kind=0;Kind<6;++Kind)
+  for(int32 Stage=0;Stage<=int32(EJobStage::Filed);++Stage)for(int32 Kind=0;Kind<8;++Kind)
   {
-   FJob J=G.Work[0];J.Stage=EJobStage(Stage);J.bAnomaly=Kind>0;J.bControl=Kind>1;J.ControlAt=Kind>2?8:0;J.bAudioReviewed=Kind>4;
-   J.Phenomenon=Kind==3?TEXT("wrong_source"):Kind==4?TEXT("duplicate_print"):TEXT("time_disagreement");Try(G.JobNextAction(J));
+   FJob J=G.Work[0];J.Stage=EJobStage(Stage);J.bAnomaly=Kind>0;J.bControl=Kind>1&&Kind<6;J.ControlAt=Kind>2&&Kind<6?8:0;J.bAudioReviewed=Kind==5||Kind==7;
+   // GAMEPLAY-LOOP-01: 6 and 7 are the extra-tick take, before and after its one listen
+   J.Phenomenon=Kind==3?TEXT("wrong_source"):Kind==4?TEXT("duplicate_print"):Kind>=6?TEXT("extra_pulse"):TEXT("time_disagreement");Try(G.JobNextAction(J));
   }
   for(int32 T=1;T<=6;++T){G.Tutorial=T;Try(G.TutorialObjective());}
   G.Tutorial=0;Try(G.Objective());

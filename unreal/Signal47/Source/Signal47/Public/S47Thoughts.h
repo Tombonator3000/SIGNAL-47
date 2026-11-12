@@ -20,5 +20,27 @@ namespace S47Thoughts
  bool May(double NowReal,double LastReal);
  // As the night's events ask: a thought for Key, if the pool, the cooldown and the screen allow. True when one was sent.
  bool Think(US47Main* M,const FString& Key);
+ // UI-20261112 (Tom: «flere anledninger»): more occasions, each its own pool, all under the same cooldown.
+ //  "find": a field record the player has just found out on the land (FS47FreeformSession::RecordEvidence);
+ //  "two": once a night as the clock passes 02:00; "anomaly": the chart off the printer shows a discrepancy;
+ //  "tired", "exhausted": in a heavy spell, by how tired (FS47Fatigue).
+ inline constexpr double TiredFrom=.55,ExhaustedFrom=.8;
+ // Pure: the pool for this tiredness (FS47Fatigue::Level), empty up to TiredFrom.
+ const TCHAR* TiredKey(double Tired);
+ // Pure: "find" for an evidence id that is a find out on the land (a place, a trace), empty for the desk's, a case's and the rest.
+ const TCHAR* FindKey(const FString& EvidenceId);
+ // Pure: whether the game's clock (seconds, FS47FreeformSession::Clock) went past 02:00 between Prev and Now while being played
+ // (a rest or lost time that jumps over it is not it).
+ bool PassedTwo(double PrevClock,double NowClock);
+ // A thought for Key in After seconds of play (never over a panel: it waits until the panel is shut, and for the cooldown a while).
+ void Later(const FString& Key,double After=1.2);
+ // Every frame (US47Main::Step): the clock's 02:00 and the thoughts that wait.
+ void Step(US47Main* M,double Dt);
+ // UI-20261112 (Tom: «gli bort fadende i forskjellige retninger hver gang»): as a thought goes it drifts a little way off, a new
+ // way each time. DriftAngle: degrees (0 right, 90 down) at least DriftApart from the last one, for a roll 0..1. DriftOffset: how
+ // far along it at K (0 just going, 1 gone), in the mock's pixels; nothing with reduced motion (bStill). Both pure.
+ inline constexpr double DriftPx=46.,DriftSecs=1.4,DriftApart=70.;
+ double DriftAngle(double LastDeg,double Roll);
+ FVector2D DriftOffset(double Deg,double K,bool bStill);
  bool SelfTest(TArray<FString>& Lines);
 }

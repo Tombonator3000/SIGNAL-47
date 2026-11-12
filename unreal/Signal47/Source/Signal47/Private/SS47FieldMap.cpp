@@ -1,4 +1,5 @@
 #include "SS47FieldMap.h"
+#include "S47CaseFieldTests.h"
 #include "S47EventPlaces.h"
 #include "S47FieldLife.h"
 #include "S47FreeformWorld.h"
@@ -13,8 +14,10 @@
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47Relief.h"
+#include "S47Theme.h"
 #include "S47RoadShape.h"
 #include "S47RoadTerrain.h"
+#include "S47Script.h"
 #include "S47Truck.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -79,6 +82,38 @@ namespace S47FieldMapLocal
 	// Where the sheet was left: the next one opens there, on the player when they have moved.
 	struct FViewMemory { FVector2D Middle = FVector2D(33, -300); double Scale = ScaleFirst; FVector2D LastMe = FVector2D(1e9, 1e9); FString LastCircle; }; // LastCircle: D45-20261110
 	FViewMemory& Memory() { static FViewMemory Kept; return Kept; }
+	// MAP-20261108 (→ M3, Tom 8 Nov: "strøket når det er gjort"): the work written on the sheet, by a key that stays the same while
+	// the job does (its words may change: "Trip camera: set it out here", then "Trip camera (set)"). A job gone from one gathering to the
+	// next has been done: it stays on the sheet struck through, at its place, for the rest of that game day (Seed and Day), never saved.
+	// Six at most, the newest kept; one that comes back is live again. Hold: keys (or their beginnings) gone only from sight, the work
+	// still undone (the round's stops after 19:00, OPS's jobs while the evening holds them back): dropped, never struck.
+	struct FJobLedger { int32 Seed = MIN_int32, Day = MIN_int32; TArray<TPair<FString, FS47MapJob>> Live, Done; };
+	FJobLedger& Ledger() { static FJobLedger Kept; return Kept; }
+	constexpr int32 DoneMost = 6;
+	void Settle(FJobLedger& L, int32 Seed, int32 Day, const TArray<TPair<FString, FS47MapJob>>& Now, const TArray<FString>& Hold = TArray<FString>())
+	{
+		if (L.Seed != Seed || L.Day != Day) { L = FJobLedger(); L.Seed = Seed; L.Day = Day; }
+		const auto Has = [](const TArray<TPair<FString, FS47MapJob>>& In, const FString& Key) { return In.ContainsByPredicate([&Key](const TPair<FString, FS47MapJob>& P) { return P.Key == Key; }); };
+		for (const TPair<FString, FS47MapJob>& Was : L.Live)
+			if (!Has(Now, Was.Key) && !Hold.ContainsByPredicate([&Was](const FString& H) { return Was.Key.StartsWith(H); })) { L.Done.RemoveAll([&Was](const TPair<FString, FS47MapJob>& P) { return P.Key == Was.Key; }); L.Done.Add(Was); }
+		L.Done.RemoveAll([&Has, &Now](const TPair<FString, FS47MapJob>& P) { return Has(Now, P.Key); });
+		while (L.Done.Num() > DoneMost) L.Done.RemoveAt(0);
+		L.Live = Now;
+	}
+	// The done ones ride in the view's marks (S47UI.h stays as it is), as the slips' circles do: Kind "job_done", the words in At's Spot.
+	void AddDone(FS47MapView& V, const FS47MapJob& Job)
+	{
+		FS47MapMark Mk; Mk.Kind = TEXT("job_done"); Mk.Line = Job.Text;
+		FS47MapAt At; At.Spot = Job.Text; At.T = Job.X; At.M = Job.Z; Mk.At = At;
+		V.Marks.Add(Mk);
+	}
+	TArray<FS47MapJob> DoneJobs(const FS47MapView& V)
+	{
+		TArray<FS47MapJob> Found;
+		for (const FS47MapMark& Mk : V.Marks)
+			if (Mk.Kind == TEXT("job_done") && Mk.At.IsSet()) { FS47MapJob Job; Job.X = Mk.At->T; Job.Z = Mk.At->M; Job.Text = Mk.At->Spot; Found.Add(Job); }
+		return Found;
+	}
 
 	// ---------- the contours ----------
 	struct FContour { TArray<FVector2f> P; FBox2f Box; double Ft = 0; bool bIndex = false; };
@@ -553,17 +588,23 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 {
 	if (!M || !M->Freeform) return;
 	FS47FreeformSession& Fs = *M->Freeform;
-	const auto Write = [&V](const FString& Area, double X, double Z, const FString& Text)
+	// Each job by its key (S47FieldMapLocal::FJobLedger): what was here last time and is gone now is struck through.
+	TArray<TPair<FString, FS47MapJob>> Now;
+	const auto Put = [&V, &Now](const FString& Key, double X, double Z, const FString& Text)
+	{
+		FS47MapJob Job; Job.X = X; Job.Z = Z; Job.Text = Text;
+		V.Jobs.Add(Job);
+		Now.Add(TPair<FString, FS47MapJob>(Key, Job));
+	};
+	const auto Write = [&Put](const FString& Key, const FString& Area, double X, double Z, const FString& Text)
 	{
 		double Rx = 0, Rz = 0, Hd = 0;
-		if (!OnSheet(Area, X, Z, 0, Rx, Rz, Hd)) return;
-		FS47MapJob Job; Job.X = Rx; Job.Z = Rz; Job.Text = Text;
-		V.Jobs.Add(Job);
+		if (OnSheet(Area, X, Z, 0, Rx, Rz, Hd)) Put(Key, Rx, Rz, Text);
 	};
 	// A dish that is down, by its number.
 	if (Fs.Field && Fs.Field->HasArrayFault() && M->Web)
 		for (int32 I = 0; I < M->Web->DishCount(); ++I)
-			if (M->Web->DishId(I) == Fs.Field->ServiceDishId()) { Write(TEXT("saro"), M->Web->DishX(I), M->Web->DishZ(I), Fs.Field->ServiceDishId() + TEXT(" drive fault")); break; }
+			if (M->Web->DishId(I) == Fs.Field->ServiceDishId()) { Write(TEXT("fault:") + Fs.Field->ServiceDishId(), TEXT("saro"), M->Web->DishX(I), M->Web->DishZ(I), Fs.Field->ServiceDishId() + TEXT(" drive fault")); break; }
 	// D45-20261110 (Tom: told to repair S-13, and it was not on the map): the station goal's junction, by its number. Only the next
 	// branch, so the sheet stays clean; the fault lamp on its box says the same out there.
 	if (Fs.Field && Fs.Field->ArrayWear().bActive && M->Web)
@@ -572,12 +613,12 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 				if (M->Web->DishId(I) == Goal->Junction)
 				{
 					const FString Mend = FString::Printf(TEXT("%s: mend the %s%s"), Goal->Junction, *FString(Goal->Title).ToLower(), FS47FreeformSession::GoalWaits(Fs.Clock()) ? TEXT(", by daylight") : TEXT(""));
-					Write(TEXT("saro"), M->Web->DishX(I), M->Web->DishZ(I), Mend);
+					Write(FString(TEXT("mend:")) + Goal->Junction, TEXT("saro"), M->Web->DishX(I), M->Web->DishZ(I), Mend);
 					break;
 				}
 	// The feeder, when the station's power is off.
 	if (Fs.PowerFault() && Fs.EventPlaces)
-		if (const FS47EventPlace* Feeder = Fs.EventPlaces->Find(TEXT("feeder"))) { FS47MapJob Job; Job.X = Feeder->EntryX; Job.Z = Feeder->EntryZ; Job.Text = TEXT("fix the feeder"); V.Jobs.Add(Job); }
+		if (const FS47EventPlace* Feeder = Fs.EventPlaces->Find(TEXT("feeder"))) Put(TEXT("feeder"), Feeder->EntryX, Feeder->EntryZ, TEXT("fix the feeder"));
 	// The round's stops left today.
 	if (Fs.Round && Fs.Field)
 	{
@@ -588,7 +629,7 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 				const FString Name = FS47DayRound::StopName(Stop);
 				if (!Due.Contains(Name)) continue;
 				const FVector At = Fs.Field->InteractionPoint(Stop);
-				if (!At.IsZero()) Write(TEXT("saro"), At.X, At.Z, TEXT("round: ") + Name);
+				if (!At.IsZero()) Write(TEXT("round:") + Stop, TEXT("saro"), At.X, At.Z, TEXT("round: ") + Name);
 			}
 	}
 	// Observing work waiting at OPS, and Ward's paper in the tray.
@@ -598,29 +639,52 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 		FString Ops;
 		if (Waiting > 0) Ops = FString::Printf(TEXT("OPS: %d %s to do"), Waiting, Waiting == 1 ? TEXT("job") : TEXT("jobs"));
 		if (Fs.Predecessor && !Fs.Predecessor->TaskLine().IsEmpty() && Fs.Predecessor->TaskLine().Contains(TEXT("tray"))) Ops += Ops.IsEmpty() ? FString(TEXT("OPS: letter in the tray")) : FString(TEXT(", letter in the tray"));
-		if (!Ops.IsEmpty()) Write(TEXT("saro"), 0, 0, Ops);
+		if (!Ops.IsEmpty()) Write(TEXT("ops"), TEXT("saro"), 0, 0, Ops);
 	}
 	// The mailbox's flag.
 	if (Fs.Mail && Fs.Mail->MailIn())
 	{
 		FString Area; double X = 0, Z = 0;
-		if (Fs.Mail->WorldSpot(Area, X, Z)) Write(Area, X, Z, TEXT("mail in the box"));
+		if (Fs.Mail->WorldSpot(Area, X, Z)) Write(TEXT("mail"), Area, X, Z, TEXT("mail in the box"));
 	}
 	// D48-20261110 (Tom, D46-24: told to leave the trip camera where the last record was kept, and the sheet did not say where): the
 	// place to set it out while the land test is planned, then where it stands, until it is collected.
 	if (Fs.TripCamera)
 	{
 		FVector2D Road; FString Title, CamArea; FVector CamAt;
-		if (Fs.TripCamera->StandsAt(CamArea, CamAt)) Write(CamArea, CamAt.X, CamAt.Z, TEXT("Trip camera (set)"));
-		else if (Fs.TripCamera->SetOutPlace(Road, Title)) { FS47MapJob Job; Job.X = Road.X; Job.Z = Road.Y; Job.Text = TEXT("Trip camera: set it out here"); V.Jobs.Add(Job); }
+		if (Fs.TripCamera->StandsAt(CamArea, CamAt)) Write(TEXT("tripcamera"), CamArea, CamAt.X, CamAt.Z, TEXT("Trip camera (set)"));
+		else if (Fs.TripCamera->SetOutPlace(Road, Title)) Put(TEXT("tripcamera"), Road.X, Road.Y, TEXT("Trip camera: set it out here"));
 	}
 	// The truck, when it is in trouble where it stands.
 	if (Fs.Care && Fs.Care->NeedsRescue())
 	{
 		const FString What = Fs.Care->Stuck() ? TEXT("truck: dig it out") : Fs.Care->Flat() ? TEXT("truck: change the wheel") : TEXT("truck: water the radiator");
-		if (V.bTruck) { FS47MapJob Job; Job.X = V.TruckX; Job.Z = V.TruckZ; Job.Text = What; V.Jobs.Add(Job); }
-		else if (V.bDriving && V.bMe) { FS47MapJob Job; Job.X = V.MeX; Job.Z = V.MeZ; Job.Text = What; V.Jobs.Add(Job); }
+		if (V.bTruck) Put(TEXT("truck"), V.TruckX, V.TruckZ, What);
+		else if (V.bDriving && V.bMe) Put(TEXT("truck"), V.MeX, V.MeZ, What);
 	}
+	// MAP-20261108 (→ M3): the case's field test where it is done (the ladder, the gate, the field post), and the field logger out on
+	// its post until it is fetched; both in SARO's own terms.
+	if (Fs.CaseField)
+	{
+		FVector At; FString Label;
+		if (Fs.CaseField->MapSpot(At, Label)) Write(TEXT("casetest"), TEXT("saro"), At.X, At.Z, Label);
+	}
+	if (Fs.Field && Fs.Field->FieldLogger().Site >= 0)
+	{
+		const FVector At = Fs.Field->InteractionPoint(TEXT("ff:logger-device"));
+		Write(TEXT("logger"), TEXT("saro"), At.X, At.Z, Fs.Field->FieldLogger().bRecording ? TEXT("logger recording") : TEXT("logger: fetch it"));
+	}
+	S47FieldMapLocal::FJobLedger& Kept = S47FieldMapLocal::Ledger();
+	TArray<FString> Hold;
+	if (Fs.Round && Fs.Round->TaskLine().IsEmpty() && !Fs.Round->DoneToday()) Hold.Add(TEXT("round:"));
+	if (Fs.Jobs().ContainsByPredicate([](const FS47FreeformSession::FJob& J) { return J.Stage != FS47FreeformSession::EJobStage::Filed && !J.bDuplicateRejected && J.CaseTest < 0; })) Hold.Add(TEXT("ops"));
+	S47FieldMapLocal::Settle(Kept, Fs.Seed(), Fs.Day(), Now, Hold);
+	for (const TPair<FString, FS47MapJob>& Done : Kept.Done) S47FieldMapLocal::AddDone(V, Done.Value);
+}
+
+FString S47FieldMap::KeyWords(int32 Row)
+{
+	return Row == 0 ? FString(TEXT("work to do")) : Row == 1 ? FString(TEXT("to look into")) : FString(TEXT("done"));
 }
 
 FString S47FieldMap::Compass(double Deg)
@@ -724,6 +788,9 @@ TArray<FString> S47FieldMap::Description(const FS47MapView& V)
 	TArray<FString> Work;
 	for (const FS47MapJob& Job : V.Jobs) Work.Add(Job.Text);
 	if (Work.Num()) Said.Add(TEXT("Written in by the places: ") + FString::Join(Work, TEXT("; ")) + TEXT("."));
+	TArray<FString> Struck;
+	for (const FS47MapJob& Job : S47FieldMapLocal::DoneJobs(V)) Struck.Add(Job.Text);
+	if (Struck.Num()) Said.Add(TEXT("Struck through, done today: ") + FString::Join(Struck, TEXT("; ")) + TEXT("."));
 	if (V.Notes.Num()) Said.Add(FString::Printf(TEXT("Your own marks: %d."), V.Notes.Num()));
 	return Said;
 }
@@ -745,9 +812,13 @@ void SS47FieldMap::Construct(const FArguments& InArgs)
 	// D45-20261110 (Tom could not find the slip's mark): the first time the sheet opens after a new slip, it shows both the player (or
 	// SARO) and the slip's circle, so the circle is there to be seen; after that it opens as it always has.
 	{
+		// MAP-D62-20261112 (Tom, d62: opened again on the road, the circle was nowhere on the sheet): the newest circle not yet stood in is
+		// framed again whenever the sheet would open without it on it, not only the first time.
 		const TArray<S47FieldMap::FSlipCircle> Circles = S47FieldMap::SlipCircles(View);
-		const S47FieldMap::FSlipCircle* Newest = Circles.Num() && !Circles.Last().bChecked ? &Circles.Last() : nullptr;
-		if (Newest && Newest->Label != Kept.LastCircle)
+		const S47FieldMap::FSlipCircle* Newest = nullptr;
+		for (const S47FieldMap::FSlipCircle& Cc : Circles) if (!Cc.bChecked) Newest = &Cc;
+		const bool bOnSheet = Newest && S47FieldMapLocal::InFrame(ToPage(Newest->X, Newest->Z), 30);
+		if (Newest && (Newest->Label != Kept.LastCircle || !bOnSheet))
 		{
 			Kept.LastCircle = Newest->Label;
 			const FVector2D Here = View.bMe ? FVector2D(View.MeX, View.MeZ) : SaroAt, There(Newest->X, Newest->Z);
@@ -879,7 +950,9 @@ FReply SS47FieldMap::OnMouseButtonUp(const FGeometry& G, const FPointerEvent& E)
 
 FCursorReply SS47FieldMap::OnCursorQuery(const FGeometry& G, const FPointerEvent& E) const
 {
-	return FCursorReply::Cursor(bDrag ? EMouseCursor::GrabHandClosed : EMouseCursor::GrabHand);
+	// MAP-D62-20261112 (Tom, d62: "the mouse disappears from the map"): the packaged game has no grab-hand cursor files, so the engine's
+	// GrabHand drew nothing over the sheet; S47Theme::GrabCursor gives the hand that exists there (as the case board's does).
+	return FCursorReply::Cursor(S47Theme::GrabCursor(bDrag));
 }
 
 void SS47FieldMap::SurveyWorld() const
@@ -1148,6 +1221,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 
 	// ---- the array, the buildings, the land's own features ----
 	if (Sc >= .8) for (const auto& Trail : Paths) Pen.Dashed({ OnPage(Trail.Key.X, Trail.Key.Y), OnPage(Trail.Value.X, Trail.Value.Y) }, Revised(.6f), .9f, LRoad, { 4, 3 });
+	TArray<FBox2f> DishWords; // MAP-20261108: the dishes' numbers, which the pencil's words below keep clear of
 	for (int32 Di = 0; Di < Dishes.Num(); ++Di)
 	{
 		const FVector2D& Dish = Dishes[Di];
@@ -1157,7 +1231,12 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		Pen.Lines(Pen.Circle(Ctr, Rad, 16), Revised(), 1.2f, LBuilt);
 		Pen.Fill(Ctr - FVector2f(1, 1), FVector2f(2, 2), Revised(), LBuilt);
 		// Close enough in to tell them apart: each its number, as the array's PC and the jobs have it.
-		if (Sc >= .9 && DishIds.IsValidIndex(Di)) Pen.Text(DishIds[Di], Ctr + FVector2f(Rad + 3, -Rad - 1), Small(14), Revised(), LWords, 0.f, .5f, true);
+		if (Sc >= .9 && DishIds.IsValidIndex(Di))
+		{
+			const FVector2f NumAt = Ctr + FVector2f(Rad + 3, -Rad - 1);
+			const FVector2f NumSize = Pen.Text(DishIds[Di], NumAt, Small(14), Revised(), LWords, 0.f, .5f, true);
+			DishWords.Add(FBox2f(NumAt - FVector2f(0, NumSize.Y * .5f), NumAt + FVector2f(NumSize.X, NumSize.Y * .5f)));
+		}
 	}
 	for (const FBlock& Bk : Blocks)
 	{
@@ -1243,7 +1322,7 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 
 	// ---- printed names ----
 	// What is already written where: the printed names and the player's arrow, which the ink below keeps clear of.
-	TArray<FBox2f> Occupied;
+	TArray<FBox2f> Occupied = DishWords;
 	const auto Name = [&Pen, &OnPage, &Visible, &Occupied, LWords](const FString& Words, double X, double Z, const FVector2f& By, const FSlateFontInfo& Font, float AlignX, float AlignY, const FLinearColor& Col = FLinearColor::Transparent)
 	{
 		if (!Visible(X, Z, 200)) return;
@@ -1314,37 +1393,55 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		for (const double D : { Sec.Az - Sec.Spread, Sec.Az + Sec.Spread }) Pen.Dashed({ F2(From), F2(Ray(D)) }, Line, 1.2f, LPencil, { 2, 5 });
 		// The truck's line is a narrow one: its middle drawn too, so that two of them are seen to cross.
 		if (Sec.bFrom) Pen.Dashed({ F2(From), F2(Ray(Sec.Az)) }, Line, 1.f, LPencil, { 2, 4 });
-		if (Ring)
-		{
-			// The circle where to look: a question mark in it until it has been stood in, then a tick; the label just outside it.
-			const FVector2f Ctr = OnPage(Ring->X, Ring->Z);
-			const float Rp = FMath::Max(8.f, float(Ring->R * Sc));
-			Pen.Lines(Pen.Circle(Ctr, Rp, 48), Line, 1.7f, LPencil);
-			if (Ring->bChecked) Pen.Lines({ Ctr + FVector2f(-6, 0), Ctr + FVector2f(-2, 5), Ctr + FVector2f(8, -8) }, Line, 2.f, LPencil);
-			else Pen.Text(TEXT("?"), Ctr + FVector2f(0, 1), Pencil(Rp >= 14.f ? 26.f : 20.f), Line, LPencilWords, .5f, .5f);
-			const FVector2f Size = FPen::Measure(Sec.Label, Pencil(24));
-			const float Out45 = Rp * .72f + 6.f;
-			static const FVector2f Sides[] = { FVector2f(1, -1), FVector2f(-1, -1), FVector2f(1, 1), FVector2f(-1, 1) };
-			FVector2f Corner = Ctr + Sides[0] * Out45; float AlignX = 0.f, AlignY = 1.f;
-			for (const FVector2f& Sd : Sides)
-			{
-				const FVector2f Try = Ctr + Sd * Out45;
-				const FVector2f TopLeft = Try - FVector2f(Sd.X > 0 ? 0.f : Size.X, Sd.Y < 0 ? Size.Y : 0.f);
-				const FBox2f Want(TopLeft, TopLeft + Size);
-				if (!InFrame(FVector2D(TopLeft.X, TopLeft.Y)) || !InFrame(FVector2D(TopLeft.X + Size.X, TopLeft.Y + Size.Y))) continue;
-				if (Occupied.ContainsByPredicate([&Want](const FBox2f& Had) { return Had.Intersect(Want); })) continue;
-				Corner = Try; AlignX = Sd.X > 0 ? 0.f : 1.f; AlignY = Sd.Y < 0 ? 1.f : 0.f; break;
-			}
-			{
-				const FVector2f TopLeft = Corner - FVector2f(Size.X * AlignX, Size.Y * AlignY);
-				Occupied.Add(FBox2f(TopLeft, TopLeft + Size));
-			}
-			Pen.Text(Sec.Label, Corner, Pencil(24), Line, LPencilWords, AlignX, AlignY, true);
-			continue;
-		}
+		if (Ring) continue; // its circle and label: below, with every circle on the sheet
 		// No circle (an older save, the truck's, the land's own bearings): on the centre line, on the land, drawn only if on the sheet.
 		const FVector2D Tag = FMath::Lerp(From, Ray(Sec.Az), Sec.bFrom ? .35 : .6);
 		if (InFrame(Tag, 4)) Pen.Text(Sec.Label, F2(Tag), Pencil(24), Line, LPencilWords, .5f, .5f, true);
+	}
+	// MAP-D62-20261112 (Tom, d62: the circle gone on the map's second opening): every slip's circle on the sheet is drawn, whether or not
+	// its wedge still is (a circle not yet stood in outlives its line's noon); one off this part of the sheet, not yet looked at, gets a
+	// red arrow at the edge toward it.
+	for (const S47FieldMap::FSlipCircle& Ring : Circles)
+	{
+		if (!Ring.bChecked && !Visible(Ring.X, Ring.Z, Ring.R * .5))
+		{
+			const FVector2D At = ToPage(Ring.X, Ring.Z);
+			const FVector2D Rim = EdgeToward(At, 26);
+			const FVector2D Way = (At - FVector2D(FrameMidX, FrameMidY)).GetSafeNormal();
+			const FVector2f Tip = F2(Rim), Fwd = F2(Way), Side(-Fwd.Y, Fwd.X);
+			const FLinearColor Red(.86f, .07f, .05f, 1.f);
+			Pen.Triangle(Tip + Fwd * 14.f, Tip - Fwd * 6.f + Side * 9.f, Tip - Fwd * 6.f - Side * 9.f, Red, LPencilWords);
+			Pen.Text(TEXT("circle, ") + YardsOrMiles(FVector2D::Distance(FVector2D(Ring.X, Ring.Z), Mid)), Tip - Fwd * 34.f, Pencil(24), Red, LPencilWords, .5f, .5f, true);
+			continue;
+		}
+		// The circle where to look: a question mark in it until it has been stood in, then a tick; the label just outside it.
+		const FVector2f Ctr = OnPage(Ring.X, Ring.Z);
+		const float Rp = FMath::Max(10.f, float(Ring.R * Sc));
+		// Tom 12 Nov: the area to search is marked in a clear red ring (a red grease pencil), drawn twice so it reads at a glance;
+		// once stood in it stays red but paler, with a tick.
+		const FLinearColor Red = Ring.bChecked ? FLinearColor(.62f, .16f, .12f, .75f) : FLinearColor(.86f, .07f, .05f, 1.f);
+		Pen.Lines(Pen.Circle(Ctr, Rp, 64), Red, 3.2f, LPencil);
+		Pen.Lines(Pen.Circle(Ctr, Rp + 2.5f, 64), Red, 1.4f, LPencil);
+		if (Ring.bChecked) Pen.Lines({ Ctr + FVector2f(-7, 0), Ctr + FVector2f(-2, 6), Ctr + FVector2f(9, -9) }, Red, 2.6f, LPencil);
+		else Pen.Text(TEXT("?"), Ctr + FVector2f(0, 1), Pencil(Rp >= 14.f ? 28.f : 22.f), Red, LPencilWords, .5f, .5f);
+		const FVector2f Size = FPen::Measure(Ring.Label, Pencil(24));
+		const float Out45 = Rp * .72f + 6.f;
+		static const FVector2f Sides[] = { FVector2f(1, -1), FVector2f(-1, -1), FVector2f(1, 1), FVector2f(-1, 1) };
+		FVector2f Corner = Ctr + Sides[0] * Out45; float AlignX = 0.f, AlignY = 1.f;
+		for (const FVector2f& Sd : Sides)
+		{
+			const FVector2f Try = Ctr + Sd * Out45;
+			const FVector2f TopLeft = Try - FVector2f(Sd.X > 0 ? 0.f : Size.X, Sd.Y < 0 ? Size.Y : 0.f);
+			const FBox2f Want(TopLeft, TopLeft + Size);
+			if (!InFrame(FVector2D(TopLeft.X, TopLeft.Y)) || !InFrame(FVector2D(TopLeft.X + Size.X, TopLeft.Y + Size.Y))) continue;
+			if (Occupied.ContainsByPredicate([&Want](const FBox2f& Had) { return Had.Intersect(Want); })) continue;
+			Corner = Try; AlignX = Sd.X > 0 ? 0.f : 1.f; AlignY = Sd.Y < 0 ? 1.f : 0.f; break;
+		}
+		{
+			const FVector2f TopLeft = Corner - FVector2f(Size.X * AlignX, Size.Y * AlignY);
+			Occupied.Add(FBox2f(TopLeft, TopLeft + Size));
+		}
+		Pen.Text(Ring.Label, Corner, Pencil(24), Red, LPencilWords, AlignX, AlignY, true);
 	}
 	// Where two bearings from different places cross: a ring round it, the way one would pencil it.
 	for (const FVector2D& Cross : View.Crossings)
@@ -1400,6 +1497,30 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			const FVector2f From = Corner + FVector2f(bLeft ? 4.f : -4.f, 0);
 			Pen.Lines({ From, Spot + (From - Spot).GetSafeNormal() * 7.f }, Blue, 1.6f, LPencil);
 			Pen.Text(Job.Text, Corner, Pencil(26), Blue, LPencilWords, bLeft ? 1.f : 0.f, .5f, true);
+		}
+		// MAP-20261108 (→ M3): work done today, paler, its ring ticked and its words struck through. Only close enough in to read, and only
+		// where the words fit clear of everything else; otherwise the ticked ring alone.
+		const FLinearColor Faded = Hue(0x24407f, .5f);
+		for (const FS47MapJob& Job : DoneJobs(View))
+		{
+			if (!Visible(Job.X, Job.Z, 100)) continue;
+			const FVector2f Spot = OnPage(Job.X, Job.Z);
+			Pen.Lines(Pen.Circle(Spot, 5, 16), Faded, 1.4f, LPencil);
+			Pen.Lines({ Spot + FVector2f(-4, 0), Spot + FVector2f(-1, 4), Spot + FVector2f(6, -6) }, Faded, 1.8f, LPencil);
+			if (Sc < .45) continue;
+			const FVector2f Size = FPen::Measure(Job.Text, Pencil(22));
+			static const FVector2f Tries[] = { FVector2f(12, 0), FVector2f(-12, 0), FVector2f(12, -20), FVector2f(-12, -20), FVector2f(12, 20), FVector2f(-12, 20) };
+			for (const FVector2f& Off : Tries)
+			{
+				const bool bL = Off.X < 0;
+				const FVector2f TopLeft = Spot + Off - FVector2f(bL ? Size.X : 0.f, Size.Y * .5f);
+				const FBox2f Want(TopLeft - FVector2f(3, 2), TopLeft + Size + FVector2f(3, 2));
+				if (Written.ContainsByPredicate([&Want](const FBox2f& Had) { return Had.Intersect(Want); })) continue;
+				Written.Add(Want);
+				Pen.Text(Job.Text, Spot + Off, Pencil(22), Faded, LPencilWords, bL ? 1.f : 0.f, .5f, true);
+				Pen.Lines({ TopLeft + FVector2f(-2, Size.Y * .55f), TopLeft + FVector2f(Size.X + 2, Size.Y * .45f) }, Faded, 1.5f, LPencilWords + 2);
+				break;
+			}
 		}
 	}
 	for (const FS47MapNote& Mark : View.Notes)
@@ -1572,6 +1693,19 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 				Pen.Lines(Arc, Hue(0x7a5230, .12f + .04f * Ring), 3.f - Ring * .8f, LMargin);
 			}
 		}
+		// MAP-20261108 (→ M3): the pencil's own key, in pencil, under the stamp: work, what to look into, and done.
+		{
+			const FLinearColor KeyBlue = Hue(0x24407f, .95f), KeyLead = Graphite(.92f);
+			const FVector2f Work(Px + 6, 728), Ask(Px + 6, 750), Did(Px + 6, 772);
+			Pen.Lines(Pen.Circle(Work, 5, 16), KeyBlue, 1.6f, LMargin);
+			Pen.Text(S47FieldMap::KeyWords(0), Work + FVector2f(12, 0), Pencil(20), KeyBlue, LMargin, 0.f, .5f);
+			Pen.Lines(Pen.Circle(Ask, 7, 18), KeyLead, 1.4f, LMargin);
+			Pen.Text(TEXT("?"), Ask + FVector2f(0, 1), Pencil(18), KeyLead, LMargin, .5f, .5f);
+			Pen.Text(S47FieldMap::KeyWords(1), Ask + FVector2f(12, 0), Pencil(20), KeyLead, LMargin, 0.f, .5f);
+			Pen.Lines({ Did + FVector2f(-4, 0), Did + FVector2f(-1, 4), Did + FVector2f(6, -6) }, KeyLead, 1.6f, LMargin);
+			const FVector2f Size = Pen.Text(S47FieldMap::KeyWords(2), Did + FVector2f(12, 0), Pencil(20), KeyLead, LMargin, 0.f, .5f);
+			Pen.Lines({ Did + FVector2f(10, 1), Did + FVector2f(14 + Size.X, -1) }, KeyLead, 1.3f, LMargin + 1);
+		}
 		Pen.Text(TEXT("CALICHE, N. MEX."), FVector2f(PanelR, 744), Printed(18), Ink(), LMargin, 1.f, .5f);
 		Pen.Text(TEXT("1979"), FVector2f(PanelR, 762), Small(11), Ink(), LMargin, 1.f, .5f);
 		Pen.Text(TEXT("PHOTOREVISED 1984"), FVector2f(PanelR, 777), Small(11), Revised(), LMargin, 1.f, .5f);
@@ -1669,6 +1803,67 @@ bool S47FieldMap::SelfTest(TArray<FString>& Lines)
 		Check(Back.Num() == 1 && Back[0].X == C.X && Back[0].Z == C.Z && Back[0].R == C.R && Back[0].Label == C.Label && !Back[0].bChecked && Back[0].Where == C.Where
 			&& D.ContainsByPredicate([](const FString& L) { return L.StartsWith(TEXT("A pencilled circle 1.1 miles south-southwest of SARO (Day 1 slip, 12:28), not looked at yet")); }),
 			TEXT("a slip's circle rides in the view with its label and is read out where it is"));
+	}
+	// MAP-20261108 (→ M3, Tom 8 Nov: work pencilled in by its place, struck through when done): a job gone from one gathering to the
+	// next is struck at its place for the rest of the day; one held back only from sight (the round after 19:00) is not; a new day and
+	// a new game start clean; six at most. The struck ones ride in the view and are read out; the pencil's key and the new labels keep
+	// to the spoiler limits.
+	{
+		const auto Job = [](const TCHAR* Key, double X, double Z, const TCHAR* Text) { FS47MapJob J; J.X = X; J.Z = Z; J.Text = Text; return TPair<FString, FS47MapJob>(Key, J); };
+		FJobLedger L;
+		Settle(L, 7, 3, { Job(TEXT("mail"), 10, 20, TEXT("mail in the box")), Job(TEXT("round:pump"), 30, 40, TEXT("round: the pump")), Job(TEXT("tripcamera"), 50, 60, TEXT("Trip camera: set it out here")) });
+		const bool bNoneYet = L.Done.IsEmpty() && L.Live.Num() == 3;
+		Settle(L, 7, 3, { Job(TEXT("round:pump"), 30, 40, TEXT("round: the pump")), Job(TEXT("tripcamera"), 52, 61, TEXT("Trip camera (set)")) });
+		const bool bStruck = L.Done.Num() == 1 && L.Done[0].Key == TEXT("mail") && L.Done[0].Value.X == 10 && L.Done[0].Value.Text == TEXT("mail in the box");
+		Settle(L, 7, 3, { Job(TEXT("tripcamera"), 52, 61, TEXT("Trip camera (set)")) }, { TEXT("round:") });
+		const bool bHeld = L.Done.Num() == 1 && !L.Done.ContainsByPredicate([](const TPair<FString, FS47MapJob>& P) { return P.Key.StartsWith(TEXT("round:")); });
+		Settle(L, 7, 3, { Job(TEXT("mail"), 11, 20, TEXT("mail in the box")) });
+		const bool bBack = L.Done.Num() == 1 && L.Done[0].Key == TEXT("tripcamera") && L.Done[0].Value.Text == TEXT("Trip camera (set)");
+		Settle(L, 7, 4, {});
+		const bool bNewDay = L.Done.IsEmpty() && L.Live.IsEmpty();
+		for (int32 I = 0; I < 9; ++I) { Settle(L, 7, 4, { Job(*FString::Printf(TEXT("fault:S-%02d"), I + 1), I, 0, TEXT("drive fault")) }); }
+		Settle(L, 7, 4, {});
+		const bool bCapped = L.Done.Num() == DoneMost && L.Done.Last().Key == TEXT("fault:S-09");
+		Settle(L, 8, 4, {});
+		const bool bNewGame = L.Done.IsEmpty();
+		Check(bNoneYet && bStruck && bHeld && bBack && bNewDay && bCapped && bNewGame,
+			TEXT("a job gone from the sheet is struck at its place for the day (one only out of sight is not, one back is live again); a new day or game starts clean; six at most"));
+		FS47MapView V; V.bField = true;
+		FS47MapJob Live; Live.X = 1; Live.Z = 2; Live.Text = FS47CaseFieldTests::MapLabel(2, false); V.Jobs.Add(Live);
+		FS47MapJob Did; Did.X = 5; Did.Z = 6; Did.Text = TEXT("logger: fetch it"); AddDone(V, Did);
+		const TArray<FS47MapJob> Back = DoneJobs(V);
+		const TArray<FString> D = Description(V);
+		Check(Back.Num() == 1 && Back[0].X == 5 && Back[0].Z == 6 && Back[0].Text == Did.Text && SlipCircles(V).IsEmpty()
+			&& D.ContainsByPredicate([](const FString& Ln) { return Ln.StartsWith(TEXT("Struck through, done today: logger: fetch it")); })
+			&& D.ContainsByPredicate([](const FString& Ln) { return Ln.Contains(TEXT("case test: field post")); }),
+			TEXT("work done rides in the view apart from the slips' circles and is read out struck through; the live work by its place"));
+		bool bPlain = true;
+		TArray<FString> Said = { KeyWords(0), KeyWords(1), KeyWords(2), TEXT("logger recording"), TEXT("logger: fetch it") };
+		for (int32 T = 0; T < 3; ++T) { Said.Add(FS47CaseFieldTests::MapLabel(T, false)); Said.Add(FS47CaseFieldTests::MapLabel(T, true)); }
+		for (const FString& Words : Said) bPlain &= !Words.IsEmpty() && Words.Len() <= 28 && S47Script::LintText(Words).IsEmpty();
+		Check(bPlain && FS47CaseFieldTests::MapLabel(0, true) == TEXT("case test: roof plate (set)") && FS47CaseFieldTests::MapLabel(1, false) == TEXT("case test: gate seal"),
+			TEXT("the case test's, the logger's and the key's pencil words are short and plain"));
+	}
+	// MAP-D62-20261112 (Tom, d62): the sheet opened again, the circle already framed once, zoomed in on the player elsewhere and with
+	// no wedge left: it frames the circle again, which is drawn without its wedge; the map's hand cursor is one that shows.
+	if (FSlateApplication::IsInitialized())
+	{
+		FViewMemory& Kept = Memory();
+		const FViewMemory Was = Kept;
+		FS47MapView V; V.bField = V.bMe = true; V.MeX = -20; V.MeZ = 150; V.MeHeading = 180;
+		FSlipCircle C; C.X = 170; C.Z = 720; C.R = 150; C.Label = TEXT("Day 1 slip, 11:36"); C.Where = TEXT("south of SARO"); C.Fade = .3f;
+		AddSlipCircle(V, C);
+		Kept.LastCircle = C.Label; Kept.Scale = 3; Kept.Middle = FVector2D(-20, 150); Kept.LastMe = FVector2D(-20, 150);
+		const TSharedRef<SS47FieldMap> Sheet = SNew(SS47FieldMap).View(V).Width(900.f);
+		const bool bFramed = InFrame(Project(Sheet->Centre(), Sheet->ScaleNow(), C.X, C.Z)) && InFrame(Project(Sheet->Centre(), Sheet->ScaleNow(), V.MeX, V.MeZ));
+		Kept.Scale = 3; Kept.Middle = FVector2D(-20, 150);
+		FSlipCircle Done = C; Done.bChecked = true;
+		FS47MapView Looked = V; Looked.Marks.Reset(); AddSlipCircle(Looked, Done);
+		const TSharedRef<SS47FieldMap> Again = SNew(SS47FieldMap).View(Looked).Width(900.f);
+		const bool bLeft = FMath::IsNearlyEqual(Again->ScaleNow(), 3.0) && V.Sectors.IsEmpty() && SlipCircles(V).Num() == 1;
+		Kept = Was;
+		Check(bFramed && bLeft && S47Theme::GrabCursor(false) != EMouseCursor::None && S47Theme::GrabCursor(true) != EMouseCursor::None,
+			TEXT("opened again with its circle off the sheet, the map frames the circle not yet looked at (none once looked at), drawn without its wedge; its hand cursor shows"));
 	}
 	return bAll;
 }

@@ -183,6 +183,21 @@ FString FS47TruckCare::StatusLine() const
  if(Hot())return TEXT("The radiator is dry and the needle is in the red. It will crawl, no more.");
  return WaterLeft<.25?TEXT("The temperature needle is climbing. It wants water soon."):FString();
 }
+TArray<TPair<FString,FString>> FS47TruckCare::LoadLines(int32 Spares,int32 Waters,int32 Ropes,int32 Wires)
+{
+ TArray<TPair<FString,FString>> L;
+ L.Add({TEXT("Spare wheel"),Spares>0?FString::FromInt(Spares):FString(TEXT("NONE / Feed & Seed or gas station, $15"))});
+ L.Add({TEXT("Cans of radiator water"),Waters>0?FString::FromInt(Waters):FString(TEXT("NONE / Feed & Seed or gas station, $1"))});
+ L.Add({TEXT("Spade, jack and wheel brace"),TEXT("Behind the seat")});
+ if(Ropes>0)L.Add({TEXT("Tow rope and come-along"),FString::FromInt(Ropes)});
+ if(Wires>0)L.Add({TEXT("Fence wire"),FString::FromInt(Wires)});
+ return L;
+}
+FString FS47TruckCare::RackNote(bool bParcelLoaded)
+{
+ return bParcelLoaded?FString(TEXT("The paid parcel rides in the rack until you unpack it at SARO's GARAGE RECEIVING table."))
+  :FString(TEXT("The rack is empty until you buy something. Pay at the Caliche gas station counter or the Feed & Seed, carry the parcel here and use the rack to load it; unpack it at SARO's GARAGE RECEIVING."));
+}
 FString FS47TruckCare::Steps(int32 Spares,int32 Waters) const
 {
  if(!NeedsRescue())return FString();
@@ -468,6 +483,13 @@ bool FS47TruckCare::SelfTest(TArray<FString>& Lines)
  const FString WithSpare=T.Steps(1,2),NoSpare=T.Steps(0,2);
  Check(WithSpare.Contains(TEXT("spade"))&&WithSpare.Contains(TEXT("jack"))&&WithSpare.Contains(TEXT("spare wheel"))&&WithSpare.Contains(TEXT("Get out"))&&WithSpare.Contains(TEXT("county tow")),TEXT("a stranded truck says what is wrong, what it needs and where it is"));
  Check(NoSpare.Contains(TEXT("NO SPARE"))&&NoSpare.Contains(TEXT("$15")),TEXT("a flat with no spare says where to get one"));
+ {
+  // TRUCK-LOAD-20261112: the truck's own load is listed before anything is bought, and what is short says where to get it.
+  const auto NewTruck=FS47TruckCare::LoadLines(1,2,0,0),Short=FS47TruckCare::LoadLines(0,0,1,3);
+  Check(NewTruck.Num()==3&&NewTruck[0].Value==TEXT("1")&&NewTruck[1].Value==TEXT("2")&&NewTruck[2].Key.Contains(TEXT("jack")),TEXT("a new truck lists its spare, two cans of water and the tools behind the seat"));
+  Check(Short.Num()==5&&Short[0].Value.Contains(TEXT("$15"))&&Short[1].Value.Contains(TEXT("NONE"))&&Short[3].Value==TEXT("1")&&Short[4].Value==TEXT("3"),TEXT("used up says where to buy; rope and wire show once bought"));
+  Check(FS47TruckCare::RackNote(false).Contains(TEXT("empty until you buy"))&&FS47TruckCare::RackNote(true).Contains(TEXT("GARAGE RECEIVING")),TEXT("an empty rack says it is empty until something is bought, and how"));
+ }
  Check(FS47TruckCare::TowFeeFor(0)==35&&FS47TruckCare::TowFeeFor(4000)==45&&FS47TruckCare::TowFeeFor(1e6)==60&&FS47TruckCare::TowFeeFor(-5)==35,TEXT("the tow costs 35 to 60 dollars by distance"));
  Check(FS47TruckCare::TowMinutesFor(0)==45.&&FS47TruckCare::TowMinutesFor(1e6)==90.,TEXT("the tow takes 45 to 90 minutes"));
  T.TestLeg(10000);FS47TruckCare L(nullptr);L.Begin(S47J::Read(S47J::Write(T.Save())));

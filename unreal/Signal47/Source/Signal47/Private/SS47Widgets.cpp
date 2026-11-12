@@ -23,6 +23,9 @@
 #include "S47HudGauges.h"
 #include "S47Stress.h"
 #include "S47Fatigue.h"
+#include "S47Audio.h"
+#include "S47Thoughts.h"
+#include "S47LocationCards.h"
 #include "S47Flow.h"
 #include "S47GameStyle.h"
 #include "S47Image.h"
@@ -407,6 +410,12 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top)
 		.Padding(TAttribute<FMargin>::CreateLambda([this] { const float H = float(GetCachedGeometry().GetLocalSize().Y); return FMargin(0, bAtLine ? 0.64f * H : 0.5f * H + P(28), 0, 0); }))
 		[Prompt]
+		// UI-20261112 (Tom: «teksten må komme litt mer midt på skjermen»): the player's own thought nearer the middle of the screen, a
+		// little under the centre: clear of the ring and of the use prompt under it (lower at the line, where the prompt is lower).
+		// The captions stay at the foot; a thought is in their lane of the one queue, so never up with one.
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top)
+		.Padding(TAttribute<FMargin>::CreateLambda([this] { const float H = float(GetCachedGeometry().GetLocalSize().Y); return FMargin(0, (bAtLine ? 0.78f : 0.66f) * H, 0, 0); }))
+		[SAssignNew(ThoughtBox, SVerticalBox)]
 		// the captions at the foot (.sub), the newest under
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, P(96))[SAssignNew(ToastBox, SVerticalBox)]
 		// MSG-ONE-20261109: a plain line while a caption is up, small and dimmed, bottom left over the NOTED slip
@@ -498,7 +507,19 @@ void SS47Hud::SyncToasts()
 			S47Game::SplitCaption(Shown->Text, T->Who, T->Line);
 			// WEEKLY-CASE-20261109: a thought has no speaker and no clock over it
 			T->bThought = S47Thought::Is(Shown->Text);
-			if (T->bThought) { T->Who.Reset(); T->Line = S47Thought::Words(Shown->Text); }
+			if (T->bThought)
+			{
+				T->Who.Reset(); T->Line = S47Thought::Words(Shown->Text);
+				// UI-20261112 (Tom: «gli bort fadende i forskjellige retninger hver gang»): as it goes it drifts a little way off, a new
+				// way each time (S47Thoughts::DriftAngle); with Head motion and bumps off, or slow fades, it only fades. One thought at
+				// a time: this one comes in once the one before it has gone.
+				const US47Main* Mine = Main();
+				const bool bStill = Mine && Mine->Flow && (!Mine->Flow->bHeadMotion || Mine->Flow->bCalmFlash);
+				T->GoSecs = bStill ? 0.9f : float(S47Thoughts::DriftSecs);
+				LastWay = S47Thoughts::DriftAngle(LastWay, FMath::FRand());
+				T->Way = float(LastWay);
+				for (const TSharedRef<FToast>& Going : Toasts) if (Going->bThought && Going->Out >= 0.f) T->In = FMath::Min(T->In, -(Going->GoSecs - Going->Out) / 0.35f);
+			}
 			else if (T->Who.IsEmpty()) if (const US47Main* Mn = Main(); Mn && Mn->Story && Mn->Mode == US47Main::EMode::Play) T->Who = Mn->Evening && Mn->Evening->Commute() ? FString(TEXT("LATE AFTERNOON")) : Mn->Story->ClockText(false);
 			// HUD-D-20261109: words coming over the walkie ("WALKIE 1, DALE: ...") put its line up for as long as they are on screen
 			int32 SpokeOn = 1;
@@ -522,9 +543,10 @@ void SS47Hud::ClearToasts() { Toasts.Empty(); Queue.Clear(); Queue.Step(Now, 0.)
 void SS47Hud::Rebuild()
 {
 	using namespace S47Game;
-	if (!ToastBox.IsValid() || !CornerBox.IsValid()) return;
+	if (!ToastBox.IsValid() || !CornerBox.IsValid() || !ThoughtBox.IsValid()) return;
 	ToastBox->ClearChildren();
 	CornerBox->ClearChildren();
+	ThoughtBox->ClearChildren();
 	const bool bLarge = Main() && Main()->UI && Main()->UI->bLargeText;
 	for (const TSharedRef<FToast>& T : Toasts)
 	{
@@ -551,17 +573,25 @@ void SS47Hud::Rebuild()
 		{
 			const TSharedPtr<FToast> X = W.Pin();
 			if (!X.IsValid()) return FLinearColor::Transparent;
-			return FLinearColor(1, 1, 1, Dim * (X->Out >= 0.f ? FMath::Max(0.f, 1.f - X->Out / 0.6f) : FMath::SmoothStep(0.f, 1.f, X->In)));
+			return FLinearColor(1, 1, 1, Dim * (X->Out >= 0.f ? FMath::Max(0.f, 1.f - X->Out / X->GoSecs) : FMath::SmoothStep(0.f, 1.f, X->In)));
 		};
 		if (T->bThought)
 		{
 			// WEEKLY-CASE-20261109: the player's own thought, no box. D46-5-20261110 (Tom): in the typewriter face like a caption in a
-			// case-file show (Special Elite), pale on the dark with a hard shadow under it so that it reads on a lit yard too; low on the
-			// screen like the captions (the same lane, so one at a time with them).
+			// case-file show (Special Elite), pale on the dark with a hard shadow under it so that it reads on a lit yard too.
+			// UI-20261112 (Tom): nearer the middle of the screen (ThoughtBox), and as it goes it drifts a little way off as it fades.
 			const float TypePx = (bLarge ? 32.f : 27.f);
-			ToastBox->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(3))
+			ThoughtBox->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(3))
 			[
 				SNew(SBorder).BorderImage(Box(C(0x05070d, 0.f))).Padding(FMargin(P(18), P(4), P(18), P(6))).ColorAndOpacity_Lambda(Alpha)
+				.RenderTransform_Lambda([W]
+				{
+					const TSharedPtr<FToast> X = W.Pin();
+					if (!X.IsValid() || X->Out < 0.f) return TOptional<FSlateRenderTransform>();
+					const US47Main* Mine = Main();
+					const bool bStill = Mine && Mine->Flow && (!Mine->Flow->bHeadMotion || Mine->Flow->bCalmFlash);
+					return TOptional<FSlateRenderTransform>(FSlateRenderTransform(S47Thoughts::DriftOffset(X->Way, X->Out / X->GoSecs, bStill) * double(S47Game::U)));
+				})
 				[
 					SNew(STextBlock).Text(FText::FromString(T->Line)).Font(Type(TypePx, 1.f)).ColorAndOpacity(FLinearColor(0.93f, 0.92f, 0.88f, 0.96f))
 					.ShadowOffset(FVector2D(2.f, 2.f)).ShadowColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.85f))
@@ -582,6 +612,88 @@ void SS47Hud::Rebuild()
 			.RenderTransform_Lambda([W] { const TSharedPtr<FToast> X = W.Pin(); return TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2D(0, X.IsValid() && X->Out < 0.f ? P(6) * (1.f - FMath::SmoothStep(0.f, 1.f, X->In)) : 0.f))); })
 			[In]
 		];
+	}
+}
+
+// UI-20261112 (Tom: «stedskort»): the location card. S47LocationCards says which and when; here it is typed out bottom left in white
+// typewriter letters with a thin shadow, the teleprinter's type bar ticking quietly for each letter, then stands and fades.
+bool SS47Hud::LocationCard(const FString& Line1, const FString& Line2, const FString& Line3)
+{
+	if (PlaceCard.T >= 0) return false;
+	PlaceCard = FPlaceCard();
+	for (const FString* Each : { &Line1, &Line2, &Line3 }) if (!Each->TrimStartAndEnd().IsEmpty()) PlaceCard.L.Add(Each->TrimStartAndEnd());
+	if (!PlaceCard.L.Num()) return false;
+	PlaceCard.T = 0;
+	PlaceCard.Lift = PlaceCardLift();
+	return true;
+}
+
+float SS47Hud::PlaceCardLift() const
+{
+	// over a plain line in the corner or the NOTED slip when one is there; otherwise low, over the key hints' row
+	for (const TSharedRef<FToast>& T : Toasts) if (T->bCorner) return S47Game::P(300);
+	return SlipT >= 0.f ? S47Game::P(196) : S47Game::P(104);
+}
+
+void SS47Hud::StepPlaceCard(float Dt)
+{
+	if (PlaceCard.T < 0) return;
+	PlaceCard.Lift += (PlaceCardLift() - PlaceCard.Lift) * FMath::Min(1.f, Dt * 6.f);
+	// its time runs only while it can be seen
+	if (!Playing() || ModalOpen()) return;
+	PlaceCard.T += Dt;
+	const TArray<FString>& L = PlaceCard.L;
+	int32 Letters = 0, Whole = 0;
+	TCHAR Newest = TEXT(' ');
+	for (int32 I = 0; I < L.Num(); ++I)
+	{
+		const int32 N = S47LocationCards::Typed(L, I, PlaceCard.T);
+		Letters += N;
+		Whole += N >= L[I].Len() ? 1 : 0;
+		if (N > 0) Newest = L[I][N - 1];
+	}
+	US47Main* M = Main();
+	US47Audio* Sound = M ? M->Audio.Get() : nullptr;
+	// one strike of the type bar for a letter (none for a space), and the carriage's softer one as a line ends
+	if (Letters > PlaceCard.Ticked)
+	{
+		PlaceCard.Ticked = Letters;
+		if (Sound && Newest != TEXT(' ')) Sound->TypeBar(FVector::ZeroVector, false, S47LocationCards::TickGain);
+	}
+	if (Whole > PlaceCard.Returned)
+	{
+		PlaceCard.Returned = Whole;
+		if (Sound) Sound->TypeBar(FVector::ZeroVector, true, S47LocationCards::ReturnGain);
+	}
+	if (PlaceCard.T >= S47LocationCards::Life(L)) PlaceCard.T = -1;
+}
+
+void SS47Hud::PaintPlaceCard(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const
+{
+	using namespace S47Game;
+	const TArray<FString>& L = PlaceCard.L;
+	const float A = float(S47LocationCards::Alpha(L, PlaceCard.T));
+	if (A <= 0.002f || !L.Num()) return;
+	const bool bLarge = Main() && Main()->UI && Main()->UI->bLargeText;
+	const FVector2f Whole = FVector2f(G.GetLocalSize());
+	// the place a size over the town and the time; the lines stand on the card's foot
+	const float Big = bLarge ? 34.f : 29.f, Small = bLarge ? 28.f : 24.f, Pitch = 1.32f;
+	float Tall = 0.f;
+	for (int32 I = 0; I < L.Num(); ++I) Tall += P((I ? Small : Big) * Pitch);
+	const float Left = P(46), Under = FMath::Max(1.5f, P(1.5f));
+	float Y = Whole.Y - PlaceCard.Lift - Tall;
+	for (int32 I = 0; I < L.Num(); ++I)
+	{
+		const float Px = I ? Small : Big;
+		const FString Shown = L[I].Left(S47LocationCards::Typed(L, I, PlaceCard.T));
+		if (!Shown.IsEmpty())
+		{
+			const FSlateFontInfo Face = Type(Px, 1.5f);
+			const FVector2f Room(Whole.X - Left, P(Px * 1.4f));
+			FSlateDrawElement::MakeText(Out, Layer, G.ToPaintGeometry(Room, FSlateLayoutTransform(FVector2f(Left + Under, Y + Under))), Shown, Face, ESlateDrawEffect::None, FLinearColor(0.f, 0.f, 0.f, 0.8f * A));
+			FSlateDrawElement::MakeText(Out, Layer + 1, G.ToPaintGeometry(Room, FSlateLayoutTransform(FVector2f(Left, Y))), Shown, Face, ESlateDrawEffect::None, FLinearColor(1.f, 1.f, 1.f, 0.96f * A));
+		}
+		Y += P(Px * Pitch);
 	}
 }
 
@@ -634,9 +746,10 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	{
 		if (T->Out < 0.f) T->In = FMath::Min(1.f, T->In + Dt / 0.35f);
 		else T->Out += Dt;
-		bGone |= T->Out >= 0.6f;
+		bGone |= T->Out >= T->GoSecs;
 	}
-	if (bGone) { Toasts.RemoveAll([](const TSharedRef<FToast>& T) { return T->Out >= 0.6f; }); Rebuild(); }
+	if (bGone) { Toasts.RemoveAll([](const TSharedRef<FToast>& T) { return T->Out >= T->GoSecs; }); Rebuild(); }
+	StepPlaceCard(Dt); // UI-20261112
 	FlashT = FMath::Max(0.f, FlashT - Dt);
 	ReadGauges(Dt);
 	const float Target = bFadeOn ? 1.f : 0.f;
@@ -1059,6 +1172,12 @@ int32 SS47Hud::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 	if (Gauges.BatteryA > 0.f || Gauges.RadioA > 0.f || (Gauges.bShown && Gauges.FiledT >= 0.f))
 	{
 		PaintGauges(G, Out, Top + 2);
+		Top += 2;
+	}
+	// UI-20261112 (Tom): the location card, bottom left, under the shutter and the fade
+	if (PlaceCard.T >= 0 && Playing() && !ModalOpen() && !Vf.bOn && !SS47ScreenView::AnyWorldScreenActive())
+	{
+		PaintPlaceCard(G, Out, Top + 1);
 		Top += 2;
 	}
 	if (FlashT > 0.f)

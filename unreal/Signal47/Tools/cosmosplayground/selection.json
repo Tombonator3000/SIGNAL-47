@@ -1,0 +1,22 @@
+{
+ "_doc": "The Cosmos meshes taken out of the Post Apocalyptic Playground packs (extract.py) and moved to /Game/Licensed/CosmosPlayground/<dest> in a throwaway 5.8 project (migrate.py). Chosen by name only: whole playground equipment. What was left out and why is in README.md.",
+ "packs": {
+  "vol1": {
+   "zip": "PostApocPlaygroundVol1.zip",
+   "root": "PostApocPlayground_VOL1",
+   "dest": "Vol1",
+   "meshes": [
+    "Meshes/SM_JungleGym_01a", "Meshes/SM_JungleGym_03b", "Meshes/SM_Playground_Set_02b", "Meshes/SM_Playground_Set_04b", "Meshes/SM_Slide_03b"
+   ]
+  },
+  "vol3": {
+   "zip": "PostApocPlaygroundVol3.zip",
+   "root": "PostApocPlayground_VOL3",
+   "dest": "Vol3",
+   "meshes": [
+    "Meshes/Basketball_Goal_01a", "Meshes/SM_Bench_01a", "Meshes/SM_House_01a", "Meshes/SM_MerryGoRound_01a", "Meshes/SM_Slide_02a",
+    "Meshes/SM_Spring_Rider_Chicken_02a", "Meshes/SM_Spring_Rider_Pig_01a"
+   ]
+  }
+ }
+}

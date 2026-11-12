@@ -35,6 +35,8 @@ namespace S47FieldMap
 	void GatherJobs(US47Main* M, FS47MapView& V);
 	// "north-northeast"
 	FString Compass(double Deg);
+	// MAP-20261108 (→ M3): the pencil's key in the legend's column: 0 the work written in, 1 what to look into, 2 what is done (struck).
+	FString KeyWords(int32 Row);
 	// D45-20261110 (Tom's d45 map: the slip's mark far off the land): a bearing slip's pencilled search circle, road-local metres, with the
 	// wedge's label ("Day 3 slip, 21:40"), where it is in words ("1.1 miles south-southwest of SARO") and whether it has been stood in.
 	// S47UI.h stays as it is, so it rides in FS47MapView::Marks as Kind "slip_circle" (Freeform's sheet has no Story marks of its own).

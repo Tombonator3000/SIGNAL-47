@@ -28,6 +28,10 @@ public:
  bool InspectGate();
  bool ReadPost(); // The second logger's post, once its window is over.
  bool Climbing() const{return ClimbT>=0;}
+ // MAP-20261108 (→ M3): where the planned test is done (SARO's terms: the ladder, the gate or the field post) and its short pencil
+ // label for the survey sheet. False when no field test is planned.
+ bool MapSpot(FVector& OutSaro,FString& OutLabel) const;
+ static FString MapLabel(int32 Test,bool bSet);
  static void PeakAfter(double Prepared,double& Start,double& End);
  static bool ComparableWind(double Reference,const FVector2D& Direction,double Strength,const FVector2D& Current);
  static bool SelfTest(TArray<FString>& Lines);

@@ -2080,7 +2080,7 @@ bool US47World::CabGetOut()
 	const bool bOut = GetOutHere();
 	bLeaveRunning = false;
 	if (bOut && bIdleOut && FirstTime(TEXT("idle")))
-		Toast(FString::Printf(TEXT("You leave the engine running: it idles, headlights on, using a little fuel. %s in the cab turns the key."), *S47Keys::Said(TEXT("ignition"))), 6.f);
+		Toast(FString::Printf(TEXT("You leave the engine running: it idles, headlights on, using a little fuel, heard and seen a long way off. %s in the cab turns the key."), *S47Keys::Said(TEXT("ignition"))), 6.f);
 	return bOut;
 }
 

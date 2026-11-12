@@ -121,6 +121,7 @@ public:
 	float Volume = 0.8f, MusicLevel = 0.7f, RadioLevel = 1.f, Sens = 1.f, PadLookSpeed = 1.f, BaseFov = 70.f;
 	bool bInvertY = false, bPadInvertY = false, bLargeText = false, bCalmFlash = false, bStillShots = false, bHeadMotion = true, bAbductOn = true;
 	bool bCameraMoments = true;   // N1110: the short snaps of the view in events (FS47CameraMoment; settings "cameraMoments")
+	bool bLocationCards = true;   // UI-20261112 (Tom): the place's name typed out on arriving (S47LocationCards; settings "locationCards")
 	bool bCharacters = true, bSerling = true, bArtBell = true, bRadioCast = true;
 	bool bVehicleMirrors = true;   // the Jeep's live mirrors (settings "vehicleMirrors"; -S47Mirrors=0/1 for this run only)
 	FString Quality = TEXT("high"), Picture = TEXT("carpenter");

@@ -19,7 +19,8 @@ void FS47FreeformTest::StepStationFiles(double Dt)
  if(!M||!M->Flow||M->Flow->bStarting||S47Startup::Blocking()||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Player||!M->UI||!M->World)return;
  auto& F=*M->Freeform;
  auto Shot=[&](const TCHAR* Name){FScreenshotRequest::RequestScreenshot(Root/Name,true,false);};
- auto Show=[&](const TCHAR* Key,int32 Page){F.ArchiveTab=4;F.ArchivePick=Key;F.ArchivePage=Page;F.OpenArchive();};
+ // On the glass the file is a tab of OPS / RECORDS; off it, a page behind the binder's STATION FILES divider (RECORDS-BINDER).
+ auto Show=[&](const TCHAR* Key,int32 Page){F.ArchiveTab=4;F.ArchivePick=Key;F.ArchivePage=Page;if(F.TerminalOnGlass())F.OpenArchive();else F.BinderShow(S47Binder::FileKey(Key),Page);};
  if(Stage==0)
  {
   if(Age<3)return;M->UI->Close(true);
@@ -51,7 +52,7 @@ void FS47FreeformTest::StepStationFiles(double Dt)
   if(!Check(F.Day()>=3&&F.StationFileDue(),FString::Printf(TEXT("on day %d the memo on the valley in Norway is released and RECORDS is marked again"),F.Day())))return;
   Go(8,.5);return;
  }
- if(Stage==8){M->UI->Close(true);Show(TEXT("station-03"),0);if(!Check(F.ArchiveTab==4&&!F.TerminalOnGlass(),TEXT("the same files are in the records binder, on paper")))return;Go(9,.7);return;}
+ if(Stage==8){M->UI->Close(true);Show(TEXT("station-03"),0);if(!Check(F.BinderView->Tab==S47Binder::SecStation&&F.BinderView->Pick==S47Binder::FileKey(TEXT("station-03"))&&!F.TerminalOnGlass(),TEXT("the same files are in the records binder, on paper")))return;Go(9,.7);return;}
  if(Stage==9){Shot(TEXT("station-files-binder.png"));Go(10,.3);return;}
  if(Stage==10)
  {

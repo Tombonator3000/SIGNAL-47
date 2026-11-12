@@ -188,6 +188,8 @@ public:
 	void HoldTruck(double K) { if (FS47DriveController* D = CabDrive()) D->Held = K; }
 	/** IGNITION-20261111: the truck left running with the player out of it: idling, headlights on. */
 	bool EngineIdling() const { return bIdleOut; }
+	/** IDLE-LURE-20261112: the truck idling in the area the player is in, on foot (what a visit's body may be drawn to), or null. */
+	FS47Truck* IdleTruckNow() const { return bIdleOut && !bDriving && Area == IdleArea ? IdleTruck : nullptr; }
 	/** The idling truck goes quiet and dark: switched off, or (bDied) its tank ran dry. */
 	void EndIdle(bool bDied = false);
 	/** The key, stopped in the cab (the ignition action; F10's check). */

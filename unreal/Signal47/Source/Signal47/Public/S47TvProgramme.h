@@ -55,7 +55,7 @@ public:
 	 *  (ON_AIR, OFF_AIR) and its snow. The programme's own clock (ChannelTime) runs in real seconds: a set tuned in later shows
 	 *  the moment the others show. */
 	enum class EAir : uint8 { Programme, SignOff, Card, Snow };
-	static constexpr double DAY_ON = 6 * 3600, DAY_OFF = 2 * 3600, SIGN_OFF = 64, CARD_AFTER = 150;
+	static constexpr double DAY_ON = 6 * 3600, DAY_OFF = 2 * 3600, SIGN_OFF = 82, CARD_AFTER = 150;
 	struct FChannel { EAir Air = EAir::Snow; double Into = -1, Time = 0, Clock = -1; bool bAsked = false; };
 	static void Advance(FChannel& C, double Clock, double Dt, bool bDay, bool bForced);
 	static void ChannelStep(double Clock, double Dt, bool bDay);

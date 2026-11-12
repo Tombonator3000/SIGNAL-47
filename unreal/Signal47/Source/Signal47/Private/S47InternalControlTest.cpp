@@ -18,9 +18,9 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 
-// One unusual observation through the receiver's RECORD tab: explanation, real button, timed control, next hint.
-// D45-20261110: -S47InternalControlEarly takes Tom's new order instead: the control straight after the take on the receiver's own
-// ACQUIRE key (the chart left at the printer), the reel deck, then OPS naming the printer, then the chart.
+// GAMEPLAY-LOOP-01 (Tom, 12 November): one unusual observation along its six steps, each one thing at one place: ANOMALY DETECTED on
+// the receiver, record it there, one listen at the reel deck, confirm at OPS, the packet at the printer (the binder is walked in the
+// card player, S47DevFreeform). No control to record, no second reel, no chart to fetch. (The name is the old internal-control test's.)
 void FS47FreeformTest::StepInternalControl(double Dt)
 {
  using J=FS47FreeformSession::EJobStage;
@@ -53,7 +53,6 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   Found[0]->SimulateClick();return true;
  };
  auto Shows=[&](const FString& Text){TArray<TSharedRef<SButton>> Found;bool TextSeen=false;Scan(Text,Found,TextSeen);return TextSeen;};
- const bool bEarly=FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlEarly"));
  if(Stage==0)
  {
   if(Age<3)return;M->UI->Close(true);F.Director->Stop();
@@ -65,87 +64,37 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(!Check(F.PointSelected(),TEXT("array commanded")))return;
   Go(1);return;
  }
- if(Stage==1){if(!F.StartAcquisition())return;Go(2);return;}
- if(Stage==2&&bEarly)
+ if(Stage==1)
  {
-  if(F.CurrentJob()->Stage!=J::Chart)return;
-  if(!Check(F.CurrentJob()->bAnomaly&&!F.CurrentJob()->bPrinted&&!F.CurrentJob()->bControl&&F.CanRecordControl(),TEXT("D45: the unusual take is on tape with its chart still at the printer, and its control can be recorded")))return;
-  if(!Check(F.JobNextAction(*F.CurrentJob()).StartsWith(TEXT("RECEIVER"))&&F.JobLocation(*F.CurrentJob()).StartsWith(TEXT("Receiver")),TEXT("D45: hint and location name the receiver: ")+F.JobNextAction(*F.CurrentJob())))return;
+  // 1: ANOMALY DETECTED, on the HUD's line and on the receiver's glass, once the card is tuned and the array steady
+  if(!F.TerminalLines(1).Contains(TEXT("ANOMALY DETECTED")))return;
+  const FString Said=F.JobNextAction(*F.CurrentJob());
+  if(!Check(F.AnomalyAhead()&&Said.StartsWith(TEXT("RECEIVER"))&&Said.Contains(TEXT("ANOMALY DETECTED")),TEXT("the tuned receiver says ANOMALY DETECTED before the take: ")+Said))return;
+  // 2: record it there
+  if(!Check(F.StartAcquisition()&&F.CurrentJob()->bAnomaly&&F.JobNextAction(*F.CurrentJob()).Contains(TEXT("ANOMALY DETECTED")),TEXT("START RECORDING takes the unusual take, still marked as such: ")+F.JobNextAction(*F.CurrentJob())))return;
+  Go(2);return;
+ }
+ if(Stage==2)
+ {
+  if(F.CurrentJob()->Stage!=J::Recorded)return;
+  const auto* Take=F.CurrentJob();
+  if(!Check(Take->bAnomaly&&Take->bPrinted&&!Take->OriginalPage.IsEmpty()&&!Take->bControl&&!F.CanRecordControl()&&F.PrinterJobId()!=Take->Id,TEXT("the take is kept as it ends: original in the notebook, no chart at the printer, no control asked for")))return;
+  if(!Check(F.JobNextAction(*Take).StartsWith(TEXT("REEL DECK"))&&F.JobLocation(*Take).StartsWith(TEXT("Reel deck"))&&F.TerminalLines(1).Contains(TEXT("ANOMALY DETECTED")),TEXT("hint and location name the reel deck: ")+F.JobNextAction(*Take)))return;
   M->Player->Place(0,-2.15,0);F.OpenReceiver();Go(20,1.);return;
  }
  if(Stage==20){if(!Click(TEXT("ACQUIRE")))return;Go(21,1.);return;}
  if(Stage==21)
  {
-  TArray<TSharedRef<SButton>> Keys;bool KeySeen=false;Scan(TEXT("RECORD CONTROL / 8 s"),Keys,KeySeen);
-  if(!Check(Keys.Num()==1&&Keys[0]->IsEnabled(),TEXT("D45: ACQUIRE offers RECORD CONTROL / 8 s right after the take")))return;
+  TArray<TSharedRef<SButton>> Keys;bool KeySeen=false;Scan(TEXT("ON TAPE / REEL DECK"),Keys,KeySeen);
+  if(!Check(Keys.Num()==1&&!Keys[0]->IsEnabled(),TEXT("ACQUIRE says the take is on tape and the reel deck is next; nothing to press here")))return;
+  TArray<TSharedRef<SButton>> Control;bool ControlSeen=false;Scan(TEXT("RECORD CONTROL / 8 s"),Control,ControlSeen);
+  if(!Check(Control.Num()==0,TEXT("the receiver offers no control for the unusual take")))return;
   TSharedPtr<SWidget> Up=Keys[0];while(Up.IsValid()&&Up->GetTypeAsString()!=TEXT("SScrollBox"))Up=Up->GetParentWidget();
   const float Over=Up.IsValid()?StaticCastSharedPtr<SScrollBox>(Up)->GetScrollOffsetOfEnd():-1.f;
-  UE_LOG(LogTemp,Display,TEXT("S47 D45 receiver ACQUIRE with the tape strip: %.1f units past the glass"),Over);
-  if(!Check(Up.IsValid()&&Over<1.f,FString::Printf(TEXT("D45: ACQUIRE with the tape strip fits the glass without scrolling (%.1f over)"),Over)))return;
-  if(!Check(Shows(TEXT("LOCKED")),TEXT("D45: the ARRAY line shows the lock")))return;
-  Shot(TEXT("acquire-after-take.png"));Keys[0]->SimulateClick();
-  if(!Check(F.CurrentJob()->bControl&&F.CurrentJob()->Stage==J::Chart,TEXT("D45: the receiver's own key starts the control before the chart is collected")))return;
-  Go(22,2.);return;
- }
- if(Stage==22){Shot(TEXT("acquire-control-running.png"));Go(23);return;}
- if(Stage==23)
- {
-  if(F.CurrentJob()->ControlAt<8)return;
-  if(!Check(F.CurrentJob()->Stage==J::Chart&&F.JobNextAction(*F.CurrentJob()).StartsWith(TEXT("REEL DECK")),TEXT("D45: after the control the reel deck is next, the chart still waiting: ")+F.JobNextAction(*F.CurrentJob())))return;
-  Go(70,1.);return;
- }
- if(Stage==2)
- {
-  if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
-  if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Recorded&&F.CurrentJob()->bAnomaly&&!F.CurrentJob()->bControl,TEXT("unusual original retained, control not yet recorded")))return;
-  if(!Check(F.JobNextAction(*F.CurrentJob()).Contains(TEXT("RECORD TAB"))&&F.JobLocation(*F.CurrentJob()).Contains(TEXT("RECORD tab")),TEXT("hint and location name the RECORD tab: ")+F.JobNextAction(*F.CurrentJob())))return;
-  M->Player->Place(0,-2.15,0);F.OpenReceiver();Go(3,1.);return;
- }
- // The other way in: the physical receiver rack by the window.
- if(Stage==3&&FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlRack")))
- {
-  M->UI->Close(true);M->Player->Place(4.4,-2.24,0);
-  const FVector Eye(4.4,M->Player->FloorY+M->Player->Eye,-2.24),D=FVector(5.265,1.07,-2.24)-Eye;
-  M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());Go(30,1.);return;
- }
- if(Stage==30)
- {
-  const FString Pick=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
-  if(!Check(Pick==TEXT("rack")&&bool(M->Player->OnUse),TEXT("actual eye-ray selects the receiver rack; got ")+Pick+TEXT(", label ")+F.Label(TEXT("rack"))))return;
-  Shot(TEXT("rack-aimed.png"));M->Player->OnUse(TEXT("rack"));
-  if(!Check(F.CurrentJob()->bControl,TEXT("using the physical rack starts the control")))return;
-  Go(31);return;
- }
- if(Stage==31)
- {
-  if(F.CurrentJob()->ControlAt<8)return;
-  if(!Check(F.CurrentJob()->bPrinted,TEXT("control completes with the original kept")))return;
-  Finish(true,TEXT("Physical receiver rack starts the timed control."));return;
- }
- if(Stage==3){if(!Click(TEXT("RECORD")))return;Go(4,1.);return;}
- if(Stage==4)
- {
-  if(!Check(Shows(TEXT("THE SKY OR THE STATION"))&&Shows(TEXT("NOT RECORDED"))&&Shows(TEXT("reference signal")),TEXT("RECORD tab explains the control and shows it is not recorded")))return;
-  Shot(TEXT("control-before.png"));Go(5,1.);return;
- }
- if(Stage==5)
- {
-  if(!Click(TEXT("RECORD INTERNAL CONTROL / 8 SECONDS")))return;
-  if(!Check(F.CurrentJob()->bControl,TEXT("the on-screen button starts the control")))return;
-  Go(6,2.);return;
- }
- if(Stage==6)
- {
-  if(!Check(Shows(TEXT("RUNNING"))&&F.CurrentJob()->ControlAt>0&&F.CurrentJob()->ControlAt<8,FString::Printf(TEXT("panel shows the control running, %.1f s"),F.CurrentJob()->ControlAt)))return;
-  TArray<TSharedRef<SButton>> Found;bool TextSeen=false;Scan(TEXT("RECORD INTERNAL CONTROL / 8 SECONDS"),Found,TextSeen);
-  if(!Check(Found.Num()==0,TEXT("start button is gone while it runs")))return;
-  Shot(TEXT("control-running.png"));Go(7);return;
- }
- if(Stage==7)
- {
-  if(F.CurrentJob()->ControlAt<8)return;
-  if(!Check(Shows(TEXT("COMPLETE")),TEXT("panel shows the control complete")))return;
-  Shot(TEXT("control-complete.png"));Go(70,1.);return;
+  UE_LOG(LogTemp,Display,TEXT("S47 receiver ACQUIRE with the tape strip: %.1f units past the glass"),Over);
+  if(!Check(Up.IsValid()&&Over<1.f,FString::Printf(TEXT("ACQUIRE with the tape strip fits the glass without scrolling (%.1f over)"),Over)))return;
+  if(!Check(Shows(TEXT("ANOMALY ON TAPE")),TEXT("the receiver's banner names the anomaly on tape")))return;
+  Shot(TEXT("acquire-after-take.png"));Go(70,1.);return;
  }
  if(Stage==70)
  {
@@ -180,7 +129,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  }
  if(Stage==73)
  {
-  if(!Check(Shows(TEXT("LISTEN TO THE WHOLE ORIGINAL"))&&Shows(TEXT("MARK THE EXTRA TICKS"))&&Shows(TEXT("KNOWN SOUNDS TO COMPARE BY EAR")),TEXT("panel says what to do first")))return;
+  if(!Check(Shows(TEXT("PLAY THE TAKE ONCE"))&&Shows(TEXT("CONFIRMED: TO OPS"))&&Shows(TEXT("KNOWN SOUNDS TO COMPARE BY EAR")),TEXT("panel says what to do first")))return;
   // D45-20261110: one faceplate, no scrolling: its last row stands above the way out
   TArray<TSharedRef<SButton>> Last,Out;bool LastSeen=false,OutSeen=false;Scan(TEXT("NEXT REFERENCE"),Last,LastSeen);Scan(TEXT("ESC / RETURN TO ROOM"),Out,OutSeen);
   if(!Check(Last.Num()==1&&Out.Num()==1,TEXT("D45: the deck has its references row and its way out")))return;
@@ -227,22 +176,29 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(!Check(!F.TapePanelOpen()&&!M->ModalOpen()&&!M->bPausedByMenu,TEXT("a real Escape press leaves the panel without opening the pause menu")))return;
   Go(8,.3);return;
  }
- if(Stage==8&&bEarly)
- {
-  if(!Check(!F.RegisterComparison(TEXT("unresolved"))&&F.FeedbackText().Contains(TEXT("PRINTER"))&&F.CurrentJob()->Stage==J::Chart,TEXT("D45: OPS names the printer while the chart waits: ")+F.FeedbackText()))return;
-  Go(80);return;
- }
- if(Stage==80)
- {
-  if(F.PrinterProgress()<1)return;
-  if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Recorded&&F.CurrentJob()->bPrinted&&F.CurrentJob()->bControl&&F.CurrentJob()->ControlAt>=8,TEXT("D45: the chart collected after the control keeps the control")))return;
-  if(!Check(F.JobNextAction(*F.CurrentJob()).StartsWith(TEXT("REEL DECK")),TEXT("D45: and the reel deck is still the next step: ")+F.JobNextAction(*F.CurrentJob())))return;
-  Finish(true,TEXT("D45: unusual take, control at the receiver straight after it, reel deck, OPS naming the printer, chart later."));return;
- }
  if(Stage==8)
  {
-  const FString Next=F.JobNextAction(*F.CurrentJob());
-  if(!Check(F.CurrentJob()->bPrinted&&Next.Contains(TEXT(":")),TEXT("original kept and next step named: ")+Next))return;
-  Finish(true,TEXT("Unusual observation through the RECORD tab: explanation, real button, timed control and next step."));return;
+  // 3: the rest of the take, from where it stopped: one listen confirms it (the marks set by hand are kept)
+  F.OpenAudio();if(!Check(F.AudioAction(TEXT("play")),TEXT("PLAY resumes the take at the deck")))return;Go(81);return;
+ }
+ if(Stage==81)
+ {
+  if(F.AudioPlaying()||F.AudioPreparing())return;
+  const auto* Take=F.CurrentJob();
+  if(!Check(Take->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&Take->ControlCovered==0&&FMath::IsNearlyEqual(Take->MarkStart,9.,.05)&&FMath::IsNearlyEqual(Take->MarkEnd,13.,.05),TEXT("one listen confirms the anomaly and keeps the hand marks")))return;
+  if(!Check(F.JobNextAction(*Take).StartsWith(TEXT("OPS")),TEXT("then OPS: ")+F.JobNextAction(*Take)))return;
+  // 4: confirm at OPS, one button
+  M->UI->Close(true);
+  if(!Check(!F.RegisterComparison(TEXT("sky"))&&F.CurrentJob()->Stage==J::Recorded,TEXT("OPS takes no origin it cannot show")))return;
+  if(!Check(F.RegisterComparison(TEXT("unresolved"))&&F.CurrentJob()->Stage==J::Registered,TEXT("Confirm anomaly registers it")))return;
+  Go(82);return;
+ }
+ if(Stage==82)
+ {
+  // 5: the packet at the printer, then 6: the binder
+  if(F.PrinterProgress()<1)return;
+  if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Packet&&F.JobNextAction(*F.CurrentJob()).Contains(TEXT("BINDER")),TEXT("the printer gives the packet and the binder is next")))return;
+  M->UI->Close(true);
+  Finish(true,TEXT("Unusual take: ANOMALY DETECTED, recorded, one listen at the reel deck, confirmed at OPS, packet printed; the binder is next."));return;
  }
 }

@@ -1,0 +1,14 @@
+{
+ "_doc": "SCHOOL-PLAYGROUND (Tom, 12 November): bought Cosmos playground pieces at the Caliche school (S47TownSites FDress; the meshes by Tools/cosmosplayground, git-ignored under /Game/Licensed/CosmosPlayground, loaded only if present). at: the site's metres [x east, z south] from the school's spot (road x 48, z 2245) where the bottom centre of the piece's turned and scaled bounds goes on the land; the playground's ground is x -28 to -5, z 16 to 30, its fence along z 29 and x -6 with gaps at x -15 to -12 and z 20 to 23. yaw: Unreal degrees on top of the site's (0: the mesh's +X east, +Y south). collide: a walk block from its bounds. replaces: the group of the stand-in boxes that goes unseen when the piece is here (swings, merry, seesaw, monkey, benches). The packs have no swing set and no see-saw: the swings stay as boxes. Not read by S47Props.",
+ "pieces": [
+  {"id": "merryGoRound", "asset": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_MerryGoRound_01a.SM_MerryGoRound_01a", "at": [-14, 22], "yaw": 15, "collide": true, "replaces": "merry"},
+  {"id": "jungleGym", "asset": "/Game/Licensed/CosmosPlayground/Vol1/Meshes/SM_JungleGym_03b.SM_JungleGym_03b", "at": [-24, 25.6], "yaw": 0, "collide": true, "replaces": "monkey"},
+  {"id": "slide", "asset": "/Game/Licensed/CosmosPlayground/Vol1/Meshes/SM_Slide_03b.SM_Slide_03b", "at": [-9, 24.6], "yaw": 0, "collide": true},
+  {"id": "springPig", "asset": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_Spring_Rider_Pig_01a.SM_Spring_Rider_Pig_01a", "at": [-10.2, 18.6], "yaw": 20, "replaces": "seesaw"},
+  {"id": "springChicken", "asset": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_Spring_Rider_Chicken_02a.SM_Spring_Rider_Chicken_02a", "at": [-8.3, 19.3], "yaw": -35},
+  {"id": "benchWest", "asset": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_Bench_01a.SM_Bench_01a", "at": [-26.6, 21.6], "yaw": 90, "collide": true, "replaces": "benches"},
+  {"id": "benchSouth", "asset": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_Bench_01a.SM_Bench_01a", "at": [-19, 28.3], "yaw": 0, "collide": true},
+  {"id": "playhouse", "asset": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_House_01a.SM_House_01a", "at": [-24.3, 18.3], "yaw": 0, "collide": true},
+  {"id": "hoop", "asset": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/Basketball_Goal_01a.Basketball_Goal_01a", "at": [-16.5, 17.2], "yaw": 0, "collide": true}
+ ]
+}

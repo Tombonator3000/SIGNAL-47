@@ -1014,6 +1014,12 @@ void FS47DevFreeform::StepCards()
  if(CardsStage==3)
  {
   if(bCase&&!Card.bCaseValid&&Card.Stage<=J::Pointed){Say(FString::Printf(TEXT("case test SPOILED: %s"),*F->NextAction().Left(200)));CardsStage=1;return;}
+  // GAMEPLAY-LOOP-01 (Tom, 12 November): the extra-tick take is kept as it ends, with no chart: straight to the reel deck
+  if(Card.Stage==J::Recorded&&FS47FreeformSession::PlainAnomaly(Card))
+  {
+   Say(FString::Printf(TEXT("anomaly on tape: original kept %d, control %d, next %s"),Card.bPrinted?1:0,Card.bControl?1:0,*F->NextAction().Left(160)));
+   if(M->UI)M->UI->Close(true);F->SelectJob(CardsJob);CardsStage=26;CardsWait=F->Clock();return;
+  }
   if(Card.Stage!=J::Chart||F->PrinterProgress()<1)
   {
    if(F->Clock()-CardsSaid>=1800){CardsSaid=F->Clock();Say(FString::Printf(TEXT("still no chart: stage %d, printer %.2f, power %d, next %s"),int32(Card.Stage),F->PrinterProgress(),F->HasPowerForReactiveLight()?1:0,*F->NextAction().Left(160)));}
@@ -1026,37 +1032,26 @@ void FS47DevFreeform::StepCards()
   if(Card.Stage==J::Chart&&++CardsOlder<6){Say(TEXT("the printer gave an older sheet first; taking the next"));F->SelectJob(CardsJob);return;}
   if(!Card.bAnomaly){CardsStage=9;return;}
   F->SelectJob(CardsJob);
-  const bool bInstrument=Card.Phenomenon==TEXT("wrong_source")||Card.Phenomenon==TEXT("time_disagreement")||Card.Phenomenon==TEXT("duplicate_print");
-  CardsStage=bInstrument?40:25;CardsWait=F->Clock();return;
- }
- if(CardsStage==25)
- {
-  // The array settles for a second first; a player presses again, so this does too.
-  if(F->StartControl()){CardsStage=26;return;}
-  if(F->Clock()-CardsWait>=600){Say(FString::Printf(TEXT("control never started: stage %d, control %d, power %d, next %s"),int32(Card.Stage),Card.bControl?1:0,F->HasPowerForReactiveLight()?1:0,*F->NextAction().Left(200)));Give(TEXT("the control would not start"));}
-  return;
+  const bool bInstrument=!FS47FreeformSession::PlainAnomaly(Card);
+  CardsStage=bInstrument?40:26;CardsWait=F->Clock();return;
  }
  if(CardsStage==26)
  {
-  if(Card.ControlAt<8)return;
+  // The reel deck: the take, played once from the start, confirms the anomaly by itself (no control, no second reel, no marks).
   if(F->AudioDesk){const FVector P=F->AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(P.X,P.Z-1.2,0);}
   F->OpenAudio();F->AudioAction(TEXT("original"));F->AudioAction(TEXT("play"));CardsStage=27;CardsOlder=0;return;
  }
- if(CardsStage==27||CardsStage==28)
+ if(CardsStage==27)
  {
-  // Each reel heard through: a tape still loading, or stopped short, is pressed again (at most three times).
-  const bool bOriginal=CardsStage==27;
+  // The take heard through: a tape still loading, or stopped short, is pressed again (at most three times).
   if(F->AudioPlaying()||F->AudioPreparing())return;
-  const double Heard=bOriginal?Card.OriginalCovered:Card.ControlCovered,Full=bOriginal?18.:8.;
-  if(Heard<Full-.05&&++CardsOlder<4){F->AudioAction(bOriginal?TEXT("original"):TEXT("control"));F->AudioAction(TEXT("play"));return;}
-  if(Heard<Full-.05)Say(FString::Printf(TEXT("the %s reel stopped at %.1f of %.0f s: %s"),bOriginal?TEXT("original"):TEXT("control"),Heard,Full,*F->AudioStopReason()));
+  if(!Card.bAudioReviewed&&!FS47FreeformSession::TapeHeard(Card)&&++CardsOlder<4){F->OpenAudio();F->AudioAction(TEXT("original"));F->AudioAction(TEXT("play"));return;}
+  if(!Card.bAudioReviewed&&!FS47FreeformSession::TapeHeard(Card))Say(FString::Printf(TEXT("the take stopped at %.1f of 18 s: %s"),Card.OriginalCovered,*F->AudioStopReason()));
   CardsOlder=0;
-  if(bOriginal){F->AudioAction(TEXT("control"));F->AudioAction(TEXT("play"));CardsStage=28;return;}
-  F->AudioAction(TEXT("original"));F->SeekAudio(9.1);F->AudioAction(TEXT("mark_start"));F->SeekAudio(13.0);F->AudioAction(TEXT("mark_end"));
-  const bool bOk=F->AudioAction(TEXT("confirm"));
-  Say(FString::Printf(TEXT("both reels heard (original %.0f s, control %.0f s), interval confirmed %d"),Card.OriginalCovered,Card.ControlCovered,bOk?1:0));
+  const bool bOk=Card.bAudioReviewed;
+  Say(FString::Printf(TEXT("take heard once (%.0f s), anomaly confirmed %d, marks %.1f-%.1f, next %s"),Card.OriginalCovered,bOk?1:0,Card.MarkStart,Card.MarkEnd,*F->NextAction().Left(120)));
   if(M->UI)M->UI->Close(true);
-  if(!bOk){Give(TEXT("the reel deck would not retain the comparison"));return;}
+  if(!bOk){Give(TEXT("one listen at the reel deck did not confirm the anomaly"));return;}
   CardsStage=9;return;
  }
  if(CardsStage==40)
@@ -1716,10 +1711,20 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddWeekCase(E);
 }
 
+bool FS47DevFreeform::SelfTest(TArray<FString>& Lines)
+{
+ bool bOk=true;
+ const auto Check=[&](bool bGood,const TCHAR* What){Lines.Add(FString::Printf(TEXT("%s devFreeform: %s"),bGood?TEXT("ok"):TEXT("FAIL"),What));bOk&=bGood;};
+ Check(!PutsDownUnread(true,false,true),TEXT("Natural rhythm turned on from F10: an open F10 menu or sheet stays open (Tom 12 Nov)"));
+ Check(PutsDownUnread(true,true,true)&&!PutsDownUnread(true,true,false),TEXT("a run nobody plays (-S47NaturalNight) still puts an open sheet down"));
+ Check(!PutsDownUnread(false,true,true)&&!PutsDownUnread(false,false,true),TEXT("without Natural rhythm nothing is put down"));
+ return bOk;
+}
+
 void FS47DevFreeform::Stop()
 {
  // A new game or the title: the session these were set on has gone.
- Waiting.Reset();bNatural=false;Speed=SpeedUsed=1;Holding.Empty();bFlagRead=false;
+ Waiting.Reset();bNatural=false;bUnattended=false;Speed=SpeedUsed=1;Holding.Empty();bFlagRead=false;
  if(EyeGlintClear)EyeGlintClear();
  if(TripoNewClear)TripoNewClear();
  if(WorldFixesClear)WorldFixesClear();
@@ -1758,7 +1763,10 @@ void FS47DevFreeform::Step(double Dt)
  // NIGHT-20261110: a sheet the night puts in front of the player (the note on the desk) holds the night until it is read; the card player reads it and puts it down.
  {
   static double ModalHeld=0;
-  if(bNatural&&M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&M->ModalOpen()&&M->UI){ModalHeld+=FApp::GetDeltaTime();if(ModalHeld>6){ModalHeld=0;UE_LOG(LogS47DevFreeform,Display,TEXT("S47: natural night: a sheet lay open 6 s with nobody at it; put down"));M->UI->Close();}}
+  // F10-CLOSES-20261112 (Tom: "the F10 menu closes by itself after a few seconds"): only a run nobody plays (-S47NaturalNight from
+  // the command line) has its sheets put down. With Natural rhythm turned on from F10 the player is there, and this closed F10
+  // itself, the truck's menu and every sheet after six seconds.
+  if(PutsDownUnread(bNatural,bUnattended,M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&M->ModalOpen()&&M->UI)){ModalHeld+=FApp::GetDeltaTime();if(ModalHeld>UnreadSeconds){ModalHeld=0;UE_LOG(LogS47DevFreeform,Display,TEXT("S47: natural night: a sheet lay open 6 s with nobody at it; put down"));M->UI->Close();}}
   else ModalHeld=0;
  }
  if(!Session())return;
@@ -1769,7 +1777,7 @@ void FS47DevFreeform::Step(double Dt)
   double Flag=0;
   if(FParse::Value(FCommandLine::Get(),TEXT("S47NaturalNight="),Flag)&&DevRun())
   {
-   Speed=FMath::Clamp(Flag,1.,60.);SetNatural(true);
+   Speed=FMath::Clamp(Flag,1.,60.);bUnattended=true;SetNatural(true);
    if(Menu)Menu->Relabel(TEXT("Natural rhythm: off"),TEXT("Natural rhythm: ON"));
    // -S47NaturalDay=2: begin at 17:00 on that day, past the first night's grace, with every rule live. Nothing else is set.
    int32 FromDay=0;

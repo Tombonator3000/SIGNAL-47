@@ -1,0 +1,485 @@
+{
+ "bytes_on_disk": 277180637,
+ "checks": [
+  {
+   "detail": "Content/Licensed/CosmosPlayground",
+   "name": "packages on disk under Content/Licensed/CosmosPlayground",
+   "pass": true
+  },
+  {
+   "detail": [],
+   "name": "every package saved by UE5 (legacy file version -8 or lower)",
+   "pass": true
+  },
+  {
+   "detail": {},
+   "name": "at least one mesh passes",
+   "pass": true
+  }
+ ],
+ "destination": "/Game/Licensed/CosmosPlayground",
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "failed": {},
+ "meshes": {
+  "Basketball_Goal_01a": {
+   "bounds_cm": {
+    "max": [
+     63.2,
+     122.4,
+     338.1
+    ],
+    "min": [
+     -71.4,
+     -0.5,
+     -1.0
+    ]
+   },
+   "lods": 1,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol3",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/Basketball_Goal_01a.Basketball_Goal_01a",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -4.1,
+     60.9
+    ],
+    "height_above_bottom_cm": 1.0
+   },
+   "size_cm": [
+    134.6,
+    123.0,
+    339.1
+   ],
+   "triangles_lod0": 5172
+  },
+  "SM_Bench_01a": {
+   "bounds_cm": {
+    "max": [
+     92.7,
+     29.5,
+     88.7
+    ],
+    "min": [
+     -102.9,
+     -29.5,
+     -0.4
+    ]
+   },
+   "lods": 1,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol3",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_Bench_01a.SM_Bench_01a",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -5.1,
+     0.0
+    ],
+    "height_above_bottom_cm": 0.4
+   },
+   "size_cm": [
+    195.6,
+    59.0,
+    89.1
+   ],
+   "triangles_lod0": 2840
+  },
+  "SM_House_01a": {
+   "bounds_cm": {
+    "max": [
+     132.4,
+     175.4,
+     143.4
+    ],
+    "min": [
+     -212.5,
+     -117.6,
+     -1.6
+    ]
+   },
+   "lods": 1,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol3",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_House_01a.SM_House_01a",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -40.0,
+     28.9
+    ],
+    "height_above_bottom_cm": 1.6
+   },
+   "size_cm": [
+    344.9,
+    293.0,
+    145.0
+   ],
+   "triangles_lod0": 5204
+  },
+  "SM_JungleGym_01a": {
+   "bounds_cm": {
+    "max": [
+     335.9,
+     334.1,
+     246.6
+    ],
+    "min": [
+     -331.1,
+     -334.9,
+     -4.3
+    ]
+   },
+   "lods": 1,
+   "long_axis": "y",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol1",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol1/Meshes/SM_JungleGym_01a.SM_JungleGym_01a",
+   "pivot": {
+    "at_bottom": false,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     2.4,
+     -0.4
+    ],
+    "height_above_bottom_cm": 4.3
+   },
+   "size_cm": [
+    667.0,
+    669.0,
+    250.9
+   ],
+   "triangles_lod0": 10436
+  },
+  "SM_JungleGym_03b": {
+   "bounds_cm": {
+    "max": [
+     132.2,
+     132.9,
+     299.7
+    ],
+    "min": [
+     -132.1,
+     -132.2,
+     -1.1
+    ]
+   },
+   "lods": 1,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol1",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol1/Meshes/SM_JungleGym_03b.SM_JungleGym_03b",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.1,
+     0.3
+    ],
+    "height_above_bottom_cm": 1.1
+   },
+   "size_cm": [
+    264.3,
+    265.1,
+    300.8
+   ],
+   "triangles_lod0": 11628
+  },
+  "SM_MerryGoRound_01a": {
+   "bounds_cm": {
+    "max": [
+     128.1,
+     128.1,
+     66.3
+    ],
+    "min": [
+     -128.1,
+     -128.1,
+     0.4
+    ]
+   },
+   "lods": 1,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol3",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_MerryGoRound_01a.SM_MerryGoRound_01a",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     0.0
+    ],
+    "height_above_bottom_cm": -0.4
+   },
+   "size_cm": [
+    256.3,
+    256.3,
+    65.9
+   ],
+   "triangles_lod0": 6272
+  },
+  "SM_Playground_Set_02b": {
+   "bounds_cm": {
+    "max": [
+     214.0,
+     249.6,
+     405.4
+    ],
+    "min": [
+     -144.7,
+     -336.0,
+     -0.0
+    ]
+   },
+   "lods": 1,
+   "long_axis": "y",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol1",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol1/Meshes/SM_Playground_Set_02b.SM_Playground_Set_02b",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     34.7,
+     -43.2
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    358.7,
+    585.6,
+    405.5
+   ],
+   "triangles_lod0": 13522
+  },
+  "SM_Playground_Set_04b": {
+   "bounds_cm": {
+    "max": [
+     183.4,
+     253.7,
+     368.7
+    ],
+    "min": [
+     -153.4,
+     -355.3,
+     -1.8
+    ]
+   },
+   "lods": 1,
+   "long_axis": "y",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol1",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol1/Meshes/SM_Playground_Set_04b.SM_Playground_Set_04b",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     15.0,
+     -50.8
+    ],
+    "height_above_bottom_cm": 1.8
+   },
+   "size_cm": [
+    336.9,
+    609.0,
+    370.5
+   ],
+   "triangles_lod0": 13506
+  },
+  "SM_Slide_02a": {
+   "bounds_cm": {
+    "max": [
+     69.7,
+     373.3,
+     303.7
+    ],
+    "min": [
+     -70.0,
+     -272.8,
+     -2.7
+    ]
+   },
+   "lods": 1,
+   "long_axis": "y",
+   "material_slots": 2,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol3",
+   "packages": 13,
+   "path": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_Slide_02a.SM_Slide_02a",
+   "pivot": {
+    "at_bottom": false,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -0.1,
+     50.3
+    ],
+    "height_above_bottom_cm": 2.7
+   },
+   "size_cm": [
+    139.7,
+    646.0,
+    306.3
+   ],
+   "triangles_lod0": 7256
+  },
+  "SM_Slide_03b": {
+   "bounds_cm": {
+    "max": [
+     81.7,
+     236.9,
+     321.2
+    ],
+    "min": [
+     -81.6,
+     -216.0,
+     -0.2
+    ]
+   },
+   "lods": 1,
+   "long_axis": "y",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol1",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol1/Meshes/SM_Slide_03b.SM_Slide_03b",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     10.5
+    ],
+    "height_above_bottom_cm": 0.2
+   },
+   "size_cm": [
+    163.3,
+    452.9,
+    321.5
+   ],
+   "triangles_lod0": 10938
+  },
+  "SM_Spring_Rider_Chicken_02a": {
+   "bounds_cm": {
+    "max": [
+     43.6,
+     16.6,
+     75.9
+    ],
+    "min": [
+     -14.4,
+     -16.9,
+     0.0
+    ]
+   },
+   "lods": 1,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol3",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_Spring_Rider_Chicken_02a.SM_Spring_Rider_Chicken_02a",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     14.6,
+     -0.2
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    58.0,
+    33.5,
+    75.9
+   ],
+   "triangles_lod0": 5162
+  },
+  "SM_Spring_Rider_Pig_01a": {
+   "bounds_cm": {
+    "max": [
+     31.4,
+     15.8,
+     82.0
+    ],
+    "min": [
+     -39.5,
+     -21.7,
+     0.0
+    ]
+   },
+   "lods": 1,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "vol3",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosPlayground/Vol3/Meshes/SM_Spring_Rider_Pig_01a.SM_Spring_Rider_Pig_01a",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     -4.1,
+     -2.9
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    70.9,
+    37.5,
+    82.0
+   ],
+   "triangles_lod0": 5476
+  }
+ },
+ "mode": "verify",
+ "passed": [
+  "Basketball_Goal_01a",
+  "SM_Bench_01a",
+  "SM_House_01a",
+  "SM_JungleGym_01a",
+  "SM_JungleGym_03b",
+  "SM_MerryGoRound_01a",
+  "SM_Playground_Set_02b",
+  "SM_Playground_Set_04b",
+  "SM_Slide_02a",
+  "SM_Slide_03b",
+  "SM_Spring_Rider_Chicken_02a",
+  "SM_Spring_Rider_Pig_01a"
+ ],
+ "status": "PASS"
+}

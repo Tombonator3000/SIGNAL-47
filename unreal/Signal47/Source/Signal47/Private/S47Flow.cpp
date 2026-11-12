@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47FieldLife.h"
 #include "S47DirectorCam.h"
 #include "S47StoryDirector.h"
 #include "S47NightLog.h"
@@ -321,6 +322,7 @@ void US47Flow::Init(US47Main* InM)
 	bStillShots = S47J::Bool(Store, TEXT("stillShots"), false);
 	bHeadMotion = S47J::Bool(Store, TEXT("headMotion"), true);
 	bCameraMoments = S47J::Bool(Store, TEXT("cameraMoments"), true); // N1110
+	bLocationCards = S47J::Bool(Store, TEXT("locationCards"), true); // UI-20261112
 	bVehicleMirrors = S47J::Bool(Store, TEXT("vehicleMirrors"), true);
 	{
 		bool bRun = bVehicleMirrors;
@@ -1648,6 +1650,8 @@ FS47PauseOpts US47Flow::Settings()
 	O.OnHeadMotion = [this](bool V) { bHeadMotion = V; ApplyLook(); StoreSet(TEXT("headMotion"), V); };
 	O.bCameraMoments = bCameraMoments; // N1110: read by FS47CameraMoment::Start as a moment is asked for
 	O.OnCameraMoments = [this](bool V) { bCameraMoments = V; StoreSet(TEXT("cameraMoments"), V); };
+	O.bLocationCards = bLocationCards; // UI-20261112: read by S47LocationCards::Step as a place is come to
+	O.OnLocationCards = [this](bool V) { bLocationCards = V; StoreSet(TEXT("locationCards"), V); };
 	O.bVehicleMirrors = bVehicleMirrors;
 	O.OnVehicleMirrors = [this](bool V) { bVehicleMirrors = V; S47Mirrors::SetEnabled(V); StoreSet(TEXT("vehicleMirrors"), V); };
 	O.bAbduct = bAbductOn;
@@ -2360,7 +2364,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 				case FS47FreeformSession::EJobStage::Pointed: Why = TEXT("Match frequency, gain and bandwidth to this work card. Start when reception reaches 100%."); break;
 				case FS47FreeformSession::EJobStage::Integrating: Why = TEXT("The recording keeps valid seconds. Automatic reference scans move the dishes between samples; wait for them to settle."); break;
 				case FS47FreeformSession::EJobStage::Chart: Why = TEXT("The measurement is finished. Collect its paper original before registering the result."); break;
-				case FS47FreeformSession::EJobStage::Recorded: Why = J.bAnomaly ? TEXT("The original is already retained. Complete the independent comparison requested by this work order.") : TEXT("The original is already retained. A routine result needs no comparison; register it for payment."); break;
+				case FS47FreeformSession::EJobStage::Recorded: Why = FS47FreeformSession::PlainAnomaly(J) ? (J.bAudioReviewed ? TEXT("The take is checked on tape. Confirm the anomaly at OPS; the packet prints for the binder.") : TEXT("The take is kept. Play it once at the reel deck: one listen confirms the anomaly.")) : J.bAnomaly ? TEXT("The original is already retained. Complete the independent comparison requested by this work order.") : TEXT("The original is already retained. A routine result needs no comparison; register it for payment."); break;
 				case FS47FreeformSession::EJobStage::Registered: Why = TEXT("Registration is complete. Collect the labeled paper packet before filing it."); break;
 				default: Why = TEXT("The packet is already collected. Place it in the records-room binder to finish this order."); break;
 				}
@@ -2771,6 +2775,14 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 			Kit.Add({ Item.Value, TEXT("Usable delivered stock. Parcels still in transit are listed separately."), FString::FromInt(F->InventoryCount(Item.Key)), FString(), FString() });
 		if (F->InventoryCount(TEXT("fragment")) > 0) Kit.Add({ TEXT("Field samples"), TEXT("Retained samples for physical workbench comparison."), FString::FromInt(F->InventoryCount(TEXT("fragment"))), FString(), FString() });
 		if (F->InventoryCount(TEXT("archived_fragment")) > 0) Kit.Add({ TEXT("Archived samples"), TEXT("Sealed material retained after comparison."), FString::FromInt(F->InventoryCount(TEXT("archived_fragment"))), FString(), FString() });
+		{
+			// TRUCK-LOAD-20261112: what rides in the truck itself (the spare wheel and water it starts with, the tools behind the seat).
+			TArray<FString> Said;
+			for (const TPair<FString, FString>& Line : FS47TruckCare::LoadLines(F->InventoryCount(TEXT("spare")), F->InventoryCount(TEXT("water")), F->InventoryCount(TEXT("rope")), F->InventoryCount(TEXT("wire"))))
+				Said.Add(Line.Key + TEXT(": ") + Line.Value);
+			Kit.Add({ TEXT("In the truck"), FString::Join(Said, TEXT(". ")) + TEXT(". The cargo rack on the back of the parked truck shows the same, with the fuel and what to do when it is stuck."),
+				FString::Printf(TEXT("Spare %d / water %d"), F->InventoryCount(TEXT("spare")), F->InventoryCount(TEXT("water"))), FString(), FString() });
+		}
 		Kit.Add({ TEXT("Vehicle fuel"), TEXT("Fuel already in the truck tank; spare cans are separate."), FString::Printf(TEXT("%.1f / %.0f"), F->VehicleFuel(), F->TankCap()), FString(), FString() });
 		Kit.Add({ TEXT("Backup generator"), TEXT("Fuel already in the generator; spare cans are separate."), FString::Printf(TEXT("%s / %.1f hours"), F->GeneratorRunning() ? TEXT("Running") : TEXT("Stopped"), F->GeneratorHours()), FString(), FString() });
 		if (F->ParcelStage() > 0)

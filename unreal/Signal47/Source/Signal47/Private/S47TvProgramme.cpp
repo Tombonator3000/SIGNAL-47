@@ -297,6 +297,32 @@ TSharedPtr<FS47AudioBuffer> FS47TvProgramme::Anthem()
 	// note a small band of harmonics with the octave under it, as a station's worn tape through a two-inch speaker would give it.
 	static const TSharedPtr<FS47AudioBuffer> Sound = []
 	{
+		// Tom 12 Nov: a real recording at sign-off, not the tune: the U.S. Navy Band (public domain, Tools/anthem/fetch.sh), two
+		// seconds in from black and faded out before the card. Without the file, the tune below as before.
+		{
+			TArray<uint8> Bytes;
+			if (FFileHelper::LoadFileToArray(Bytes, *(FPaths::ProjectContentDir() / TEXT("Audio/Raw/tv/anthem.wav"))))
+			{
+				const TSharedPtr<FS47AudioBuffer> Rec = S47Wa::DecodeWav(Bytes);
+				if (Rec.IsValid() && Rec->Duration() > 20.0 && Rec->Duration() <= SIGN_OFF - 2.5)
+				{
+					const float RecRate = Rec->SampleRate();
+					const int32 Total = int32(SIGN_OFF * RecRate), Lead = int32(2.0 * RecRate), Len = Rec->Length(), FadeN = int32(1.2 * RecRate);
+					TSharedRef<FS47AudioBuffer> Buf = MakeShared<FS47AudioBuffer>(1, Total, RecRate);
+					float* Dst = Buf->GetChannelData(0);
+					FMemory::Memzero(Dst, Total * sizeof(float));
+					const float* Src = Rec->GetChannelData(0);
+					for (int32 I = 0; I < Len && Lead + I < Total; ++I)
+					{
+						const float Tail = I > Len - FadeN ? float(Len - I) / float(FadeN) : 1.f;
+						Dst[Lead + I] = 0.8f * Src[I] * Tail;
+					}
+					UE_LOG(LogS47Tv, Display, TEXT("S47: the station's sign-off: the recorded anthem, %.1f s in %.0f s"), Rec->Duration(), SIGN_OFF);
+					return TSharedPtr<FS47AudioBuffer>(Buf);
+				}
+				UE_LOG(LogS47Tv, Warning, TEXT("S47: the recorded anthem not used (%.1f s; it must fit %.0f s); the tune instead"), Rec.IsValid() ? Rec->Duration() : 0.0, SIGN_OFF);
+			}
+		}
 		struct FNote { int32 Midi; double Beats; };
 		static const FNote A[] = { {67,.75},{64,.25},{60,1},{64,1},{67,1},{72,2},{76,.75},{74,.25},{72,1},{64,1},{66,1},{67,2},{67,.5},{67,.5},{76,1.5},{74,.5},{72,1},{71,2},{69,.75},{71,.25},{72,1},{72,1},{67,1},{64,1},{60,1} };
 		static const FNote B[] = { {76,.5},{76,.5},{76,1},{77,1},{79,1},{79,2},{77,.5},{76,.5},{74,1},{76,1},{77,1},{77,2},{77,1},{76,1.5},{74,.5},{72,1},{71,2},{69,.75},{71,.25},{72,1},{64,1},{66,1},{67,2} };
@@ -469,7 +495,7 @@ bool FS47TvProgramme::SelfTest(TArray<FString>& Lines)
 		const double Programme0 = Ch.Time;
 		for (int32 I = 0; I < 62; ++I) Advance(Ch, 26 * 3600 + 30 + I * 13, 1.0, true, false);
 		const bool bStill = Ch.Air == EAir::SignOff;
-		for (int32 I = 0; I < 4; ++I) Advance(Ch, 26 * 3600 + 900 + I * 13, 1.0, true, false);
+		for (int32 I = 0; I < 22; ++I) Advance(Ch, 26 * 3600 + 900 + I * 13, 1.0, true, false); // (SIGN_OFF 82 s: the recorded anthem, Tom 12 Nov)
 		Check(bStill && Ch.Air == EAir::Card && Ch.Time > Programme0 + 60, TEXT("channel: the flag and the anthem for their minute of real time, then the card"));
 		for (int32 I = 0; I < int32(CARD_AFTER) + 2; ++I) Advance(Ch, 26 * 3600 + 1000 + I * 13, 1.0, true, false);
 		Check(Ch.Air == EAir::Snow, TEXT("channel: then snow"));

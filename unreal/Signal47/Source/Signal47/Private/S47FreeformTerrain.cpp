@@ -1,4 +1,5 @@
 #include "S47FreeformTerrain.h"
+#include "S47GroundEdits.h"
 #include "S47FarmWorld.h"
 #include "S47Geo.h"
 #include "S47Main.h"
@@ -410,7 +411,14 @@ namespace
 			if (!TileMesh) continue;
 			double Rx = 0, Rz = 0;
 			const bool bKnown = ReliefRoadXZ(W, ReliefFrameOf(W, Tile), TileMesh->Bounds.Origin, Rx, Rz);
-			TileMesh->SetHiddenInGame(bOn && (!bKnown || FMath::Abs(S47Relief::Sample(Rx, Rz)) > .03));
+			bool bSite = false;   // CALICHE-GROUND: nor may a tile lie over a site's pad, bank or cut (S47GroundEdits): it would stand in the areaway
+			if (bOn && bKnown)
+			{
+				const FVector E = TileMesh->Bounds.BoxExtent / 100.0;
+				const FBox2D SoilBox(FVector2D(Rx - E.X, Rz - E.Y), FVector2D(Rx + E.X, Rz + E.Y));
+				for (const FBox2D& B : S47GroundEdits::ClearBoxes()) bSite |= SoilBox.Intersect(B);
+			}
+			TileMesh->SetHiddenInGame(bOn && (!bKnown || bSite || FMath::Abs(S47Relief::Sample(Rx, Rz)) > .03));
 		}
 		// The finale's ground stands hidden here, its collision on: a ray in Freeform must not find land nobody sees.
 		for (int32 Finale : {1820, 1821})
@@ -502,6 +510,7 @@ namespace S47FreeformTerrain
 		}
 		return S.bOn;
 	}
+	void SitesChanged(AS47Web* Web) { if (Web && IsOn(Web)) HideOldSoil(Web, true); }
 	bool IsOn(const AS47Web* Web) { return Web && Web->FreeformTerrain.IsValid() && Web->FreeformTerrain->bOn; }
 	bool IsRelief(const AS47Web* Web, const UStaticMesh* Mesh)
 	{

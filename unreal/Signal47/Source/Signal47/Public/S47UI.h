@@ -62,6 +62,7 @@ struct FS47PauseOpts
 	bool bCalmFlash = false; TFunction<void(bool)> OnCalmFlash;
 	bool bStillShots = false; TFunction<void(bool)> OnStillShots;
 	bool bHeadMotion = true; TFunction<void(bool)> OnHeadMotion; bool bCameraMoments = true; TFunction<void(bool)> OnCameraMoments; // N1110: the short snaps of the view in events (FS47CameraMoment)
+	bool bLocationCards = true; TFunction<void(bool)> OnLocationCards; // UI-20261112: the place's name typed out on arriving (S47LocationCards)
 	bool bVehicleMirrors = true; TFunction<void(bool)> OnVehicleMirrors; // Graphics: the Jeep's live mirrors (S47Mirrors)
 	bool bAbduct = true; TFunction<void(bool)> OnAbduct; // unset: not offered
 	// the Unreal version's own: the brightness before the tone curve (0..1, .5 as made), and the keys
@@ -185,6 +186,9 @@ public:
 	void Toast(const FString& Text, float Secs = 3.2f, TFunction<double()> Clock = {}); void Alert(const FString& Text, float Secs = 4.f); // Alert, MSG-ONE-20261109: a line of danger, first in the one queue (FS47MessageQueue)
 	// WEEKLY-CASE-20261109: the player's own thought (S47Thought, at the end of this file): through the queue, one at a time. Empty does nothing.
 	void Thought(const FString& Text, float Secs = 4.5f);
+	// UI-20261112 (Tom): the location card, bottom left: the place, the town and state, the time, typed out a letter at a time
+	// (S47LocationCards has what and when; SS47Hud draws and ticks it). False when there is no HUD to show it or one is still up.
+	bool LocationCard(const FString& Line1, const FString& Line2, const FString& Line3 = FString());
 	void ClearToasts();
 	FString LastDescription() const;                 // the last toast that was not a caption (V)
 	void Objective(const FString& Text);             // empty hides it

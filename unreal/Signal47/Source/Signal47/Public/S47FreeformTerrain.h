@@ -20,6 +20,8 @@ namespace S47FreeformTerrain
 	bool IsOn(const AS47Web* Web);
 	/** One of the two relief meshes now on this world's ground (S47SaroSeam's and S47RadioWoman's checks accept it). */
 	bool IsRelief(const AS47Web* Web, const UStaticMesh* Mesh);
+	/** CALICHE-GROUND: a site gave the land new pads or cuts (S47GroundEdits): the old soil tiles over them go unseen. */
+	void SitesChanged(AS47Web* Web);
 	const TCHAR* RoadMeshPath();
 	/** The ground's or the range's material is ours for the time being: S47MesaRock leaves this component alone. */
 	bool HoldsMaterial(const AS47Web* Web, const UStaticMeshComponent* Component);
