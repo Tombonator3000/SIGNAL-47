@@ -60,5 +60,8 @@ private:
  void Show();
  void Close();
  void AfterStep();
+ // Step 6: the pack's papers a scene hands over (give_documents) go into Freeform's notebook as field records, once each.
+ void Deliver();
+ TSet<FString> Delivered;
  void Finish();
 };

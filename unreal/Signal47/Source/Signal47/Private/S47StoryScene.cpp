@@ -5,6 +5,7 @@
 #include "S47Web.h"
 #include "S47Audio.h"
 #include "S47DaleVoice.h"
+#include "S47Freeform.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47StoryScene,Log,All);
 
@@ -115,8 +116,26 @@ void FS47StoryScene::Tick(double Dt)
 }
 
 // After a step of the pack: the scene goes on (ring, or open), or it is over.
+void FS47StoryScene::Deliver()
+{
+ for(const FString& Id:Pack.Documents())
+ {
+  if(Delivered.Contains(Id))continue;
+  Delivered.Add(Id);
+  // The trafo follow-up card is measured and stamped by its own physical controller, not handed over as text.
+  if(Id==TEXT("EV_TRAFO_FOLLOWUP"))continue;
+  const FS47EveningDocument* D=Pack.FindDocument(Id);
+  if(!D)continue;
+  const FString Text=D->Title+(D->Stamp.IsEmpty()?FString():TEXT(" / ")+D->Stamp)+TEXT("\n\n")+FString::Join(D->Body,TEXT("\n\n"));
+  UE_LOG(LogS47StoryScene,Display,TEXT("S47: story scene %s hands over the paper %s"),*Active,*Id);
+  if(M&&M->Freeform)M->Freeform->RecordEvidence(TEXT("story-doc.")+Id.ToLower(),Text);
+  if(M&&M->UI)M->UI->Toast(FString::Printf(TEXT("PAPER: %s (in the notebook)"),*D->Title),5);
+ }
+}
+
 void FS47StoryScene::AfterStep()
 {
+ Deliver();
  const FS47EveningScene* S=Pack.CurrentScene();
  if(!S){Finish();return;}
  Channel=S->Channel;
@@ -229,7 +248,7 @@ void FS47StoryScene::Stop()
  if(bOpen&&M&&M->UI){bOpen=false;M->UI->Close(true);}
  bOpen=false;bWantOpen=false;ReopenIn=0;
  Active.Reset();SpokenLine.Reset();Channel.Reset();
- Pack.Reset();
+ Pack.Reset();Delivered.Reset();
 }
 
 S47J::FObj FS47StoryScene::Save() const
@@ -247,6 +266,8 @@ void FS47StoryScene::Load(const S47J::FObj& Saved)
  if(!Saved->TryGetObjectField(TEXT("pack"),P)||!P||!P->IsValid())return;
  FString Error;
  if(!Pack.Load(*P,Error)){UE_LOG(LogS47StoryScene,Display,TEXT("S47: story scene: save not read (%s); none under way"),*Error);Pack.Reset();return;}
+ // Papers owned at the save were handed over before it (the notebook keeps them).
+ for(const FString& Id:Pack.Documents())Delivered.Add(Id);
  if(const FS47EveningScene* S=Pack.CurrentScene()){Active=S->Id;Channel=S->Channel;AfterStep();}
 }
 
@@ -281,6 +302,10 @@ bool FS47StoryScene::SelfTest(TArray<FString>& Lines)
   T.Choose(Cs[0]->Id);
  }
  Check(!T.Busy()&&GotT.Contains(TEXT("handover_done"))&&GotT.Contains(TEXT("scene_d01_handover"))&&!T.bRing,TEXT("STORY-5: the handover plays to its end with a choice; handover_done and scene_d01_handover become story flags"));
+ {
+  bool bAll=true;for(const FString& Id:T.Pack.Documents())bAll&=T.Delivered.Contains(Id);
+  Check(bAll,FString::Printf(TEXT("STORY-6: every paper a scene hands over goes to the notebook once (%d papers)"),T.Pack.Documents().Num()));
+ }
  // Step 6: Dale's signal call rings while there is a signal; the signal goes before anyone picks up: it stops ringing and is taken back.
  T.SetContext({{TEXT("ctx_signal_present"),true}});
  const bool bRang=T.Begin(TEXT("D21_SIGNAL_PHONE"),Why)&&T.bRing;
