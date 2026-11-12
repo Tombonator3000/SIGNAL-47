@@ -1,0 +1,554 @@
+{
+  "status": "Referanse",
+  "gjelder": "Genererte basefargeteksturer for SIGNAL / 47, New Mexico 1986",
+  "sist_kontrollert": "2026-11-12",
+  "generator": "Innebygd ImageGen",
+  "processing": "Leveringsbilder skaleres med FFmpeg Lanczos til bestilte pikselmål; originalene bevares i Codex generated_images.",
+  "tiling": "Genereringsmål; ikke verifisert som perfekt sømløst. Bestillingen beskriver separat sømløshet, ruhet og relieff før Unreal-integrasjon.",
+  "textures": [
+    {
+      "group": 1,
+      "file": "saro/block_ext.png",
+      "coverage": "2.4 × 2.4 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Painted concrete block CMU wall, nominal 16 by 8 inch blocks: exactly 6 block lengths horizontally and 12 courses vertically, running bond. Cream-grey sun-faded paint, fine rust traces and small patches. Dust stains arranged periodically, not a nonrepeating bottom-only gradient.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game material diffuse BASE COLOUR TEXTURE, not a rendered material preview. Generate exactly one texture filling the entire image. Output PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 2.4 × 2.4 m. Painted concrete block CMU wall, nominal 16 by 8 inch blocks: exactly 6 block lengths horizontally and 12 courses vertically, running bond. Cream-grey sun-faded paint, fine rust traces and small patches. Dust stains arranged periodically, not a nonrepeating bottom-only gradient. Small rural New Mexico town, spring1986, building materials from1940s–1960s still in use, dusty and sun-faded. Photographic orthographic straight-on surface scan, entirely flat even diffuse illumination. No lighting baked into texture, shadows, highlights, reflections, ambient occlusion, perspective, vignette, frame or border. All four edges must repeat perfectly, preserving phase and scale of every seam and pattern across opposing edges. No text, letters, logos, brands, known symbols, Zia sun symbol, people or objects. No Cosmos references. Photorealistic not painted or stylized. Deliver only the texture surface, no collage, no labels, no side-by-side maps. Exact intended filename saro/block_ext.png, but DO NOT print filename inside image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-010c8f59-1ecc-40cb-ba78-11abebda91db.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 1,
+      "file": "saro/block_int.png",
+      "coverage": "2.4 × 2.4 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Interior painted cinderblock, nominal 16 by 8 inch: 6 block lengths horizontally and 12 courses vertically in running bond. Cream enamel aged dull, hip-height scuffs distributed to tile, few small nail holes and old tape marks. No actual tape or letters.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game material diffuse BASE COLOUR TEXTURE, not a rendered material preview. Generate exactly one texture filling the entire image. Output PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 2.4 × 2.4 m. Interior painted cinderblock, nominal 16 by 8 inch: 6 block lengths horizontally and 12 courses vertically in running bond. Cream enamel aged dull, hip-height scuffs distributed to tile, few small nail holes and old tape marks. No actual tape or letters. Small rural New Mexico town, spring1986, building materials from1940s–1960s still in use, dusty and sun-faded. Photographic orthographic straight-on surface scan, entirely flat even diffuse illumination. No lighting baked into texture, shadows, highlights, reflections, ambient occlusion, perspective, vignette, frame or border. All four edges must repeat perfectly, preserving phase and scale of every seam and pattern across opposing edges. No text, letters, logos, brands, known symbols, Zia sun symbol, people or objects. No Cosmos references. Photorealistic not painted or stylized. Deliver only the texture surface, no collage, no labels, no side-by-side maps. Exact intended filename saro/block_int.png, but DO NOT print filename inside image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-e7998149-6b7c-45c3-8716-957dbf5d7ad3.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 1,
+      "file": "saro/vct_floor.png",
+      "coverage": "1.2 × 1.2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Institutional vinyl composition tile, nominal 12 inch squares, EXACTLY 4 columns and 4 rows of tiles filling frame. Pale grey-beige with darker flecks, two subtly off-colour replacement tiles, scuffs and dull wax, no specular reflections.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game material diffuse BASE COLOUR TEXTURE, not a rendered material preview. Generate exactly one texture filling the entire image. Output PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1.2 × 1.2 m. Institutional vinyl composition tile, nominal 12 inch squares, EXACTLY 4 columns and 4 rows of tiles filling frame. Pale grey-beige with darker flecks, two subtly off-colour replacement tiles, scuffs and dull wax, no specular reflections. Small rural New Mexico town, spring1986, building materials from1940s–1960s still in use, dusty and sun-faded. Photographic orthographic straight-on surface scan, entirely flat even diffuse illumination. No lighting baked into texture, shadows, highlights, reflections, ambient occlusion, perspective, vignette, frame or border. All four edges must repeat perfectly, preserving phase and scale of every seam and pattern across opposing edges. No text, letters, logos, brands, known symbols, Zia sun symbol, people or objects. No Cosmos references. Photorealistic not painted or stylized. Deliver only the texture surface, no collage, no labels, no side-by-side maps. Exact intended filename saro/vct_floor.png, but DO NOT print filename inside image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-1f5be53a-e82c-4a33-b1b8-da004a4cce02.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 1,
+      "file": "saro/ceiling_tile.png",
+      "coverage": "1.2 × 1.2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "EXACTLY 2 columns and 2 rows of suspended acoustic ceiling tiles, nominal 2-foot tiles, pinhole pattern, off-white slight yellowing. Thin flat white metal T-grid at tile boundaries. Orthographic surface scan; no recessed ceiling, no lights, no perspective.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game material diffuse BASE COLOUR TEXTURE, not a rendered material preview. Generate exactly one texture filling the entire image. Output PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1.2 × 1.2 m. EXACTLY 2 columns and 2 rows of suspended acoustic ceiling tiles, nominal 2-foot tiles, pinhole pattern, off-white slight yellowing. Thin flat white metal T-grid at tile boundaries. Orthographic surface scan; no recessed ceiling, no lights, no perspective. Small rural New Mexico town, spring1986, building materials from1940s–1960s still in use, dusty and sun-faded. Photographic orthographic straight-on surface scan, entirely flat even diffuse illumination. No lighting baked into texture, shadows, highlights, reflections, ambient occlusion, perspective, vignette, frame or border. All four edges must repeat perfectly, preserving phase and scale of every seam and pattern across opposing edges. No text, letters, logos, brands, known symbols, Zia sun symbol, people or objects. No Cosmos references. Photorealistic not painted or stylized. Deliver only the texture surface, no collage, no labels, no side-by-side maps. Exact intended filename saro/ceiling_tile.png, but DO NOT print filename inside image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-57843be0-6b9e-4d81-868a-271e5ed761f8.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 1,
+      "file": "saro/wall_panel.png",
+      "coverage": "2 × 2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Light grey-green painted plasterboard wall, faint roller texture, slight discolouration where equipment once hung, subtly blended mottling without distinct centered silhouette or visible equipment. No panel trim.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game material diffuse BASE COLOUR TEXTURE, not a rendered material preview. Generate exactly one texture filling the entire image. Output PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 2 × 2 m. Light grey-green painted plasterboard wall, faint roller texture, slight discolouration where equipment once hung, subtly blended mottling without distinct centered silhouette or visible equipment. No panel trim. Small rural New Mexico town, spring1986, building materials from1940s–1960s still in use, dusty and sun-faded. Photographic orthographic straight-on surface scan, entirely flat even diffuse illumination. No lighting baked into texture, shadows, highlights, reflections, ambient occlusion, perspective, vignette, frame or border. All four edges must repeat perfectly, preserving phase and scale of every seam and pattern across opposing edges. No text, letters, logos, brands, known symbols, Zia sun symbol, people or objects. No Cosmos references. Photorealistic not painted or stylized. Deliver only the texture surface, no collage, no labels, no side-by-side maps. Exact intended filename saro/wall_panel.png, but DO NOT print filename inside image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-b4cfd979-2145-4255-b9ec-7f3cb487b2bd.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 1,
+      "file": "saro/concrete_floor.png",
+      "coverage": "4 × 4 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Sealed grey concrete floor with muted dark oil stains, subtle tyre marks, hairline crack and exactly one straight saw-cut joint. Joint wraps seamlessly across opposite edges. No actual tyres or objects.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game material diffuse BASE COLOUR TEXTURE, not a rendered material preview. Generate exactly one texture filling the entire image. Output PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 4 × 4 m. Sealed grey concrete floor with muted dark oil stains, subtle tyre marks, hairline crack and exactly one straight saw-cut joint. Joint wraps seamlessly across opposite edges. No actual tyres or objects. Small rural New Mexico town, spring1986, building materials from1940s–1960s still in use, dusty and sun-faded. Photographic orthographic straight-on surface scan, entirely flat even diffuse illumination. No lighting baked into texture, shadows, highlights, reflections, ambient occlusion, perspective, vignette, frame or border. All four edges must repeat perfectly, preserving phase and scale of every seam and pattern across opposing edges. No text, letters, logos, brands, known symbols, Zia sun symbol, people or objects. No Cosmos references. Photorealistic not painted or stylized. Deliver only the texture surface, no collage, no labels, no side-by-side maps. Exact intended filename saro/concrete_floor.png, but DO NOT print filename inside image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-01ec22df-6f0b-4c50-9667-e7f81ae4270a.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 1,
+      "file": "saro/enamel_green.png",
+      "coverage": "1 × 1 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Olive-green baked enamel coating on flat steel, small chips exposing grey primer, fine scratches, subtle uneven wear. Flat sheet only, no cabinet edges, handles, bolts or objects.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game material diffuse BASE COLOUR TEXTURE, not a rendered material preview. Generate exactly one texture filling the entire image. Output PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1 × 1 m. Olive-green baked enamel coating on flat steel, small chips exposing grey primer, fine scratches, subtle uneven wear. Flat sheet only, no cabinet edges, handles, bolts or objects. Small rural New Mexico town, spring1986, building materials from1940s–1960s still in use, dusty and sun-faded. Photographic orthographic straight-on surface scan, entirely flat even diffuse illumination. No lighting baked into texture, shadows, highlights, reflections, ambient occlusion, perspective, vignette, frame or border. All four edges must repeat perfectly, preserving phase and scale of every seam and pattern across opposing edges. No text, letters, logos, brands, known symbols, Zia sun symbol, people or objects. No Cosmos references. Photorealistic not painted or stylized. Deliver only the texture surface, no collage, no labels, no side-by-side maps. Exact intended filename saro/enamel_green.png, but DO NOT print filename inside image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-ea878277-ef7c-4d08-b9ec-d3499ca8b477.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 1,
+      "file": "saro/galvanized.png",
+      "coverage": "1 × 1 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Dull galvanized steel flat sheet, realistic small zinc spangle crystalline pattern, scattered white oxidation spots, no corrugation, no panel edges, no screws, no mirror reflections.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game material diffuse BASE COLOUR TEXTURE, not a rendered material preview. Generate exactly one texture filling the entire image. Output PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1 × 1 m. Dull galvanized steel flat sheet, realistic small zinc spangle crystalline pattern, scattered white oxidation spots, no corrugation, no panel edges, no screws, no mirror reflections. Small rural New Mexico town, spring1986, building materials from1940s–1960s still in use, dusty and sun-faded. Photographic orthographic straight-on surface scan, entirely flat even diffuse illumination. No lighting baked into texture, shadows, highlights, reflections, ambient occlusion, perspective, vignette, frame or border. All four edges must repeat perfectly, preserving phase and scale of every seam and pattern across opposing edges. No text, letters, logos, brands, known symbols, Zia sun symbol, people or objects. No Cosmos references. Photorealistic not painted or stylized. Deliver only the texture surface, no collage, no labels, no side-by-side maps. Exact intended filename saro/galvanized.png, but DO NOT print filename inside image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-f1fe6f61-4b2b-40ee-b635-0563f2d14046.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 2,
+      "file": "town/stucco_beige.png",
+      "coverage": "3 × 3 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Aged beige cement stucco, hand-trowelled, hairline cracks. Darker dusty band along lower edge; SPECIAL EXCEPTION: left-right seamless periodic edges required, top and bottom may differ to preserve bottom dirt band.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 3 × 3 m. Aged beige cement stucco, hand-trowelled, hairline cracks. Darker dusty band along lower edge; SPECIAL EXCEPTION: left-right seamless periodic edges required, top and bottom may differ to preserve bottom dirt band. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename town/stucco_beige.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-03d42555-bf8f-414e-a68c-2187de6d0536.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 2,
+      "file": "town/stucco_white.png",
+      "coverage": "3 × 3 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Whitewashed stucco, chalky, flaking in small patches revealing tan underlayer. Subtle believable aging, not abandoned rubble.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 3 × 3 m. Whitewashed stucco, chalky, flaking in small patches revealing tan underlayer. Subtle believable aging, not abandoned rubble. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename town/stucco_white.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-053695a3-8640-4377-9ac0-c46f09d08ac9.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 2,
+      "file": "town/adobe.png",
+      "coverage": "2 × 2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Adobe wall with mud plaster, small areas of exposed adobe brick where plaster fell away, visible straw flecks. Flat straight surface no wall tops or wall edges.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 2 × 2 m. Adobe wall with mud plaster, small areas of exposed adobe brick where plaster fell away, visible straw flecks. Flat straight surface no wall tops or wall edges. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename town/adobe.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-e93dbbd1-86ed-42bf-b71a-a4ba4e1648b1.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 2,
+      "file": "town/clapboard_white.png",
+      "coverage": "1.5 × 1.5 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "White painted horizontal wooden clapboard siding, nominal 4-inch exposure, exactly 15 horizontal board courses filling image. Cracking and peeling paint exposes grey wood. No cast shadows at board overlaps; encode color only.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1.5 × 1.5 m. White painted horizontal wooden clapboard siding, nominal 4-inch exposure, exactly 15 horizontal board courses filling image. Cracking and peeling paint exposes grey wood. No cast shadows at board overlaps; encode color only. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename town/clapboard_white.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-6ae1ff3a-96be-4a6d-93e2-688d03b75275.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 2,
+      "file": "town/brick_red.png",
+      "coverage": "1 × 1 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Common red brick running bond with nominal bricks 20cm long and 6.25cm high including joints, exactly 5 brick lengths across and 16 courses tall, half-brick staggered joints. Weathered mortar, few chipped and darker bricks, subtle varied red/brown.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1 × 1 m. Common red brick running bond with nominal bricks 20cm long and 6.25cm high including joints, exactly 5 brick lengths across and 16 courses tall, half-brick staggered joints. Weathered mortar, few chipped and darker bricks, subtle varied red/brown. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename town/brick_red.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-d90a62d4-2c9c-4fc5-88ee-0a9533d719d4.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 2,
+      "file": "town/terrazzo.png",
+      "coverage": "1.5 × 1.5 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Red and cream terrazzo flooring, small embedded chips with a thin straight brass divider strip crossing entire image and wrapping periodically. Worn path and tiny cracks, no reflected light or metallic gleam.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1.5 × 1.5 m. Red and cream terrazzo flooring, small embedded chips with a thin straight brass divider strip crossing entire image and wrapping periodically. Worn path and tiny cracks, no reflected light or metallic gleam. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename town/terrazzo.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-32caccfb-bc25-439b-a71c-f28498bb6c61.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 2,
+      "file": "town/tile_green_cream.png",
+      "coverage": "1.2 × 1.2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Nominal 6-inch ceramic wall tile, EXACTLY 8 columns and 8 rows filling square. Cream tiles with EXACTLY ONE horizontal green accent row, fine crazed glaze and dirty grout. Flat base colour, no highlights despite glazed material. Perfectly repeating full tile grid.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1.2 × 1.2 m. Nominal 6-inch ceramic wall tile, EXACTLY 8 columns and 8 rows filling square. Cream tiles with EXACTLY ONE horizontal green accent row, fine crazed glaze and dirty grout. Flat base colour, no highlights despite glazed material. Perfectly repeating full tile grid. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename town/tile_green_cream.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-553e47f3-e09b-42ea-aa90-4665eaf0a57a.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 2,
+      "file": "town/roof_tar.png",
+      "coverage": "2 × 2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Flat tar-and-gravel roof surface, grey-black with small light gravel grains and patched seams. Orthographic top-down material surface only, no parapets or rooftop objects.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 2 × 2 m. Flat tar-and-gravel roof surface, grey-black with small light gravel grains and patched seams. Orthographic top-down material surface only, no parapets or rooftop objects. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename town/roof_tar.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-43d1fda0-fb07-4dde-afc5-1e87b0d2882c.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 2,
+      "file": "town/tin_rust.png",
+      "coverage": "1 × 1 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Corrugated galvanized roofing tin, vertical corrugations, heavy irregular rust patches, shallow dents, sparse nail heads. Uniform flat illumination without directional shadow bands. Rust and corrugations periodic at borders.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1 × 1 m. Corrugated galvanized roofing tin, vertical corrugations, heavy irregular rust patches, shallow dents, sparse nail heads. Uniform flat illumination without directional shadow bands. Rust and corrugations periodic at borders. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename town/tin_rust.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-e763a6b4-80c8-4553-b283-eeeea04a2960.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 3,
+      "file": "homes/stucco_tan.png",
+      "coverage": "3 × 3 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Tan residential stucco, sun-faded with muted water staining below a nominal window height. No window, opening or sill in image. Stain variation wraps periodically across edges.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 3 × 3 m. Tan residential stucco, sun-faded with muted water staining below a nominal window height. No window, opening or sill in image. Stain variation wraps periodically across edges. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename homes/stucco_tan.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-9a0aa2b5-877f-4b97-992c-9caf87c4e4b8.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 3,
+      "file": "homes/stucco_cream.png",
+      "coverage": "3 × 3 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Cream residential stucco, relatively smooth sand finish, a few repaired hairline cracks with lighter patch material.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 3 × 3 m. Cream residential stucco, relatively smooth sand finish, a few repaired hairline cracks with lighter patch material. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename homes/stucco_cream.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-4c81736e-777a-4fb9-85c6-97d3ae7e369a.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 3,
+      "file": "farm/barn_wood.png",
+      "coverage": "2 × 2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Vertical weathered grey barn boards, nominal 10-inch width, exactly 8 vertical boards across. Silver grey grain, knots and splits, sparse nail rust stains, board ends absent. Uniform color scan, no shadowed depth.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 2 × 2 m. Vertical weathered grey barn boards, nominal 10-inch width, exactly 8 vertical boards across. Silver grey grain, knots and splits, sparse nail rust stains, board ends absent. Uniform color scan, no shadowed depth. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename farm/barn_wood.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-b9a5dc34-2b01-4d3a-834d-c403ca2ed818.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 3,
+      "file": "farm/plaster_int.png",
+      "coverage": "3 × 3 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Old interior lime plaster, off-white with fine cracks, smoke-darkened patches suggest near-ceiling staining but distributed periodically to maintain four-edge seamlessness. No ceiling edge, fixtures or corners.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 3 × 3 m. Old interior lime plaster, off-white with fine cracks, smoke-darkened patches suggest near-ceiling staining but distributed periodically to maintain four-edge seamlessness. No ceiling edge, fixtures or corners. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename farm/plaster_int.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-6bf82122-2213-41a4-b782-44fc383a5cd2.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 3,
+      "file": "farm/plank_floor.png",
+      "coverage": "2 × 2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Worn pine plank flooring, nominal 5-inch board width, exactly 16 parallel vertical boards across with staggered periodic end joints. Dark varnish worn through on traffic paths. Flat diffuse base color, no gloss.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 2 × 2 m. Worn pine plank flooring, nominal 5-inch board width, exactly 16 parallel vertical boards across with staggered periodic end joints. Dark varnish worn through on traffic paths. Flat diffuse base color, no gloss. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename farm/plank_floor.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-a2ca49be-230a-42b3-8998-42dc0f4780aa.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 3,
+      "file": "farm/linoleum.png",
+      "coverage": "1.2 × 1.2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "1950s kitchen linoleum, modest small-scale repeating geometric pattern in faded cream, muted mustard and brown, worn through in scattered places. No symbols or lettering, not ceramic tiles.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1.2 × 1.2 m. 1950s kitchen linoleum, modest small-scale repeating geometric pattern in faded cream, muted mustard and brown, worn through in scattered places. No symbols or lettering, not ceramic tiles. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename farm/linoleum.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-20630209-53a9-48b6-a79c-6abb1f1cc216.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 3,
+      "file": "substation/concrete_pad.png",
+      "coverage": "3 × 3 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Old concrete equipment pad top surface, weathered grey, small oil-drip stains and localized surface spalls resembling edge wear. No visible outer pad perimeter, because surface must tile seamlessly.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 3 × 3 m. Old concrete equipment pad top surface, weathered grey, small oil-drip stains and localized surface spalls resembling edge wear. No visible outer pad perimeter, because surface must tile seamlessly. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename substation/concrete_pad.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-b06bc787-4888-4c7e-939a-56ec577a807b.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 3,
+      "file": "substation/gravel.png",
+      "coverage": "1 × 1 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Crushed grey gravel bed with approximately one-inch 2.5cm angular stones, few tiny weeds. Flat overhead photogrammetry-like diffuse base colour with no cast shadows or strong dark gaps, no border.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1 × 1 m. Crushed grey gravel bed with approximately one-inch 2.5cm angular stones, few tiny weeds. Flat overhead photogrammetry-like diffuse base colour with no cast shadows or strong dark gaps, no border. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename substation/gravel.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-c8a3591e-5e4d-496a-afe4-c09db2d52cda.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 4,
+      "file": "road/asphalt.png",
+      "coverage": "3 × 3 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Sun-bleached highway asphalt, grey fine aggregate, cracks and dark tar-sealed crack lines. Absolutely no painted road lines, curbs or markings.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 3 × 3 m. Sun-bleached highway asphalt, grey fine aggregate, cracks and dark tar-sealed crack lines. Absolutely no painted road lines, curbs or markings. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename road/asphalt.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-ec0eb285-ce20-41fc-af58-f765678b4b73.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 4,
+      "file": "road/parking.png",
+      "coverage": "3 × 3 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Old parking-lot asphalt, very faded grey with gravel aggregate showing and scattered muted oil spots. No parking lines, road markings, curbs or objects.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 3 × 3 m. Old parking-lot asphalt, very faded grey with gravel aggregate showing and scattered muted oil spots. No parking lines, road markings, curbs or objects. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename road/parking.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-dcdd7435-dfda-41db-98f1-52a9481bce77.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 4,
+      "file": "motel/stucco.png",
+      "coverage": "2 × 2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Pinkish-tan motel stucco, smooth sand finish, thin diffuse rust streaks, sun-faded and dusty.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 2 × 2 m. Pinkish-tan motel stucco, smooth sand finish, thin diffuse rust streaks, sun-faded and dusty. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename motel/stucco.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-e1190397-4c14-48e8-8636-1257abab4698.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 4,
+      "file": "motel/pool_deck.png",
+      "coverage": "2 × 2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "Exposed-aggregate concrete pool deck, sun-bleached cream-grey, hairline cracks, small rounded aggregate. Surface only, no water, coping edge, pool or objects.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 2 × 2 m. Exposed-aggregate concrete pool deck, sun-bleached cream-grey, hairline cracks, small rounded aggregate. Surface only, no water, coping edge, pool or objects. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename motel/pool_deck.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-8d2824fb-7a4b-4448-91a3-391bf65564c7.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 4,
+      "file": "school/chalkboard.png",
+      "coverage": "2 × 1 m",
+      "pixels": [
+        2048,
+        1024
+      ],
+      "description": "Dark green slate chalkboard, faint erased chalk haze, absolutely no writing, letters, drawings or frame. Rectangular WIDE image 2048 × 1024 pixels, landscape, seamless across all four edges.",
+      "native_pixels": [
+        1774,
+        887
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 1024 pixels landscape. Real-world coverage 2 × 1 m. Dark green slate chalkboard, faint erased chalk haze, absolutely no writing, letters, drawings or frame. Rectangular WIDE image 2048 × 1024 pixels, landscape, seamless across all four edges. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename school/chalkboard.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-97cf4046-c5d3-4930-b6cd-83d893cca52a.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 4,
+      "file": "school/vct_school.png",
+      "coverage": "1.2 × 1.2 m",
+      "pixels": [
+        2048,
+        2048
+      ],
+      "description": "School vinyl composition floor tile, nominal12inch squares, exactly 4 columns and4rows filling image. Beige with brown flecks, chair scuffs, dull surface. No chair, no reflections.",
+      "native_pixels": [
+        1254,
+        1254
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 2048 × 2048 pixels square. Real-world coverage 1.2 × 1.2 m. School vinyl composition floor tile, nominal12inch squares, exactly 4 columns and4rows filling image. Beige with brown flecks, chair scuffs, dull surface. No chair, no reflections. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename school/vct_school.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-783a148e-5839-4da5-afb2-8f3f91fb516c.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    },
+    {
+      "group": 4,
+      "file": "doors/wood_door.png",
+      "coverage": "1 × 2 m",
+      "pixels": [
+        1024,
+        2048
+      ],
+      "description": "Weathered green-grey painted flat wooden door SURFACE only, peeling paint more visible in lower zone but edge-matched for tiling. No hardware, hinges, knob, frame, perimeter or bevels. Rectangular TALL image 1024 × 2048 pixels, portrait. Flat continuous wood surface, no full object mockup.",
+      "native_pixels": [
+        887,
+        1774
+      ],
+      "prompt": "Use case: photorealistic-natural. Asset type: game diffuse BASE COLOUR TEXTURE only, not rendered material preview. Generate one continuous texture filling entire image, PNG EXACTLY 1024 × 2048 pixels portrait. Real-world coverage 1 × 2 m. Weathered green-grey painted flat wooden door SURFACE only, peeling paint more visible in lower zone but edge-matched for tiling. No hardware, hinges, knob, frame, perimeter or bevels. Rectangular TALL image 1024 × 2048 pixels, portrait. Flat continuous wood surface, no full object mockup. Materials for a small rural New Mexico town in spring1986, built1940s–1960s, still used, sun-faded and dusty. Photographic orthographic straight-on surface scan under perfectly flat even diffuse illumination. No shadows, highlights, reflections, baked ambient occlusion, vignette, perspective, border or frame. Unless explicit horizontal-only exception above, must repeat perfectly on all four edges with matched pattern scale and phase. No text, writing, logos, brands, recognizable symbols, Zia sun symbol, people, Cosmos references. Photoreal not painted/stylized. No material sphere, props, full building, labelled collage or PBR map grid. Intended filename doors/wood_door.png, do NOT print it in image.",
+      "generated_original": "/home/tom/.codex/generated_images/01a1cf76-e79c-75f2-ab05-267428d85605/exec-068d478c-4017-4346-a976-e9944ce2dc61.png",
+      "file_status": "Generated; size checked; seamlessness and material scale require review"
+    }
+  ]
+}
