@@ -170,7 +170,7 @@ S47HudGauges::FClockFace S47HudGauges::ClockFace(const FString& Watch)
 	if (Nums[0] > 23 || Nums[1] > 59 || Nums[2] > 59 || (Pieces.Num() == 3 && Pieces[2].Len() != 2) || Pieces[1].Len() != 2) return Face;
 	Face.bValid = true;
 	Face.bPm = Nums[0] >= 12;
-	Face.Hour = Nums[0] % 12 == 0 ? 12 : Nums[0] % 12;
+	Face.Hour = Nums[0]; // Tom 12 Nov: a 24-hour clock, 14 in the afternoon and 02 at night
 	Face.Minute = Nums[1];
 	Face.Second = Nums[2];
 	return Face;
@@ -569,10 +569,10 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 		Check(bSet && bBad && bKept, TEXT("the HUD colour is set at once, a bad one falls back, and the choice is kept and read back from the store"));
 	}
 
-	// the segment clock: 12 hours with AM and PM
+	// the segment clock: 24 hours (Tom 12 Nov), two figures for the hour always
 	const FClockFace Late = ClockFace(TEXT("23:41")), Small = ClockFace(TEXT("01:47")), Noon = ClockFace(TEXT("12:05")), Midnight = ClockFace(TEXT("00:12"));
-	Check(Late.bValid && Late.Hour == 11 && Late.Minute == 41 && Late.bPm && Late.Second < 0 && Small.Hour == 1 && !Small.bPm && Noon.Hour == 12 && Noon.bPm
-		&& Midnight.Hour == 12 && !Midnight.bPm, TEXT("the clock reads 12 hours with AM and PM, never 24"));
+	Check(Late.bValid && Late.Hour == 23 && Late.Minute == 41 && Late.Second < 0 && Small.Hour == 1 && Noon.Hour == 12
+		&& Midnight.Hour == 0, TEXT("the clock reads 24 hours: 23:41, 01:47, 12:05, 00:12"));
 	const FClockFace Secs = ClockFace(TEXT("02:13:07")), All = ClockFace(TEXT("88:88"));
 	Check(Secs.bValid && Secs.Second == 7 && Secs.Hour == 2 && All.bValid && All.bAll && !ClockFace(TEXT("")).bValid && !ClockFace(TEXT("LATE AFTERNOON")).bValid
 		&& !ClockFace(TEXT("25:00")).bValid && !ClockFace(TEXT("9:7")).bValid, TEXT("the seconds of a warning, the jumping 88:88, and words that are no time"));

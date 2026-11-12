@@ -934,9 +934,9 @@ void SS47Hud::PaintClock(const FGeometry& G, FSlateWindowElementList& Out, int32
 			Lit.Poly(Sq, OnInk);
 		}
 	};
-	constexpr uint8 All = 0x7f, TensPresent = 0x06;
-	// a 12-hour clock: the tens of the hours can only be a 1, so that place has only its two segments
-	Figure(0.f, 0.f, 1.f, TensPresent, Shown.bAll || Shown.Hour >= 10 ? TensPresent : 0);
+	constexpr uint8 All = 0x7f;
+	// a 24-hour clock (Tom 12 Nov): two full figures for the hour, 02 at night and 14 in the afternoon
+	Figure(0.f, 0.f, 1.f, All, Shown.bAll ? All : S47HudGauges::Segments(Shown.Hour / 10));
 	Figure(36.f * Kc, 0.f, 1.f, All, Shown.bAll ? All : S47HudGauges::Segments(Shown.Hour % 10));
 	Colon(72.f * Kc, 0.f, DigitH, 4.6f * Kc);
 	Figure(84.f * Kc, 0.f, 1.f, All, Shown.bAll ? All : S47HudGauges::Segments(Shown.Minute / 10));
@@ -953,10 +953,6 @@ void SS47Hud::PaintClock(const FGeometry& G, FSlateWindowElementList& Out, int32
 	Ghosts.Draw(Out, Layer + 1);
 	Glow.Draw(Out, Layer + 1);
 	Lit.Draw(Out, Layer + 2);
-	const float Mark = 158.f * Kc + SecondsW;
-	const bool bAmLit = Shown.bAll || !Shown.bPm, bPmLit = Shown.bAll || Shown.bPm;
-	HudTextRimmed(Out, Layer + 1, G, TEXT("AM"), Term(11.f, 0.8f), Corner + Pf(Mark, 7.5f), 0.f, bAmLit ? DimInk : Ghost, bAmLit ? Rim : 0.f);
-	HudTextRimmed(Out, Layer + 1, G, TEXT("PM"), Term(11.f, 0.8f), Corner + Pf(Mark, 17.5f), 0.f, bPmLit ? DimInk : Ghost, bPmLit ? Rim : 0.f);
 	HudTextRimmed(Out, Layer + 1, G, DayWords(), Term(12.f, 0.9f), Corner + Pf(4.f, DigitH + 13.f), 0.f, C(Pal.Clock, Pal.ClockOn * 0.6f), Rim);
 }
 
