@@ -125,6 +125,11 @@ Prepared for local playback at 48 kHz; NASA reference playback preserves speed a
 Synthetic Nebula ambience: Ultimate SFX for Games, Function Loops (purchased library).
 These source credits describe the recordings, not the fictional instrument's acquisition date.
 
+TV ANTHEM (2026-11-12)
+"The Star-Spangled Banner" performed by the United States Navy Band, a work of the U.S. federal government, public domain
+(Wikimedia Commons). Band-limited and levelled by Tools/anthem/fetch.sh for the TV station's sign-off.
+
+
 STREET LAMPS (2026-11-09)
 Cobra-head street lamp, davit arm, tapered steel pole and wood-pole arm: original Blender geometry and procedural textures made for SIGNAL / 47 (unreal/ArtSource/StreetLamps). No third-party meshes or images.
 
