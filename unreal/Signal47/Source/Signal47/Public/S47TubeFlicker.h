@@ -47,6 +47,21 @@ struct FS47TubeFlicker
 	}
 	bool Active(double Now) const { return Now - Start < 1.5; }
 
+	// PLAY-31-34: a tube that burns out for good (FS47FreeformSession::BreakTube) sputters before it goes dark.
+	// Level (of the tube's lit output) T seconds after the break: three flashes 0.4 s apart (2.5 a second, under
+	// the 3 a second limit), each weaker, then dark. With calm flashes (Settings / Flashing images: SLOW FADES)
+	// one smooth fade instead. Past BreakSecs the level is 0 for good.
+	static double BreakSecs(bool bCalm) { return bCalm ? 1.2 : .9; }
+	static float BreakLevel(double T, bool bCalm)
+	{
+		if (T < 0 || T >= BreakSecs(bCalm)) return 0.f;
+		if (bCalm) { const float U = float(1. - T / BreakSecs(true)); return U * U; }
+		if (T < .08) return 1.f;               // the arc as it goes: full, a beat
+		if (T >= .40 && T < .46) return .6f;   // tries again
+		if (T >= .80 && T < .84) return .3f;   // and once more, faint
+		return 0.f;
+	}
+
 private:
 	bool bInit = false, bOn = false;
 	double Changed = 0, Start = -100.0;

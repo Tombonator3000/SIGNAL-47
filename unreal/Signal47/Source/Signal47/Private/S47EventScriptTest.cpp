@@ -1,6 +1,7 @@
 #include "S47EventScript.h"
 #include "S47Freeform.h"
 #include "S47NightRhythm.h"
+#include "S47TubeFlicker.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -125,6 +126,20 @@ bool S47EventScript::SelfTest(TArray<FString>& Lines)
    FS47EventScript T=N;T.Beats[0].Next=0;Check(Lint(T).Num()>0,TEXT("tube beat: neither tube nor next is refused"));
    T=N;T.Beats[0].Next=7;Check(Lint(T).Num()>0,TEXT("tube beat: next 7 is refused (six tubes can go)"));
    T=N;T.Beats[0].Tube=3;Check(Lint(T).Num()>0,TEXT("tube beat: tube and next together are refused"));
+  }
+  // PLAY-31-34: the breaking tube's sputter (FS47TubeFlicker::BreakLevel): at most three flashes, never faster than 3 a second,
+  // dark for good after; with calm flashes one fade that never brightens again.
+  {
+   int32 Flashes=0;double LastRise=-10,MinGap=10;float PrevLevel=0,CalmPrev=2;bool bCalmOk=true;
+   for(double Ts=0;Ts<2.;Ts+=.005)
+   {
+    const float Lv=FS47TubeFlicker::BreakLevel(Ts,false);
+    if(Lv>0&&PrevLevel<=0){++Flashes;MinGap=FMath::Min(MinGap,Ts-LastRise);LastRise=Ts;}
+    PrevLevel=Lv;
+    const float Cv=FS47TubeFlicker::BreakLevel(Ts,true);bCalmOk&=Cv<=CalmPrev;CalmPrev=Cv;
+   }
+   const bool bDarkAfter=FS47TubeFlicker::BreakLevel(FS47TubeFlicker::BreakSecs(false),false)==0&&FS47TubeFlicker::BreakLevel(FS47TubeFlicker::BreakSecs(true),true)==0;
+   Check(Flashes==3&&MinGap>=1./3.&&bCalmOk&&bDarkAfter&&FS47TubeFlicker::BreakLevel(0,true)>.9f,FString::Printf(TEXT("tube break: %d flashes at least %.2f s apart (3 a second at most), a calm fade, then dark for good"),Flashes,MinGap>9?0.:MinGap));
   }
  }
  {
