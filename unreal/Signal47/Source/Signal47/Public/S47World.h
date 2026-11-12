@@ -372,5 +372,7 @@ private:
 	// TRUCK-HINT-20261109: the Freeform line about the gas station and GARAGE RECEIVING: whether it has been said this run, and the
 	// situations it was last said or held for (S47TruckHint::Due). For the run, as Hints.
 	bool bTruckHintSaid = false;
+	// the stopped-in-the-cab key hint (Frame): once per stop, the first few stops of a session
+	bool bStopHintSaid = false; int32 StopHints = 0; double StoppedFor = 0;
 	TSet<FString> TruckHintFor;
 };

@@ -2395,7 +2395,9 @@ void FS47Happenings::Step(double Dt)
    Lc->SetLightColor(P->Lamps[Li].Base*FLinearColor(float(1.+Damp*(Gain.X/Mean-1.)),float(1.+Damp*(Gain.Y/Mean-1.)),float(1.+Damp*(Gain.Z/Mean-1.))));
   }
  }
- if(F->Held()){StepGeiger(0);return;}
+ // Tom 12 Nov (d60): a running tap does not run on while the night is held (the reel deck, a console): its 22 s are night seconds,
+ // so it was heard for as long as the hold lasted. It stops with the hold.
+ if(F->Held()){if(Uneasy.I==5)EndUneasy();StepGeiger(0);return;}
  const int32 Night=FS47FreeformSession::NightOf(F->Clock());
  if(Night!=PlanNight)PlanTonight(Night);
  // What lasts is measured at the night's pace (NightPace): at x1 in play nothing changes.

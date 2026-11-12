@@ -2247,6 +2247,21 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	if (Engine) Engine->Tick();
 	IdleStep();
 	const bool bModal = M->ModalOpen();
+	// Tom 12 Nov (d60): the key was there (S47Keys "ignition") but nothing in the cab said so. Stopped in the truck for a moment, the
+	// cab says once per stop (the first few stops of a session) which key gets out and which turns the engine off or on.
+	if (bDriving && !bModal && !bBusy && !(M->Story && M->Story->IsCinematic()))
+	{
+		const FLegRec* KeyLeg = Leg.IsEmpty() ? nullptr : Legs.Find(Leg);
+		const double Spd = KeyLeg && KeyLeg->Drive ? FMath::Abs(KeyLeg->Drive->Speed) : 99.;
+		if (Spd > 2.) { StoppedFor = 0; bStopHintSaid = false; }
+		else if (Spd < .3 && !bStopHintSaid && StopHints < 4 && (StoppedFor += Dt) > 1.5)
+		{
+			bStopHintSaid = true; ++StopHints;
+			Toast(FString::Printf(TEXT("Stopped. %s: get out. %s: turn the key, engine %s."), *S47Keys::Said(TEXT("use")), *S47Keys::Said(TEXT("ignition")),
+				KeyLeg && KeyLeg->Drive && KeyLeg->Drive->bEngine ? TEXT("off") : TEXT("on")), 4.f);
+		}
+	}
+	else StoppedFor = 0;
 	// World.update: the road's cattle guard under the truck driven there (before the step, as there)
 	if (!bModal && (Area == TEXT("road") || Area == TEXT("diner")) && Road)
 	{
