@@ -16,6 +16,12 @@ class FS47DaleVoice;
 // flags. When a scene is over, every pack flag that is set and is a valid story flag id becomes a story flag, and so does
 // "scene_<id in lower case>": later story scripts wait on them with story_flag.
 //
+// STORY-DRIVE-20261112: the car radio and the face-to-face talk. A radio scene of the drive (channel radio, phase commute, no choices:
+// I01_DRIVE, I10_BACK_ON_ROAD) is the truck's radio: its lines come as captions one after another while the player is in the truck and
+// no panel is up, no panel of its own; out of the truck the rest plays on unheard and the scene is over (its effects hold). A physical
+// scene (the diner's counter, I02..I09) ends where it stands when the player drives off (FS47EveningPack::Abandon); its flags so far
+// and scene_<id> become story flags as usual.
+//
 // Dale is heard with Freeform's own voice (FS47DaleVoice, the "dale" bank = dale_de_design, never a clone); a line with no take is text.
 // Everyone else is text. The save is {pack:<FS47EveningPack::Save>, ring:bool}; an active scene is taken up again (a phone scene rings).
 class FS47StoryScene
@@ -47,6 +53,8 @@ public:
  bool Continue();
  bool Choose(const FString& ChoiceId);
  static bool SelfTest(TArray<FString>& Lines);
+ // The scene under way is the truck's radio on the drive (see above).
+ bool CarRadio() const;
 private:
  US47Main* M=nullptr;
  FS47EveningPack Pack;
@@ -54,6 +62,10 @@ private:
  FString Active,Channel,SpokenLine;
  bool bReady=false,bRing=false,bOpen=false,bWantOpen=false;
  double ReopenIn=0;
+ double RadioHold=0;   // seconds the car radio's current caption has left
+ int8 TestCab=-1;      // the self-test's "in the truck" (1 or 0) in place of US47World::bDriving; -1: the world's
+ bool InCab() const;
+ void RadioStep(double Dt);
  TSharedPtr<uint8> Life=MakeShared<uint8>(0);
  void StartRing();
  void StopRing();

@@ -67,6 +67,9 @@ public:
 	bool StillWanted() const;
 	// Takes back such a scene without its effects (its reason has gone before anyone answered). False once it has begun.
 	bool Withdraw();
+	// STORY-DRIVE-20261112: the player has walked or driven away from a face-to-face scene under way (begun or not): it ends where it
+	// stands. Effects of lines and choices already taken stay; the scene's own on_complete is not applied. False with none active.
+	bool Abandon();
 	const FS47EveningScene* CurrentScene() const;
 	const FS47EveningScene* FindScene(const FString& Id) const { return Scenes.Find(Id); }
 	const FS47EveningLine* CurrentLine() const;

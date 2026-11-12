@@ -10,6 +10,9 @@
 #include "S47ScriptPlayer.h"
 #include "S47UI.h"
 #include "S47World.h"
+#include "S47RoadShape.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -418,6 +421,27 @@ FString FS47StoryDirector::Apply(const FS47Beat& B,const FString& Text)
  }
 }
 
+FS47StoryDirector::FDrive FS47StoryDirector::DriveStart()
+{
+ FDrive D;
+ D.Leg=TEXT("road");D.To=TEXT("saro");
+ D.At=FVector(8001.8,0,S47RoadShape::TOWN().Z1+35);D.Heading=0;
+ return D;
+}
+
+bool FS47StoryDirector::BeginDrive(US47Main* Main)
+{
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryAtSaro"))){UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story night starts at SARO (-S47StoryAtSaro)"));return false;}
+ if(!Main||!IsValid(Main->World)||Main->World->bBusy||Main->World->bDriving){UE_LOG(LogS47StoryDirector,Warning,TEXT("S47: story night: the drive to SARO could not start; the night starts at SARO"));return false;}
+ const FDrive D=DriveStart();
+ FS47TripOpts O;
+ O.Leg=D.Leg;O.AtPos=D.At;O.AtHeading=D.Heading;
+ O.Hint=TEXT("SARO: leave the truck on its pad by the station and go in to OPS.");
+ Main->World->StartTrip(D.Leg,D.To,O);
+ UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story night starts in the truck on the %s leg at %.1f %.1f, heading for %s"),*D.Leg,D.At.X,D.At.Z,*D.To);
+ return true;
+}
+
 bool FS47StoryDirector::StartScript(const FString& Id,FString& Why)
 {
  if(!FindScript(Id)){Why=TEXT("no story script ")+Id;return false;}
@@ -764,6 +788,37 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
    FString StoryDir=ScriptsDir();
    FPaths::NormalizeDirectoryName(StoryDir);FPaths::CollapseRelativeDirectories(StoryDir);
    Check(!S47EventScript::ReadDirs().Contains(StoryDir)&&!S47EventScript::Find(TEXT("evening_handover")),TEXT("STORY-4: Freeform's event folders do not read the story's scripts"));
+  }
+ }
+ { // STORY-DRIVE-20261112: a new Story night begins in the truck on the road to SARO, and the drive hands over to the handover
+  const FDrive D=DriveStart();
+  Check(D.Leg==TEXT("road")&&D.To==TEXT("saro")&&FMath::IsNearlyEqual(D.At.X,8001.8)&&FMath::IsNearlyEqual(D.At.Z,S47RoadShape::TOWN().Z1+35)&&D.Heading==0,
+   TEXT("STORY-8: a new Story night starts in the truck on the road leg at the old Story's drive start, heading north for SARO"));
+  const FS47EventScript* Drive=FindScript(TEXT("evening_drive"));
+  const FS47EventScript* Diner=FindScript(TEXT("evening_diner"));
+  if(!Drive||!Diner)Lines.Add(TEXT("NOTE story director: no evening_drive.json or evening_diner.json in Content/Director/Story/beats beside this build"));
+  else
+  {
+   const auto Has=[](const FS47EventScript& Sc,TFunction<bool(const FS47Beat&)> Fn){return Sc.Beats.ContainsByPredicate(Fn);};
+   const auto WaitsOn=[](const FS47Beat& Bt,const TCHAR* If,const TCHAR* Arg){return Bt.Wait.ContainsByPredicate([If,Arg](const FS47ScriptCond& C){return C.If==If&&(!Arg||C.Arg==Arg);});};
+   const int32 Arrive=Drive->Beats.IndexOfByPredicate([&WaitsOn](const FS47Beat& Bt){return Bt.Do==ES47Beat::Flag&&Bt.Flag==TEXT("arrived_saro")&&WaitsOn(Bt,TEXT("area"),TEXT("saro"))&&WaitsOn(Bt,TEXT("on_foot"),nullptr);});
+   const int32 Begun=Drive->Beats.IndexOfByPredicate([&WaitsOn](const FS47Beat& Bt){return Bt.Do==ES47Beat::Flag&&Bt.Flag==TEXT("drive_begun")&&WaitsOn(Bt,TEXT("in_truck"),nullptr);});
+   const int32 Hands=Drive->Beats.IndexOfByPredicate([](const FS47Beat& Bt){return Bt.Do==ES47Beat::Start&&Bt.Script==TEXT("evening_handover");});
+   const bool bRadio=Has(*Drive,[](const FS47Beat& Bt){return Bt.Do==ES47Beat::Scene&&Bt.Name==TEXT("I01_DRIVE");});
+   Check(S47EventScript::LintStory(*Drive).IsEmpty()&&S47EventScript::LintStory(*Diner).IsEmpty()&&S47EventScript::Lint(*Drive).Num()>0&&S47EventScript::Lint(*Diner).Num()>0,
+    TEXT("STORY-8: evening_drive and evening_diner pass the story's lint; Freeform's lint refuses them"));
+   Check(bRadio&&Begun>=0&&Arrive>Begun&&Hands>Arrive,TEXT("STORY-8: evening_drive waits for the truck, plays I01_DRIVE on its radio, waits for the player on foot at SARO, then starts evening_handover"));
+   Check(Has(*Diner,[](const FS47Beat& Bt){return Bt.Do==ES47Beat::Scene&&Bt.Name==TEXT("I02_DINER_HELLO");})&&Has(*Diner,[](const FS47Beat& Bt){return Bt.Do==ES47Beat::Scene&&Bt.Name==TEXT("I10_BACK_ON_ROAD");}),
+    TEXT("STORY-8: evening_diner greets a stop at the Mesa Diner (I02) and plays I10 back on the road"));
+   // The acts beside the build start the drive first, and a fresh director has it under way; a save in the evening act does not again.
+   FString Text;
+   TArray<FAct> Parsed;FString Why;
+   const bool bActs=FFileHelper::LoadFileToString(Text,*ActsPath())&&ParseActs(Text,Parsed,Why)&&Parsed.Num()>0&&Parsed[0].Scripts.Num()>0&&Parsed[0].Scripts[0]==TEXT("evening_drive")
+    &&Parsed[0].Scripts.Contains(TEXT("evening_diner"))&&!Parsed[0].Scripts.Contains(TEXT("evening_handover"));
+   FS47StoryDirector Fresh(nullptr);
+   Fresh.BeginWith(Text,S47J::FObj());
+   const bool bQueued=Fresh.Pending.ContainsByPredicate([](const FPending& P){return P.Id==TEXT("evening_drive");})&&!Fresh.Pending.ContainsByPredicate([](const FPending& P){return P.Id==TEXT("evening_handover");});
+   Check(bActs&&bQueued,TEXT("STORY-8: the evening act starts evening_drive and evening_diner (the handover comes from the drive, not the act)"));
   }
  }
  { // Step 5: the scene beat

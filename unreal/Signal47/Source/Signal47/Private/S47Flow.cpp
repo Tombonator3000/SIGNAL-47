@@ -1064,7 +1064,8 @@ void US47Flow::StartGame(const FStart& O)
   if (M->Night && M->Night->Flashlight) M->Night->Flashlight->bHave=true;
   // A new operator arrives on foot at the visitor entrance, the station shut and the Jeep in its garage.
   // Tom 5 Nov. Saves and tests written for the old start keep theirs; the normal journey drives from the pad.
-  // Story's one night starts at SARO with the station open and the Jeep on its pad, as the normal journey does (no mailbox start).
+  // Story's one night starts with the station open and the Jeep on its pad, as the normal journey does (no mailbox start); the player
+  // drives it up from Caliche (FS47StoryDirector::BeginDrive, below).
   if(!O.State.IsValid()&&!bStoryNight&&!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney"))&&(!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))))
   {
    auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("saro"));S47J::Set(Pose,TEXT("x"),35.4);S47J::Set(Pose,TEXT("y"),0.);S47J::Set(Pose,TEXT("z"),-.4);S47J::Set(Pose,TEXT("h"),UE_DOUBLE_PI);
@@ -1109,6 +1110,9 @@ void US47Flow::StartGame(const FStart& O)
  {
   if(!M->StoryDirector)M->StoryDirector=MakeShared<FS47StoryDirector>(M);
   M->StoryDirector->Begin(S47J::Obj(O.State,TEXT("storyDirector")));
+  // STORY-DRIVE-20261112 (Tom 12 Nov): a new Story night begins in the truck on the highway, driving north to SARO (the old Story's
+  // opening), on Freeform's own trip; the evening act's evening_drive follows it to the handover. A Continue resumes where it was saved.
+  if(!O.State.IsValid())FS47StoryDirector::BeginDrive(M);
  }
  else if (M->StoryDirector) M->StoryDirector->Stop();
  // New Freeform operators collect the camera physically. Every legacy Freeform
