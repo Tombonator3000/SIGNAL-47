@@ -1,0 +1,37 @@
+{
+ "_doc": "CALICHE-GROUND: pads and cuts the sites registered (S47GroundEdits), road-local metres; written by the game with -S47GroundEditsDump, cut into the ground mesh by Tools/freeformterrain/site_ground.py",
+ "sites": {
+  "school": {
+   "pads": [
+    {
+     "x": 38.5,
+     "z": 2244.0,
+     "hx": 16.5,
+     "hz": 17.0,
+     "yaw": 0.0,
+     "y": 10.8999,
+     "bank": 5.0
+    },
+    {
+     "x": 31.5,
+     "z": 2268.0,
+     "hx": 11.5,
+     "hz": 7.0,
+     "yaw": 0.0,
+     "y": 10.8999,
+     "bank": 3.0
+    }
+   ],
+   "cuts": [
+    {
+     "x": 40.8,
+     "z": 2245.5,
+     "hx": 13.8,
+     "hz": 15.5,
+     "yaw": 0.0,
+     "y": 8.1199
+    }
+   ]
+  }
+ }
+}

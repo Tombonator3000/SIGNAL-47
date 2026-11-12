@@ -1,4 +1,6 @@
 #include "S47TownSites.h"
+#include "S47GroundEdits.h"
+#include "S47FreeformTerrain.h"
 #include "S47Breather.h"
 #include "S47EventPlaces.h"
 #include "S47FarmWorld.h"
@@ -19,6 +21,12 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Dom/JsonObject.h"
+#include "Misc/FileHelper.h"
+#include "Misc/PackageName.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include <limits>
@@ -48,6 +56,7 @@ namespace S47TownSitesLocal
 	const TCHAR* const LitPath = TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque");
 	constexpr double StripM = 1.5;
 
+	TMap<FString, TArray<S47TownSites::FSite::FDress>> DressOf; // each site's bought pieces as last read (Build)
 	S47TownSites::FPart Box(double X, double Z, double W, double D, double H, uint32 Colour, bool bSolid = true)
 	{
 		S47TownSites::FPart P; P.X = X; P.Z = Z; P.W = W; P.D = D; P.H = H; P.Colour = Colour; P.bSolid = bSolid; return P;
@@ -154,6 +163,8 @@ namespace S47TownSitesLocal
 		Pad(S.PadX0, S.PadX1, S.PadZ1, S.PadZ1 + Bk, Yard, NaN, TEXT("z"), true);   // south
 		Pad(S.PadX0, S.PadX1, S.PadZ0 - Bk, S.PadZ0, NaN, Yard, TEXT("z"), true);   // north
 		S.ModelFoot = { S.PadX0, S.PadX1, S.PadZ0, S.PadZ1 };
+		// CALICHE-GROUND: no land inside the ring (the model's apron, its light wells, E4's areaway and S2 are open down to the basement's floor)
+		S.GroundCuts.Add({ PX(-100), PX(2660), PZ(-100), PZ(3000) }); S.GroundCutY = -3.4;
 		// lights: two fluorescent fixtures in each classroom, one in the office, the staff room, each WC and the stair, three down the
 		// corridor; the basement rooms one each; and the lamp over E1 (the stand-in's stood 1.2 m inside the wall)
 		// (modest: a night school lit by a few tubes left on, not a showroom; the first night run at 22:00 was twice this)
@@ -232,31 +243,40 @@ namespace S47TownSitesLocal
 				const auto Post = [&](double X, double Z, double H, double Dia = .06, uint32 C = Galv) { Keep(Box(X, Z, Dia, Dia, H, C, true), 0, true); };
 				// the footpath: 1.5 m of concrete from x -42 (the highway's shoulder) to the pad's edge at -26
 				Keep(Box(-34, 0, 16, 1.5, .08, Concrete, false));
+				int32 G0 = S.Parts.Num();
+				const auto Group = [&S, &G0](const TCHAR* Name) { for (int32 I = G0; I < S.Parts.Num(); ++I) S.Parts[I].Group = Name; G0 = S.Parts.Num(); };
 				// swings: two frames' posts, a top bar, two seats on their chains (x -20, z 19 to 25)
 				for (const double Z : { 19.0, 25.0 }) Post(-20, Z, 2.5, .09);
 				Keep(Box(-20, 22, .09, 6.2, .09, Galv, false), 2.42);
 				for (const double Z : { 20.8, 23.2 }) { Keep(Box(-20, Z, .5, .22, .05, Rubber, false), .5); for (const double DZ : { -.2, .2 }) Keep(Box(-20, Z + DZ, .03, .03, 1.85, Galv, false), .55); }
+				Group(TEXT("swings"));
 				// the merry-go-round: a disc on a centre post, four bars (x -14, z 22)
 				Keep(Box(-14, 22, 3, 3, .08, Paint, false), .32, true); Post(-14, 22, 1.1, .1);
 				Keep(Box(-14, 22, 2.6, .04, .04, Galv, false), .9); Keep(Box(-14, 22, .04, 2.6, .04, Galv, false), .9);
+				Group(TEXT("merry"));
 				// the see-saw: a plank over its fulcrum (x -9, z 19)
 				Keep(Box(-9, 19, 3, .25, .06, Wood, false), .55); Keep(Box(-9, 19, .3, .5, .5, Galv, true));
+				Group(TEXT("seesaw"));
 				// monkey bars: four posts, two rails and the rungs (x -24, z 24 to 27)
 				for (const double X : { -25.5, -22.5 }) for (const double Z : { 24.0, 27.0 }) Post(X, Z, 2.1, .06);
 				for (const double Z : { 24.0, 27.0 }) Keep(Box(-24, Z, 3.1, .04, .04, Galv, false), 2.05);
 				for (int32 I = 0; I < 7; ++I) Keep(Box(-25.5 + I * .5, 25.5, .03, 3.0, .03, Galv, false), 2.05);
+				Group(TEXT("monkey"));
 				// the fence frame: posts every 3 m with a top rail, along z 29 (x -27 to -6) and x -6 (z 17 to 29), gaps at z 20 to 23
 				// and x -15 to -12 (the way in and the way out), the pad's side open
 				for (double X = -27; X <= -6.01; X += 3) if (X < -15.5 || X > -11.5) Post(X, 29, 1.25);
 				Keep(Box(-21.5, 29, 11, .04, .04, Galv, false), 1.2); Keep(Box(-8.5, 29, 5, .04, .04, Galv, false), 1.2);
 				for (double Z = 17; Z <= 29.01; Z += 3) if (Z < 19.5 || Z > 23.5) Post(-6, Z, 1.25);
 				Keep(Box(-6, 18.5, .04, 3, .04, Galv, false), 1.2); Keep(Box(-6, 26.5, .04, 5, .04, Galv, false), 1.2);
+				G0 = S.Parts.Num();
 				// two benches facing the playground (x -26, z 20 and -10, z 26.5), and the bike rack by the steps' north side
 				for (const FVector2D& At : { FVector2D(-26, 20), FVector2D(-10, 26.5) })
 				{
 					Keep(Box(At.X, At.Y, .4, 1.8, .06, Wood, false), .44);
 					for (const double DZ : { -.75, .75 }) Keep(Box(At.X, At.Y + DZ, .35, .06, .44, Galv, true));
 				}
+				Group(TEXT("benches"));
+				S.DressFile = TEXT("school_cosmos.json");
 				for (int32 I = 0; I < 6; ++I) Keep(Box(-23.5, -4.5 + I * .5, .04, .04, .8, Galv, false), 0, true);
 				Keep(Box(-23.5, -3.25, .04, 2.6, .04, Galv, false), .78);
 			}
@@ -418,6 +438,29 @@ TArray<FBox2D> S47TownSites::Footprint(const FSite& S, const FPart& P)
 	return Out;
 }
 
+bool S47TownSites::ReadDress(const FString& File, TArray<FSite::FDress>& Out, FString* Error)
+{
+	const auto Fail = [&](const FString& Why) { if (Error) *Error = File + TEXT(": ") + Why; return false; };
+	FString Text;
+	TSharedPtr<FJsonObject> J;
+	if (!FFileHelper::LoadFileToString(Text, *(FPaths::ProjectConfigDir() / TEXT("Props") / File))) return Fail(TEXT("not in Config/Props"));
+	if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), J) || !J.IsValid()) return Fail(TEXT("does not read"));
+	const TArray<TSharedPtr<FJsonValue>>* Pieces = nullptr;
+	if (!J->TryGetArrayField(TEXT("pieces"), Pieces)) return Fail(TEXT("has no pieces"));
+	for (const TSharedPtr<FJsonValue>& V : *Pieces)
+	{
+		const TSharedPtr<FJsonObject> P = V->AsObject();
+		const TArray<TSharedPtr<FJsonValue>>* At = nullptr;
+		if (!P.IsValid() || !P->TryGetArrayField(TEXT("at"), At) || At->Num() != 2) return Fail(TEXT("a piece has no at [x, z]"));
+		FSite::FDress D;
+		P->TryGetStringField(TEXT("id"), D.Id); P->TryGetStringField(TEXT("asset"), D.Asset); P->TryGetStringField(TEXT("replaces"), D.Replaces);
+		D.X = (*At)[0]->AsNumber(); D.Z = (*At)[1]->AsNumber();
+		P->TryGetNumberField(TEXT("yaw"), D.Yaw); P->TryGetNumberField(TEXT("scale"), D.Scale); P->TryGetBoolField(TEXT("collide"), D.bCollide);
+		Out.Add(MoveTemp(D));
+	}
+	return true;
+}
+
 FBox2D S47TownSites::ModelRect(const FSite& S, const FSite::FWall& R)
 {
 	// a rectangle of the site's metres in the road's (the site standing square: its corners turned, then the box round them)
@@ -559,6 +602,24 @@ bool S47TownSites::SelfTest(TArray<FString>& Lines)
 		Check(Uses.Num() == 4 && Uses.Contains(TEXT("ff:breather:gate")) && bClosed && FVector2D::Distance(Mouth, Out) < 6,
 			FString::Printf(TEXT("the Breather: %d uses on its pieces (gate, sign, plaque, hut), and no way from the mouth out to the street but through the fence"), Uses.Num()));
 	}
+	// SCHOOL-PLAYGROUND: the bought pieces' file (passes with and without the assets)
+	for (const FSite& S : Sites()) if (!S.DressFile.IsEmpty())
+	{
+		TArray<FSite::FDress> Dress; FString Error;
+		const bool bRead = ReadDress(S.DressFile, Dress, &Error);
+		bool bGood = bRead && Dress.Num() > 0; int32 Here = 0;
+		TSet<FString> Ids, Groups;
+		for (const FPart& P : S.Parts) if (!P.Group.IsEmpty()) Groups.Add(P.Group);
+		for (const FSite::FDress& D : Dress)
+		{
+			bGood &= !D.Id.IsEmpty() && !Ids.Contains(D.Id) && D.Asset.StartsWith(TEXT("/Game/Licensed/CosmosPlayground/")) && D.Scale > .5 && D.Scale < 1.5 && (D.Replaces.IsEmpty() || Groups.Contains(D.Replaces));
+			// on the yard or the pad, outside the building
+			bGood &= S.Yards.ContainsByPredicate([&D](const FSite::FWall& Y) { return D.X > Y.MinX && D.X < Y.MaxX && D.Z > Y.MinZ && D.Z < Y.MaxZ; });
+			Ids.Add(D.Id);
+			Here += FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(D.Asset)) ? 1 : 0;
+		}
+		Check(bGood, FString::Printf(TEXT("%s: %s reads%s: %d pieces with an id, a licensed path and a sane scale, each on the playground's ground, each standing in for a known group of boxes or none; %d of the assets are here"), *S.Id, *S.DressFile, bRead ? TEXT("") : *(TEXT(" NOT (") + Error + TEXT(")")), Dress.Num(), Here));
+	}
 	bAll &= S47Breather::SelfTest(Lines);
 	return bAll;
 }
@@ -599,8 +660,36 @@ bool FS47TownSites::Build()
 	};
 	int32 Models = 0;
 	S47TownSitesLocal::ModelsUpSet.Reset();
+	DressedGroups.Reset();
 	for (const FSite& S : Sites())
 	{
+		// SCHOOL-PLAYGROUND: the bought pieces that are here, each on the land where the file says; the boxes they stand in for go unseen.
+		if (!S.DressFile.IsEmpty())
+		{
+			FString Error;
+			TArray<FSite::FDress> Dress;
+			if (!ReadDress(S.DressFile, Dress, &Error)) UE_LOG(LogS47TownSites, Warning, TEXT("S47: temp sites: %s: %s"), *S.Id, *Error);
+			TArray<FString> Missing;
+			int32 Up = 0;
+			for (int32 I = 0; I < Dress.Num(); ++I)
+			{
+				const FSite::FDress& D = Dress[I];
+				UStaticMesh* Mesh = FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(D.Asset)) ? LoadObject<UStaticMesh>(nullptr, *D.Asset) : nullptr;
+				if (!Mesh) { Missing.Add(D.Id); continue; }
+				UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("S47SiteDress_%s_%s"), *S.Id, *D.Id));
+				C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(W->GetRootComponent());
+				C->SetStaticMesh(Mesh); C->SetCastShadow(true);
+				C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetCollisionResponseToAllChannels(ECR_Ignore);
+				C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
+				C->RegisterComponent();
+				FBuiltPart B; B.Site = S.Id; B.Dress = I; B.Comp = C; Parts.Add(B);
+				if (!D.Replaces.IsEmpty()) DressedGroups.Add(S.Id + TEXT(":") + D.Replaces);
+				++Up;
+			}
+			S47TownSitesLocal::DressOf.Add(S.Id, Dress);
+			if (Missing.Num()) UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites: %s: %d of %d Cosmos pieces not here (Tools/cosmosplayground), the boxes stand for them: %s"), *S.Id, Missing.Num(), Dress.Num(), *FString::Join(Missing, TEXT(", ")));
+			if (Up) UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites: %s: %d Cosmos pieces stand on the site, in place of %d groups of boxes"), *S.Id, Up, DressedGroups.Num());
+		}
 		// The site's real model, when its asset is there (SCHOOL-V2 stage 2); the stand-in boxes and their words go unseen then.
 		UStaticMesh* Model = S.Model.IsEmpty() ? nullptr : LoadObject<UStaticMesh>(nullptr, *S.Model);
 		if (!S.Model.IsEmpty() && !Model) { UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites: %s has no model at %s (Tools/freemodels/import_free.sh): its boxes stand"), *S.Id, *S.Model); }
@@ -643,7 +732,7 @@ bool FS47TownSites::Build()
 			C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetCollisionResponseToAllChannels(ECR_Ignore);
 			C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
 			C->RegisterComponent();
-			FBuiltPart B; B.Site = S.Id; B.Part = I; B.bByModel = Model && !P.bKeep; B.Comp = C; Parts.Add(B);
+			FBuiltPart B; B.Site = S.Id; B.Part = I; B.bByModel = (Model && !P.bKeep) || (!P.Group.IsEmpty() && DressedGroups.Contains(S.Id + TEXT(":") + P.Group)); B.Comp = C; Parts.Add(B);
 		}
 		for (int32 I = 0; I < S.Words.Num(); ++I)
 		{
@@ -699,9 +788,11 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 		}
 		Bottom.Add(Lo); Top.Add(Hi);
 	}
+	// (the model first: it gives the land its pad, and what stands on the yard is seated on that)
+	for (int32 Pass = 0; Pass < 2; ++Pass)
 	for (const FBuiltPart& B : Parts)
 	{
-		if (B.Site != Site) continue;
+		if (B.Site != Site || (Pass == 0) != B.bModel) continue;
 		USceneComponent* C = B.Comp.Get();
 		if (!C) continue;
 		if (B.bModel)
@@ -717,7 +808,8 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 				// a corner of the mesh (Unreal centimetres, x east, y south) turned by the model's own yaw, in the site's metres
 				const double LX = (K.X * FMath::Cos(Yaw) - K.Y * FMath::Sin(Yaw)) * .01, LZ = (K.X * FMath::Sin(Yaw) + K.Y * FMath::Cos(Yaw)) * .01;
 				const FVector2D At = ToRoad(*S, S->ModelX + LX, S->ModelZ + LZ);
-				Hi = FMath::Max(Hi, Ground(At.X, At.Y, bWithFloor));
+				// (the land as it is without any site's pad: S47GroundEdits changes SurfaceY under this very model)
+				Hi = FMath::Max(Hi, Road.Y + S47RoadTerrain::NaturalY(At.X, At.Y));
 			}
 			const FVector2D At = ToRoad(*S, S->ModelX, S->ModelZ);
 			C->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + At.X, Hi - S->ModelLift, Road.Z + At.Y)), FRotator(0, S->Yaw + S->ModelYaw, 0));
@@ -725,6 +817,21 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 			// each seating; the exits' steps run down to the land at their far end.
 			const double FloorY = Hi - S->ModelLift + S->ModelFloorUp;
 			ModelFloorY.Add(S->Id, FloorY);
+			// CALICHE-GROUND: the pad, the yards beside it and the cuts go to the land itself (S47GroundEdits: SurfaceY follows them while
+			// the relief is on). bLand: the installed ground mesh holds them too, so the land draws the pad and its banks, not boxes.
+			bool bLand = false;
+			if (S->PadX1 > S->PadX0 && S47TownSitesLocal::Square(S->Yaw))
+			{
+				const auto RectOf = [&](const FSite::FWall& R) { const FBox2D B = ModelRect(*S, R); S47GroundEdits::FRect O; O.X = B.GetCenter().X; O.Z = B.GetCenter().Y; O.HalfX = B.GetExtent().X; O.HalfZ = B.GetExtent().Y; return O; };
+				TArray<S47GroundEdits::FPad> Pads; TArray<S47GroundEdits::FCut> Cuts;
+				constexpr double LandUnder = .02;   // the land lies 2 cm under the yard's level: the model's apron is at that level and would flicker with it
+				{ S47GroundEdits::FPad P; P.R = RectOf({ S->PadX0, S->PadX1, S->PadZ0, S->PadZ1 }); P.Y = Hi - Road.Y - LandUnder; P.Bank = S->PadBank; Pads.Add(P); }
+				for (const FSite::FWall& Y : S->Yards) { S47GroundEdits::FPad P; P.R = RectOf(Y); P.Y = Hi - Road.Y - LandUnder; P.Bank = 3; Pads.Add(P); }
+				for (const FSite::FWall& G : S->GroundCuts) { S47GroundEdits::FCut K; K.R = RectOf(G); K.Y = FloorY + S->GroundCutY - Road.Y; Cuts.Add(K); }
+				S47GroundEdits::Set(S->Id, Pads, Cuts);
+				S47FreeformTerrain::SitesChanged(M->Web.Get());
+				bLand = S47GroundEdits::Baked(S->Id);
+			}
 			if (S->PadX1 > S->PadX0)
 			{
 				// the pad's top level with the yard (Hi), 2 m thick; a bank on each side where the land is more than a step lower
@@ -741,7 +848,8 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 						const FSite::FWall Piece = bRing ? S->PadTops[PB.PadPiece] : FSite::FWall{ S->PadX0, S->PadX1, S->PadZ0, S->PadZ1 };
 						const double Deep = bRing ? 5.0 : 2.0, PWX = Piece.MaxX - Piece.MinX, PWZ = Piece.MaxZ - Piece.MinZ;
 						const FVector2D PAt = ToRoad(*S, (Piece.MinX + Piece.MaxX) * .5, (Piece.MinZ + Piece.MaxZ) * .5);
-						PC->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + PAt.X, Hi - Deep * .5, Road.Z + PAt.Y)), FRotator(0, S->Yaw, 0));
+						// (bLand: the land lies on it; it stays 3 cm under as the ground's wall behind the wells and the areaway)
+						PC->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + PAt.X, Hi - Deep * .5 - (bLand ? .06 : 0), Road.Z + PAt.Y)), FRotator(0, S->Yaw, 0));
 						PC->SetWorldScale3D(FVector(bQuarter ? PWZ : PWX, bQuarter ? PWX : PWZ, Deep));
 						PC->SetHiddenInGame(false);
 						continue;
@@ -752,7 +860,7 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 					const double L = S->PadBank;
 					const FVector2D Far = ToRoad(*S, EdgeX + OutX * L, EdgeZ + OutZ * L);
 					const double Drop = Hi - Ground(Far.X, Far.Y, bWithFloor);
-					if (Drop < .25) { PC->SetHiddenInGame(true); PC->SetCollisionEnabled(ECollisionEnabled::NoCollision); continue; }
+					if (Drop < .25 || bLand) { PC->SetHiddenInGame(true); PC->SetCollisionEnabled(ECollisionEnabled::NoCollision); continue; }
 					PC->SetCollisionEnabled(ECollisionEnabled::QueryOnly); PC->SetHiddenInGame(false);
 					const FVector2D Mid = ToRoad(*S, EdgeX + OutX * L * .5, EdgeZ + OutZ * L * .5);
 					const FVector2D OutDir = S47TownSitesLocal::Turn(OutX, OutZ, S->Yaw);
@@ -773,6 +881,7 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 				const FBox2D FB = ModelRect(*S, { F.MinX, F.MaxX, F.MinZ, F.MaxZ });
 				const bool bZ = F.Axis == TEXT("z");
 				double Y0 = F.Y0, Y1 = F.Y1;
+				if (F.bToLand && bLand) continue; // (the bank is the land's own: SurfaceY has it)
 				if (F.bToLand)
 				{
 					const FVector2D Lo(bZ ? FB.GetCenter().X : FB.Min.X, bZ ? FB.Min.Y : FB.GetCenter().Y), HiEnd(bZ ? FB.GetCenter().X : FB.Max.X, bZ ? FB.Max.Y : FB.GetCenter().Y);
@@ -787,6 +896,18 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 			WallLevels(*S);
 		}
 		else if (B.PadSide > -2) {} // the pad and its banks: placed with the model above
+		else if (B.Dress >= 0)
+		{
+			const TArray<FSite::FDress>* Dress = S47TownSitesLocal::DressOf.Find(Site);
+			UStaticMeshComponent* DC = Cast<UStaticMeshComponent>(C);
+			if (!Dress || !Dress->IsValidIndex(B.Dress) || !DC || !DC->GetStaticMesh()) continue;
+			const FSite::FDress& D = (*Dress)[B.Dress];
+			// the bottom centre of its turned and scaled bounds on the land at its place (the packs' pivots are not in the middle)
+			const FRotator Rot(0, S->Yaw + D.Yaw, 0);
+			const FBox Bd = DC->GetStaticMesh()->GetBoundingBox().TransformBy(FTransform(Rot, FVector::ZeroVector, FVector(D.Scale)));
+			const FVector2D At = ToRoad(*S, D.X, D.Z);
+			DC->SetWorldTransform(FTransform(Rot, S47Three::ToUE(FVector(Road.X + At.X, Ground(At.X, At.Y, bWithFloor), Road.Z + At.Y)) - FVector(Bd.GetCenter().X, Bd.GetCenter().Y, Bd.Min.Z), FVector(D.Scale)));
+		}
 		else if (!B.bWords)
 		{
 			const FPart& P = S->Parts[B.Part];
@@ -884,7 +1005,20 @@ void FS47TownSites::SetColliders(bool bOn)
 				*Spot(TEXT("S1 mid-flight"), 2080, 1275, 0), *Spot(TEXT("S1 landing"), 2300, 1400, -1.7), *Spot(TEXT("basement corridor"), 1500, 1400, -3.4),
 				Free(ToRoad(S, S.ModelX + (900 - 1200) * .01, S.ModelZ + (1200 - 1400) * .01)) ? TEXT("FAILED (the corridor wall is not there)") : TEXT("ok"));
 		}
-		if (!S.Parts[I].bSolid || (bModel && !S.Parts[I].bKeep)) continue;
+		if (I == 0)
+			if (const TArray<FSite::FDress>* Dress = S47TownSitesLocal::DressOf.Find(S.Id))
+				for (const FBuiltPart& B : Parts)
+				{
+					// a bought piece's walk block from its bounds (Unreal x is the world's x, Unreal y its z), 5 cm in
+					UPrimitiveComponent* DC = B.Site == S.Id && Dress->IsValidIndex(B.Dress) && (*Dress)[B.Dress].bCollide ? Cast<UPrimitiveComponent>(B.Comp.Get()) : nullptr;
+					if (!DC) continue;
+					DC->UpdateBounds();
+					const FBox Bd = DC->Bounds.GetBox();
+					FS47Rect R; R.MinX = Bd.Min.X / 100.0 + .05; R.MaxX = Bd.Max.X / 100.0 - .05; R.MinZ = Bd.Min.Y / 100.0 + .05; R.MaxZ = Bd.Max.Y / 100.0 - .05;
+					R.Id = FString::Printf(TEXT("temp:%s:dress:%s"), *S.Id, *(*Dress)[B.Dress].Id); R.bEnabled = true;
+					if (R.MaxX > R.MinX && R.MaxZ > R.MinZ) Walk.Add(R);
+				}
+		if (!S.Parts[I].bSolid || (bModel && !S.Parts[I].bKeep) || (!S.Parts[I].Group.IsEmpty() && DressedGroups.Contains(S.Id + TEXT(":") + S.Parts[I].Group))) continue;
 		int32 K = 0;
 		for (const FBox2D& B : Footprint(S, S.Parts[I]))
 		{
@@ -934,6 +1068,7 @@ void FS47TownSites::HidePlants(bool bHide)
 	// would otherwise stand up through a trailer's roof. Shrunk to nothing, never removed, so that every count they keep is as it was.
 	TArray<FBox2D> Under;
 	for (const FBox2D& B : S47TownSites::SolidFootprints()) Under.Add(B.ExpandBy(1.0));
+	for (const FBox2D& B : S47GroundEdits::ClearBoxes()) Under.Add(B.ExpandBy(.5)); // CALICHE-GROUND: pads, banks and cuts
 	// (N1110: and the Breather's landing and surround, inside its fence.)
 	for (const S47TownSites::FSite& S : S47TownSites::Sites()) if (S.bLandmark)
 		for (const S47TownSites::FPart& P : S.Parts) if (!P.bSolid && P.Lift <= 0) for (const FBox2D& B : S47TownSites::Footprint(S, P)) Under.Add(B.ExpandBy(.5));
