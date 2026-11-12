@@ -162,7 +162,10 @@ TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
  else if(Screen==1)
  {
   // D45-20261110: the array's state where the printer tray's static line was, so the line count stays the same
-  const FString Array=!J?FString(TEXT("ARRAY / NO JOB")):PointReady()?FString(Settle>=1?TEXT("ARRAY / LOCKED"):TEXT("ARRAY / SETTLING")):J->Stage==EJobStage::New?FString(TEXT("ARRAY / NOT POINTED")):FString(TEXT("ARRAY / SLEWING"));
+  // GAMEPLAY-LOOP-01 (Tom, 12 November): an unusual take says ANOMALY DETECTED on the receiver's glass, from the tuned card until the
+  // reel deck has heard it, in the array line's place (the same count of lines).
+  const bool bOdd=J&&((J->Stage==EJobStage::Pointed&&ReceiverReady()&&AnomalyAhead())||(PlainAnomaly(*J)&&J->Stage>=EJobStage::Integrating&&J->Stage<=EJobStage::Recorded&&!J->bAudioReviewed));
+  const FString Array=bOdd?FString(TEXT("ANOMALY DETECTED")):!J?FString(TEXT("ARRAY / NO JOB")):PointReady()?FString(Settle>=1?TEXT("ARRAY / LOCKED"):TEXT("ARRAY / SETTLING")):J->Stage==EJobStage::New?FString(TEXT("ARRAY / NOT POINTED")):FString(TEXT("ARRAY / SLEWING"));
   L={TEXT("RX BANK 3 / RECEIVER"),J?J->Id:TEXT("NO JOB SELECTED"),FString::Printf(TEXT("F %.3f MHz"),M->Story->Rx.Frequency),FString::Printf(TEXT("GAIN %.0f / BW %.0f"),M->Story->Rx.Gain,M->Story->Rx.Bandwidth),FString::Printf(TEXT("CARD %.3f / AZ %.1f"),P.F,(P.Az[0]+P.Az[1])*.5),J?FString::Printf(TEXT("REC %.1f / %.1f s / %d%%"),J->Elapsed,SourceSeconds(),SourceSeconds()>0?FMath::Clamp(int32(100*J->Elapsed/SourceSeconds()),0,100):0):FString(),Array};
  }
  else if(Screen==2)
