@@ -13,6 +13,7 @@
 #include "S47OpenLand.h"
 #include "S47Places.h"
 #include "S47Relief.h"
+#include "S47Theme.h"
 #include "S47RoadShape.h"
 #include "S47RoadTerrain.h"
 #include "S47Truck.h"
@@ -745,9 +746,13 @@ void SS47FieldMap::Construct(const FArguments& InArgs)
 	// D45-20261110 (Tom could not find the slip's mark): the first time the sheet opens after a new slip, it shows both the player (or
 	// SARO) and the slip's circle, so the circle is there to be seen; after that it opens as it always has.
 	{
+		// MAP-D62-20261112 (Tom, d62: opened again on the road, the circle was nowhere on the sheet): the newest circle not yet stood in is
+		// framed again whenever the sheet would open without it on it, not only the first time.
 		const TArray<S47FieldMap::FSlipCircle> Circles = S47FieldMap::SlipCircles(View);
-		const S47FieldMap::FSlipCircle* Newest = Circles.Num() && !Circles.Last().bChecked ? &Circles.Last() : nullptr;
-		if (Newest && Newest->Label != Kept.LastCircle)
+		const S47FieldMap::FSlipCircle* Newest = nullptr;
+		for (const S47FieldMap::FSlipCircle& Cc : Circles) if (!Cc.bChecked) Newest = &Cc;
+		const bool bOnSheet = Newest && S47FieldMapLocal::InFrame(ToPage(Newest->X, Newest->Z), 30);
+		if (Newest && (Newest->Label != Kept.LastCircle || !bOnSheet))
 		{
 			Kept.LastCircle = Newest->Label;
 			const FVector2D Here = View.bMe ? FVector2D(View.MeX, View.MeZ) : SaroAt, There(Newest->X, Newest->Z);
@@ -879,7 +884,9 @@ FReply SS47FieldMap::OnMouseButtonUp(const FGeometry& G, const FPointerEvent& E)
 
 FCursorReply SS47FieldMap::OnCursorQuery(const FGeometry& G, const FPointerEvent& E) const
 {
-	return FCursorReply::Cursor(bDrag ? EMouseCursor::GrabHandClosed : EMouseCursor::GrabHand);
+	// MAP-D62-20261112 (Tom, d62: "the mouse disappears from the map"): the packaged game has no grab-hand cursor files, so the engine's
+	// GrabHand drew nothing over the sheet; S47Theme::GrabCursor gives the hand that exists there (as the case board's does).
+	return FCursorReply::Cursor(S47Theme::GrabCursor(bDrag));
 }
 
 void SS47FieldMap::SurveyWorld() const
@@ -1314,41 +1321,55 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		for (const double D : { Sec.Az - Sec.Spread, Sec.Az + Sec.Spread }) Pen.Dashed({ F2(From), F2(Ray(D)) }, Line, 1.2f, LPencil, { 2, 5 });
 		// The truck's line is a narrow one: its middle drawn too, so that two of them are seen to cross.
 		if (Sec.bFrom) Pen.Dashed({ F2(From), F2(Ray(Sec.Az)) }, Line, 1.f, LPencil, { 2, 4 });
-		if (Ring)
-		{
-			// The circle where to look: a question mark in it until it has been stood in, then a tick; the label just outside it.
-			const FVector2f Ctr = OnPage(Ring->X, Ring->Z);
-			const float Rp = FMath::Max(10.f, float(Ring->R * Sc));
-			// Tom 12 Nov: the area to search is marked in a clear red ring (a red grease pencil), drawn twice so it reads at a glance;
-			// once stood in it stays red but paler, with a tick.
-			const FLinearColor Red = Ring->bChecked ? FLinearColor(.62f, .16f, .12f, .75f) : FLinearColor(.86f, .07f, .05f, 1.f);
-			Pen.Lines(Pen.Circle(Ctr, Rp, 64), Red, 3.2f, LPencil);
-			Pen.Lines(Pen.Circle(Ctr, Rp + 2.5f, 64), Red, 1.4f, LPencil);
-			if (Ring->bChecked) Pen.Lines({ Ctr + FVector2f(-7, 0), Ctr + FVector2f(-2, 6), Ctr + FVector2f(9, -9) }, Red, 2.6f, LPencil);
-			else Pen.Text(TEXT("?"), Ctr + FVector2f(0, 1), Pencil(Rp >= 14.f ? 28.f : 22.f), Red, LPencilWords, .5f, .5f);
-			const FVector2f Size = FPen::Measure(Sec.Label, Pencil(24));
-			const float Out45 = Rp * .72f + 6.f;
-			static const FVector2f Sides[] = { FVector2f(1, -1), FVector2f(-1, -1), FVector2f(1, 1), FVector2f(-1, 1) };
-			FVector2f Corner = Ctr + Sides[0] * Out45; float AlignX = 0.f, AlignY = 1.f;
-			for (const FVector2f& Sd : Sides)
-			{
-				const FVector2f Try = Ctr + Sd * Out45;
-				const FVector2f TopLeft = Try - FVector2f(Sd.X > 0 ? 0.f : Size.X, Sd.Y < 0 ? Size.Y : 0.f);
-				const FBox2f Want(TopLeft, TopLeft + Size);
-				if (!InFrame(FVector2D(TopLeft.X, TopLeft.Y)) || !InFrame(FVector2D(TopLeft.X + Size.X, TopLeft.Y + Size.Y))) continue;
-				if (Occupied.ContainsByPredicate([&Want](const FBox2f& Had) { return Had.Intersect(Want); })) continue;
-				Corner = Try; AlignX = Sd.X > 0 ? 0.f : 1.f; AlignY = Sd.Y < 0 ? 1.f : 0.f; break;
-			}
-			{
-				const FVector2f TopLeft = Corner - FVector2f(Size.X * AlignX, Size.Y * AlignY);
-				Occupied.Add(FBox2f(TopLeft, TopLeft + Size));
-			}
-			Pen.Text(Sec.Label, Corner, Pencil(24), Red, LPencilWords, AlignX, AlignY, true);
-			continue;
-		}
+		if (Ring) continue; // its circle and label: below, with every circle on the sheet
 		// No circle (an older save, the truck's, the land's own bearings): on the centre line, on the land, drawn only if on the sheet.
 		const FVector2D Tag = FMath::Lerp(From, Ray(Sec.Az), Sec.bFrom ? .35 : .6);
 		if (InFrame(Tag, 4)) Pen.Text(Sec.Label, F2(Tag), Pencil(24), Line, LPencilWords, .5f, .5f, true);
+	}
+	// MAP-D62-20261112 (Tom, d62: the circle gone on the map's second opening): every slip's circle on the sheet is drawn, whether or not
+	// its wedge still is (a circle not yet stood in outlives its line's noon); one off this part of the sheet, not yet looked at, gets a
+	// red arrow at the edge toward it.
+	for (const S47FieldMap::FSlipCircle& Ring : Circles)
+	{
+		if (!Ring.bChecked && !Visible(Ring.X, Ring.Z, Ring.R * .5))
+		{
+			const FVector2D At = ToPage(Ring.X, Ring.Z);
+			const FVector2D Rim = EdgeToward(At, 26);
+			const FVector2D Way = (At - FVector2D(FrameMidX, FrameMidY)).GetSafeNormal();
+			const FVector2f Tip = F2(Rim), Fwd = F2(Way), Side(-Fwd.Y, Fwd.X);
+			const FLinearColor Red(.86f, .07f, .05f, 1.f);
+			Pen.Triangle(Tip + Fwd * 14.f, Tip - Fwd * 6.f + Side * 9.f, Tip - Fwd * 6.f - Side * 9.f, Red, LPencilWords);
+			Pen.Text(TEXT("circle, ") + YardsOrMiles(FVector2D::Distance(FVector2D(Ring.X, Ring.Z), Mid)), Tip - Fwd * 34.f, Pencil(24), Red, LPencilWords, .5f, .5f, true);
+			continue;
+		}
+		// The circle where to look: a question mark in it until it has been stood in, then a tick; the label just outside it.
+		const FVector2f Ctr = OnPage(Ring.X, Ring.Z);
+		const float Rp = FMath::Max(10.f, float(Ring.R * Sc));
+		// Tom 12 Nov: the area to search is marked in a clear red ring (a red grease pencil), drawn twice so it reads at a glance;
+		// once stood in it stays red but paler, with a tick.
+		const FLinearColor Red = Ring.bChecked ? FLinearColor(.62f, .16f, .12f, .75f) : FLinearColor(.86f, .07f, .05f, 1.f);
+		Pen.Lines(Pen.Circle(Ctr, Rp, 64), Red, 3.2f, LPencil);
+		Pen.Lines(Pen.Circle(Ctr, Rp + 2.5f, 64), Red, 1.4f, LPencil);
+		if (Ring.bChecked) Pen.Lines({ Ctr + FVector2f(-7, 0), Ctr + FVector2f(-2, 6), Ctr + FVector2f(9, -9) }, Red, 2.6f, LPencil);
+		else Pen.Text(TEXT("?"), Ctr + FVector2f(0, 1), Pencil(Rp >= 14.f ? 28.f : 22.f), Red, LPencilWords, .5f, .5f);
+		const FVector2f Size = FPen::Measure(Ring.Label, Pencil(24));
+		const float Out45 = Rp * .72f + 6.f;
+		static const FVector2f Sides[] = { FVector2f(1, -1), FVector2f(-1, -1), FVector2f(1, 1), FVector2f(-1, 1) };
+		FVector2f Corner = Ctr + Sides[0] * Out45; float AlignX = 0.f, AlignY = 1.f;
+		for (const FVector2f& Sd : Sides)
+		{
+			const FVector2f Try = Ctr + Sd * Out45;
+			const FVector2f TopLeft = Try - FVector2f(Sd.X > 0 ? 0.f : Size.X, Sd.Y < 0 ? Size.Y : 0.f);
+			const FBox2f Want(TopLeft, TopLeft + Size);
+			if (!InFrame(FVector2D(TopLeft.X, TopLeft.Y)) || !InFrame(FVector2D(TopLeft.X + Size.X, TopLeft.Y + Size.Y))) continue;
+			if (Occupied.ContainsByPredicate([&Want](const FBox2f& Had) { return Had.Intersect(Want); })) continue;
+			Corner = Try; AlignX = Sd.X > 0 ? 0.f : 1.f; AlignY = Sd.Y < 0 ? 1.f : 0.f; break;
+		}
+		{
+			const FVector2f TopLeft = Corner - FVector2f(Size.X * AlignX, Size.Y * AlignY);
+			Occupied.Add(FBox2f(TopLeft, TopLeft + Size));
+		}
+		Pen.Text(Ring.Label, Corner, Pencil(24), Red, LPencilWords, AlignX, AlignY, true);
 	}
 	// Where two bearings from different places cross: a ring round it, the way one would pencil it.
 	for (const FVector2D& Cross : View.Crossings)
@@ -1673,6 +1694,27 @@ bool S47FieldMap::SelfTest(TArray<FString>& Lines)
 		Check(Back.Num() == 1 && Back[0].X == C.X && Back[0].Z == C.Z && Back[0].R == C.R && Back[0].Label == C.Label && !Back[0].bChecked && Back[0].Where == C.Where
 			&& D.ContainsByPredicate([](const FString& L) { return L.StartsWith(TEXT("A pencilled circle 1.1 miles south-southwest of SARO (Day 1 slip, 12:28), not looked at yet")); }),
 			TEXT("a slip's circle rides in the view with its label and is read out where it is"));
+	}
+	// MAP-D62-20261112 (Tom, d62): the sheet opened again, the circle already framed once, zoomed in on the player elsewhere and with
+	// no wedge left: it frames the circle again, which is drawn without its wedge; the map's hand cursor is one that shows.
+	if (FSlateApplication::IsInitialized())
+	{
+		FViewMemory& Kept = Memory();
+		const FViewMemory Was = Kept;
+		FS47MapView V; V.bField = V.bMe = true; V.MeX = -20; V.MeZ = 150; V.MeHeading = 180;
+		FSlipCircle C; C.X = 170; C.Z = 720; C.R = 150; C.Label = TEXT("Day 1 slip, 11:36"); C.Where = TEXT("south of SARO"); C.Fade = .3f;
+		AddSlipCircle(V, C);
+		Kept.LastCircle = C.Label; Kept.Scale = 3; Kept.Middle = FVector2D(-20, 150); Kept.LastMe = FVector2D(-20, 150);
+		const TSharedRef<SS47FieldMap> Sheet = SNew(SS47FieldMap).View(V).Width(900.f);
+		const bool bFramed = InFrame(Project(Sheet->Centre(), Sheet->ScaleNow(), C.X, C.Z)) && InFrame(Project(Sheet->Centre(), Sheet->ScaleNow(), V.MeX, V.MeZ));
+		Kept.Scale = 3; Kept.Middle = FVector2D(-20, 150);
+		FSlipCircle Done = C; Done.bChecked = true;
+		FS47MapView Looked = V; Looked.Marks.Reset(); AddSlipCircle(Looked, Done);
+		const TSharedRef<SS47FieldMap> Again = SNew(SS47FieldMap).View(Looked).Width(900.f);
+		const bool bLeft = FMath::IsNearlyEqual(Again->ScaleNow(), 3.0) && V.Sectors.IsEmpty() && SlipCircles(V).Num() == 1;
+		Kept = Was;
+		Check(bFramed && bLeft && S47Theme::GrabCursor(false) != EMouseCursor::None && S47Theme::GrabCursor(true) != EMouseCursor::None,
+			TEXT("opened again with its circle off the sheet, the map frames the circle not yet looked at (none once looked at), drawn without its wedge; its hand cursor shows"));
 	}
 	return bAll;
 }
