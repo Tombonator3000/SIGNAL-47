@@ -131,6 +131,12 @@ public:
  // what would have stopped it goes to the log. Fixtures on a developer run's fixed rules are not asked.
  // Within: the event that this one is part of (the car whose light it is), whose ground does not count against it either.
  bool Allow(FName Id,FName Within=NAME_None);
+ // M1-FLOOR-20261112 (FS47Happenings::StepFloor): a night with nothing noticed by three loosens the rhythm for one small thing. What
+ // it loosens: the event's cooldown, the night's budgets and its draw. Never the tier, the hours, the rest after something, the spacing
+ // after a start, what holds the ground, the danger limits or where it may be.
+ static bool Loosens(FName Why){return Why==TEXT("cooldown")||Why==TEXT("budget")||Why==TEXT("not_drawn_tonight");}
+ // Allow, with what Loosens names let through (and said in the log).
+ bool AllowFloor(FName Id);
  // It has started, or is over: a danger is counted for the night, and the rest after it runs for everyone.
  // Every start is also the one common log of starts (Tom's critics, 8 November): after one, the next waits two to six minutes of the
  // clock, whatever system it is, so that nothing comes in a heap when a rest lets go. bMet false: a danger nobody met, the short rest.

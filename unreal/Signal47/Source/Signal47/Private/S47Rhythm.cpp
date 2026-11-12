@@ -355,6 +355,25 @@ bool FS47Rhythm::Allow(FName Id,FName Within)
  return !E->bEnforce;
 }
 
+bool FS47Rhythm::AllowFloor(FName Id)
+{
+ if(S47DirectorCam::On(M))return false;
+ auto* F=M&&M->IsFreeform()&&M->Freeform?M->Freeform.Get():nullptr;
+ if(!F||!F->RulesLive())return true;
+ const auto* E=Rules.Find(Id);
+ if(!E)return true;
+ FS47RhythmNow Now=ReadNow();
+ if(Now.Busy==Id)Now.Busy=NAME_None;
+ const FS47Verdict V=May(Id,Now);
+ if(V.bMay)return true;
+ if(Loosens(V.Why))
+ {
+  UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm loosens %s for the night's floor: %s %s, day %d %s"),*Id.ToString(),*V.Why.ToString(),*V.Detail,Now.Day,*ClockText(Now.Clock));
+  return true;
+ }
+ return Allow(Id);
+}
+
 void FS47Rhythm::Began(FName Id)
 {
  auto* F=M&&M->Freeform?M->Freeform.Get():nullptr;
