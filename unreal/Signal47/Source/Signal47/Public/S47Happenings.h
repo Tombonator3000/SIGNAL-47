@@ -379,6 +379,8 @@ private:
  // was noticed (saved); FloorWarned: the event the animals went ahead of for it, let through loosened when it comes; bFloorTry: the
  // rhythm is asked loosened (MayStart) while the floor tries.
  void StepFloor();
+ // The floor's event or unease has started: the night has had its floor (saved, and an autosave asked for).
+ void FloorStarted(int32 Night);
  int32 FloorNight=0,NoticedNight=0,FloorNoneNight=0;double FloorTryClock=0;bool bFloorTry=false;FString FloorWarned;
  // Drawing to where the player is (coordinator, 8 November): a draw that cannot happen there gives its place to one that can.
  uint32 SituationNow() const;

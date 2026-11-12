@@ -305,7 +305,7 @@ void FS47FarmSite::Stop()
  if(bLive&&bStallSet&&M->World)M->World->bKeyStall=false;
  bStallSet=false;
  if(bLive)EndLure();
- FrostTruck=nullptr;Lure.Reset();
+ FrostTruck=nullptr;LureLampTruck=nullptr;Lure.Reset();
  if(bLive)HideBody();
  bBodyOut=false;
  RestoreHome();
@@ -1002,7 +1002,7 @@ void FS47FarmSite::StepFigure(double Dt,double Dist)
 void FS47FarmSite::StepLure(double Dt)
 {
  LureGoal.Reset();LureFace.Reset();
- if(!M||!M->World||!M->Player||!M->Freeform||Lure.Over())return;
+ if(!M||!M->World||!M->Player||!M->Freeform||Lure.Over()){if(bLureLamp)RestoreLureLamp();return;}
  auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();
  FS47Truck* Truck=M->World->IdleTruckNow();
  // The body out now: the small one's own brain, or the moved one.
@@ -1065,8 +1065,12 @@ void FS47FarmSite::StepLure(double Dt)
   if(LureCoughIn<=0&&Truck)if(FS47EngineSound* Eng=M->World->EngineSound())Eng->Cough(.6);
  }
  const bool bCalm=M->Flow&&M->Flow->bCalmFlash;
- if(Truck&&Lure.Part()==EL::Touch){Truck->SetLightLevel(Lure.LampLevel(bCalm));bLureLamp=true;}
- else if(bLureLamp){bLureLamp=false;if(Truck)Truck->SetLightLevel(1);}
+ if(Truck&&Lure.Part()==EL::Touch)
+ {
+  if(LureLampTruck&&LureLampTruck!=Truck)RestoreLureLamp();
+  Truck->SetLightLevel(Lure.LampLevel(bCalm));bLureLamp=true;LureLampTruck=Truck;
+ }
+ else if(bLureLamp)RestoreLureLamp();
  // Left alone at it: a heavy bang, a dent, and the engine stalls, dark. The key starts it again, not the first time (bKeyStall,
  // kept past the visit's end: bStallSet no longer clears it). Never more than that.
  if(Lure.TakeStruck()&&Truck)
@@ -1078,7 +1082,7 @@ void FS47FarmSite::StepLure(double Dt)
    M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.5f,.Rate=.45f,.At=Bang,.When=.04f});
    M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.8f,.Rate=.5f,.At=Bang,.When=.32f});
   }
-  if(bLureLamp){bLureLamp=false;Truck->SetLightLevel(1);}
+  if(bLureLamp)RestoreLureLamp();
   M->World->bKeyStall=true;bStallSet=false;
   M->World->EndIdle(true);
   if(M->Freeform->Attention)M->Freeform->Attention->Add(6,TEXT("a visit's body struck the idling truck"));
@@ -1121,15 +1125,30 @@ void FS47FarmSite::StepLure(double Dt)
 
 void FS47FarmSite::EndLure()
 {
- if(bLureLamp){bLureLamp=false;if(M&&M->World)if(FS47Truck* Truck=M->World->IdleTruckNow())Truck->SetLightLevel(1);}
+ if(bLureLamp)RestoreLureLamp();
  if(bLureHeld){bLureHeld=false;if(M&&M->Night&&M->Night->Glimpses)M->Night->Glimpses->HoldAttention({},0,false);}
  LureGoal.Reset();LureFace.Reset();LureCoughIn=-1;
+}
+
+FS47Truck* FS47FarmSite::LiveTruck(FS47Truck* T) const
+{
+ return T&&M&&IsValid(M->World)&&M->World->OwnsTruck(T)?T:nullptr;
+}
+
+void FS47FarmSite::RestoreLureLamp()
+{
+ // On the truck that was dimmed, not on whatever idles now: got into, or died dark, IdleTruckNow is null (critic 12 Nov).
+ bLureLamp=false;
+ if(FS47Truck* T=LiveTruck(LureLampTruck))T->SetLightLevel(1);
+ LureLampTruck=nullptr;
 }
 
 // The hand stays in the frost until the truck is driven again; then the defroster takes it in a few seconds.
 void FS47FarmSite::StepFrost(double Dt)
 {
  if(!FrostTruck||!M||!IsValid(M->World)||!M->World->bDriving)return;
+ // Critic 12 Nov: a truck that is no longer the world's is let go, never touched.
+ if(!LiveTruck(FrostTruck)){FrostTruck=nullptr;return;}
  FrostDriven+=Dt;
  const double K=FMath::Clamp(.6*(1.-(FrostDriven-4.)/6.),0.,.6);
  if(M->World->CabTruck()==FrostTruck)FrostTruck->SetFrost(K);

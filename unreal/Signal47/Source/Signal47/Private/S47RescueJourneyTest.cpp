@@ -234,7 +234,9 @@ void FS47FreeformTest::StepRescueJourney(double Dt)
   M->UI->Close(true);
   if(!Check(M->Player->Walkable(M->Player->Pos.X,M->Player->Pos.Z),TEXT("roadside leaves the player on walkable SARO ground")))return;
   const FVector Rack=W.InteractionPoint(TEXT("ff:cargo"));M->Player->Place(Rack.X+1.4,Rack.Z,0);W.Use(TEXT("ff:cargo"));
-  if(!Check(W.ParcelStage()==2,TEXT("with fuel in the tank the rack unloads as usual")))return;
+  if(!Check(W.ParcelStage()==3&&M->UI->Modal(),TEXT("with fuel in the tank the rack opens its panel as usual")))return;
+  W.UnloadFromRack();M->UI->Close(true);
+  if(!Check(W.ParcelStage()==2,TEXT("its unload button hands the parcel over")))return;
   const FVector Table=W.InteractionPoint(TEXT("ff:delivery"));M->Player->Place(Table.X-1.4,Table.Z,0);Go(20,.4);return;
  }
  if(Stage==20)

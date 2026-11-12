@@ -58,6 +58,9 @@ namespace S47LocationCards
    {TEXT("shack"),TEXT("shack"),TEXT("LINE SHACK"),County,24,false,false},
    {TEXT("cairn"),TEXT("cairn"),TEXT("SURVEY CAIRN"),County,20,false,false},
    {TEXT("trough"),TEXT("trough"),TEXT("SALT LICK AND TROUGH"),County,22,false,false},
+   // Critic 12 Nov: "saucer" is a banned word in the thoughts and the cards, but SAUCER ROCK is the place's own local name (FS47Places:
+   // "Saucer Rock", a hoodoo shaped like a cup and saucer, initials in it back to 1951), used on the map and in its record: kept, and
+   // the one name the banned list lets through (LocalNames in SelfTest).
    {TEXT("saucer_rock"),TEXT("saucer_rock"),TEXT("SAUCER ROCK"),County,30,false,false},
   };
   return Table;
@@ -147,13 +150,33 @@ namespace S47LocationCards
   State.Shown.Add(Id,Day);State.Since=0;
   UE_LOG(LogTemp,Display,TEXT("S47: location card (%s): %s / %s / %s"),*Id,*L[0],*L[1],*L[2]);
  }
+ void Save(const void* Session,int32 Today,const S47J::FObj& O)
+ {
+  if(!O.IsValid()||!Session||State.Session!=Session)return;
+  S47J::FObj Kept=S47J::New();bool bAny=false;
+  for(const TPair<FString,int32>& Was:State.Shown)if(Was.Value==Today&&Find(Was.Key)){S47J::Set(Kept,*Was.Key,Was.Value);bAny=true;}
+  if(bAny)S47J::Set(O,TEXT("locationCards"),Kept);
+ }
+ void Load(const void* Session,const S47J::FObj& Saved)
+ {
+  State=FState();State.Session=Session;
+  const S47J::FObj Kept=S47J::Obj(Saved,TEXT("locationCards"));
+  if(!Kept.IsValid())return;
+  for(const TPair<FString,TSharedPtr<FJsonValue>>& Was:Kept->Values)
+  {
+   double Day=0;
+   if(Find(Was.Key)&&Was.Value.IsValid()&&Was.Value->TryGetNumber(Day)&&FMath::IsFinite(Day)&&Day>=1&&Day<=100000)State.Shown.Add(Was.Key,int32(Day));
+  }
+ }
  bool SelfTest(TArray<FString>& Out)
  {
   bool bOk=true;
   auto Check=[&](bool Cond,const FString& What){Out.Add(FString(Cond?TEXT("PASS "):TEXT("FAIL "))+What);bOk&=Cond;};
   const FS47EventPlaces& Cat=PureCatalogue();
   // the words: capitals, short, the game's own county and town, no spoiler word
-  static const TCHAR* const Banned[]={TEXT("47"),TEXT("1947"),TEXT("cable"),TEXT("tomas"),TEXT("taken"),TEXT("silhouette"),TEXT("8.15"),TEXT("alien"),TEXT("ufo"),TEXT("martian"),TEXT("third")};
+  static const TCHAR* const Banned[]={TEXT("47"),TEXT("1947"),TEXT("cable"),TEXT("tomas"),TEXT("taken"),TEXT("silhouette"),TEXT("8.15"),TEXT("alien"),TEXT("ufo"),TEXT("martian"),TEXT("third"),TEXT("saucer")};
+  // the places' own local names that hold a banned word (the cup-and-saucer rock west of town, FS47Places' "Saucer Rock")
+  static const TCHAR* const LocalNames[]={TEXT("SAUCER ROCK")};
   FString Bad;TSet<FString> Ids,Firsts;int32 Placed=0;bool bStand=true;
   for(const FCard& C:Cards())
   {
@@ -162,7 +185,8 @@ namespace S47LocationCards
    Ids.Add(C.Id);Firsts.Add(A);
    for(const FString& W:{A,B})
    {
-    const FString Lo=W.ToLower();
+    FString Lo=W.ToLower();
+    for(const TCHAR* Local:LocalNames)if(W==Local)Lo.Empty();
     for(const TCHAR* X:Banned)if(Lo.Contains(X))Bad=C.Id;
     for(const TCHAR Ch:W)if(Ch<32||Ch>126)Bad=C.Id;
     for(int32 I=0;I<W.Len();++I)if(W[I]=='C'&&(I==0||!FChar::IsAlpha(W[I-1]))&&(I+1>=W.Len()||!FChar::IsAlpha(W[I+1])))Bad=C.Id;
@@ -188,6 +212,19 @@ namespace S47LocationCards
    const bool bDoor=Feed&&Spot(*Feed,Cat,Door);
    Check(bDoor&&At(Cat,TEXT("diner"),FString(),true,Door.X+2,Door.Y+1)==TEXT("feed")&&At(Cat,TEXT("diner"),FString(),true,0,Door.Y)==TEXT("caliche"),
     TEXT("UI-1112: a front on the street gives its card at its door, the roadway past it gives the town's"));
+  }
+  {
+   // Critic 12 Nov: today's cards go into the save and come back from it; another day's, an unknown id and a bad day do not.
+   const FState Keep=State;static const int32 Owner=0;
+   S47J::FObj Saved=S47J::New(),Cards0=S47J::New();
+   S47J::Set(Cards0,TEXT("diner"),3);S47J::Set(Cards0,TEXT("gas"),2);S47J::Set(Cards0,TEXT("no_such_card"),3);S47J::Set(Cards0,TEXT("feed"),-4);S47J::Set(Saved,TEXT("locationCards"),Cards0);
+   Load(&Owner,Saved);
+   S47J::FObj Again=S47J::New();Save(&Owner,3,Again);
+   const S47J::FObj Back=S47J::Obj(Again,TEXT("locationCards"));
+   const bool bBack=Back.IsValid()&&Back->Values.Num()==1&&S47J::Int(Back,TEXT("diner"))==3;
+   S47J::FObj Other=S47J::New();Save(&Keep,3,Other);
+   State=Keep;
+   Check(bBack&&!Other->HasField(TEXT("locationCards")),TEXT("UI-1112: today's cards are saved and read back (Continue does not type them again); another day's and unknown ones are not"));
   }
   // when: once a day, a gap between two, and from a truck at speed only an area's
   Check(May(false,false,false,0,1e9)&&!May(true,false,false,0,1e9)&&!May(false,false,false,0,MinGap-1)&&May(false,false,false,0,MinGap),

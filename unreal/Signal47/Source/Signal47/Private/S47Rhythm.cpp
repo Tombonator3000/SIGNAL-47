@@ -254,7 +254,7 @@ bool FS47Rhythm::LoadOverride(FString& Why)
  return true;
 }
 
-FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FName)> Need) const
+FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FName)> Need,bool bLoosened) const
 {
  const auto No=[](const FString& Why,const FString& Detail=FString(),double Retry=-1){FS47Verdict V;V.bMay=false;V.Why=FName(*Why);V.Detail=Detail;V.RetryClock=Retry;return V;};
  const auto* E=Rules.Find(Id);
@@ -277,7 +277,7 @@ FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FNa
    return No(TEXT("tier"),FString::Printf(TEXT("%s from %s"),S47NightTiers::Name(E->Tier),*ClockText(S47NightTiers::FromClockHour(E->Tier,Night)*3600.)));
  }
  const FString IdText=Id.ToString();
- if(const int32* Last=Now.LastDays.Find(Id))
+ if(const int32* Last=bLoosened?nullptr:Now.LastDays.Find(Id))
  {
   // As the Director has it now: the day-to-day answer from the id, so that the panel tells the truth about its own numbers.
   if(E->CoolMin>=0)
@@ -288,9 +288,12 @@ FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FNa
  if(Now.RestLeft>0)return No(TEXT("rest"),FString::Printf(TEXT("%.0f s"),Now.RestLeft));
  // A moment after anything else began: not on top of it. Being taken and the dash clock after a passing are part of what began.
  if(Now.SinceStart<Now.StartGap&&Id!=TEXT("taken")&&Id!=TEXT("clock_ahead"))return No(TEXT("spacing"),FString::Printf(TEXT("%.0f s of the clock"),Now.StartGap-Now.SinceStart));
- if(E->Budget==TEXT("minor")&&Now.MinorLeft<=0)return No(TEXT("budget"),TEXT("small"));
- if(E->Budget==TEXT("invest")&&Now.InvestLeft<=0)return No(TEXT("budget"),TEXT("investigation"));
- if(E->Budget==TEXT("sky")&&Now.SkyLeft<=0)return No(TEXT("budget"),TEXT("sky"));
+ if(!bLoosened)
+ {
+  if(E->Budget==TEXT("minor")&&Now.MinorLeft<=0)return No(TEXT("budget"),TEXT("small"));
+  if(E->Budget==TEXT("invest")&&Now.InvestLeft<=0)return No(TEXT("budget"),TEXT("investigation"));
+  if(E->Budget==TEXT("sky")&&Now.SkyLeft<=0)return No(TEXT("budget"),TEXT("sky"));
+ }
  {
   // The week's own limit (the fourth week and the finale may have two), or the file's.
   const int32 Limit=Rules.DangerLimit(Now.Day,Now.AssessDay);
@@ -299,7 +302,7 @@ FS47Verdict FS47Rhythm::May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FNa
  if(E->Level==ES47RhythmLevel::Danger&&Now.bHumorTonight)return No(TEXT("humor_night"));
  if(!E->Areas.IsEmpty()&&!E->Areas.Contains(Now.Area))return No(TEXT("not_here"),E->Areas[0]);
  if(Need)for(const FName N:E->Needs)if(!Need(N))return No(FString::Printf(TEXT("needs:%s"),*N.ToString()));
- if(!E->DrawState.IsEmpty())if(const int32* Drawn=Now.Draws.Find(E->DrawState))if(*Drawn==0)return No(TEXT("not_drawn_tonight"));
+ if(!bLoosened&&!E->DrawState.IsEmpty())if(const int32* Drawn=Now.Draws.Find(E->DrawState))if(*Drawn==0)return No(TEXT("not_drawn_tonight"));
  return FS47Verdict();
 }
 
@@ -366,7 +369,9 @@ bool FS47Rhythm::AllowFloor(FName Id)
  if(Now.Busy==Id)Now.Busy=NAME_None;
  const FS47Verdict V=May(Id,Now);
  if(V.bMay)return true;
- if(Loosens(V.Why))
+ // Critic 12 Nov: May says only the first reason, and cooldown and budget come before the ground, the rest, the spacing and the danger
+ // limits. Asked loosened, every hard rule is still asked: only a clean answer lets the floor through.
+ if(Loosens(V.Why)&&May(Id,Now,nullptr,true).bMay)
  {
   UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm loosens %s for the night's floor: %s %s, day %d %s"),*Id.ToString(),*V.Why.ToString(),*V.Detail,Now.Day,*ClockText(Now.Clock));
   return true;
@@ -765,6 +770,14 @@ bool FS47Rhythm::SelfTest(TArray<FString>& Lines)
  {FS47RhythmNow A=N;A.Clock=4*86400.+23*3600.;A.MinorLeft=0;Check(Says(TEXT("flyover"),A)==TEXT("budget"),TEXT("the day's small budget stops a small one"));}
  {FS47RhythmNow A=N;A.Area=TEXT("road");Check(Says(TEXT("service_presence"),A)==TEXT("not_here"),TEXT("service_presence only at SARO"));}
  {FS47RhythmNow A=N;A.Draws.Add(TEXT("pendingThreatNight"),0);Check(Says(TEXT("service_presence"),A)==TEXT("not_drawn_tonight"),TEXT("a draw lost tonight says so"));}
+ {
+  // Critic 12 Nov (M1-FLOOR): asked loosened, the cooldown is let go and what holds the ground still holds it.
+  FS47RhythmNow A=N;A.LastDays.Add(TEXT("service_presence"),5);
+  const bool bCoolOnly=Says(TEXT("service_presence"),A)==TEXT("cooldown")&&R.May(TEXT("service_presence"),A,nullptr,true).bMay;
+  A.Busy=TEXT("door_visit");A.RestLeft=100;
+  const FS47Verdict Held=R.May(TEXT("service_presence"),A,nullptr,true);
+  Check(bCoolOnly&&!Held.bMay&&Held.Why==TEXT("slot_taken:door_visit")&&Says(TEXT("service_presence"),A)==TEXT("cooldown"),TEXT("the floor loosens the cooldown only: under it the ground and the rest still hold"));
+ }
  Check(R.May(TEXT("service_presence"),N,[](FName N2){return N2!=TEXT("native_body");}).Why==TEXT("needs:native_body"),TEXT("a need says its name"));
  {
   FS47Rhythm L(nullptr);FString W;Parse(S47RhythmDefaultJson,L.Rules,W);L.Rules.DangerPerNight=1;

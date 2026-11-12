@@ -2468,7 +2468,7 @@ void FS47Happenings::Step(double Dt)
  StepFirstDay(); // D46-20261110 (D46-3): the first day's script (S47FirstDay.cpp)
  // N1110 (ANIMALS-20261108): an event the animals went ahead of, its few seconds up
  // M1-FLOOR-20261112: the one the floor offered is let through as loosened as it was asked.
- if(AnimalWarn){FString WId,WVar;while(AnimalWarn->Due(WId,WVar)){FString WWhy;bFloorTry=!FloorWarned.IsEmpty()&&WId==FloorWarned;if(bFloorTry)FloorWarned.Empty();const bool bWent=StartEvent(WId,WVar,false,WWhy);bFloorTry=false;if(!bWent)Refused(WId,WWhy);}}
+ if(AnimalWarn){FString WId,WVar;while(AnimalWarn->Due(WId,WVar)){FString WWhy;bFloorTry=!FloorWarned.IsEmpty()&&WId==FloorWarned;if(bFloorTry)FloorWarned.Empty();const bool bFloorIt=bFloorTry;const bool bWent=StartEvent(WId,WVar,false,WWhy);bFloorTry=false;if(!bWent)Refused(WId,WWhy);else if(bFloorIt)FloorStarted(FS47FreeformSession::NightOf(M->Freeform->Clock()));}}
  // N1110 (rhythm): a false alarm in the evening, the ease eight to ten minutes after a danger
  if(!Calm)Calm=MakeShared<FS47Calm>(M);
  Calm->Step(Dt);
@@ -2583,6 +2583,11 @@ bool FS47Happenings::FloorUneaseFits(int32 I)
  for(const int32 K:Fit)if(K==I)return true;
  return false;
 }
+void FS47Happenings::FloorStarted(int32 Night)
+{
+ FloorNight=Night;
+ if(M)M->RequestAutosave();
+}
 void FS47Happenings::StepFloor()
 {
  auto* F=M->Freeform.Get();
@@ -2595,24 +2600,34 @@ void FS47Happenings::StepFloor()
  if(!FloorOpen(H,Night,bNoticed,FloorNight,bAuthored)||Clock<FloorTryClock)return;
  // Asked again every minute and a half of the clock: what holds the ground now, or a rest, may let go.
  FloorTryClock=Clock+90;
+ // Critic 12 Nov: the one the animals went ahead of is no longer waiting (a load, a reset): the floor may offer again.
+ if(!FloorWarned.IsEmpty()&&!(AnimalWarn&&AnimalWarn->Waiting()))FloorWarned.Empty();
  if(!Now.Id.IsEmpty()||Uneasy.I>=0||!FloorWarned.IsEmpty())return;
+ // Critic 12 Nov: nor on top of what holds the ground elsewhere: a visit at the farm or the field, a director script, a capture, the
+ // week's case, a door visit, the highway's lights (FS47Rhythm::ReadNow says who).
+ if(M->Rhythm)
+ {
+  const FName Holder=M->Rhythm->ReadNow().Busy;
+  if(!Holder.IsNone())return;
+ }
  const uint32 Sit=SituationNow();
  const TArray<FString> Order=FloorOrder(Sit,F->QuietNight(Night),F->Seed(),Night);
  TArray<FString> Tried;
- const auto Offer=[&](const FString& What,const TCHAR* How)
+ // Critic 12 Nov: the night has had its floor only once something has started. The one the animals go ahead of is marked when it
+ // comes (Step, FloorStarted); refused then, or lost to a Continue during the lead, the floor offers again.
+ const auto Offer=[&](const FString& What,const TCHAR* How,bool bStarted)
  {
-  FloorNight=Night;
+  if(bStarted)FloorStarted(Night);
   UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d: quiet so far, the floor offers %s (%s, day %d %s in %s)"),Night,*What,How,F->Day(),*S47Hap::ClockText(Clock),*M->Web->Area());
-  M->RequestAutosave();
  };
  const auto TryEvent=[&](const FString& Id)
  {
   if(LastDays.FindRef(Id)==F->Day()){Tried.Add(Id+TEXT(": today already"));return false;}
   FString Why;
   bFloorTry=true;const bool bWent=StartEvent(Id,FString(),false,Why);bFloorTry=false;
-  if(bWent){Offer(Id,FloorHeard(Id)?TEXT("heard at the player"):TEXT("to be seen"));return true;}
+  if(bWent){Offer(Id,FloorHeard(Id)?TEXT("heard at the player"):TEXT("to be seen"),true);return true;}
   // The animals go first (S47AnimalWarn): that is the thing noticed, and the event follows, let through as loosened (Step).
-  if(Why==TEXT("the animals first")){FloorWarned=Id;Offer(Id,TEXT("the animals first"));return true;}
+  if(Why==TEXT("the animals first")){FloorWarned=Id;Offer(Id,TEXT("the animals first"),false);return true;}
   Tried.Add(Id+TEXT(": ")+Why);return false;
  };
  int32 K=0;
@@ -2624,7 +2639,7 @@ void FS47Happenings::StepFloor()
   if(UneaseDone.Contains(I)||!FloorUneaseFits(I))continue;
   FString Why;
   bFloorTry=true;const bool bWent=FireUnease(I,false,Why);bFloorTry=false;
-  if(bWent){Noticed(UneaseId(I),-1,TEXT("unease"),++Serial);Offer(FString::Printf(TEXT("unease %d %s"),I+1,UneaseId(I)),TEXT("at the player"));return;}
+  if(bWent){Noticed(UneaseId(I),-1,TEXT("unease"),++Serial);Offer(FString::Printf(TEXT("unease %d %s"),I+1,UneaseId(I)),TEXT("at the player"),true);return;}
   Tried.Add(FString::Printf(TEXT("unease %d: %s"),I+1,*Why));
  }
  for(;K<Order.Num();++K)if(TryEvent(Order[K]))return;

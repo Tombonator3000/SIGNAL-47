@@ -47,6 +47,9 @@ public:
   bool bCaseValid=true,bCaseRecorded=false;
   int32 PaidAmount=-1; // N1110 (T16-20): what was credited when this card paid, for the shift log; -1 before it paid (or in a save from before)
   bool bDocked=false; // the day the player was taken: this card pays half (TakenCosts)
+  // Critic 12 Nov (GAMEPLAY-LOOP-01): what the take will be, decided once as the tuned receiver first shows it (DecideTake), so that
+  // ANOMALY DETECTED and the take agree whatever the Director says later. -1 not yet, 0 routine, 1 unusual. Saved while Pointed.
+  int32 TakeDecided=-1;bool bTakeOut=false;FString TakePhen;
  };
  explicit FS47FreeformSession(US47Main* Main);
  ~FS47FreeformSession();
@@ -127,7 +130,8 @@ public:
  static FString TerminalNextLine(const FString& Text,int32 Screen);
  FString MeasurementRecord() const;
  bool ArrayBlocked() const; // too few antennas to measure at all
- void OpenArchive();
+ // bBinderOffGlass: off the OPS glass, the records-room binder (OpenBinder); false: the paper records page itself.
+ void OpenArchive(bool bBinderOffGlass=true);
  void OpenPhotos(); // FIX-20261110: OPS / PHOTOGRAPHS, the film record and the allowance desk
  int32 ArchiveTab=0,ArchivePage=0;FString ArchivePick; // presentation only, never saved
  // RECORDS-BINDER (-> M3): the records-room binder on paper (S47RecordsBinder.h the model, SS47Binder.h the pages; the session's
@@ -600,7 +604,9 @@ public:
  // CHAIN-1-20261109: something is out on the land tonight that a bearing may still point at (FS47Happenings::OutTonight): the
  // pulsar card run tonight then shows a discrepancy by itself, and registering it prints the slip toward that place.
  bool OutThereTonight() const;
- void SetPhenomenon(const FString& Id) { PhenomenonId=Id; Changed(); }
+ void SetPhenomenon(const FString& Id) { if(PhenomenonId!=Id)UndecideTakes(); PhenomenonId=Id; Changed(); }
+ // Critic 12 Nov: an instrument fault set or cleared is a new question for what the tuned receiver shows (FJob::TakeDecided).
+ void UndecideTakes() { for(FJob& W:Work)if(W.Stage==EJobStage::Pointed)W.TakeDecided=-1; }
  const FString& Phenomenon() const { return PhenomenonId; }
  int32 SelectedJob() const { return FieldFocus>=0?-1:Selected; }
  const TArray<FJob>& Jobs() const { return Work; }
@@ -864,8 +870,15 @@ private:
  void PrintJob(bool bPacket,bool bShow=true);
  // GAMEPLAY-LOOP-01: what StartAcquisition decides, without deciding it (Phen: the phenomenon it would carry; bOutThere: from the land).
  bool TakeAnomalous(const FJob& J,FString& Phen,bool& bOutThere) const;
+ // The take's decision kept on the job (FJob::TakeDecided): TakeAnomalous once, then what it said.
+ void DecideTake(FJob& J);
+ bool DecidedTake(const FJob& J,FString& Phen,bool& bOutThere) const;
  void RetainOriginal(FJob& J); // the original page kept as the take ends, with no chart to fetch
  bool ConfirmOnTape(FJob& J); // the reel deck's one listen: marks the ticks if they are not, keeps the review, names OPS
+ // Critic 12 Nov: an extra-tick take waiting for its one listen at the deck; and the deck threading the oldest of them when the
+ // selected job is not one (OpenAudio, OpenTapePanel).
+ static bool TapeWaits(const FJob& J);
+ void FollowTapeJob();
  FString DetectedJob; // the job whose ANOMALY DETECTED was last said aloud (once a take; not saved)
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);
  void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false);

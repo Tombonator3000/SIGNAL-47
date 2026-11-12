@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "S47Json.h"
 class US47Main;
 class FS47EventPlaces;
 
@@ -55,5 +56,9 @@ namespace S47LocationCards
  double Life(const TArray<FString>& L);
  // Every frame (US47Main::Step): looks where the player is twice a second and asks the HUD for the card of a place just come to.
  void Step(US47Main* M,double Dt);
+ // Critic 12 Nov: today's cards kept in the session's save ("locationCards": card id -> day; optional), so that a Continue does not
+ // type the same places out again. Session: the FS47FreeformSession the memory belongs to.
+ void Save(const void* Session,int32 Today,const S47J::FObj& O);
+ void Load(const void* Session,const S47J::FObj& Saved);
  bool SelfTest(TArray<FString>& Out);
 }

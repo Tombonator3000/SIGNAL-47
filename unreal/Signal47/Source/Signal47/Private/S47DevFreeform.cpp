@@ -1763,8 +1763,8 @@ void FS47DevFreeform::Step(double Dt)
  // NIGHT-20261110: a sheet the night puts in front of the player (the note on the desk) holds the night until it is read; the card player reads it and puts it down.
  {
   static double ModalHeld=0;
-  // F10-CLOSES-20261112 (Tom: "the F10 menu closes by itself after a few seconds"): only a run nobody plays (-S47NaturalNight from
-  // the command line) has its sheets put down. With Natural rhythm turned on from F10 the player is there, and this closed F10
+  // F10-CLOSES-20261112 (Tom: "the F10 menu closes by itself after a few seconds"): only a run nobody plays (-S47NaturalNight with
+  // -unattended or -S47SmokeTest on the command line) has its sheets put down. With Natural rhythm turned on from F10 the player is there, and this closed F10
   // itself, the truck's menu and every sheet after six seconds.
   if(PutsDownUnread(bNatural,bUnattended,M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&M->ModalOpen()&&M->UI)){ModalHeld+=FApp::GetDeltaTime();if(ModalHeld>UnreadSeconds){ModalHeld=0;UE_LOG(LogS47DevFreeform,Display,TEXT("S47: natural night: a sheet lay open 6 s with nobody at it; put down"));M->UI->Close();}}
   else ModalHeld=0;
@@ -1777,7 +1777,9 @@ void FS47DevFreeform::Step(double Dt)
   double Flag=0;
   if(FParse::Value(FCommandLine::Get(),TEXT("S47NaturalNight="),Flag)&&DevRun())
   {
-   Speed=FMath::Clamp(Flag,1.,60.);bUnattended=true;SetNatural(true);
+   // Critic 12 Nov: the title's Developer screen starts the same flag with a human at the keys; only a run nobody plays (the
+   // command line's -unattended or -S47SmokeTest) has its sheets put down.
+   Speed=FMath::Clamp(Flag,1.,60.);bUnattended=FParse::Param(FCommandLine::Get(),TEXT("unattended"))||FParse::Param(FCommandLine::Get(),TEXT("S47SmokeTest"));SetNatural(true);
    if(Menu)Menu->Relabel(TEXT("Natural rhythm: off"),TEXT("Natural rhythm: ON"));
    // -S47NaturalDay=2: begin at 17:00 on that day, past the first night's grace, with every rule live. Nothing else is set.
    int32 FromDay=0;

@@ -29,6 +29,9 @@ public:
  };
  static constexpr double DrawWithin = 60, Reached = 1.3, RingRadius = 3.6, CircleSeconds = 9, BeamSeconds = 4, TouchSeconds = 3.5, WaitSeconds = 10,
   IrkedSeconds = 2.5, GiveUpSeconds = 60, WalkMps = 1.1, PlayerNear = 6, IrkChance = .6;
+ // Critic 12 Nov: GiveUpSeconds counts from its coming to the truck (the ring), so that one drawn from 45 to 60 m still reaches the
+ // hood; the walk there has its own limit, DrawWithin at its pace and a little more (a body that cannot get there gives up).
+ static constexpr double WalkGiveUpSeconds = DrawWithin / WalkMps + 20;
  // What the small ones hear from the engine (S47Noise's What): the visit's own ears pass over it, the Roswell brain goes to look.
  static constexpr const TCHAR* NoiseName = TEXT("an idling engine");
  void Reset() { *this = FS47IdleLure(); }
@@ -53,7 +56,7 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  EPart P = EPart::None;
- double T = 0, Age = 0, Held = 0; // seconds in this part; since it began; at this part's goal
+ double T = 0, Age = 0, Held = 0; // seconds in this part; since it came to the truck (0 while it walks there); at this part's goal
  bool bWillIrk = false, bTouched = false, bStruck = false, bLetGo = false;
  void Go(EPart To) { P = To; T = 0; }
  void End() { if (Active()) bLetGo = true; P = EPart::Over; T = 0; }

@@ -122,7 +122,8 @@ public:
  static int32 CoolDays(const FString& Id,int32 Last,int32 Min=2,int32 Max=4);
  // Fixed order, so that the panel and the log say the same: off, tutorial, too_early_day, outside_hours, tier, cooldown, slot_taken:<id>, rest,
  // budget, danger_night, humor_night, not_here, needs:<name>, not_drawn_tonight. Need answers for a name; unset: every need holds.
- FS47Verdict May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FName)> Need=nullptr) const;
+ // bLoosened (critic 12 Nov): what Loosens names is not asked at all, so that the verdict says the first of the hard rules that holds it.
+ FS47Verdict May(FName Id,const FS47RhythmNow& Now,TFunction<bool(FName)> Need=nullptr,bool bLoosened=false) const;
  // The event's tier as the file has it (an unknown id: full, so that nothing unclassified comes early).
  ES47Allowed TierOf(FName Id) const{const auto* E=Rules.Find(Id);return E?E->Tier:ES47Allowed::Full;}
  // The world's answers, from what each system lets be read.
@@ -135,7 +136,7 @@ public:
  // it loosens: the event's cooldown, the night's budgets and its draw. Never the tier, the hours, the rest after something, the spacing
  // after a start, what holds the ground, the danger limits or where it may be.
  static bool Loosens(FName Why){return Why==TEXT("cooldown")||Why==TEXT("budget")||Why==TEXT("not_drawn_tonight");}
- // Allow, with what Loosens names let through (and said in the log).
+ // Allow, with what Loosens names let through (and said in the log): May asked loosened must come back clean; any hard rule holds it.
  bool AllowFloor(FName Id);
  // It has started, or is over: a danger is counted for the night, and the rest after it runs for everyone.
  // Every start is also the one common log of starts (Tom's critics, 8 November): after one, the next waits two to six minutes of the

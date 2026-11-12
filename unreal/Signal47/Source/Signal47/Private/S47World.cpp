@@ -1667,6 +1667,14 @@ void US47World::DriveOnOldRoad()
 	StartTrip(TEXT("roswell"), TEXT("roswell"), O);
 }
 
+bool US47World::OwnsTruck(const FS47Truck* T) const
+{
+	if (!T) return false;
+	if (T == SaroTruckP.Get() || T == TruckP.Get() || T == ParkedP.Get() || T == OldTruckP.Get()) return true;
+	for (const TPair<FString, FLegRec>& L : Legs) if (L.Value.Truck == T) return true;
+	return false;
+}
+
 FS47Truck* US47World::TruckHere() const
 {
 	if (Area == TEXT("roswell") || Leg == TEXT("roswell")) return nullptr;

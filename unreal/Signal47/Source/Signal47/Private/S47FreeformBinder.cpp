@@ -43,7 +43,8 @@ S47Binder::FSource FS47FreeformSession::BinderSource() const
    JobIn.Showed=!J.bAnomaly?TEXT("ROUTINE RESULT"):!J.bAudioReviewed?TEXT("COMPARISON PENDING"):J.Phenomenon==TEXT("wrong_source")?TEXT("OFF-SOURCE RESPONSE")
     :J.Phenomenon==TEXT("time_disagreement")?TEXT("CLOCK DISAGREEMENT"):J.Phenomenon==TEXT("duplicate_print")?TEXT("DUPLICATE ORIGINAL"):TEXT("SOURCE UNRESOLVED");
    // An unusual original belongs with the case its kind opens, once that case is open.
-   if(J.bAnomaly)JobIn.CaseLine=FS47FreeformCases::LineForFinding(J.Phenomenon);
+   // Critic 12 Nov: the plain extra-tick take (GAMEPLAY-LOOP-01) has no phenomenon of its own: it belongs with Case 01, the pulsar's.
+   if(J.bAnomaly)JobIn.CaseLine=PlainAnomaly(J)?0:FS47FreeformCases::LineForFinding(J.Phenomenon);
   }
   Src.Jobs.Add(MoveTemp(JobIn));
  }

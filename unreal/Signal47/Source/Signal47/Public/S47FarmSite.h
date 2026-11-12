@@ -212,6 +212,11 @@ private:
  double LureRingFrom=0,LureNoiseIn=0,LureCoughIn=-1,FrostDriven=0;
  bool bLureLamp=false,bLureHeld=false;
  FS47Truck* FrostTruck=nullptr;
+ // Critic 12 Nov: the truck whose lamps the lure dimmed, so that they come back on it when the player gets in or the engine dies
+ // (IdleTruckNow is null then). Live: the kept truck while it is still one of the world's (US47World::OwnsTruck), else null.
+ FS47Truck* LureLampTruck=nullptr;
+ FS47Truck* LiveTruck(FS47Truck* T) const;
+ void RestoreLureLamp();
  void StepLure(double Dt);
  void EndLure();
  void StepFrost(double Dt);

@@ -210,6 +210,8 @@ public:
 	FS47EngineSound* EngineSound() const { return Engine.Get(); }
 	/** The truck the player has, if it is in this area, or null (not on the old road). */
 	FS47Truck* TruckHere() const;
+	/** Critic 12 Nov: whether a truck kept from earlier is still one of this world's (a leg's, SARO's, the station's, the diner's, the old road's). */
+	bool OwnsTruck(const FS47Truck* T) const;
 	/** The copies of the truck: on SARO's pad, on the road and the diner's lot, at the station, on the old road. */
 	FS47Truck* SaroTruck() const { return SaroTruckP.Get(); }
 	FS47Truck* OldTruck() const { return OldTruckP.Get(); }

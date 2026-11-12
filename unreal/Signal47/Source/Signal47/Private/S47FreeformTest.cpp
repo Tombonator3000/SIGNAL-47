@@ -1151,6 +1151,9 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==8707)
   {
    if(M->World->bBusy)return;M->World->PlaceTruck(TEXT("saro"));const FVector Cargo=F.Field->InteractionPoint(TEXT("ff:cargo"));Place(Cargo+FVector(1.4,0,0));F.Field->Use(TEXT("ff:cargo"));
+   // Critic 12 Nov: the loaded rack opens its panel; unloading is its button.
+   if(!Check(F.Field->ParcelStage()==3&&M->UI->Modal(),TEXT("the loaded rack opens its panel and keeps the parcel until its unload button")))return;
+   F.Field->UnloadFromRack();M->UI->Close(true);
    if(!Check(F.Field->ParcelStage()==2&&Contents()&&StockUnchanged(),TEXT("physical unloading keeps the same basket in hand before receiving")))return;
    const FVector Receiving=F.Field->InteractionPoint(TEXT("ff:delivery"));Place(Receiving+FVector(0,0,1.5));F.Field->Use(TEXT("ff:delivery"));
    if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.InventoryCount(TEXT("relay"))==ShopRelays+1&&F.Field->DeliveredParcels()==ShopDelivered+1&&F.Field->CargoDeliveries()==ShopCargo+1&&F.Budget()==ShopCash-35,TEXT("one garage delivery credits exact basket contents and one cargo transaction")))return;
@@ -1773,6 +1776,8 @@ void FS47FreeformTest::Step(double Dt)
   if(M->World->bBusy)return;M->World->PlaceTruck(TEXT("saro"));
   const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X+1.4,P.Z,0);
   F.Field->Use(TEXT("ff:cargo"));
+  if(!Check(F.Field->ParcelStage()==3&&M->UI->Modal(),TEXT("the loaded rack opens its panel instead of emptying itself")))return;
+  F.Field->UnloadFromRack();M->UI->Close(true);
   if(!Check(F.Field->ParcelStage()==2,TEXT("truck cargo must be unloaded before physical bench delivery")))return;
   Go(43,.3);return;
  }
