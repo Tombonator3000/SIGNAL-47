@@ -190,7 +190,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal,bool bOneNi
  ServiceGuide=GuideServiceBaseline=GuideSupplyBaseline=0;bGuideSupply=bGuideFocus=false;
  // A new Freeform game opens with the first-shift tutorial; dev/test runs opt in with -S47FreeformTutorial.
  Tutorial=!Saved&&M&&M->Flow&&(!M->Flow->bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTutorial")))?1:0;
- TutorialJobId.Empty();FieldFocus=-1;bMailboxStart=false;bStationLocked=bDarkTold=false;
+ DriveCheckAt=-1;DriveCheckDay=DriveCheckDish=DriveCheckTone=0;DriveCheckResult.Reset();TutorialJobId.Empty();FieldFocus=-1;bMailboxStart=false;bStationLocked=bDarkTold=false;
  DayNumber=1;WorldClock=8*3600;Cash=120;Loan=0;Selected=AudioSourceIndex=SelectedDish=0;WokenNight=RousedNight=0;WakeClock=0;ReviewWeek=Carried=StandbyTotal=0;LastPay=20;SideWeek=SidePaid=Repairs=0;
  Settle=CrossSample=AudioCursor=AutosaveAt=IntegrationPulse=0;CrossPoint=0;bCrossRunning=false;ArrayJob.Empty();
  if(!Saved&&bOneNight){Tutorial=0;WorldClock=18*3600;} // Story's one night: day 1 from the evening shift, nothing to teach
@@ -202,6 +202,9 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal,bool bOneNi
   if(!JsonVersion(Saved)) { bActive=false;return; }
   Tutorial=FMath::Clamp(SafeInt(Saved,TEXT("tutorial")),0,6);
   bStationLocked=S47J::Bool(Saved,TEXT("stationLocked"));bDarkTold=!bStationLocked;
+  // T16-20/FIX10-10: both added to the record; a save from before has neither and reads as it did (no hint, no check today)
+  bMailboxStart=S47J::Bool(Saved,TEXT("mailboxStart"));
+  if(const auto Drive=S47J::Obj(Saved,TEXT("driveCheck"));Drive.IsValid()){DriveCheckDay=FMath::Max(0,SafeInt(Drive,TEXT("day")));DriveCheckTone=FMath::Clamp(SafeInt(Drive,TEXT("tone")),0,2);DriveCheckResult=S47J::Str(Drive,TEXT("result"));}
   TutorialJobId=S47J::Str(Saved,TEXT("tutorialJobId"));
   FieldFocus=FMath::Clamp(SafeInt(Saved,TEXT("fieldFocus"),-1),-1,FS47FreeformCases::CaseCount-1);
   JobSeed=int32(FMath::Clamp(SafeNum(Saved,TEXT("jobSeed"),JobSeed),double(MIN_int32),double(MAX_int32)));
@@ -3437,7 +3440,9 @@ void FS47FreeformSession::LandRecord(const FString& Id)
   const int32 Planned=C?FCString::Atoi(*C->PlannedJob.Mid(7)):0; // FIELD-D0012-...
   if(Night<Planned)return;
   const bool bSeen=TripCamera&&TripCamera->CaughtTonight()!=FS47TripCamera::ECatch::None;
-  ReportFieldTest(Line,Test,true,bSeen,Text);return;
+  // T16-20: a blank roll only counts when the camera really stood watch; else the test is not answered (not valid), and may be set again.
+  const bool bCovered=bSeen||!TripCamera||TripCamera->CoveredEnough();
+  ReportFieldTest(Line,Test,bCovered,bSeen,Text);return;
  }
  if(Test==FS47FreeformCases::LandNeedle)
  {
@@ -4753,7 +4758,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
 }
 S47J::FObj FS47FreeformSession::Save()const
 {
- auto O=S47J::New();if(bStationLocked)S47J::Set(O,TEXT("stationLocked"),true);S47J::Set(O,TEXT("fieldFocus"),FieldFocus);S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);if(WokenNight>0)S47J::Set(O,TEXT("wokenNight"),WokenNight);if(RousedNight>0)S47J::Set(O,TEXT("rousedNight"),RousedNight);if(RulesLive()||ReviewWeek>0)S47J::Set(O,TEXT("reviewWeek"),ReviewWeek);if(Carried>0)S47J::Set(O,TEXT("carried"),Carried);if(StandbyTotal>0)S47J::Set(O,TEXT("standbyPaid"),StandbyTotal);if(SideWeek>0)S47J::Set(O,TEXT("sideWeek"),SideWeek);if(SidePaid>0)S47J::Set(O,TEXT("sidePaid"),SidePaid);if(Repairs>0)S47J::Set(O,TEXT("repairs"),Repairs);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
+ auto O=S47J::New();if(bStationLocked)S47J::Set(O,TEXT("stationLocked"),true);if(bMailboxStart)S47J::Set(O,TEXT("mailboxStart"),true);if(DriveCheckDay>0&&DriveCheckAt<0){auto Drive=S47J::New();S47J::Set(Drive,TEXT("day"),DriveCheckDay);S47J::Set(Drive,TEXT("tone"),DriveCheckTone);S47J::Set(Drive,TEXT("result"),DriveCheckResult);S47J::Set(O,TEXT("driveCheck"),Drive);}S47J::Set(O,TEXT("fieldFocus"),FieldFocus);S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);if(WokenNight>0)S47J::Set(O,TEXT("wokenNight"),WokenNight);if(RousedNight>0)S47J::Set(O,TEXT("rousedNight"),RousedNight);if(RulesLive()||ReviewWeek>0)S47J::Set(O,TEXT("reviewWeek"),ReviewWeek);if(Carried>0)S47J::Set(O,TEXT("carried"),Carried);if(StandbyTotal>0)S47J::Set(O,TEXT("standbyPaid"),StandbyTotal);if(SideWeek>0)S47J::Set(O,TEXT("sideWeek"),SideWeek);if(SidePaid>0)S47J::Set(O,TEXT("sidePaid"),SidePaid);if(Repairs>0)S47J::Set(O,TEXT("repairs"),Repairs);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
  S47J::Set(O,TEXT("journal"),Journal.Save());S47J::Set(O,TEXT("economyRevision"),2);
  S47J::Set(O,TEXT("selected"),Selected);S47J::Set(O,TEXT("audioSource"),AudioSourceIndex);S47J::Set(O,TEXT("audioCursor"),AudioCursor);S47J::Set(O,TEXT("settle"),Settle);if(!ArrayJob.IsEmpty())S47J::Set(O,TEXT("arrayJob"),ArrayJob);S47J::Set(O,TEXT("cross"),CrossPoint);S47J::Set(O,TEXT("crossSample"),CrossSample);S47J::Set(O,TEXT("crossRunning"),bCrossRunning);
  TArray<TSharedPtr<FJsonValue>> Jobs;
@@ -4846,6 +4851,16 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   const FString B2=TraceBookLine(0,-1,FString(),TEXT("RECORD"),TEXT("A light over the ridge."));
   Check(A==TEXT("D2 22:10 / ARRAY SERVICE AREA / BEARING / NE, heard"),TEXT("trace book line: day, time, place, kind"));
   Check(B2==TEXT("D1 / RECORD / A light over the ridge."),TEXT("trace book line: no time or place"));
+ }
+ { // FIX10-10: the drive check's result of the day and the mailbox start survive a Continue; a record from before has neither
+  FS47FreeformSession Old(nullptr);Old.Begin(nullptr);auto OldState=Old.Save();Old.Stop();
+  FS47FreeformSession Fresh(nullptr);Fresh.Begin(OldState);
+  Check(!Fresh.bMailboxStart&&!Fresh.DriveCheckedToday()&&!OldState->HasField(TEXT("mailboxStart"))&&!OldState->HasField(TEXT("driveCheck")),TEXT("FIX10-10: a record without the drive check or the mailbox start reads as before, and writes none"));
+  Fresh.Stop();
+  S47J::Set(OldState,TEXT("mailboxStart"),true);auto Drive=S47J::New();S47J::Set(Drive,TEXT("day"),1);S47J::Set(Drive,TEXT("tone"),2);S47J::Set(Drive,TEXT("result"),TEXT("TEST RESULT"));S47J::Set(OldState,TEXT("driveCheck"),Drive);
+  FS47FreeformSession Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(OldState)));auto KeptState=Kept.Save();
+  Check(Kept.bMailboxStart&&Kept.DriveCheckedToday()&&Kept.DriveCheckResultText()==TEXT("TEST RESULT")&&S47J::Bool(KeptState,TEXT("mailboxStart"))&&S47J::Obj(KeptState,TEXT("driveCheck")).IsValid(),TEXT("FIX10-10: the mailbox start and today's drive check survive a Continue"));
+  Kept.Stop();
  }
  OK&=SS47TapeScope::SelfTest(Lines); // D45-20261110: each take's own look on the reel deck's displays
  OK&=FS47Attention::SelfTest(Lines); // N1110: the attention curve, its thresholds, sabotage and the visit
@@ -5187,6 +5202,13 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Check(L.PlanCaseTest(Land,FS47FreeformCases::LandCamera),TEXT("Land: with the trip camera built, its control is planned"));
   L.RecordEvidence(TEXT("place_windmill_needle"),TEXT("again"));
   Check(L.PlannedFieldTest(Land)==FS47FreeformCases::LandCamera&&!LC->Results[FS47FreeformCases::LandCamera].bDone,TEXT("Land: a magnetometer reading does not answer the camera's control"));
+  // T16-20: a blank roll from a camera that barely stood watch answers nothing; with its cover it is the result as before.
+  if(L.TripCamera)
+  {
+   L.TripCamera->TestCover(600);L.RecordEvidence(TEXT("tripcam_d1"),TEXT("Trip camera at the windmill, read in the morning. The counter has not moved."));
+   Check(!LC->Results[FS47FreeformCases::LandCamera].bDone&&L.PlannedFieldTest(Land)==FS47FreeformCases::LandCamera,TEXT("T16-20: a blank roll from a camera that stood watch ten minutes does not answer the land test"));
+   L.TripCamera->TestCover(FS47TripCamera::EnoughCover);
+  }
   L.RecordEvidence(TEXT("tripcam_d1"),TEXT("Trip camera at the windmill, read in the morning. The counter has not moved."));
   Check(LC->Results[FS47FreeformCases::LandCamera].bDone&&!LC->Results[FS47FreeformCases::LandCamera].bPresent&&L.CaseFile().Excluded(Land,2)&&L.CaseFile().Remaining(Land)==1&&LC->Leads.Contains(TEXT("tripcam_d1"))&&L.CaseStep(Land).Step==ECaseStep::File,
    TEXT("Land: the trip camera's own frames are the result: a quiet night rules out the unaccounted, and it is a field record of the land"));

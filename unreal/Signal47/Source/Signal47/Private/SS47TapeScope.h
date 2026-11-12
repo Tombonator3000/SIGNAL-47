@@ -58,6 +58,7 @@ private:
  // D45-20261110: the take's look, the band display's live state (peak-hold dots, the pass of this playback) and the retain run
  TAttribute<uint32> Seed;TAttribute<bool> Recording,Retained;TAttribute<double> Period;TAttribute<FString> Caption;bool bPhosphor=false;
  mutable FTakeLook Look;mutable bool bLook=false,bWasRun=false,bWasRetained=false,bPrimed=false;
+ mutable TArray<FVector2f> Heard,Ahead; // FIX10-10: kept between frames (Reset keeps the capacity), not allocated at every paint
  mutable float PeakHold[7]={0,0,0,0,0,0,0};mutable double LastPaint=0,RetainAt=-10;mutable uint32 Pass=0;
 };
 
@@ -93,6 +94,7 @@ private:
  TAttribute<bool> Playing,Loading,Control;
  TAttribute<TArray<double>> Ticks;
  // what the picture shows (winds toward the real cursor), the reels' angles, the needles and their peak lamps
+ mutable TArray<FVector2f> RingPts; // FIX10-10: one scratch for every ring of the reels, not a new array per ring per frame
  mutable double Shown=-1,Last=0,AngleL=0,AngleR=0,Needle[2]={0,0},Peak[2]={0,0},PeakAt[2]={-10,-10},HeadGlow=0;
  // D45-20261110: see the arguments; ThreadAt: a tape change threads the new tape in; RetainAt: the counter's RETAINED blink
  TAttribute<uint32> Seed;TAttribute<bool> Recording,Retained;TAttribute<double> Period,MarkIn,MarkOut;TAttribute<FString> Caption;bool bPhosphor=false;

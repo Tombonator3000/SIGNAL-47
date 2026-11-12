@@ -3,6 +3,7 @@
 #include "S47Audio.h"
 #include "S47Drive.h"
 #include "S47Album.h"
+#include "S47Animals.h"
 #include "S47FarmSite.h"
 #include "S47FreeformDirector.h"
 #include "S47Glimpses.h"
@@ -578,7 +579,7 @@ namespace
 }
 void FS47TripCamera::Begin(const S47J::FObj& Saved)
 {
- Stop();Life=MakeShared<uint8>(0);bOut=false;Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;Yaw=0;
+ Stop();Life=MakeShared<uint8>(0);bOut=false;Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;Yaw=0;Covered=0;AnimalClock=-1;LastWatch=-1;
  if(Saved.IsValid()&&S47J::Bool(Saved,TEXT("out")))
  {
   const auto A=S47J::Nums(Saved,TEXT("at"));const double Clock=S47J::Num(Saved,TEXT("clock"));Area=S47J::Str(Saved,TEXT("area"));Title=S47J::Str(Saved,TEXT("title"));
@@ -586,6 +587,8 @@ void FS47TripCamera::Begin(const S47J::FObj& Saved)
   {
    At=FVector(A[0],A[1],A[2]);SetClock=Clock;bAtMarksThen=S47J::Bool(Saved,TEXT("marks"));bOut=true;Yaw=TripYaw(Saved);
    Caught=ECatch(FMath::Clamp(S47J::Int(Saved,TEXT("caught")),0,2));CaughtClock=S47J::Num(Saved,TEXT("caughtClock"),-1);PhotoId=S47J::Str(Saved,TEXT("photo"));
+   // T16-20: a save from before has neither; it reads as no cover and no animal, and the first Watch builds them up
+   Covered=FMath::Clamp(S47J::Num(Saved,TEXT("cover"),0),0.,86400.);AnimalClock=S47J::Num(Saved,TEXT("animalClock"),-1);if(!FMath::IsFinite(Covered))Covered=0;if(!FMath::IsFinite(AnimalClock))AnimalClock=-1;
   }
  }
  if(M&&IsValid(M->Web.Get())&&Scene.Get()!=M->Web.Get()){bBuilt=false;PropSaro.Reset();PropRoad.Reset();}
@@ -600,6 +603,8 @@ S47J::FObj FS47TripCamera::Save() const
  if(Yaw!=0)S47J::Set(O,TEXT("yaw"),Yaw); // D46-20261110: added to the record; a save without it reads as before
  if(Caught!=ECatch::None){S47J::Set(O,TEXT("caught"),int32(Caught));S47J::Set(O,TEXT("caughtClock"),CaughtClock);}
  if(!PhotoId.IsEmpty())S47J::Set(O,TEXT("photo"),PhotoId);
+ if(Covered>0)S47J::Set(O,TEXT("cover"),Covered);
+ if(AnimalClock>=0)S47J::Set(O,TEXT("animalClock"),AnimalClock);
  return O;
 }
 bool FS47TripCamera::Build()
@@ -655,7 +660,7 @@ bool FS47TripCamera::SetHere(const FString& InTitle,bool bAtMarks)
 {
  if(!CanSet()||!M->Player||!M->Web)return false;
  const auto Clock=M->Freeform->Clock();
- bOut=true;Title=InTitle;bAtMarksThen=bAtMarks;SetClock=Clock;Area=M->Web->Area();Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;
+ bOut=true;Title=InTitle;bAtMarksThen=bAtMarks;SetClock=Clock;Area=M->Web->Area();Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();LookIn=0;Covered=0;AnimalClock=-1;LastWatch=-1;
  if(Area==TEXT("diner"))Area=TEXT("road");
  At=FVector(M->Player->Pos.X+1.5,M->Player->FloorY,M->Player->Pos.Z);
  Yaw=FMath::IsFinite(M->Player->Yaw)?FMath::Fmod(M->Player->Yaw,UE_DOUBLE_TWO_PI):0; // D46-20261110: it watches the way the player looked
@@ -680,12 +685,12 @@ bool FS47TripCamera::SetOutPlace(FVector2D& OutRoad,FString& OutTitle) const
  if(!Where||!FMath::IsFinite(Where->X)||!FMath::IsFinite(Where->Z))return false;
  OutRoad=FVector2D(Where->X,Where->Z);OutTitle=Where->Title;return true;
 }
-int32 FS47TripCamera::Reading(ECatch Got,int32 Seed,int32 Night)
+int32 FS47TripCamera::Reading(ECatch Got,bool bAnimal)
 {
  if(Got==ECatch::Body)return 3;
  if(Got==ECatch::Light)return 2;
- // Nothing strange passed: now and then an animal did. That is ordinary life, not an observation, and it is all the dice decide.
- return FS47NightRhythm::Roll(Seed,Night,0x54524950u)<.3f?1:0;
+ // Nothing strange passed. A coyote may have: ordinary life, not an observation, and only when one really crossed its view.
+ return bAnimal?1:0;
 }
 FString FS47TripCamera::ReadingText(int32 Read,const FString& Place,int32 Seed,int32 Night,double When,bool bFrame)
 {
@@ -725,6 +730,14 @@ void FS47TripCamera::Watch()
  if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(Flat(I.Pos)<Reach&&Sees(Lens,I.Eye)){Body=I.Eye;break;}
  // N1110 (T16-20): a figure the night sent to the station's fences is a body near the lens as well.
  if(!Body&&F.Director)for(const TCHAR* Fig:{TEXT("observer"),TEXT("service_presence"),TEXT("feeder_presence"),TEXT("array_presence")})if(F.Director->ActiveEvent()==Fig&&Flat(F.Director->EventAnchor())<Reach&&Sees(Lens,F.Director->EventAnchor()+FVector(0,1.6,0))){Body=F.Director->EventAnchor()+FVector(0,1.6,0);break;}
+
+ // T16-20: it only stood watch while this world was the loaded one and the night was going on; that is its cover, in game seconds. A step
+ // longer than a normal tick (a sleep, a skip) adds a little, not the whole jump.
+ const double NowClock=F.Clock();
+ if(LastWatch>=0&&NowClock>=LastWatch)Covered=FMath::Min(Covered+FMath::Min(NowClock-LastWatch,30.),86400.);
+ LastWatch=NowClock;
+ // A coyote that really came by, within sight: it is all an animal frame is.
+ if(AnimalClock<0&&M->Animals.IsValid())if(FVector Coy;M->Animals->CoyoteWhere(Coy)&&Flat(Coy)<Reach&&Sees(Lens,Coy+FVector(0,.5,0))){AnimalClock=NowClock;UE_LOG(LogTemp,Display,TEXT("S47: trip camera at %s saw a coyote at %.0f"),*Title,AnimalClock);}
  if(!Body&&F.FarmSite)if(const TOptional<FVector> Eye=F.FarmSite->VisitBodyEye();Eye&&Flat(*Eye)<Reach&&Sees(Lens,*Eye))Body=*Eye;
  if(!Body)
  {
@@ -760,12 +773,14 @@ bool FS47TripCamera::Collect()
  if(!bANight)Page=TEXT("Too soon. The counter reads nothing yet. Taken up again.");
  else
  {
-  const int32 Read=Reading(Caught,F.Seed(),Night);
-  Page=ReadingText(Read,Title,F.Seed(),Night,CaughtClock,!PhotoId.IsEmpty());
+  const int32 Read=Reading(Caught,SawAnimal());
+  Page=ReadingText(Read,Title,F.Seed(),Night,Read==1?AnimalClock:CaughtClock,!PhotoId.IsEmpty());
+  // T16-20: a blank counter after a night it mostly did not stand watch is no result; it says so, and the land test is not answered by it.
+  if(Read==0&&!CoveredEnough())Page=FString::Printf(TEXT("Trip camera at %s, read in the morning. The counter has not moved, but it stood watch for only part of the night (the clock says %d minutes of it). That is not a night it covered. Covers only what crossed its wire."),*Title,int32(Covered/60));
   F.RecordEvidence(FString::Printf(TEXT("tripcam_d%d"),Night),Page);
   UE_LOG(LogTemp,Display,TEXT("S47: trip camera read, reading %d for night %d"),Read,Night);
  }
- bOut=false;Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();Layout();
+ bOut=false;Caught=ECatch::None;CaughtClock=-1;PhotoId.Empty();Covered=0;AnimalClock=-1;LastWatch=-1;Layout();
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("TRIP CAMERA"),S47Kit::Col({S47Kit::Text(Page),S47Kit::Small(TEXT("Back in your kit. It can be set again."))}),760));
  M->RequestAutosave();return true;
 }
@@ -780,10 +795,8 @@ bool FS47TripCamera::SelfTest(TArray<FString>& Lines)
  bool OK=true;
  const auto Check=[&](bool B,const TCHAR* Why){OK&=B;Lines.Add(FString::Printf(TEXT("%s trip camera: %s"),B?TEXT("PASS"):TEXT("FAIL"),Why));};
  FS47TripCamera C(nullptr);C.Begin(nullptr);Check(C.Save()->Values.Num()==0&&!C.Out(),TEXT("an older save has none out"));
- int32 Strange=0,Animal=0;bool bStable=true;
- for(int32 N=1;N<=400;++N){const int32 R0=Reading(ECatch::None,47,N);Strange+=R0>=2?1:0;Animal+=R0==1?1:0;bStable&=R0==Reading(ECatch::None,47,N);}
- Check(bStable&&Strange==0&&Animal>0&&Animal<400,TEXT("nothing strange is drawn for a night that brought nothing past it; an animal sometimes; the same each time"));
- Check(Reading(ECatch::Light,47,3)==2&&Reading(ECatch::Body,47,3)==3,TEXT("what passed is what it shows"));
+ Check(Reading(ECatch::None,false)==0&&Reading(ECatch::None,true)==1,TEXT("nothing strange and no coyote seen reads as nothing; a coyote seen reads as an animal, no die"));
+ Check(Reading(ECatch::Light,true)==2&&Reading(ECatch::Body,false)==3,TEXT("what passed is what it shows"));
  bool bRecord=true;for(int32 R=0;R<4;++R){const FString T=ReadingText(R,TEXT("the mine"),47,3,2*3600.+7*60,R>=2);bRecord&=T.Contains(TEXT("the mine"))&&!T.ToLower().Contains(TEXT("alien"));if(R>=2)bRecord&=T.Contains(TEXT("02:07"))&&T.Contains(TEXT("develop"));}
  Check(bRecord,TEXT("each reading says where, and does not say what"));
  auto O=S47J::New();S47J::Set(O,TEXT("out"),true);S47J::Set(O,TEXT("area"),TEXT("road"));S47J::Set(O,TEXT("title"),TEXT("the mine"));S47J::Set(O,TEXT("clock"),90000.);S47J::Set(O,TEXT("at"),TArray<double>{1,2,3});
@@ -796,6 +809,10 @@ bool FS47TripCamera::SelfTest(TArray<FString>& Lines)
  FS47TripCamera Faced(nullptr);Faced.Begin(S47J::Read(S47J::Write(O)));Check(FMath::IsNearlyEqual(Faced.Yaw,-2.25)&&FMath::IsNearlyEqual(S47J::Num(Faced.Save(),TEXT("yaw")),-2.25)&&Faced.Out(),TEXT("the way it faces survives a Continue"));
  S47J::Set(O,TEXT("yaw"),1e30);
  FS47TripCamera Wild(nullptr);Wild.Begin(S47J::Read(S47J::Write(O)));Check(Wild.Out()&&FMath::Abs(Wild.Yaw)<=UE_DOUBLE_TWO_PI,TEXT("a yaw out of all bounds is held to a turn, and the camera is still out"));
+ S47J::Set(O,TEXT("cover"),3600.);S47J::Set(O,TEXT("animalClock"),95000.);
+ FS47TripCamera Cov(nullptr);Cov.Begin(S47J::Read(S47J::Write(O)));Check(!Cov.CoveredEnough()&&Cov.SawAnimal()&&FMath::IsNearlyEqual(S47J::Num(Cov.Save(),TEXT("cover")),3600.)&&FMath::IsNearlyEqual(S47J::Num(Cov.Save(),TEXT("animalClock")),95000.),TEXT("its cover and a coyote it saw survive a Continue"));
+ S47J::Set(O,TEXT("cover"),9000.);
+ FS47TripCamera Full(nullptr);Full.Begin(S47J::Read(S47J::Write(O)));Check(Full.CoveredEnough()&&!Kept.CoveredEnough()&&!Kept.SawAnimal(),TEXT("a record from before has no cover and no animal; two hours of watching is enough"));
  return OK;
 }
 
