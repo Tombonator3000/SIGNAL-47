@@ -1656,11 +1656,10 @@ void FS47FreeformSession::TakenAway(double WorldSeconds)
 }
 void FS47FreeformSession::Recover(const FString& Why)
 {
- if(const FJob* Was=CurrentJob();bActive&&!bDead&&Was)UnfitCaseRelay(*Was); // CASETEST-20261109: a fitted swap relay back (the reset below)
  if(!bActive||bDead)return;
  bAudioPlaying=false;
  if(bDeadly){bDead=true;Changed(TEXT("Contact. Load the last saved case to continue."));return;}
- FJob* J=Job();if(J&&J->Stage==EJobStage::Integrating){J->Stage=EJobStage::Pointed;J->Elapsed=0;Settle=0;bCrossRunning=false;}
+ FJob* J=Job();if(J&&J->Stage==EJobStage::Integrating){UnfitCaseRelay(*J);J->Stage=EJobStage::Pointed;J->Elapsed=0;Settle=0;bCrossRunning=false;} // CASETEST-20261109: a fitted swap relay back, once, as TakenAway
  WorldClock+=15*60;DayNumber=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay))+1);AddDay(DayNumber);LapseUntakenCards();
  if(M&&M->UI)M->UI->Fade(true,TEXT("CONTACT LOST"));
  bRecovering=M&&M->Story;const int32 Epoch=++RecoveryEpoch;
@@ -5327,6 +5326,15 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Sp.AddItem(TEXT("relay"),1);const int32 Relays=Sp.InventoryCount(TEXT("relay"));Sp.Selected=Sp.Work.Num()-1;
   {auto& RJ=Sp.Work.Last();Check(Sp.Consume(TEXT("relay")),TEXT("Relay fixture: the spare is fitted as the recording starts"));RJ.Stage=EJobStage::Integrating;Sp.SpoilCaseTest(RJ,TEXT("a test fixture stopped it,"));}
   Check(Sp.InventoryCount(TEXT("relay"))==Relays&&Sp.Work.Last().Stage==EJobStage::Pointed,TEXT("Timing swap: a recording stopped short gives its fitted relay back to the depot"));
+  // M3: given back once. A second stop on the stopped job, or a stop of a run already registered, gives nothing more.
+  Sp.SpoilCaseTest(Sp.Work.Last(),TEXT("a test fixture stopped it again,"));Sp.UnfitCaseRelay(Sp.Work.Last());
+  {auto& RJ=Sp.Work.Last();RJ.Stage=EJobStage::Integrating;RJ.bCaseRecorded=true;Sp.UnfitCaseRelay(RJ);RJ.bCaseRecorded=false;RJ.Stage=EJobStage::Pointed;}
+  Check(Sp.InventoryCount(TEXT("relay"))==Relays,TEXT("Timing swap: the fitted relay comes back once, never for a second stop or a run already registered (M3)"));
+  // M3: lost time in the middle of the swap gives the relay back once too, and the test stays planned on the same job.
+  {auto& RJ=Sp.Work.Last();Check(Sp.Consume(TEXT("relay")),TEXT("Relay fixture: the spare fitted again"));RJ.Stage=EJobStage::Integrating;RJ.Elapsed=5;}
+  const FString SwapId=Sp.Work.Last().Id;Sp.TakenAway(600.);Sp.TakenAway(600.);
+  Check(Sp.InventoryCount(TEXT("relay"))==Relays&&Sp.Work.Last().Id==SwapId&&Sp.Work.Last().Stage==EJobStage::Pointed&&!Sp.Work.Last().bCaseRecorded&&Sp.CaseFile().Get(1)->Planned==0
+   &&Sp.CaseFile().Get(1)->PlannedJob==SwapId&&!Sp.CaseFile().Get(1)->Results[0].bDone,TEXT("Timing swap: lost time mid-recording gives the relay back once, no result, the same job still planned (M3)"));
   Sp.Stop();
  }
  {
