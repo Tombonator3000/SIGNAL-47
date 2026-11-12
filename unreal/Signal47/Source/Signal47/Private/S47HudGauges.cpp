@@ -1,4 +1,5 @@
 #include "S47HudGauges.h"
+#include "S47FieldRadio.h"
 #include "S47Json.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -27,10 +28,13 @@ bool S47HudGauges::BatteryShown(bool bDrains, bool bHave, bool bOn, double Level
 	return bDrains && bHave && (bOn || Level < Low);
 }
 
-FString S47HudGauges::CbLine() { return TEXT("CB 19"); }
+// HUD-20261108: the frequency in use is shown with the set (CB channel 19 is 27.185 MHz; the walkie's three channels are
+// FS47FieldRadio::ChannelMHz: 49.830 + 0.015 per channel, kept in step by the self-test).
+FString S47HudGauges::CbLine() { return TEXT("CB 19  27.185"); }
 FString S47HudGauges::WalkieLine(int32 Channel, const FString& Who)
 {
-	const FString Line = FString::Printf(TEXT("WALKIE %d"), FMath::Clamp(Channel, 1, 3));
+	const int32 Ch = FMath::Clamp(Channel, 1, 3);
+	const FString Line = FString::Printf(TEXT("WALKIE %d  %.3f"), Ch, 49.830 + .015 * (Ch - 1));
 	const FString Name = Who.TrimStartAndEnd().ToUpper();
 	return Name.IsEmpty() ? Line : Line + TEXT(" \u00B7 ") + Name;
 }
@@ -477,8 +481,9 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	Check(BatteryShown(true, true, true, 1.0, 0.2) && BatteryShown(true, true, false, 0.1, 0.2) && !BatteryShown(true, true, false, 0.8, 0.2),
 		TEXT("shown while the lamp is on, or when it is low; hidden when it is off and well charged"));
 	Check(!BatteryShown(false, true, true, 0.1, 0.2) && !BatteryShown(true, false, true, 0.1, 0.2), TEXT("not shown in the Story, nor before the lamp is taken"));
-	Check(CbLine() == TEXT("CB 19") && WalkieLine(1, TEXT("Dale")) == FString(TEXT("WALKIE 1 \u00B7 DALE")) && WalkieLine(2) == TEXT("WALKIE 2") && WalkieLine(7) == WalkieLine(3),
-		TEXT("the radio line names the set, its channel and who is sending"));
+	Check(CbLine() == TEXT("CB 19  27.185") && WalkieLine(1, TEXT("Dale")) == FString(TEXT("WALKIE 1  49.830 \u00B7 DALE")) && WalkieLine(2) == TEXT("WALKIE 2  49.845") && WalkieLine(7) == WalkieLine(3)
+		&& WalkieLine(3) == FString::Printf(TEXT("WALKIE 3  %.3f"), FS47FieldRadio::ChannelMHz(3)),
+		TEXT("the radio line names the set, its channel, its frequency (the field radio's own) and who is sending"));
 	// HUD-D-20261109: one radio colour in every palette, so the CB and the walkie are told apart by their words alone
 	bool bApart = true;
 	for (const FString& Who : { FString(), FString(TEXT("DALE")), FString(TEXT("YOU")) })
