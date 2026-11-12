@@ -781,12 +781,15 @@ void US47Audio::TelexMotor(TOptional<FVector> At)
 
 /** One character struck on the teleprinter's platen (KAPITLER.md: made here, rhythmic strikes and
  *  a motor); `cr` the carriage going back at the end of a line. */
-void US47Audio::TypeBar(const FVector& At, bool bCr)
+void US47Audio::TypeBar(const FVector& At, bool bCr, float Flat)
 {
 	if (!Ctx.IsValid()) return;
 	FBatch Batch(*Ctx);
 	const double T = Ctx->CurrentTime();
-	const TSharedPtr<FS47AudioNode> Dest = Panner(At, 2.4);
+	// UI-20261112 (Tom, the location cards): Flat over 0 is the same strike with no place, straight to the effects bus at that level
+	TSharedPtr<FS47AudioNode> Dest;
+	if (Flat > 0.f) { auto Level = Ctx->CreateGain(); Level->Gain.SetValue(Flat); Level->Connect(Node(nullptr, SfxBus)); Dest = Level; }
+	else Dest = Panner(At, 2.4);
 	auto N = NoiseSrc(false, false); auto Bp = Ctx->CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Frequency.SetValue(bCr ? 900 : 2300 + FMath::FRand() * 500); Bp->Q.SetValue(bCr ? 1.2 : 2.2);
 	auto G = Ctx->CreateGain();
 	const double Len = bCr ? 0.16 : 0.018;

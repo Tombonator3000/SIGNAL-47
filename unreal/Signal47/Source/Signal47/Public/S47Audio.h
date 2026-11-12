@@ -183,7 +183,7 @@ public:
 	void PowerDown(const FVector& At);
 	void PowerUp(const FVector& At);
 	void TelexMotor(TOptional<FVector> At);
-	void TypeBar(const FVector& At, bool bCr = false);
+	void TypeBar(const FVector& At, bool bCr = false, float Flat = 0.f); // Flat > 0: not placed, at this level (the HUD's location card)
 	void Radio(TOptional<FVector> At, float Level = 0.06f);
 	void RadioVoice(float Secs, float When = 0.f);
 	void CabRadio(const FString& Mode);      // 'talk' | 'carrier' | 'hiss' | '' (null: off)

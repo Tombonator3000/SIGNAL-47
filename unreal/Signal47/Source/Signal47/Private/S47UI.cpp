@@ -315,6 +315,12 @@ void US47UI::Thought(const FString& Text, float Secs)
 	if (SS47Hud* H = Hud ? Hud->HudWidget() : nullptr) H->Toast(S47Thought::Line(Text), Secs, {}, int32(FS47MessageQueue::EPri::Radio));
 }
 
+bool US47UI::LocationCard(const FString& Line1, const FString& Line2, const FString& Line3)
+{
+	SS47Hud* H = Hud ? Hud->HudWidget() : nullptr;
+	return H && H->LocationCard(Line1, Line2, Line3);
+}
+
 void US47UI::ClearToasts()
 {
 	// (and lastDescription with them, SS47Hud's; the closer look's words; the button)
