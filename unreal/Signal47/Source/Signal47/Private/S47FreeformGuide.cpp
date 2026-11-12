@@ -31,7 +31,7 @@ bool FS47FreeformSession::StartServiceGuide(bool bSupplyTrip)
  if(!Field->HasArrayFault()&&!Field->TriggerServiceFault(ServiceGuide==0)){Feedback=TEXT("Service target unavailable. Restore station power and try again.");Changed(Feedback);return false;}
  GuideServiceBaseline=Field->ServiceCompletions();GuideSupplyBaseline=Field->ServiceSupplyDeliveries();
  ServiceGuide=1;bGuideSupply=bSupplyTrip;bGuideFocus=true;FieldFocus=-1;
- Feedback=FString::Printf(TEXT("WORK ORDER ISSUED / %s. At its cabinet outside: open the hatch and switch it to LOCAL, fit one relay, then close it and run the movement test. It stays off remote until the test passes; sign off here on MAINTENANCE after that."),*Field->ServiceDishId());Changed(Feedback);
+ Feedback=FString::Printf(TEXT("WORK ORDER ISSUED / %s. Go out to its cabinet; each step shows as you go. It stays off remote until the movement test passes; then sign off here on MAINTENANCE."),*Field->ServiceDishId());Changed(Feedback);
  return true;
 }
 FString FS47FreeformSession::ServiceObjective()const
@@ -39,7 +39,7 @@ FString FS47FreeformSession::ServiceObjective()const
  if(ServiceGuide!=1||!Field)return FString();
  const int32 S=Field->ServiceStage();
  const auto At=[this](const TCHAR* Text){FString Result=FString(Text).Replace(TEXT("S-03"),*Field->ServiceDishId());return Field->ServiceDishId()==TEXT("S-03")?Result:Result.Replace(TEXT("CABLE JUNCTION"),TEXT("AZ / EL DRIVE"));};
- if(S==1)return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: INSPECT, ISOLATE AND OPEN THE RELAY HATCH"));
+ if(S==1)return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SWITCH TO LOCAL AND OPEN THE RELAY HATCH"));
  if(bGuideSupply&&Field->ServiceSupplyDeliveries()<=GuideSupplyBaseline)
  {
   // The receiving table is inside the garage: with the roll-up door down, that comes first.
@@ -60,10 +60,10 @@ FString FS47FreeformSession::ServiceObjective()const
   return Field->InventoryCount(TEXT("donor"))>0?TEXT("EAST WING CALIBRATION BENCH: TEST THE DONOR AND HARVEST ITS COMPATIBLE RELAY"):TEXT("PARTS STORAGE: CHECK RELAY STOCK; ENTER CALICHE'S STORE AND BUY A REPLACEMENT AT THE COUNTER IF EMPTY");
  switch(S)
  {
-  case 2:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: ISOLATE REMOTE MOVEMENT AND OPEN THE RELAY HATCH"));
-  case 3:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: OPEN THE RELAY COVER"));
+  case 2:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SWITCH TO LOCAL AND OPEN THE RELAY HATCH"));
+  case 3:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: OPEN THE RELAY HATCH"));
   case 4:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SEAT THE COMPATIBLE REPLACEMENT RELAY"));
-  case 5:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: CLOSE THE RELAY COVER AND RUN THE MOVEMENT TEST"));
+  case 5:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: CLOSE THE RELAY HATCH AND RUN THE MOVEMENT TEST"));
   case 6:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: START THE FIVE-DEGREE OUT-AND-BACK TEST"));
   case 7:case 8:return At(TEXT("S-03 LOCAL BOX: WATCH THE AUTOMATIC OUT-AND-BACK TEST; WHEN COMPLETE, SIGN OFF THE WORK ORDER AT ARRAY STATUS (LEFT-HAND PC)"));
   // D45-20261110: the work order is signed off on the array PC's MAINTENANCE tab

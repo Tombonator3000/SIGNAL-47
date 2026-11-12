@@ -608,7 +608,7 @@ public:
  FString TerminalDate(double AtClock) const;
  // The procedure card taped to the desk by the OPS terminal: what the screens used to explain, to be read when wanted.
  static FS47Doc SopCard();
- // OPS's own system lines (S47FreeformScreens.cpp): the queue ("MORE WORK / 2 OPEN TODAY / 1 CARRIED / NEXT ISSUE 08:00") and the
+ // OPS's own system lines (S47FreeformScreens.cpp): the queue ("MORE WORK / 2 OPEN TODAY / 1 FROM EARLIER / NEW JOBS 08:00") and the
  // account on the glass ("BUDGET $31 / REQ $12"). REQUISITION, never debt.
  static FString QueueLine(int32 Remaining,int32 Today,int32 Earlier,int32 Rejected);
  static FString OpsAccountLine(int32 Budget,int32 Requisition);

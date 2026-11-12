@@ -2905,8 +2905,8 @@ FString FS47FreeformSession::CasePrecondition(const FJob& J)const
  {
   case ECaseCondition::Generator:return Field&&Field->GeneratorRunning()?FString():FString(TEXT("BEHIND THE CONTROL ROOM: START THE FUELLED STANDBY GENERATOR; KEEP THE WHOLE CASE TEST RECORDING ON GENERATOR POWER, OFF THE MAINS"));
   case ECaseCondition::Repeat:return Cases.InRepeatWindow(J.CaseLine,DayNumber,FMath::Fmod(WorldClock,86400.))?FString():TEXT("OPS (corner PC): CHECK THE CASE BOARD; WAIT FOR THE DATED REPEAT WINDOW. ")+CaseWindowText(J.CaseLine);
-  case ECaseCondition::DoorsSealed:return StationSealed()?FString():FString(TEXT("SARO CONTROL ROOM: CLOSE BOTH OUTSIDE DOORS AND STAY INSIDE THROUGH THE WHOLE CASE TEST RECORDING"));
-  case ECaseCondition::RelaySwap:return InventoryCount(TEXT("relay"))>0||J.Stage>EJobStage::Pointed?FString():FString(TEXT("CALICHE GAS STATION: BUY A RELAY FOR THE TIMING SWAP; THE SARO DEPOT HAS NONE"));
+  case ECaseCondition::DoorsSealed:return StationSealed()?FString():FString(TEXT("SARO CONTROL ROOM: CLOSE THE SOUTH AND EAST OUTSIDE DOORS AND STAY INSIDE THROUGH THE WHOLE CASE TEST RECORDING"));
+  case ECaseCondition::RelaySwap:return InventoryCount(TEXT("relay"))>0||J.Stage>EJobStage::Pointed?FString():FString(TEXT("CALICHE GAS STATION: BUY A RELAY FOR THE TIMING SWAP; PARTS STORAGE AT SARO HAS NONE"));
   default:return FString();
  }
 }
@@ -2994,7 +2994,7 @@ FS47FreeformSession::FCaseStep FS47FreeformSession::CaseStep(int32 Line)const
  {
   const FString Test=CaseTestName(Line,C->Planned);
   S.Card=TEXT("CASE BOARD // FOLLOW THE PLAN FOR ")+Title+TEXT(".");
-  if(PlannedFieldTest(Line)>=0){S.Step=ECaseStep::RunPlan;S.Next=FieldNextAction(Line);S.Task=S.Next;S.Short=Title+TEXT(": FOLLOW THE FIELD TEST.");return S;}
+  if(PlannedFieldTest(Line)>=0){S.Step=ECaseStep::RunPlan;S.Next=FieldNextAction(Line);S.Task=S.Next;S.Short=Title+TEXT(": FIELD TEST, ")+Test.ToUpper()+TEXT(".");return S;}
   // the same words as before, so that the pause menu's note puts the test's window on this line
   S.Task=TEXT("CASE / ")+Test+TEXT(": run job ")+C->PlannedJob;
   const FJob* J=Work.FindByPredicate([&](const FJob& X){return X.Id==C->PlannedJob&&X.CaseLine==Line&&X.CaseTest==C->Planned;});
@@ -3441,7 +3441,7 @@ bool FS47FreeformSession::FocusFieldCase(int32 Line)
 FString FS47FreeformSession::FieldNextAction(int32 Line)const
 {
  const int32 Test=PlannedFieldTest(Line);
- if(Test<0)return TEXT("OPS / CASE BOARD: REVIEW THE RETAINED FIELD RESULTS AND CHOOSE THE NEXT CONTROL. AN INCOMPLETE TEST ESTABLISHES NO PRESENCE OR ABSENCE.");
+ if(Test<0)return TEXT("OPS / CASE BOARD: READ THE FIELD RESULTS SO FAR AND PLAN THE NEXT CONTROL. A TEST LEFT HALF DONE SHOWS NOTHING EITHER WAY.");
  const FString Unavailable=FS47FreeformCases::UnavailableReason(Line,Test,HasKit(TEXT("logger2")));
  if(!Unavailable.IsEmpty())return Unavailable+TEXT(" Cancel this retained plan to choose another control.");
  if(Line==2&&CaseField){const FString Actual=CaseField->Objective();if(!Actual.IsEmpty())return Actual;}
@@ -3455,8 +3455,8 @@ FString FS47FreeformSession::FieldNextAction(int32 Line)const
 FString FS47FreeformSession::LandTestNeeds(int32 Line,int32 Test)const
 {
  if(Line!=FS47FreeformCases::LandLine)return FString();
- if(Test==FS47FreeformCases::LandCamera&&!(Field&&Field->Workshop().IsBuilt(TEXT("trip_camera"))))return TEXT("the trip camera, built at the bench");
- if(Test==FS47FreeformCases::LandNeedle&&!HasKit(TEXT("magnetometer")))return TEXT("the survey magnetometer, from the parts store");
+ if(Test==FS47FreeformCases::LandCamera&&!(Field&&Field->Workshop().IsBuilt(TEXT("trip_camera"))))return TEXT("the trip camera, built at the workshop on the east wing bench");
+ if(Test==FS47FreeformCases::LandNeedle&&!HasKit(TEXT("magnetometer")))return TEXT("the survey magnetometer, bought on OPS / SUPPLIES");
  return FString();
 }
 void FS47FreeformSession::LandRecord(const FString& Id)
@@ -3811,7 +3811,7 @@ bool FS47FreeformSession::FaultDue()const
 }
 FString FS47FreeformSession::EveningLine(const FJob& J)const
 {
- return FString::Printf(TEXT("EVENING OBSERVATION / %s IS UP FROM %s. UNTIL THEN: DAY WORK, REPAIRS, SUPPLIES. OPS CAN WAIT FOR IT."),*FString(FS47Observing::Runs()[J.Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(J)));
+ return FString::Printf(TEXT("EVENING OBSERVATION / %s IN VIEW FROM %s. TILL THEN: DAY WORK, REPAIRS, SUPPLIES, OR OUT WITH THE CAMERA. AFTER 02:00 IT IS BETTER INSIDE: ADVICE, NOT A RULE."),*FString(FS47Observing::Runs()[J.Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(J)));
 }
 bool FS47FreeformSession::LetterWaits(const FString& Line)
 {
@@ -3881,15 +3881,16 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // An idle loan logger is an option, not the next thing to do: it never again stands in front of the goal (T16-17, 10).
  if(Field&&Field->LoggerAccess()&&(Field->FieldLogger().Pressing()||(Goal.IsEmpty()&&!Evening)))return Say(Field->FieldLogger().NextAction());
  if(Evening)return Say(Goal.IsEmpty()?EveningLine(*Evening):EveningLine(*Evening)+TEXT(" ")+Goal,
-  FString::Printf(TEXT("TRACKING PC // %s IS UP FROM %s. UNTIL THEN, DAY WORK."),*FString(FS47Observing::Runs()[Evening->Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(*Evening))));
+  FString::Printf(TEXT("TRACKING PC // %s IN VIEW FROM %s. TILL THEN, DAY WORK."),*FString(FS47Observing::Runs()[Evening->Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(*Evening))));
  // Said only when it is true: what stops a rest says so itself.
  const bool bCanRest=!Director||Director->RestBlock().IsEmpty();
  // The reference check pays nothing: a player short of money needs to hear where paid work comes from.
- if(Cash<5||Loan>0)return Say(bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR NEW PAID OBSERVATIONS; THEY CLEAR ANY REQUISITION BALANCE FIRST."):TEXT("OPS: TODAY'S PAID WORK IS DONE. NEW PAID OBSERVATIONS COME WITH THE MORNING; THEY CLEAR ANY REQUISITION BALANCE FIRST."),
+ if(Cash<5||Loan>0)return Say(bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR NEW PAID OBSERVATIONS; THEIR PAY GOES FIRST TO WHAT YOU OWE STORES (REQ ON OPS)."):TEXT("OPS: TODAY'S PAID WORK IS DONE. NEW PAID OBSERVATIONS COME WITH THE MORNING; THEIR PAY GOES FIRST TO WHAT YOU OWE STORES (REQ ON OPS)."),
   bCanRest?TEXT("OPS // TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR MORE."):TEXT("OPS // TODAY'S PAID WORK IS DONE. MORE COMES WITH THE MORNING."));
  if(!Goal.IsEmpty())return SayGoal();
- return Say(bCanRest?TEXT("OPS / DAILY WORK: START AN OPTIONAL REFERENCE CHECK TO RETAIN A FRESH INSTRUMENT BASELINE (NO PAYMENT). PHOTO LAB AND ARRAY SERVICE ARE ALSO AVAILABLE; REST IS OPTIONAL."):TEXT("OPS / DAILY WORK: START AN OPTIONAL REFERENCE CHECK TO RETAIN A FRESH INSTRUMENT BASELINE (NO PAYMENT). PHOTO LAB AND ARRAY SERVICE ARE ALSO AVAILABLE."),
-  bCanRest?TEXT("OPS // OPTIONAL: A REFERENCE CHECK, NO PAY. OR REST."):TEXT("OPS // OPTIONAL: A REFERENCE CHECK, NO PAY. OR THE PHOTO LAB."));
+ // FIX10-3 (M3): the loop from here is out and back: the camera, then the photo lab's wet bench.
+ return Say(bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. GO OUT WITH THE CAMERA: PHOTOGRAPHS AND SAMPLES ARE YOUR EVIDENCE. DEVELOP FILM AT THE WET BENCH IN THE PHOTO LAB. ARRAY REPAIRS: ARRAY STATUS (left-hand PC). OPTIONAL: A REFERENCE CHECK AT DAILY WORK, NO PAY. OR REST."):TEXT("OPS: TODAY'S PAID WORK IS DONE. GO OUT WITH THE CAMERA: PHOTOGRAPHS AND SAMPLES ARE YOUR EVIDENCE. DEVELOP FILM AT THE WET BENCH IN THE PHOTO LAB. ARRAY REPAIRS: ARRAY STATUS (left-hand PC). OPTIONAL: A REFERENCE CHECK AT DAILY WORK, NO PAY."),
+  bCanRest?TEXT("OPS // PAID WORK DONE. GO OUT WITH THE CAMERA, OR REST."):TEXT("OPS // PAID WORK DONE. GO OUT WITH THE CAMERA."));
 }
 bool FS47FreeformSession::StartReferenceCheck()
 {
@@ -3898,7 +3899,7 @@ bool FS47FreeformSession::StartReferenceCheck()
  J.Card=FS47FreeformJobs::Make(JobSeed,DayNumber,0,0);J.bGenerated=true;J.bPaid=true;
  J.Card.Receiver.Card=TEXT("OPTIONAL REFERENCE CHECK / NO PAYMENT\nRetain a fresh instrument baseline using the usual tracking cross and receiver. This check creates no incident or cause by itself.\n\n")+J.Card.Receiver.Card;
  Work.Add(J);Selected=Work.Num()-1;FieldFocus=-1;bGuideFocus=false;Settle=0;bCrossRunning=false;bAudioPlaying=false;AudioCursor=0;
- Changed(TEXT("TRACKING (right-hand PC): POINT TO 3C 286 FOR YOUR OPTIONAL REFERENCE CHECK. KEEP THE ORIGINAL AS AN INSTRUMENT BASELINE; NO EXTRA PAYMENT IS DUE."));return true;
+ Changed(TEXT("TRACKING (right-hand PC): POINT TO 3C 286 FOR THE REFERENCE CHECK. ITS ORIGINAL IS KEPT AS A BASELINE; NO PAY."));return true;
 }
 bool FS47FreeformSession::CancelFieldTest(int32 Line)
 {
@@ -4554,7 +4555,7 @@ void FS47FreeformSession::AcceptTutorialJob()
 {
  if(Tutorial!=1||!CurrentJob()||CurrentJob()->Id!=TutorialJobId)return;
  Tutorial=2;
- Changed(FString::Printf(TEXT("FIRST SHIFT / Job %s accepted. Point, record, keep the original and register it at OPS for $20. This is the normal daily workflow; unusual results later require controls and a physically filed packet."),*CurrentJob()->Id));
+ Changed(FString::Printf(TEXT("FIRST SHIFT / Job %s accepted. Point the array, record, collect the original at the printer, then register it here at OPS: $20."),*CurrentJob()->Id));
 }
 void FS47FreeformSession::StepTutorial()
 {
@@ -4680,9 +4681,9 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
  if(M&&M->Web&&ArrayBlocked()&&(J->Stage<=EJobStage::Integrating||(J->Stage==EJobStage::Recorded&&J->Phenomenon==TEXT("wrong_source")&&(!J->bControl||J->ControlAt<8))))return ArrayMeasurementStatus();
  switch(J->Stage)
  {
-  case EJobStage::New:return TEXT("TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE");
-  case EJobStage::Pointed:if(&JobValue!=CurrentJob())return TEXT("TRACKING (right-hand PC): FOLLOW THIS JOB AND VERIFY ITS ACTUAL POINTING BEFORE RECORDING");return PointReady()&&Settle>=1?TEXT("RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING"):TEXT("TRACKING (right-hand PC): WAIT FOR ENCODER AGREEMENT, THEN USE RECEIVER (centre PC)");
-  case EJobStage::Integrating:return TEXT("RECEIVER (centre PC): KEEP IT TUNED; COLLECT THE ORIGINAL AT THE PRINTER"); // the printer stays on the card (critic round 5)
+  case EJobStage::New:return FS47Observing::Runs().IsValidIndex(J->Source)?FString(TEXT("TRACKING (right-hand PC): POINT THE ARRAY AT "))+FString(FS47Observing::Runs()[J->Source].Source).ToUpper():FString(TEXT("TRACKING (right-hand PC): POINT THE ARRAY AT THE SELECTED SOURCE"));
+  case EJobStage::Pointed:if(&JobValue!=CurrentJob())return TEXT("TRACKING (right-hand PC): FOLLOW THIS JOB AND VERIFY ITS ACTUAL POINTING BEFORE RECORDING");return PointReady()&&Settle>=1?TEXT("RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING"):TEXT("TRACKING (right-hand PC): WAIT FOR THE ARRAY TO SETTLE, THEN USE RECEIVER (centre PC)");
+  case EJobStage::Integrating:return TEXT("RECEIVER (centre PC): KEEP TUNING; THEN THE ORIGINAL IS AT THE PRINTER"); // the printer stays on the card (critic round 5)
   case EJobStage::Chart:
    // D45-20261110 (Tom): the extra-tick take goes control, reel deck, then the chart on the way to OPS. Its chart prints meanwhile.
    if(J->bAnomaly&&!Specialized(J->Phenomenon))
@@ -4695,18 +4696,18 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
    }
    return J->ChartFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"));
   case EJobStage::Recorded:
-   if(J->bDuplicateRejected)return TEXT("OPS / DAILY WORK: SELECT ANOTHER OBSERVATION. LEGACY ORIGINAL RETAINED; UNVERIFIABLE DUPLICATE REMOVED FROM PRINTER QUEUE WITHOUT A FINDING OR PAYMENT.");
+   if(J->bDuplicateRejected)return TEXT("OPS / DAILY WORK: SELECT ANOTHER OBSERVATION. THE OLD ORIGINAL IS KEPT; ITS UNCHECKED DUPLICATE WAS DROPPED, NO PAY.");
    if(!J->bAnomaly)return J->CaseTest>=0&&!J->bCaseRecorded?TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT AND ITS CASE TEST"):TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT");
-   if(!J->bControl)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): MEASURE WEST, EAST AND CENTRE BEAMS"):TEXT("RECEIVER (centre PC), RECORD TAB: RECORD THE INTERNAL CONTROL");
+   if(!J->bControl)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): MEASURE WEST, EAST AND CENTRE OF THE SOURCE"):TEXT("RECEIVER (centre PC), RECORD TAB: RECORD THE INTERNAL CONTROL");
    if(J->ControlAt<8)
    {
-    if(J->Phenomenon==TEXT("wrong_source"))return TEXT("TRACKING (right-hand PC): WAIT FOR AUTOMATIC WEST, EAST AND CENTRE SAMPLES; THEN COMPARE AT OPS (corner PC), DAILY WORK");
+    if(J->Phenomenon==TEXT("wrong_source"))return TEXT("TRACKING (right-hand PC): WAIT FOR AUTOMATIC WEST, EAST AND CENTRE READINGS; THEN COMPARE AT OPS (corner PC), DAILY WORK");
     if(J->Phenomenon==TEXT("time_disagreement"))return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN COMPARE CLOCK READINGS AT OPS (corner PC), DAILY WORK");
     if(J->Phenomenon==TEXT("duplicate_print"))return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC REGISTER CHECK; THEN WAIT FOR THE DUPLICATE TO FINISH AT THE PRINTER");
     return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN REVIEW BOTH RECORDINGS AT THE REEL DECK ON THE WALL TABLE");
    }
    if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return J->DuplicateFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL; THEN COMPARE AT OPS (corner PC), DAILY WORK"));
-   if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPS (corner PC): DAILY WORK / SELECT THIS JOB AND PRESS COMPARE AND REGISTER THE RETAINED MEASUREMENTS");
+   if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPS (corner PC): DAILY WORK / SELECT THIS JOB AND PRESS COMPARE AND REGISTER");
    return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE COMPARISON: SOURCE UNRESOLVED"):TEXT("REEL DECK (wall table): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
   case EJobStage::Registered:return J->PacketFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE LABELLED REGISTERED PACKET"));
   case EJobStage::Packet:return TEXT("RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER");
@@ -5061,8 +5062,8 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  }
  Check(TerminalNextLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB"),3)==TEXT("NEXT / USE THIS PC"),TEXT("NEXT line reads past the first-shift counter"));
  Check(TerminalNextLine(TEXT("ARRAY 12/27 / MEASUREMENT RATE 43% / BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24"),0)==TEXT("NEXT / USE THIS PC")&&TerminalNextLine(TEXT("ARRAY 12/27 / MEASUREMENT RATE 43% / BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24"),1)==TEXT("NEXT / ARRAY STATUS (LEFT-HAND PC)"),TEXT("A blocked array sends every workstation to the status PC"));
- Check(TerminalNextLine(TEXT("EVENING OBSERVATION / 3C 286 IS UP FROM 19:20. UNTIL THEN: DAY WORK, REPAIRS, SUPPLIES. OPS CAN WAIT FOR IT."),2)==TEXT("NEXT / 3C 286 IS UP FROM 19:20")&&TerminalNextLine(Workflow.EveningLine(*WJ),2).Contains(TEXT("IS UP FROM")),TEXT("An evening observation shows its time, and a clock's colon does not cut the line"));
- Check(TerminalNextLine(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: INSPECT, ISOLATE AND OPEN THE RELAY HATCH"),1)==TEXT("NEXT / S-03 CABLE JUNCTION / LOCAL BOX")&&TerminalNextLine(TEXT("A very long sentence with no station in it that cannot fit on the glass at all"),1).IsEmpty()&&TerminalNextLine(TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT"),3).IsEmpty()&&TerminalNextLine(FString(),3).IsEmpty(),TEXT("NEXT line keeps a place that fits and says nothing rather than half a sentence"));
+ Check(TerminalNextLine(TEXT("EVENING OBSERVATION / 3C 286 IN VIEW FROM 19:20. TILL THEN: DAY WORK, REPAIRS, SUPPLIES, OR OUT WITH THE CAMERA. AFTER 02:00 IT IS BETTER INSIDE: ADVICE, NOT A RULE."),2)==TEXT("NEXT / 3C 286 IN VIEW FROM 19:20")&&TerminalNextLine(Workflow.EveningLine(*WJ),2).Contains(TEXT("IN VIEW FROM")),TEXT("An evening observation shows its time, and a clock's colon does not cut the line"));
+ Check(TerminalNextLine(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SWITCH TO LOCAL AND OPEN THE RELAY HATCH"),1)==TEXT("NEXT / S-03 CABLE JUNCTION / LOCAL BOX")&&TerminalNextLine(TEXT("A very long sentence with no station in it that cannot fit on the glass at all"),1).IsEmpty()&&TerminalNextLine(TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT"),3).IsEmpty()&&TerminalNextLine(FString(),3).IsEmpty(),TEXT("NEXT line keeps a place that fits and says nothing rather than half a sentence"));
  {
   FS47FreeformSession Older(nullptr);Older.Begin(nullptr);
   Check(Older.MeasurementRecord().Contains(TEXT("0 FILED ORIGINALS / 0 REFERENCE BASELINES"))&&Older.MeasurementRecord().Contains(TEXT("No reference baseline")),TEXT("The bench's measurement record starts empty and says where a baseline comes from"));

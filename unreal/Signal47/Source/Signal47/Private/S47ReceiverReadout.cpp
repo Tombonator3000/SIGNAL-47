@@ -82,13 +82,13 @@ TSharedRef<SWidget> S47ReceiverReadout::Build(const FData& Input)
  {return SNew(STextBlock).Text_Lambda([Value]{return FText::FromString(Value());}).Font(S47Style::Mono(Size)).ColorAndOpacity(C).AutoWrapText(true);};
  return SNew(SVerticalBox)
   +SVerticalBox::Slot().AutoHeight().Padding(0,3)
-   [Text([D]{return FString::Printf(TEXT("RECEPTION %d %%  /  %s"),S47Signal::CarrierPercent(Quality(*D)),D->GetStatus?*D->GetStatus():D->GetRecording&&D->GetRecording()?TEXT("RECORDING"):D->GetReady&&D->GetReady()?TEXT("READY / START ACQUISITION"):TEXT("NOT READY"));},26,Green)]
+   [Text([D]{return FString::Printf(TEXT("RECEPTION %d %%  /  %s"),S47Signal::CarrierPercent(Quality(*D)),D->GetStatus?*D->GetStatus():D->GetRecording&&D->GetRecording()?TEXT("RECORDING"):D->GetReady&&D->GetReady()?TEXT("READY / START RECORDING"):TEXT("NOT READY"));},26,Green)]
   +SVerticalBox::Slot().AutoHeight().Padding(0,4)[SNew(SReceiverMeters).Data(D)]
   +SVerticalBox::Slot().AutoHeight().Padding(0,4)[SNew(SReceiverTrace).Data(D)]
   +SVerticalBox::Slot().AutoHeight()
    [Text([D]{const auto R=D->GetReceiver?D->GetReceiver():FS47Rx();const auto P=D->GetProfile?D->GetProfile():R.Profile();return FString::Printf(TEXT("ORANGE: TUNED %.3f MHz   GREEN: TARGET %.3f MHz"),R.Frequency,P.F);},18,Amber)]
   +SVerticalBox::Slot().AutoHeight().Padding(0,4)
-   [Text([D]{return FString::Printf(TEXT("ARRAY: %s / %.0f %% ELEMENTS AVAILABLE   RECORDING: %.0f %%"),D->GetTrackingReady&&D->GetTrackingReady()?TEXT("POINTING AGREED"):TEXT("WAITING FOR POINTING"),100*Unit(D->GetArrayQuality?D->GetArrayQuality():0.),100*Unit(D->GetProgress?D->GetProgress():0.));},20,Green)]
+   [Text([D]{return FString::Printf(TEXT("ARRAY: %s / %.0f %% OF ANTENNAS UP   RECORDING: %.0f %%"),D->GetTrackingReady&&D->GetTrackingReady()?TEXT("ON TARGET"):TEXT("WAITING FOR POINTING"),100*Unit(D->GetArrayQuality?D->GetArrayQuality():0.),100*Unit(D->GetProgress?D->GetProgress():0.));},20,Green)]
   +SVerticalBox::Slot().AutoHeight().Padding(0,4)
    [Text([D]{return FString(TEXT("NEXT / "))+(D->GetNextAction?D->GetNextAction():FString(TEXT("Inspect the active work card.")));},24,Amber)];
 }
