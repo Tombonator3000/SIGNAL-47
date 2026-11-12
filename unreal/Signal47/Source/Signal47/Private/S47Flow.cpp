@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47FieldLife.h"
 #include "S47DirectorCam.h"
 #include "S47StoryDirector.h"
 #include "S47NightLog.h"
@@ -2774,6 +2775,14 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 			Kit.Add({ Item.Value, TEXT("Usable delivered stock. Parcels still in transit are listed separately."), FString::FromInt(F->InventoryCount(Item.Key)), FString(), FString() });
 		if (F->InventoryCount(TEXT("fragment")) > 0) Kit.Add({ TEXT("Field samples"), TEXT("Retained samples for physical workbench comparison."), FString::FromInt(F->InventoryCount(TEXT("fragment"))), FString(), FString() });
 		if (F->InventoryCount(TEXT("archived_fragment")) > 0) Kit.Add({ TEXT("Archived samples"), TEXT("Sealed material retained after comparison."), FString::FromInt(F->InventoryCount(TEXT("archived_fragment"))), FString(), FString() });
+		{
+			// TRUCK-LOAD-20261112: what rides in the truck itself (the spare wheel and water it starts with, the tools behind the seat).
+			TArray<FString> Said;
+			for (const TPair<FString, FString>& Line : FS47TruckCare::LoadLines(F->InventoryCount(TEXT("spare")), F->InventoryCount(TEXT("water")), F->InventoryCount(TEXT("rope")), F->InventoryCount(TEXT("wire"))))
+				Said.Add(Line.Key + TEXT(": ") + Line.Value);
+			Kit.Add({ TEXT("In the truck"), FString::Join(Said, TEXT(". ")) + TEXT(". The cargo rack on the back of the parked truck shows the same, with the fuel and what to do when it is stuck."),
+				FString::Printf(TEXT("Spare %d / water %d"), F->InventoryCount(TEXT("spare")), F->InventoryCount(TEXT("water"))), FString(), FString() });
+		}
 		Kit.Add({ TEXT("Vehicle fuel"), TEXT("Fuel already in the truck tank; spare cans are separate."), FString::Printf(TEXT("%.1f / %.0f"), F->VehicleFuel(), F->TankCap()), FString(), FString() });
 		Kit.Add({ TEXT("Backup generator"), TEXT("Fuel already in the generator; spare cans are separate."), FString::Printf(TEXT("%s / %.1f hours"), F->GeneratorRunning() ? TEXT("Running") : TEXT("Stopped"), F->GeneratorHours()), FString(), FString() });
 		if (F->ParcelStage() > 0)

@@ -24,6 +24,11 @@ public:
  // The line above the menu.
  FString MenuNote() const;
  bool Natural() const{return bNatural;}
+ // A sheet left open UnreadSeconds is put down only in a natural night nobody plays (started by -S47NaturalNight); never in one a
+ // player turned on from F10, where it closed F10 itself after six seconds (F10-CLOSES-20261112).
+ static constexpr double UnreadSeconds=6;
+ static bool PutsDownUnread(bool bNaturalOn,bool bNobodyPlays,bool bSheetOpen){return bNaturalOn&&bNobodyPlays&&bSheetOpen;}
+ static bool SelfTest(TArray<FString>& Lines);
  double SpeedNow() const{return SpeedUsed;}
  // The text of the panel on the screen.
  FString PanelText() const;
@@ -127,7 +132,7 @@ private:
  void StepNatural(double Dt);
  FString HoldFor() const;
  void ShowPanel(bool bShow);
- bool bNatural=false,bHold=true,bPanelWanted=false,bPanelFull=false,bFlagRead=false;
+ bool bNatural=false,bUnattended=false,bHold=true,bPanelWanted=false,bPanelFull=false,bFlagRead=false;
  double Speed=1,SpeedUsed=1;
  // -S47NaturalStand=house|field: where the player stands each night from 21:00, as a player might choose to; nothing is started.
  void StepStand();

@@ -36,6 +36,12 @@ public:
  // What is wrong, what it takes and where it is, step by step (empty when the truck is sound). Shown when the truck strands,
  // on the task list and in the truck menu. The spade, jack and wheel brace ride behind the seat; the spare wheel is in the pouch.
  FString Steps(int32 Spares,int32 Waters) const;
+ // TRUCK-LOAD-20261112 (Tom: "the truck inventory doesn't seem to work, is it because I haven't bought anything?"): what rides in the
+ // truck itself, always listed, with where to get what is short. A new operator's truck has one spare wheel, two cans of water, and
+ // the spade, jack and wheel brace behind the seat; rope and wire show once bought. Shown in the truck menu and the notebook's Kit.
+ static TArray<TPair<FString,FString>> LoadLines(int32 Spares,int32 Waters,int32 Ropes,int32 Wires);
+ // The rack's own line: empty is not a fault; it holds one paid parcel from a Caliche counter until unpacked at SARO.
+ static FString RackNote(bool bParcelLoaded);
  // The county tow when it cannot be mended: $35 to $60 by the distance driven from SARO, 45 to 90 minutes. Never refused: what
  // cash cannot cover goes on the weekly sheet.
  int32 TowFee() const{return TowFeeFor(LegMetres);}

@@ -1006,7 +1006,11 @@ bool FS47FreeformWorld::CargoUse()
  {
   // A loaded rack on an empty tank still opens this menu: roadside return carries the truck and its cargo.
   TArray<S47Kit::FW> R;R.Add(S47Kit::Section(TEXT("FUEL"),FString::Printf(TEXT("%.1f / %.0f"),Fuel,TankCap())));
-  R.Add(S47Kit::Section(TEXT("CARGO")));
+  // TRUCK-LOAD-20261112 (Tom: "the truck inventory doesn't seem to work, because I haven't bought anything?"): this menu said only
+  // "Parcel EMPTY" before anything was bought; the spare wheel and the water that start in the truck were not listed. Now what rides
+  // in the truck is always listed, and the empty rack says what goes in it and where it comes from.
+  R.Add(S47Kit::Table(TEXT("IN THE TRUCK"),TEXT("QTY"),FS47TruckCare::LoadLines(InventoryCount(TEXT("spare")),InventoryCount(TEXT("water")),InventoryCount(TEXT("rope")),InventoryCount(TEXT("wire")))));
+  R.Add(S47Kit::Section(TEXT("CARGO RACK")));
   R.Add(S47Kit::Status(TEXT("Parcel"),Payload==3?TEXT("LOADED"):TEXT("EMPTY"),Payload==3?1:0,FString(),false,Payload==3));
   if(Payload==3)
   {
@@ -1014,6 +1018,7 @@ bool FS47FreeformWorld::CargoUse()
    for(const TCHAR* Key:AllItems())if(const int32 Count=Contents.FindRef(Key);Count>0)Lines.Add({ItemTitle(Key),FString::FromInt(Count)});
    if(!Lines.IsEmpty())R.Add(S47Kit::Table(TEXT("CONTENTS"),TEXT("QTY"),Lines));
   }
+  R.Add(S47Kit::Small(Payload==1?FString(TEXT("Your paid parcel is still on the shop counter. Carry it here and use the rack to load it.")):Payload==4?FString(TEXT("Your paid parcel is set down where you left it. Carry it here and use the rack to load it.")):FS47TruckCare::RackNote(Payload==3)));
   R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<TankCap()-.01));
   // The truck's own trouble: what the player can do about it, and the county if not.
   const auto* Care=M->Freeform->Care.Get();const bool bCare=Care&&Care->NeedsRescue();
@@ -1021,7 +1026,6 @@ bool FS47FreeformWorld::CargoUse()
   if(Care)
   {
    R.Add(S47Kit::Section(TEXT("RADIATOR"),FString::Printf(TEXT("%.0f%%"),Care->Water()*100)));
-   R.Add(S47Kit::Section(TEXT("SPARE WHEEL"),FString::Printf(TEXT("%d"),InventoryCount(TEXT("spare")))));
    if(!Care->StatusLine().IsEmpty())R.Add(S47Kit::Small(Care->StatusLine()));
    if(Care->Stuck())R.Add(S47Kit::Button(FString::Printf(TEXT("Dig it out with the spade / about %.0f minutes"),Care->DigTime()),[this]{M->Freeform->Care->DigOut();M->UI->Close();},true));
    if(Care->Flat())R.Add(S47Kit::Button(FString::Printf(TEXT("Jack it up and change the wheel / about %.0f minutes"),FS47TruckCare::WheelMinutes),[this]{M->Freeform->Care->ChangeWheel();M->UI->Close();},true,InventoryCount(TEXT("spare"))>0));

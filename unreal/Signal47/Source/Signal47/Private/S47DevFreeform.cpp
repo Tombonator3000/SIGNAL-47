@@ -1711,10 +1711,20 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddWeekCase(E);
 }
 
+bool FS47DevFreeform::SelfTest(TArray<FString>& Lines)
+{
+ bool bOk=true;
+ const auto Check=[&](bool bGood,const TCHAR* What){Lines.Add(FString::Printf(TEXT("%s devFreeform: %s"),bGood?TEXT("ok"):TEXT("FAIL"),What));bOk&=bGood;};
+ Check(!PutsDownUnread(true,false,true),TEXT("Natural rhythm turned on from F10: an open F10 menu or sheet stays open (Tom 12 Nov)"));
+ Check(PutsDownUnread(true,true,true)&&!PutsDownUnread(true,true,false),TEXT("a run nobody plays (-S47NaturalNight) still puts an open sheet down"));
+ Check(!PutsDownUnread(false,true,true)&&!PutsDownUnread(false,false,true),TEXT("without Natural rhythm nothing is put down"));
+ return bOk;
+}
+
 void FS47DevFreeform::Stop()
 {
  // A new game or the title: the session these were set on has gone.
- Waiting.Reset();bNatural=false;Speed=SpeedUsed=1;Holding.Empty();bFlagRead=false;
+ Waiting.Reset();bNatural=false;bUnattended=false;Speed=SpeedUsed=1;Holding.Empty();bFlagRead=false;
  if(EyeGlintClear)EyeGlintClear();
  if(TripoNewClear)TripoNewClear();
  if(WorldFixesClear)WorldFixesClear();
@@ -1753,7 +1763,10 @@ void FS47DevFreeform::Step(double Dt)
  // NIGHT-20261110: a sheet the night puts in front of the player (the note on the desk) holds the night until it is read; the card player reads it and puts it down.
  {
   static double ModalHeld=0;
-  if(bNatural&&M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&M->ModalOpen()&&M->UI){ModalHeld+=FApp::GetDeltaTime();if(ModalHeld>6){ModalHeld=0;UE_LOG(LogS47DevFreeform,Display,TEXT("S47: natural night: a sheet lay open 6 s with nobody at it; put down"));M->UI->Close();}}
+  // F10-CLOSES-20261112 (Tom: "the F10 menu closes by itself after a few seconds"): only a run nobody plays (-S47NaturalNight from
+  // the command line) has its sheets put down. With Natural rhythm turned on from F10 the player is there, and this closed F10
+  // itself, the truck's menu and every sheet after six seconds.
+  if(PutsDownUnread(bNatural,bUnattended,M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&M->ModalOpen()&&M->UI)){ModalHeld+=FApp::GetDeltaTime();if(ModalHeld>UnreadSeconds){ModalHeld=0;UE_LOG(LogS47DevFreeform,Display,TEXT("S47: natural night: a sheet lay open 6 s with nobody at it; put down"));M->UI->Close();}}
   else ModalHeld=0;
  }
  if(!Session())return;
@@ -1764,7 +1777,7 @@ void FS47DevFreeform::Step(double Dt)
   double Flag=0;
   if(FParse::Value(FCommandLine::Get(),TEXT("S47NaturalNight="),Flag)&&DevRun())
   {
-   Speed=FMath::Clamp(Flag,1.,60.);SetNatural(true);
+   Speed=FMath::Clamp(Flag,1.,60.);bUnattended=true;SetNatural(true);
    if(Menu)Menu->Relabel(TEXT("Natural rhythm: off"),TEXT("Natural rhythm: ON"));
    // -S47NaturalDay=2: begin at 17:00 on that day, past the first night's grace, with every rule live. Nothing else is set.
    int32 FromDay=0;
