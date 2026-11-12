@@ -7,6 +7,7 @@
 #include "S47SaroClip.h"
 #include "S47Three.h"
 #include "S47TownLayer.h"
+#include "S47TownSites.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "CollisionQueryParams.h"
@@ -135,6 +136,37 @@ namespace
   }
   return true;
  }
+ // BLOCKERS-20261109 (temp:*): a turned M4 site is held by strips across x (S47TownSites::Footprint, StripM 1.5 m), a staircase round the
+ // turned box that stands out of its real walls by up to one strip. The walker is held by that approximation on purpose, so a temp: box of
+ // a site that does not stand square is measured one strip wider. Square sites (and the school's model walls) keep the plain pad.
+ double TempStrip(const FBlocker& B)
+ {
+  constexpr double StripM = 1.5;
+  TArray<FString> Part;
+  if (B.Kind != TEXT("walk") || !B.Id.StartsWith(TEXT("temp:"))) return 0;
+  B.Id.ParseIntoArray(Part, TEXT(":"));
+  if (Part.Num() < 3) return 0;
+  for (const S47TownSites::FSite& Site : S47TownSites::Sites())
+  {
+   if (Site.Id != Part[1]) continue;
+   const double Turn = FMath::Fmod(FMath::Abs(Site.Yaw), 90.0);
+   return (Turn < 1e-6 || Turn > 90 - 1e-6) ? 0 : StripM;
+  }
+  return 0;
+ }
+ // The nearest thing drawn to a flagged box (its name and the gap in metres): the list then says what class of box it is and what stands by it.
+ FString NearestDrawn(const TArray<FDrawn>& Things, const FBlocker& B)
+ {
+  double Best = 1e18; FString Name;
+  for (const FDrawn& D : Things)
+  {
+   if (D.Box.Max.Y - D.Box.Min.Y < .15) continue;
+   const double Dx = FMath::Max3(D.Box.Min.X - B.MaxX, B.MinX - D.Box.Max.X, 0.0), Dz = FMath::Max3(D.Box.Min.Z - B.MaxZ, B.MinZ - D.Box.Max.Z, 0.0);
+   const double Gap = FMath::Sqrt(Dx * Dx + Dz * Dz);
+   if (Gap < Best) { Best = Gap; Name = D.Name; }
+  }
+  return Name.IsEmpty() ? FString(TEXT("nothing drawn near")) : FString::Printf(TEXT("nearest drawn: %s, %.1f m off"), *Name, Best);
+ }
  // A walk area's name for the area the player is in, and its drive leg's.
  FString WalkOf(const FString& Area) { return Area == TEXT("diner") ? FString(TEXT("road")) : Area; }
 }
@@ -255,9 +287,10 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
   if (!bGround) { ++Away; continue; }
   ++Seen;
   // Whatever is drawn standing within Pad of a point: a small thing taller than a decal, or a standing face of a big mesh.
+  const double Slack = Pad + TempStrip(Bk);
   const auto DrawnAt = [&](double PX, double PZ)
   {
-   const FBox2D Sq(FVector2D(PX - Pad, PZ - Pad), FVector2D(PX + Pad, PZ + Pad));
+   const FBox2D Sq(FVector2D(PX - Slack, PZ - Slack), FVector2D(PX + Slack, PZ + Slack));
    const FIntPoint GA = CellOf(Sq.Min.X, Sq.Min.Y, Cell), GB = CellOf(Sq.Max.X, Sq.Max.Y, Cell);
    for (int32 GX = GA.X; GX <= GB.X; ++GX) for (int32 GZ = GA.Y; GZ <= GB.Y; ++GZ)
     if (const TArray<int32>* In = Grid.Find(FIntPoint(GX, GZ)))
@@ -314,7 +347,7 @@ TArray<FBlocker> Run(US47Main* M, double Pad, TArray<FString>& Lines)
     continue;
    }
    FBlocker Found = Bk;
-   Found.Id += FString::Printf(TEXT(" (%d%% of its edge bare, at x %.2f..%.2f z %.2f..%.2f)"), Bare * 100 / Open, BareBox.Min.X, BareBox.Max.X, BareBox.Min.Y, BareBox.Max.Y);
+   Found.Id += FString::Printf(TEXT(" (%d%% of its edge bare, at x %.2f..%.2f z %.2f..%.2f; %s)"), Bare * 100 / Open, BareBox.Min.X, BareBox.Max.X, BareBox.Min.Y, BareBox.Max.Y, *NearestDrawn(Drawn, Bk));
    Out.Add(Found);
   }
  }
