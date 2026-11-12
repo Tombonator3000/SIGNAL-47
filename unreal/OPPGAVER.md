@@ -2,6 +2,10 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## Dagskift 12. november til 16:00, Claude Code
+
+Kopier: `~/SIGNAL-47` (Claude, `claude/story-on-freeform`, koordinator, bygg og prøver) og `~/SIGNAL-47-cosmic` (Codex). Skriveagenter i egne worktrees, én om gangen med motor. Lærdom: legg ikke en kommando i kø mens en vaktet kjøring går, og kjør Blender gjennom `q.py`; begge stopper prøver med «contention». Ferdig å rydde: ingen agent-worktrees står igjen.
+
 ## Dagskift 9. november til 20:00, Claude Code
 
 Tom ca. 08:30: fortsett til kl. 20 med ultracode og agenter (kvoten nullstilles da). Kopier: `~/SIGNAL-47` (Claude, `claude/day-20261109`, koordinator, bygg og installasjon), `~/SIGNAL-47-cosmic` (Codex), og to agent-worktrees (øyeglimt på alle aliens; UFO-lys med skimring). Seks patch-agenter uten egen kopi tar M7-pakkene A, B1, B2, C, D og E fra gjennomgangen (planen og funnene i scratchpad `m7plan.md` og `m7audit.json`), med faste fileiere. Én tung motorjobb om gangen via `q.py`.

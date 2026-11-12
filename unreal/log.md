@@ -2319,3 +2319,13 @@ NEW STORY starter nå en Freeform-økt merket som Story (`storyDirector{v:1}`), 
 - 22:00 Cosmos-rekvisitter i butikken når de finnes (18 deler, `Tools/cosmosshop`), Blender-kassaapparatet tatt ut. Selvtest OK 4898 med og uten delene. `4cc874f3`.
 - 22:10 Tom: ekte 1980-tallsfoto som mål (tre målbilder utenfor Git); stjernehimmelen skal ikke endres.
 - 23:00 STORY-ON-FREEFORM-01 steg 5: `FS47StoryScene`, beat `scene`, D01 ringer på OPS-telefonen; ingen forgjenger på Story-natt (Tom: spilleren er Reyes). `S47StationLook` (bildetone, tegnes når `M_StationLook` finnes). Selvtest OK 4904. `c49017a8`. Regresjon avbrutt av samtidig motorjobb; kjøres på nytt.
+
+## 2026-11-12
+
+- 09:30 Dagskift til 16:00 (Tom). Køskriptet `q.py` venter på opptatt motor og Toms spill, holder 20 s pause mellom jobber og starter aldri en lang jobb på nytt.
+- 10:00 GAMEPLAY-LOOP-01: kortspilleren tar saksløkken gjennom en naturlig natt: to jobber, avvik, begge spolene, saken åpnet, pakken arkivert, kontrollforsøk kjørt og resultatark hentet, neste forsøk venter på sitt vindu.
+- 10:30 FIX10-10: strømbrudd låser materen (aggregat eller reparasjon, ellers fylkets mannskap etter 180 spillminutter, ca. 12 min om natta); stasjonsfiler forblir merket til de åpnes. POWER-CHOICE: sabotasjen gir spor og risiko ved trafoen, aggregatet bråker og trekker oppmerksomhet.
+- 11:00 PLAY-31-34 rørgnist, FIX10-3 terminalhint (25 funn), STORY steg 6 (ubesvart samtale trekkes tilbake, papirer til notatboka), SHOT-BEAT-01, HUD-frekvens, østfløyens bryter, FIX10-9 (skikkelse fra vinduet, egne notater sjekkes mot antenneloggen), T16-17 (gårdshuset, stedene gir saksspor), CRT-reserveringer.
+- 12:00 GAS-STATION-LIFT-01: ChatGPT-teksturer i stasjonen via `gs_photo.py` (modellkilde utenfor Git); gulvfargen tilpasset målbildet; Tom beholdt gammelt trepanel.
+- 12:10 Tom: fast byggeregel for undersøkelse, sniking, skjul og flukt (AGENTS.md); skolen V2 som plan, blokkmodell med rutesjekk 7/7.
+- 13:20 Selvtest 4934 OK, regresjon 251 PASS. To regresjoner falt på egen kø: vakten regner et ventende skall med byggeskript eller Blender i argumentene som tung jobb.
