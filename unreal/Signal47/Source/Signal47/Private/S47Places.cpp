@@ -792,7 +792,8 @@ void FS47Places::FillMapAt(FS47MapView& View,double Now) const
  {
   const FBearing& B=Fixes[I];
   // D45-20261110: "Day 3 slip, 21:40", not "D3" (it read as a grid square). The pin board leaves out what starts with D: still so.
-  FS47MapSector S;S.Az=B.Az;S.Spread=B.Spread;S.Label=B.bCar?FString::Printf(TEXT("Day %d truck"),B.Day):FString::Printf(TEXT("Day %d slip"),B.Day);
+  // FIX10-9 (→ M3): a line pencilled from a SARO window (FS47Happenings, the figure on the rise; Target WindowTarget) is the eye's, not the truck's.
+  FS47MapSector S;S.Az=B.Az;S.Spread=B.Spread;S.Label=!B.bCar?FString::Printf(TEXT("Day %d slip"),B.Day):B.Target==WindowTarget?FString::Printf(TEXT("Day %d window"),B.Day):FString::Printf(TEXT("Day %d truck"),B.Day);
   // NIGHT-20261110: the pencilled wedge carries the hour the slip was taken (as the slip has it); an older bearing has none.
   if(B.Clock>=0)S.Label+=TEXT(", ")+SlipClock(B.Clock);
   S.bFrom=B.bCar;S.FromX=B.FromX;S.FromZ=B.FromZ;
@@ -1033,6 +1034,15 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
   const FString Calm=NeedleReading(TEXT("All steel; the needle follows the tower and nothing else."),false),Stirred=NeedleReading(TEXT("All steel; the needle follows the tower and nothing else."),true);
   Check(Calm==TEXT("All steel; the needle follows the tower and nothing else.")&&!Calm.Contains(TEXT("settle"))&&Stirred.StartsWith(Calm)&&Stirred.Contains(TEXT("will not settle"))&&!Stirred.ToLower().Contains(TEXT("alien")),
    TEXT("the needle is calm with nothing near and will not settle after something happened near"));
+  {
+   // FIX10-9 (→ M3): a figure seen from a SARO window is a line from SARO on the map, labelled as the window's, and it crosses a truck's.
+   FS47Places Pane(nullptr);Pane.Begin(nullptr);
+   const bool bPane=Pane.AddCarFix(Sx,Sz,110,WindowTarget,Clock,4)&&Pane.AddCarFix(Tx,Tz,45,TEXT("omen:a"),Clock+60,4);
+   FS47MapView PaneView;Pane.FillMapAt(PaneView,Clock+120);
+   const bool bLabel=PaneView.Sectors.ContainsByPredicate([](const FS47MapSector& X){return X.Label.StartsWith(TEXT("Day 4 window"));})&&PaneView.Sectors.ContainsByPredicate([](const FS47MapSector& X){return X.Label.StartsWith(TEXT("Day 4 truck"));});
+   Check(bPane&&bLabel&&Pane.Bearings()[0].bCar&&FMath::IsNearlyEqual(Pane.Bearings()[0].FromX,Sx,.11)&&!Dosed(Pane.Bearings()[0],Clock+60),
+    TEXT("FIX10-9: a figure seen from a SARO window is a line from SARO on the map, \"Day N window\", beside a truck's (no dose: no place)"));
+  }
   Check(Kept.Bearings().Num()==2&&K.bCar&&FMath::IsNearlyEqual(K.FromX,Tx+40,.11)&&FMath::IsNearlyEqual(K.FromZ,Tz-30,.11)&&FMath::IsNearlyEqual(K.Clock,Clock+120,.5)&&FMath::IsNearlyEqual(K.Until,ColdAt(Clock),.5),
    TEXT("a bearing's clock, its noon and the truck's place survive a Continue"));
  }

@@ -457,6 +457,14 @@ public:
  // At SARO (asked from Step once a second, D46-20261110): every developed photograph from a night out there, trip camera frame and retrieved logger tape not
  // asked yet, the newest first, at most MostAskedAtOnce at a time. The number asked.
  int32 AskWhatCameBack();
+ // FIX10-9 (→ M3, "mer å merke for den som blir inne"): what the player logged by hand in the notebook in a night's dark hours
+ // (FS47NightLog::LogOwn, EVENTS) is a time too. Once that night is over (06:00) and the player is at SARO, OPS sets one of them against
+ // the array's log, the same question and the same telex as a photograph's: the first in the same minute as something the array
+ // caught, otherwise the night's first. Asked once a night ("own-N"), only for the night just over: a held night's notes, or an older
+ // save's, are never asked all at once. Pure: the index into Clocks, -1 none.
+ static int32 OwnNoteFor(const TArray<double>& Clocks,const TArray<FArrayMark>& Marks,int32 Night);
+ static FString OwnNoteId(int32 Night){return FString::Printf(TEXT("own-%d"),Night);}
+ static constexpr const TCHAR* OwnNoteWhat=TEXT("your own note in the notebook");
  double MinuteLook=0; // D46-20261110: seconds since AskWhatCameBack was last tried at SARO
  // OPS (FS47FreeformDirector::RegisterFieldRecord): a developed photograph from one of the night's happenings out there is a field
  // record the station pays for once, as field money under the week's cap (EarnSide, FieldRecordPay). -1: refused (not developed, not

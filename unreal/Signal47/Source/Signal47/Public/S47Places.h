@@ -119,6 +119,9 @@ public:
  // from the truck toward the same thing replaces it; a few kept per target. True when it is a new line on the map.
  static constexpr double CarSpread=8,CarApart=300;
  static constexpr int32 MaxFixes=12;
+ // FIX10-9 (→ M3): the same kind of line from SARO itself, pencilled from a control room window toward a figure seen on the rise
+ // (FS47Happenings): its target, so that the map says "Day N window" and never doses the counter (no place).
+ static constexpr const TCHAR* WindowTarget=TEXT("window:figure");
  bool AddCarFix(double FromX,double FromZ,double Az,const FString& Target,double Clock,int32 Day);
  // FillMap with a clock: what is live, faded as it cools, the known places inside a sector marked, and where lines cross.
  void FillMapAt(FS47MapView& View,double Now) const;

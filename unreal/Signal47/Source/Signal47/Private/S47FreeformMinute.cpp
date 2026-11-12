@@ -13,6 +13,7 @@
 #include "S47Happenings.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47NightLog.h"
 #include "S47Places.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47FreeformMinute, Log, All);
@@ -177,6 +178,19 @@ int32 FS47FreeformSession::AskWhatCameBack()
   int32 Peak=0;for(int32 I=1;I<T.Levels.Num();++I)if(T.Levels[I]>T.Levels[Peak])Peak=I;
   Due.Emplace(T.Id,TEXT("the field logger's loudest minute"),T.Start+Peak*60.+30.);
  }
+ // FIX10-9 (→ M3): the player's own note from the night just over (OwnNoteFor), once that night has ended at 06:00.
+ if(NightLog)
+ {
+  const TArray<double> OwnAt=NightLog->OwnClocks();
+  const int32 NightNow=NightOf(WorldClock);
+  Look+=OwnAt.Num()*17+NightNow*5+(FMath::Fmod(WorldClock,86400.)>=6*3600.?1:0);
+  for(int32 OwnNight=FMath::Max(1,NightNow-1);OwnNight<=NightNow;++OwnNight)
+  {
+   if(WorldClock<FS47NightLog::SixOf(OwnNight)||AskedSameMinute(OwnNoteId(OwnNight)))continue;
+   const int32 Pick=OwnNoteFor(OwnAt,ArrayMarks,OwnNight);
+   if(Pick>=0)Due.Emplace(OwnNoteId(OwnNight),OwnNoteWhat,OwnAt[Pick]);
+  }
+ }
  if(Look==AskLook&&PrimeBefore<0)return 0;
  AskLook=Look;
  if(PrimeBefore>=0)
@@ -190,6 +204,19 @@ int32 FS47FreeformSession::AskWhatCameBack()
  for(const FAsk& A:Due){if(N>=MostAskedAtOnce)break;N+=AskSameMinute(A.Id,A.Clock,A.What)?1:0;}
  if(N>0)AskLook=-1; // the rest next time
  return N;
+}
+int32 FS47FreeformSession::OwnNoteFor(const TArray<double>& Clocks,const TArray<FArrayMark>& Marks,int32 Night)
+{
+ // Only what was noted in that night's dark hours (19:00 to 06:00); the first in the same minute as the array, else the first noted.
+ int32 First=-1,Same=-1;
+ for(int32 I=0;I<Clocks.Num();++I)
+ {
+  const double C=Clocks[I];
+  if(!S47FreeformMinuteLocal::NightHour(C)||NightOf(C)!=Night)continue;
+  if(First<0||C<Clocks[First])First=I;
+  if(SameMinute(Marks,C)&&(Same<0||C<Clocks[Same]))Same=I;
+ }
+ return Same>=0?Same:First;
 }
 int32 FS47FreeformSession::RegisterNightPhoto(const FString& ShotId,double ShotClock,bool bDeveloped,const FString& Title)
 {
@@ -280,6 +307,25 @@ bool FS47FreeformSession::MinuteSelfTest(TArray<FString>& Lines)
    &&S.RegisterNightPhoto(TEXT("F-0020"),Night4+12*3600.,true,TEXT("Kodak"))==-1&&S.RegisterNightPhoto(TEXT("F-0021"),Shot,false,TEXT("Kodak"))==-1&&S.RegisterNightPhoto(TEXT("F-0022"),Shot+60,true,TEXT("Kodak"))==0,
    TEXT("a night photograph registered at OPS pays once, under the week's $35 cap (then nothing); undeveloped or from no night out there it is refused"));
   S.Stop();R.Stop();
+ }
+ {
+  // FIX10-9 (→ M3): what the player noted by hand from inside on night 4 (21:30, 22:41 and 23:50; one at 07:10 the morning after and
+  // one on night 3 are not that night's): the one in the same minute as the array's catch (22:40) is asked, YES, a record of OUT ON
+  // THE LAND that strikes Animals and weather; with nothing caught, the night's first, NO, strikes nothing. Once a night.
+  FS47FreeformSession S(nullptr);S.Begin(nullptr);S.Tutorial=0;
+  S.WorldClock=Night4+22*3600.+40*60.;S.DayNumber=4;
+  S.RecordEvidence(TEXT("landing_logged_d4"),TEXT("At 22:40 the array logged something low on the horizon coming down, about 110 degrees from SARO, give or take 40."));
+  const TArray<double> Notes={Night4+21*3600.+30*60.,Night4+22*3600.+41*60.,Night4+23*3600.+50*60.,Night4+31*3600.+10*60.,Night4-86400.+22*3600.};
+  const int32 Pick=OwnNoteFor(Notes,S.ArrayLog(),4);
+  const int32 Quiet=OwnNoteFor(Notes,TArray<FArrayMark>(),4);
+  const int32 NoNight=OwnNoteFor(TArray<double>{Night4+12*3600.,Night4+31*3600.+10*60.},S.ArrayLog(),4);
+  S.WorldClock=FS47NightLog::SixOf(4)+600;
+  const bool bYes=Pick>=0&&S.AskSameMinute(OwnNoteId(4),Notes[Pick],OwnNoteWhat)&&S.HasFinding(TEXT("minute_yes_own-4"))&&S.AskedSameMinute(OwnNoteId(4))&&!S.AskSameMinute(OwnNoteId(4),Notes[0],OwnNoteWhat);
+  const auto* Land=S.CaseFile().Get(FS47FreeformCases::LandLine);
+  const bool bTelex=S.TelexQueue().Num()==1&&S.TelexQueue()[0].Page.Contains(TEXT("YOUR OWN NOTE IN THE NOTEBOOK"))&&S.TelexQueue()[0].Page.Contains(TEXT("SAME MINUTE ON ARRAY: YES"))&&!S.TelexQueue()[0].Page.Contains(TEXT("47"));
+  Check(Pick==1&&Quiet==0&&NoNight==-1&&bYes&&Land&&Land->bOpen&&Land->Leads.Contains(TEXT("minute_yes_own-4"))&&S.CaseFile().Excluded(FS47FreeformCases::LandLine,0)&&bTelex&&FieldRecordKey(TEXT("minute_yes_own-4")),
+   TEXT("FIX10-9: a note logged by hand from inside in the array's minute is asked once the night is over: YES on the telex, a record of OUT ON THE LAND, Animals and weather struck; nothing caught, the night's first; never the morning or another night"));
+  S.Stop();
  }
  {
   // An older save (no "minutes"): the array's log read again from its own records; what came back before is not asked all at once.
