@@ -1371,7 +1371,8 @@ bool FS47FreeformSession::StartControl()
  {J->CaptureControl.Begin(J->Id+TEXT("/control"),true,{});if(LiveCapture)LiveCapture->Stop();}
  if(J->Phenomenon==TEXT("wrong_source")){J->BeamPoint=0;J->BeamAz.Reset();J->BeamEl.Reset();J->BeamAmplitude.Reset();J->bBeamVerified=false;PointBeamControl();Changed(TEXT("TRACKING (right-hand PC): West, east and centre are measured automatically. Wait for completion, then open DAILY WORK at OPS (corner PC), select this job and press Compare and register the retained instrument measurements."));}
  else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("RECEIVER RACK: Checking the master register automatically. When complete, collect the duplicate at the PRINTER; the original is retained."):PlainAnomaly(*J)?TEXT("RECEIVER RACK: Optional 8-second control running. The job does not need it; the reel deck is next.")
-  :TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. When complete, follow the job hint to OPS for clock measurements or the REEL DECK on the wall table for audio comparison."));return true;
+  :TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. When complete, follow the job hint to OPS for clock measurements or the REEL DECK on the wall table for audio comparison."));
+ return true;
 }
 void FS47FreeformSession::SeekAudio(double At){if(!FMath::IsFinite(At))return;CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();AudioCursor=FMath::Clamp(At,0.,AudioSourceIndex==0?18.:8.);bAudioPlaying=false;Changed();}
 bool FS47FreeformSession::MarkAudioAt(double At)
