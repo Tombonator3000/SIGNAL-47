@@ -982,7 +982,7 @@ void FS47FreeformSession::StepWork(double Dt)
  S47CaptureSound::FFrame CaptureInput;
  if(M&&M->Story){CaptureInput.Frequency=M->Story->Rx.Frequency;CaptureInput.Gain=M->Story->Rx.Gain;CaptureInput.Bandwidth=M->Story->Rx.Bandwidth;CaptureInput.Quality=M->Story->Rx.Quality(EffectiveProfile(*J))*ReceiverReception();}
  if(J->Stage==EJobStage::Integrating&&J->CaptureOriginal.Eligible()&&(!PointReady()||Settle<1||!M||!M->Story||!M->Story->Rx.Pass(EffectiveProfile(*J))))InterruptCapture(TEXT("Receiver lock interrupted; retained measurements use compatible reference sound."));
- if(J->Stage==EJobStage::Pointed&&DetectedJob!=J->Id&&ReceiverReady()&&AnomalyAhead()){DetectedJob=J->Id;Changed(TEXT("ANOMALY DETECTED. RECEIVER (centre PC): Press START RECORDING."));}
+ if(J->Stage==EJobStage::Pointed&&DetectedJob!=J->Id&&ReceiverReady()&&AnomalyAhead()){DetectedJob=J->Id;Changed(TEXT("ANOMALY DETECTED. RECEIVER (centre PC): Press START RECORDING."));if(M)S47Thoughts::Later(TEXT("anomaly"),1.5);} // UI-20261112: the player's own thought as the anomaly shows
  if(J->Stage==EJobStage::Pointed||J->Stage==EJobStage::Integrating)
  {
   Settle=PointReady()?FMath::Min(1.,Settle+Dt):0;
@@ -1283,7 +1283,7 @@ bool FS47FreeformSession::CollectChart()
  if(Kind==0)
  {
   J->Stage=EJobStage::Recorded;J->bPrinted=true;PrintJob(false);
-  if(M&&J->bAnomaly)S47Thoughts::Later(TEXT("anomaly"),1.5); // UI-20261112 (Tom): the chart in hand shows the discrepancy: the player's own thought, once the sheet is put down
+  // (the anomaly thought now comes as ANOMALY DETECTED shows, GAMEPLAY-LOOP-01; the plain anomaly has no chart)
   // CHAIN-5B-20261109: under the chart, once a night, a line of the array's own log about what is out there tonight (WordOfTonight).
   if(Happenings){const FString Said=Happenings->WordOfTonight(TEXT("printer"));if(!Said.IsEmpty()&&M&&M->UI)M->UI->Toast(Said,8);}
  }
