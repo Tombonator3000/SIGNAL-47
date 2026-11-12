@@ -5542,7 +5542,7 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
    FS47Happenings Older(nullptr);Older.Begin(S47J::Read(S47J::Write(Old)));
    const FString Way=S47Hap::PaneWay(TEXT("east-northeast"),47.2),Way2=S47Hap::PaneWay(TEXT("south"),181.6);
    Check(B.Now.bInside&&B.Now.bSeen&&Older.Now.Id==TEXT("horizon_figure")&&!Older.Now.bInside&&Way==TEXT("east-northeast, about 48 degrees from SARO")&&Way2==TEXT("south, about 182 degrees from SARO")&&!S47Hap::Concluding(Way)&&S47Hap::PaneWatchS>=10&&S47Hap::PaneWatchS<60,
-    TEXT("FIX10-9: the figure on the rise seen from a SARO window keeps its bearing from SARO in the record (never 47), stays a long look, and an older save reads as before"));
+    TEXT("FIX10-9: the figure on the rise seen from a SARO window keeps its bearing from SARO in the record (never the barred number), stays a long look, and an older save reads as before"));
   }
   A.Now=FActive();A.Now.Id=TEXT("road_glimpse");A.Now.Variant=TEXT("crawler");A.Now.Len=3;
   FS47Happenings C(nullptr);C.Begin(S47J::Read(S47J::Write(A.Save())));
