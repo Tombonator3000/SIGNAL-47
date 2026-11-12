@@ -1,6 +1,8 @@
 #include "S47Web.h"
 #include "S47Main.h"
 #include "S47RoomLights.h"
+#include "S47Freeform.h"
+#include "S47Flow.h"
 
 #include "Components/PointLightComponent.h"
 #include "Components/RectLightComponent.h"
@@ -226,7 +228,19 @@ void AS47Web::UpdateFixtureLighting()
 			const auto& Drivers = P.bDesk ? LampLights : CeilingLights;
 			const TArray<float>& Base = P.bDesk ? LampBase : CeilingBase;
 			K *= Drivers.IsValidIndex(P.Driver) && Drivers[P.Driver].IsValid() && Drivers[P.Driver]->IsVisible() ? Drivers[P.Driver]->Intensity / FMath::Max(0.001f, Base[P.Driver]) : 0.f;
-			if (P.Tube >= 0 && !TubeLit(P.Tube)) K = 0;
+			if (P.Tube >= 0)
+			{
+				// PLAY-31-34: a tube that breaks for good while the room watches sputters out (three flashes at
+				// 2.5 a second, or one slow fade with calm flashes), then its light and glass stay dark. Only
+				// a break seen after the first update sputters; a mended tube (spare pair) strikes as usual.
+				const bool bNowBroken = Main && Main->Freeform && Main->Freeform->TubeBroken(P.Tube);
+				const double Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+				if (P.bBreakSeen && bNowBroken && !P.bBroken) P.BrokeAt = Now;
+				P.bBreakSeen = true; P.bBroken = bNowBroken;
+				const bool bCalm = Main && Main->Flow && Main->Flow->bCalmFlash;
+				const bool bPowered = TubePowered.IsValidIndex(P.Tube) && TubePowered[P.Tube];
+				if (!TubeLit(P.Tube)) K = bNowBroken && bPowered ? K * FS47TubeFlicker::BreakLevel(Now - P.BrokeAt, bCalm) : 0.f;
+			}
 		}
 		// Mask only the finished ceiling output. The upstream drivers still represent
 		// supply/flicker for CRTs, instruments and Story's power snapshots.
@@ -243,7 +257,15 @@ void AS47Web::UpdateFixtureLighting()
 			}
 		}
 		// Fluorescent tubes strike on and die off on real switch events (S47TubeFlicker).
-		if (!P.bDesk) K = P.Flicker.Apply(GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0, K, uint32(P.Node));
+		// A breaking tube's sputter is its own flicker: the ballast still follows it, but its die-off blips would
+		// add flashes over the 3 a second limit, so the sputter is what is shown.
+		if (!P.bDesk)
+		{
+			const double Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+			const float Shown = P.Flicker.Apply(Now, K, uint32(P.Node));
+			const bool bSputter = P.bBroken && Now - P.BrokeAt < FS47TubeFlicker::BreakSecs(false) + .5;
+			if (!bSputter) K = Shown;
+		}
 		L->SetVisibility(K > 0.0001f);
 		// Obj.SetColor can replace a diffuser with its private MID during a story flicker.
 		// Follow the material actually on the mesh, including a replacement at unchanged power.

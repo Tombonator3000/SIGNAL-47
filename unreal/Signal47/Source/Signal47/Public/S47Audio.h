@@ -90,6 +90,8 @@ public:
 
 	// ---------- the prologue's names (Unreal positions, file names) ----------
 	void Play(const FString& Name, float Gain = 1.f, const FVector& At = FVector::ZeroVector, float Rate = 1.f);
+	// PLAY-31-34: whether a recording by this file name (radio_crackle_short) was found on disk, bought ones included
+	bool HasRecording(const FString& Name) const { return ByFile.Contains(Name); }
 	void Loop(const FString& Key, const FString& Name, float Gain = 1.f, const FVector& At = FVector::ZeroVector);
 	void Stop(const FString& Key, float Fade = 0.05f); // stop(key, fade)
 	void Pour(const FVector& At);
