@@ -1,0 +1,40 @@
+{
+ "_doc": "ANIM-TRY-20261112: what is taken from Free100Animations (names only, no licensed data). 'copy' are the package folders import.sh copies from the unpacked project into the throwaway 5.8 project; migrate.py moves 'moves' there. 'clips' maps our clip names (ClipFile in S47CreatureClips.cpp) to the migrated source sequence; 'extras' are retargeted under their own names for later, not read by FS47ClipBank. 'targets' are the skeletal meshes retarget.py makes an IK Rig and an IK Retargeter for.",
+ "dest": "/Game/Licensed/Free100",
+ "copy": ["Characters/Mannequins/Meshes", "Characters/Mannequins/Materials", "Characters/Mannequins/Textures",
+          "Characters/Mannequins/Rigs/PA_Mannequin.uasset", "Characters/Mannequins/Anims/Unarmed/MM_Idle.uasset",
+          "Characters/Mannequins/Anims/Unarmed/Walk", "Characters/Mannequins/Anims/Unarmed/Jog", "ThirdPerson/Anims/100"],
+ "moves": {
+  "/Game/Characters/Mannequins": "/Game/Licensed/Free100/Mannequins",
+  "/Game/ThirdPerson/Anims/100": "/Game/Licensed/Free100/Anims100"
+ },
+ "source_mesh": "/Game/Licensed/Free100/Mannequins/Meshes/SKM_Manny_Simple",
+ "source_skeleton": "/Game/Licensed/Free100/Mannequins/Meshes/SK_Mannequin",
+ "clips": {
+  "walk": "/Game/Licensed/Free100/Mannequins/Anims/Unarmed/Walk/MF_Unarmed_Walk_Fwd",
+  "idle": "/Game/Licensed/Free100/Mannequins/Anims/Unarmed/MM_Idle",
+  "run": "/Game/Licensed/Free100/Mannequins/Anims/Unarmed/Jog/MF_Unarmed_Jog_Fwd",
+  "sit": "/Game/Licensed/Free100/Anims100/CityAnims/AS_SittingOnBench"
+ },
+ "extras": {
+  "clean_counter": "/Game/Licensed/Free100/Anims100/RPG-NPCAnims/AS_BartenderCleanCounter",
+  "clean_mug": "/Game/Licensed/Free100/Anims100/RPG-NPCAnims/AS_BartenderCleanMug",
+  "pour": "/Game/Licensed/Free100/Anims100/RPG-NPCAnims/AS_BartenderPourDrink",
+  "check_watch": "/Game/Licensed/Free100/Anims100/CityAnims/AS_CheckWatch",
+  "warm_hands": "/Game/Licensed/Free100/Anims100/SurvivalAnims/AS_WarmHands",
+  "talk_hands": "/Game/Licensed/Free100/Anims100/CityAnims/AS_TalkingWithHands",
+  "inspect": "/Game/Licensed/Free100/Anims100/WorldInteractionAnims/AS_Inspect"
+ },
+ "gaits": ["walk", "run"],
+ "targets": {
+  "deputy": {"mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_deputy", "rig": "tripo23", "first": true},
+  "attendant": {"mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_attendant", "rig": "tripo23"},
+  "souvenir_man": {"mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_souvenir_man", "rig": "tripo23"},
+  "waitress": {"mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_waitress", "rig": "tripo23"},
+  "patron": {"mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_patron", "rig": "tripo23"},
+  "nora": {"mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_nora", "rig": "tripo23"},
+  "earl": {"mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_earl", "rig": "tripo23"},
+  "radio_woman": {"mesh": "/Game/Licensed/TripoNPC/Rigged/SK_Tripo_radio_woman", "rig": "tripo23"},
+  "waitress_mh": {"mesh": "/Game/MetaHumans/MHC_Waitress/Body/SKM_MHC_Waitress_BodyMesh", "rig": "mannequin", "clips_only": ["idle"], "extras_only": ["clean_counter", "clean_mug", "pour"]}
+ }
+}
