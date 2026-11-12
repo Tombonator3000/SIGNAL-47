@@ -99,11 +99,20 @@ b=.86+.04*cl+.03*cl2+ton+.02*p2
 b*=(.80+.20*joint)
 pitm=np.clip((pits-1.35)*2.2,0,1);b*=1-.22*pitm
 chalk=np.clip((noise(n,8,8,45)-1.5)*2,0,1)
-png(OUT/'T_Lived_Block_BC.png',np.stack([b*(1-.03*chalk),b*.985,b*.95],2))
-png(OUT/'T_Lived_Block_R.png',np.clip(.84+.06*cl+.1*(1-joint),0,1))
 h=joint*1.6+.16*p2-.55*pitm+.04*cl
 dx=(np.roll(h,-1,1)-np.roll(h,1,1))*.9;dy=(np.roll(h,-1,0)-np.roll(h,1,0))*.9;l=np.sqrt(dx*dx+dy*dy+1)
-png(OUT/'T_Lived_Block_N.png',np.stack([-dx/l*.5+.5,-dy/l*.5+.5,1/l*.5+.5],2))
+painted=np.stack([b*(1-.03*chalk),b*.985,b*.95],2)
+# TEXTURES-PHOTO-20261112: Tom's photo of a painted block wall where it is at hand (photo_tex.py), in the painted one's
+# colour since BlockSaro and BlockWing tint this one texture; the painted block is what is made without the photo.
+sys.path.insert(0,str(Path(__file__).resolve().parent.parent))
+import photo_tex
+P=photo_tex.surface('lived_block',old=painted,green=-1.)
+if P:
+    png(OUT/'T_Lived_Block_BC.png',P['base']);png(OUT/'T_Lived_Block_R.png',P['rough']);png(OUT/'T_Lived_Block_N.png',P['normal'])
+else:
+    png(OUT/'T_Lived_Block_BC.png',painted)
+    png(OUT/'T_Lived_Block_R.png',np.clip(.84+.06*cl+.1*(1-joint),0,1))
+    png(OUT/'T_Lived_Block_N.png',np.stack([-dx/l*.5+.5,-dy/l*.5+.5,1/l*.5+.5],2))
 # ---- outside grime, 2048 x 2048, RGBA: bands wrap in U. 0..512: road dust rising from the foot (bottom of the band is the ground); 512..1024 rain from under a coping (top is the coping)
 #      1024..1536: rust below a fitting, wide; 1536..2048: dark damp running down from a scupper.
 N=2048;B=np.zeros((N,N,4),dtype=np.float32);vv=np.linspace(0,1,512)[:,None]

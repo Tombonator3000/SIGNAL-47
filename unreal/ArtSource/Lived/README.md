@@ -14,3 +14,11 @@ Spillerens Jeep er Toms egen Tripo-modell med Codex' kabin- og hjuldeling; kilde
 - Byggskript, blend, glb, før/etter-bilder og importrot: `~/Documents/ChatGPT/Signal 47/modeller/jeep-20261110/` (`build_jeep.py`, `render_views.py`, `import-root/`).
 - Import: `unreal/ArtSource/Lived/import_truck.sh [importrot]` kjører `run_import.py truck <rot>` bak motorreservasjonen (Nanite av, tre LOD-er, uten kollisjon) og leser `Saved/lived-truck-import.json`. Kontrakten her (`lived-truck-contract.json`) er den samme som i importroten.
 - Selvtesten `FS47Fleet::Audit` kontrollerer at begge lyktepunktene ligger på den importerte kroppen.
+
+## Fototeksturer (TEXTURES-PHOTO-20261112, 12. november 2026)
+
+`../photo_tex.py` er felles fotoinngang for byggenes teksturskript (generalisert fra bensinstasjonens `gs_photo.py`): hele blokker/fliser klippes ut, aksene som ikke fliser kryssfades, bildet gjentas til det spennet UV-ene allerede bruker, fargen kan trekkes mot den gamle malte teksturen (materialer som toner en delt tekstur), og ruhet og relieff leses fra bildet. Bildene ligger utenfor Git i `~/scratch-bm/refs/textures-20261112/` (`S47_PHOTO_DIR`); uten bilde, eller med `S47_PHOTO_OFF=1`, lages den malte teksturen som før.
+
+- SARO: `lived_tex.py` (blokkhuden ute), `../EastWing/Props/Textures/build_textures.py` (kremblokk, betong, grønn lakk, galvanisert) og `../Office/build_office.py` (vegg, takplate, gulvflis; `photo_tex.py saro` skriver de samme filene uten Blender). Kontrollrommets gulv (`vct_floor.py`) er beholdt malt: det er ett bilde av hele rommet med gangspor, brennmerker og kaffe.
+- Kjøres utenfor Blender med en Python som har numpy, for eksempel `/home/tom/stable-diffusion-webui-forge/venv/bin/python3 lived_tex.py <utmappe>`.
+- Inn i spillet: `python3 ~/.claude/skills/signal47-nattskift/scripts/q.py python3 unreal/ArtSource/run_photo_tex_import.py saro <mappe med T_Lived_Block_*.png>`. `photo_tex_import.py` legger bare PNG-ene over de eksisterende teksturassetene (samme navn, materialer og mesher urørt), beholder sRGB/komprimering og setter største størrelse: 2048 for vegger og gulv en går tett på, 1024 for små flater. Rapport i `Saved/photo-tex-import.json`.

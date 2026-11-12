@@ -158,6 +158,12 @@ TAN=mat('BinderTan',(.28,.22,.12),.80)
 LIGHT=mat('Diffuser',(.65,.62,.48),.56)
 mat('CorridorTubeWest',(.65,.62,.48),.56)
 mat('CorridorTubeEast',(.65,.62,.48),.56)
+# TEXTURES-PHOTO-20261112: Tom's photos over the painted wall, ceiling panel and floor tile where they are at hand
+# (ArtSource/photo_tex.py writes the same three files per finish; the Blender preview materials keep the painted images).
+try:
+    sys.path.insert(0,str(ROOT.parent));import photo_tex
+    print('S47PHOTO office',photo_tex.office(TEX))
+except Exception as e:print('S47PHOTO office: painted kept:',e)
 
 def xyz(p):return Vector((p[0],-p[2],p[1]))
 def active(o):

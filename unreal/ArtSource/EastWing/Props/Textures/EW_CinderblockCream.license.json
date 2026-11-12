@@ -1,6 +1,6 @@
 {
   "asset": "EW_CinderblockCream",
-  "license": "Project-owned original procedural artwork; no third-party image assets",
+  "license": "Project-owned artwork: albedo from an image generated for the project by its owner (ChatGPT, 12 Nov 2026), processed by photo_tex.py; no third-party image assets",
   "copyright": "SIGNAL / 47 project",
   "redistribution": "May accompany the project; no external purchased/Tripo content",
   "source": "build_textures.py",
@@ -17,13 +17,13 @@
   "files": {
     "BaseColor": {
       "file": "EW_CinderblockCream_BaseColor.png",
-      "sha256": "6d082eb07700900b62a13ed18be0df6a714746a087f6fef2b1f21a47dff6ed52",
+      "sha256": "826b4caa492eca4c1df3182c65b072aa442f84c5484b35e7305f0a179e1b5227",
       "color_space": "sRGB",
       "bit_depth": 8
     },
     "Roughness": {
       "file": "EW_CinderblockCream_Roughness.png",
-      "sha256": "f110814f93976f8263dca57343fb0f67a958d1aef6bad05db9c04c4d38ddcc3b",
+      "sha256": "a1b675cc0e40d18bc6ea138e78f30d4e71d6d14ebd9d690a3f56605def7fe260",
       "color_space": "linear",
       "bit_depth": 8
     },
@@ -35,24 +35,24 @@
     },
     "NormalDX": {
       "file": "EW_CinderblockCream_NormalDX.png",
-      "sha256": "0949d439d8541e8a90b84a5a0de0b7061e7d007580d04b8552fa6885b089b768",
+      "sha256": "90e374e2321af1db542c4a6f5fbd9a30c8c44ed2e7225e4ac145feb3b8fc45d9",
       "color_space": "linear",
       "bit_depth": 8
     },
     "NormalGL": {
       "file": "EW_CinderblockCream_NormalGL.png",
-      "sha256": "0d54380d0ae3151fcca5c3b40e82a46d545c1c307f3d9f61ba0249ac610ca0fc",
+      "sha256": "4d91ad567692af18b70a2622f6e1026cdf5386f2fa17a92e6f78759e8383e4cc",
       "color_space": "linear",
       "bit_depth": 8
     },
     "Height": {
       "file": "EW_CinderblockCream_Height.png",
-      "sha256": "0a5b628ccf8530830f981f9d4d9595cec17eeb1513522f3bf6275dffd7e11ad9",
+      "sha256": "896bc6efe1a5c7eb59f57dbb77d7fd0d3a0ed0a505729ee6a6684651d6b66e45",
       "color_space": "linear",
       "bit_depth": 16,
       "decode_metres": {
-        "offset": -0.0030687409453094006,
-        "scale": 0.0033504477760288864
+        "offset": -0.023546390235424042,
+        "scale": 0.03593622613698244
       }
     }
   }
