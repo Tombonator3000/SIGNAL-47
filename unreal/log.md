@@ -2329,3 +2329,4 @@ NEW STORY starter nå en Freeform-økt merket som Story (`storyDirector{v:1}`), 
 - 12:00 GAS-STATION-LIFT-01: ChatGPT-teksturer i stasjonen via `gs_photo.py` (modellkilde utenfor Git); gulvfargen tilpasset målbildet; Tom beholdt gammelt trepanel.
 - 12:10 Tom: fast byggeregel for undersøkelse, sniking, skjul og flukt (AGENTS.md); skolen V2 som plan, blokkmodell med rutesjekk 7/7.
 - 13:20 Selvtest 4934 OK, regresjon 251 PASS. To regresjoner falt på egen kø: vakten regner et ventende skall med byggeskript eller Blender i argumentene som tung jobb.
+- 15:40 Skolen V2 i Caliche (Fable): importert modell, gangsoner, to golvhøyder, taklys, tomt og lekeplass. Tom leverte 32 ChatGPT-teksturer (TEXTURES-PHOTO) og byggeregelen. Selvtest 4934 OK, regresjon 251 PASS på `abc6e124`. Ikke installert; d59 gjelder fortsatt.
