@@ -6,6 +6,7 @@
 #include "S47Rx.h"
 #include "S47FreeformJobs.h"
 #include "S47FreeformCases.h"
+#include "S47RecordsBinder.h"
 class US47Main;
 class FS47FreeformDirector;
 class FS47FreeformWorld;
@@ -129,6 +130,15 @@ public:
  void OpenArchive();
  void OpenPhotos(); // FIX-20261110: OPS / PHOTOGRAPHS, the film record and the allowance desk
  int32 ArchiveTab=0,ArchivePage=0;FString ArchivePick; // presentation only, never saved
+ // RECORDS-BINDER (-> M3): the records-room binder on paper (S47RecordsBinder.h the model, SS47Binder.h the pages; the session's
+ // part is S47FreeformBinder.cpp). OpenArchive opens it whenever the records are not on the OPS glass. BinderShow opens it at one
+ // entry ("file:station-03", "job:<id>", "case:0", "rec:<finding>"). Where it is open is presentation only; the one thing saved is
+ // when each packet went in ("binderFiled", by job id; an older save has none, and its filed pages carry their day alone).
+ void OpenBinder();
+ void BinderShow(const FString& EntryKey,int32 Page=0);
+ S47Binder::FSource BinderSource() const;
+ TSharedRef<S47Binder::FView> BinderView=MakeShared<S47Binder::FView>();
+ static bool BinderSelfTest(TArray<FString>& Lines); // the stamps across a Continue, and what the session hands the binder
  // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS. FIX10-10 (12 Nov): the files opened are saved
  // (stationFilesSeen, by key), so a released file stays marked until it is read, across days and Continue.
  uint32 StationFilesSeen=0;bool StationFileDue() const;
@@ -673,6 +683,14 @@ private:
  double SkyFaultUntil=0; // FIX10-10: game clock at which the county restores a lockout left by a passage; 0 = none
  void StepSky(double Dt);
  FString ArchiveNote;
+ // RECORDS-BINDER: the shift day and clock each packet went into the binder, by job id (saved "binderFiled").
+ struct FBinderStamp{int32 Day=0;double Clock=0;};
+ TMap<FString,FBinderStamp> BinderFiled;
+ void ShowBinder();
+ bool FileAtBinder(FString& Words);
+ void BinderRead(const FString& EntryKey);
+ void LoadBinder(const S47J::FObj& Saved);
+ void SaveBinder(const S47J::FObj& Record) const;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false,bTapePanel=false;
  bool bPowerApplied=false,bLastPower=true;
  bool bMotorFeedback=false,bPrinterFeedback=false;
