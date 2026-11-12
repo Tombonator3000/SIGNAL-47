@@ -129,7 +129,9 @@ public:
  void OpenArchive();
  void OpenPhotos(); // FIX-20261110: OPS / PHOTOGRAPHS, the film record and the allowance desk
  int32 ArchiveTab=0,ArchivePage=0;FString ArchivePick; // presentation only, never saved
- uint32 StationFilesSeen=0;bool StationFileDue() const; // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS
+ // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS. FIX10-10 (12 Nov): the files opened are saved
+ // (stationFilesSeen, by key), so a released file stays marked until it is read, across days and Continue.
+ uint32 StationFilesSeen=0;bool StationFileDue() const;
  void OpenCaseBoard(int32 Line=-1,bool bNotes=false); // D48-20261110: bNotes opens it with the case notes (traces, leads, records) unfolded
  bool PlanCaseTest(int32 Line,int32 Test);
  bool FocusFieldTest(int32 Line);
@@ -549,9 +551,15 @@ public:
  void SetPowerFault(bool bFault);
  bool PowerFault() const { return bPowerFault; }
  // FIX-20261110 (Tom, point 2): what passes over SARO takes the mains with it. Sag seconds of dips and torn screens first (time to
- // get to the standby generator), then the mains are out for Out seconds and come back by themselves. A running generator carries
- // the station through it, and the line recorder keeps writing (SkyRode: the record the passage leaves). Nothing of it is saved:
- // a passage is one sitting, and a save opened in the middle of one has its mains.
+ // get to the standby generator), then the mains are out for Out seconds. A running generator carries the station through it, and
+ // the line recorder keeps writing (SkyRode: the record the passage leaves). Nothing of the passage itself is saved.
+ // FIX10-10 (12 Nov, critics: "the power comes back by itself after barely two minutes"): when the mains try to come back, the
+ // feeder's protection locks out and leaves an ordinary feeder fault (bPowerFault, saved). The station stays dark until the
+ // generator carries it or the remote feeder (ff:feeder) is mended (FS47FreeformWorld, the existing repair); the county line crew
+ // restores it by itself SkyFaultMinutes game minutes later (SkyFaultUntil, saved), so nobody is left without a way on. Not on a
+ // Story night: there the act's own feeder_fault owns the power_fault and power_restored flags.
+ static constexpr double SkyFaultMinutes=90;
+ double SkyFaultClock() const { return SkyFaultUntil; }
  void SkyCutBegin(double Sag,double Out);
  bool SkySagging() const { return SkySag>0; }
  bool SkyMainsOut() const { return SkySag<=0&&SkyOut>0; }
@@ -644,6 +652,7 @@ private:
  US47Main* M=nullptr;
  bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false,bOldCalendar=false;
  double SkySag=0,SkySagAll=1,SkyOut=0,SkyDipAt=0,SkyDip=0,SkyDark=0;bool bSkyRode=false;int32 SkyTold=0;
+ double SkyFaultUntil=0; // FIX10-10: game clock at which the county restores a lockout left by a passage; 0 = none
  void StepSky(double Dt);
  FString ArchiveNote;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false,bTapePanel=false;
