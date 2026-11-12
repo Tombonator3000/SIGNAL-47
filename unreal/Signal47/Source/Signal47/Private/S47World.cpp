@@ -46,6 +46,7 @@
 #include "S47Night.h"
 #include "S47Obj.h"
 #include "S47OldRoad.h"
+#include "S47TownSites.h"
 #include "S47OpenLand.h"
 #include "S47RoadArea.h"
 #include "S47RoadShape.h"
@@ -1623,6 +1624,8 @@ bool US47World::OnLand(double X, double Z, const FString& InArea)
 		{
 			// SARO-GEN-RAMP-20261109: the truck ramp's open sides hold the truck, not one on foot (S47OpenLand::TruckRampSide).
 			if (!O.bCircle && A == TEXT("saro") && S47OpenLand::TruckRampSide(O.MinX, O.MaxX, O.MinZ, O.MaxZ)) continue;
+			// SCHOOL-V2 (Tom, d60: "en usynlig vegg rundt hele skolen"): a standing model's pad and yard hold the truck, not one on foot.
+			if (!O.bCircle && (A == TEXT("road") || A == TEXT("diner")) && S47TownSites::WalkOver(O.MinX, O.MaxX, O.MinZ, O.MaxZ)) continue;
 			if (O.bCircle ? FMath::Square(X - O.X) + FMath::Square(Z - O.Z) < FMath::Square(O.R + R) : X > O.MinX - R && X < O.MaxX + R && Z > O.MinZ - R && Z < O.MaxZ + R) return false;
 		}
 	}

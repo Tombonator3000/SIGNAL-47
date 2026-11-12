@@ -79,47 +79,74 @@ namespace S47TownSitesLocal
 			for (double Gx : G) { if (Gx - GapW * 50 > From) S.Walls.Add({ PX(Py) - T * .5, PX(Py) + T * .5, PZ(From), PZ(Gx - GapW * 50) }); From = Gx + GapW * 50; }
 			if (B > From) S.Walls.Add({ PX(Py) - T * .5, PX(Py) + T * .5, PZ(From), PZ(B) });
 		};
-		// the outer walls: E1 in the south (2 m), E2 west and E3 east at py 2100 (and E4 under E3)
+		// Which floor a wall holds on, by the height of the walker's feet over the ground floor (12 November, after Tom's d60: one list
+		// for both floors let nobody rail the stair well, and the basement had no south wall): G the ground floor and the yard (feet
+		// over -0.9), B the basement and the areaway (under -2.5), or every height (the shaft, the outer walls with a door on both floors).
+		constexpr double GLo = -.9, BHi = -2.5, Every = 1e9;
+		const auto Level = [&S](int32 From, double Lo, double Hi) { for (int32 I = From; I < S.Walls.Num(); ++I) { S.Walls[I].Lo = Lo; S.Walls[I].Hi = Hi; } };
+		const auto Rect = [&](double Py0, double Py1, double Px0, double Px1) { S.Walls.Add({ PX(Py0), PX(Py1), PZ(Px0), PZ(Px1) }); };
+		int32 N0 = 0;
+		// the outer walls: E1 in the south (2 m), E3 east at py 2100 with E4 under it (every height: S2 climbs along that wall), the north wall
 		AlongX(0, 0, 2800, { 1400 }, Wide);
 		AlongX(2400, 0, 2800, {});
-		AlongY(0, 0, 2400, { 2100 });
 		AlongY(2800, 0, 2400, { 2100 });
-		// the corridor's walls, K1..K8 (K9..K12 under K3/K4 and K7/K8 at py 1400 and 1700: the same rectangles serve both floors; the
-		// basement's doors at py 1400 are given as gaps too, which costs the ground floor nothing but a gap in the classrooms' wall)
-		AlongY(1200, 0, 2400, { 200, 600, 1100, 1400, 1700 });
-		AlongY(1600, 0, 2400, { 200, 600, 1100, 1400, 1700 });
+		// the west wall: E2 at py 2100 on the ground floor, whole in the basement; and the basement's south retaining wall at py 1200
+		N0 = S.Walls.Num(); AlongY(0, 0, 2400, { 2100 }); Level(N0, GLo, Every);
+		N0 = S.Walls.Num(); AlongY(0, 1200, 2400, {}); AlongX(1200, 0, 2800, {}); Level(N0, -Every, BHi);
+		// the corridor's walls: K1..K8 on the ground floor, K9..K12 in the basement, and the shaft's sides at every height
+		N0 = S.Walls.Num(); AlongY(1200, 0, 1800, { 200, 600, 1100, 1700 }); AlongY(1600, 0, 1800, { 200, 600, 1100, 1700 }); Level(N0, GLo, Every);
+		N0 = S.Walls.Num(); AlongY(1200, 1200, 1800, { 1400, 1700 }); AlongY(1600, 1200, 1800, { 1400, 1700 }); Level(N0, -Every, BHi);
+		AlongY(1200, 1800, 2400, {}); AlongY(1600, 1800, 2400, {});
 		// the wings' cross walls: D1 (px 300), D2 (800), D3 (300), D4 (2400); the basement's D5 under D3 and D6 under D4
-		AlongX(400, 0, 1200, { 300 });
-		AlongX(800, 0, 1200, { 800 });
-		AlongX(1600, 0, 1200, { 300 });
-		AlongX(400, 1600, 2800, {});
-		AlongX(800, 1600, 2800, {});
-		AlongX(1600, 1600, 2800, { 2400 });
-		// the stair's door S1a/S1b across the corridor at py 1800 and the spine wall between the flights. (The walls are one list for
-		// both floors: a rail across the well or a wall closing the nook under the upper flight would also block the flights, so the
-		// floors below sort the levels out instead: from the top landing the east half drops one onto the lower flight.)
+		N0 = S.Walls.Num();
+		AlongX(400, 0, 1200, { 300 }); AlongX(800, 0, 1200, { 800 }); AlongX(1600, 0, 1200, { 300 });
+		AlongX(400, 1600, 2800, {}); AlongX(800, 1600, 2800, {}); AlongX(1600, 1600, 2800, { 2400 });
+		Level(N0, GLo, Every);
+		N0 = S.Walls.Num(); AlongX(1600, 0, 1200, { 300 }); AlongX(1600, 1600, 2800, { 2400 }); Level(N0, -Every, BHi);
+		// the stair's doors S1a/S1b across the corridor at py 1800 and the spine wall between the flights
 		AlongX(1800, 1200, 1600, { 1400 });
 		constexpr double TopY = 1800 + 7.5 + 150, MidY = TopY + 28 * 9;   // the top landing's end, the mid landing (caliche_school.py)
 		S.Walls.Add({ PX(TopY), PX(MidY), PZ(1400) - .08, PZ(1400) + .08 });
-		// floors: the flights and the mid landing first (they win over the ground floor's rectangle), then the ground floor over the
-		// whole plan, the basement under its north half, and ramps outside the exits from the land up to the doors
+		// Tom, d60 ("fiks trappa"): the steel rail across the well's open edge on the top landing (the east half, over the lower flight),
+		// on the ground floor only; and under the upper flight the nook is walled off in the basement (no headroom there).
+		N0 = S.Walls.Num(); Rect(TopY - 5, TopY + 5, 1400, 1600); Level(N0, GLo, Every);
+		N0 = S.Walls.Num(); Rect(TopY, TopY + 10, 1200, 1400); Level(N0, -Every, BHi);
+		// the portal's wall before E1 and the pipe rails down its steps
+		Rect(-40, 0, 1100, 1300); Rect(-40, 0, 1500, 1700); Rect(-352, -40, 1094, 1098); Rect(-352, -40, 1702, 1706);
+		// E3's deck over the areaway: rails on its east side (down the steps too) and its north end, for one on the deck or in the yard
+		N0 = S.Walls.Num(); Rect(1876, 2200, 2958, 2962); Rect(2198, 2202, 2800, 2962); Level(N0, GLo, Every);
+		// E4's areaway and S2: the east retaining wall with its railing, the rail on the west side north of the building; the wall under
+		// the deck's south edge in the areaway. The stair's top (py 2620 on) is open to the yard.
+		Rect(1980, 2640, 3000, 3020); Rect(2400, 2600, 2780, 2800);
+		N0 = S.Walls.Num(); Rect(1980, 2000, 2800, 3020); Level(N0, -Every, BHi);
+		// Tom, d60 ("lag kjellervinduer"): the light wells before the basement windows, a curb and a rail round each (caliche_school.py WELLS)
+		for (const double Py : { 1400.0, 1800.0, 2300.0 }) Rect(Py - 80, Py + 80, -90, 0);            // west wall: the storage, the boiler room
+		for (const double Px : { 400.0, 900.0, 1900.0, 2400.0 }) Rect(2400, 2490, Px - 80, Px + 80);  // north wall: the boiler room, the archive
+		// (none on the east wall: the land there lies 0.3 m under the yard and would stand in a well to the window's head)
+		// floors: the flights and the mid landing first (they win over the ground floor's rectangle), the exits' landings and steps, then
+		// the ground floor over the whole plan, the basement under its north half, and the yard
 		S.Floors.Add({ PX(TopY), PX(MidY), PZ(1200), PZ(1400), 0, -1.7, TEXT("x") });
 		S.Floors.Add({ PX(TopY), PX(MidY), PZ(1400), PZ(1600), -3.4, -1.7, TEXT("x") });
 		S.Floors.Add({ PX(MidY), PX(2400), PZ(1200), PZ(1600), -1.7, -1.7, TEXT("x") });
-		S.Floors.Add({ PX(0), PX(2400), PZ(0), PZ(2800), 0, 0, TEXT("x") });
-		S.Floors.Add({ PX(1200), PX(2400), PZ(0), PZ(2800), -3.4, -3.4, TEXT("x") });
-		// The yard: the pad's level (0.6 m under the ground floor, the spec's Z_TERRAIN) from py -600 to 2600, px -200 to 3000, with
+		// The yard: the pad's level (0.6 m under the ground floor, the spec's Z_TERRAIN) from py -600 to 2700, px -400 to 3000 (E2's steps end on it), with
 		// banks 5 m wide down to the land beyond; the exits' steps end on the pad, and the walker has the pad and its banks as floors.
 		const double Yard = S.ModelLift - S.ModelFloorUp;
-		S.PadX0 = PX(-600); S.PadX1 = PX(2600); S.PadZ0 = PZ(-200); S.PadZ1 = PZ(3000); S.PadBank = 5;
+		S.PadX0 = PX(-600); S.PadX1 = PX(2700); S.PadZ0 = PZ(-400); S.PadZ1 = PZ(3000); S.PadBank = 5;
+		// The pad is drawn as a ring a metre off the walls (the model's own apron lies in that metre, with the wells and the areaway open in it)
+		S.PadTops.Add({ PX(-600), PX(-100), PZ(-400), PZ(3000) });
+		S.PadTops.Add({ PX(2660), PX(2700), PZ(-400), PZ(3000) });
+		S.PadTops.Add({ PX(-100), PX(2660), PZ(-400), PZ(-100) });
 		const auto Pad = [&S](double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const TCHAR* Axis, bool bToLand = false)
 		{
 			FSite::FFloorPad R; R.MinX = MinX; R.MaxX = MaxX; R.MinZ = MinZ; R.MaxZ = MaxZ; R.Y0 = Y0; R.Y1 = Y1; R.Axis = Axis; R.bToLand = bToLand; S.Floors.Add(R);
 		};
-		Pad(PX(-270), PX(0), PZ(1300), PZ(1500), Yard, 0, TEXT("x"));          // E1's front steps
-		Pad(PX(2045), PX(2155), PZ(-250), PZ(0), Yard, 0, TEXT("z"));          // E2
-		Pad(PX(2045), PX(2155), PZ(2800), PZ(2950), 0, Yard, TEXT("z"));       // E3's landing and steps
-		Pad(PX(2045), PX(2155), PZ(2800), PZ(3400), -3.4, Yard, TEXT("z"));    // E4's areaway and S2 up to the yard (the basement's way out; under E3's)
+		// (as the model has them: a landing level with the floor, then the steps)
+		Pad(PX(-240), PX(0), PZ(1100), PZ(1700), 0, 0, TEXT("x")); Pad(PX(-324), PX(-240), PZ(1100), PZ(1700), Yard, 0, TEXT("x"));       // E1
+		Pad(PX(2000), PX(2200), PZ(-160), PZ(0), 0, 0, TEXT("x")); Pad(PX(2000), PX(2200), PZ(-244), PZ(-160), Yard, 0, TEXT("z"));       // E2, steps west
+		Pad(PX(1960), PX(2200), PZ(2800), PZ(2960), 0, 0, TEXT("x")); Pad(PX(1876), PX(1960), PZ(2800), PZ(2960), Yard, 0, TEXT("x"));    // E3's deck, steps south along the wall
+		Pad(PX(2000), PX(2200), PZ(2800), PZ(3000), -3.4, -3.4, TEXT("x")); Pad(PX(2200), PX(2620), PZ(2800), PZ(3000), -3.4, Yard, TEXT("x")); // E4's areaway under the deck, S2 north up to the yard
+		S.Floors.Add({ PX(0), PX(2400), PZ(0), PZ(2800), 0, 0, TEXT("x") });
+		S.Floors.Add({ PX(1200), PX(2400), PZ(0), PZ(2800), -3.4, -3.4, TEXT("x") });
 		Pad(S.PadX0, S.PadX1, S.PadZ0, S.PadZ1, Yard, Yard, TEXT("x"));
 		const double NaN = std::numeric_limits<double>::quiet_NaN(), Bk = S.PadBank;
 		Pad(S.PadX1, S.PadX1 + Bk, S.PadZ0, S.PadZ1, Yard, NaN, TEXT("x"), true);   // the banks: east
@@ -399,6 +426,21 @@ FBox2D S47TownSites::ModelRect(const FSite& S, const FSite::FWall& R)
 	return Out;
 }
 
+bool S47TownSites::WalkOver(double MinX, double MaxX, double MinZ, double MaxZ)
+{
+	static const bool bOld = FParse::Param(FCommandLine::Get(), TEXT("S47SchoolWalkOld")); // (the walk test's proof: d60 as it was)
+	if (bOld) return false;
+	const FVector Road = S47Legs::ORIGINS(TEXT("road"));
+	const auto Same = [&](const FBox2D& B) { return FMath::Abs(Road.X + B.Min.X - MinX) < .01 && FMath::Abs(Road.X + B.Max.X - MaxX) < .01 && FMath::Abs(Road.Z + B.Min.Y - MinZ) < .01 && FMath::Abs(Road.Z + B.Max.Y - MaxZ) < .01; };
+	for (const FSite& S : Sites())
+	{
+		if (!ModelsUp().Contains(S.Id)) continue;
+		if (Same(ModelRect(S, S.ModelFoot))) return true;
+		for (const FSite::FWall& Y : S.Yards) if (Same(ModelRect(S, Y))) return true;
+	}
+	return false;
+}
+
 TArray<FBox2D> S47TownSites::SolidFootprints()
 {
 	TArray<FBox2D> Out;
@@ -576,15 +618,16 @@ bool FS47TownSites::Build()
 			++Models;
 			if (S47TownSitesLocal::Square(S.Yaw)) S47TownSitesLocal::ModelsUpSet.Add(S.Id);
 			if (S.PadX1 > S.PadX0)
-				for (int32 Side = -1; Side < 4; ++Side)
+				for (int32 Side = -FMath::Max(1, S.PadTops.Num()); Side < 4; ++Side)
 				{
-					UStaticMeshComponent* PC = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("S47Site_%s_Pad%d"), *S.Id, Side + 1));
+					// (the top's pieces first, then the four banks)
+					UStaticMeshComponent* PC = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("S47Site_%s_Pad%d"), *S.Id, Side + 100));
 					PC->SetMobility(EComponentMobility::Movable); PC->SetupAttachment(W->GetRootComponent());
 					PC->SetStaticMesh(Cube); PC->SetMaterial(0, Mat(S.PadColour)); PC->SetCastShadow(true);
 					PC->SetCollisionEnabled(ECollisionEnabled::QueryOnly); PC->SetCollisionResponseToAllChannels(ECR_Ignore);
 					PC->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); PC->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
 					PC->RegisterComponent();
-					FBuiltPart PB; PB.Site = S.Id; PB.PadSide = Side; PB.Comp = PC; Parts.Add(PB);
+					FBuiltPart PB; PB.Site = S.Id; PB.PadSide = FMath::Max(Side, -1); PB.PadPiece = Side < 0 ? -Side - 1 : 0; PB.Comp = PC; Parts.Add(PB);
 				}
 			const FBox MB = Model->GetBoundingBox();
 			UE_LOG(LogS47TownSites, Display, TEXT("S47: temp sites: %s stands as its model (bounds x %.0f..%.0f y %.0f..%.0f z %.0f..%.0f cm; %d walls, %d floors, %d lights)"), *S.Id, MB.Min.X, MB.Max.X, MB.Min.Y, MB.Max.Y, MB.Min.Z, MB.Max.Z, S.Walls.Num(), S.Floors.Num(), S.Lights.Num());
@@ -693,9 +736,13 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 					const double CX = (S->PadX0 + S->PadX1) * .5, CZ = (S->PadZ0 + S->PadZ1) * .5, WX = S->PadX1 - S->PadX0, WZ = S->PadZ1 - S->PadZ0;
 					if (PB.PadSide < 0)
 					{
-						const FVector2D PAt = ToRoad(*S, CX, CZ);
-						PC->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + PAt.X, Hi - 1.0, Road.Z + PAt.Y)), FRotator(0, S->Yaw, 0));
-						PC->SetWorldScale3D(FVector(bQuarter ? WZ : WX, bQuarter ? WX : WZ, 2.0));
+						// (2 m thick: 5 where it is a ring, so its inner sides stand as the ground's wall behind the model's wells and areaway)
+						const bool bRing = S->PadTops.IsValidIndex(PB.PadPiece);
+						const FSite::FWall Piece = bRing ? S->PadTops[PB.PadPiece] : FSite::FWall{ S->PadX0, S->PadX1, S->PadZ0, S->PadZ1 };
+						const double Deep = bRing ? 5.0 : 2.0, PWX = Piece.MaxX - Piece.MinX, PWZ = Piece.MaxZ - Piece.MinZ;
+						const FVector2D PAt = ToRoad(*S, (Piece.MinX + Piece.MaxX) * .5, (Piece.MinZ + Piece.MaxZ) * .5);
+						PC->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + PAt.X, Hi - Deep * .5, Road.Z + PAt.Y)), FRotator(0, S->Yaw, 0));
+						PC->SetWorldScale3D(FVector(bQuarter ? PWZ : PWX, bQuarter ? PWX : PWZ, Deep));
 						PC->SetHiddenInGame(false);
 						continue;
 					}
@@ -737,6 +784,7 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 				if (bFlip) Swap(Y0, Y1);
 				AS47Props::AddFloor(Road.X + FB.Min.X, Road.X + FB.Max.X, Road.Z + FB.Min.Y, Road.Z + FB.Max.Y, FloorY + Y0, FloorY + Y1, bZ ? TEXT("z") : TEXT("x"), true, Tag);
 			}
+			WallLevels(*S);
 		}
 		else if (B.PadSide > -2) {} // the pad and its banks: placed with the model above
 		else if (!B.bWords)
@@ -765,6 +813,22 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 		}
 	}
 	if (bWithFloor) SeatedSites.Add(Site);
+}
+
+void FS47TownSites::WallLevels(const S47TownSites::FSite& S)
+{
+	// The walls' floors as world heights, from where the model's ground floor stands now (set again at each seating).
+	const double* FY = ModelFloorY.Find(S.Id);
+	if (!M || !M->Web || !FY) return;
+	const FString Head = FString::Printf(TEXT("temp:%s:wall:"), *S.Id);
+	for (FS47Rect& R : M->Web->CollidersMutable(TEXT("road")))
+	{
+		if (!R.Id.StartsWith(Head)) continue;
+		const int32 I = FCString::Atoi(*R.Id.Mid(Head.Len()));
+		if (!S.Walls.IsValidIndex(I)) continue;
+		R.MinY = S.Walls[I].Lo < -1e8 ? -1e9 : *FY + S.Walls[I].Lo;
+		R.MaxY = S.Walls[I].Hi > 1e8 ? 1e9 : *FY + S.Walls[I].Hi;
+	}
 }
 
 int32 FS47TownSites::ColliderCount() const
@@ -801,6 +865,7 @@ void FS47TownSites::SetColliders(bool bOn)
 				R.Id = FString::Printf(TEXT("temp:%s:wall:%d"), *S.Id, KW++); R.bEnabled = true;
 				Walk.Add(R);
 			}
+			WallLevels(S);
 		}
 		if (bModel && I == 0 && S.Id == TEXT("school"))
 		{
@@ -993,6 +1058,7 @@ void FS47TownSites::Step(double Dt)
 {
 	if (!bActive) { if (M && M->IsFreeform() && IsValid(M->Web.Get())) Begin(); return; }
 	if (!M || M->Web.Get() != Scene.Get()) { Begin(); return; }
+	StepSchoolWalk(Dt);
 	// The truck's list is made once the world has its legs, which may be after the session began.
 	if (!bDriveAdded) SetDrive(true);
 	if (BreatherPart) BreatherPart->Step(Dt); // (N1110: every frame: the draft's level follows the player)
@@ -1008,4 +1074,132 @@ void FS47TownSites::Step(double Dt)
 	// On the ground the walker really stands on, once the player is near enough for it to be the land's own floor.
 	for (const S47TownSites::FSite& S : S47TownSites::Sites())
 		if (!SeatedSites.Contains(S.Id) && FVector2D::Distance(FVector2D(RX, RZ), FVector2D(S.X, S.Z)) < 400) Seat(S.Id, true);
+}
+
+// ---------- -S47SchoolWalkTest (Tom, d60: nobody got into the school; no human needed to know it again) ----------
+// The walker itself, by its own keys' path (TestMove, the walker's Resolve and floors): from the footpath by the highway in at E1,
+// the corridor, class 1 and D3, down S1 to the basement, the storage and the boiler room, up again, out E2, round the back and
+// down S2 in at E4, out again and up E3's steps, and out the front. Points are the plan's centimetres (school_plan.py).
+// A step: walk to the point (PASS: arrived, the floor as said); Hold: walk at it and be held (a rail, a wall).
+struct FS47SchoolWalk
+{
+	struct FStep { const TCHAR* Name; double Px, Py, Floor; bool bHold = false; double Tol = .3; };
+	TArray<FStep> Steps;
+	int32 At = -1, Fails = 0, Passes = 0;
+	double T = 0, Since = 0, Best = 1e9, BestAt = 0, StartFloor = 0, Begun = 0;
+	bool bDone = false;
+};
+
+void FS47TownSites::StepSchoolWalk(double Dt)
+{
+	using namespace S47TownSites;
+	static const bool bWanted = FParse::Param(FCommandLine::Get(), TEXT("S47SchoolWalkTest"));
+	if (!bWanted || !M || !M->Player || !M->World || !M->Web) return;
+	const FSite* S = Find(TEXT("school"));
+	const double* FY = ModelFloorY.Find(TEXT("school"));
+	if (!S) return;
+	if (!SchoolWalk) SchoolWalk = MakeShared<FS47SchoolWalk>();
+	FS47SchoolWalk& K = *SchoolWalk;
+	if (K.bDone) return;
+	K.T += Dt;
+	if (K.T < 6) return;
+	AS47Walker* P = M->Player;
+	const FVector Road = S47Legs::ORIGINS(TEXT("road"));
+	const auto World = [&](double Px, double Py) { const FVector2D R = ToRoad(*S, S->ModelX + (Py - 1200) * .01, S->ModelZ + (Px - 1400) * .01); return FVector2D(Road.X + R.X, Road.Z + R.Y); };
+	const auto PlanOf = [&](double X, double Z) { return FVector2D((Z - Road.Z - S->Z - S->ModelZ) * 100 + 1400, (X - Road.X - S->X - S->ModelX) * 100 + 1200); };
+	if (K.At < 0)
+	{
+		if (!FY || !ModelsUp().Contains(TEXT("school"))) { UE_LOG(LogS47TownSites, Warning, TEXT("S47: school walk test: FAIL, the school's model does not stand")); K.bDone = true; return; }
+		constexpr double G = 0, Y = -.6, B = -3.4, L = -1.7;
+		K.Steps = {
+			{ TEXT("the yard before the front steps"), 1560, -450, Y }, { TEXT("E1's landing"), 1400, -150, G }, { TEXT("in through E1"), 1400, 120, G },
+			{ TEXT("the corridor at K3"), 1400, 1100, G }, { TEXT("class 1 through K3"), 1000, 1100, G }, { TEXT("class 1 by D3"), 300, 1400, G },
+			{ TEXT("class 3 through D3"), 300, 1750, G }, { TEXT("class 3 by K4"), 1000, 1700, G }, { TEXT("the corridor through K4"), 1400, 1700, G },
+			{ TEXT("S1's top landing through S1a"), 1400, 1890, G },
+			{ TEXT("held by the rail over the well"), 1500, 2080, G, true },
+			{ TEXT("the landing's west half"), 1285, 1890, G }, { TEXT("down the upper flight to the mid landing"), 1285, 2300, L },
+			{ TEXT("the mid landing's east half"), 1500, 2300, L }, { TEXT("down the lower flight"), 1500, 1900, B },
+			{ TEXT("under the top landing's west half"), 1285, 1890, B }, { TEXT("held by the wall under the upper flight"), 1285, 2100, B, true },
+			{ TEXT("before S1b"), 1400, 1890, B }, { TEXT("the basement corridor through S1b"), 1400, 1700, B }, { TEXT("the basement corridor at K9"), 1400, 1400, B },
+			{ TEXT("held by the basement's south wall"), 1400, 1000, B, true },
+			{ TEXT("back at K9"), 1400, 1400, B }, { TEXT("the storage through K9"), 1000, 1400, B }, { TEXT("the storage by D5"), 300, 1450, B },
+			{ TEXT("the boiler room through D5"), 300, 1750, B }, { TEXT("the boiler room by K10"), 1000, 1700, B }, { TEXT("the basement corridor through K10"), 1400, 1700, B },
+			{ TEXT("under the landing through S1b"), 1400, 1890, B }, { TEXT("the lower flight's foot"), 1500, 1900, B }, { TEXT("up the lower flight"), 1500, 2300, L },
+			{ TEXT("the mid landing's west half"), 1285, 2300, L }, { TEXT("up the upper flight"), 1285, 1890, G }, { TEXT("S1a from the landing"), 1400, 1890, G },
+			{ TEXT("the corridor again"), 1400, 1700, G }, { TEXT("class 3 through K4"), 1000, 1700, G }, { TEXT("class 3 by E2"), 150, 2100, G },
+			{ TEXT("out E2 on its landing"), -90, 2100, G }, { TEXT("the yard west of E2"), -320, 2100, Y },
+			{ TEXT("held by the rail of a light well"), -40, 1800, Y, true },
+			{ TEXT("the yard's north-west corner"), -300, 2600, Y }, { TEXT("the yard behind the school"), 2900, 2690, Y },
+			{ TEXT("down S2 to the areaway"), 2900, 2100, B }, { TEXT("the archive through E4"), 2600, 2100, B }, { TEXT("the archive by D6"), 2400, 1700, B },
+			{ TEXT("the workshop through D6"), 2400, 1450, B }, { TEXT("the workshop by K11"), 1800, 1400, B }, { TEXT("the basement corridor through K11"), 1400, 1400, B },
+			{ TEXT("the archive through K12"), 1800, 1700, B, false }, { TEXT("the archive by E4"), 2600, 2100, B }, { TEXT("out E4 in the areaway"), 2900, 2100, B },
+			{ TEXT("up S2 to the yard"), 2900, 2690, Y }, { TEXT("east of the areaway's wall"), 3060, 2690, Y, false, .9 }, { TEXT("along the areaway's wall"), 3060, 1820, Y, false, .9 },
+			{ TEXT("the foot of E3's steps"), 2880, 1820, Y }, { TEXT("E3's deck"), 2880, 2090, G },
+			{ TEXT("held by the deck's rail"), 3100, 2090, G, true },
+			{ TEXT("class 4 through E3"), 2600, 2100, G }, { TEXT("class 4 by D4"), 2400, 1700, G }, { TEXT("class 2 through D4"), 2400, 1450, G },
+			{ TEXT("class 2 by K7"), 1800, 1100, G }, { TEXT("the corridor through K7"), 1400, 1100, G }, { TEXT("the front door from inside"), 1400, 120, G },
+			{ TEXT("out E1"), 1400, -150, G }, { TEXT("the yard again"), 1560, -450, Y },
+		};
+		// (K10 and K12 are at py 1700; K12's row goes from K11's corridor point up the corridor first)
+		K.Steps.Insert(FS47SchoolWalk::FStep{ TEXT("the basement corridor at K12"), 1400, 1700, B }, K.Steps.IndexOfByPredicate([](const FS47SchoolWalk::FStep& St) { return FCString::Strcmp(St.Name, TEXT("the archive through K12")) == 0; }));
+		const FVector2D From = World(1560, -1050);
+		if (M->Web->Area() != TEXT("diner")) M->World->Enter(TEXT("diner"));
+		P->Place(From.X, From.Y, P->Yaw);
+		K.At = 0; K.Since = K.T; K.Best = 1e9; K.BestAt = K.T; K.Begun = K.T;
+		if (!SeatedSites.Contains(TEXT("school"))) Seat(TEXT("school"), true);
+		FY = ModelFloorY.Find(TEXT("school"));
+		// the land against the yard where the model is open to it: a well or the areaway shows the land in it if the land is higher than its floor
+		FString Land;
+		for (const FVector2D& Q : { FVector2D(-45, 1400), FVector2D(-45, 1800), FVector2D(-45, 2300), FVector2D(400, 2445), FVector2D(900, 2445), FVector2D(1900, 2445), FVector2D(2400, 2445), FVector2D(2845, 1400), FVector2D(2900, 2100), FVector2D(2900, 2500), FVector2D(1400, 1800), FVector2D(1400, -300) })
+		{
+			const FVector2D R = ToRoad(*S, S->ModelX + (Q.Y - 1200) * .01, S->ModelZ + (Q.X - 1400) * .01);
+			Land += FString::Printf(TEXT(" (%.0f,%.0f) %+.2f"), Q.X, Q.Y, Road.Y + S47RoadTerrain::SurfaceY(R.X, R.Y) - (*FY - .6));
+		}
+		UE_LOG(LogS47TownSites, Display, TEXT("S47: school walk test: the land against the yard, metres, at plan points:%s"), *Land);
+		UE_LOG(LogS47TownSites, Display, TEXT("S47: school walk test: begins on the footpath at %.1f %.1f in %s, floor %+.2f over the school's, %s; %d steps%s"), P->Pos.X, P->Pos.Z, *M->Web->Area(), P->FloorY - *FY,
+			P->Walkable(P->Pos.X, P->Pos.Z) ? TEXT("walkable") : TEXT("NOT WALKABLE"), K.Steps.Num(), FParse::Param(FCommandLine::Get(), TEXT("S47SchoolWalkOld")) ? TEXT(" (as d60 was: the pad in the walker's way)") : TEXT(""));
+		return;
+	}
+	if (!FY) return;
+	if (K.At >= K.Steps.Num())
+	{
+		P->TestMove.Reset(); P->bTestRun = false; K.bDone = true;
+		if (K.Fails) { UE_LOG(LogS47TownSites, Warning, TEXT("S47: school walk test: FAIL, %d of %d steps failed (%.0f s)"), K.Fails, K.Steps.Num(), K.T - K.Begun); }
+		else { UE_LOG(LogS47TownSites, Display, TEXT("S47: school walk test: PASS, %d of %d steps (%.0f s)"), K.Passes, K.Steps.Num(), K.T - K.Begun); }
+		return;
+	}
+	const FS47SchoolWalk::FStep& St = K.Steps[K.At];
+	const FVector2D To = World(St.Px, St.Py);
+	const double Dx = To.X - P->Pos.X, Dz = To.Y - P->Pos.Z, D = FMath::Sqrt(Dx * Dx + Dz * Dz);
+	const FVector2D Plan = PlanOf(P->Pos.X, P->Pos.Z);
+	const double Rel = P->FloorY - *FY;
+	P->Yaw = FMath::Atan2(-Dx, -Dz); P->Pitch = -0.06; P->TestMove = FVector2D(0, -1); P->bTestRun = true;
+	if (D < K.Best - .02) { K.Best = D; K.BestAt = K.T; }
+	const auto Next = [&](bool bPass, const FString& Why)
+	{
+		if (bPass) { ++K.Passes; UE_LOG(LogS47TownSites, Display, TEXT("S47: school walk test: step %d PASS: %s: at plan %.0f %.0f, floor %+.2f%s"), K.At + 1, St.Name, Plan.X, Plan.Y, Rel, *Why); }
+		else
+		{
+			++K.Fails;
+			UE_LOG(LogS47TownSites, Warning, TEXT("S47: school walk test: step %d FAIL: %s: at plan %.0f %.0f, floor %+.2f, %.2f m short of %.0f %.0f%s"), K.At + 1, St.Name, Plan.X, Plan.Y, Rel, D, St.Px, St.Py, *Why);
+			// put where the step would have ended (a hold: back where it began), so the rest of the way is still tried
+			const FVector2D Put = St.bHold && K.At > 0 ? World(K.Steps[K.At - 1].Px, K.Steps[K.At - 1].Py) : To;
+			P->FloorY = *FY + (St.bHold && K.At > 0 ? K.Steps[K.At - 1].Floor : St.Floor);
+			P->Pos.X = Put.X; P->Pos.Z = Put.Y; P->MoveFrom = P->Pos;
+		}
+		++K.At; K.Since = K.T; K.Best = 1e9; K.BestAt = K.T;
+	};
+	if (St.bHold)
+	{
+		// held: 3 s of walking at it, never there, and the floor never left
+		if (D < .45 || FMath::Abs(Rel - St.Floor) > .35) Next(false, D < .45 ? TEXT(" (walked through: nothing held)") : TEXT(" (fell off the floor)"));
+		else if (K.T - K.Since > 3) Next(true, FString::Printf(TEXT(", held %.2f m short"), D));
+		return;
+	}
+	if (D < .3)
+	{
+		if (FMath::Abs(Rel - St.Floor) < St.Tol || K.T - K.BestAt > 1.0) Next(FMath::Abs(Rel - St.Floor) < St.Tol, FMath::Abs(Rel - St.Floor) < St.Tol ? FString() : FString::Printf(TEXT(" (the floor should be %+.2f)"), St.Floor));
+		return;
+	}
+	if (K.T - K.BestAt > 3.5) Next(false, FString::Printf(TEXT(" (held there; %s)"), P->Walkable(P->Pos.X + Dx / D * .5, P->Pos.Z + Dz / D * .5) ? TEXT("the ground ahead is walkable: a collider") : TEXT("the ground ahead is NOT WALKABLE")));
 }

@@ -37,7 +37,7 @@ struct FS47FreeformTerrainState;
 class FS47RadioWoman;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
-struct FS47Rect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; FString Id; bool bEnabled = true; };
+struct FS47Rect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; FString Id; bool bEnabled = true; double MinY = -1e9, MaxY = 1e9; }; // MinY, MaxY (SCHOOL-V2, 12 November): the heights of the walker's feet a collider holds at (a rail on the floor above, not on the flight under it); every height by default
 
 // One node of the web scene: its three.js local matrix (kept as position, quaternion and
 // scale so the story can move it as the web version does), and the component that draws it.
