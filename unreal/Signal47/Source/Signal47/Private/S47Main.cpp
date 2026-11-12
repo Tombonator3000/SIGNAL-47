@@ -18,6 +18,8 @@
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
+#include "S47Thoughts.h"
+#include "S47LocationCards.h"
 #include "S47FreeformDirector.h"
 #include "S47HighwayUfo.h"
 #include "S47HighwayUfoTest.h"
@@ -120,6 +122,7 @@ void US47Main::Step(double Dt)
 	}
 	const bool bFree = IsFreeform();
 	if (Freeform && bFree) Freeform->Step(Dt);
+	S47Thoughts::Step(this, Dt); S47LocationCards::Step(this, Dt); // UI-20261112 (Tom): the thoughts that wait and 02:00; the location card of a place just come to
 	if (bFree && StoryDirector && Flow && Flow->StoryNight() && StoryDirector->Active()) StoryDirector->Tick(Dt); // STORY-ON-FREEFORM-01: nothing outside a Story night
 	if (!bFree && Evening) Evening->Step(Dt);
 	if (Office) Office->Step(Dt); // Doors, drawers and room visibility also update in Freeform.

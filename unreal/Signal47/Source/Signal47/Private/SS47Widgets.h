@@ -59,6 +59,8 @@ public:
 	// small in the corner. Pri: an FS47MessageQueue::EPri, or -1 to tell it from the words (FS47MessageQueue::Classify).
 	void Toast(const FString& Text, float Secs, TFunction<double()> Clock = {}, int32 Pri = -1);
 	void ClearToasts();
+	// UI-20261112 (Tom): the location card, typed out bottom left (S47LocationCards). False while one is still up.
+	bool LocationCard(const FString& Line1, const FString& Line2, const FString& Line3);
 	void Fade(bool bOn, const FString& Text);
 	bool IsFaded() const { return bFadeOn; }
 	// UI.ts: the objective line (top left), a closer look's words (under the crosshair), the
@@ -85,9 +87,18 @@ public:
 private:
 	// what is on screen of the queue's lines: the one each lane shows, and the ones fading out (Id: the queue's; bCorner: a plain line
 	// beside a caption, small in the corner)
-	struct FToast { FString Text, Who, Line; int32 Id = 0; bool bHint = false, bCorner = false, bThought = false; float In = 0.f, Out = -1.f; };
+	// UI-20261112 (Tom): GoSecs: how long it takes to go (a thought longer, as it drifts off); Way: the way a thought drifts as it
+	// goes, degrees (S47Thoughts::DriftAngle), a new one each time (LastWay: the last one given)
+	struct FToast { FString Text, Who, Line; int32 Id = 0; bool bHint = false, bCorner = false, bThought = false; float In = 0.f, Out = -1.f, GoSecs = 0.6f, Way = 0.f; };
 	TArray<TSharedRef<FToast>> Toasts;
-	TSharedPtr<SVerticalBox> ToastBox, CornerBox;
+	TSharedPtr<SVerticalBox> ToastBox, CornerBox, ThoughtBox;
+	double LastWay = 200.;
+	// UI-20261112 (Tom): the location card bottom left (S47LocationCards): its lines, seconds since it began (-1: none), the letters
+	// and lines already ticked, and how far off the foot it stands (over the NOTED slip or a plain line when one is there)
+	struct FPlaceCard { TArray<FString> L; double T = -1; int32 Ticked = 0, Returned = 0; float Lift = 0.f; } PlaceCard;
+	float PlaceCardLift() const;
+	void StepPlaceCard(float Dt);
+	void PaintPlaceCard(const FGeometry& G, FSlateWindowElementList& Out, int32 Layer) const;
 	FS47MessageQueue Queue;
 	void SyncToasts();
 	TUniquePtr<FSlateBrush> WhiteBrush;

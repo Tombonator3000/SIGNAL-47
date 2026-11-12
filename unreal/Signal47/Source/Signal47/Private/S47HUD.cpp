@@ -19,6 +19,7 @@
 #include "S47FreeformTerminal.h"
 #include "S47MessageQueue.h"
 #include "S47Thoughts.h"
+#include "S47LocationCards.h"
 #include "S47TonightNote.h"
 #include "S47SaroSave.h"
 #include "S47Stress.h"
@@ -291,6 +292,7 @@ void AS47HUD::Start()
 		bOk &= FS47FieldRadio::SelfTest(Lines);
 		bOk &= FS47MessageQueue::SelfTest(Lines); // MSG-ONE-20261109, TRUCK-HINT-20261109
 		bOk &= S47Thoughts::SelfTest(Lines); // D46-5-20261110
+		bOk &= S47LocationCards::SelfTest(Lines); // UI-20261112 (Tom): the location cards
 		bOk &= FS47DaleVoice::SelfTest(Lines); // (DALE-WIRE-20261109: Dale's own takes on the walkie and the service line)
 		bOk &= FS47Stress::SelfTest(Lines) & S47HudGauges::SelfTest(Lines) & S47Sneak::SelfTest(Lines);
 		bOk &= S47FreeformTerminal::SelfTest(Lines); // (D45-20261110: the tubes' rare, faint hum bar)

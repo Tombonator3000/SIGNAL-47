@@ -85,6 +85,7 @@
 #include "S47Inter.h"
 #include "S47Keys.h"
 #include "S47Three.h"
+#include "S47Thoughts.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SScaleBox.h"
 #include "Widgets/Layout/SBorder.h"
@@ -1230,6 +1231,7 @@ bool FS47FreeformSession::CollectChart()
  if(Kind==0)
  {
   J->Stage=EJobStage::Recorded;J->bPrinted=true;PrintJob(false);
+  if(M&&J->bAnomaly)S47Thoughts::Later(TEXT("anomaly"),1.5); // UI-20261112 (Tom): the chart in hand shows the discrepancy: the player's own thought, once the sheet is put down
   // CHAIN-5B-20261109: under the chart, once a night, a line of the array's own log about what is out there tonight (WordOfTonight).
   if(Happenings){const FString Said=Happenings->WordOfTonight(TEXT("printer"));if(!Said.IsEmpty()&&M&&M->UI)M->UI->Toast(Said,8);}
  }
@@ -1563,6 +1565,7 @@ void FS47FreeformSession::RecordEvidence(const FString& Id,const FString& Text)
  // (a magnetometer reading at a place already read is kept once, but it is read again: the land's control takes it, LandRecord)
  if(Findings.Contains(Id)){LandRecord(Id);return;}
  Findings.Add(Id,Text);FindingDays.Add(Id,DayNumber);TakenCount+=Id.StartsWith(TEXT("taken-"))?1:0;
+ if(M)S47Thoughts::Later(S47Thoughts::FindKey(Id)); // UI-20261112 (Tom): a new find out on the land: the player's own thought (empty key: none)
  if(LessonRecordKey(Id)&&RulesLive())
  {
   const int32 Paid=EarnSide(FieldRecordPay,TEXT("field record, a lesson"));

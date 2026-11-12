@@ -221,6 +221,9 @@ void SS47Settings::BuildRows()
 			[P](int32 I) { const bool V = I == 1; if (P->bStillShots == V) return; P->bStillShots = V; if (P->OnStillShots) P->OnStillShots(V); }, 0,
 			[P] { return FString(P->bStillShots ? TEXT("Still shots") : TEXT("Moving camera")); },
 			Says(TEXT("The camera in the last minutes of the night: it moves as the scene does, or it holds still shots one after another, for anyone the movement makes unwell. It also stops film flicker, frame weave and moving tape disturbances.")));
+		// UI-20261112 (Tom): the place's name typed out bottom left on arriving (S47LocationCards)
+		AddToggle(TEXT("Location cards"), &FS47PauseOpts::bLocationCards, &FS47PauseOpts::OnLocationCards, true,
+			TEXT("On arriving somewhere, the name of the place, the town and the time are typed out in the lower left corner for a few seconds, with a quiet teleprinter tick. Once a day for each place. Off: no cards and no ticking."));
 		break;
 	}
 	case 1: // PICTURE
