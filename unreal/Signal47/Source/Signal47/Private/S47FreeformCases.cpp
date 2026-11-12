@@ -331,6 +331,9 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  // visit at them) is a lead on the land. The farm's own marks (farm_trace) share the station's ground and stay with the visitors.
  if(Id.StartsWith(TEXT("lights_trace_")))return LandLine;
  // Around the base: the station, its doors and rooms, the farm that shares its ground, a taking.
+ // T16-17 (→ M1): the old house's two things (FS47Places: the back room by daylight, and a needle there that will not settle) are
+ // the farm's, so the visitors', not the land's.
+ if((Id.StartsWith(TEXT("place_kitchen_"))||Id.StartsWith(TEXT("place_backroom_")))&&Id.Contains(TEXT("_unsettled_d")))return 2;
  if(Id.Contains(TEXT("_daylight_d"))||Id.StartsWith(TEXT("taken-"))||Id.EndsWith(TEXT("_visit"))||Id.StartsWith(TEXT("peek-"))||Id.StartsWith(TEXT("flood-room-"))||Id.StartsWith(TEXT("door-visit-"))||Id.StartsWith(TEXT("door-marks-")))return 2;
  // LOOP-WHOLE-20261109, step 2: out on the land. What the night's events leave there (FS47Happenings), a thing moved at a place, the
  // trip camera, a car on the road, Saucer Rock by the hour after midnight (FS47Places). Leads, not yet one cause.
@@ -338,6 +341,9 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  // LOOP-3-20261109: what comes home from out there as a question (the same minute on the array, FS47FreeformSession::AskSameMinute)
  // and a needle that will not settle where something happened in the last two nights (FS47Places::Use, LOOP-4).
  if(Id.StartsWith(TEXT("minute_yes_"))||Id.StartsWith(TEXT("minute_no_"))||(Id.StartsWith(TEXT("place_"))&&Id.Contains(TEXT("_unsettled_d"))))return LandLine;
+ // T16-17 (→ M1, "the places are reading stations"): the trace a place shows by day (FS47Places::DayTrace, kept as place_trace_dN) was
+ // read and filed under nothing; it is what the night left out there, a lead like the rest.
+ if(Id.StartsWith(TEXT("place_trace_d")))return LandLine;
  // WEEKLY-CASE-20261109: what the week's case leaves (S47WeekCase), a lead out on the land; never a night record (FS47Happenings).
  if(Id.StartsWith(TEXT("weekcase_")))return LandLine;
  // D48-20261110: the balloon's instrument box taken while lights were seen over that ground (FS47Balloon): the plain thing that would
@@ -950,6 +956,9 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
    for(const TCHAR* Id:Home)bLand&=LineForFinding(Id)==2;
    bLand&=LineForFinding(TEXT("place_windmill_needle"))==-1&&LineForFinding(TEXT("place_windmill"))==-1&&LineForFinding(TEXT("place_saucer_rock_night4_t1"))==-1;
    bLand&=LineForFinding(TEXT("place_balloon_box"))==-1&&LineForFinding(TEXT("place_balloon_school"))==-1; // (D48: the box itself and its errands are no lead)
+   // T16-17 (→ M1): a place's daylight trace is a lead out there; the old house's back room by daylight and its needle are the visitors'
+   bLand&=LineForFinding(TEXT("place_trace_d6"))==LandLine&&LineForFinding(TEXT("place_backroom_daylight_d5"))==2&&LineForFinding(TEXT("place_backroom_unsettled_d5"))==2
+    &&LineForFinding(TEXT("place_kitchen"))==-1&&LineForFinding(TEXT("place_kitchen_needle"))==-1&&LineForFinding(TEXT("place_tank_unsettled_d5"))==LandLine;
    // A record out there opens the land's case, not the visitors'.
    FS47FreeformCases K;K.Reset(5);K.AddLead(LineForFinding(TEXT("cattle_ring_d4")),TEXT("cattle_ring_d4"),4,23*3600.);
    bLand&=K.Get(LandLine)->bOpen&&!K.Get(2)->bOpen&&K.Get(LandLine)->Leads.Num()==1&&K.Get(LandLine)->LastLeadDay==4;
