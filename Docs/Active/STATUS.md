@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 12. november kl. 20:04 (d62): versjon 0.9.62, `e63eea04` på `claude/story-drive-20261112`
+## Installert 12. november kl. 22:37 (d63): versjon 0.9.63, `ac5663cd` på `claude/freeform-20261112`
+
+Ikke merget; rask levering. Freeform (Story står på vent): avviksjobben strømlinjeformet (ANOMALY DETECTED → opptak → spolebånd → bekreft på OPS → print → perm), ny perm i arkivrommet, peilesirkelen klar rød og blir stående til stedet er sjekket, musepekeren på kartet, tanker midt på og glir bort + flere anledninger, stedskort, TV-ens sign-off med ekte nasjonalsang (US Navy Band), F10 lukker seg ikke lenger, biloppbevaringen viser hva som er i bilen, aliens undersøker en bil på tomgang; bakken og Cosmos-lekeplassen ved skolen (fra d62) er med. Selvtest 5019, regresjon PASS 250. Tilbakerulling: d62 (`e63eea04`). Ikke spilt av Tom.
+
+## Tidligere: installert 12. november kl. 20:04 (d62): versjon 0.9.62, `e63eea04` på `claude/story-drive-20261112`
 
 Ikke merget (PR #513 åpen); rask levering. Innhold i tillegg til d61: bakken flates og graves ut der et bygg ber om det (`S47GroundEdits`, bakt i terrengmeshen) – skolens kjellertrapp og lysgraver er åpne; Cosmos-lekeplassen ved skolen (ni deler, lastes hvis den finnes, aldri i Git). Gåprøve 65/65, selvtest 4965, regresjon PASS 251. Tilbakerulling: d61 (`fd5a625b`). Ikke spilt av Tom.
 
