@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "id": "morning_telex",
+  "name": "Story: the remote sheets at 05:04, then the station is searched (SC11)",
+  "notes": "STORY steg 6, the morning act. Started by morning_saro once the player is inside SARO. The old SC11's telex (S47SC11: TELEX 05:04 HONDO, then SITE 11, the document sc11_remote) printed on Freeform's own telex in the control room (the telex beat, FS47FreeformSession::QueueTelex), torn off there as any other paper. Then the siege on Freeform's own visit at SARO (the start beat's happening attention_visit, FS47Attention::StartForStory, started for the story past the hold a story script keeps): the mains sag and go; inside with the lights on (the standby generator) it holds and goes; inside in the dark the light comes through the windows, in the yard it stands over the player, as being taken always does. The story waits for its end (ended_attention_visit). The story flag taken is cleared first, so only a taking in this visit counts: then Reyes' night ends at once (morning_end); otherwise Ward (morning_ward). The full tier holds (the clock is at 05:04 at least). Left out: the pale body searching the rooms and the searchlight on a fixed cycle (the old chapter's own siege engine), and the tubes' switch.",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 0,
+      "do": "clock",
+      "at_least": "05:04"
+    },
+    {
+      "at": 1,
+      "do": "telex",
+      "key": "telex-story-remote",
+      "title": "Remote sheets, Hondo and Site 11",
+      "stamp": "TELEX 05:04",
+      "text": "TELEX 05:04  HONDO VALLEY RADIO STATION\nSOURCE H-1 ....... RANGE NEGATIVE\nFIRST LIMIT ...... 05:29:47\nREQUEST PROCEDURE\n\nTELEX 05:05  SITE 11\nSOURCE S-11 ...... RANGE NEGATIVE\nFIRST LIMIT ...... 05:29:47\nSAME DIRECTION AS SARO\n\n(Three stations, three sources, one time. Nobody asked for a procedure for this.)"
+    },
+    {
+      "at": 1,
+      "do": "toast",
+      "text": "The telex wakes: TELEX 05:04 HONDO VALLEY RADIO STATION. SOURCE H-1. RANGE NEGATIVE. FIRST LIMIT 05:29:47.",
+      "secs": 7
+    },
+    {
+      "at": 9,
+      "do": "toast",
+      "text": "TELEX 05:05 SITE 11. SOURCE S-11. RANGE NEGATIVE. FIRST LIMIT 05:29:47. SAME DIRECTION AS SARO. The telex stops.",
+      "secs": 7
+    },
+    {
+      "at": 16,
+      "do": "thought",
+      "text": "Three stations, three sources, one time.",
+      "secs": 4
+    },
+    {
+      "at": 17,
+      "do": "evidence",
+      "key": "story_sc11_telex",
+      "text": "05:04. Hondo and Site 11 on the telex. Three sources, the same first limit: 05:29:47."
+    },
+    {
+      "at": 18,
+      "do": "objective",
+      "text": "Tear off the remote sheets at the telex. They go with the originals."
+    },
+    {
+      "at": 30,
+      "do": "flag",
+      "flag": "ended_attention_visit",
+      "set": false
+    },
+    {
+      "at": 30,
+      "do": "flag",
+      "flag": "taken",
+      "set": false
+    },
+    {
+      "at": 31,
+      "do": "toast",
+      "text": "Light comes across the control-room windows from outside. Not a car. It moves like someone looking.",
+      "secs": 6
+    },
+    {
+      "at": 32,
+      "do": "objective",
+      "text": "Something is searching the building. Keep the lights on and stay inside, off the windows."
+    },
+    {
+      "at": 37,
+      "do": "start",
+      "happening": "attention_visit"
+    },
+    {
+      "at": 38,
+      "do": "flag",
+      "flag": "searched",
+      "wait": [
+        {
+          "if": "story_flag",
+          "flag": "ended_attention_visit"
+        }
+      ],
+      "max": 600
+    },
+    {
+      "at": 39,
+      "do": "objective",
+      "text": ""
+    },
+    {
+      "at": 39,
+      "do": "start",
+      "script": "morning_ward",
+      "if": [
+        {
+          "if": "no_story_flag",
+          "flag": "taken"
+        }
+      ]
+    },
+    {
+      "at": 39,
+      "do": "start",
+      "script": "morning_end",
+      "if": [
+        {
+          "if": "story_flag",
+          "flag": "taken"
+        }
+      ]
+    }
+  ]
+}

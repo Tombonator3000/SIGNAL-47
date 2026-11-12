@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "id": "morning_road",
+  "name": "Story: the last road (SC13)",
+  "notes": "STORY steg 6, the morning act. Started by morning_ward. The old SC13 'The road to Roswell' (S47Chapter6: the objective to the courier, past C without stopping) on Freeform's own truck: the objective, then the story waits for the player at the wheel (or its most) and goes on to the end (morning_end). Left out: the old road with its mile posts, the 10.4 COURIER sign and the survey bolt at C (the old chapter's own road; Freeform's map has none of them).",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 0,
+      "do": "clock",
+      "at_least": "05:20"
+    },
+    {
+      "at": 0,
+      "do": "objective",
+      "text": "The truck. Get the originals to the courier, and don't stop at C."
+    },
+    {
+      "at": 1,
+      "do": "flag",
+      "flag": "on_the_road",
+      "wait": [
+        "in_truck"
+      ],
+      "max": 600
+    },
+    {
+      "at": 1,
+      "do": "thought",
+      "text": "The sheets on the seat beside me. Don't stop.",
+      "secs": 4,
+      "if": [
+        "in_truck"
+      ]
+    },
+    {
+      "at": 2,
+      "do": "start",
+      "script": "morning_end"
+    }
+  ]
+}

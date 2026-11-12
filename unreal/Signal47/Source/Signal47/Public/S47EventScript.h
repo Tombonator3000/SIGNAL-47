@@ -50,6 +50,12 @@ class FS47CameraMoment;
 //              happening "deputy_round" sends the county car, FS47DeputyRound::ForStory), or event: a Freeform Director event
 //   clock      at_least "HH:MM": the Freeform clock is pushed forward to that hour of tonight, never back, never into the next night
 //   objective  text: the story's line on top of the HUD's objective and the task list; empty clears it
+//              (start's happening "attention_visit", STORY steg 6, the morning act: Freeform's visit at SARO, FS47Attention::StartForStory)
+//   telex      STORY steg 6 (the morning act): key (the paper's id), title, stamp and text (its page): a sheet on Freeform's telex in the
+//              control room (FS47FreeformSession::QueueTelex), printed there and torn off by the player as any other
+//   end        STORY steg 6 (the morning act): the Story night is over. Once the player is out of a panel and not being taken, the
+//              screen goes black, the end cards play (SS47Ending: the title, the credits, the 1947 photograph), the Story is marked
+//              completed for the title (FS47SaveStore::MarkStoryCompleted) and the game returns to it (US47Flow::StoryNightEnd)
 // Any beat: "if": conditions that must hold when its time comes (else it is left out); "wait": conditions it waits for, at most
 // "max" seconds (else it is left out). Conditions are the scripted events' (S47Script::CondKinds), and in_saro, area;
 // in the story store also story_flag and no_story_flag ({"if":"story_flag","flag":"<id>"}).
@@ -58,7 +64,7 @@ class FS47CameraMoment;
 // seed, the same each night it is asked), if (conditions). Asked by the night's happenings (FS47Happenings::StartEvent) before the
 // rhythm, never for an F10 start.
 
-enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Silence, Tube, Flag, Start, Clock, Objective, Scene, Shot, Count };
+enum class ES47Beat : uint8 { Sound, Tone, Printer, Light, Tv, Line, Thought, Toast, Evidence, Map, Prop, Show, Hide, Shake, CameraSnap, Silence, Tube, Flag, Start, Clock, Objective, Scene, Shot, Telex, End, Count };
 
 struct FS47Beat
 {

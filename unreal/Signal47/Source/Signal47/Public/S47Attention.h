@@ -114,6 +114,9 @@ public:
  int32 Visits() const{return VisitCount;}
  FString Status() const;
  void Add(double Points,const TCHAR* Why);
+ // STORY steg 6, the morning act (SC11): a visit at SARO now, for the story (FS47StoryDirector's start beat "attention_visit"), past the
+ // score, its hours and the draw; a Story night only, at SARO on foot, no visit or taking under way. False with why.
+ bool StartForStory(FString& Why);
  void TestSet(double Score){Value=FMath::Clamp(Score,0.,Top);}
  static bool SelfTest(TArray<FString>& Lines);
 private:

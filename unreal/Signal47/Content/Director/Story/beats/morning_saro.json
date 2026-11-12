@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "id": "morning_saro",
+  "name": "Story: SARO, five in the morning (SC11)",
+  "notes": "STORY steg 6, the morning act (Content/Director/Story/acts.json, act morning: from 04:00 once night_room6 has set room6_done). The old SC11 'SARO is searched' (S47SC11, PRODUKSJON_SC01_SC13.md SC11) on Freeform's own station: back at SARO on foot, then inside the building, before the telex (morning_telex). Left out: tearing the receiver's original off the event log and taking the event sheet from the desk (the old chapter's own pick-ups; Freeform's printer and logbook are the operator's, and a new pick-up would be a new mechanic). Each wait is left out after its most, so the morning goes on.",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 0,
+      "do": "flag",
+      "flag": "morning_at_saro",
+      "wait": [
+        {
+          "if": "area",
+          "is": "saro"
+        },
+        "on_foot"
+      ],
+      "max": 900
+    },
+    {
+      "at": 0,
+      "do": "toast",
+      "text": "SARO, five in the morning. Every window dark but yours.",
+      "secs": 6
+    },
+    {
+      "at": 0,
+      "do": "objective",
+      "text": "Inside, to the control room. The remote sheets print on the telex at 05:04."
+    },
+    {
+      "at": 1,
+      "do": "flag",
+      "flag": "morning_in_station",
+      "wait": [
+        "in_saro"
+      ],
+      "max": 600
+    },
+    {
+      "at": 2,
+      "do": "start",
+      "script": "morning_telex"
+    }
+  ]
+}

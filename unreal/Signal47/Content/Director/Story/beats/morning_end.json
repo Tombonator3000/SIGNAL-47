@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "id": "morning_end",
+  "name": "Story: 05:29:47, the end of Reyes' night (SC13)",
+  "notes": "STORY steg 6, the morning act. Started by morning_road, or by morning_telex when the visit took the player. The old SC13's last minute and its fixed ending (S47Chapter6, THE EVENT: the CB opening by itself, the engine on the channel, the far voices, 05:29:47, then the old Story's end cards) as text, the night's own silence and the gear's flicker (FS47Omen), then the end beat: black, the title, the credits, the 1947 photograph, the Story marked completed, and back to the title (US47Flow::StoryNightEnd). Story is Reyes' night: Freeform takes place after it, with Reyes gone. Taken by the visit, the lines carry no hour (the time is gone). Left out: the truck stalling at C, the 47 seconds' flash and the camera pulling out over the empty bench (the old chapter's own road, truck and camera).",
+  "enabled": true,
+  "beats": [
+    {
+      "at": 0,
+      "do": "objective",
+      "text": ""
+    },
+    {
+      "at": 0,
+      "do": "silence",
+      "secs": 30,
+      "level": 0.03
+    },
+    {
+      "at": 1,
+      "do": "thought",
+      "text": "The light let me go. The sheets are still with me. The time between is not.",
+      "secs": 5,
+      "if": [
+        {
+          "if": "story_flag",
+          "flag": "taken"
+        }
+      ]
+    },
+    {
+      "at": 2,
+      "do": "toast",
+      "text": "The CB opens by itself. Nobody calls.",
+      "secs": 3.5,
+      "if": [
+        "in_truck"
+      ]
+    },
+    {
+      "at": 2,
+      "do": "toast",
+      "text": "The walkie opens by itself. Nobody calls.",
+      "secs": 3.5,
+      "if": [
+        "on_foot"
+      ]
+    },
+    {
+      "at": 5,
+      "do": "toast",
+      "text": "On the channel, small and a long way off, an engine idling. It sounds like yours.",
+      "secs": 5.5
+    },
+    {
+      "at": 11,
+      "do": "toast",
+      "text": "It coughs twice and dies.",
+      "secs": 4
+    },
+    {
+      "at": 16,
+      "do": "toast",
+      "text": "05:29. On the radio, a man's voice, far away: Reference west. No. East.",
+      "secs": 4,
+      "if": [
+        {
+          "if": "no_story_flag",
+          "flag": "taken"
+        }
+      ]
+    },
+    {
+      "at": 16,
+      "do": "toast",
+      "text": "On the radio, a man's voice, far away: Reference west. No. East.",
+      "secs": 4,
+      "if": [
+        {
+          "if": "story_flag",
+          "flag": "taken"
+        }
+      ]
+    },
+    {
+      "at": 21,
+      "do": "toast",
+      "text": "A woman's voice: Don't stop at C.",
+      "secs": 4
+    },
+    {
+      "at": 25,
+      "do": "light",
+      "kind": "gear",
+      "strength": 0.9,
+      "secs": 8
+    },
+    {
+      "at": 26,
+      "do": "thought",
+      "text": "Breathing, close. My own.",
+      "secs": 3.5
+    },
+    {
+      "at": 30,
+      "do": "toast",
+      "text": "05:29:47.",
+      "secs": 3,
+      "if": [
+        {
+          "if": "no_story_flag",
+          "flag": "taken"
+        }
+      ]
+    },
+    {
+      "at": 32,
+      "do": "end"
+    }
+  ]
+}

@@ -95,9 +95,22 @@ public:
  static double HoleFromAt(double Clock);
  // US47WorldLife: the hole's start on a Story night once opened; unset otherwise.
  static TOptional<double> StarHoleFrom(const US47Main* Main);
+ // STORY steg 6, the morning act (SC11, Tom: weave existing systems): the start beat's happening that brings Freeform's visit at SARO
+ // tonight (FS47Attention::StartForStory: the mains sag, then inside with power it holds and goes, inside in the dark or in the yard the
+ // light comes as being taken does). The director tells its end as ended_attention_visit (and at once when it could not begin, so the
+ // story goes on), and sets TakenFlag once the player has been taken this Story night (FS47FreeformSession::TimesTaken rose).
+ static constexpr const TCHAR* AttentionVisitId=TEXT("attention_visit");
+ static constexpr const TCHAR* TakenFlag=TEXT("taken");
+ // STORY steg 6 (SC13): the end beat. It is due at once; the end comes when EndMay holds (no panel, nobody being taken), then the flag
+ // EndFlag is set and US47Flow::StoryNightEnd plays the end cards, marks the Story completed and goes back to the title. Saved as
+ // "ending" while it is due (a save in between ends the night on Continue).
+ static constexpr const TCHAR* EndFlag=TEXT("story_end");
+ static bool EndMay(bool bModal,bool bTaking){return !bModal&&!bTaking;}
+ bool IsEndDue() const{return bEndDue;}
+ bool HasEnded() const{return bEnded;}
  // The longest a clock beat waits for a closed panel and the player out of the truck, in real seconds; then it is left out.
  static constexpr double ClockWaitMost=5;
- // A story-only beat (flag, start, clock, objective), with its text filled in; called by the runner. What it did, for the log.
+ // A story-only beat (flag, start, clock, objective, scene, telex, end), with its text filled in; called by the runner. What it did, for the log.
  FString Apply(const FS47Beat& B,const FString& Text);
  // Starts a story script on the next tick. False with why: not in the store, or already running or waiting.
  bool StartScript(const FString& Id,FString& Why);
@@ -162,6 +175,9 @@ private:
  bool bHeld=false;            // FS47ScriptPlayer::Hold("story") is on
  FString LastEvent,LastGround,LastPatrol; // step 6: what was under way at the last tick (EndedFlagOf); not saved
  double HoleFrom=-1;          // step 6: the star hole's start (HoleFromAt), below zero: not opened; saved as holeFrom
+ FString LastVisit;           // step 6, the morning act: the Attention visit under way at the last tick (not saved)
+ int32 LastTaken=-1;          // the session's TimesTaken at the last tick; below zero: not read yet (not saved)
+ bool bEndDue=false,bEnded=false; // the end beat has come / the end has been played
  void QueueAct(int32 Index);
  void StartPending();
  void StepClock(double Dt);

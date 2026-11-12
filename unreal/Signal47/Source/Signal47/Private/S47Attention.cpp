@@ -20,6 +20,7 @@
 #include "S47ScriptPlayer.h"
 #include "S47Seen.h"
 #include "S47SkyVisitors.h"
+#include "S47StoryDirector.h"
 #include "S47Taken.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -492,6 +493,24 @@ void FS47Attention::BeginVisit()
  if(!Play(VisitId)&&M->UI)M->UI->Thought(TEXT("Something is right over the station."),4.5f);
  // It comes as the mains go: the sag's own lines point at the standby generator (FS47FreeformSession::StepSky).
  F->SkyCutBegin(VisitSag,VisitOut);
+}
+
+// STORY steg 6, the morning act (SC11 "SARO is searched"): the visit started by the story director on a Story night, past the score,
+// the hours, the dice and the one-at-a-time hold a story script keeps on the night (OneAtATime is true while it runs). The visit itself
+// is the same: BeginVisit, then StepVisit's outcome by where the player is and whether the lights are on.
+bool FS47Attention::StartForStory(FString& Why)
+{
+ using namespace S47AttentionLocal;
+ const FS47FreeformSession* F=Session(M);
+ if(!FS47StoryDirector::Of(M)){Why=TEXT("not a Story night");return false;}
+ if(!F||!F->Active()){Why=TEXT("no Freeform session");return false;}
+ if(Visit!=EVisit::None){Why=TEXT("a visit is under way already");return false;}
+ if(F->Taken&&F->Taken->Busy()){Why=TEXT("being taken");return false;}
+ if(!AtSaro()){Why=TEXT("not at SARO on foot");return false;}
+ BeginVisit();
+ if(Visit==EVisit::None){Why=TEXT("it did not begin");return false;}
+ UE_LOG(LogS47Attention,Display,TEXT("S47: attention: the visit at SARO is the story's"));
+ return true;
 }
 
 void FS47Attention::StepVisit(double Dt)
