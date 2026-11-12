@@ -1,7 +1,7 @@
 """Texture-only re-import of the surfaces photo_tex.py regenerates (TEXTURES-PHOTO-20261112): each PNG goes over the texture
 asset its pipeline's importer made (same asset, so materials and meshes are untouched), keeping its sRGB / compression /
 green-flip settings, with the surface's largest size. Runs in the editor's python:
-  python3 run_photo_tex_import.py saro <dir with the Lived textures (lived_tex.py's output)>
+  python3 run_photo_tex_import.py saro <dir with lived_tex.py's and `photo_tex.py saro <dir>`'s output>
 Report: Saved/photo-tex-import.json."""
 from pathlib import Path
 import json, re
@@ -36,6 +36,7 @@ SETS = {'saro': (
     + rows('/Game/EastWing/Props/Surfaces/Textures', 'M_EW_Galvanized', ew('EW_Galvanized'), 1024)
     + rows('/Game/EastWing/Props/Workshop/Materials/Textures', 'M_EW_GreenSteel', ew('EW_GreenSteel'), 1024)
     + rows('/Game/EastWing/Props/Workshop/Materials/Textures', 'M_EW_Galvanized', ew('EW_Galvanized'), 1024)
+    + rows('/Game/EastWing/Shell/Materials/Textures', 'EW_Shell_Masonry', [LIVED / ('EW_Shell_Masonry_' + c + '.png') for c in ('BaseColor', 'Roughness', 'NormalGL')], 2048)
     + rows('/Game/Signal47/Art/Office/Materials/Textures', 'M_Office_SageWall', office('M_Office_SageWall'), 1024)
     + rows('/Game/Signal47/Art/Office/Materials/Textures', 'M_Office_CeilingTile', office('M_Office_CeilingTile'), 1024)
     + rows('/Game/Signal47/Art/Office/Materials/Textures', 'M_Office_FloorLinoleum', office('M_Office_FloorLinoleum'), 1024))}

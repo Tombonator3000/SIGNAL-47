@@ -11,7 +11,7 @@ ever one of them) replace a generator's painted albedo where one is listed here.
 A generator asks surface(key, old=...) and keeps its painted texture when that returns None (no entry, or the picture is absent).
 
 numpy only; Pillow or Blender's bpy reads the picture, whichever is there. Outside Blender:
-  /home/tom/stable-diffusion-webui-forge/venv/bin/python3 photo_tex.py saro          (the SARO textures that have no generator hook)
+  /home/tom/stable-diffusion-webui-forge/venv/bin/python3 photo_tex.py saro [dir]    (the SARO textures without a generator hook; dir: lived_tex.py's output folder, for the east wing's wall)
   /home/tom/stable-diffusion-webui-forge/venv/bin/python3 photo_tex.py check         (what each picture's seams and grid look like)
 S47_PHOTO_DIR moves the picture folder; S47_PHOTO_OFF=1 gives the painted textures again.
 """
@@ -27,7 +27,9 @@ LUMA = np.array([0.2126, 0.7152, 0.0722], np.float32)
 #        crop: (x0, x1, y0, y1) pixels of it that are whole blocks/tiles (None: all of it); span: metres (u, v) that part covers
 #        uv:   metres (u, v) the mesh's UVs repeat the texture over;  size: pixels of the texture (the import's largest size too)
 #        grid: (nu, nv) pattern repeats in the cropped part: the seam fade shifts by whole repeats (None: half the picture)
-#        match: how far its mean colour is pulled to the old painted texture's (0 the picture's own, 1 the old one's)
+#        match: how far its mean colour is pulled to the old painted texture's (0 the picture's own, 1 the old one's);
+#        target: that painted colour, linear, where the generator's paint is one colour (else the caller hands over `old`)
+#        contrast: the picture's contrast about its mean (after the match), where a material mutes or a pattern shouts
 #        rough: (lo, hi) roughness from bright to dark; relief: metres of height per standard deviation of fine shade;
 #        grain: how much of the pixel-sized shade goes into the relief (1 all of it; blocks little: their joints carry it)
 #        mosaic: (n_photo, n_out, inset) for a floor or ceiling whose joints are geometry: n_out x n_out tile faces without joints
@@ -46,15 +48,20 @@ SURFACES = {
                           grid=None, match=0.7, rough=(0.32, 0.62), relief=0.00004),
     'EW_Galvanized': dict(file='saro/galvanized.png', crop=None, span=(1.0, 1.0), uv=(1.0, 1.0), size=1024,
                           grid=None, match=0.0, rough=(0.36, 0.58), relief=0.000004),
+    # The east wing's own walls, /Game/EastWing/Shell (Shell/import_unreal.py): its material takes a quarter of the picture's
+    # grey over a cream paint and a normal at 0.3, with the UVs at 2 m a tile: 4 blocks by 10 courses of the picture, its
+    # contrast doubled so that joints and stains come through that paint. Written by `photo_tex.py saro <dir>`.
+    'EW_Shell_Masonry': dict(file='saro/block_int.png', crop=(7, 2037, 6, 1855), span=(2.0, 2.0), uv=(2.0, 2.0), size=2048,
+                             grid=(4, 5), match=0.0, contrast=2.0, rough=(0.25, 0.95), relief=0.0075, grain=0.12),
     # The office set's 1 m cube-projected finishes, /Game/Signal47/Art/Office (Office/build_office.py), which the control
     # room's and the corridor's finishes tint (SaroInteriors): their colour stays the painted one's.
-    'M_Office_SageWall': dict(file='saro/wall_panel.png', crop=(512, 1536, 512, 1536), span=(1.0, 1.0), uv=(1.0, 1.0), size=1024,
+    'M_Office_SageWall': dict(target=(.255, .282, .250), file='saro/wall_panel.png', crop=(512, 1536, 512, 1536), span=(1.0, 1.0), uv=(1.0, 1.0), size=1024,
                               grid=None, match=1.0, rough=(0.84, 0.95), relief=0.00002),
     # Ceiling panels and floor tiles are real geometry there (T-bars, 30 cm quads): the texture is tile faces without joints.
-    'M_Office_CeilingTile': dict(file='saro/ceiling_tile.png', mosaic=(2, 2, 0.05), span=(1.2, 1.2), uv=(1.0, 1.0), size=1024,
+    'M_Office_CeilingTile': dict(target=(.46, .47, .43), file='saro/ceiling_tile.png', mosaic=(2, 2, 0.05), span=(1.2, 1.2), uv=(1.0, 1.0), size=1024,
                                  grid=None, match=1.0, rough=(0.93, 0.99), relief=0.00006),
-    'M_Office_FloorLinoleum': dict(file='saro/vct_floor.png', mosaic=(4, 3, 0.05), span=(1.2, 1.2), uv=(1.0, 1.0), size=1024,
-                                   grid=None, match=1.0, rough=(0.45, 0.75), relief=0.00001),
+    'M_Office_FloorLinoleum': dict(target=(.235, .255, .232), file='saro/vct_floor.png', mosaic=(4, 3, 0.05), span=(1.2, 1.2), uv=(1.0, 1.0), size=1024,
+                                   grid=None, match=1.0, contrast=0.5, rough=(0.45, 0.75), relief=0.00001),   # its streaks at half strength: the picture's pattern is loud
 }
 # Kept painted, on purpose (12 Nov): M_Lived_VCTFloor (vct_floor.py). The control room's floor is one picture of the whole
 # 12 x 9 m room with its walked lanes, caster arcs, burns and coffee; a repeating photo would lose all of it.
@@ -154,7 +161,8 @@ def match_mean(a, old, amount=1.0):
     if amount <= 0 or old is None:
         return a
     la = srgb2lin(a)
-    want = srgb2lin(np.asarray(old, np.float32)[..., :3]).reshape(-1, 3).mean(0)
+    old = np.asarray(old, np.float32)
+    want = old if old.ndim == 1 else srgb2lin(old[..., :3]).reshape(-1, 3).mean(0)   # a linear colour, or a picture
     have = la.reshape(-1, 3).mean(0)
     gain = 1 + amount * (want / np.maximum(have, 1e-4) - 1)
     return lin2srgb(np.clip(la * gain, 0, 1))
@@ -241,7 +249,10 @@ def surface(key, old=None, size=None, green=1.0):
         a = seamless(a, s.get('grid'))
         reps = (max(1, round(s['uv'][0] / s['span'][0])), max(1, round(s['uv'][1] / s['span'][1])))
         a = resample(np.tile(a, (reps[1], reps[0], 1)), N, N)
-    a = np.clip(match_mean(a, old, s.get('match', 0)), 0, 1)
+    a = np.clip(match_mean(a, s.get('target', old), s.get('match', 0)), 0, 1)
+    if s.get('contrast'):
+        m = a.reshape(-1, 3).mean(0)
+        a = np.clip(m + (a - m) * s['contrast'], 0, 1)
     rough, hgt = maps(a, s['rough'], grain=s.get('grain', 1.0))
     hm = hgt * s['relief']
     print('S47PHOTO', key, s['file'], 'x%d,%d' % reps, '%d px' % N, 'mean', np.round(a.reshape(-1, 3).mean(0), 3), flush=True)
@@ -255,7 +266,7 @@ def office(out=None):
     done = []
     for key in ('M_Office_SageWall', 'M_Office_CeilingTile', 'M_Office_FloorLinoleum'):
         base = out / (key + '_base.png')
-        P = surface(key, old=load(base) if base.is_file() else None)
+        P = surface(key)
         if P is None:
             continue
         save(base, P['base']); save(out / (key + '_rough.png'), P['rough']); save(out / (key + '_normal_dx.png'), P['normal'])
@@ -263,10 +274,25 @@ def office(out=None):
     return done
 
 
+def shell_masonry(out):
+    """The east wing shell's block wall (texture-only: the shell's importer and its CC0 source set are left as they are).
+    Written beside lived_tex.py's output, outside Git like it (24 MB that the picture and this script make again)."""
+    out = Path(out)
+    P = surface('EW_Shell_Masonry', green=-1.0)   # that texture asset flips green on import (an OpenGL source)
+    if P is None:
+        return []
+    out.mkdir(parents=True, exist_ok=True)
+    save(out / 'EW_Shell_Masonry_BaseColor.png', P['base']); save(out / 'EW_Shell_Masonry_Roughness.png', P['rough'])
+    save(out / 'EW_Shell_Masonry_NormalGL.png', P['normal'])
+    return ['EW_Shell_Masonry']
+
+
 if __name__ == '__main__':
     what = sys.argv[1] if len(sys.argv) > 1 else 'check'
     if what == 'saro':
         print('office:', office())
+        if len(sys.argv) > 2:
+            print('shell:', shell_masonry(sys.argv[2]))
     else:
         for key, s in SURFACES.items():
             p = PHOTO_DIR / s['file']
