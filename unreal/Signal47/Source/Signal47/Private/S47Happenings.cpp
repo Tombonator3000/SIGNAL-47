@@ -171,6 +171,11 @@ namespace S47Hap
   if(FString::FromInt(D).Contains(TEXT("47")))D=(D+1)%360;
   return double(D);
  }
+ // FIX10-9 (→ M3): the figure on the rise seen from inside SARO: its way as the record says it, with the bearing from the station, so
+ // that the line on the map and the words agree ("east-southeast, about 110 degrees from SARO").
+ FString PaneWay(const FString& Way,double Az){return FString::Printf(TEXT("%s, about %.0f degrees from SARO"),*Way,Bearing(Az));}
+ // Seconds it stands there once seen through the glass, before it is gone (a long look, never the two minutes it waits unseen).
+ constexpr double PaneWatchS=20;
  constexpr uint32 Bit(ES47PlaceTrait T){return uint32(T);}
  // What the stores and the land call them in the log: never a name, never Story's far side.
  const TCHAR* const FarSide[]={TEXT("forty-seven"),TEXT("forty seven"),TEXT("47"),TEXT("tomas"),TEXT("tomás"),TEXT("silhouette"),TEXT("cable"),TEXT("kinski"),TEXT("alien"),TEXT("ufo"),TEXT("saucer"),TEXT("abduct"),TEXT("8.15"),TEXT("the event"),TEXT("elvis"),TEXT("bigfoot"),TEXT("sasquatch"),TEXT("heisenberg"),TEXT("cadillac"),TEXT("thermos"),TEXT("cut clean"),TEXT("cleanly cut"),TEXT("this records")};
@@ -1049,6 +1054,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    A.Stage=FMath::Clamp(S47J::Int(Was,TEXT("stage")),0,9);A.Serial=S47J::Int(Was,TEXT("serial"));
    A.Age=S47J::Num(Was,TEXT("age"));A.Len=S47J::Num(Was,TEXT("len"));A.X=S47J::Num(Was,TEXT("x"));A.Z=S47J::Num(Was,TEXT("z"));A.Yaw=S47J::Num(Was,TEXT("yaw"));A.Clock=S47J::Num(Was,TEXT("clock"));
    A.At=FVector(S47J::Num(Was,TEXT("ax")),S47J::Num(Was,TEXT("ay")),S47J::Num(Was,TEXT("az")));A.bSeen=S47J::Bool(Was,TEXT("seen"));A.bMet=S47J::Bool(Was,TEXT("met"));A.bDanger=IsDanger(A.Id);
+   A.bInside=S47J::Bool(Was,TEXT("inside")); // FIX10-9 (→ M3): an older save has none (false)
    const bool bFinite=FMath::IsFinite(A.Age)&&FMath::IsFinite(A.Len)&&FMath::IsFinite(A.X)&&FMath::IsFinite(A.Z)&&!A.At.ContainsNaN()&&A.Len>0&&A.Len<86400&&FMath::Abs(A.X)<1e5&&FMath::Abs(A.Z)<1e5;
    // A figure on the rise saved with Tom's Nordic or Cosmic, loaded in a build without them (the private TripoNew models are kept
    // out of Git): the shade stands there instead, as a new one would be drawn (FigureFor); without the shade's body either, it is
@@ -1102,6 +1108,7 @@ S47J::FObj FS47Happenings::Save() const
   S47J::Set(N,TEXT("x"),Now.X);S47J::Set(N,TEXT("z"),Now.Z);S47J::Set(N,TEXT("yaw"),Now.Yaw);S47J::Set(N,TEXT("clock"),Now.Clock);
   S47J::Set(N,TEXT("ax"),Now.At.X);S47J::Set(N,TEXT("ay"),Now.At.Y);S47J::Set(N,TEXT("az"),Now.At.Z);
   if(Now.bSeen)S47J::Set(N,TEXT("seen"),true);if(Now.bMet)S47J::Set(N,TEXT("met"),true);
+  if(Now.bInside)S47J::Set(N,TEXT("inside"),true); // FIX10-9 (→ M3)
   S47J::Set(O,TEXT("now"),N);
  }
  if(!Sites.IsEmpty())
@@ -4261,16 +4268,38 @@ bool FS47Happenings::StepMore(double Dt)
   // The lamp turned on it is the player's own doing, seen or not; seeing it is seeing it: against the sky on its rise, or lit.
   const bool bLamp=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn&&Seen(Now.At+FVector(0,1,0),400,6);
   const double Away=FVector2D(To.X,To.Z).Size();
-  if(!Now.bSeen&&SeenLit(Now.At+FVector(0,1.6,0),260,30,LitGround|LitSky,*Shade)){Now.bSeen=true;Noticed(TEXT("horizon_figure"),Away,TEXT("sight"));}
-  if(Now.Stage==0&&(bLamp||Away<(S47HapTiers::GlimpseOnly(Now.Clock)?S47HapTiers::GlimpseGoneAt:90.)))
+  if(!Now.bSeen&&SeenLit(Now.At+FVector(0,1.6,0),260,30,LitGround|LitSky,*Shade))
+  {
+   Now.bSeen=true;Noticed(TEXT("horizon_figure"),Away,TEXT("sight"));
+   // FIX10-9 (→ M3): from inside the building (a control room window) nobody can walk up to it: it stays its while more and is gone,
+   // and what was seen is kept with its bearing from SARO.
+   Now.bInside=FS47FieldRadio::InSaroBuilding(M);
+   if(Now.bInside)Now.Len=FMath::Min(Now.Len,Now.Age+S47Hap::PaneWatchS);
+  }
+  const bool bPaneGone=Now.bInside&&Now.bSeen&&Now.Age>=Now.Len-1.;
+  if(Now.Stage==0&&(bLamp||bPaneGone||Away<(S47HapTiers::GlimpseOnly(Now.Clock)?S47HapTiers::GlimpseGoneAt:90.)))
   {
    Now.Stage=1;Now.Len=Now.Age+1;
    if(Now.bSeen)
    {
+    // FIX10-9 (→ M3): seen from inside SARO, its way carries the bearing from the station; the same line goes on the map from SARO
+    // (FS47Places, "Day N window", where a truck's line can cross it), and the ground it stood on joins the needle's history (Past:
+    // the magnetometer at a place near it will not settle for two nights, a record of OUT ON THE LAND).
+    FString Way=DirectionFrom(Feet,Now.At);
+    if(Now.bInside)
+    {
+     double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
+     const double Az=S47Hap::Bearing(FS47Places::AzimuthOf(SaroX,SaroZ,Now.X,Now.Z));
+     Way=S47Hap::PaneWay(Way,Az);
+     const bool bLine=F->Places&&F->Places->AddCarFix(SaroX,SaroZ,Az,FS47Places::WindowTarget,Now.Clock,F->Day());
+     Past.Add({Now.X,Now.Z,F->Day()});while(Past.Num()>MostPast)Past.RemoveAt(0);
+     if(bLine&&M->UI)M->UI->Toast(FString::Printf(TEXT("Bearing on your map (%s)."),*S47Keys::MapSaid()),5);
+     UE_LOG(LogS47Happen,Display,TEXT("S47: happening horizon_figure seen from inside SARO: %.0f degrees, line on the map %d"),Az,bLine);
+    }
     // N1110-5: the finding, the gear and the thought are its script's (horizon_figure_gone); the old line only if the script cannot play
-    FS47EventCtx Gone;Gone.Words.Add(TEXT("clock"),S47Hap::ClockText(Now.Clock));Gone.Words.Add(TEXT("dir"),DirectionFrom(Feet,Now.At));
+    FS47EventCtx Gone;Gone.Words.Add(TEXT("clock"),S47Hap::ClockText(Now.Clock));Gone.Words.Add(TEXT("dir"),Way);
     if(!S47EventScript::Play(M,TEXT("horizon_figure_gone"),Gone))
-     F->RecordEvidence(FString::Printf(TEXT("horizon_figure_d%d"),F->Day()),FString::Printf(TEXT("At %s a figure stood on the rise to the %s, a long way off, dead still. Then there was nobody on the rise."),*S47Hap::ClockText(Now.Clock),*DirectionFrom(Feet,Now.At)));
+     F->RecordEvidence(FString::Printf(TEXT("horizon_figure_d%d"),F->Day()),FString::Printf(TEXT("At %s a figure stood on the rise to the %s, a long way off, dead still. Then there was nobody on the rise."),*S47Hap::ClockText(Now.Clock),*Way));
    }
   }
   if(Now.Age>=Now.Len)EndEvent(Now.Stage>0);
@@ -5502,10 +5531,19 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   FS47Happenings A(nullptr);A.Begin(nullptr);
   Check(!A.SwapOrder(9).Contains(TEXT("road_glimpse"))&&!A.SwapOrder(9).Contains(TEXT("humor")),TEXT("the rare ones are never drawn in another's place"));
   FSite S;S.Kind=TEXT("roadtracks");S.Variant=TEXT("low");S.Title=TEXT("the highway");S.Night=6;S.Serial=2;S.X=-6.5;S.Z=900;S.Until=6*86400.+20*3600.;A.Sites.Add(S);
-  A.Now.Id=TEXT("horizon_figure");A.Now.Variant=TEXT("cosmic");A.Now.Len=120;A.Now.Age=3;A.Now.X=10;A.Now.Z=20;
+  A.Now.Id=TEXT("horizon_figure");A.Now.Variant=TEXT("cosmic");A.Now.Len=120;A.Now.Age=3;A.Now.X=10;A.Now.Z=20;A.Now.bSeen=A.Now.bInside=true;
   FS47Happenings B(nullptr);B.Begin(S47J::Read(S47J::Write(A.Save())));
   Check(B.Sites.Num()==1&&B.Sites[0].Kind==TEXT("roadtracks")&&B.Sites[0].Variant==TEXT("low")&&B.Sites[0].X==-6.5,TEXT("the prints on the shoulder are still there after a Continue"));
   Check(B.Now.Id==TEXT("horizon_figure")&&B.Now.Variant==TEXT("cosmic"),TEXT("a figure on the rise keeps the body it was given across a Continue"));
+  // FIX10-9 (→ M3): seen from inside SARO it says its bearing from the station, never Story's number, and that survives a Continue;
+  // an older save (no "inside") reads as seen from outside.
+  {
+   const S47J::FObj Old=A.Save();if(const S47J::FObj W=S47J::Obj(Old,TEXT("now")))W->RemoveField(TEXT("inside"));
+   FS47Happenings Older(nullptr);Older.Begin(S47J::Read(S47J::Write(Old)));
+   const FString Way=S47Hap::PaneWay(TEXT("east-northeast"),47.2),Way2=S47Hap::PaneWay(TEXT("south"),181.6);
+   Check(B.Now.bInside&&B.Now.bSeen&&Older.Now.Id==TEXT("horizon_figure")&&!Older.Now.bInside&&Way==TEXT("east-northeast, about 48 degrees from SARO")&&Way2==TEXT("south, about 182 degrees from SARO")&&!S47Hap::Concluding(Way)&&S47Hap::PaneWatchS>=10&&S47Hap::PaneWatchS<60,
+    TEXT("FIX10-9: the figure on the rise seen from a SARO window keeps its bearing from SARO in the record (never 47), stays a long look, and an older save reads as before"));
+  }
   A.Now=FActive();A.Now.Id=TEXT("road_glimpse");A.Now.Variant=TEXT("crawler");A.Now.Len=3;
   FS47Happenings C(nullptr);C.Begin(S47J::Read(S47J::Write(A.Save())));
   Check(C.Now.Id.IsEmpty(),TEXT("a crossing cut off by a save is not carried on"));

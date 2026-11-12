@@ -275,6 +275,8 @@ private:
   // A danger counts when the player meets it (MeetDanger), not when it is drawn. Watch: until this age, the player out on foot is
   // taken (BeginOver), as under the light over the truck.
   bool bMet=false;double Watch=-1;
+  // FIX10-9 (→ M3): seen from inside the SARO building (the figure on the rise through a control room window). Saved ("inside").
+  bool bInside=false;
  } Now;
  // What stays out on the land after: a landing's ring, a stuck truck, a camper.
  struct FSite
