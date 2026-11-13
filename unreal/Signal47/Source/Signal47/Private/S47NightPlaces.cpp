@@ -643,8 +643,7 @@ bool FS47Happenings::PlaceSelfTest(TArray<FString>& Lines)
   const FSite* R=B.SiteOf(TEXT("cairnring"));const FSite* Bd=B.SiteOf(TEXT("deadbirds"));
   Check(R&&R->bHeard&&!R->bFound&&R->X==-320.&&Bd&&Bd->bKnown&&Bd->Night==10&&B.HasSite(TEXT("deadbirds")),TEXT("the cairn's ring and the birds survive a Continue, with what the player heard and was told"));
   const TArray<FStir> Left={{-320,430,6}};
-  Check(Stirred(Left,-300,450,7)&&FCString::Strcmp(S47Hap::SiteKindOf(TEXT("cairn_stones")),TEXT("cairnring"))==0&&FCString::Strcmp(S47Hap::SiteKindOf(TEXT("trough_birds")),TEXT("deadbirds"))==0,
-   TEXT("what was out there stirs the needle near its place for two nights (FS47Places::Use)"));
+  Check(Stirred(Left,-300,450,7)&&FCString::Strcmp(S47Hap::SiteKindOf(TEXT("cairn_stones")),TEXT("cairnring"))==0&&FCString::Strcmp(S47Hap::SiteKindOf(TEXT("trough_birds")),TEXT("deadbirds"))==0, TEXT("what was out there stirs the needle near its place for two nights (FS47Places::Use)"));
   A.Stop();B.Stop();
  }
  return OK;
