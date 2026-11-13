@@ -51,6 +51,7 @@
 #include "S47UI.h"
 #include "S47Thoughts.h"
 #include "S47Walker.h"
+#include "S47Sneak.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47Story.h"
@@ -3922,6 +3923,10 @@ void FS47Happenings::StepFigure(double Dt)
   return;
  }
  if(Now.Age>Now.Len){Over(false,FString());return;}
+ // SNEAK-20261108 (13 November): keep low with the lamp off and it loses the player for longer, so each wait before it stands
+ // nearer runs at a visit's pace (S47Sneak::FigureWait): about twice as long, never forever (all its waits still end well inside
+ // Now.Len). Moving the stage's start on keeps Age-Yaw the hunt's own clock, so a save keeps it. Looking at it still brings it nearer.
+ if(Now.Stage<=4)Now.Yaw+=S47Sneak::FigureShift(Dt,M->Player?M->Player->Sneak():0.,M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn);
  const auto Stand=[&](double Dist,double FromForward)
  {
   // Out of the view, at an angle from where the player looks now: they have to turn to find it.

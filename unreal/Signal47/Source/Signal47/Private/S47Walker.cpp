@@ -465,6 +465,17 @@ bool S47Sneak::SelfTest(TArray<FString>& Lines)
 		TEXT("a door is given up on only after the room has kept still a while, and not always"));
 	Check(StillInRoom(1, false, 0) && !StillInRoom(1, true, 0) && !StillInRoom(0.2, false, 0) && !StillInRoom(1, false, 1.0),
 		TEXT("still is low, dark and not walking"));
+	{
+		// SNEAK-20261108 (13 November): the figure out on the open ground. Its waits (45, 9, 35, 6 and 7 s) low and dark, and one
+		// of them summed a frame at a time the way FS47Happenings::StepFigure moves its stage's start, against its 300 s.
+		const double Waits = 45.0 + 9.0 + 35.0 + 6.0 + 7.0;
+		double Clock = 0, Start = 0;
+		for (int32 I = 0; I < 60 * 90; ++I) { Clock += 1.0 / 60; Start += FigureShift(1.0 / 60, 1, false); }
+		Check(FigureWait(45, 0, false) == 45.0 && FigureWait(45, 1, true) == 45.0 && FigureWait(45, 1, false) > 80.0 && FigureWait(45, 1, false) < 100.0
+			&& FMath::IsNearlyEqual(Clock - Start, 45.0, 0.05) && FigureShift(-1, 1, false) == 0.0 && FigureShift(0.1, 0, false) == 0.0,
+			TEXT("the figure on the open ground waits about twice as long for a player low with the lamp off; standing or lit, as before"));
+		Check(FigureWait(Waits, 1, false) < 300.0 - 20.0, TEXT("low and dark it still comes in the end: all its waits stay inside its 300 s"));
+	}
 	Check(EyeDrop > 0.4 && EyeDrop < 0.8 && Pace > 0.3 && Pace < 0.8 && StepGain > 0.1 && StepGain < 0.6 && StepEvery < 0.8,
 		TEXT("low: the eye about sixty centimetres down, half pace, softer and shorter steps"));
 	return bOk;

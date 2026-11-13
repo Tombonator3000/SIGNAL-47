@@ -6,7 +6,8 @@
 // 60 cm lower. What looks and listens for the player takes a little less from that: the small ones see and hear a crouching
 // player from less far (FS47RoswellBrain), a visit loses interest a little faster and comes on a little slower (FS47FarmSite),
 // a thing at a shut door may give up on a room where nobody moves (FS47DoorVisit), and the light under a roof finds a chest
-// that is under the sill a little later (FS47Taken). A small advantage, never invisibility: close by, in a lamp's beam or out
+// that is under the sill a little later (FS47Taken), and the figure out on the open ground comes nearer more slowly
+// (FS47Happenings figure_near, 13 November). A small advantage, never invisibility: close by, in a lamp's beam or out
 // in the open, it all still works as before. Lowness: 0 standing, 1 fully down; every number here is in one place.
 //
 // N1110 (HORROR-IDEAS-20261106-10 point 6): under a table. AS47Walker::Sneak() runs on past 1, to 2 for a player who has crept in under
@@ -50,6 +51,11 @@ namespace S47Sneak
 	inline double ApproachPace(double Lowness, bool bLampLitNow) { return bLampLitNow ? 1.0 : 1.0 - ApproachLoss * QuietOf(Lowness); }
 	inline double ChestHeight(double Lowness) { return FMath::Lerp(1.25 - ChestDrop * QuietOf(Lowness), HiddenChest, HiddenOf(Lowness)); }
 	inline double TrackPace(double Lowness) { return 1.0 - TrackLoss * QuietOf(Lowness); }
+	/** SNEAK-20261108 (13 November): the figure out on the open ground (FS47Happenings figure_near) takes this long, low and dark,
+	 *  for one of its own waits: at a visit's pace, so about twice as long crouching, the same with the lamp on. */
+	inline double FigureWait(double Wait, double Lowness, bool bLampLitNow) { return FMath::Max(0.0, Wait) / FMath::Max(0.05, HuntPace(Lowness, bLampLitNow)); }
+	/** ... done per frame: how far its stage's start moves on, so that Age-Yaw grows at the pace above. */
+	inline double FigureShift(double Dt, double Lowness, bool bLampLitNow) { return FMath::IsFinite(Dt) && Dt > 0 ? Dt * (1.0 - HuntPace(Lowness, bLampLitNow)) : 0.0; }
 	/** The thing at a shut door goes away unopened if the room has stayed low, dark and still long enough. Roll: 0 to 1. */
 	inline bool DoorGoesAway(double StillTime, double DiceRoll) { return StillTime >= DoorStillSeconds && DiceRoll < DoorGiveUp; }
 	/** Low, dark and still enough this frame to count towards it. */
