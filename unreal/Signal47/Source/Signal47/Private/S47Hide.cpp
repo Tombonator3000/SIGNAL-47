@@ -91,7 +91,9 @@ void FS47Hide::Build()
 		C->SetupAttachment(Parent->Comp.Get()); C->SetMobility(EComponentMobility::Movable);
 		C->SetRelativeScale3D(S47Three::DirToUE(Size)); C->SetCastShadow(false);
 		C->SetCollisionResponseToAllChannels(ECR_Ignore); C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
-		C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetVisibility(false);
+		// Hidden in game as well as not visible: the web shows a node's component again whenever its area comes back into view
+		// (AS47Web::ApplyVisibility), and the box then stood under the desk in the engine's grey checker (Tom, d67).
+		C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetVisibility(false); C->SetHiddenInGame(true);
 		C->RegisterComponent(); Targets.Add(C);
 		FS47Obj O = W->ObjAt(W->AdoptNode(C, Saro.I, FString(S.Id)));
 		O.SetScale(Size);
