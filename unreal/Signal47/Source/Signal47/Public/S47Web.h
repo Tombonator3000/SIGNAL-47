@@ -470,7 +470,7 @@ private:
 		FS47TubeFlicker Flicker; // fluorescent strike / die-off on switching (not desk lamps)
 		// PLAY-31-34: a control room tube seen breaking for good sputters (FS47TubeFlicker::BreakLevel) from BrokeAt;
 		// the first update only notes the state, so a load or a change of area shows broken tubes already dark.
-		bool bBreakSeen = false, bBroken = false; double BrokeAt = -100.0;
+		bool bBreakSeen = false, bBroken = false, bWorn = false; double BrokeAt = -100.0; // bWorn: PLAY-31-34 (14 Nov), burned out of age: one spark
 		FLinearColor Color = FLinearColor::White;
 		TWeakObjectPtr<URectLightComponent> Light;
 		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;

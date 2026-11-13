@@ -36,6 +36,16 @@ public:
 	// N1110 (pace, critic 3): three variants of the relief, by the day (calm_after for days 1, 4, 7; calm_after_b for 2, 5, 8; calm_after_c for 3, 6, 9).
 	static const TCHAR* ReliefScript(int32 Day = 1) { const int32 K = ((Day % 3) + 3) % 3; return K == 2 ? TEXT("calm_after_b") : K == 0 ? TEXT("calm_after_c") : TEXT("calm_after"); }
 
+	// PLAY-31-34 (14 November, Tom's «Vurder»): a ceiling tube in the control room burns out of age in a false alarm's slot (script
+	// tube_wear: its gates hold the rest, day 8 on and about one night in four). Pure: from week 2, none already out of age waiting for
+	// the day shift, a real tube left to go, the player in the control room to see it, never on a Story night.
+	static constexpr const TCHAR* TubeWearScript = TEXT("tube_wear");
+	static constexpr const TCHAR* TubeDaleScript = TEXT("tube_wear_dale");
+	static bool TubeWearMay(int32 Day, int32 WornNow, bool bTubeLeft, bool bInControlRoom, bool bStoryNight)
+	{ return Day >= 8 && WornNow == 0 && bTubeLeft && bInControlRoom && !bStoryNight; }
+	// Dale's word the evening after the day shift's new tube (FS47FreeformSession::TubeRemarkDue): 19:00 to 23:00 (night hours 19 to 23).
+	static bool TubeRemarkHour(double NightHour) { return NightHour >= 19. && NightHour < 23.; }
+
 	/** Once a frame from FS47Happenings::Step. */
 	void Step(double Dt);
 	/** A new game or area: nothing waits. */
@@ -52,6 +62,7 @@ private:
 	bool Quiet(double Clock) const;
 	double LastAlarm = -1e9;       // clock seconds of the last false alarm
 	int32 LastFridgeDay = 0;       // the day the refrigerator last played (0: never)
+	int32 LastTubeNight = 0;       // PLAY-31-34: the night tube_wear was last asked (its odds are the night's)
 	US47Main* M = nullptr;
 	int32 Night = 0, Played = 0, Reliefs = 0;
 	double NextTry = 0;            // real seconds (US47Main::T) before the next question
