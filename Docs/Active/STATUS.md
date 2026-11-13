@@ -4,7 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 12. november kl. 22:37 (d63): versjon 0.9.63, `ac5663cd` på `claude/freeform-20261112`
+## Installert 13. november kl. 01:34 (d64): versjon 0.9.64, `1e9a3964` på `claude/freeform-20261112`
+
+Ikke merget (PR #514 åpen); rask levering. I tillegg til d63: kartet viser saksforsøk og logger, gjort arbeid strøket over, tegnforklaring; hinderlista uten falske treff; SARO med Toms fototeksturer (blokkhud ute, østfløyen, kontorsettet); ingen tomme netter (en liten hendelse ved spilleren kl. 03 når ingenting er merket); Free100-gange for sheriffen bak `-S47Free100=walk,idle` (standard uendret); 14 rettinger etter kritikk (bl.a. lys på bilen etter alien, bilpanelet med pakke, peilegrensen). Selvtest 5041, regresjon PASS 251. Tilbakerulling: d63 (`ac5663cd`). Ikke spilt av Tom.
+
+## Tidligere: installert 12. november kl. 22:37 (d63): versjon 0.9.63, `ac5663cd` på `claude/freeform-20261112`
 
 Ikke merget; rask levering. Freeform (Story står på vent): avviksjobben strømlinjeformet (ANOMALY DETECTED → opptak → spolebånd → bekreft på OPS → print → perm), ny perm i arkivrommet, peilesirkelen klar rød og blir stående til stedet er sjekket, musepekeren på kartet, tanker midt på og glir bort + flere anledninger, stedskort, TV-ens sign-off med ekte nasjonalsang (US Navy Band), F10 lukker seg ikke lenger, biloppbevaringen viser hva som er i bilen, aliens undersøker en bil på tomgang; bakken og Cosmos-lekeplassen ved skolen (fra d62) er med. Selvtest 5019, regresjon PASS 250. Tilbakerulling: d62 (`e63eea04`). Ikke spilt av Tom.
 
