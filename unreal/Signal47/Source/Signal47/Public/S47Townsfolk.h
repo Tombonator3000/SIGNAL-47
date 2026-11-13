@@ -47,6 +47,8 @@ public:
 	// The night's events took Who (last seen at a catalogue place, may be empty). False: not one of them, or someone is already gone.
 	bool Vanish(const FString& Who, const FString& Place);
 	bool Away(const FString& Who) const;
+	// The day Who went (0: not gone). M7-SPREAD-20261113: the late case's rack log the day after (FS47Predecessor::LateRackDue).
+	int32 GoneDay(const FString& Who) const { const FGone* G = Gone.FindByPredicate([&Who](const FGone& Each) { return Each.Who == Who; }); return G ? G->Day : 0; }
 	// Whoever is gone in the running game (one game at a time).
 	static bool AwayNow(const FString& Who);
 	// What the town has seen, for FS47RadioTips' "town:" lines: "away_deputy" while the deputy is gone, "back_deputy" for three

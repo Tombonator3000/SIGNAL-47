@@ -11,7 +11,8 @@
 #include "UnrealClient.h"
 
 // FIX-20261110 (Tom, points 2 and 3), -S47StationFilesTest: SARO's own files under OPS / RECORDS / STATION FILES and in the
-// records binder: four on the first day (the generator memo and the operator's card among them), the rest released by day.
+// records binder: three on the first day (the history, the generator memo and the operator's card), the rest released over the month
+// (M7-SPREAD-20261113: days 2, 5, 9, 13, 20 and 24).
 void FS47FreeformTest::StepStationFiles(double Dt)
 {
  Age+=FMath::Min(Dt,.2);if(Hold>0){Hold-=Dt;return;}
@@ -26,7 +27,8 @@ void FS47FreeformTest::StepStationFiles(double Dt)
   if(Age<3)return;M->UI->Close(true);
   if(!Check(S47StationFiles::Lint().IsEmpty(),TEXT("the files keep to the spoiler limits: ")+S47StationFiles::Lint()))return;
   int32 First=0;for(int32 I=0;I<S47StationFiles::Count();++I)First+=S47StationFiles::Get(I).Day<=1;
-  if(!Check(S47StationFiles::Count()==9&&First==4&&F.StationFileDue(),TEXT("nine files, four of them there on the first day and marked on RECORDS")))return;
+  int32 Late=0;for(int32 I=0;I<S47StationFiles::Count();++I)Late=FMath::Max(Late,S47StationFiles::Get(I).Day);
+  if(!Check(S47StationFiles::Count()==9&&First==3&&Late>=22&&Late<=24&&F.StationFileDue(),TEXT("nine files, three of them there on the first day and marked on RECORDS, the last released in the fourth week (M7)")))return;
   if(!Check(F.Use(TEXT("opsTerminal")),TEXT("the OPS terminal opens")))return;Go(1,.6);return;
  }
  if(Stage==1)
@@ -40,31 +42,31 @@ void FS47FreeformTest::StepStationFiles(double Dt)
  if(Stage==5)
  {
   // Which of the first day's files run to a second page depends on the glass; one of them must, and it must turn.
-  bool Turned=false;for(const TCHAR* Key:{TEXT("station-01"),TEXT("station-04"),TEXT("station-02"),TEXT("station-08")}){Show(Key,1);if(F.ArchivePage==1){Turned=true;break;}}
+  bool Turned=false;for(const TCHAR* Key:{TEXT("station-01"),TEXT("station-08"),TEXT("station-02")}){Show(Key,1);if(F.ArchivePage==1){Turned=true;break;}}
   if(!Check(Turned,TEXT("a long file turns to its second page")))return;Go(6,.7);return;
  }
  if(Stage==6){Shot(TEXT("station-files-card-2.png"));Go(7,.3);return;}
  if(Stage==7)
  {
-  Show(TEXT("station-01"),0);Show(TEXT("station-04"),0);
+  Show(TEXT("station-01"),0);
   if(!Check(!F.StationFileDue(),TEXT("once the day's files are opened RECORDS is no longer marked")))return;
-  M->UI->Close(true);for(int32 I=0;I<4&&F.Day()<3;++I)F.TestAdvance(FMath::Fmod(8.2*3600.-FMath::Fmod(F.Clock(),86400.)+86400.,86400.)+60.);
-  if(!Check(F.Day()>=3&&F.StationFileDue(),FString::Printf(TEXT("on day %d the memo on the valley in Norway is released and RECORDS is marked again"),F.Day())))return;
+  M->UI->Close(true);for(int32 I=0;I<6&&F.Day()<5;++I)F.TestAdvance(FMath::Fmod(8.2*3600.-FMath::Fmod(F.Clock(),86400.)+86400.,86400.)+60.);
+  if(!Check(F.Day()>=5&&F.StationFileDue(),FString::Printf(TEXT("on day %d the note on field maintenance is released and RECORDS is marked again"),F.Day())))return;
   Go(8,.5);return;
  }
- if(Stage==8){M->UI->Close(true);Show(TEXT("station-03"),0);if(!Check(F.BinderView->Tab==S47Binder::SecStation&&F.BinderView->Pick==S47Binder::FileKey(TEXT("station-03"))&&!F.TerminalOnGlass(),TEXT("the same files are in the records binder, on paper")))return;Go(9,.7);return;}
+ if(Stage==8){M->UI->Close(true);Show(TEXT("station-06"),0);if(!Check(F.BinderView->Tab==S47Binder::SecStation&&F.BinderView->Pick==S47Binder::FileKey(TEXT("station-06"))&&!F.TerminalOnGlass(),TEXT("the same files are in the records binder, on paper")))return;Go(9,.7);return;}
  if(Stage==9){Shot(TEXT("station-files-binder.png"));Go(10,.3);return;}
  if(Stage==10)
  {
   M->UI->Close(true);
   if(!Check(!F.Save()->HasField(TEXT("stationFiles")),TEXT("no file text is in the save")))return;
   // FIX10-10: a file released on an earlier day and never opened stays marked; what was opened is saved by key.
-  if(!Check(F.StationFileDue(),TEXT("the files released on day 2 and never opened still mark RECORDS on a later day")))return;
+  if(!Check(F.StationFileDue(),TEXT("the terms released on day 2 and never opened still mark RECORDS on a later day")))return;
   const TArray<FString> Seen=S47J::Strs(F.Save(),TEXT("stationFilesSeen"));
-  if(!Check(Seen.Contains(TEXT("station-03"))&&Seen.Contains(TEXT("station-01"))&&!Seen.Contains(TEXT("station-07")),TEXT("the files opened are in the save by key, the unopened are not")))return;
+  if(!Check(Seen.Contains(TEXT("station-06"))&&Seen.Contains(TEXT("station-01"))&&!Seen.Contains(TEXT("station-04"))&&!Seen.Contains(TEXT("station-07")),TEXT("the files opened are in the save by key, the unopened are not")))return;
   for(int32 I=0;I<S47StationFiles::Count();++I)if(S47StationFiles::Get(I).Day<=F.Day())Show(S47StationFiles::Get(I).Key,0);
   M->UI->Close(true);
   if(!Check(!F.StationFileDue(),TEXT("once every released file is opened RECORDS is no longer marked")))return;
-  Finish(true,TEXT("Station files: nine of SARO's own papers under OPS / RECORDS and in the binder, released by day, paged, within the limits."));return;
+  Finish(true,TEXT("Station files: nine of SARO's own papers under OPS / RECORDS and in the binder, released over the month, paged, within the limits."));return;
  }
 }

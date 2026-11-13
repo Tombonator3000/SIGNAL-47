@@ -129,7 +129,7 @@ void FS47Predecessor::StepLateMinute(int32 Today)
  const int32 Line=FS47FreeformCases::MinuteLine;
  if(LateBulletinDay==0)
  {
-  // After the van has been at the Mesa once in the third week, whatever was said to them; by day 15 in any case. No Sky Watch in a
+  // After the van has been at the Mesa once in the third week, whatever was said to them; by BulletinBy (day 13, M7-SPREAD-20261113) in any case. No Sky Watch in a
   // game without them.
   if(!F.Visitors)return;
   const bool bVan=F.Visitors->Has(TEXT("let_in"))||F.Visitors->Has(TEXT("turned_away"))||F.Visitors->Has(TEXT("tie_seen"));
@@ -179,13 +179,25 @@ void FS47Predecessor::StepLateRaked(int32 Today)
   if(Id.StartsWith(TEXT("military_"))){LateKeep(FS47FreeformCases::RakedLine,0,FString());return;}
 }
 
+bool FS47Predecessor::LateRackDue(int32 Line,int32 Today,int32 GoneDay,bool bMilitaryGone,bool bGroundRead)
+{
+ if(Line==FS47FreeformCases::PostLine)return Today>=PostOpenBy&&GoneDay>0&&Today>GoneDay;
+ if(Line==FS47FreeformCases::RakedLine)return Today>=RakedOpenBy&&bMilitaryGone&&!bGroundRead;
+ return false;
+}
 void FS47Predecessor::StepLateRack()
 {
  auto& F=*M->Freeform;
  // The printer runs a strip by itself for the receiver log of that night or that morning, once one is in the control room.
+ // M7-SPREAD-20261113 (M7): and for a case nobody has gone to see, from its day (LateRackDue): the log opens it, and the place is
+ // still there to look at as the other half.
+ const FString Who=LateAway();
+ const int32 Went=!Who.IsEmpty()&&F.Townsfolk?F.Townsfolk->GoneDay(Who):0;
+ const bool bMilitary=F.Visitors&&F.Visitors->RakedRecently(3);
  for(const int32 Line:{FS47FreeformCases::PostLine,FS47FreeformCases::RakedLine})
  {
-  const auto* K=F.CaseFile().Get(Line);if(!K||!K->bOpen||K->bConcluded)continue;
+  const auto* K=F.CaseFile().Get(Line);if(!K||K->bConcluded)continue;
+  if(!K->bOpen&&!LateRackDue(Line,F.Day(),Went,bMilitary,F.HasFinding(TEXT("raked_ground"))))continue;
   const FString Id=FS47FreeformCases::Def(Line).Mystery->Clues[1].Finding;if(F.HasFinding(Id))continue;
   if(!InControlRoom()){LateRackAt=-1;return;}
   const double Real=FPlatformTime::Seconds();

@@ -81,7 +81,9 @@ namespace S47Big
  const TCHAR* const Names[]={TEXT("column"),TEXT("fall"),TEXT("rise")};
  constexpr uint32 SaltNight=0x42494731u,SaltHour=0x42494732u,SaltVar=0x42494733u;
  // CHAIN-4-20261109: the first night of each round's window of four (round 0 is nights 2 to 3), and the salt of its place.
- constexpr int32 RoundFrom[]={2,9,16},RoundSpan=4;
+ // M7-SPREAD-20261113 (M7): a fourth window, nights 23 to 26 (off Ward's Monday 22 and 29 and the three nights before the assessment).
+ constexpr int32 RoundFrom[]={2,9,16,23},RoundSpan=4;
+ static_assert(UE_ARRAY_COUNT(RoundFrom)==FS47Happenings::BigRounds,"one window for each round");
  constexpr uint32 SaltPlace=0x42494737u;
  double Smooth(double A,double B,double X){const double T=FMath::Clamp((X-A)/FMath::Max(1e-6,B-A),0.,1.);return T*T*(3-2*T);}
  // Level in three's terms (y up): the way along the ground, x and z (FVector::GetSafeNormal2D keeps x and y, which is wrong here).
@@ -1206,27 +1208,28 @@ bool FS47Happenings::BigSelfTest(TArray<FString>& Lines)
   Check(E.SaveBig()==nullptr&&E.BigHappened()==0,TEXT("a game that has not reached it saves nothing of it"));
  }
  // CHAIN-4-20261109: three big nights in a month, one a week for three weeks, in three shapes and at three places.
+ // M7-SPREAD-20261113 (M7): and a fourth in week four, nights 23 to 26, in a shape the third was not, at a fourth place.
  {
-  int32 Bad=0,Close=0,Same=0,Var1[3]={0,0,0},Var2[3]={0,0,0};bool bSameSeed=true;
+  int32 Bad=0,Close=0,Same=0,Var1[3]={0,0,0},Var2[3]={0,0,0},Var4[3]={0,0,0};bool bSameSeed=true;
   for(int32 Seed=1;Seed<=2000;++Seed)
   {
-   const FBigPlan A=BigPlanFor(Seed),B=BigPlanAt(Seed,1,{A.Variant}),C=BigPlanAt(Seed,2,{A.Variant,B.Variant});
-   for(const FBigPlan& P:{B,C})
+   const FBigPlan A=BigPlanFor(Seed),B=BigPlanAt(Seed,1,{A.Variant}),C=BigPlanAt(Seed,2,{A.Variant,B.Variant}),Fourth=BigPlanAt(Seed,3,{A.Variant,B.Variant,C.Variant});
+   for(const FBigPlan& P:{B,C,Fourth})
    {
     // Its window, after two and never in Story's minute; never a Monday (Ward's sheet, FS47FreeformSession::NextReviewDay: 8, 15,
     // 22), the week's case (two nights after the first) or the finale's nights before the assessment (day 30 less three).
-    const bool bWindow=(P.Night>=9&&P.Night<=12)||(P.Night>=16&&P.Night<=19);
+    const bool bWindow=(P.Night>=9&&P.Night<=12)||(P.Night>=16&&P.Night<=19)||(P.Night>=23&&P.Night<=26);
     if(!bWindow||P.Hour<26.||P.Hour>=28.||(P.Hour>=26.33&&P.Hour<26.67)||P.Night%7==1||P.Night==FS47WeekCase::CaseNightFor(A.Night)||P.Night>=27)++Bad;
    }
-   if(B.Night>12||C.Night<16)++Bad;
+   if(B.Night>12||C.Night<16||C.Night>19||Fourth.Night<23)++Bad;
    // The days after (1420 to the third) are over before the next.
-   if(B.Night<=A.Night+3||C.Night<=B.Night+3)++Close;
-   if(A.Variant==B.Variant||A.Variant==C.Variant||B.Variant==C.Variant)++Same;
-   ++Var1[FMath::Clamp(B.Variant,0,2)];++Var2[FMath::Clamp(C.Variant,0,2)];
+   if(B.Night<=A.Night+3||C.Night<=B.Night+3||Fourth.Night<=C.Night+3)++Close;
+   if(A.Variant==B.Variant||A.Variant==C.Variant||B.Variant==C.Variant||Fourth.Variant==C.Variant)++Same;
+   ++Var1[FMath::Clamp(B.Variant,0,2)];++Var2[FMath::Clamp(C.Variant,0,2)];++Var4[FMath::Clamp(Fourth.Variant,0,2)];
    const FBigPlan D=BigPlanAt(Seed,1,{A.Variant});bSameSeed&=D.Night==B.Night&&D.Hour==B.Hour&&D.Variant==B.Variant;
   }
-  Check(Bad==0&&Close==0&&bSameSeed,TEXT("CHAIN-4: three big nights a month: nights 2 to 3, 9 to 12 and 16 to 19, after two, apart by more than their days after, never on Ward's Monday, the week's case or the finale"));
-  Check(Same==0&&Var1[0]>300&&Var1[1]>300&&Var1[2]>300&&Var2[0]>300&&Var2[1]>300&&Var2[2]>300,FString::Printf(TEXT("CHAIN-4: three shapes, never one twice (week two column %d fall %d rise %d, week three %d %d %d of 2000)"),Var1[0],Var1[1],Var1[2],Var2[0],Var2[1],Var2[2]));
+  Check(Bad==0&&Close==0&&bSameSeed,TEXT("CHAIN-4: four big nights a month: nights 2 to 3, 9 to 12, 16 to 19 and 23 to 26 (M7), after two, apart by more than their days after, never on Ward's Monday, the week's case or the finale"));
+  Check(Same==0&&Var1[0]>300&&Var1[1]>300&&Var1[2]>300&&Var2[0]>300&&Var2[1]>300&&Var2[2]>300&&Var4[0]>300&&Var4[1]>300&&Var4[2]>300,FString::Printf(TEXT("CHAIN-4: three shapes, never one twice in the first three, the fourth never the third's (week two column %d fall %d rise %d, week three %d %d %d, week four %d %d %d of 2000)"),Var1[0],Var1[1],Var1[2],Var2[0],Var2[1],Var2[2],Var4[0],Var4[1],Var4[2]));
   // The places: from SARO by the seed, the event places' own draw, never one already used.
   FS47EventPlaces E(nullptr);double SaroX=0,SaroZ=0;S47OpenLand::RoadOf(TEXT("saro"),9,0,SaroX,SaroZ);
   int32 Missing=0,Twice=0;
@@ -1236,9 +1239,11 @@ bool FS47Happenings::BigSelfTest(TArray<FString>& Lines)
    const FString P0=S47Big::PlaceFor(E,Seed,A.Night,0,FVector2D(SaroX,SaroZ),{});
    const FString P1=S47Big::PlaceFor(E,Seed,B.Night,1,FVector2D(SaroX,SaroZ),{P0});
    const FString P2=S47Big::PlaceFor(E,Seed,C.Night,2,FVector2D(SaroX,SaroZ),{P0,P1});
-   Missing+=(P0.IsEmpty()||P1.IsEmpty()||P2.IsEmpty())?1:0;Twice+=(P0==P1||P0==P2||P1==P2)?1:0;
+   const FBigPlan Fourth=BigPlanAt(Seed,3,{A.Variant,B.Variant,C.Variant});
+   const FString P3=S47Big::PlaceFor(E,Seed,Fourth.Night,3,FVector2D(SaroX,SaroZ),{P0,P1,P2});
+   Missing+=(P0.IsEmpty()||P1.IsEmpty()||P2.IsEmpty()||P3.IsEmpty())?1:0;Twice+=(P0==P1||P0==P2||P1==P2||P3==P0||P3==P1||P3==P2)?1:0;
   }
-  Check(Missing==0&&Twice==0,FString::Printf(TEXT("CHAIN-4: three places, never one twice (300 games: %d without a place, %d with one twice)"),Missing,Twice));
+  Check(Missing==0&&Twice==0,FString::Printf(TEXT("CHAIN-4: four places, never one twice (300 games: %d without a place, %d with one twice)"),Missing,Twice));
   // An older save that has had the first: it gets the next two, and the first is still the first (the week's case is planned on it).
   S47J::FObj Old=S47J::New();S47J::Set(Old,TEXT("night"),2);S47J::Set(Old,TEXT("variant"),1);S47J::Set(Old,TEXT("saw"),true);S47J::Set(Old,TEXT("title"),FString(TEXT("the dry lake")));S47J::Set(Old,TEXT("place"),FString(TEXT("land:dry_lake")));
   FS47Happenings H(nullptr);H.ResetBig();H.LoadBig(Old);
@@ -1255,13 +1260,17 @@ bool FS47Happenings::BigSelfTest(TArray<FString>& Lines)
   FS47Happenings L(nullptr);L.ResetBig();L.LoadBig(S47J::Read(S47J::Write(H.SaveBig())));
   bOld&=L.BigRound==2&&L.BigPast.Num()==2&&L.BigPast[0].Night==2&&L.BigPast[0].Var==1&&L.BigPast[1].Title==TEXT("the salt lick")&&L.BigHappened()==2&&L.BigPlan().Night==Third.Night&&L.BigPlan().Variant==Third.Variant;
   L.BigNight=Third.Night;L.BigVar=Third.Variant;
-  bOld&=L.BigAhead()<0&&L.BigHappened()==2&&L.BigLatest()==Third.Night;
+  // M7-SPREAD-20261113: then the fourth, nights 23 to 26, not in the third's shape; and no more.
+  const FBigPlan Last=L.BigPlan();
+  bOld&=L.BigAhead()==3&&L.BigHappened()==2&&L.BigLatest()==Third.Night&&Last.Night>=23&&Last.Night<=26&&Last.Variant!=Third.Variant;
+  L.BigNextRound();L.BigNight=Last.Night;L.BigVar=Last.Variant;
+  bOld&=L.BigAhead()<0&&L.BigRound==3&&L.BigPast.Num()==3;
   // One that came in after the first's nights (never): the next two all the same.
   S47J::FObj Never=S47J::New();S47J::Set(Never,TEXT("night"),-1);
   FS47Happenings N(nullptr);N.ResetBig();N.LoadBig(Never);
   bOld&=N.BigAhead()==1&&N.BigHappened()==-1;
   N.BigNextRound();bOld&=N.BigHappened()==-1&&N.BigAhead()==1&&N.BigPast[0].Var==-1;
-  Check(bOld,TEXT("CHAIN-4: an older save that had the first gets the next two in shapes it has not had; the first stays the first; the rounds survive a save"));
+  Check(bOld,TEXT("CHAIN-4: an older save that had the first gets the next three, the second and third in shapes it has not had; the first stays the first; the rounds survive a save"));
  }
  // The rhythm's file has it, after two, on the night system, never a danger.
  {

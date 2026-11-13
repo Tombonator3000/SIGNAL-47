@@ -1850,6 +1850,15 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   Check(S47J::Int(Back3,TEXT("bulletin"))==13&&S47J::Int(Back3,TEXT("thermosDay"))==18&&S47J::Int(Back3,TEXT("postDay"))==16&&S47J::Int(Back3,TEXT("awayDay"))==17&&Late.Known()==2,TEXT("the bulletin, the thermos, an emptied post and the trip meter survive a Continue, and the trail after wagon 23 counts in what is known"));
   FS47Predecessor None3(nullptr);None3.Begin(nullptr,false,1);
   Check(None3.MinuteClock()==0&&!None3.Save()->HasField(TEXT("bulletin")),TEXT("no printed minute before the bulletin"));
+  // M7-SPREAD-20261113 (M7): a late case nobody has gone to see opens at the rack, never before its day.
+  {
+   constexpr int32 Post=FS47FreeformCases::PostLine,Raked=FS47FreeformCases::RakedLine;
+   Check(!LateRackDue(Post,11,9,false,false)&&!LateRackDue(Post,12,12,false,false)&&LateRackDue(Post,12,10,false,false)&&LateRackDue(Post,16,15,false,false)&&!LateRackDue(Post,20,0,true,false),
+    TEXT("the empty post's log prints by itself from day 12, the day after somebody went, never with nobody gone"));
+   Check(!LateRackDue(Raked,17,0,true,false)&&LateRackDue(Raked,18,0,true,false)&&!LateRackDue(Raked,20,0,false,false)&&!LateRackDue(Raked,20,0,true,true)&&!LateRackDue(FS47FreeformCases::MinuteLine,25,3,true,false),
+    TEXT("the raked ground's log from day 18, only after the military came and their ground was not read; the printed minute keeps its chart"));
+   Check(BulletinBy>=LateCaseDay&&BulletinBy+2<=15&&PostOpenBy==12&&RakedOpenBy==18,TEXT("the bulletin by day 13, its minute by the night of day 15"));
+  }
   // The trail after wagon 23: the trip meter, the attendant's thermos once it has been read, and the letter that answers it.
   const X::FPerson* Att=X::Person(TEXT("attendant"));
   const X::FTopic* Thermos=Att?Att->Topics.FindByPredicate([](const X::FTopic& Q){return FString(Q.Id)==TEXT("thermos");}):nullptr;
