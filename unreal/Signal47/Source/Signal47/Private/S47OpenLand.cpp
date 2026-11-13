@@ -255,17 +255,22 @@ namespace S47OpenLand
 		int32 Line = 0; double Along = 0;
 		return FenceLineOf(RoadX, RoadZ, Line, Along);
 	}
+	// HWY-FENCE-GONE-20261113 (Tom, 13 November, after d65: "Fjern gjerdet som går langs motorveien på sidene, det har ikke funksjon
+	// lenger"): of the highway's two lines (0 and 1, road x -21 and 21) nothing stays, neither wire nor post. They have held no one in
+	// Freeform since 7 November (IsBoundaryLine, US47World::ReconcileFarm; the walk's lines, bFencesOpen): what holds one there is a hill
+	// or the rim's fence. The old pasture's three lines (2-4) keep their worn stretches; the ranch's open pipe gate (S47HighwayRanch) stays.
+	static bool OnHighwayLine(int32 Line) { return Line == 0 || Line == 1; }
 	bool FenceWireStays(double RoadX, double RoadZ)
 	{
 		int32 Line = 0; double Along = 0;
-		if (!FenceLineOf(RoadX, RoadZ, Line, Along)) return false;
+		if (!FenceLineOf(RoadX, RoadZ, Line, Along) || OnHighwayLine(Line)) return false;
 		const FFenceBit Bit = FenceBitAt(Line, Along);
 		return Along >= Bit.WireFrom && Along <= Bit.WireTo;
 	}
 	bool FencePostStays(double RoadX, double RoadZ)
 	{
 		int32 Line = 0; double Along = 0;
-		if (!FenceLineOf(RoadX, RoadZ, Line, Along)) return false;
+		if (!FenceLineOf(RoadX, RoadZ, Line, Along) || OnHighwayLine(Line)) return false;
 		const FFenceBit Bit = FenceBitAt(Line, Along);
 		if (Along < Bit.WireFrom || Along > Bit.PostsTo) return false;
 		return Along <= Bit.WireTo || S47RoadShape::Hash(RoadX * 3, RoadZ) < .55;
@@ -287,4 +292,25 @@ namespace S47OpenLand
 		if (auto* C = WiresC.Get()) C->SetVisibility(bShow);
 	}
 	int32 FencePosts() { return PostCount; }
+
+	bool SelfTest(TArray<FString>& Lines)
+	{
+		// HWY-FENCE-GONE-20261113: along both of the highway's lines no wire and no post stays; the lines are still found (so the cut
+		// and the scan take them all), and they are long and thin (so they hold no one). The pasture's remnants are only counted (by hash).
+		const double F = S47RoadTerrain::HWY.Fence;
+		int32 Found = 0, Kept = 0;
+		for (double Z = -1000; Z <= 2900; Z += .5)
+			for (const double X : { -F, F })
+			{
+				Found += OnRoadFence(X, Z) ? 1 : 0;
+				Kept += FenceWireStays(X, Z) || FencePostStays(X, Z) ? 1 : 0;
+			}
+		int32 Pasture = 0;
+		for (double X = -755; X < -25; X += .5) Pasture += FencePostStays(X, S47RoadTerrain::PASTURE.North) || FencePostStays(X, S47RoadTerrain::PASTURE.South) ? 1 : 0;
+		const bool bThin = IsBoundaryLine(-45, -45, 100, 640) && IsBoundaryLine(-3, -3, 100, 860) && IsBoundaryLine(F - .1, F + .1, -1000, 2900);
+		const bool bOk = Found == 2 * 7801 && Kept == 0 && bThin;
+		Lines.Add(FString::Printf(TEXT("%s highway fence gone: %d of %d points on its two lines keep wire or post (want 0); the pasture's keep %d (counted only); long and thin %d"),
+			bOk ? TEXT("PASS") : TEXT("FAIL"), Kept, Found, Pasture, bThin ? 1 : 0));
+		return bOk;
+	}
 }

@@ -1,4 +1,5 @@
 #include "S47CalicheAccess.h"
+#include "S47GasBayDoor.h"
 #include "S47CalicheNewHomes.h"
 #include <limits>
 #include "S47Main.h"
@@ -314,18 +315,20 @@ void Update()
  for(const auto& C:Retired)Retire(C.Get());
  if(!Main.IsValid()||!Main->Web)return;
  S47CalicheNewHomes::Update(Main.Get());
+ S47GasBayDoor::Update(Main.Get()); // GAS-BAY-DOOR-20261113: the bay's roll-up door, by hand
  const float Mask=Main->Web->ExteriorDaylightMask(Main->Web->FloodSet(TEXT("town")),1);
  if(Mask==LastExteriorMask)return;LastExteriorMask=Mask;
  for(const auto& G:ExteriorGlows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*Mask);
 }
 void Save(const S47J::FObj& State)
 {
- if(!State)return;auto Doors=S47J::New();for(const FRoom& R:Rooms)S47J::Set(Doors,*R.Id,R.bOpen);for(const TCHAR* Door:{TEXT("gasDoor"),TEXT("radioLobbyDoor")})S47J::Set(Doors,Door,AS47Props::IsDoorOpen(Door));S47J::Set(State,TEXT("calicheAccessDoors"),Doors);
+ if(!State)return;auto Doors=S47J::New();for(const FRoom& R:Rooms)S47J::Set(Doors,*R.Id,R.bOpen);for(const TCHAR* Door:{TEXT("gasDoor"),TEXT("radioLobbyDoor")})S47J::Set(Doors,Door,AS47Props::IsDoorOpen(Door));S47J::Set(Doors,TEXT("gasBay"),S47GasBayDoor::IsOpen());S47J::Set(State,TEXT("calicheAccessDoors"),Doors);
 }
 void Restore(const S47J::FObj& State)
 {
  const auto Doors=S47J::Obj(State,TEXT("calicheAccessDoors"));for(FRoom& R:Rooms){R.bOpen=S47J::Bool(Doors,*R.Id,true);Sync(R);}
  for(const TCHAR* Door:{TEXT("gasDoor"),TEXT("radioLobbyDoor")})if(AS47Props::IsDoorOpen(Door)!=S47J::Bool(Doors,Door,true))AS47Props::UseDoor(Door);
+ S47GasBayDoor::SetOpen(S47J::Bool(Doors,TEXT("gasBay"),false),true); // (a new game's, and an old save's: shut)
 }
 
 double FloorAt(double X,double Z)
