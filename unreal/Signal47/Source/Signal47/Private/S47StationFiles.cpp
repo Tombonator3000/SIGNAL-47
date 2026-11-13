@@ -160,7 +160,7 @@ The work goes in a loop, and it starts at the desks.
 - a time and a place written down in your own hand.
 A story on its own counts for nothing. Two of these that agree are enough to open a case.
 
-4. BACK AT THE DESKS. Develop the film in the photo lab. Register what you found on OPS. It goes to RECORDS, PHOTOGRAPHS or the CASE BOARD, and the board tells you what would settle it. Then the terminals send you out again.
+4. BACK AT THE DESKS. Develop the film in the photo lab. Register what you found on OPS. It goes to RECORDS, PHOTOGRAPHS or the CASE BOARD, and the board tells you what would settle it. File each packet in the binder in the records room. What is filed goes into the weekly report to Dr. Ward, sent at OPS. Then the terminals send you out again.
 
 The jobs are what you're paid for. The rest is why the station stays open.)TXT")},
   {TEXT("station-09"),TEXT("09 THE TOWN"),24,TEXT(R"TXT(SARO / STATION FILE 09

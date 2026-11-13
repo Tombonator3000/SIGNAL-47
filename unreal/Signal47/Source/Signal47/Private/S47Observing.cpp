@@ -950,7 +950,7 @@ void FS47Observing::OpenAudioComparison()
 {
  if(!bWorkEnabled||!Active()||!M||!M->UI||!AudioDesk||!AudioDesk->Ready())return;
  if(!AudioAvailable()){M->UI->Toast(PulsarObjective(),5);return;}
- if(!AudioDesk->ListeningPosition()){M->UI->Toast(TEXT("Use the reel deck beside the telephone: ORIGINAL / CONTROL, PLAY, MARK IN / OUT, RETAIN."),5);return;}
+ if(!AudioDesk->ListeningPosition()){M->UI->Toast(TEXT("Use the reel deck beside the telephone: ORIGINAL / REFERENCE, PLAY, MARK IN / MARK OUT, RETAIN."),5);return;}
  bAudioPanelOpen=true;
 }
 
