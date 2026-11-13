@@ -3,8 +3,10 @@
 
   build_music.py free  [--inbox DIR]    the free downloads (CC BY 4.0 and public domain): trimmed, levelled, the radio's narrowed to AM
   build_music.py own   [--own FILE]     Tom's own "Signal 47 - Track 1 - Intro Drive" (id signal47_intro_drive)
-  build_music.py mixes [--bundle DIR]   our own arrangements of the bought "1984 Retro Music Production Bundle" and "ABYSS" loops
-  build_music.py all                    the three above
+  build_music.py mixes [--bundle DIR]   our own arrangements of the bought loops: four from the "1984 Retro Music Production Bundle"
+                                        and "ABYSS", and five quiet ones that lay the 1980s loops over the dark ones
+  build_music.py quiet [--bundle DIR]   only those five
+  build_music.py all                    free, own and mixes
   build_music.py index                  only media.json's rows for what is staged
   --content DIR    the project's Content (default: this project's); the files go to DIR/Audio/Raw/media/{music,radio}/<name>.wav,
                    where FS47MediaSource::Open finds music/<name>.mp3 and radio/<name>.mp3 (S47Media.cpp)
@@ -70,7 +72,8 @@ FREE = [
 ]
 # Tom's own track: the score's copy, and one narrowed to AM for a set that plays it as the radio does
 OWN_OUT = [('music/signal47_intro_drive', False), ('radio/signal47_intro_drive', True)]
-MIXES = ['music/s47_night_freight', 'music/s47_cold_dish', 'music/s47_carrier_lock', 'music/s47_county_road', 'radio/s47_night_freight']
+MIXES = ['music/s47_night_freight', 'music/s47_cold_dish', 'music/s47_carrier_lock', 'music/s47_county_road', 'radio/s47_night_freight',
+         'music/s47_third_shift', 'music/s47_dry_lake', 'music/s47_vacancy', 'music/s47_grey_hour', 'music/s47_standing_wave']
 
 TRIM = ('silenceremove=start_periods=1:start_duration=0:start_silence=0.15:start_threshold=-50dB:detection=peak,areverse,'
         'silenceremove=start_periods=1:start_duration=0:start_silence=0.15:start_threshold=-50dB:detection=peak,areverse')
@@ -208,28 +211,31 @@ def own(media, src, previews):
 # Each piece is one kit's loops, phase-locked to one bar grid (a loop always plays the bar the piece is on, whenever it comes
 # in), so the kit's own chord cycle holds. Layers come and go on bar lines; levels are set from each loop's measured loudest
 # half, not by ear. The bus: 30 Hz high-pass, a little narrower, 9.5 kHz low-pass, soft saturation, slow wow, 2:1 compression
-# of the loudest few dB, a ceiling, then MUSIC_LUFS. Nobody has listened to these: the previews are for Tom's ear.
+# of the loudest few dB, a ceiling, then MUSIC_LUFS. Tom has heard the first four (13 November: "kule, og kan brukes utenfor radioen også").
 SR = 44100
 
 
-def mixes(media, bundle, previews):
+def mixes(media, bundle, previews, first=True, quiet=True):
     retro = os.path.join(bundle, '1984 Retro Music Production Bundle')
     abyss = os.path.join(bundle, 'ABYSS - Dark Cinematic', 'Loops')
-    if not os.path.isdir(retro) or not os.path.isdir(abyss):
+    scifi = os.path.join(bundle, 'Ambience & SFX', 'Ambience SciFi')
+    if not os.path.isdir(retro) or not os.path.isdir(abyss) or not os.path.isdir(scifi):
         print('S47 music: no bought bundle at %s: the mixes are left out (the game plays without them)' % bundle)
         return
     try:
         import numpy as np
-        from scipy.signal import butter, sosfilt
+        from scipy.signal import butter, fftconvolve, sosfilt
     except ImportError:
         print('S47 music: numpy and scipy are needed for the mixes: left out (see this file\'s head)')
         return
 
-    def load(path):
+    def load(path, semi=0):
         hits = glob.glob(glob.escape(path)) or glob.glob(path)
         if len(hits) != 1:
             sys.exit('S47 music: loop not found (or not unique): %s' % path)
-        raw = run(['ffmpeg', '-v', 'error', '-i', hits[0], '-ac', '2', '-ar', str(SR), '-f', 'f32le', '-']).stdout
+        # semi: semitones by tape speed (pitch and tempo together, as on a deck: no stretching, so nothing to smear)
+        speed = ['-af', 'aresample=%d,asetrate=%d,aresample=%d' % (SR, round(SR * 2 ** (semi / 12.0)), SR)] if semi else []
+        raw = run(['ffmpeg', '-v', 'error', '-i', hits[0]] + speed + ['-ac', '2', '-ar', str(SR), '-f', 'f32le', '-']).stdout
         x = np.frombuffer(raw, dtype=np.float32).astype(np.float64).reshape(-1, 2)
         if len(x) < SR // 4:
             sys.exit('S47 music: loop is empty: %s' % path)
@@ -307,7 +313,7 @@ def mixes(media, bundle, previews):
         tail = tail[tail.rfind('Summary:'):]
         return float(re.search(r'I:\s+(-?[\d.]+) LUFS', tail).group(1)), float(re.search(r'Peak:\s+(-?[\d.]+) dBFS', tail).group(1))
 
-    def master(x, name, wow=0.0006):
+    def master(x, name, wow=0.0006, ceiling=-1.0):
         x = sosfilt(sos('highpass', 30), x, axis=0)
         mid, side = x.mean(axis=1), (x[:, 0] - x[:, 1]) / 2
         x = np.stack([mid + side * 0.85, mid - side * 0.85], axis=1)
@@ -346,7 +352,7 @@ def mixes(media, bundle, previews):
         lufs, _ = measure(x)
         x *= 10 ** ((MUSIC_LUFS - lufs) / 20)
         lufs, peak = measure(x)
-        if peak > -1.0:
+        if peak > ceiling:
             sys.exit('S47 music: %s peaks at %.1f dBTP' % (name, peak))
         dst = os.path.join(media, 'music', name + '.wav')
         os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -361,88 +367,289 @@ def mixes(media, bundle, previews):
             preview(dst, os.path.join(previews, 'mix_' + name + '.mp3'))
         return dst
 
-    # (a) "Night Freight": the late truck radio. Neon Highway kit 5, 80 BPM, F#-E-B-D, 72 bars = 3:36.
-    # intro 0-8 (pad, air) / A 8-24 (bass, arp; shaker and high pad from 16) / B 24-40 (kick; lead and snare from 32) /
-    # break 40-48 (pads and the high arp) / C 48-64 (all; lead from 56) / outro 64-72
-    k5 = os.path.join(retro, 'Function Loops - Neon Highway', 'FL_NHW_KIT05_80BPM_F#-E-B-D', 'FL_NHW_KIT05_80BPM_LOOPS', 'FL_NHW_KIT05_80_')
-    p = Piece(80, 72)
-    p.add(k5 + 'F#-E-B-D_LOW NOTE PAD.wav', -23, [(0, 72, 4, 7)])
-    p.add(k5 + 'ATMO SFX.wav', -33, [(0, 16, 2, 2), (40, 48, 1, 1)])
-    p.add(k5 + 'F#-E-B-D_BASS.wav', -21, [(8, 40, 0.1, 0.25), (48, 64, 0.1, 1)], open_from=(260, 6))
-    p.add(k5 + 'F#-E-B-D_ARP.wav', -27, [(8, 72, 4, 7)], open_from=(900, 8))
-    p.add(k5 + 'F#-E-B-D_HIGH PAD.wav', -28, [(16, 40, 2, 1), (48, 64, 1, 2)])
-    p.add(k5 + 'SHAKER.wav', -39, [(16, 40, 1, 0.5), (48, 64, 0.5, 1)], perc=True)
-    p.add(k5 + 'KICK.wav', -25, [(24, 40, 0.02, 0.1), (48, 64, 0.02, 0.5)], lp=240, perc=True)
-    p.add(k5 + 'SNARE.wav', -32, [(32, 40, 0.02, 0.1), (56, 64, 0.02, 0.5)], lp=3000, perc=True)
-    p.add(k5 + 'F#-E-B-D_LEAD.wav', -29, [(32, 40, 0.5, 0.5), (56, 64, 0.5, 1)], lp=4500)
-    p.add(k5 + 'F#_HIGH ARP.wav', -33, [(40, 56, 1, 2)])
-    p.add(k5 + 'F#-E-B-D_MID BASS.wav', -30, [(48, 64, 1, 1)])
-    p.add(k5 + 'CRASH.wav', -36, [(24, 28, 0, 1), (48, 52, 0, 1)], perc=True, once=True)
-    freight = master(p.bus, 's47_night_freight')
-    used = {'s47_night_freight': p.used}
+    used = {}
+    if first:
+        # (a) "Night Freight": the late truck radio. Neon Highway kit 5, 80 BPM, F#-E-B-D, 72 bars = 3:36.
+        # intro 0-8 (pad, air) / A 8-24 (bass, arp; shaker and high pad from 16) / B 24-40 (kick; lead and snare from 32) /
+        # break 40-48 (pads and the high arp) / C 48-64 (all; lead from 56) / outro 64-72
+        k5 = os.path.join(retro, 'Function Loops - Neon Highway', 'FL_NHW_KIT05_80BPM_F#-E-B-D', 'FL_NHW_KIT05_80BPM_LOOPS', 'FL_NHW_KIT05_80_')
+        p = Piece(80, 72)
+        p.add(k5 + 'F#-E-B-D_LOW NOTE PAD.wav', -23, [(0, 72, 4, 7)])
+        p.add(k5 + 'ATMO SFX.wav', -33, [(0, 16, 2, 2), (40, 48, 1, 1)])
+        p.add(k5 + 'F#-E-B-D_BASS.wav', -21, [(8, 40, 0.1, 0.25), (48, 64, 0.1, 1)], open_from=(260, 6))
+        p.add(k5 + 'F#-E-B-D_ARP.wav', -27, [(8, 72, 4, 7)], open_from=(900, 8))
+        p.add(k5 + 'F#-E-B-D_HIGH PAD.wav', -28, [(16, 40, 2, 1), (48, 64, 1, 2)])
+        p.add(k5 + 'SHAKER.wav', -39, [(16, 40, 1, 0.5), (48, 64, 0.5, 1)], perc=True)
+        p.add(k5 + 'KICK.wav', -25, [(24, 40, 0.02, 0.1), (48, 64, 0.02, 0.5)], lp=240, perc=True)
+        p.add(k5 + 'SNARE.wav', -32, [(32, 40, 0.02, 0.1), (56, 64, 0.02, 0.5)], lp=3000, perc=True)
+        p.add(k5 + 'F#-E-B-D_LEAD.wav', -29, [(32, 40, 0.5, 0.5), (56, 64, 0.5, 1)], lp=4500)
+        p.add(k5 + 'F#_HIGH ARP.wav', -33, [(40, 56, 1, 2)])
+        p.add(k5 + 'F#-E-B-D_MID BASS.wav', -30, [(48, 64, 1, 1)])
+        p.add(k5 + 'CRASH.wav', -36, [(24, 28, 0, 1), (48, 52, 0, 1)], perc=True, once=True)
+        freight = master(p.bus, 's47_night_freight')
+        used['s47_night_freight'] = p.used
 
-    # (b) "Cold Dish": the observatory's night bed, no drums. ABYSS, 100 BPM, D# minor (D#m, D#m, B, G#m every 8 bars), 88 bars = 3:31.
-    # pedal 0-8 / sub 8-16 / first pad 16-32 / second pad over it 32-48 / thin and high 48-56 / darker pair 56-72 / down 72-88
-    pad = os.path.join(abyss, 'Pad Loops', 'FL_ABB_Pad_100_D#_Obsidian_')
-    p = Piece(100, 88)
-    p.add(pad + '21_8bars.wav', -23, [(0, 88, 4, 8)])
-    p.add(os.path.join(abyss, 'Bass Loops', 'FL_ABB_Bass_100_D#_Void_08_4bars.wav'), -25, [(8, 48, 4, 4), (56, 80, 4, 6)], lp=140)
-    p.add(pad + '01_8bars.wav', -23, [(16, 48, 4, 3), (56, 82, 3, 8)])
-    p.add(pad + '18_8bars.wav', -26, [(32, 48, 4, 3)])
-    p.add(pad + '19_8bars.wav', -27, [(46, 58, 2, 3), (72, 82, 3, 6)])
-    p.add(pad + '02_8bars.wav', -25, [(56, 72, 3, 3)])
-    master(p.bus, 's47_cold_dish', wow=0.0004)
-    used['s47_cold_dish'] = p.used
+        # (b) "Cold Dish": the observatory's night bed, no drums. ABYSS, 100 BPM, D# minor (D#m, D#m, B, G#m every 8 bars), 88 bars = 3:31.
+        # pedal 0-8 / sub 8-16 / first pad 16-32 / second pad over it 32-48 / thin and high 48-56 / darker pair 56-72 / down 72-88
+        pad = os.path.join(abyss, 'Pad Loops', 'FL_ABB_Pad_100_D#_Obsidian_')
+        p = Piece(100, 88)
+        p.add(pad + '21_8bars.wav', -23, [(0, 88, 4, 8)])
+        p.add(os.path.join(abyss, 'Bass Loops', 'FL_ABB_Bass_100_D#_Void_08_4bars.wav'), -25, [(8, 48, 4, 4), (56, 80, 4, 6)], lp=140)
+        p.add(pad + '01_8bars.wav', -23, [(16, 48, 4, 3), (56, 82, 3, 8)])
+        p.add(pad + '18_8bars.wav', -26, [(32, 48, 4, 3)])
+        p.add(pad + '19_8bars.wav', -27, [(46, 58, 2, 3), (72, 82, 3, 6)])
+        p.add(pad + '02_8bars.wav', -25, [(56, 72, 3, 3)])
+        master(p.bus, 's47_cold_dish', wow=0.0004)
+        used['s47_cold_dish'] = p.used
 
-    # (c) "Carrier Lock": tension, a pulse over a C pedal. Retrowave, 100 BPM, C minor, 72 bars = 2:53.
-    # arp alone 0-8 / pulse 8-16 / heartbeat kick 16-24 / B 24-40 (bass and pad move C, C, Eb, F) / break 40-48 /
-    # pulse again 48-64 / out 64-72
-    rw = os.path.join(retro, 'Function Loops - Retrowave', 'Loops')
-    p = Piece(100, 72)
-    p.add(os.path.join(rw, 'Synth Loops', 'Arps', 'FL_SKY_100_Synth_Arp_Analog_Cm.wav'), -26, [(0, 72, 3, 6)], open_from=(500, 8), close_to=(600, 6))
-    p.add(os.path.join(rw, 'Synth Loops', 'Pads', 'FL_SKY_100_Synth_Pad_Velvet_Cmin.wav'), -25, [(0, 24, 4, 1), (40, 48, 0.5, 1), (64, 72, 1, 6)])
-    p.add(os.path.join(rw, 'Bass Loops', 'FL_SKY_100_Bass_Synth_Pulse_Cm_Bas.wav'), -21, [(8, 24, 0.5, 0.1), (48, 64, 0.5, 1)], open_from=(220, 4))
-    p.add(os.path.join(rw, 'Drum Loops', 'Kicks', 'FL_SKY_100_Drum_Kick_Feedback.wav'), -26, [(16, 40, 0.02, 0.1), (48, 64, 0.02, 1)], lp=160, perc=True)
-    p.add(os.path.join(rw, 'Synth Loops', 'Arps', 'FL_SKY_100_Synth_Arp_Electric_Cm.wav'), -31, [(16, 24, 2, 0.5), (56, 64, 2, 1)], lp=5000)
-    p.add(os.path.join(rw, 'Synth Loops', 'Leads', 'FL_SKY_100_Synth_Lead_Flashes_Cmin.wav'), -30, [(16, 24, 0.5, 0.5), (56, 64, 0.5, 1)], lp=5000)
-    p.add(os.path.join(rw, 'Bass Loops', 'FL_SKY_100_Bass_Synth_Deep_Cm.wav'), -21, [(24, 40, 0.1, 0.25)])
-    p.add(os.path.join(rw, 'Synth Loops', 'Pads', 'FL_SKY_100_Synth_Pad_Starlit_Cmin.wav'), -25, [(24, 40, 1, 1)])
-    p.add(os.path.join(rw, 'Drum Loops', 'Hats', 'FL_SKY_100_Drum_Hat_Textured.wav'), -40, [(24, 40, 1, 1)], perc=True)
-    p.add(os.path.join(rw, 'Synth Loops', 'Leads', 'FL_SKY_100_Synth_Lead_Slowdive_Cmin.wav'), -29, [(40, 48, 0.5, 1)], lp=5000)
-    master(p.bus, 's47_carrier_lock')
-    used['s47_carrier_lock'] = p.used
+        # (c) "Carrier Lock": tension, a pulse over a C pedal. Retrowave, 100 BPM, C minor, 72 bars = 2:53.
+        # arp alone 0-8 / pulse 8-16 / heartbeat kick 16-24 / B 24-40 (bass and pad move C, C, Eb, F) / break 40-48 /
+        # pulse again 48-64 / out 64-72
+        rw = os.path.join(retro, 'Function Loops - Retrowave', 'Loops')
+        p = Piece(100, 72)
+        p.add(os.path.join(rw, 'Synth Loops', 'Arps', 'FL_SKY_100_Synth_Arp_Analog_Cm.wav'), -26, [(0, 72, 3, 6)], open_from=(500, 8), close_to=(600, 6))
+        p.add(os.path.join(rw, 'Synth Loops', 'Pads', 'FL_SKY_100_Synth_Pad_Velvet_Cmin.wav'), -25, [(0, 24, 4, 1), (40, 48, 0.5, 1), (64, 72, 1, 6)])
+        p.add(os.path.join(rw, 'Bass Loops', 'FL_SKY_100_Bass_Synth_Pulse_Cm_Bas.wav'), -21, [(8, 24, 0.5, 0.1), (48, 64, 0.5, 1)], open_from=(220, 4))
+        p.add(os.path.join(rw, 'Drum Loops', 'Kicks', 'FL_SKY_100_Drum_Kick_Feedback.wav'), -26, [(16, 40, 0.02, 0.1), (48, 64, 0.02, 1)], lp=160, perc=True)
+        p.add(os.path.join(rw, 'Synth Loops', 'Arps', 'FL_SKY_100_Synth_Arp_Electric_Cm.wav'), -31, [(16, 24, 2, 0.5), (56, 64, 2, 1)], lp=5000)
+        p.add(os.path.join(rw, 'Synth Loops', 'Leads', 'FL_SKY_100_Synth_Lead_Flashes_Cmin.wav'), -30, [(16, 24, 0.5, 0.5), (56, 64, 0.5, 1)], lp=5000)
+        p.add(os.path.join(rw, 'Bass Loops', 'FL_SKY_100_Bass_Synth_Deep_Cm.wav'), -21, [(24, 40, 0.1, 0.25)])
+        p.add(os.path.join(rw, 'Synth Loops', 'Pads', 'FL_SKY_100_Synth_Pad_Starlit_Cmin.wav'), -25, [(24, 40, 1, 1)])
+        p.add(os.path.join(rw, 'Drum Loops', 'Hats', 'FL_SKY_100_Drum_Hat_Textured.wav'), -40, [(24, 40, 1, 1)], perc=True)
+        p.add(os.path.join(rw, 'Synth Loops', 'Leads', 'FL_SKY_100_Synth_Lead_Slowdive_Cmin.wav'), -29, [(40, 48, 0.5, 1)], lp=5000)
+        master(p.bus, 's47_carrier_lock')
+        used['s47_carrier_lock'] = p.used
 
-    # (d) "County Road": the drive. Neon Highway kit 4, 124 BPM, A-C-D, 96 bars = 3:06.
-    # pad 0-4 / arp 4-16 / bass 16-24 / kick and hat 24-40 (mid bass, pluck from 32) / lead and snare 40-56 /
-    # break 56-64 / all 64-88 (lead and snare from 72) / out 88-96
-    k4 = os.path.join(retro, 'Function Loops - Neon Highway', 'FL_NHW_KIT04_124BPM_A-C-D', 'FL_NHW_KIT04_124BPM_LOOPS', 'FL_NHW_KIT04_124_')
-    p = Piece(124, 96)
-    p.add(k4 + 'A-C-D_PAD.wav', -21, [(0, 96, 2, 7)])
-    p.add(k4 + 'ATMO SFX.wav', -30, [(0, 16, 1, 2), (56, 64, 1, 1)])
-    p.add(k4 + 'A_ARP.wav', -26, [(4, 96, 4, 7)], open_from=(800, 8))
-    p.add(k4 + 'A-C-D_BASS.wav', -20, [(16, 56, 0.1, 0.25), (64, 88, 0.1, 1)], open_from=(260, 6))
-    p.add(k4 + 'KICK.wav', -23, [(24, 56, 0.02, 0.1), (64, 88, 0.02, 0.5)], lp=320, perc=True)
-    p.add(k4 + 'CLSHAT.wav', -37, [(24, 56, 1, 0.25), (64, 88, 0.5, 1)], perc=True)
-    p.add(k4 + 'A-C-D_MID BASS.wav', -27, [(32, 56, 1, 0.25), (64, 88, 1, 1)])
-    p.add(k4 + 'A_HIGH PLUCK.wav', -31, [(32, 40, 0.5, 0.5), (56, 64, 0.5, 0.5), (80, 88, 0.5, 1)])
-    p.add(k4 + 'SNARE.wav', -30, [(40, 56, 0.02, 0.1), (72, 88, 0.02, 0.5)], lp=3200, perc=True)
-    p.add(k4 + 'A-C-D_LEAD.wav', -28, [(40, 56, 0.5, 0.5), (72, 88, 0.5, 1)], lp=4500)
-    p.add(k4 + 'CRASH.wav', -36, [(24, 28, 0, 1), (64, 68, 0, 1)], perc=True, once=True)
-    p.add(k4 + 'FLYBY.wav', -33, [(56, 64, 0, 1)], once=True)
-    master(p.bus, 's47_county_road')
-    used['s47_county_road'] = p.used
+        # (d) "County Road": the drive. Neon Highway kit 4, 124 BPM, A-C-D, 96 bars = 3:06.
+        # pad 0-4 / arp 4-16 / bass 16-24 / kick and hat 24-40 (mid bass, pluck from 32) / lead and snare 40-56 /
+        # break 56-64 / all 64-88 (lead and snare from 72) / out 88-96
+        k4 = os.path.join(retro, 'Function Loops - Neon Highway', 'FL_NHW_KIT04_124BPM_A-C-D', 'FL_NHW_KIT04_124BPM_LOOPS', 'FL_NHW_KIT04_124_')
+        p = Piece(124, 96)
+        p.add(k4 + 'A-C-D_PAD.wav', -21, [(0, 96, 2, 7)])
+        p.add(k4 + 'ATMO SFX.wav', -30, [(0, 16, 1, 2), (56, 64, 1, 1)])
+        p.add(k4 + 'A_ARP.wav', -26, [(4, 96, 4, 7)], open_from=(800, 8))
+        p.add(k4 + 'A-C-D_BASS.wav', -20, [(16, 56, 0.1, 0.25), (64, 88, 0.1, 1)], open_from=(260, 6))
+        p.add(k4 + 'KICK.wav', -23, [(24, 56, 0.02, 0.1), (64, 88, 0.02, 0.5)], lp=320, perc=True)
+        p.add(k4 + 'CLSHAT.wav', -37, [(24, 56, 1, 0.25), (64, 88, 0.5, 1)], perc=True)
+        p.add(k4 + 'A-C-D_MID BASS.wav', -27, [(32, 56, 1, 0.25), (64, 88, 1, 1)])
+        p.add(k4 + 'A_HIGH PLUCK.wav', -31, [(32, 40, 0.5, 0.5), (56, 64, 0.5, 0.5), (80, 88, 0.5, 1)])
+        p.add(k4 + 'SNARE.wav', -30, [(40, 56, 0.02, 0.1), (72, 88, 0.02, 0.5)], lp=3200, perc=True)
+        p.add(k4 + 'A-C-D_LEAD.wav', -28, [(40, 56, 0.5, 0.5), (72, 88, 0.5, 1)], lp=4500)
+        p.add(k4 + 'CRASH.wav', -36, [(24, 28, 0, 1), (64, 68, 0, 1)], perc=True, once=True)
+        p.add(k4 + 'FLYBY.wav', -33, [(56, 64, 0, 1)], once=True)
+        master(p.bus, 's47_county_road')
+        used['s47_county_road'] = p.used
 
-    # the radio's copy of (a): the far station's late record
-    stage(freight, os.path.join(media, 'radio', 's47_night_freight.wav'), RADIO_LUFS, AM, 1.0, 22050, 1)
-    if previews:
-        preview(os.path.join(media, 'radio', 's47_night_freight.wav'), os.path.join(previews, 'radio_am_s47_night_freight_30s.mp3'), 80, 30)
+        # the radio's copy of (a): the far station's late record
+        stage(freight, os.path.join(media, 'radio', 's47_night_freight.wav'), RADIO_LUFS, AM, 1.0, 22050, 1)
+        if previews:
+            preview(os.path.join(media, 'radio', 's47_night_freight.wav'), os.path.join(previews, 'radio_am_s47_night_freight_30s.mp3'), 80, 30)
+
+    # ---------------------------------------------------------------- the quiet ones
+    # Tom, 13 November 2026: "Prøv å mikse sammen de andre musikk-loopene med 1980s-loopene, noe ambient, skummelt men rolig."
+    # Five beds. Each is a sustained ground from the bundle's dark kits (ABYSS, and the tonal beds of "Ambience SciFi") with one
+    # or two of the 1984 bundle's analog synth loops (Retrowave, Neon Highway, Darkwave) far inside it: low-passed, a little
+    # of the shared room on them, never a drum kit and never a lead. Two to four things sound at a time; they come and go over
+    # 10 to 30 seconds; every piece starts from nothing and ends in nothing. The other music kits in the bundle ("Modern Music
+    # Kits": trap, phonk, breakcore, indie, lofi, pop) are the wrong decade and the wrong weather, and are not used.
+    # The loops were chosen by measurement (Tools/music/measure_music.py and the catalogue's features): the pitch classes of
+    # every bar, how still a loop is, its centroid and how much of it is pulse. A loop in another key is brought over by tape
+    # speed, one or two semitones at most (semi=): pitch and tempo together, as on a deck, so nothing is stretched. A loop with a
+    # pulse keeps its exact length (lock=); a sustained one wraps over a crossfade of its own tail (xf=).
+    # Nobody has listened to these either: they are checked by measurement, and the previews are for Tom's ear.
+    def seam(x, xf):
+        """One period of a sustained loop whose end runs into its beginning over xf seconds."""
+        n = min(int(xf * SR), len(x) // 3)
+        if n < 64:
+            return x
+        size = len(x) - n
+        head, tail = x[:n], x[size:]
+        alike = float((head * tail).sum() / (np.sqrt((head ** 2).sum() * (tail ** 2).sum()) + 1e-12))
+        up = ramp(n) if alike > 0.5 else np.sqrt(ramp(n))  # the same sound: amplitudes add up; another: powers do
+        down = up[::-1]
+        per = x[:size].copy()
+        per[:n] = head * up[:, None] + tail * down[:, None]
+        return per
+
+    def room(send, secs=4.5):
+        """The one room all five share: a 4.5 s tail of filtered noise (the same every build), dark, and different in each ear."""
+        n = int(secs * SR)
+        t = np.arange(n) / SR
+        ir = np.random.default_rng(47).standard_normal((n, 2)) * np.exp(-6.9 * t / (secs * 0.8))[:, None]
+        ir = sosfilt(sos('lowpass', 3000), sosfilt(sos('highpass', 220), ir, axis=0), axis=0)
+        ir[:int(0.03 * SR)] *= ramp(int(0.03 * SR))[:, None]
+        ir /= np.sqrt((ir ** 2).sum(axis=0))
+        return np.stack([fftconvolve(send, ir[:, c])[:len(send)] for c in (0, 1)], axis=1)
+
+    class Bed:
+        def __init__(self, secs):
+            self.n = int(round(secs * SR))
+            self.bus = np.zeros((self.n, 2))
+            self.send = np.zeros(self.n)
+            self.used = []
+            self.stems = []
+
+        def add(self, path, level, spans, semi=0, lock=False, xf=2.0, hp=None, lp=None, move=None, far=0.0, width=1.0, sway=None):
+            """level: dB of its loudest half, after its filters at their most open. spans: (from s, to s, fade-in s, fade-out s).
+            lp: Hz, or (dark Hz, open Hz) with move: [(s, 0..1), ...], how open it is when. far: 0..1, how much of it is only
+            the room. sway: (dB, period s, phase 0..1), a slow breath in its level."""
+            x = load(path, semi)
+            name = os.path.relpath(path, bundle) + (' (%+d semitones)' % semi if semi else '')
+            self.used.append(name)
+            # safe in mono: no layer is wider than a correlation of 0.3 between its two channels (two of the beds come wider than 0)
+            mid, side = x.mean(axis=1), (x[:, 0] - x[:, 1]) / 2
+            width *= min(1.0, np.sqrt(0.54 * (mid ** 2).mean() / ((side ** 2).mean() + 1e-20)))
+            if width != 1.0:
+                x = np.stack([mid + side * width, mid - side * width], axis=1)
+            if lock:
+                edge = int(0.002 * SR)
+                x[-edge:] *= ramp(edge, False)[:, None]
+                x[:edge] *= ramp(edge)[:, None]
+            else:
+                x = seam(x, xf)
+            # no click where it wraps: the join's sharpest corner against the loop's own sharpest thousandth
+            m = np.concatenate([x[-64:], x[:64]]).mean(axis=1)
+            corner = np.abs(np.diff(m, 2))[56:70].max() / (np.percentile(np.abs(np.diff(x.mean(axis=1), 2)), 99.9) + 1e-9)
+            if corner > 3:
+                sys.exit('S47 music: %s would click where it wraps (%.1f)' % (name, corner))
+            dark, bright = (lp if isinstance(lp, tuple) else (None, lp))
+
+            def shaped(seg, cut):
+                if hp:
+                    seg = sosfilt(sos('highpass', hp), seg, axis=0)
+                return sosfilt(sos('lowpass', cut), seg, axis=0) if cut else seg
+
+            twice = shaped(np.concatenate([x, x]), bright)
+            gain = 10 ** ((level - loud_rms(twice[len(x):])) / 20)
+            stem = np.zeros(self.n)
+            for t0, t1, fin, fout in spans:
+                s, e = int(t0 * SR), min(self.n, int(t1 * SR))
+                seg = x[(np.arange(s, e) if lock else np.arange(e - s)) % len(x)]
+                if dark:
+                    a = np.interp(np.arange(s, e) / SR, [m[0] for m in move], [m[1] for m in move])[:, None]
+                    seg = shaped(seg, dark) * (1 - a) + shaped(seg, bright) * a
+                else:
+                    seg = shaped(seg, bright)
+                seg = seg * gain
+                if sway:
+                    seg *= (10 ** (sway[0] * np.sin(2 * np.pi * (np.arange(s, e) / SR / sway[1] + sway[2])) / 20))[:, None]
+                n = min(len(seg), int(fin * SR))
+                seg[:n] *= ramp(n)[:, None]
+                n = min(len(seg), int(fout * SR))
+                seg[-n:] *= ramp(n, False)[:, None]
+                self.bus[s:e] += seg * (1 - 0.6 * far)
+                self.send[s:e] += seg.mean(axis=1) * far
+                stem[s:e] += (seg ** 2).mean(axis=1)
+            self.stems.append((name, stem))
+
+        def mix(self, wet=0.5):
+            x = self.bus + wet * room(self.send)
+            edge = int(1.0 * SR)
+            x[:edge] *= ramp(edge)[:, None]
+            x[-edge:] *= ramp(edge, False)[:, None]
+            return x
+
+        def table(self, name, step=30.0):
+            # which layer carries how much of each half minute (dB under the sum of the layers): written, since nobody hears it
+            w = int(step * SR)
+            total = sum(s for _, s in self.stems)
+            print('S47 music: %s, layers in dB under their sum, per %d s' % (name, step))
+            for label, s in self.stems:
+                row = []
+                for i in range(0, self.n, w):
+                    part, whole = s[i:i + w].mean(), total[i:i + w].mean()
+                    row.append('  . ' if part < whole * 1e-4 else '%4.0f' % (10 * np.log10(part / (whole + 1e-20) + 1e-20)))
+                print('S47 music:   %-58s%s' % (os.path.basename(label)[:58], ''.join(row)))
+
+    def quiet_piece(name, bed, wow=0.0010):
+        bed.table(name)
+        used[name] = bed.used
+        # (the same bus as the four above, so the nine are one score; a true peak of -7 dBTP at the most, like the calm ones there)
+        return master(bed.mix(), name, wow=wow, ceiling=-7.0)
+
+    if quiet:
+        sci = os.path.join(scifi, 'FL_GFX_Ambience_SciFi_')
+        opad = os.path.join(abyss, 'Pad Loops', 'FL_ABB_Pad_100_')
+        orhy = os.path.join(abyss, 'Rhythmic Loops', 'FL_ABB_Rhythm_100_')
+        obas = os.path.join(abyss, 'Bass Loops', 'FL_ABB_Bass_100_')
+        rw = os.path.join(retro, 'Function Loops - Retrowave', 'Loops', 'Synth Loops')
+        rpad = os.path.join(rw, 'Pads', 'FL_SKY_100_Synth_Pad_')
+        rarp = os.path.join(rw, 'Arps', 'FL_SKY_100_Synth_Arp_')
+        nhw2 = os.path.join(retro, 'Function Loops - Neon Highway', 'FL_NHW_KIT02_90BPM_D-G-Bb-D#', 'FL_NHW_KIT02_90BPM_LOOPS', 'FL_NHW_KIT02_90_')
+        dwpad = os.path.join(retro, 'Function Loops - Darkwave - Postpunk', 'FL_DW_Loops', 'FL_DW_Synth_Loops', 'FL_DW_150_Synth_Pad_')
+        PAD = 0.08  # a pad with chords in it: a seam short enough to keep its bars, long enough not to tick
+
+        # (e) "Third Shift": inside SARO at night. C, unresolved: a chord of fourths (G C F Bb D) that never lands. 100 BPM, 4:29.
+        # the bed alone 0-19 / ABYSS' C minor pad 19-125 and 197-254 / the Retrowave fifth, pulsing like a machine two rooms
+        # away, 48-134 and 202-257 / the Retrowave pad's four chords 110-192 / a low C with a B against it, far off, 154-202
+        b = Bed(268.8)
+        b.add(sci + 'Retro_Smoothness_Cm.wav', -24, [(0, 268.8, 14, 20)], lp=(700, 4000), move=[(0, .15), (60, .6), (130, .9), (200, .5), (268, .1)], sway=(1.5, 47, 0))
+        b.add(opad + 'Gm_Obsidian_41_8bars.wav', -25, [(19.2, 124.8, 14, 16), (196.8, 254.4, 16, 20)], xf=PAD, lp=3000)
+        b.add(rarp + 'Electric_Cm.wav', -27, [(48, 134.4, 16, 16), (201.6, 256.8, 14, 18)], lock=True, lp=(500, 1500),
+              move=[(48, .1), (90, .9), (134, .2), (201, .1), (230, .6), (257, .1)], far=.5)
+        b.add(rpad + 'Starlit_Cmin.wav', -25, [(110.4, 192, 16, 18)], xf=PAD, lp=2600, far=.3)
+        b.add(rarp + 'Midnight_Cm.wav', -30, [(153.6, 201.6, 12, 14)], lock=True, lp=900, far=.7)
+        quiet_piece('s47_third_shift', b)
+
+        # (f) "Dry Lake": out on the land at night. D, open: D G A and no third. Free time, 5:00.
+        # the bed 0-300 / ABYSS' drone, a semitone down, 10-150 / the Neon Highway arpeggio (90 BPM) as lights far out, 40-112
+        # and 228-284 / the pedal 100-190 / the Retrowave arpeggio opening and closing 136-214, alone with the bed near 195 /
+        # the fifth and a slow sub 200-282
+        b = Bed(300)
+        b.add(sci + 'Gloomy_Silence_Dm.wav', -24, [(0, 300, 14, 20)], lp=(600, 3500), move=[(0, .2), (80, .7), (160, .4), (230, .9), (300, .1)], sway=(1.5, 53, .25))
+        b.add(orhy + 'D#_Neural_04_8bars.wav', -27, [(10, 150, 16, 20)], semi=-1, sway=(2, 37, 0))
+        b.add(nhw2 + 'D_ARP.wav', -27, [(40, 112, 18, 18), (228, 284, 16, 20)], lock=True, lp=1600, far=.7)
+        b.add(opad + 'D#_Obsidian_21_8bars.wav', -26, [(100, 190, 18, 20)], semi=-1)
+        b.add(rarp + 'Velvet_Dm.wav', -27, [(136, 214, 18, 18)], lock=True, lp=(500, 1400), move=[(136, .1), (175, 1), (214, .1)], far=.5)
+        b.add(orhy + 'D#_Neural_07_8bars.wav', -27, [(200, 282, 18, 22)], semi=-1)
+        b.add(obas + 'D#_Void_08_4bars.wav', -29, [(196, 272, 14, 20)], semi=-1, xf=PAD, lp=120)
+        quiet_piece('s47_dry_lake', b)
+
+        # (g) "Vacancy": the motel room. A minor over C, the warmest of the five: a major seventh that stays. 100 BPM, 4:10.
+        # the bed 0-250 / the Retrowave pad (Am, C, F, F) 14-110 and 197-240 / ABYSS' still chord, a semitone up, 72-156 /
+        # three long notes going down (C, A, F), far, 126-204 / the dark Retrowave chords 149-228
+        b = Bed(249.6)
+        b.add(sci + 'Broken_Core_Am.wav', -24, [(0, 249.6, 12, 18)], lp=(800, 3500), move=[(0, .3), (70, .8), (150, .5), (210, .8), (249, .2)], sway=(1.2, 41, 0))
+        b.add(rpad + 'Midnight_Amin.wav', -25, [(14.4, 110.4, 16, 18), (196.8, 240, 14, 18)], xf=PAD, lp=(900, 2600),
+              move=[(14, .2), (60, 1), (110, .3), (196, .2), (220, .7), (240, .2)])
+        b.add(opad + 'G#m_Obsidian_36_8bars.wav', -27, [(72, 156, 16, 18)], semi=1)
+        b.add(opad + 'G#m_Obsidian_37_8bars.wav', -29, [(126, 204, 16, 18)], semi=1, xf=PAD, lp=2200, far=.6)
+        b.add(os.path.join(rw, 'Chords', 'FL_SKY_100_Synth_Chord_Smooth_Amin.wav'), -26, [(148.8, 228, 16, 18)], xf=PAD, lp=1800)
+        quiet_piece('s47_vacancy', b)
+
+        # (h) "Grey Hour": before dawn. E minor; the low end leaves and the top opens, and nothing resolves (the bed itself brushes a
+        # G sharp every half minute and lets it go). Free time, 4:24.
+        # the bed 0-264, opening / a sub 0-105 / the pedal, a semitone up, 18-135 / the Darkwave pad opening 62-196 /
+        # ABYSS' thin pad (Em, C, Am) 122-240 / the Retrowave arpeggio, far, 166-244 / a high shimmer, two semitones down, 204-254
+        b = Bed(264)
+        b.add(sci + 'Soft_Space_Em.wav', -24, [(0, 264, 12, 20)], lp=(700, 4500), move=[(0, .1), (100, .5), (200, 1), (264, .4)], sway=(1.2, 49, .5))
+        b.add(obas + 'D#_Void_08_4bars.wav', -28, [(0, 105, 10, 30)], semi=1, xf=PAD, lp=130)
+        b.add(opad + 'D#_Obsidian_21_8bars.wav', -26, [(18, 135, 16, 26)], semi=1)
+        b.add(dwpad + 'Feedback_Em.wav', -26, [(62, 196, 20, 22)], xf=PAD, lp=(800, 3600), move=[(62, .05), (130, .6), (175, 1), (196, .5)], far=.3)
+        b.add(opad + 'D#_Obsidian_19_8bars.wav', -26, [(122, 240, 18, 22)], semi=1, xf=PAD)
+        b.add(rarp + 'Sunrise_Em.wav', -30, [(166, 244, 18, 20)], lock=True, lp=2400, far=.7)
+        b.add(orhy + 'F#_Neural_21_4bars.wav', -35, [(204, 254, 16, 18)], semi=-2, lp=5000, far=.4)
+        quiet_piece('s47_grey_hour', b)
+
+        # (i) "Standing Wave": nearly still, for the archive and wherever the game waits. D#, one note and its fifth. Free time, 3:42.
+        # the bed 0-222 / ABYSS' drone 6-214 and its pedal 30-196, each breathing at its own rate / a sub 20-204 /
+        # the Retrowave pulse, a semitone up and nearly closed, 52-176 / a high drone, far, 88-204
+        b = Bed(222)
+        b.add(sci + 'Ellegant_Space_D#m.wav', -24, [(0, 222, 14, 20)], lp=(700, 3200), move=[(0, .3), (110, .7), (222, .3)], sway=(1.2, 61, 0))
+        b.add(orhy + 'D#_Neural_04_8bars.wav', -26, [(6, 214, 16, 20)], sway=(2, 43, .5))
+        b.add(opad + 'D#_Obsidian_21_8bars.wav', -27, [(30, 196, 18, 22)], sway=(2, 59, .2))
+        b.add(obas + 'D#_Void_08_4bars.wav', -30, [(20, 204, 14, 20)], xf=PAD, lp=120)
+        b.add(rarp + 'Pulse_Dm.wav', -29, [(52, 176, 20, 22)], semi=1, lock=True, lp=(450, 1000), move=[(52, .1), (114, .9), (176, .1)], far=.6)
+        b.add(orhy + 'D#_Neural_06_8bars.wav', -33, [(88, 204, 20, 22)], lp=3500, far=.4)
+        quiet_piece('s47_standing_wave', b, wow=0.0006)
+
     for name, loops in used.items():
         print('S47 music: %s: %s' % (name, '; '.join(os.path.basename(v) for v in loops)))
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('what', choices=('free', 'own', 'mixes', 'all', 'index'))
+    ap.add_argument('what', choices=('free', 'own', 'mixes', 'quiet', 'all', 'index'))
     ap.add_argument('--content', default=os.path.join(PROJECT, 'Content'))
     ap.add_argument('--inbox', default=INBOX)
     ap.add_argument('--own', default=OWN)
@@ -456,8 +663,8 @@ def main():
         free(media, args.inbox, args.previews)
     if args.what in ('own', 'all'):
         own(media, args.own, args.previews)
-    if args.what in ('mixes', 'all'):
-        mixes(media, args.bundle, args.previews)
+    if args.what in ('mixes', 'quiet', 'all'):
+        mixes(media, args.bundle, args.previews, first=args.what != 'quiet')
     index(media)
 
 
