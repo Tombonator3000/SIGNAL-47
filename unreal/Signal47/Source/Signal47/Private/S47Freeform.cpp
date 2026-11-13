@@ -4182,6 +4182,12 @@ bool FS47FreeformSession::RestSuggestedAt(double AtClock,int32 ShiftDay,bool bLi
  const double Now=FS47FreeformJobs::ShiftClock(FMath::Fmod(FMath::Max(0.,AtClock),SecondsPerDay));
  return Now<EveningOpens||Now>=26.5*3600.;
 }
+bool FS47FreeformSession::NightBeforeGoal()const
+{
+ const double Now=FS47FreeformJobs::ShiftClock(FMath::Fmod(FMath::Max(0.,WorldClock),SecondsPerDay));
+ if(Now<EveningOpens||Now>=NightWatchCloses)return false;
+ return Work.ContainsByPredicate([](const FJob& J){return J.bGenerated&&J.CaseTest<0&&J.Day>=2&&J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected;});
+}
 bool FS47FreeformSession::SlipToFollow()const
 {
  if(!Places)return false;
@@ -4250,7 +4256,10 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  if(Pending>0)return Say(FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending),
   FString::Printf(TEXT("OPS // %d OBSERVATION%s WAITING."),Pending,Pending==1?TEXT(""):TEXT("S")));
  // With the parts in hand the station's own goal is the next thing to do, whatever the budget or a case says; in daylight.
- if(Next&&Field->BranchNeeds(*Next).IsEmpty()&&!bDark)return SayGoal();
+ // LOOP-NIGHT-WATCH-20261113 (Tom 13 November: «nattevakta gå foran»): not in the night (NightBeforeGoal): from 19:00 the night's
+ // cards and the night watch's notice lead, and the goal is said after them (the lines below append it).
+ const bool bNightFirst=NightBeforeGoal();
+ if(Next&&Field->BranchNeeds(*Next).IsEmpty()&&!bDark&&!bNightFirst)return SayGoal();
  if(Urgent>=0)return Say(Step.Next,Step.Card);
  if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return Say(FString(TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH.")),TEXT("PHOTO LAB // DEVELOP YOUR EXPOSED FILM AT THE WET BENCH."));
  if(ServiceGuide==1)return Say(ServiceObjective());
@@ -4269,9 +4278,13 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // The reference check pays nothing: a player short of money needs to hear where paid work comes from.
  if(Cash<5||Loan>0)return Say(bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR NEW PAID OBSERVATIONS; THEIR PAY GOES FIRST TO WHAT YOU OWE STORES (REQ ON OPS)."):TEXT("OPS: TODAY'S PAID WORK IS DONE. NEW PAID OBSERVATIONS COME WITH THE MORNING; THEIR PAY GOES FIRST TO WHAT YOU OWE STORES (REQ ON OPS)."),
   bCanRest?TEXT("OPS // TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR MORE."):TEXT("OPS // TODAY'S PAID WORK IS DONE. MORE COMES WITH THE MORNING."));
- if(!Goal.IsEmpty())return SayGoal();
+ // LOOP-NIGHT-WATCH-20261113: on the night watch's nights (from day 2) a goal that only waits for daylight does not stand in front of
+ // the night's last line, once the watch is done: that line, or rest, and the goal after it.
+ const bool bGoalWaitsBehind=bDark&&RulesLive()&&DayNumber>=2;
+ if(!Goal.IsEmpty()&&!bGoalWaitsBehind)return SayGoal();
  // FIX10-3 (M3): the loop from here is out and back: the camera, then the photo lab's wet bench.
- return Say(bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. GO OUT WITH THE CAMERA: PHOTOGRAPHS AND SAMPLES ARE YOUR EVIDENCE. DEVELOP FILM AT THE WET BENCH IN THE PHOTO LAB. ARRAY REPAIRS: ARRAY STATUS (left-hand PC). OPTIONAL: A REFERENCE CHECK AT DAILY WORK, NO PAY. OR REST."):TEXT("OPS: TODAY'S PAID WORK IS DONE. GO OUT WITH THE CAMERA: PHOTOGRAPHS AND SAMPLES ARE YOUR EVIDENCE. DEVELOP FILM AT THE WET BENCH IN THE PHOTO LAB. ARRAY REPAIRS: ARRAY STATUS (left-hand PC). OPTIONAL: A REFERENCE CHECK AT DAILY WORK, NO PAY."),
+ const FString DoneLine=bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. GO OUT WITH THE CAMERA: PHOTOGRAPHS AND SAMPLES ARE YOUR EVIDENCE. DEVELOP FILM AT THE WET BENCH IN THE PHOTO LAB. ARRAY REPAIRS: ARRAY STATUS (left-hand PC). OPTIONAL: A REFERENCE CHECK AT DAILY WORK, NO PAY. OR REST."):TEXT("OPS: TODAY'S PAID WORK IS DONE. GO OUT WITH THE CAMERA: PHOTOGRAPHS AND SAMPLES ARE YOUR EVIDENCE. DEVELOP FILM AT THE WET BENCH IN THE PHOTO LAB. ARRAY REPAIRS: ARRAY STATUS (left-hand PC). OPTIONAL: A REFERENCE CHECK AT DAILY WORK, NO PAY.");
+ return Say(Goal.IsEmpty()?DoneLine:DoneLine+TEXT(" ")+Goal,
   bCanRest?TEXT("OPS // PAID WORK DONE. GO OUT WITH THE CAMERA, OR REST."):TEXT("OPS // PAID WORK DONE. GO OUT WITH THE CAMERA."));
 }
 bool FS47FreeformSession::StartReferenceCheck()
@@ -5168,9 +5181,12 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Field&&ServiceGuide!=1)NoteChore(Result,TEXT("relay"),Field->HasArrayFault()?Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."):FString(),FString());
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const FString Step=CaseStep(Line).Task;!Step.IsEmpty())Result.Add({Step,false}); // CASES-OPS-20261109
  if(Director)for(const TPair<FString,bool>& Trail:Director->MysteryTrailRows())Result.Add({Trail.Key,Trail.Value}); // PT-NOTEBOOK-20261109: ticked off, not dropped
- if(const FString Goal=StationGoalLine();!Goal.IsEmpty())Result.Add({Goal,false});
+ // LOOP-NIGHT-WATCH-20261113: in the night the night's cards first, the station goal after them (NightBeforeGoal)
+ const bool bNightFirst=NightBeforeGoal();const FString Goal=StationGoalLine();
+ if(!Goal.IsEmpty()&&!bNightFirst)Result.Add({Goal,false});
  if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("Service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});
  for(const FJob& J:Work)if(J.Day==DayNumber||J.Stage!=EJobStage::Filed)Result.Add({JobLine(J),J.Stage==EJobStage::Filed});
+ if(!Goal.IsEmpty()&&bNightFirst)Result.Add({Goal,false});
  if(Fatigue){const FString Tired=Fatigue->KitLine();if(!Tired.IsEmpty())Result.Add({TEXT("YOU / ")+Tired,false});} // D46-20261110: Tired / Wide awake, coffee 2 cups
  return Result;
 }
@@ -6081,25 +6097,39 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Eve.TestAdvance(2.25*3600.);
   Check(Eve.EveningGated(*Day2[2])&&Eve.Day()==2,TEXT("Day: a night watch not begun by 04:00 waits for the next night"));
   Eve.Stop();
-  // LOOP-NIGHT-WATCH-20261113: OPS's next step through an ordinary second night, the two early cards in by 20:30.
+  // LOOP-NIGHT-WATCH-20261113: OPS's next step through an ordinary second night, the two early cards in by 20:30: once with a working
+  // array (as an older save has it, no station goal), once with the repair parts in hand (Tom 13 November: «nattevakta gå foran»: the
+  // night watch's line leads and the repair is said after it; at 02:42 the rest line is not hidden behind the goal's daylight wait).
+  // (money enough that the line is not the one about stores)
+  for(const bool bPartsWalk:{false,true})
   {
-   // (the walk is the cards' and the rest's: a working array, as an older save has it, so no station goal stands in front of them (with
-   // the parts in hand it comes first until one in the morning, and after it the goal's line is said before the rest), and money enough
-   // that the line is not the one about stores)
    auto WalkSave=[]{FS47FreeformSession W0(nullptr);W0.Begin(nullptr);auto Sv=S47J::Read(S47J::Write(W0.Save()));W0.Stop();return Sv;}();
-   if(const auto Fd=S47J::Obj(WalkSave,TEXT("field")))S47J::Set(Fd,TEXT("arrayWear"),FS47ArrayWear().Save());
+   if(const auto Fd=S47J::Obj(WalkSave,TEXT("field"))){FS47ArrayWear WalkWear;if(bPartsWalk)WalkWear.Start();S47J::Set(Fd,TEXT("arrayWear"),WalkWear.Save());}
    FS47FreeformSession Walk(nullptr);Walk.Begin(WalkSave);Walk.Tutorial=0;Walk.ServiceGuide=0;Walk.Cash=50;Walk.Loan=0;Walk.TestLiveRules();
-   Check(!Walk.Field||Walk.StationGoalLine().IsEmpty(),TEXT("Next step on night 2: the walk's fixture has a working array (no station goal)"));
+   const auto* WalkBranch=Walk.Field&&Walk.Field->ArrayWear().bActive?Walk.Field->ArrayWear().NextBranch():nullptr;
+   if(!bPartsWalk)Check(!Walk.Field||Walk.StationGoalLine().IsEmpty(),TEXT("Next step on night 2: the walk's fixture has a working array (no station goal)"));
+   else Check(WalkBranch&&Walk.Field->BranchNeeds(*WalkBranch).IsEmpty()&&!Walk.StationGoalLine().IsEmpty(),TEXT("Next step on night 2: the second walk's fixture has a worn array and the repair parts in hand"));
    for(FJob& J:Walk.Work)J.Stage=EJobStage::Filed;
    Walk.TestAdvance(86400);
    FJob* Watch=nullptr;for(FJob& J:Walk.Work)if(J.Day==2){if(J.Slot<2)J.Stage=EJobStage::Filed;else Watch=&J;}
-   bool bGap=Watch!=nullptr,bNoRest=true;
+   bool bGap=Watch!=nullptr,bNoRest=true,bGoalAfter=true;
    for(const double H:{20.5,22.,23.5,24.5,25.1})
    {
     Walk.TestAdvance(FMath::Max(0.,86400.+H*3600.-Walk.Clock()));
-    const FString Line=Walk.WorkActivities(nullptr);
-    bGap&=Line.StartsWith(TEXT("NIGHT WATCH / "))&&Line.Contains(TEXT("TONIGHT'S TWO CARDS ARE IN."))&&Line.Contains(TEXT("TILL THEN THE TIME IS YOURS"))&&TerminalNextLine(Line,2).Contains(TEXT("IN VIEW FROM 01:"));
+    FString WalkCard;const FString Line=Walk.WorkActivities(&WalkCard);
+    bGap&=Line.StartsWith(TEXT("NIGHT WATCH / "))&&Line.Contains(TEXT("TONIGHT'S TWO CARDS ARE IN."))&&Line.Contains(TEXT("TILL THEN THE TIME IS YOURS"))&&TerminalNextLine(Line,2).Contains(TEXT("IN VIEW FROM 01:"))
+     &&WalkCard.StartsWith(TEXT("NIGHT WATCH // "))&&WalkCard.Contains(TEXT("YOUR OWN TIME"));
     bNoRest&=!Line.Contains(TEXT("REST"));
+    // the repair after the watch's line, never dropped: until one in the morning to be done, after it waiting for daylight; in the
+    // notebook the night watch's card before the goal
+    if(bPartsWalk)
+    {
+     const TArray<FS47Task> WalkTasks=Walk.Tasks();const FString WalkGoal=Walk.StationGoalLine();const FString WatchLine=Watch?Walk.JobLine(*Watch):FString();
+     const int32 GoalRow=WalkTasks.IndexOfByPredicate([&WalkGoal](const FS47Task& T){return T.Text==WalkGoal;});
+     const int32 WatchRow=WalkTasks.IndexOfByPredicate([&WatchLine](const FS47Task& T){return T.Text==WatchLine;});
+     bGoalAfter&=Line.Find(TEXT("STATION GOAL / "))>Line.Find(TEXT("BE BACK IN THE CONTROL ROOM BY"))&&Line.Contains(H<25.?TEXT("REPAIR THE"):TEXT("WAITS FOR DAYLIGHT"))
+      &&WatchRow>=0&&GoalRow>WatchRow;
+    }
    }
    Walk.TestAdvance(FMath::Max(0.,86400.+25.8*3600.-Walk.Clock()));
    const bool bUp=Walk.WorkActivities(nullptr).StartsWith(TEXT("OPS (corner PC), DAILY WORK"));
@@ -6107,9 +6137,13 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    Walk.TestAdvance(FMath::Max(0.,86400.+26.2*3600.-Walk.Clock()));
    const FString Done=Walk.WorkActivities(nullptr);
    Walk.TestAdvance(FMath::Max(0.,86400.+26.7*3600.-Walk.Clock()));
-   const FString Later=Walk.WorkActivities(nullptr);
+   FString LaterCard;const FString Later=Walk.WorkActivities(&LaterCard);
+   if(bPartsWalk)bGoalAfter&=Done.StartsWith(TEXT("OPS: TODAY'S PAID WORK IS DONE."))&&Later.StartsWith(TEXT("OPS: TODAY'S PAID WORK IS DONE."))&&LaterCard.Contains(TEXT("OR REST"))
+     &&Done.Contains(TEXT("WAITS FOR DAYLIGHT"))&&Later.Find(TEXT("STATION GOAL / "))>Later.Find(TEXT("OR REST."));
    Check(bGap&&bNoRest&&bUp&&Done.Contains(TEXT("PAID WORK IS DONE"))&&!Done.Contains(TEXT("REST"))&&Later.Contains(TEXT("OR REST")),
-    TEXT("Next step on night 2: 20:30 to 01:15 the night watch's hour and his own time, never rest; the watch up at 01:48; done at 02:12 no rest yet; at 02:42 the old line, or rest (LOOP-NIGHT-WATCH)"));
+    bPartsWalk?TEXT("Next step on night 2, the repair parts in hand: 20:30 to 01:15 the night watch's hour and his own time, never rest; the watch up at 01:48; done at 02:12 no rest yet; at 02:42 the old line, or rest (LOOP-NIGHT-WATCH)")
+     :TEXT("Next step on night 2: 20:30 to 01:15 the night watch's hour and his own time, never rest; the watch up at 01:48; done at 02:12 no rest yet; at 02:42 the old line, or rest (LOOP-NIGHT-WATCH)"));
+   if(bPartsWalk)Check(bGoalAfter,TEXT("Next step on night 2, the repair parts in hand: the night watch leads from 20:30 and the repair is said after it (in the notebook too); at 02:12 and 02:42 the paid-work line, or rest, before the goal's daylight wait (Tom: nattevakta gå foran)"));
    Walk.Stop();
   }
   // The next-step line across an ordinary night: no rest before the night watch (19:00 to 02:30), unless worn out; from 02:30 it may.

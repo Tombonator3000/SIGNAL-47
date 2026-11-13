@@ -223,6 +223,10 @@ public:
  // LOOP-NIGHT-WATCH-20261113: whether OPS may say "or rest" now: not from 19:00 until 02:30 of a shift from day 2 (the night watch
  // keeps him up into the full hours), unless he is worn out (FS47Fatigue at S47Thoughts::ExhaustedFrom). Pure.
  static bool RestSuggestedAt(double AtClock,int32 ShiftDay,bool bLive,bool bWorn);
+ // LOOP-NIGHT-WATCH-20261113 (Tom 13 November: «nattevakta gå foran»): from 19:00 until 04:00 on the shift's clock, while one of the
+ // night's cards from day 2 (the night watch last) is still to be done, the cards and the night watch's notice come before the station
+ // goal on the next step (WorkActivities) and in the notebook (Tasks); the goal is said after them, and leads again by day.
+ bool NightBeforeGoal() const;
  // A live bearing slip whose circle on the map has not been stood in yet (FS47Places::SlipRows).
  bool SlipToFollow() const;
  // The soonest of the cards waiting for the evening, and the next time it comes up; null if none is.
