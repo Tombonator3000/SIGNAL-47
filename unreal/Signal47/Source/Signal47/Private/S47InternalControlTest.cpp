@@ -182,6 +182,16 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   // (taken by hand, the page goes over to TUNE a moment after the fix; either way RECORD is next)
   UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: after the fix the receiver is on page %d"),F.ReceiverPage());
+  // RX-LOOK round 2: first TUNE as it stands before the take (the pictures had it only with the banner's first line and after
+  // the take): the zoomed spectrum and the waterfall fill the body now
+  if(F.ReceiverPage()!=1){if(!Click(TEXT("TUNE")))return;}
+  Go(108,1.);return;
+ }
+ if(Stage==108)
+ {
+  if(!Check(F.ReceiverPage()==1&&Shows(TEXT("FINE TUNING (MHz)"))&&Shows(TEXT("SIGNAL WATERFALL")),TEXT("RX-LOOK: TUNE before the take shows the zoomed spectrum and the waterfall beside it")))return;
+  if(!Fits(TEXT("START RECORDING"),TEXT("TUNE before the take")))return;
+  Shot(TEXT("tune-before-take.png"));
   if(!Click(TEXT("RECORD")))return;Go(11,1.);return;
  }
  if(Stage==11)
@@ -242,7 +252,25 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   // RX-LOOK-20261113: the chart is the celestial sphere, in the receiver's own frame (the state banner, the scopes beside it)
   if(!Check(Shows(TEXT("EQUATORIAL CELESTIAL SPHERE"))&&Shows(TEXT("SIGNAL WATERFALL"))&&Shows(TEXT("ACQUISITION / TRACKING"))&&Onward.Num()==1&&Onward[0]->IsEnabled()&&F.SkyFix.IsValid()&&F.SkyAcquired(),TEXT("ACQUIRE is the sky chart: after the take its fix is held and TUNE is the way on")))return;
   if(!Fits(TEXT("TUNE >"),TEXT("the sky chart")))return;
-  Shot(TEXT("acquire-sky-chart.png"));Go(70,1.);return;
+  Shot(TEXT("acquire-sky-chart.png"));Go(24,1.);return;
+ }
+ // RX-LOOK round 2: the two tabs the pictures did not cover, in the receiver's frame, for the look. (Here, after everything the
+ // receiver's due cue is asked about: opening DATA marks its page as seen.) How far DATA runs past the glass is logged, not judged.
+ if(Stage==24){if(!Click(TEXT("ARRAY")))return;Go(25,1.);return;}
+ if(Stage==25)
+ {
+  if(!Check(F.ReceiverPage()==2&&Shows(TEXT("ARRAY / ANTENNAS ON THIS TARGET")),TEXT("RX-LOOK: the ARRAY tab opens in the receiver's frame")))return;
+  Shot(TEXT("array-tab.png"));
+  if(!Click(TEXT("DATA")))return;Go(26,1.);return;
+ }
+ if(Stage==26)
+ {
+  if(!Check(F.ReceiverPage()==4&&Shows(TEXT("WORK CARD")),TEXT("RX-LOOK: the DATA tab opens in the receiver's frame")))return;
+  TArray<TSharedRef<SButton>> Keys;bool KeySeen=false;Scan(TEXT("NEXT >"),Keys,KeySeen);
+  TSharedPtr<SWidget> Up;if(Keys.Num()>0)Up=Keys[0];
+  while(Up.IsValid()&&Up->GetTypeAsString()!=TEXT("SScrollBox"))Up=Up->GetParentWidget();
+  UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: DATA is %.1f units past the glass (below 1: it fits)"),Up.IsValid()?StaticCastSharedPtr<SScrollBox>(Up)->GetScrollOffsetOfEnd():-1.f);
+  Shot(TEXT("data-tab.png"));Go(70,1.);return;
  }
  if(Stage==70)
  {

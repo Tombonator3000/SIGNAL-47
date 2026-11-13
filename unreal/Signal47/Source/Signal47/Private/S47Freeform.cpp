@@ -3011,8 +3011,8 @@ void FS47FreeformSession::OpenReceiver()
   Rows.Add(T::Columns({
    {.8f,T::Panel(TEXT("WORK CARD"),S47Kit::Col(Left))},
    {1.2f,T::Panel(FString(),S47Kit::Col({
-    T::TitleRow(TEXT("LAST TAKE / FREQUENCY OVER TIME"),FString::Printf(TEXT("%.0f s"),SourceSeconds())),T::Spectrogram(TakeLook,HasTake,132), // RX-LOOK-20261113: 150 and 110, lower for the frame's body
-    T::TitleRow(TEXT("KNOWN SOURCE FOR COMPARISON"),TAttribute<FString>::CreateLambda(RefShown)),T::Spectrogram(RefLook,[]{return true;},96)}))}},10));
+    T::TitleRow(TEXT("LAST TAKE / FREQUENCY OVER TIME"),FString::Printf(TEXT("%.0f s"),SourceSeconds())),T::Spectrogram(TakeLook,HasTake,128), // RX-LOOK-20261113: 150 and 110, lower for the frame's body (round 2: 128 and 92, the body is 8 lower)
+    T::TitleRow(TEXT("KNOWN SOURCE FOR COMPARISON"),TAttribute<FString>::CreateLambda(RefShown)),T::Spectrogram(RefLook,[]{return true;},92)}))}},10));
   Rows.Add(T::Note(TAttribute<FString>::CreateLambda([this]{return FString(FS47ReceiverSound::BlurbOf(DataRef));}),20,TAttribute<FLinearColor>(S47Kit::Css(0x8cffa4))));
   Rows.Add(T::Columns({
    {1.f,T::Button(TEXT("< PREVIOUS"),[this,Refs]{DataRef=(DataRef+Refs-1)%Refs;OpenReceiver();})},
