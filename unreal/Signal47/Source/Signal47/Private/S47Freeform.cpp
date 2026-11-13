@@ -4438,7 +4438,7 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  else if(!CaseSheets.IsEmpty())return Say(FString::Printf(TEXT("PRINTER: COLLECT THE RESULT SHEET FOR %s."),FS47FreeformCases::Def(CaseSheets[0].Line).Title),TEXT("PRINTER // CASE RESULT SHEET."));
  // TELEX-20261109 (Tom's words on the HUD, "TELEX: A reply is waiting"): once the HUD's second line, now (TASKS-TEN-20261113, change 5)
  // a paper waiting like the printer's
- if(const FString Telex=TelexLine();!Telex.IsEmpty())return Say(TEXT("TELEX (control room): ")+Telex+TEXT(". TEAR IT OFF AT THE TELEX."),TEXT("TELEX // ")+Telex.Mid(7).ToUpper()+TEXT("."));
+ if(const FString Telex=TelexLine();!Telex.IsEmpty())return Say(TEXT("TELEX (control room): ")+Telex.Mid(7)+TEXT(". TEAR IT OFF AT THE TELEX."),TEXT("TELEX // ")+Telex.Mid(7).ToUpper()+TEXT("."));
  // TASKS-TEN-20261113 (change 10): the pinned matter's next step, once nothing blocks
  {FString PinFull,PinShort;if(PinnedStep(PinFull,PinShort))return Say(PinFull,PinShort,PinKey.StartsWith(TEXT("card"))||PinKey.StartsWith(TEXT("matter:"))?PinKey:PinText);}
  // 2. A WINDOW OPEN NOW (TASKS-TEN-20261113): be there for it.
@@ -6226,6 +6226,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   const FCaseStep XS=X.CaseStep(ML);
   Check(XS.Step==ECaseStep::AwaitReply&&XS.Task.Contains(TEXT("tear off the reply at the telex"))&&X.CaseNextLine(ML).Contains(TEXT("TEAR IT OFF AT THE TELEX"))&&X.AvailableActivities().StartsWith(TEXT("TELEX (control room): A reply is waiting"))
    &&X.TonightPlan().StartsWith(TEXT("TELEX / A REPLY IS WAITING"))&&X.Label(TEXT("telex"))==TEXT("The telex is printing"),TEXT("Telex: CaseStep, the HUD's one line (paper waiting, blocking now: TASKS-TEN change 5), TONIGHT'S PLAN and the machine say a reply is waiting there"));
+  if(!X.AvailableActivities().StartsWith(TEXT("TELEX (control room): A reply is waiting")))UE_LOG(LogTemp,Warning,TEXT("S47: telex self-test: the next step reads %s"),*X.AvailableActivities());
   FS47FreeformSession Y(nullptr);Y.Begin(S47J::Read(S47J::Write(X.Save())));Y.Tutorial=0;
   Check(Y.OnTelex(Doc)&&Y.TelexQueue().Num()==1&&Y.TelexQueue()[0].Page==X.TelexQueue()[0].Page&&!Y.InTelexTray(Doc)&&Y.CaseStep(ML).Step==ECaseStep::AwaitReply,TEXT("Telex: a paper on the machine survives Save and Continue, still not in the tray"));
   Y.TelexSheets[0].Feed=TelexSeconds;
