@@ -12,12 +12,19 @@ namespace
   double AzOffsets[3],ElOffsets[3],FrequencyOffsets[3],Seconds[3];
   int32 StartMinute,MinuteSpread;
   FS47FreeformJobs::EControl Control;
+  // LOOP-NIGHT-WATCH-20261113 (→ M1, M7; Tom 13 November, after the critics): the first shift's own times, kept for day 1 (the
+  // first night's script, S47FirstDay, and a Story night, which is day 1), while StartMinute and MinuteSpread are every later day's.
+  int32 FirstMinute,FirstSpread;
  };
+ // From day 2 the two early cards come up together, the pointing cross at 19:00 and the pulsar at about 19:30 (suggested 19:50 to
+ // 20:10, its source up half an hour before), and the third card (WeekSource) is the night watch: suggested 01:45 to 02:15, so that
+ // its source is up between 01:15 and 01:45 and it is worked at SARO into the two o'clock hour. Minutes past midnight run on past
+ // 24*60 here, on the shift's clock (FCard::SuggestedClock keeps the clock of day).
  const FSourceRule Rules[4]={
-  {{-2,0,2},{-1,0,1},{-.005,0,.005},{12,14,16},19*60,20,FS47FreeformJobs::EControl::PointingCross},
-  {{-2,0,2},{-1,0,1},{-.005,0,.005},{18,18,18},19*60+50,25,FS47FreeformJobs::EControl::PulsarTiming},
-  {{-2,0,2},{-1,0,1},{-.003,0,.003},{18,20,22},20*60+45,25,FS47FreeformJobs::EControl::InternalReference},
-  {{-2,0,2},{-1,0,1},{-.005,0,.005},{14,16,18},22*60+5,25,FS47FreeformJobs::EControl::InternalReference}
+  {{-2,0,2},{-1,0,1},{-.005,0,.005},{12,14,16},19*60,20,FS47FreeformJobs::EControl::PointingCross,19*60,20},
+  {{-2,0,2},{-1,0,1},{-.005,0,.005},{18,18,18},20*60,10,FS47FreeformJobs::EControl::PulsarTiming,19*60+50,25},
+  {{-2,0,2},{-1,0,1},{-.003,0,.003},{18,20,22},26*60,15,FS47FreeformJobs::EControl::InternalReference,20*60+45,25},
+  {{-2,0,2},{-1,0,1},{-.005,0,.005},{14,16,18},26*60,15,FS47FreeformJobs::EControl::InternalReference,22*60+5,25}
  };
  // Explicit integer mixing: no GetTypeHash implementation/order dependency.
  uint32 Mix(uint32 V)
@@ -61,10 +68,12 @@ FS47FreeformJobs::FCard FS47FreeformJobs::Make(int32 Seed,int32 Day,int32 Slot,i
  if(Random.RandRange(0,1)==0)P.Bw[1]=FMath::FloorToDouble((B0+B1)*.5);
  else P.Bw[0]=FMath::CeilToDouble((B0+B1)*.5);
  Out.Seconds=Rule.Seconds[Random.RandRange(0,2)];Out.Control=Rule.Control;
- const int32 Minute=Rule.StartMinute+Random.RandRange(-Rule.MinuteSpread/5,Rule.MinuteSpread/5)*5;
- Out.SuggestedClock=Minute*60.;
+ const bool bFirst=Out.Day<=1;
+ const int32 Spread=bFirst?Rule.FirstSpread:Rule.MinuteSpread;
+ const int32 Minute=(bFirst?Rule.FirstMinute:Rule.StartMinute)+Random.RandRange(-Spread/5,Spread/5)*5,OfDay=Minute%(24*60);
+ Out.SuggestedClock=OfDay*60.;
  P.Stage=FString::Printf(TEXT("FREEFORM D%02d / JOB %d"),Out.Day,Out.Slot+1);P.Action=TEXT("START RECORDING");
- P.Card=FString::Printf(TEXT("SARO / D%02d OBSERVATION %d / %s\nSUGGESTED %02d:%02d / FULL PAY FOR TWO DAYS\nF %.3f MHz / AZ %.1f / EL %.1f\nGAIN %.0f-%.0f / BW %.0f-%.0f kHz\nINTEGRATION %.0f s\n%s"),Out.Day,Out.Slot+1,Run.Source,Minute/60,Minute%60,P.F,Az,Out.El,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1],Out.Seconds,*ControlText(Out.Control));
+ P.Card=FString::Printf(TEXT("SARO / D%02d OBSERVATION %d / %s\n%sSUGGESTED %02d:%02d / FULL PAY FOR TWO DAYS\nF %.3f MHz / AZ %.1f / EL %.1f\nGAIN %.0f-%.0f / BW %.0f-%.0f kHz\nINTEGRATION %.0f s\n%s"),Out.Day,Out.Slot+1,Run.Source,NightWatch(Out)?TEXT("NIGHT WATCH / "):TEXT(""),OfDay/60,OfDay%60,P.F,Az,Out.El,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1],Out.Seconds,*ControlText(Out.Control));
  P.Note=TEXT("Observation card retains its original settings and source identity. Normal measurements remain valid; an anomaly requires independent control before interpretation.");
  return Out;
 }
@@ -81,7 +90,9 @@ bool FS47FreeformJobs::Valid(const FCard& C)
  const auto& P=C.Receiver;const auto& Base=FS47Observing::Runs()[C.Source].P;
  if(!FMath::IsFinite(P.F)||P.F<S47Signal::FMin||P.F>S47Signal::FMax||FMath::Abs(P.F-Base.F)>Base.FTol||P.FTol!=Base.FTol)return false;
  if(!FMath::IsFinite(C.El)||C.El<5||C.El>85||!FMath::IsFinite(C.Seconds)||C.Seconds<12||C.Seconds>24||(C.Source==1&&C.Seconds!=18))return false;
- if(!FMath::IsFinite(C.SuggestedClock)||C.SuggestedClock<18*3600||C.SuggestedClock>=23*3600||C.Control!=Rules[C.Source].Control)return false;
+ // the evening's hours, or (the third card only) the night watch's small hours; a saved card keeps whichever it was issued with
+ const bool bEvening=C.SuggestedClock>=18*3600&&C.SuggestedClock<23*3600,bWatch=C.Slot==2&&C.SuggestedClock>=0&&C.SuggestedClock<3*3600;
+ if(!FMath::IsFinite(C.SuggestedClock)||!(bEvening||bWatch)||C.Control!=Rules[C.Source].Control)return false;
  for(double V:{P.FTol,P.Az[0],P.Az[1],P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1]})if(!FMath::IsFinite(V))return false;
  if(P.Az[0]<Base.Az[0]||P.Az[1]>Base.Az[1]||P.Az[0]>=P.Az[1]||P.Gain[0]<Base.Gain[0]||P.Gain[1]>Base.Gain[1]||P.Gain[0]>=P.Gain[1]||P.Bw[0]<Base.Bw[0]||P.Bw[1]>Base.Bw[1]||P.Bw[0]>=P.Bw[1])return false;
  FS47Rx Rx;Rx.Frequency=P.F;Rx.Gain=FMath::RoundToDouble((P.Gain[0]+P.Gain[1])*.5);Rx.Bandwidth=FMath::RoundToDouble((P.Bw[0]+P.Bw[1])*.5);Rx.Azimuth=(P.Az[0]+P.Az[1])*.5;
@@ -122,6 +133,35 @@ bool FS47FreeformJobs::SelfTest(TArray<FString>& Results)
   }
   Good&=bWeekly&&bStartsHI&&bStartsVirgo;
   Results.Add(FString::Printf(TEXT("%s / Freeform jobs: the third card's survey holds for a week and turns with the next (M7)"),bWeekly&&bStartsHI&&bStartsVirgo?TEXT("PASS"):TEXT("FAIL")));
+ }
+ // LOOP-NIGHT-WATCH-20261113: from day 2 two early cards (19:00, and about 19:30 once its source is up) and the night watch after
+ // midnight on the same shift; day 1 keeps the first shift's own times.
+ {
+  bool bEarly=true,bWatch=true,bFirst=true,bText=true;
+  const auto In=[](double Clock,int32 FromMinute,int32 ToMinute){return Clock>=FromMinute*60.-1e-6&&Clock<=ToMinute*60.+1e-6;};
+  for(int32 Seed:{0,1,47,-1,MAX_int32})for(int32 Day=1;Day<=30;++Day)
+  {
+   const auto Deck=Generate(Seed,Day);if(Deck.Num()!=DailyCount){bEarly=false;continue;}
+   if(Day==1)
+   {
+    bFirst&=In(Deck[0].SuggestedClock,18*60+40,19*60+20)&&In(Deck[1].SuggestedClock,19*60+25,20*60+15)&&!NightWatch(Deck[2])
+     &&(Deck[2].Source==2?In(Deck[2].SuggestedClock,20*60+20,21*60+10):In(Deck[2].SuggestedClock,21*60+40,22*60+30));
+    for(const auto& C:Deck)bText&=!C.Receiver.Card.Contains(TEXT("NIGHT WATCH"));
+    continue;
+   }
+   bEarly&=In(Deck[0].SuggestedClock,18*60+40,19*60+20)&&In(Deck[1].SuggestedClock,19*60+50,20*60+10)&&!NightWatch(Deck[0])&&!NightWatch(Deck[1]);
+   for(int32 Source:{-1,2,3})
+   {
+    const auto W=Source<0?Deck[2]:Make(Seed,Day,2,Source);
+    bWatch&=NightWatch(W)&&In(ShiftClock(W.SuggestedClock),25*60+45,26*60+15)&&Valid(W);
+    bText&=W.Receiver.Card.Contains(TEXT("NIGHT WATCH / SUGGESTED 0"));
+   }
+  }
+  // A card saved in the old evening windows (19:50 or 22:05 on day 5) still reads as valid, and stays an evening card.
+  auto Old=Make(47,5,2,3);Old.SuggestedClock=22*3600.+5*60.;auto OldPulsar=Make(47,5,1);OldPulsar.SuggestedClock=19*3600.+50*60.;
+  const bool bOld=Valid(Old)&&!NightWatch(Old)&&Valid(OldPulsar)&&ShiftClock(1.5*3600.)==25.5*3600.&&ShiftClock(19*3600.)==19*3600.;
+  const bool bAll=bEarly&&bWatch&&bFirst&&bText&&bOld;Good&=bAll;
+  Results.Add(FString::Printf(TEXT("%s / Freeform jobs: from day 2 two early cards (19:00, 19:50-20:10) and the night watch suggested 01:45-02:15 on the same shift; day 1 keeps its own times; old evening cards stay valid (LOOP-NIGHT-WATCH)"),bAll?TEXT("PASS"):TEXT("FAIL")));
  }
  Results.Add(FString::Printf(TEXT("%s / %d deterministic legal daily cards, JSON seed/day replay, measured off-frequency/off-azimuth rejection, both survey choices, stable overrides, source-correct controls, pulsar recording retained"),Good?TEXT("PASS"):TEXT("FAIL"),Cards));
  return Good;

@@ -2121,7 +2121,7 @@ void FS47FreeformSession::OpenOperations()
      if(SelectJob(Next)){OpsSection=1;OpenOperations();}
     },true));
    }
-   else if(const FJob* Later=Work.FindByPredicate([this](const FJob& X){return EveningGated(X);}))Continue.Add(T::Small(EveningLine(*Later)));
+   else if(double LaterUp=0;const FJob* Later=NextEveningCard(LaterUp))Continue.Add(T::Small(EveningLine(*Later))); // LOOP-NIGHT-WATCH-20261113: the soonest
    else Continue.Add(T::Small(Rejected>0?TEXT("QUEUE / LEGACY ORIGINALS ONLY / REFERENCE CHECK BELOW, NO PAYMENT / NEW JOBS 08:00"):TEXT("QUEUE / DAILY OBSERVATIONS COMPLETE / REFERENCE CHECK BELOW, NO PAYMENT")));
    FString Photo;
    const FS47Album* Album=M&&M->Night?M->Night->Album.Get():nullptr;
@@ -3815,12 +3815,14 @@ bool FS47FreeformSession::EveningGated(const FJob& J)const
  // first shift's. Once begun a card runs out whenever it was begun, and a case test keeps its own window.
  if(!J.bGenerated||J.Stage!=EJobStage::New||J.Day<2||J.CaseTest>=0||Tutorial>0)return false;
  if(M&&M->Flow&&M->Flow->bDevRun&&!bTestEvening)return false;
- const double Now=FMath::Fmod(WorldClock,SecondsPerDay);
- return Now<EveningUp(J)||Now>=EveningCloses;
+ // LOOP-NIGHT-WATCH-20261113: on the shift's clock, so that the night watch's window (01:15 to 04:00) is one window after midnight
+ const double Now=FS47FreeformJobs::ShiftClock(FMath::Fmod(WorldClock,SecondsPerDay));
+ return Now<EveningUp(J)||Now>=EveningShut(J);
 }
 const FS47FreeformSession::FJob* FS47FreeformSession::NextEveningCard(double& Up)const
 {
- const FJob* Best=nullptr;Up=0;const double Base=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay;
+ // the midnight before the shift day began (08:00 to 08:00): its cards' times on the shift's clock count from there
+ const FJob* Best=nullptr;Up=0;const double Base=FMath::FloorToDouble((WorldClock-8*3600.)/SecondsPerDay)*SecondsPerDay;
  for(const FJob& J:Work)if(EveningGated(J))
  {
   double At=Base+EveningUp(J);if(At<=WorldClock)At+=SecondsPerDay;
@@ -3958,7 +3960,7 @@ FString FS47FreeformSession::TakenCosts(double SafeClock)
   if(J.Stage==EJobStage::Pointed){J.Stage=EJobStage::New;J.Elapsed=0;++Unpointed;}
   if(J.bGenerated&&J.Day>=2&&J.Stage==EJobStage::New)for(int32 Offset=-1;Offset<=1;++Offset)
   {
-   const double Open=Base+Offset*SecondsPerDay+EveningUp(J),Shut=Base+Offset*SecondsPerDay+EveningCloses;
+   const double Open=Base+Offset*SecondsPerDay+EveningUp(J),Shut=Base+Offset*SecondsPerDay+EveningShut(J);
    if(Open<WorldClock&&Shut>SafeClock){++Missed;break;}
   }
  }
@@ -4093,7 +4095,30 @@ bool FS47FreeformSession::FaultDue()const
 }
 FString FS47FreeformSession::EveningLine(const FJob& J)const
 {
+ // LOOP-NIGHT-WATCH-20261113 (Tom 13 November, after the critics): the hours between the evening's two cards and the night watch are
+ // the player's own: the slip an evening anomaly printed, the camera, the town. Never rest before the watch. The first sentence stays
+ // short: the workstations' NEXT line (TerminalNextLine) is the place and the time.
+ if(NightWatch(J))
+ {
+  int32 EarlyIn=0;for(const FJob& X:Work)EarlyIn+=X.Day==J.Day&&X.Slot<2&&X.CaseTest<0&&X.bGenerated&&X.Stage>=EJobStage::Registered?1:0;
+  const bool bTwoIn=EarlyIn>=2;
+  return FString::Printf(TEXT("NIGHT WATCH / %s IN VIEW FROM %s. %sTHE WATCH IS WORKED AT SARO INTO THE SMALL HOURS. TILL THEN THE TIME IS YOURS: %sOUT WITH THE CAMERA, OR INTO TOWN. BE BACK IN THE CONTROL ROOM BY %s."),
+   *FString(FS47Observing::Runs()[J.Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(J)),bTwoIn?TEXT("TONIGHT'S TWO CARDS ARE IN. "):TEXT(""),
+   SlipToFollow()?TEXT("THE BEARING SLIP'S CIRCLE ON THE MAP, "):TEXT(""),*FS47FreeformCases::Clock(EveningUp(J)));
+ }
  return FString::Printf(TEXT("EVENING OBSERVATION / %s IN VIEW FROM %s. TILL THEN: DAY WORK, REPAIRS, SUPPLIES, OR OUT WITH THE CAMERA. AFTER 02:00 IT IS BETTER INSIDE: ADVICE, NOT A RULE."),*FString(FS47Observing::Runs()[J.Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(J)));
+}
+bool FS47FreeformSession::RestSuggestedAt(double AtClock,int32 ShiftDay,bool bLive,bool bWorn)
+{
+ if(!bLive||ShiftDay<2||bWorn)return true;
+ const double Now=FS47FreeformJobs::ShiftClock(FMath::Fmod(FMath::Max(0.,AtClock),SecondsPerDay));
+ return Now<EveningOpens||Now>=26.5*3600.;
+}
+bool FS47FreeformSession::SlipToFollow()const
+{
+ if(!Places)return false;
+ for(const TPair<FString,bool>& Slip:Places->SlipRows(WorldClock))if(!Slip.Value)return true;
+ return false;
 }
 bool FS47FreeformSession::LetterWaits(const FString& Line)
 {
@@ -4118,6 +4143,8 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
 {
  int32 Pending=0;const FJob* Evening=nullptr;
  for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected){if(!EveningGated(J))++Pending;else if(!Evening)Evening=&J;}
+ // LOOP-NIGHT-WATCH-20261113: the one coming up soonest (with two early cards and the night watch, the first in the list is not it)
+ if(Evening){double Soon=0;const FJob* Soonest=NextEveningCard(Soon);if(Soonest&&!Soonest->bDuplicateRejected)Evening=Soonest;}
  // The array is what the whole station is working toward: whatever else is on the line, it stays in sight.
  const FString Goal=StationGoalLine();
  const auto* Next=Field&&Field->ArrayWear().bActive?Field->ArrayWear().NextBranch():nullptr;
@@ -4162,10 +4189,15 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  if(Gear&&Gear->AnyLeft())return Say(Gear->TaskLine(),Gear->TaskLine());
  // An idle loan logger is an option, not the next thing to do: it never again stands in front of the goal (T16-17, 10).
  if(Field&&Field->LoggerAccess()&&(Field->FieldLogger().Pressing()||(Goal.IsEmpty()&&!Evening)))return Say(Field->FieldLogger().NextAction());
+ if(Evening&&NightWatch(*Evening))return Say(Goal.IsEmpty()?EveningLine(*Evening):EveningLine(*Evening)+TEXT(" ")+Goal,
+  FString::Printf(TEXT("NIGHT WATCH // %s AT %s. TILL THEN%s"),*FString(FS47Observing::Runs()[Evening->Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(*Evening)),
+   SlipToFollow()?TEXT(": THE SLIP ON THE MAP."):TEXT(", YOUR OWN TIME.")));
  if(Evening)return Say(Goal.IsEmpty()?EveningLine(*Evening):EveningLine(*Evening)+TEXT(" ")+Goal,
   FString::Printf(TEXT("TRACKING PC // %s IN VIEW FROM %s. TILL THEN, DAY WORK."),*FString(FS47Observing::Runs()[Evening->Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(*Evening))));
- // Said only when it is true: what stops a rest says so itself.
- const bool bCanRest=!Director||Director->RestBlock().IsEmpty();
+ // Said only when it is true: what stops a rest says so itself. LOOP-NIGHT-WATCH-20261113: and not from 19:00 until 02:30 of a shift
+ // from day 2 (RestSuggestedAt), unless he is worn out: the small hours are the night's, and the night watch keeps him in them.
+ const bool bWorn=Fatigue&&Fatigue->Level()>=S47Thoughts::ExhaustedFrom;
+ const bool bCanRest=(!Director||Director->RestBlock().IsEmpty())&&RestSuggestedAt(WorldClock,DayNumber,RulesLive(),bWorn);
  // The reference check pays nothing: a player short of money needs to hear where paid work comes from.
  if(Cash<5||Loan>0)return Say(bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR NEW PAID OBSERVATIONS; THEIR PAY GOES FIRST TO WHAT YOU OWE STORES (REQ ON OPS)."):TEXT("OPS: TODAY'S PAID WORK IS DONE. NEW PAID OBSERVATIONS COME WITH THE MORNING; THEIR PAY GOES FIRST TO WHAT YOU OWE STORES (REQ ON OPS)."),
   bCanRest?TEXT("OPS // TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR MORE."):TEXT("OPS // TODAY'S PAID WORK IS DONE. MORE COMES WITH THE MORNING."));
@@ -5911,18 +5943,63 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   // The evening's cards, from the planner's own rules, for every source and slot.
   FS47FreeformSession Eve(nullptr);Eve.Begin(nullptr);Eve.TestAdvance(86400);
   TArray<const FJob*> Day2;for(const FJob& J:Eve.Work)if(J.Day==2)Day2.Add(&J);
-  bool bAll=Day2.Num()==3,bRange=true;for(const auto* J:Day2){bAll&=Eve.EveningGated(*J);const double Up=EveningUp(*J);bRange&=Up>=EveningOpens&&Up<EveningCloses;}
-  Check(bAll&&bRange,TEXT("Day: from day two all three cards wait for the evening, and come up between 19:00 and 23:30"));
+  // LOOP-NIGHT-WATCH-20261113: the two early cards come up at 19:00 and about 19:30, the night watch between 01:15 and 01:45 (shift clock)
+  bool bAll=Day2.Num()==3,bRange=Day2.Num()==3;
+  for(const auto* J:Day2)bAll&=Eve.EveningGated(*J);
+  if(bRange)bRange=EveningUp(*Day2[0])==EveningOpens&&EveningUp(*Day2[1])>=19*3600.+20*60.&&EveningUp(*Day2[1])<=19*3600.+40*60.&&!NightWatch(*Day2[0])&&!NightWatch(*Day2[1])
+   &&NightWatch(*Day2[2])&&EveningUp(*Day2[2])>=25*3600.+15*60.&&EveningUp(*Day2[2])<=25*3600.+45*60.&&EveningShut(*Day2[2])==NightWatchCloses&&EveningShut(*Day2[0])==EveningCloses;
+  Check(bAll&&bRange,TEXT("Day: from day two all three cards wait; the first is up at 19:00, the second between 19:20 and 19:40, the night watch between 01:15 and 01:45 after midnight (LOOP-NIGHT-WATCH)"));
   Check(!Eve.EveningGated(Eve.Work[0]),TEXT("Day: the first day's own cards are not held back"));
   double UpAt=0;const FJob* Soonest=Eve.NextEveningCard(UpAt);
   Check(Soonest&&UpAt==86400+EveningUp(*Soonest)&&UpAt>Eve.Clock(),TEXT("Day: OPS can name the soonest source and when"));
   Eve.TestAdvance(FMath::Fmod(86400.*2+22*3600.-Eve.Clock(),86400.));
-  Check(!Eve.EveningGated(*Day2[0])&&!Eve.EveningGated(*Day2[1]),TEXT("Day: at ten in the evening the sources are up"));
+  Check(!Eve.EveningGated(*Day2[0])&&!Eve.EveningGated(*Day2[1])&&Eve.EveningGated(*Day2[2]),TEXT("Day: at ten in the evening the two early sources are up, the night watch not yet"));
+  {
+   double WatchAt=0;const FJob* Next=Eve.NextEveningCard(WatchAt);
+   Check(Next==Day2[2]&&WatchAt==86400.+EveningUp(*Day2[2])&&FS47FreeformSession::NightOf(WatchAt)==2,TEXT("Day: at ten OPS names the night watch, after midnight on shift day 2"));
+  }
   Eve.TestAdvance(2*3600.);
   Check(Eve.EveningGated(*Day2[0]),TEXT("Day: a card not begun by half past eleven waits for the next evening"));
   auto* Begun=const_cast<FJob*>(Day2[0]);Begun->Stage=EJobStage::Pointed;
   Check(!Eve.EveningGated(*Begun),TEXT("Day: a card already begun runs out whenever it was begun"));
+  // LOOP-NIGHT-WATCH-20261113: the night watch opens after midnight on its own shift day, pays as on its day, and waits from 04:00.
+  Eve.TestAdvance(1.75*3600.+5*60.);
+  Check(!Eve.EveningGated(*Day2[2])&&Eve.Day()==Day2[2]->Day&&FS47FreeformSession::NightOf(Eve.Clock())==2&&FMath::Max(0,Eve.Day()-Day2[2]->Day)==0,
+   TEXT("Day: at 01:50 the night watch is up, on shift day 2: its day, full pay (LOOP-NIGHT-WATCH)"));
+  Eve.TestAdvance(2.25*3600.);
+  Check(Eve.EveningGated(*Day2[2])&&Eve.Day()==2,TEXT("Day: a night watch not begun by 04:00 waits for the next night"));
   Eve.Stop();
+  // LOOP-NIGHT-WATCH-20261113: OPS's next step through an ordinary second night, the two early cards in by 20:30.
+  {
+   FS47FreeformSession Walk(nullptr);Walk.Begin(nullptr);Walk.Tutorial=0;Walk.TestLiveRules();
+   for(FJob& J:Walk.Work)J.Stage=EJobStage::Filed;
+   Walk.TestAdvance(86400);
+   FJob* Watch=nullptr;for(FJob& J:Walk.Work)if(J.Day==2){if(J.Slot<2)J.Stage=EJobStage::Filed;else Watch=&J;}
+   bool bGap=Watch!=nullptr,bNoRest=true;
+   for(const double H:{20.5,22.,23.5,24.5,25.1})
+   {
+    Walk.TestAdvance(FMath::Max(0.,86400.+H*3600.-Walk.Clock()));
+    const FString Line=Walk.WorkActivities(nullptr);
+    bGap&=Line.StartsWith(TEXT("NIGHT WATCH / "))&&Line.Contains(TEXT("TONIGHT'S TWO CARDS ARE IN."))&&Line.Contains(TEXT("TILL THEN THE TIME IS YOURS"))&&TerminalNextLine(Line,2).Contains(TEXT("IN VIEW FROM 01:"));
+    bNoRest&=!Line.Contains(TEXT("REST"));
+   }
+   Walk.TestAdvance(FMath::Max(0.,86400.+25.8*3600.-Walk.Clock()));
+   const bool bUp=Walk.WorkActivities(nullptr).StartsWith(TEXT("OPS (corner PC), DAILY WORK"));
+   if(Watch)Watch->Stage=EJobStage::Filed;
+   Walk.TestAdvance(FMath::Max(0.,86400.+26.2*3600.-Walk.Clock()));
+   const FString Done=Walk.WorkActivities(nullptr);
+   Walk.TestAdvance(FMath::Max(0.,86400.+26.7*3600.-Walk.Clock()));
+   const FString Later=Walk.WorkActivities(nullptr);
+   Check(bGap&&bNoRest&&bUp&&Done.Contains(TEXT("PAID WORK IS DONE"))&&!Done.Contains(TEXT("REST"))&&Later.Contains(TEXT("OR REST")),
+    TEXT("Next step on night 2: 20:30 to 01:15 the night watch's hour and his own time, never rest; the watch up at 01:48; done at 02:12 no rest yet; at 02:42 the old line, or rest (LOOP-NIGHT-WATCH)"));
+   Walk.Stop();
+  }
+  // The next-step line across an ordinary night: no rest before the night watch (19:00 to 02:30), unless worn out; from 02:30 it may.
+  {
+   bool bNone=true;for(const double H:{19.,20.5,22.,23.5,24.,25.,26.,26.4})bNone&=!RestSuggestedAt(86400.+H*3600.,2,true,false);
+   Check(bNone&&RestSuggestedAt(86400.+26.6*3600.,2,true,false)&&RestSuggestedAt(86400.+23*3600.,2,true,true)&&RestSuggestedAt(86400.+14*3600.,2,true,false)&&RestSuggestedAt(22*3600.,1,true,false)&&RestSuggestedAt(86400.+22*3600.,2,false,false),
+    TEXT("Rest: OPS says no rest from 19:00 to 02:30 from day two, unless worn out; from 02:30, by day, on the first night and in a developer run as before (LOOP-NIGHT-WATCH)"));
+  }
   FS47FreeformSession Hours(nullptr);Hours.Begin(nullptr);
   const double Night5=4*86400.+24*3600.;
   Check(Hours.TheirHoursNow(Night5+2.5*3600.)&&!Hours.TheirHoursNow(Night5+1.5*3600.)&&!Hours.QuietNight(5),TEXT("Hours: a developer run keeps the fixed two in the morning"));

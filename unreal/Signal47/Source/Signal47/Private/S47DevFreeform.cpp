@@ -901,10 +901,11 @@ void FS47DevFreeform::StepCards()
  if(CardsStage<0)return;
  const auto& Jobs=F->Jobs();
  const auto Give=[&](const TCHAR* Why){Say(FString(TEXT("GAVE UP: "))+Why);if(!CardsId.IsEmpty())CardsDone.Add(CardsId);CardsStage=0;CardsJob=-1;CardsId.Empty();};
- if(H>=27.&&CardsStage!=0){Give(TEXT("the work was not through by 03:00"));return;}
+ // LOOP-NIGHT-WATCH-20261113: the night watch is up from 01:15 to 01:45 and waits from 04:00, so the night's work runs to 04:30
+ if(H>=28.5&&CardsStage!=0){Give(TEXT("the work was not through by 04:30"));return;}
  if(CardsStage==0)
  {
-  if(H>=27.)
+  if(H>=28.5)
   {
    UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: night done: case 1 %s; case 2 %s; plan [%s]"),Night,*ClockText(F->Clock()),*CaseText(0),*CaseText(1),*F->TonightPlan().Replace(TEXT("\n"),TEXT(" | ")).Left(300));
    CardsStage=-1;return;
@@ -970,12 +971,13 @@ void FS47DevFreeform::StepCards()
     return;
    }
   }
-  // Then the day's paid cards: the reference (slot 0), then the pulsar (slot 1).
-  for(int32 Slot=0;Slot<2;++Slot)
+  // Then the day's paid cards: the reference (slot 0), then the pulsar (slot 1), and after midnight the night watch (slot 2, kind 3:
+  // kind 2 is a case test). LOOP-NIGHT-WATCH-20261113: the bot takes all three, each as its window comes up.
+  for(int32 Slot=0;Slot<3;++Slot)
   {
    const int32 Index=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Day==F->Day()&&X.Slot==Slot&&X.CaseTest<0&&X.Stage==J::New&&!CardsDone.Contains(X.Id);});
    if(Index<0||F->EveningGated(Jobs[Index]))continue;
-   CardsJob=Index;CardsId=Jobs[Index].Id;CardsKind=Slot;CardsStage=1;CardsFrom=F->Clock();
+   CardsJob=Index;CardsId=Jobs[Index].Id;CardsKind=Slot<2?Slot:3;CardsStage=1;CardsFrom=F->Clock();
    const bool bOut=F->OutThereTonight();
    FString Event,Title;double X=0,Z=0;bool bAhead=false;const bool bAny=F->Happenings&&F->Happenings->OutTonight(Night,Event,Title,X,Z,bAhead);
    Say(FString::Printf(TEXT("card %s (slot %d): out there tonight %d (lead %s at %s%s), director anomaly %d"),*Jobs[Index].Id,Slot,bOut?1:0,bAny?*Event:TEXT("none"),bAny?*Title:TEXT("-"),bAhead?TEXT(", still to come"):TEXT(""),F->Anomaly()?1:0));
@@ -1144,6 +1146,9 @@ void FS47DevFreeform::StepTour()
  auto* F=Session();
  if(StandPlace!=TEXT("tour")||!F||!M->Player||!M->Web||!M->World||M->World->bBusy||M->ModalOpen()||!HoldFor().IsEmpty())return;
  if(F->Taken&&F->Taken->Busy())return;
+ // LOOP-NIGHT-WATCH-20261113: a card under way (the night watch from 01:15, back in the control room at 02:00) keeps the tour at SARO
+ // until it is through, as a player working it would stay.
+ if(bCards&&CardsStage>=1&&CardsStage<90&&M->Web->Area()==TEXT("saro"))return;
  const double H0=FMath::Fmod(F->Clock(),86400.)/3600.,H=H0<12?H0+24:H0;
  if(H<19.9||H>=29.9)return;
  // 0 the control room, 1 Caliche's street, 2 at the wheel on the highway, 3 the farm yard, 4 the open land past the farm.

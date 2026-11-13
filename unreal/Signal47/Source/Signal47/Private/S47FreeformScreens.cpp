@@ -202,6 +202,7 @@ FString FS47FreeformSession::TerminalNextLine(const FString& Text,int32 Screen)
  if(Where.IsEmpty()||Where.StartsWith(TEXT("PAUSE MENU")))return FString();
  if(Where.StartsWith(TEXT("ARRAY "))&&Where.Contains(TEXT("BLOCKED")))Where=TEXT("ARRAY STATUS (LEFT-HAND PC)");
  else if(Where.StartsWith(TEXT("EVENING OBSERVATION / ")))Where=Where.RightChop(22);
+ else if(Where.StartsWith(TEXT("NIGHT WATCH / ")))Where=Where.RightChop(14); // LOOP-NIGHT-WATCH-20261113
  static const TCHAR* const Own[4]={TEXT("ARRAY STATUS"),TEXT("RECEIVER (CENTRE PC)"),TEXT("TRACKING (RIGHT-HAND PC)"),TEXT("OPS")};
  if(Screen>=0&&Screen<4&&Where.StartsWith(Own[Screen]))return TEXT("NEXT / USE THIS PC");
  while(Where.Len()>MaxWhere)

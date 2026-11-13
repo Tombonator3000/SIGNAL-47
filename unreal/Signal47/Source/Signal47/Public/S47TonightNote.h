@@ -46,6 +46,8 @@ namespace S47TonightNote
   TArray<FWindow> Windows;      // Freeform: the planned case tests' windows
   TArray<FString> WaitingCases; // Freeform: the titles of open cases with no test planned
   double EveningUp = -1;        // Freeform: when the next evening card's source is up (world clock); negative: none waiting
+  bool bNightWatch = false;     // LOOP-NIGHT-WATCH-20261113: that card is the night watch (after midnight); the hours till then are his own
+  bool bSlip = false;           // a live bearing slip whose circle on the map is still to be stood in
   bool bAntennasWait = false;   // Freeform: the station goal waits for daylight (FS47FreeformSession::GoalWaits)
   struct FDone* Done = nullptr; // Freeform: what is remembered done tonight (Tonight()); none: only what the list says now
   uint64 Game = 0;              // which game it is (the case and its seed): another one forgets what was remembered
