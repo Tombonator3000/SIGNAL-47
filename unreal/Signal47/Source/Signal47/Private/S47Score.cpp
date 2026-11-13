@@ -102,12 +102,32 @@ FS47Score::FS47Score(US47Main* InM, const TSharedRef<FS47AudioContext>& InCtx, c
 {
 	FS47AudioContext::FBatch Batch(*Ctx);
 	Bus = Ctx->CreateGain(); Bus->Gain.SetValue(1); Bus->Connect(Dest);
+	Mix = Ctx->CreateGain(); Mix->Connect(Bus);
+}
+
+void FS47Score::Insert(const TSharedPtr<FS47AudioNode>& In, const TSharedPtr<FS47AudioNode>& Out)
+{
+	if (!Mix || !Bus) return;
+	FS47AudioContext::FBatch Batch(*Ctx);
+	if (InsertIn) Mix->Disconnect(InsertIn);
+	if (InsertOut) InsertOut->Disconnect(Bus);
+	Mix->Disconnect(Bus);
+	InsertIn = In.IsValid() && Out.IsValid() ? In : nullptr; InsertOut = InsertIn ? Out : nullptr;
+	if (InsertIn) { Mix->Connect(InsertIn); InsertOut->Connect(Bus); }
+	else Mix->Connect(Bus);
+}
+
+FString FS47Score::PlayingFile() const
+{
+	const FS47ScoreTrack* C = El.IsValid() ? S47Score::TRACKS.Find(Track) : nullptr;
+	return C ? C->File : FString();
 }
 
 FS47Score::~FS47Score()
 {
 	*bAlive = false;
 	Stop();
+	Insert(nullptr, nullptr);
 }
 
 // The current imported tracks have no verified BPM/key/stems. Their transitions use a
@@ -297,7 +317,7 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 		OutgoingUntil = Now + FadeSeconds;
 	}
 	const TSharedPtr<FS47GainNode> G = Ctx->CreateGain(); G->Gain.SetValue(0);
-	NewEl->Connect(G); G->Connect(Bus);
+	NewEl->Connect(G); G->Connect(Mix);
 	G->Gain.SetValueAtTime(0, Now); G->Gain.LinearRampToValueAtTime(C->Gain, Now + FadeSeconds);
 	RampUntil = Now + FadeSeconds; TargetGain = C->Gain;
 	const TWeakPtr<FS47MediaSource> WeakEl = NewEl;

@@ -82,6 +82,12 @@ public:
 		TFunction<bool()> RoofStepsBusy, ReelTapeBusy, SaroDarkBusy, OfficePhoneBusy;
 		TFunction<bool()> ArchiveBusy, ArrayBackBusy, TruckBRacing, MorningBusy;
 	} Held;
+	// SIDEBAND-20261113: every deck passes Mix on its way to the bus. What is put in here (In ... Out: the colour bus, S47Sideband.h)
+	// sits between the decks and the bus, so a duck on the bus takes it too; the texture under the score does not pass it.
+	void Insert(const TSharedPtr<FS47AudioNode>& In, const TSharedPtr<FS47AudioNode>& Out);
+	bool Inserted() const { return InsertIn.IsValid(); }
+	// The file of the piece that plays (empty: none), for what is set per piece.
+	FString PlayingFile() const;
 	static bool SelfTest(TArray<FString>& Lines);
 	static bool RenderTour(const FString& Path, TArray<FString>& Lines);
 
@@ -90,6 +96,8 @@ private:
 	TSharedRef<FS47AudioContext> Ctx;
 	TSharedPtr<FS47AudioNode> Dest;
 	TSharedPtr<FS47GainNode> Bus; // every deck passes this, so a duck leaves deck fades alone
+	TSharedPtr<FS47GainNode> Mix; // the decks' sum, before the bus (SIDEBAND-20261113)
+	TSharedPtr<FS47AudioNode> InsertIn, InsertOut;
 	TSharedPtr<FS47CosmicAmbient> Cosmic;
 	TSharedPtr<FS47MediaSource> El;
 	TSharedPtr<FS47GainNode> Gain;
