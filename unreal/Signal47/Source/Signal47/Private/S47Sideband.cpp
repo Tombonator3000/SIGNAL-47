@@ -637,6 +637,9 @@ void FS47SidebandBus::Engage()
 	Pushed = { -1, -1, -1, -1 };
 }
 
+bool FS47SidebandBus::Warm() const { return bEngaged && LetGoAt < 0 && Ctx->CurrentTime() >= EngagedAt + .09; }
+void FS47SidebandBus::Wake() { if (!bEngaged || LetGoAt >= 0) Engage(); }
+
 void FS47SidebandBus::LetGo()
 {
 	if (!bEngaged || LetGoAt >= 0) return;

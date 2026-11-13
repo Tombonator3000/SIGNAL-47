@@ -189,6 +189,9 @@ public:
 	bool StingerSounding() const;
 
 	bool Engaged() const { return bEngaged; }
+	// The chain is in and across: a sound started now is heard from its first frame. Wake brings it in (a tenth of a second).
+	bool Warm() const;
+	void Wake();
 	bool RoomEngaged() const { return bRoom; }
 	int32 Nodes() const { return NodeCount; }
 	// For the tests: stand-in buffers instead of the files.
@@ -299,6 +302,7 @@ private:
 	S47Sideband::FGlide Glide[4];
 	double T = 0, TensionNow = 0, GroundNow = 0, GroundWant = 0, GroundSeen = 0, EventQuiet = 0, HushFor = 0;
 	double AfterEncounter = 0, AfterHold = 0, AfterTaken = 0, HintNudge = 0, FarRise = -1;
+	double BedOutAt = -1; // after a full moment the bed dies away and stays out for the rest of that event
 	bool bOwnsGround = false, bWasTaken = false, bGroundFrame = false, bGroundHeld = false;
 	double AuditionV[4] = { -1, -1, -1, -1 }, AuditionLeft[4] = { 0, 0, 0, 0 };
 	double SceneT = -1, SceneDelay = -1, StandWant = 1; bool bSceneHit = false, bSceneBed = false;

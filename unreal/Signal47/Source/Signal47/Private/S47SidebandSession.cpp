@@ -198,7 +198,10 @@ bool FS47Sideband::MomentFor(int32 Scare, double Strength, bool bAudition)
 bool FS47Sideband::FireMoment(S47Sideband::ETier Tier, bool bForce, int32 ForceIndex, FString& Why)
 {
 	using S47Sideband::ETier;
-	const double When = Ctx->CurrentTime() + .02;
+	// (a chain that was out takes a tenth of a second to come across: the moment waits for it, so that no front is lost)
+	const bool bCold = !Bus->Warm();
+	Bus->Wake();
+	const double When = Ctx->CurrentTime() + (bCold ? .12 : .02);
 	int32 Pick = ForceIndex; bool bSoft = Stingers == S47Sideband::EMode::Soft;
 	if (!bForce)
 	{
@@ -223,6 +226,7 @@ bool FS47Sideband::FireMoment(S47Sideband::ETier Tier, bool bForce, int32 ForceI
 		Bus->MomentDuck(When);
 		Bus->BedMoment(When);
 		FarRise = 2.6; // FAR comes up from 2.6 s, the score comes back inside it
+		BedOutAt = T + 13.; // and the bed is gone by 13 s
 	}
 	else if (Tier == ETier::Hint) HintNudge = 1.;
 	return bPlayed;
@@ -236,6 +240,7 @@ void FS47Sideband::Event(double Dt, bool bActive, S47Sideband::ETier Clock)
 		if (!Rules.InEvent())
 		{
 			const int32 Bed = Rules.Begin(T, Clock);
+			BedOutAt = -1;
 			UE_LOG(LogS47SidebandSession, Display, TEXT("S47: FLARES event begins (%s), bed %s"), S47Sideband::TierName(Clock), Bed >= 0 ? S47Sideband::Beds()[Bed] : TEXT("none"));
 		}
 	}
@@ -293,7 +298,8 @@ void FS47Sideband::StepScene(double Dt)
 	if (!bSceneHit && SceneT >= SceneHit)
 	{
 		bSceneHit = true;
-		const double When = Ctx->CurrentTime() + .02;
+		const double When = Ctx->CurrentTime() + (Bus->Warm() ? .02 : .12);
+		Bus->Wake();
 		const bool bPlayed = Stingers != S47Sideband::EMode::Off && Bus->Stinger(SceneStinger, S47Sideband::ETier::Full, Stingers == S47Sideband::EMode::Soft, When);
 		Bus->Hit(When, !bPlayed); Bus->MomentDuck(When); Bus->BedMoment(When);
 	}
@@ -390,7 +396,7 @@ void FS47Sideband::Step(double Dt)
 		const double Cap = Rules.EventTier() == S47Sideband::ETier::Glimpse ? FMath::Min(Wanted.BedCap, S47Sideband::GlimpseBedCap) : Rules.EventTier() == S47Sideband::ETier::Full ? Wanted.BedCap : 0.;
 		const double Near = HushFor > 0 && HushFor < 6. ? 0. : FMath::Min(GroundWant, Cap);
 		GroundNow = bActive ? Near : 0.;
-		Bus->Bed(Bed, Near, bActive && Bed >= 0 && Near > .01);
+		Bus->Bed(Bed, Near, bActive && Bed >= 0 && Near > .01 && !(BedOutAt >= 0 && T >= BedOutAt));
 	}
 	Bus->Set({ Glide[0].Now, Glide[1].Now, Glide[2].Now, Glide[3].Now });
 	Bus->NoiseOpen(!SpeechNow(M));
