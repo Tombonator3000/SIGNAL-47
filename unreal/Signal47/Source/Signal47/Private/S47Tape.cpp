@@ -11,6 +11,7 @@
 #include "S47Main.h"
 #include "S47Omen.h"
 #include "S47Props.h"
+#include "S47Script.h"
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -31,15 +32,14 @@ namespace S47TapeLocal
 	int32 AlienOf(const FS47Tape::FTake& Tk) { return Tk.Odd.IsEmpty() ? -1 : S47Dossier::AlienKindOf(S47Dossier::KindOfId(Tk.OddKind)); }
 	// A cassette's sound: the top end gone, the level down a little.
 	constexpr float TapeLp = 3800, TapeGain = .7f;
-	FString Counter(double Seconds)
+	// REVIEW (dossier slice 2): the counter and the clock as the player reads them never print 47 (S47Script's shared rule)
+	FString Counter(double Seconds) { return S47Script::PlayerCounter(Seconds); }
+	FString ClockText(double Clock) { return S47Script::PlayerClock(Clock); }
+	// The record of a take whose odd sound was heard through at the desk (and the self-test's sweep of it).
+	FString HeardText(int32 N, const FString& Where, int32 Day, double Clock, double OddAt, const FString& Words)
 	{
-		const int32 Whole = FMath::Max(0, FMath::RoundToInt(Seconds));
-		return FString::Printf(TEXT("%d:%02d"), Whole / 60, Whole % 60);
-	}
-	FString ClockText(double Clock)
-	{
-		const double D = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0);
-		return FString::Printf(TEXT("%02d:%02d"), int32(D / 3600) % 24, int32(FMath::Fmod(D, 3600.0) / 60));
+		return FString::Printf(TEXT("Cassette %d, recorded %s, day %d, %s. Played back at SARO: at %s on the counter you can hear %s. I did not hear it out there. It is on the tape."),
+			N, *Where, Day, *ClockText(Clock), *Counter(OddAt), *Words);
 	}
 }
 
@@ -78,7 +78,7 @@ FString FS47Tape::OddWordsOf(const FString& Sound, const FString& KindId)
 	// EVIDENCE-DOSSIER slice 2: what each one's signature is like on a cassette, as the table's TAPE column has it. Never what it was.
 	switch (S47Dossier::KindOfId(KindId))
 	{
-	case S47Dossier::EKind::Small: return TEXT("short runs of notes, each climbing a step and ending like a question, and a pause after each as if for an answer");
+	case S47Dossier::EKind::Small: return TEXT("short runs of notes, each climbing a step and ending like a question, and a pause after each");
 	case S47Dossier::EKind::Low: return TEXT("a double beat like a heart, quick, and breath that rasps close to the microphone");
 	case S47Dossier::EKind::Tall: return TEXT("slow deep pulses, two low notes grinding on each other, and something like metal creaking");
 	default: return OddWords(Sound);
@@ -424,8 +424,7 @@ void FS47Tape::Step(double Dt)
 		{
 			Tk.bOddHeard = true;
 			const FString Key = FString::Printf(TEXT("tape_%d"), Tk.N);
-			M->Freeform->RecordEvidence(Key, FString::Printf(TEXT("Cassette %d, recorded %s, day %d, %s. Played back at SARO: at %s on the counter there is %s. I did not hear it out there. It is on the tape."),
-				Tk.N, *Tk.Where, Tk.Day, *S47TapeLocal::ClockText(Tk.Clock), *S47TapeLocal::Counter(Tk.OddAt), *OddWordsOf(Tk.Odd, Tk.OddKind)));
+			M->Freeform->RecordEvidence(Key, S47TapeLocal::HeardText(Tk.N, Tk.Where, Tk.Day, Tk.Clock, Tk.OddAt, OddWordsOf(Tk.Odd, Tk.OddKind)));
 			// EVIDENCE-DOSSIER slice 2: heard, a known one's tape goes in the files, with the hour and the place it was taped
 			if (Alien >= 0)
 			{
@@ -464,8 +463,38 @@ bool FS47Tape::SelfTest(TArray<FString>& Lines)
 		// EVIDENCE-DOSSIER slice 2: each known one has its own words, in Freeform's limits; an unknown kind keeps the plain ones
 		const FString S = OddWordsOf(TEXT("voices"), TEXT("roswell")), P = OddWordsOf(TEXT("voices"), TEXT("pale")), T = OddWordsOf(TEXT("voices"), TEXT("tall"));
 		Check(S != P && P != T && S != T && OddWordsOf(TEXT("voices"), FString()) == OddWords(TEXT("voices")) && OddWordsOf(TEXT("voices"), TEXT("nordic")) == OddWords(TEXT("voices"))
-			&& S47Dossier::LintWords({ S, P, T }).IsEmpty() && HeardThrough(35.5, 31.5f) && !HeardThrough(33, 31.5f) && !HeardThrough(99, -1),
+			&& S47Dossier::LintWords({ S, P, T }).IsEmpty() && !S.Contains(TEXT("as if")) && S47TapeLocal::HeardText(1, TEXT("x"), 2, 0, 0, T).Contains(TEXT("you can hear slow deep pulses")) && HeardThrough(35.5, 31.5f) && !HeardThrough(33, 31.5f) && !HeardThrough(99, -1),
 			TEXT("EVIDENCE-DOSSIER slice 2: the small ones, the low one and the tall one each sound their own on the tape, in plain words, heard through only past it"));
+	}
+	{
+		// REVIEW (dossier slice 2, 14 Nov): every minute of the day and every counter from 0:00 to 20:00, through the heard line with
+		// each kind's words: never digits that read 47, never 08:15 or 8:15; a :47 shows a minute (or a second) on, and only that
+		bool bClean = true, bNear = true;
+		const auto Clean = [](const FString& Line) { return !Line.Contains(TEXT("47")) && !Line.Contains(TEXT("8:15")) && !Line.Contains(TEXT("8.15")); };
+		const FString Place = TEXT("the windmill on the Baca lease");
+		for (const TCHAR* Kind : { TEXT("roswell"), TEXT("pale"), TEXT("tall"), TEXT("") })
+		{
+			const FString Words = OddWordsOf(TEXT("voices"), Kind);
+			for (int32 Min = 0; Min < 24 * 60; ++Min)
+			{
+				const FString Shown = S47TapeLocal::ClockText(Min * 60. + 30);
+				bClean &= Clean(S47TapeLocal::HeardText(2, Place, 4, Min * 60. + 30, 31.5, Words)) && Clean(Shown.Replace(TEXT(":"), TEXT(""))) && Shown.Len() == 5;
+				bNear &= (FCString::Atoi(*Shown.Left(2)) * 60 + FCString::Atoi(*Shown.Right(2)) - Min + 1440) % 1440 <= 1;
+			}
+			for (int32 Sec = 0; Sec <= 1200; ++Sec)
+			{
+				const FString Shown = S47TapeLocal::Counter(Sec);
+				bClean &= Clean(S47TapeLocal::HeardText(2, Place, 4, 23 * 3600. + 46 * 60, Sec, Words)) && Clean(Shown.Replace(TEXT(":"), TEXT("")));
+				int32 Colon = INDEX_NONE;
+				const bool bColon = Shown.FindChar(TEXT(':'), Colon) && Colon > 0;
+				const int32 Back = bColon ? FCString::Atoi(*Shown.Left(Colon)) * 60 + FCString::Atoi(*Shown.Mid(Colon + 1)) - Sec : -1;
+				bNear &= Back >= 0 && Back <= 1;
+			}
+		}
+		Check(bClean && bNear && S47Script::PlayerClock(3 * 3600. + 47 * 60) == TEXT("03:48") && S47Script::PlayerClock(23 * 3600. + 47 * 60 + 59) == TEXT("23:48") && S47Script::PlayerClock(8 * 3600. + 15 * 60) == TEXT("08:16")
+			&& S47Script::PlayerClock(20 * 3600. + 15 * 60) == TEXT("20:16") && S47Script::PlayerClock(-60) == TEXT("23:59") && S47Script::PlayerClock(2 * 3600. + 14 * 60) == TEXT("02:14")
+			&& S47Script::PlayerCounter(47) == TEXT("0:48") && S47Script::PlayerCounter(107) == TEXT("1:48") && S47Script::PlayerCounter(495) == TEXT("8:16") && S47Script::PlayerCounter(31.5) == TEXT("0:32") && S47Script::PlayerCounter(-3) == TEXT("0:00"),
+			TEXT("REVIEW: a clock or a counter in the tape's words never reads 47, 08:15 or 8:15: a minute or a second on, and only that"));
 	}
 	{
 		FS47Tape A(nullptr);

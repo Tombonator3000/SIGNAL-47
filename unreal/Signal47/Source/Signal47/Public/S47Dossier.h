@@ -31,6 +31,8 @@
 // FS47RhythmData's weeks; 1 in a pure test). More saved, all optional: "files": the kind that opened each file, in number order (only
 // once a kind has more than one); a tag's "f": its file's number (only when it is not the first file of its own kind); "same": the
 // pairs kept side by side, flat ([1,3, 2,5]). A save from slice 1 has none of them and reads as it was.
+// REVIEW (14 November): by place and night alone a find ties only to a file opened by one of the same reach (the far two, or the
+// near three); a file's stage never drops once reached ("reached": by file, saved only where its tags alone would say less).
 namespace S47Dossier
 {
  enum class EKind : int32 { Small=0, Low, Tall, Silver, Shining, Count, None=-1 };
@@ -162,7 +164,7 @@ public:
  // What an older save kept, for Rebuild: a finding's key, its text and its day.
  struct FOld { FString Key,Text; int32 Day=0; };
 
- void Reset(){Sequence.Reset();Kept.Reset();Given.Reset();Spent.Reset();Same.Reset();}
+ void Reset(){Sequence.Reset();Kept.Reset();Given.Reset();Spent.Reset();Same.Reset();Reached.Reset();}
  bool IsEmpty() const{return Kept.IsEmpty();}
  // A tag on a find. False when the key has one already, when the kind has no file (the shade), or when that box gives nothing for
  // this one. Slice 2: it goes into the file it ties to (see the head of this file), else it opens the next.
@@ -224,6 +226,8 @@ private:
  void Link(int32 A,int32 B);      // 0-based
  FString BoxSign(int32 File,S47Dossier::EType Type) const; // what is in that box of that file now; empty: nothing
  S47Dossier::EStage StageIn(int32 File) const;
+ S47Dossier::EStage StageNow(int32 File) const; // from its tags alone; StageIn never goes below what Reached keeps
+ TArray<int32> Reached; // REVIEW (14 Nov): by file, the highest stage it has had (saved as "reached" only where its tags alone say less)
  TMap<int32,int32> Given; // by the kind's number: the night each file's extra bearing is for
  TSet<int32> Spent;       // and the ones printed
 };

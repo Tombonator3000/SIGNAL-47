@@ -4019,7 +4019,8 @@ void FS47Happenings::StepFigure(double Dt)
   const bool bSeen=SeenLit(Now.At+FVector(0,1.6,0),340,30,LitGround|LitSky,*Shade);
   FigureSeenFor=bSeen||bLamp?FigureSeenFor+Dt:FMath::Max(0.,FigureSeenFor-Dt*.5);
   // EVIDENCE-DOSSIER slice 2: the shining one seen with no lamp on it: by its own light, its file's LAMP
-  if(bSeen&&!bLamp&&Now.Variant==TEXT("cosmic"))F->TagEvidence(FString::Printf(TEXT("figure_ownlight_d%d"),F->Day()),S47Dossier::EKind::Shining,S47Dossier::EType::Lamp);
+  // (REVIEW 14 Nov: seen for a moment, as the silver one's is, not on a single frame at up to 340 m)
+  if(bSeen&&!bLamp&&FigureSeenFor>.6&&Now.Variant==TEXT("cosmic"))F->TagEvidence(FString::Printf(TEXT("figure_ownlight_d%d"),F->Day()),S47Dossier::EKind::Shining,S47Dossier::EType::Lamp);
   if(bSeen&&FigureStageSeen!=Now.Stage)
   {
    // What was there, where and how far: raw, in the order it came.
