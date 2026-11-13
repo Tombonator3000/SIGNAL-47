@@ -62,6 +62,9 @@ public:
 	bool bCommuteVehicle = false;
 	void BeginCommute(const S47J::FObj& SavedCar = nullptr);
 	void FinishCommute();
+	/** STORY-DRIVE-OWN-CAR-20261113: a Story night's wagon let go without parking anything (the night stopped, or the drive could not
+	 *  start): the cab and rigs are the truck's again and no second vehicle is kept. SARO 07's own pose is not touched. */
+	void EndPersonalVehicle();
 	void SetArrivalServiceWaiting(bool bVisible);
 	void SetPersonalPark(const FVector& Position, double Heading, bool bVisible, const FString& WalkArea = TEXT("saro"), bool bService = false);
 	bool PersonalTransport() const { return bPersonalTransport; }

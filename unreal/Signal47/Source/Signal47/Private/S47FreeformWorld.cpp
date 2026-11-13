@@ -814,7 +814,7 @@ void FS47FreeformWorld::Apply()
  if(Carry)Carry->Step(0,bActive?Payload:0,Item,Payload==1?ParcelShopPoint():Payload==3?TruckPoint():Dropped);
  for(auto Pair:TArray<TPair<FS47Obj,bool>>{{CargoSaro,!Road},{CargoRoad,Road}})if(Pair.Key)
  {
-  const bool Show=bActive&&Pair.Value&&M&&M->World&&!M->World->bDriving;if(const auto* N=Pair.Key.W->Node(Pair.Key.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetWorldLocation(S47Three::ToUE(TruckPoint()));C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);C->SetRenderInMainPass(false);C->SetRenderInDepthPass(false);C->SetCastShadow(false);C->SetVisibleInRayTracing(false);}Pair.Key.SetVisible(Show);
+  const bool Show=bActive&&Pair.Value&&M&&M->World&&!M->World->bDriving&&!M->World->bCommuteVehicle; /* (STORY-DRIVE-OWN-CAR-20261113: no cargo rack on the wagon) */if(const auto* N=Pair.Key.W->Node(Pair.Key.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetWorldLocation(S47Three::ToUE(TruckPoint()));C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);C->SetRenderInMainPass(false);C->SetRenderInDepthPass(false);C->SetCastShadow(false);C->SetVisibleInRayTracing(false);}Pair.Key.SetVisible(Show);
  }
  ApplyPilots();
 }
@@ -1642,7 +1642,8 @@ void FS47FreeformWorld::Step(double Dt)
  StepPump(Dt);
  if(bGenerator){GeneratorSeconds=FMath::Max(0.,GeneratorSeconds-WorldDelta);if(GeneratorSeconds<=0){GeneratorSound(EGenSound::Stall);bGenerator=false;Change(TEXT("Backup generator tank empty. Array work needs restored mains or another fuel can."));}}
  StepGeneratorSound(Dt); // D45-20261110: the running loop follows the generator's state every frame
- if(M->World&&M->World->bDriving)
+ // STORY-DRIVE-OWN-CAR-20261113: the player's own wagon on a Story night's drive (bCommuteVehicle, never set in Freeform) drinks none of the truck's tank.
+ if(M->World&&M->World->bDriving&&!M->World->bCommuteVehicle)
  {
   // (M7: the engine rebuild drinks a tenth more, FS47Outfit)
   Fuel=FMath::Max(0.,Fuel-FMath::Abs(M->World->DrivingSpeed())*FMath::Min(Dt,.2)/12000.*FS47Outfit::TuneFor(M->Freeform.Get()).Burn);
@@ -1655,7 +1656,7 @@ void FS47FreeformWorld::Step(double Dt)
   else if(bFuelHeld){M->World->HoldTruck(0);bFuelHeld=false;}
  }
  // IGNITION-20261111: left idling it drinks a little (about a gallon in three hours), and dies when the tank is dry
- else if(M->World&&M->World->EngineIdling())
+ else if(M->World&&M->World->EngineIdling()&&!M->World->bCommuteVehicle)
  {
   Fuel=FMath::Max(0.,Fuel-FMath::Min(Dt,.2)*.0001*FS47Outfit::TuneFor(M->Freeform.Get()).Burn);
   if(Fuel<=.001){M->World->EndIdle(true);Change(TEXT("SERVICE TRUCK: Left idling, it ran the tank dry and died. Its lights are out."));}

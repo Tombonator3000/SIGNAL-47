@@ -56,6 +56,7 @@
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
+#include "S47StoryDrive.h"
 #include "TimerManager.h"
 #include "UnrealClient.h"
 
@@ -237,6 +238,12 @@ void US47World::Init(US47Main* InM)
 	{
 		TruckChoice = [this](const FString& Place) -> FChoice
 		{
+			// STORY-DRIVE-OWN-CAR-20261113: on a Story night's drive the car left on the way is the player's own wagon (Story nights only).
+			if (bCommuteVehicle && M && M->IsFreeform())
+			{
+				FChoice Own;
+				if (FS47StoryDrive::Choice(M, Own.Label, Own.Use)) return Own;
+			}
 			// The two authored transports survive T01's removal of the feeder-trip exception.
 			// Horror still decides the escape; these choices grant no general pre-chapter drive.
 			if (M && M->IsFreeform())
@@ -2430,6 +2437,13 @@ void US47World::FinishCommute()
  if (TruckP) { TruckP->Body.SetVisible(true); TruckP->Shell.SetVisible(true); }
  Enter(TEXT("saro"));
  RestoreTransport(nullptr);
+}
+
+void US47World::EndPersonalVehicle()
+{
+ bCommuteVehicle = false; bPersonalTransport = false; PersonalVehicle.Reset(); ServiceVehicle.Reset();
+ for (FS47Truck* T : {SaroTruckP.Get(),TruckP.Get(),ParkedP.Get()}) if (T) T->SetPersonalVehicle(false);
+ ShowTrucks();
 }
 
 void US47World::SetPersonalPark(const FVector& Position, double Heading, bool bVisible, const FString& WalkArea, bool bService)

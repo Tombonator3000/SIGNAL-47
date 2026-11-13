@@ -438,6 +438,15 @@ void FS47Station::FreeformFixed(double Clock)
 	if (!S47NightLine::OnAir(D))
 	{
 		BlockHour = -1;
+		// STORY-DRIVE-OWN-CAR-20261113: a Story night's evening before eight is the old local evening host (EVENING_LINE) on a loop;
+		// at eight the Night Line's first hour follows what is on (the hour's own branch below).
+		if (Radio.bStoryEvening && D >= 12 * 3600 && D < S47NightLine::OnFrom)
+		{
+			const bool bNew = BlockKey != StoryEveningKey;
+			if (bNew) { BlockKey = StoryEveningKey; Cfg.Loop = EVENING_LINE(); LoopAt = 0; }
+			if (bNew || bJump || After != TEXT("loop")) { After = TEXT("loop"); Start(Refill(Clock), Clock, FMath::FRand() * 20); }
+			return;
+		}
 		// Just past four, the sign-off and the anthem as before; later in the day (or loaded into it), nothing.
 		if (After == TEXT("loop") || bJump) Cross(D - S47Radio::SIGN_OFF, Clock);
 		return;
@@ -887,6 +896,14 @@ bool FS47Radio::SelfTest(TArray<FString>& Lines)
 		FS47NightLineIn Other; Other.Night = 2;
 		for (int32 H = 24; H <= 26 && !bStatic; ++H) for (const auto& S : S47NightLine::Hour(Other, H)) if (S->Kind == TEXT("static")) { C->Start({S}, 3600); bStatic = C->OnAir() && C->Len == S->Len; Faint = C->Strength(3600, 0); }
 		Check(bStatic && Faint < 0.35, TEXT("a stretch of static stays on the air, faint, for its own length"));
+	}
+	// STORY-DRIVE-OWN-CAR-20261113: a Story night's 1420 before eight is the old local evening host; Freeform's stays silent.
+	R.bStoryEvening = true; R.Reset(17 * 3600 + 1200);
+	{
+		const bool bEvening = C->OnAir() && C->BlockKey == FS47Station::StoryEveningKey && C->Cfg.Loop.Num() == EVENING_LINE().Num();
+		R.Reset(20 * 3600 + 5); const bool bNight = C->OnAir() && C->BlockKey != FS47Station::StoryEveningKey;
+		R.bStoryEvening = false; R.Reset(19 * 3600 + 1800); const bool bSilent = !C->OnAir();
+		Check(bEvening && bNight && bSilent, TEXT("STORY-DRIVE-OWN-CAR: on a Story night 1420 before eight is the local evening host, then the Night Line; Freeform's is silent before eight"));
 	}
 	R.NightLineIn = nullptr; R.Reset(3 * 3600); Check(C->OnAir() && C->BlockKey < 0 && C->Cfg.Loop.Num() == NIGHT_LINE().Num(), TEXT("out of Freeform, Story's Night Line again"));
  A->Ctx = FS47AudioContext::Make(); C->Start({Talk({FS47RadioLine(TEXT("Hello, is this the radio?"))})},0); C->EnsureBus()->Connect(A->Ctx->Destination); C->Listen(true);

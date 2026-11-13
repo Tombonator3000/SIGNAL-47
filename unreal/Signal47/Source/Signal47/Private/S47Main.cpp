@@ -50,6 +50,7 @@
 #include "S47MotelTv.h"
 #include "S47Seen.h"
 #include "S47Web.h"
+#include "S47StoryDrive.h"
 #include "Misc/Parse.h"
 #include "S47TripoNpcs.h"
 #include "S47Lived.h"
@@ -354,6 +355,12 @@ void US47Main::InitRadio()
 void US47Main::TurnRadio()
 {
 	if (Evening && Evening->Commute()) { Evening->Use(TEXT("evening:radio")); return; }
+	// STORY-DRIVE-OWN-CAR-20261113: on a Story night's drive the wagon's radio is the local evening host's, on or off (Story nights only).
+	if (FS47StoryDrive* Wagon = IsFreeform() ? FS47StoryDrive::Of(this) : nullptr; Wagon && Wagon->OwnsRadio())
+	{
+		if (Mode == EMode::Play && !ModalOpen() && World && World->bDriving) Wagon->ToggleRadio();
+		return;
+	}
 	if (Mode != EMode::Play || ModalOpen() || !World || !World->bDriving || (Story && Story->IsCinematic())) return;
 	if (!World->TruckHere()) { if (UI) UI->Toast(TEXT("The radio stays on the Roswell station."), 2.5f); return; }
 	if (!CarRadio) return;
@@ -373,10 +380,14 @@ void US47Main::RadioStep(double Dt)
 	if (!Radio || !World || !Player) return;
 	FS47Truck* Tr = World->TruckHere();
 	if (Tr) { RadioAt = Tr->Group.WorldPosition(); RadioAt.Y += 1.05; }
-	CarRadio->Pos = Tr ? TOptional<FVector>(RadioAt) : TOptional<FVector>();
+	// STORY-DRIVE-OWN-CAR-20261113: while a Story night's wagon owns the dial (its evening host and bed, FS47StoryDrive) the car's receiver
+	// is not in the cab: silent, no captions, its station kept for the truck after the drive. Never so outside a Story night.
+	const FS47StoryDrive* Wagon = IsFreeform() ? FS47StoryDrive::Of(this) : nullptr;
+	const bool bWagonRadio = Wagon && Wagon->OwnsRadio();
+	CarRadio->Pos = Tr && !bWagonRadio ? TOptional<FVector>(RadioAt) : TOptional<FVector>();
 	CarRadio->Power = (World->bDriving ? World->Trouble.RadioLevel() : 1) * (!World->bDriving && Space == TEXT("room") ? 0.3 : 1);
 	CarRadio->Muffle = World->bDriving ? 0 : 1;
-	if (Tr) Tr->SetRadio(S47Radio::DialX(S47Radio::Freq(CarRadio->Station)), CarRadio->bOn || CarRadio->Carrying());
+	if (Tr) Tr->SetRadio(S47Radio::DialX(bWagonRadio ? double(FS47StoryDrive::Dial) : S47Radio::Freq(CarRadio->Station)), bWagonRadio ? Wagon->RadioOn() : (CarRadio->bOn || CarRadio->Carrying()));
 	bCarNear = Tr && (World->bDriving || FVector::Distance(Player->Pos, RadioAt) < 7);
 	const FS47Obj Counter = Web ? Web->Obj(TEXT("world.diner.proxies.counter")) : FS47Obj(); bool bDinerOn = false;
 	if (Counter && (World->Area == TEXT("diner") || World->Area == TEXT("road")))
@@ -391,6 +402,8 @@ void US47Main::RadioStep(double Dt)
 	// A test receiver uses the same graph, positioned by the camera, without starting a trip.
 	if (!RadioTest.IsEmpty()) { CarRadio->Set(true, RadioTest); CarRadio->Pos = S47Three::ToThree(Player->EyeUE()); CarRadio->Power = 1; CarRadio->Muffle = 0; bCarNear = true; }
 	// NIGHT-RADIO-20261109: in Freeform 1420 is Earl's Night Line from eight to four, made for the night (S47NightLine).
+	// STORY-DRIVE-OWN-CAR-20261113: on a Story night 1420 is the old local evening host's programme before the Night Line's eight o'clock.
+	Radio->bStoryEvening = IsFreeform() && Flow && Flow->StoryNight();
 	if (IsFreeform() != bool(Radio->NightLineIn)) Radio->NightLineIn = IsFreeform() ? TFunction<bool(FS47NightLineIn&)>([this](FS47NightLineIn& In) { return S47NightLine::Fill(this, In); }) : TFunction<bool(FS47NightLineIn&)>();
 	Radio->Update(Dt, Story ? Story->Clock() : 0);
 	if (TripRadio) TripRadio->Update({World->TripNow(), Story ? Story->ChapterKey : FString(), Story ? Story->Clock() : 0, World->bDriving && CarRadio->Live() && !(Story && Story->IsCinematic()) ? CarRadio->Station : FString()});

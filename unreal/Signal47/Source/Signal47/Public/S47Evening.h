@@ -43,6 +43,8 @@ public:
  bool CommitWorldScene(const FString& Id);
  FVector PersonalCarPosition() const;
  double PersonalCarHeading() const;
+ // STORY-DRIVE-OWN-CAR-20261113: the one wagon's presentation, also driven by a Story night's drive (FS47StoryDrive) while this host is off.
+ FS47EveningVisual* VisualHost() const { return Visual.Get(); }
  bool Use(const FString& Id);
  bool Trigger(const FString& Scene);
  void Parked(const FString& Place);

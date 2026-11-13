@@ -8,6 +8,8 @@
 #include "S47Freeform.h"
 #include "S47Fatigue.h"
 #include "S47World.h"
+#include "S47StoryDrive.h"
+#include "S47RecordedDialogue.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47StoryScene,Log,All);
 
@@ -39,6 +41,16 @@ FS47StoryScene::~FS47StoryScene()
  Life.Reset();
  StopRing();
  if(Voice)Voice->Stop();
+ if(RadioCaptionAlive)*RadioCaptionAlive=false;
+ if(RadioVoice)RadioVoice->Stop();
+}
+
+void FS47StoryScene::StopRadioVoice()
+{
+ if(RadioCaptionAlive)*RadioCaptionAlive=false;
+ RadioCaptionAlive.Reset();
+ if(RadioVoice&&(RadioVoice->Playing()||RadioVoice->Loading()))RadioVoice->Stop();
+ bRadioRecorded=false;bRadioCaption=false;
 }
 
 bool FS47StoryScene::Known(const FString& Id)
@@ -139,10 +151,12 @@ bool FS47StoryScene::CarRadio() const
 
 // The car radio: one caption per line, held for a reading time, while the player is in the truck and no panel is up. Out of the truck
 // the rest plays on in the cab unheard: the scene is over at once, so nothing at SARO waits behind it.
+// STORY-DRIVE-OWN-CAR-20261113: in the wagon on a Story night's drive (FS47StoryDrive) the lines are voiced (see the header).
 void FS47StoryScene::RadioStep(double Dt)
 {
  if(!InCab())
  {
+  StopRadioVoice();
   int32 Steps=0;
   while(Pack.CurrentLine()&&Steps++<64)Pack.Advance();
   if(const FS47EveningScene* S=Pack.CurrentScene();S&&!Pack.CurrentLine()&&S->Choices.IsEmpty())Pack.Advance();
@@ -151,18 +165,71 @@ void FS47StoryScene::RadioStep(double Dt)
   AfterStep();
   return;
  }
+ FS47StoryDrive* Wagon=M?FS47StoryDrive::Of(M):nullptr;
+ if(Wagon&&!Wagon->OwnsRadio())Wagon=nullptr;
+ // The wagon's radio off (or a panel up): the line waits and starts again from its beginning when the radio is heard again. The Intro
+ // Drive: the host waits for its last seconds before his first word.
+ if(Wagon&&!Wagon->Audible()){StopRadioVoice();SpokenLine.Reset();RadioHold=0;return;}
  if(M&&M->ModalOpen())return;
+ if(Wagon&&SpokenLine.IsEmpty()&&!Wagon->HostMayTalk())return;
  const FS47EveningLine* L=Pack.CurrentLine();
- if(!L){Pack.Advance();RadioHold=0;SpokenLine.Reset();AfterStep();return;}
+ if(!L){StopRadioVoice();Pack.Advance();RadioHold=0;SpokenLine.Reset();AfterStep();return;}
+ const FString Who=L->Speaker==TEXT("RADIO_HOST")?FString(TEXT("LOCAL EVENING HOST")):L->Speaker;
  if(SpokenLine!=L->Id)
  {
   SpokenLine=L->Id;
+  StopRadioVoice();
   RadioHold=FMath::Clamp(2.5+L->Text.Len()/20.0,4.0,11.0);
-  const FString Who=L->Speaker==TEXT("RADIO_HOST")?FString(TEXT("LOCAL EVENING HOST")):L->Speaker;
-  if(M&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Who+TEXT(" / ")+L->Text,float(RadioHold));
+  if(Wagon&&M&&IsValid(M->Audio))
+  {
+   if(!RadioVoice)
+   {
+    // As the old drive's (FS47Evening): the evening bank, the receiver's band and the player's radio volume.
+    RadioVoice=MakeShared<FS47RecordedDialogue>(M->Audio,TEXT("evening"),[](const FS47DialogueInput& I,FS47RadioVoice& Bank)->TOptional<TArray<FS47RadioClip>>
+    {
+     if(I.Lines.Num()!=1)return {};
+     return Bank.Resolve(I.Lines[0].Text,0,I.Voice);
+    },[](const FS47RadioClip&){return true;},[](const FS47RadioClip&)
+    {
+     FS47RecordedDialogue::FOutput Out;Out.bRadioBus=true;Out.Channel=TEXT("car-radio");return Out;
+    });
+   }
+   if(RadioVoice->Enabled()!=M->Audio->bCharacterVoices)RadioVoice->SetEnabled(M->Audio->bCharacterVoices);
+   const TOptional<TArray<FS47RadioClip>> Found=L->bRecord&&RadioVoice->Bank?RadioVoice->Bank->Resolve(L->Text,0,L->VoiceProfile):TOptional<TArray<FS47RadioClip>>();
+   if(Found.IsSet()&&M->Audio->bCharacterVoices)
+   {
+    FS47DialogueInput Input;Input.Voice=L->VoiceProfile;Input.Lines.Add({L->Speaker,L->Text});
+    RadioVoice->Play(Input);
+    RadioStartedAt=RadioVoice->StartedAt();
+    const FS47DialogueStatus Status=RadioVoice->Status();
+    if(Status.Clips.Num()==1&&Status.Clips[0].Duration>0&&(RadioVoice->Playing()||RadioVoice->Loading())){RadioHold=Status.Clips[0].Duration;bRadioRecorded=true;}
+   }
+   // Character voices off: the subtitle for the take's own length.
+   else if(Found.IsSet()&&Found->Num()>0&&(*Found)[0].Duration>0)RadioHold=(*Found)[0].Duration;
+  }
+  if(!bRadioRecorded)
+  {
+   if(M&&M->UI)M->UI->Toast(TEXT("RADIO: ")+Who+TEXT(" / ")+L->Text,float(RadioHold));
+   bRadioCaption=true;
+  }
+  else
+  {
+   UE_LOG(LogS47StoryScene,Display,TEXT("S47: story scene %s: %s voiced on the car radio (%.1f s)"),*Active,*L->Id,RadioHold);
+  }
+ }
+ // The voiced line's subtitle from the moment the voice speaks, as long as it speaks (on the audio clock).
+ if(bRadioRecorded&&!bRadioCaption&&M&&IsValid(M->Audio)&&M->Audio->Ctx&&M->Audio->Ctx->CurrentTime()>=RadioStartedAt+L->SpeechStart)
+ {
+  const auto Ctx=M->Audio->Ctx;
+  RadioCaptionAlive=MakeShared<bool>(true);
+  const TSharedPtr<bool> Alive=RadioCaptionAlive;
+  const double End=RadioStartedAt+(L->SpeechEnd>0?L->SpeechEnd:L->Duration>0?L->Duration:RadioHold);
+  if(M->UI)M->UI->Toast(TEXT("RADIO: ")+Who+TEXT(" / ")+L->Text,float(FMath::Max(0.01,End-Ctx->CurrentTime())),[Ctx,Alive]{return *Alive?Ctx->CurrentTime():1e20;});
+  bRadioCaption=true;
  }
  RadioHold-=Dt;
- if(RadioHold<=0){SpokenLine.Reset();Continue();}
+ const bool bDone=bRadioRecorded&&RadioVoice?(!RadioVoice->Playing()&&!RadioVoice->Loading()):RadioHold<=0;
+ if(bDone){StopRadioVoice();SpokenLine.Reset();Continue();}
 }
 
 // After a step of the pack: the scene goes on (ring, or open), or it is over.
@@ -271,6 +338,7 @@ void FS47StoryScene::Finish()
  Active.Reset();SpokenLine.Reset();bWantOpen=false;ReopenIn=0;
  StopRing();
  if(Voice)Voice->Stop();
+ StopRadioVoice();
  if(bWasOpen&&M&&M->UI){bOpen=false;M->UI->Close(true);}
  bOpen=false;
  if(Channel==TEXT("phone")&&M&&M->Web&&bWasOpen)
@@ -304,6 +372,7 @@ void FS47StoryScene::Stop()
 {
  StopRing();
  if(Voice)Voice->Stop();
+ StopRadioVoice();
  if(bOpen&&M&&M->UI){bOpen=false;M->UI->Close(true);}
  bOpen=false;bWantOpen=false;ReopenIn=0;
  Active.Reset();SpokenLine.Reset();Channel.Reset();
