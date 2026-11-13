@@ -371,7 +371,10 @@ bool FS47Dossier::Tag(const FString& Key,S47Dossier::EKind Kind,S47Dossier::ETyp
  for(int32 File=0;File<Sequence.Num();++File)
  {
   bool bTies=BoxSign(File,Type)==Sign;
-  for(const FTag& Had:Kept)if(!bTies&&Had.File==File&&Tb::Together(Had,One))bTies=true;
+  // REVIEW (14 Nov): by place and night alone a find of the far two ties only to a file the far two opened, and one of the near
+  // three only to a near one's: a far one's find never joins (and holds back) a near one's file because it was got there that night
+  const bool bSameReach=S47Dossier::StopsAtMarks(Sequence[File])==S47Dossier::StopsAtMarks(Kind);
+  for(const FTag& Had:Kept)if(!bTies&&bSameReach&&Had.File==File&&Tb::Together(Had,One))bTies=true;
   if(bTies)Ties.Add(File);
  }
  // One find that ties two files shows they are the same thing: kept side by side, never merged.
@@ -388,6 +391,9 @@ bool FS47Dossier::Put(FTag&& One,int32 File)
  if(!Sequence.IsValidIndex(File))return false;
  One.File=File;
  Kept.Add(MoveTemp(One));
+ // REVIEW (14 Nov): the stage the file has reached is kept; a later find may strike a box but never takes a stage back
+ if(Reached.Num()<Sequence.Num())Reached.SetNumZeroed(Sequence.Num());
+ Reached[File]=FMath::Max(Reached[File],int32(StageNow(File)));
  return true;
 }
 void FS47Dossier::Link(int32 A,int32 B)
@@ -403,6 +409,12 @@ FString FS47Dossier::BoxSign(int32 File,S47Dossier::EType Type) const
  return Out;
 }
 S47Dossier::EStage FS47Dossier::StageIn(int32 File) const
+{
+ // REVIEW (14 Nov): never below what the file has reached (and what that gave: the map mark, the bearing, the hours line)
+ const S47Dossier::EStage Now=StageNow(File);
+ return Reached.IsValidIndex(File)&&Reached[File]>int32(Now)?S47Dossier::EStage(FMath::Min(Reached[File],int32(S47Dossier::EStage::Habits))):Now;
+}
+S47Dossier::EStage FS47Dossier::StageNow(int32 File) const
 {
  if(!Sequence.IsValidIndex(File))return S47Dossier::EStage::NoFile;
  TSet<int32> Types,Nights;int32 Latest=0;bool bFar=false;
@@ -598,6 +610,12 @@ S47J::FObj FS47Dossier::Save() const
   for(const FIntPoint& Pair:Same){Flat.Add(Pair.X);Flat.Add(Pair.Y);}
   S47J::Set(Out,TEXT("same"),Flat);
  }
+ {
+  // REVIEW (14 Nov): a stage a file has reached that its tags alone no longer give (a find struck what made it): kept, by file
+  TArray<double> Peaks;bool bAbove=false;
+  for(int32 File=0;File<Sequence.Num();++File){const int32 Had=Reached.IsValidIndex(File)?Reached[File]:0;Peaks.Add(Had);bAbove|=Had>int32(StageNow(File));}
+  if(bAbove)S47J::Set(Out,TEXT("reached"),Peaks);
+ }
  if(!Given.IsEmpty())
  {
   const S47J::FObj ExtraOut=S47J::New();TArray<FString> SpentIds;
@@ -677,6 +695,11 @@ void FS47Dossier::Load(const S47J::FObj& Saved)
  const TArray<double> Flat=S47J::Nums(Saved,TEXT("same"));
  for(int32 At=0;At+1<Flat.Num();At+=2)
   if(FMath::IsFinite(Flat[At])&&FMath::IsFinite(Flat[At+1])&&Flat[At]>=1&&Flat[At+1]>=1&&Flat[At]<=Sequence.Num()&&Flat[At+1]<=Sequence.Num())Link(int32(Flat[At])-1,int32(Flat[At+1])-1);
+ // REVIEW (14 Nov): the stages reached (replaying the tags in the order logged gives them too; this keeps them whatever else changed)
+ const TArray<double> Peaks=S47J::Nums(Saved,TEXT("reached"));
+ if(Reached.Num()<Sequence.Num())Reached.SetNumZeroed(Sequence.Num());
+ for(int32 File=0;File<Peaks.Num()&&File<Sequence.Num();++File)
+  if(FMath::IsFinite(Peaks[File])&&Peaks[File]>=0&&Peaks[File]<=double(int32(S47Dossier::EStage::Habits)))Reached[File]=FMath::Max(Reached[File],int32(Peaks[File]));
  // MARKS's extra bearing, for a file there is: the night it is for, and whether it is printed
  if(const S47J::FObj ExtraIn=S47J::Obj(Saved,TEXT("extra"));ExtraIn.IsValid())for(const auto& Pair:ExtraIn->Values)
  {
@@ -981,12 +1004,41 @@ bool SelfTest(TArray<FString>& Lines)
    }
    Check(bLate,TEXT("REVIEW: tags logged out of night order (late playback) load in the order they were logged: files, struck pencil and joins the same over two Continues"));
   }
-  // the two far ones: anything of theirs in a file holds it at MARKS, whichever opened it
+  // REVIEW (14 Nov): the two far ones' finds, got the same night where a near one's file was got, do not join it by that alone:
+  // they open (or join) a file of their own, which stops at MARKS; the near file keeps HABITS and what it gave
   FS47Dossier E;
   for(int32 Night=2;Night<=4;++Night)for(const EType T:{Shape,Ground,Tape,Lamp})E.Tag(FString::Printf(TEXT("e%d%d"),Night,int32(T)),Small,T,Night,2,&Farm);
   const bool bNear=E.StageOfFile(1)==EStage::Habits;
   E.Tag(TEXT("e-silver"),Silver,Lamp,4,3,&Farm);
-  Check(bNear&&E.FileOf(TEXT("e-silver"))==1&&E.StageOfFile(1)==EStage::Marks&&E.Files()[0].Next==NextStops,TEXT("slice 2: a file with anything of the silver one or the shining one in it stops at MARKS"));
+  E.Tag(TEXT("e-silver2"),Silver,Shape,4,3,&Farm); // got with it: its file
+  E.Tag(TEXT("e-small"),Small,Ground,4,3,&Farm);   // and a near one's again: the near file, not the far one's
+  Check(bNear&&E.FileOf(TEXT("e-silver"))==2&&E.FileOf(TEXT("e-silver2"))==2&&E.FileOf(TEXT("e-small"))==1&&E.StageOfFile(1)==EStage::Habits&&E.Files()[0].Next==NextHabits&&E.Files()[0].Gave==GaveHours
+   &&E.StageOfFile(2)==EStage::Outline&&E.Files()[1].Boxes[int32(Lamp)].Note==Note(Silver,Lamp)&&E.Beside().IsEmpty(),
+   TEXT("REVIEW: a far one's find got where and when a near one's file was does not join it: its own file; the near file keeps HABITS"));
+  {
+   // REVIEW (14 Nov): a file's stage never drops. A far one's find put in a file at HABITS (a save that has it so) strikes the box,
+   // but the file keeps HABITS, its hours line, its map mark and its bearing, and keeps them over a Continue
+   FS47Dossier H;
+   for(int32 Night=2;Night<=4;++Night)for(const EType T:{Shape,Ground,Tape,Lamp})H.Tag(FString::Printf(TEXT("h%d%d"),Night,int32(T)),Small,T,Night,2,&Farm);
+   H.Grant(Small,3);
+   const S47J::FObj HRecord=S47J::Read(S47J::Write(H.Save()));
+   const S47J::FObj Row=S47J::New();
+   S47J::Set(Row,TEXT("k"),TEXT("nordic"));S47J::Set(Row,TEXT("t"),TEXT("lamp"));S47J::Set(Row,TEXT("d"),4);S47J::Set(Row,TEXT("h"),3);S47J::Set(Row,TEXT("f"),1);S47J::Set(Row,TEXT("n"),H.Tags().Num());
+   S47J::Set(S47J::Obj(HRecord,TEXT("tags")),TEXT("h-silver"),Row);
+   FS47Dossier Held;Held.Load(HRecord);
+   FS47Dossier HeldBack;HeldBack.Load(S47J::Read(S47J::Write(Held.Save())));
+   bool bKept=Held.FileOf(TEXT("h-silver"))==1;
+   for(const FS47Dossier* Each:{&Held,&HeldBack})
+   {
+    double KX=0,KZ=0;
+    const FFile Was=Each->Files()[0];
+    bKept&=Each->StageOfFile(1)==EStage::Habits&&Was.Stage==TEXT("HABITS")&&Was.Gave==GaveHours&&!Each->HoursOfFile(1).IsEmpty()&&Each->FirstWhereOfFile(1,KX,KZ)&&KX==Farm.X
+     &&Each->ExtraState(Small)==1&&Each->AtMarks()==1&&Was.Boxes[int32(Lamp)].Note==Note(Silver,Lamp)&&Was.Boxes[int32(Lamp)].Struck==TArray<FString>{Note(Small,Lamp)};
+   }
+   const S47J::FObj Out=S47J::Read(S47J::Write(Held.Save()));
+   Check(bKept&&S47J::Nums(Out,TEXT("reached"))==TArray<double>{3.}&&S47J::Write(HeldBack.Save())==S47J::Write(Held.Save())&&!S47J::Read(S47J::Write(H.Save()))->HasField(TEXT("reached")),
+    TEXT("REVIEW: a file's stage never drops: a later find may strike a box, never take back HABITS or what it gave"));
+  }
   // HABITS waits for the first week with danger in it
   FS47Dossier W;W.SetHabitsFrom(8);
   for(int32 Night=2;Night<=7;++Night)for(const EType T:{Shape,Ground,Tape,Lamp,Geiger,Animals})W.Tag(FString::Printf(TEXT("w%d%d"),Night,int32(T)),Low,T,Night,2,&Farm);
