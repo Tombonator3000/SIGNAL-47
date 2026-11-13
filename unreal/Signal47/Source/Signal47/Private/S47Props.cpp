@@ -66,7 +66,7 @@ namespace
 		Out.RemoveAll([](const FString& Name)
 		{
 			return Name == TEXT("lookdev-bindings.json") || Name == TEXT("lookdev-environment.json")
-				|| Name == TEXT("gas_cosmos.json") || Name == TEXT("gas_look.json") || Name == TEXT("school_cosmos.json") || Name == TEXT("church_cosmos.json") // (GAS-STATION-LIFT-01: the shop's Cosmos props, S47StationDressing; its picture, S47StationLook)
+				|| Name == TEXT("gas_cosmos.json") || Name == TEXT("gas_look.json") || Name == TEXT("school_cosmos.json") || Name == TEXT("church_cosmos.json") || Name == TEXT("church_convent.json") // (GAS-STATION-LIFT-01: the shop's Cosmos props, S47StationDressing; its picture, S47StationLook)
 				|| Name == TEXT("catalogue.json"); // (PROPS-REUSE-20261113: the shared real models, S47PropCatalogue)
 		});
 		Out.Sort();

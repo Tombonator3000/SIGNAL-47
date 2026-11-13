@@ -12,6 +12,10 @@ namespace S47CalicheAccess
  void Save(const S47J::FObj& State);
  void Restore(const S47J::FObj& State);
  bool HasDoor(const FString& Id);
+ // CHURCH-COLONIAL-20261113: the white board church stands only while the mission church's pack (S47Convent) is not here: never both.
+ bool OldChurchStands(bool bConventPresent);
+ // Parts of the white board church (shell, glass, interior, fixtures) stood up in this world.
+ int32 OldChurchParts();
  // Whether two names (a room's id, its use, town:use, access:id) mean the same room's door.
  bool SameDoor(const FString& A,const FString& B);
  bool UseDoor(const FString& Id);

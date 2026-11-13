@@ -105,6 +105,7 @@
 #include "S47FarmWorld.h"
 #include "S47OpenLand.h"
 #include "S47GasBayDoor.h"
+#include "S47Convent.h"
 #include "S47T02Test.h"
 #include "S47Graphics.h"
 #include "S47GraphicsTest.h"
@@ -349,6 +350,7 @@ void AS47HUD::Start()
 		bOk &= FS47Darkroom::SelfTest(Lines); // (D45-20261110: the darkroom's door and safelight rule, the fogged print, its saved switch)
 		bOk &= S47FarmWorld::SelfTest(Lines);
 		bOk &= S47OpenLand::SelfTest(Lines);
+		bOk &= S47Convent::SelfTest(Lines); // (CHURCH-COLONIAL-20261113: San Isidro as the mission church or the old one, never both; two ways out; the cemetery path at a door)
 		bOk &= S47GasBayDoor::SelfTest(Lines); // (GAS-BAY-DOOR-20261113: the gas station's roll-up door, its height, its lock and the wall cut round it) // (HWY-FENCE-GONE-20261113: the highway's fence gone in Freeform, the pasture's remnants kept)
 		bOk &= FS47Substation::SelfTest(Lines);
 		bOk &= FS47Anomaly::SelfTest(Lines);

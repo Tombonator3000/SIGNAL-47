@@ -1,0 +1,40 @@
+{
+ "_doc": "The Cosmos meshes taken out of the Colonial Convent pack (extract.py) and moved to /Game/Licensed/CosmosConvent/Convent in a throwaway 5.8 project (migrate.py): the pieces of the small mission church in Caliche (San Isidro). Chosen by name, measures and triangle counts (the pack's own FBX files measured with Blender, no picture opened) and then looked at in place in the game. What was left out and why is in README.md.",
+ "packs": {
+  "convent": {
+   "zip": "ColonialConvent.zip",
+   "root": "Colonial_Convent",
+   "dest": "Convent",
+   "meshes": [
+    "Meshes/SM_Agave01_1",
+    "Meshes/SM_Agave02_1",
+    "Meshes/SM_AltarWallOrnament",
+    "Meshes/SM_Barrel01_1",
+    "Meshes/SM_Bell",
+    "Meshes/SM_Bench",
+    "Meshes/SM_BenchExterior",
+    "Meshes/SM_Chair",
+    "Meshes/SM_Chandelier",
+    "Meshes/SM_ChapelPosaArcade_01",
+    "Meshes/SM_ChurchCandle",
+    "Meshes/SM_ChurchChalice",
+    "Meshes/SM_ChurchCurtain",
+    "Meshes/SM_ChurchFrame01_1",
+    "Meshes/SM_ChurchFrame02_1",
+    "Meshes/SM_ChurchFrame03_1",
+    "Meshes/SM_ChurchTableCross",
+    "Meshes/SM_Cross",
+    "Meshes/SM_Desk",
+    "Meshes/SM_FenceColumn_01",
+    "Meshes/SM_Fence_01",
+    "Meshes/SM_FlatWallTall_01",
+    "Meshes/SM_Log",
+    "Meshes/SM_OutsideTrims_01",
+    "Meshes/SM_PavingStoneTileBig_01",
+    "Meshes/SM_Podium",
+    "Meshes/SM_Rope",
+    "Meshes/SM_WindowTall_01"
+   ]
+  }
+ }
+}

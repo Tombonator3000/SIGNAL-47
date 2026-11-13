@@ -1,4 +1,5 @@
 #include "S47TownSites.h"
+#include "S47Convent.h"
 #include "S47PropCatalogue.h"
 #include "S47GroundEdits.h"
 #include "S47FreeformTerrain.h"
@@ -374,6 +375,7 @@ namespace S47TownSitesLocal
 			S.Traits = ES47PlaceTrait::Town | ES47PlaceTrait::Open;
 			S.Radius = 16; S.Up = 20; S.NameSide = 1; S.bLandmark = true;
 			S.PlaceX = 0; S.PlaceZ = 0; S.EntryX = -12.4; S.EntryZ = 0;
+			if (S47Convent::Present()) S.EntryX = -11.9;   // CHURCH-COLONIAL-20261113: clear of the sacristy's back wall (road x 36.2)
 			constexpr double X0 = -11, X1 = 11, Z0 = -11, Z1 = 10, GateHalf = 1.1, NorthA = 3.0, NorthB = 4.8;
 			constexpr uint32 Iron = 0x1d1d1b, Gravel = 0xa89e88, Dirt = 0x9a8a70;
 			S.Yards.Add({ X0, X1, Z0, Z1 });
@@ -413,8 +415,12 @@ namespace S47TownSitesLocal
 			// a trodden footpath from the gap in the north side. Short pieces, so each lies on the land.
 			const int32 Path0 = S.Parts.Num();
 			// (the gravel's picture thins out at its edges, so the pieces lie half over each other and the path is whole)
-			for (double Px = X0 - 1.25; Px < X1 - .4; Px += 1.5) Add(Px, 0, 3.2, 2.0, .03, Gravel, false, 0);   // from 0.15 m off the church's rear wall to just out of the east gap
-			for (double Pz = 1.2; Pz < 5.6; Pz += 1.4) Add(X0 - 1.5, Pz, 1.8, 3.0, .03, Gravel, false, 0);
+			// CHURCH-COLONIAL-20261113: the mission church (S47Convent) has a back door on the axis, 2 m from the gate: the path starts
+			// at that door's wall and the run round the old church's corner is not laid. Without the pack, as it was.
+			const bool bConvent = S47Convent::Present();
+			const double PathWest = bConvent ? S47Convent::BackDoorRoad().X - S.X : X0 - 2.85;   // the old church: 0.15 m off its rear wall
+			for (double Px = PathWest + 1.6; Px < X1 - .4; Px += 1.5) Add(Px, 0, 3.2, 2.0, .03, Gravel, false, 0);   // to just out of the east gap
+			if (!bConvent) for (double Pz = 1.2; Pz < 5.6; Pz += 1.4) Add(X0 - 1.5, Pz, 1.8, 3.0, .03, Gravel, false, 0);
 			for (double Pz = Z0 - .6; Pz < -1.5; Pz += 1.3) Add((NorthA + NorthB) * .5, Pz, 1.3, 2.8, .02, Dirt, false, 0);
 			for (int32 I = Path0; I < S.Parts.Num(); ++I) S.Parts[I].bGround = true;
 			// The name, on a board on the fence north of the gate, read from the church's side.
