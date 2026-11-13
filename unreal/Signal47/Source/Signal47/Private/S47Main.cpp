@@ -326,6 +326,7 @@ void US47Main::Step(double Dt)
 		// Tom's test of d36 at SARO (PT-RAMP, PT-PATHS, PT-STOP, PT-HALL, PT-DALE-LIGHT, PT-SWITCH; PT-RECORDS in its own file).
 		S47SaroFixes::Update(this, Dt);
 		S47RecordsDressing::Update(this, Dt);
+		S47RecordsRoom::Update(this, Dt); // RECORDS-ROOM-LIFT-20261113: after the dressing it re-houses
 		S47Lookdev::Update(this, Dt);
 	}
 	if (!bFree && SkyVisitors) SkyVisitors->Step(Dt);

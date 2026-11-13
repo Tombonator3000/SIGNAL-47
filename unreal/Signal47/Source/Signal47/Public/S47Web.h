@@ -238,6 +238,11 @@ public:
 	// Validated 0.35m relocation into the native Operations passing bay. False is read-only verification.
 	bool RecessSaroVending(bool bApply);
 	bool RehouseSaroCorridorLights(bool bApply);
+	// RECORDS-ROOM-LIFT-20261113: the records room's two tubes in the hung ceiling's troffers (S47RecordsRoom.cpp gives the ceiling).
+	// The exported nodes and flood slots keep power, dimming, flicker and the wall switch. False is read-only verification.
+	bool RehouseSaroRecordsLights(class UStaticMeshComponent* Ceiling, bool bApply);
+	// The records room's desk lamp (annex slot 5) as the banker's lamp's bulb at this Unreal point, shining down; its light, or nullptr.
+	class URectLightComponent* RehouseSaroRecordsLamp(const FVector& AtUE, bool bApply);
 
 	// ---------- interactable things ----------
 	const TArray<FS47WebItem>& Items() const { return ItemList; }
