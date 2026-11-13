@@ -562,11 +562,45 @@ namespace
 		Sheet->AddSlot().AutoHeight().Padding(0, P(4), 0, P(2))[BoxRow];
 		for (const FS47NbUnknown::FBox& One : File.Boxes)
 			if (One.bFilled && !One.Note.IsEmpty())
+			{
+				// EVIDENCE-DOSSIER slice 2: what a later find contradicted, struck through in pencil above what stands now
+				for (const FString& Was : One.Struck)
+				{
+					FS47NbScribble Gone; Gone.Text = Was; Gone.bStruck = true;
+					Sheet->AddSlot().AutoHeight().Padding(0, P(3), 0, 0)[ScribbleLine(Gone, 23.f, nullptr)];
+					Held += TEXT(". Struck: ") + Was.LeftChop(Was.EndsWith(TEXT(".")) ? 1 : 0).ToLower();
+				}
 				Sheet->AddSlot().AutoHeight().Padding(0, P(3), 0, 0)[SNew(STextBlock).Text(FText::FromString(One.Note)).Font(Hand(23)).ColorAndOpacity(Lead).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(23), 28))];
+			}
 		if (!File.Next.IsEmpty())
 			Sheet->AddSlot().AutoHeight().Padding(0, P(5), 0, 0)[SNew(STextBlock).Text(FText::FromString(File.Next)).Font(Hand(20)).ColorAndOpacity(C(0x3a3a40, 0.6f)).AutoWrapText(true)];
 		Said.Add(File.Title + TEXT(". ") + File.Stage + TEXT(".") + (File.Gave.IsEmpty() ? FString() : TEXT(" ") + File.Gave) + (Held.IsEmpty() ? FString() : TEXT(" Kept: ") + Held + TEXT(".")));
 		return SNew(SBorder).BorderImage(Box(C(0xf7f3e6, 0.55f), C(0x3a3a40, 0.55f), 1.5f, 2.f)).Padding(FMargin(P(12), P(6)))[Sheet];
+	}
+	// EVIDENCE-DOSSIER slice 2: two files a find showed to be one thing, side by side and never merged: the six boxes of the one over the
+	// other's, and between them an equals sign in red pencil where the two hold the same. No word for what it means.
+	TSharedRef<SWidget> UnknownPairBox(const FS47NbUnknownPair& Two, TArray<FString>& Said)
+	{
+		using namespace S47Game;
+		TSharedRef<SHorizontalBox> BoxColumns = SNew(SHorizontalBox);
+		for (int32 At = 0; At < Two.Labels.Num(); ++At)
+		{
+			const bool bAlike = Two.Marks.IsValidIndex(At) && Two.Marks[At] == 1;
+			BoxColumns->AddSlot().FillWidth(1.f).HAlign(HAlign_Center)
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SS47NbEvidenceBox).Filled(Two.LeftFilled.IsValidIndex(At) && Two.LeftFilled[At])]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromString(bAlike ? TEXT("=") : TEXT(" "))).Font(Hand(26)).ColorAndOpacity(Ph2Red())]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SS47NbEvidenceBox).Filled(Two.RightFilled.IsValidIndex(At) && Two.RightFilled[At])]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(2), 0, 0)[SNew(STextBlock).Text(FText::FromString(Two.Labels[At])).Font(Term(15, 1)).ColorAndOpacity(C(0x3a3a40, 0.7f))]
+			];
+		}
+		TSharedRef<SVerticalBox> Sheet = SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Two.Left)).Font(Hand(24)).ColorAndOpacity(InkBlue())]
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, P(2), 0, P(2))[BoxColumns]
+			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Two.Right)).Font(Hand(24)).ColorAndOpacity(InkBlue())];
+		Said.Add(Two.Said);
+		return SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, C(0x3a3a40, 0.45f), 1.2f, 2.f)).Padding(FMargin(P(12), P(6)))[Sheet];
 	}
 }
 
@@ -1628,6 +1662,7 @@ void SS47Notebook::BuildRight()
 		// EVIDENCE-DOSSIER-20261113: first the files of the unknown, one for each thing the player has logged evidence of, numbered in the
 		// order they were first logged (S47Dossier): six boxes and a stage each, to be read at a glance, out in the field as anywhere.
 		for (const FS47NbUnknown& UnknownOne : X.Unknowns) L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[UnknownFileBox(UnknownOne, Said)];
+		for (const FS47NbUnknownPair& UnknownTwo : X.UnknownPairs) L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[UnknownPairBox(UnknownTwo, Said)]; // slice 2
 		const bool bAnyOfThem = Boxes.Num() > 0 || X.Unknowns.Num() > 0;
 		for (const FString& Name : Boxes)
 		{
@@ -2279,6 +2314,16 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 				const TSharedRef<SWidget> Drawn = UnknownFileBox(Sheet, Spoken);
 				Check(TEXT("Freeform THEM: a file of the unknown is its number, its stage and six boxes; what is read of it names only the kinds of evidence kept"),
 					Drawn != SNullWidget::NullWidget && Spoken.Num() == 1 && Spoken[0] == TEXT("UNKNOWN 1. OUTLINE. Kept: shape, ground.") && S47Script::LintText(Spoken[0]).IsEmpty() && !S47Marginalia::NamesKind(Spoken[0]), Spoken.Num() ? Spoken[0] : FString());
+				// EVIDENCE-DOSSIER slice 2: a struck pencil in a box, and two files side by side
+				FS47NbUnknown Struck = Sheet; Struck.Boxes[2].Struck = { TEXT("Long narrow prints, a long stride apart.") };
+				FS47NbUnknownPair Two; Two.Left = TEXT("UNKNOWN 1"); Two.Right = TEXT("UNKNOWN 3"); Two.Said = TEXT("UNKNOWN 1 and UNKNOWN 3 side by side. The same in: shape.");
+				for (const FS47NbUnknown::FBox& One : Sheet.Boxes) { Two.Labels.Add(One.Label); Two.LeftFilled.Add(One.bFilled); Two.RightFilled.Add(One.Label == TEXT("SHAPE")); Two.Marks.Add(One.Label == TEXT("SHAPE") ? 1 : 0); }
+				TArray<FString> SpokenTwo;
+				const TSharedRef<SWidget> DrawnStruck = UnknownFileBox(Struck, SpokenTwo), DrawnPair = UnknownPairBox(Two, SpokenTwo);
+				Check(TEXT("Freeform THEM (slice 2): a contradicted pencil is struck through above what stands, and two files kept side by side are read as such"),
+					DrawnStruck != SNullWidget::NullWidget && DrawnPair != SNullWidget::NullWidget && SpokenTwo.Num() == 2 && SpokenTwo[0].Contains(TEXT("Struck: long narrow prints, a long stride apart")) && SpokenTwo[1] == Two.Said
+					&& S47Script::LintText(SpokenTwo[0] + TEXT(" ") + SpokenTwo[1]).IsEmpty() && !S47Marginalia::NamesKind(SpokenTwo[0] + TEXT(" ") + SpokenTwo[1]), SpokenTwo.Num() ? SpokenTwo[0] : FString());
+				Mx.UnknownPairs.Add(Two);
 			}
 			const auto Pencilled = SNew(SS47Notebook).Docs(All).Extras(Mx);
 			Pencilled->Show(TEXT("findings")); Pencilled->Section(1);

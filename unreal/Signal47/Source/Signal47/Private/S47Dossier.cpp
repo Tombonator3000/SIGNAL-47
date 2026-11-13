@@ -1,4 +1,5 @@
 #include "S47Dossier.h"
+#include "S47AlienKinds.h"
 #include "S47Marginalia.h"
 #include "S47RoadGlimpse.h"
 #include "S47Script.h"
@@ -75,11 +76,21 @@ namespace Tables
  const TCHAR* const ExtraSlip=TEXT("THE STATION KNOWS WHAT TO LISTEN FOR NOW: ONE MORE BEARING TONIGHT THAN THE NIGHT GIVES.");
  const TCHAR* const ExtraSaid=TEXT("The station knows what to listen for now: one more bearing tonight.");
  const TCHAR* const ExtraTask=TEXT("ARRAY / The station knows what to listen for now: one more bearing slip can come tonight.");
- const int32 MaxTags=4096,MaxKey=160,MaxDay=36500;
+ // Slice 2: a contradicted pencil on the binder's typed sheet (the pair's words are BesideLine and BesideWords).
+ const TCHAR* const StruckTyped=TEXT("STRUCK / ");
+ const int32 MaxTags=4096,MaxKey=160,MaxDay=36500,MaxFiles=24;
  const double MaxWhere=1e6;
  bool Valid(EKind Kind){return int32(Kind)>=0&&int32(Kind)<KindN;}
  bool Valid(EType Type){return int32(Type)>=0&&int32(Type)<TypeN;}
  bool Earlier(const FS47Dossier::FTag& A,const FS47Dossier::FTag& B){return A.Day!=B.Day?A.Day<B.Day:A.Key<B.Key;}
+ // Slice 2: got together, as the player could tell: the same night, and near each other where both kept a place; of the same kind,
+ // the same night is enough when one of them kept none (a tape played back at the desk, a photograph enlarged at the bench).
+ bool Together(const FS47Dossier::FTag& A,const FS47Dossier::FTag& B)
+ {
+  if(A.Day!=B.Day)return false;
+  if(A.bWhere&&B.bWhere)return FVector2D::Distance(FVector2D(A.X,A.Z),FVector2D(B.X,B.Z))<=S47Dossier::NearM;
+  return A.Kind==B.Kind;
+ }
 }
 const TCHAR* KindId(EKind Kind){return Tables::Valid(Kind)?Tables::KindIds[int32(Kind)]:TEXT("");}
 const TCHAR* TypeId(EType Type){return Tables::Valid(Type)?Tables::TypeIds[int32(Type)]:TEXT("");}
@@ -124,10 +135,10 @@ const TCHAR* Note(EKind Kind,EType Type)
 const TCHAR* TypeLabel(EType Type){return Tables::Valid(Type)?Tables::TypeLabels[int32(Type)]:TEXT("");}
 const TCHAR* StageWord(EStage Stage){return Tables::StageWords[FMath::Clamp(int32(Stage),0,3)];}
 bool StopsAtMarks(EKind Kind){return Kind==EKind::Silver||Kind==EKind::Shining;}
-EStage StageFor(EKind Kind,int32 Types,int32 Nights,bool bLamp)
+EStage StageFor(EKind Kind,int32 Types,int32 Nights,bool bLamp,int32 Latest,int32 HabitsFrom)
 {
  if(!Tables::Valid(Kind)||Types<1)return EStage::NoFile;
- if(Types>=4&&bLamp&&Nights>=3&&!StopsAtMarks(Kind))return EStage::Habits;
+ if(Types>=4&&bLamp&&Nights>=3&&!StopsAtMarks(Kind)&&Latest>=HabitsFrom)return EStage::Habits;
  if(Types>=3&&Nights>=2)return EStage::Marks;
  return EStage::Outline;
 }
@@ -177,6 +188,89 @@ int32 ExtraNightFor(double Clock)
  const double At=FMath::IsFinite(Clock)?FMath::Max(0.,Clock):0.;
  return FMath::Max(1,int32(FMath::FloorToDouble((At+3*3600.-8*3600.)/86400.))+1);
 }
+EKind KindOfOmen(const FString& SourceId,int32 VisitWho)
+{
+ if(SourceId==TEXT("visit"))return KindOfVisit(VisitWho);
+ if(SourceId.StartsWith(TEXT("body:"),ESearchCase::CaseSensitive)||SourceId==TEXT("door")||SourceId==TEXT("peek"))return EKind::Small;
+ return EKind::None;
+}
+int32 AlienKindOf(EKind Kind)
+{
+ switch(Kind)
+ {
+  case EKind::Small:return int32(ES47AlienKind::Roswell);
+  case EKind::Low:return int32(ES47AlienKind::Pale);
+  case EKind::Tall:return int32(ES47AlienKind::Tall);
+  case EKind::Silver:return int32(ES47AlienKind::Nordic);
+  case EKind::Shining:return int32(ES47AlienKind::Cosmic);
+  default:return -1;
+ }
+}
+float GeigerFactor(EKind Kind)
+{
+ // The table's GEIGER column: "faint", "none", "clear"; the far two have nothing in it.
+ switch(Kind)
+ {
+  case EKind::Small:return .55f;
+  case EKind::Low:return 0.f;
+  case EKind::Tall:return 1.6f;
+  case EKind::Silver:case EKind::Shining:return 0.f;
+  default:return 1.f;
+ }
+}
+int32 Earliest(EKind Kind,EStage Stage,const FGates& G,int32 Last)
+{
+ // The best case: every source that may come on a night does, and all of it is tied into one file. Then the first night the file
+ // can stand at Stage. The near three are met on a visit (one a night, the night's one danger): what it shows, the tape, the
+ // animals before it, the counter and the prints by daylight; the lamp's answer once (the low one's only from RuleBreak, and after
+ // the small ones' rule was learned on a visit before). The far two: a photograph from Sky, the receiver's take from Take, the
+ // lamp from Figure; nothing else.
+ if(!Tables::Valid(Kind)||Stage==EStage::NoFile)return 0;
+ const bool bFar=StopsAtMarks(Kind);
+ TSet<int32> Types;int32 Nights=0;
+ for(int32 Night=1;Night<=Last;++Night)
+ {
+  TArray<EType> Got;
+  if(bFar)
+  {
+   if(Night>=G.Sky)Got.Add(EType::Shape);
+   if(Night>=G.Take)Got.Add(EType::Tape);
+   if(Night>=G.Figure)Got.Add(EType::Lamp);
+  }
+  else
+  {
+   if(Night>=G.Visit)for(const EType T:{EType::Shape,EType::Tape,EType::Ground,EType::Geiger,EType::Animals})Got.Add(T);
+   if((Kind==EKind::Low||Kind==EKind::Tall)&&Night>=G.Glimpse){Got.AddUnique(EType::Shape);Got.AddUnique(EType::Ground);}
+   const int32 LampFrom=Kind==EKind::Low?FMath::Max(G.RuleBreak,G.Visit+1):G.Visit;
+   if(Night>=LampFrom)Got.Add(EType::Lamp);
+  }
+  if(Got.IsEmpty())continue;
+  ++Nights;
+  for(const EType T:Got)Types.Add(int32(T));
+  if(int32(StageFor(Kind,Types.Num(),Nights,Types.Contains(int32(EType::Lamp)),Night,G.HabitsFrom))>=int32(Stage))return Night;
+ }
+ return 0;
+}
+TArray<int32> Agreement(const FFile& A,const FFile& B)
+{
+ TArray<int32> Out;
+ for(int32 T=0;T<Tables::TypeN;++T)
+ {
+  const bool bA=A.Boxes.IsValidIndex(T)&&A.Boxes[T].bFilled,bB=B.Boxes.IsValidIndex(T)&&B.Boxes[T].bFilled;
+  Out.Add(!bA||!bB?0:A.Boxes[T].Sign==B.Boxes[T].Sign?1:2);
+ }
+ return Out;
+}
+FString BesideWords(const FFile& A,const FFile& B)
+{
+ const TArray<int32> Marks=Agreement(A,B);
+ TArray<FString> Alike;
+ for(int32 T=0;T<Marks.Num();++T)if(Marks[T]==1)Alike.Add(FString(Tables::TypeLabels[T]).ToLower());
+ FString Out=A.Title+TEXT(" and ")+B.Title+TEXT(" side by side.");
+ if(!Alike.IsEmpty())Out+=TEXT(" The same in: ")+FString::Join(Alike,TEXT(", "))+TEXT(".");
+ return Out;
+}
+FString BesideLine(int32 Number){return FString::Printf(TEXT("KEPT BESIDE UNKNOWN %d."),Number);}
 FString Sheet(const FFile& File,const TArray<FString>& PhotoLines)
 {
  FString Out=FString::Printf(TEXT("STAGE     %s\n"),*File.Stage);
@@ -195,8 +289,11 @@ FString Sheet(const FFile& File,const TArray<FString>& PhotoLines)
  {
   if(!One.bFilled||One.Note.IsEmpty())continue;
   if(!bAny){Out+=TEXT("\n\nIN PENCIL");bAny=true;}
+  for(const FString& Was:One.Struck)Out+=TEXT("\n")+FString(Tables::StruckTyped)+Was; // slice 2: what a later find contradicted
   Out+=TEXT("\n")+One.Note;
  }
+ if(!File.Beside.IsEmpty())Out+=TEXT("\n");
+ for(const int32 Other:File.Beside)Out+=TEXT("\n")+BesideLine(Other);
  if(!File.Next.IsEmpty())Out+=TEXT("\n\n")+File.Next;
  Out+=TEXT("\n\nREAD ONLY. KEPT AS THE NOTEBOOK HAS IT.");
  return Out;
@@ -212,8 +309,17 @@ TArray<FString> Words()
  for(const TCHAR* W:{GaveMapped,GaveUnmapped,GaveExtraOpen,GaveExtraSpent,GaveListens,GaveHours,GaveNoHours,ExtraSlip,ExtraSaid,ExtraTask})Out.Add(W);
  {TArray<int32> Every;for(int32 H=0;H<24;++H)Every.Add(H);Out.Add(HoursLine(5,Every));} // every hour there is, as tonight's note has them
  for(const TCHAR* W:SheetWords)Out.Add(W);
- // every stamp there can be, and a file's title
- for(int32 N=1;N<=KindN;++N)
+ // slice 2: the pair's line on the sheet, every way it can be read aloud, a struck note
+ for(int32 N=1;N<=MaxFiles;++N)Out.Add(BesideLine(N));
+ {
+  FFile A,B;A.Title=TEXT("UNKNOWN 1");B.Title=FString::Printf(TEXT("UNKNOWN %d"),MaxFiles);
+  A.Boxes.SetNum(TypeN);B.Boxes.SetNum(TypeN);
+  for(int32 T=0;T<TypeN;++T){A.Boxes[T].bFilled=B.Boxes[T].bFilled=true;A.Boxes[T].Sign=B.Boxes[T].Sign=TEXT("x");}
+  Out.Add(BesideWords(A,B));
+ }
+ Out.Add(FString(StruckTyped)+Cells[0][0].Pencil);
+ // every stamp there can be, and a file's title (slice 2: as many files as there can be)
+ for(int32 N=1;N<=MaxFiles;++N)
  {
   Out.Add(FString::Printf(TEXT("UNKNOWN %d"),N));
   for(int32 T=0;T<TypeN;++T)for(const bool bPhoto:{false,true})
@@ -226,19 +332,25 @@ TArray<FString> Words()
  }
  return Out;
 }
-FString Lint()
+FString Lint(){return LintWords(Words());}
+bool GeigerReads(bool bOut,double Metres,double HeldFor){return bOut&&FMath::IsFinite(Metres)&&Metres<=GeigerNearM&&HeldFor>=GeigerHoldS;}
+bool TakeHeard(double Cursor){return FMath::IsFinite(Cursor)&&Cursor>=S47AlienKinds::SignalFrom+S47AlienKinds::SignalSeconds*.5;}
+FString LintWords(const TArray<FString>& Said)
 {
  // Freeform's banned words (S47Thoughts, S47FreeformCases), the working names that are no plain description, and the word the
  // old photograph receipts used.
  static const TCHAR* const Not[]={TEXT("1947"),TEXT("47 s"),TEXT("forty"),TEXT("cable"),TEXT("tomas"),TEXT("taken"),TEXT("silhouette"),TEXT("8.15"),TEXT("alien"),TEXT("ufo"),TEXT("saucer"),
   TEXT("martian"),TEXT("third"),TEXT("grey"),TEXT("gray"),TEXT("abduct"),TEXT("roswell"),TEXT("nordic"),TEXT("cosmic"),TEXT("crawler"),TEXT("visitor"),TEXT("species"),TEXT("creature")};
  FString Bad;
- for(const FString& W:Words())
+ for(const FString& W:Said)
  {
   if(const FString Why=S47Script::LintText(W);!Why.IsEmpty())Bad+=FString::Printf(TEXT("'%s': %s | "),*W.Left(40),*Why);
   if(S47Marginalia::NamesKind(W))Bad+=FString::Printf(TEXT("'%s': names what it is | "),*W.Left(40));
   const FString Low=W.ToLower();
   for(const TCHAR* N:Not)if(Low.Contains(N))Bad+=FString::Printf(TEXT("'%s': says '%s' | "),*W.Left(40),N);
+  if(W.Contains(TEXT("47")))Bad+=FString::Printf(TEXT("'%s': prints 47 | "),*W.Left(40));
+  // a standalone capital C (Freeform's list): a C with no letter on either side
+  for(int32 I=0;I<W.Len();++I)if(W[I]==TEXT('C')&&(I==0||!FChar::IsAlpha(W[I-1]))&&(I+1>=W.Len()||!FChar::IsAlpha(W[I+1])))Bad+=FString::Printf(TEXT("'%s': a C on its own | "),*W.Left(40));
  }
  return Bad;
 }
@@ -253,15 +365,69 @@ bool FS47Dossier::Tag(const FString& Key,S47Dossier::EKind Kind,S47Dossier::ETyp
  FTag One;One.Key=Key;One.Kind=Kind;One.Type=Type;One.Day=FMath::Clamp(Day,1,Tb::MaxDay);
  One.Hour=Hour>=0&&Hour<24?Hour:-1; // LOOP-DOSSIER-GIVES-20261113
  if(Where&&FMath::IsFinite(Where->X)&&FMath::IsFinite(Where->Y)&&FMath::Abs(Where->X)<Tb::MaxWhere&&FMath::Abs(Where->Y)<Tb::MaxWhere){One.bWhere=true;One.X=Where->X;One.Z=Where->Y;}
+ // Slice 2: the files it ties to, as the player could tell: the same thing already in that box, or something got together with it.
+ const FString Sign=S47Dossier::Signature(Kind,Type);
+ TArray<int32> Ties;
+ for(int32 File=0;File<Sequence.Num();++File)
+ {
+  bool bTies=BoxSign(File,Type)==Sign;
+  for(const FTag& Had:Kept)if(!bTies&&Had.File==File&&Tb::Together(Had,One))bTies=true;
+  if(bTies)Ties.Add(File);
+ }
+ // One find that ties two files shows they are the same thing: kept side by side, never merged.
+ for(int32 At=1;At<Ties.Num();++At)Link(Ties[0],Ties[At]);
+ return Put(MoveTemp(One),Ties.IsEmpty()?INDEX_NONE:Ties[0]);
+}
+bool FS47Dossier::Put(FTag&& One,int32 File)
+{
+ if(File==INDEX_NONE)
+ {
+  if(Sequence.Num()>=S47Dossier::Tables::MaxFiles)return false;
+  File=Sequence.Add(One.Kind); // it opens a file: the next number
+ }
+ if(!Sequence.IsValidIndex(File))return false;
+ One.File=File;
  Kept.Add(MoveTemp(One));
- Sequence.AddUnique(Kind); // the first tag of a kind opens its file: the next number
  return true;
+}
+void FS47Dossier::Link(int32 A,int32 B)
+{
+ if(A==B||!Sequence.IsValidIndex(A)||!Sequence.IsValidIndex(B))return;
+ Same.AddUnique(FIntPoint(FMath::Min(A,B)+1,FMath::Max(A,B)+1));
+}
+FString FS47Dossier::BoxSign(int32 File,S47Dossier::EType Type) const
+{
+ // The latest in that box: an earlier one a later find contradicted is struck (Files)
+ FString Out;
+ for(const FTag& One:Kept)if(One.File==File&&One.Type==Type)Out=S47Dossier::Signature(One.Kind,Type);
+ return Out;
+}
+S47Dossier::EStage FS47Dossier::StageIn(int32 File) const
+{
+ if(!Sequence.IsValidIndex(File))return S47Dossier::EStage::NoFile;
+ TSet<int32> Types,Nights;int32 Latest=0;bool bFar=false;
+ for(const FTag& One:Kept)if(One.File==File){Types.Add(int32(One.Type));Nights.Add(One.Day);Latest=FMath::Max(Latest,One.Day);bFar|=S47Dossier::StopsAtMarks(One.Kind);}
+ // A file with anything of the far two in it stops at MARKS with them, whichever opened it.
+ const S47Dossier::EKind Kind=bFar?S47Dossier::EKind::Silver:Sequence[File];
+ return S47Dossier::StageFor(Kind,Types.Num(),Nights.Num(),Types.Contains(int32(S47Dossier::EType::Lamp)),Latest,HabitsFrom);
 }
 bool FS47Dossier::HasTag(const FString& Key) const
 {
  return Kept.ContainsByPredicate([&Key](const FTag& One){return One.Key==Key;});
 }
-int32 FS47Dossier::NumberOf(S47Dossier::EKind Kind) const{return Sequence.IndexOfByKey(Kind)+1;}
+int32 FS47Dossier::NumberOf(S47Dossier::EKind Kind) const{return FirstFileOf(Kind)+1;}
+int32 FS47Dossier::FileOf(const FString& Key) const
+{
+ const FTag* One=Kept.FindByPredicate([&Key](const FTag& Had){return Had.Key==Key;});
+ return One?One->File+1:0;
+}
+int32 FS47Dossier::FilesOf(S47Dossier::EKind Kind) const
+{
+ int32 Count=0;
+ for(const S47Dossier::EKind One:Sequence)Count+=One==Kind?1:0;
+ return Count;
+}
+S47Dossier::EStage FS47Dossier::StageOfFile(int32 Number) const{return StageIn(Number-1);}
 bool FS47Dossier::Has(S47Dossier::EKind Kind,S47Dossier::EType Type) const
 {
  return Kept.ContainsByPredicate([Kind,Type](const FTag& One){return One.Kind==Kind&&One.Type==Type;});
@@ -280,12 +446,14 @@ int32 FS47Dossier::NightsOf(S47Dossier::EKind Kind) const
 }
 S47Dossier::EStage FS47Dossier::StageOf(S47Dossier::EKind Kind) const
 {
- return S47Dossier::StageFor(Kind,TypesOf(Kind),NightsOf(Kind),Has(Kind,S47Dossier::EType::Lamp));
+ int32 Latest=0;
+ for(const FTag& One:Kept)if(One.Kind==Kind)Latest=FMath::Max(Latest,One.Day);
+ return S47Dossier::StageFor(Kind,TypesOf(Kind),NightsOf(Kind),Has(Kind,S47Dossier::EType::Lamp),Latest,HabitsFrom);
 }
 int32 FS47Dossier::AtMarks() const
 {
  int32 Count=0;
- for(const S47Dossier::EKind Kind:Sequence)Count+=int32(StageOf(Kind))>=int32(S47Dossier::EStage::Marks)?1:0;
+ for(int32 File=0;File<Sequence.Num();++File)Count+=int32(StageIn(File))>=int32(S47Dossier::EStage::Marks)?1:0;
  return Count;
 }
 S47Dossier::EFit FS47Dossier::Fit(S47Dossier::EKind File,S47Dossier::EType Type,S47Dossier::EKind FindKind) const
@@ -300,23 +468,45 @@ TArray<S47Dossier::FFile> FS47Dossier::Files() const
  TArray<S47Dossier::FFile> Out;
  for(int32 At=0;At<Sequence.Num();++At)
  {
-  const S47Dossier::EKind Kind=Sequence[At];const S47Dossier::EStage Stage=StageOf(Kind);
+  const S47Dossier::EKind Kind=Sequence[At];const S47Dossier::EStage Stage=StageIn(At);
+  bool bFar=false;
+  for(const FTag& One:Kept)bFar|=One.File==At&&S47Dossier::StopsAtMarks(One.Kind);
   S47Dossier::FFile File;File.Number=At+1;File.Title=FString::Printf(TEXT("UNKNOWN %d"),At+1);
-  File.Stage=S47Dossier::StageWord(Stage);File.Next=S47Dossier::NextWords(Kind,Stage);
-  File.bAtMarks=int32(Stage)>=int32(S47Dossier::EStage::Marks);File.Nights=NightsOf(Kind);
-  {double WhereX=0,WhereZ=0;File.Gave=S47Dossier::Gave(Kind,Stage,FirstWhere(Kind,WhereX,WhereZ),ExtraState(Kind),!HoursOf(Kind).IsEmpty());}
+  File.Stage=S47Dossier::StageWord(Stage);File.Next=S47Dossier::NextWords(bFar?S47Dossier::EKind::Silver:Kind,Stage);
+  File.bAtMarks=int32(Stage)>=int32(S47Dossier::EStage::Marks);
+  {
+   // The extra bearing is the kind's, once: its first file says what became of it; another of its files only that it listens.
+   double WhereX=0,WhereZ=0;
+   const int32 Extra=FirstFileOf(Kind)==At?ExtraState(Kind):0;
+   File.Gave=S47Dossier::Gave(Kind,Stage,FirstWhereOfFile(At+1,WhereX,WhereZ),Extra,!HoursOfFile(At+1).IsEmpty());
+  }
   File.Boxes.SetNum(Tb::TypeN);
   for(int32 T=0;T<Tb::TypeN;++T)File.Boxes[T].Label=Tb::TypeLabels[T];
+  TSet<int32> Nights;
   for(const FTag& One:Kept)
   {
-   if(One.Kind!=Kind)continue;
+   if(One.File!=At)continue;
+   Nights.Add(One.Day);
    S47Dossier::FBox& Slot=File.Boxes[int32(One.Type)];
    const bool bShape=One.Type==S47Dossier::EType::Shape;
-   if(!Slot.bFilled){Slot.bFilled=true;Slot.Day=One.Day;Slot.Note=S47Dossier::Note(Kind,One.Type);Slot.How=bShape?Tb::HowSeen:Tb::HowNoted;}
-   else Slot.Day=FMath::Min(Slot.Day,One.Day);
+   const FString Sign=S47Dossier::Signature(One.Kind,One.Type);
+   if(!Slot.bFilled){Slot.bFilled=true;Slot.Day=One.Day;Slot.Sign=Sign;Slot.Note=S47Dossier::Note(One.Kind,One.Type);Slot.How=bShape?Tb::HowSeen:Tb::HowNoted;}
+   else
+   {
+    Slot.Day=FMath::Min(Slot.Day,One.Day);
+    // Slice 2: a later find that is not what the box held: the old pencil is struck through, the new one stands
+    if(Sign!=Slot.Sign){Slot.Struck.Remove(Slot.Note);Slot.Struck.Add(Slot.Note);Slot.Struck.Remove(S47Dossier::Note(One.Kind,One.Type));Slot.Sign=Sign;Slot.Note=S47Dossier::Note(One.Kind,One.Type);}
+   }
    if(bShape&&S47Dossier::PhotoKey(One.Key)){Slot.How=Tb::HowFilm;File.Photos.Add(One.Key);}
    File.Opened=File.Opened==0?One.Day:FMath::Min(File.Opened,One.Day);File.Latest=FMath::Max(File.Latest,One.Day);
   }
+  File.Nights=Nights.Num();
+  for(const FIntPoint& Pair:Same)
+  {
+   if(Pair.X==At+1)File.Beside.Add(Pair.Y);
+   else if(Pair.Y==At+1)File.Beside.Add(Pair.X);
+  }
+  File.Beside.Sort();
   Out.Add(MoveTemp(File));
  }
  return Out;
@@ -333,6 +523,21 @@ TArray<int32> FS47Dossier::HoursOf(S47Dossier::EKind Kind) const
 {
  TArray<int32> Out;
  for(const FTag& One:Kept)if(One.Kind==Kind&&One.Hour>=0)Out.AddUnique(One.Hour);
+ Out.Sort([](int32 A,int32 B){return (A+16)%24<(B+16)%24;});
+ return Out;
+}
+bool FS47Dossier::FirstWhereOfFile(int32 Number,double& OutX,double& OutZ) const
+{
+ const FTag* Best=nullptr;
+ for(const FTag& One:Kept)if(One.File==Number-1&&One.bWhere&&(!Best||One.Day<Best->Day))Best=&One;
+ if(!Best)return false;
+ OutX=Best->X;OutZ=Best->Z;
+ return true;
+}
+TArray<int32> FS47Dossier::HoursOfFile(int32 Number) const
+{
+ TArray<int32> Out;
+ for(const FTag& One:Kept)if(One.File==Number-1&&One.Hour>=0)Out.AddUnique(One.Hour);
  Out.Sort([](int32 A,int32 B){return (A+16)%24<(B+16)%24;});
  return Out;
 }
@@ -365,29 +570,42 @@ int32 FS47Dossier::ExtraState(S47Dossier::EKind Kind) const
 int32 FS47Dossier::GrantMissing(int32 Night)
 {
  int32 Made=0;
- for(const S47Dossier::EKind Kind:Sequence)if(int32(StageOf(Kind))>=int32(S47Dossier::EStage::Marks)&&Grant(Kind,Night))++Made;
+ for(int32 File=0;File<Sequence.Num();++File)if(int32(StageIn(File))>=int32(S47Dossier::EStage::Marks)&&Grant(Sequence[File],Night))++Made;
  return Made;
 }
 S47J::FObj FS47Dossier::Save() const
 {
  const S47J::FObj Out=S47J::New(),TagsOut=S47J::New();
- TArray<FString> Ids;
- for(const S47Dossier::EKind Kind:Sequence)Ids.Add(S47Dossier::KindId(Kind));
+ // "order": each kind once, where it first opened a file (as slice 1 wrote it). Slice 2: "files" only once a kind has opened more.
+ TArray<FString> Ids,All;bool bMore=false;
+ for(const S47Dossier::EKind Kind:Sequence){const FString Id=S47Dossier::KindId(Kind);bMore|=Ids.Contains(Id);Ids.AddUnique(Id);All.Add(Id);}
  S47J::Set(Out,TEXT("order"),Ids);
+ if(bMore)S47J::Set(Out,TEXT("files"),All);
  for(const FTag& One:Kept)
  {
   const S47J::FObj Row=S47J::New();
   S47J::Set(Row,TEXT("k"),S47Dossier::KindId(One.Kind));S47J::Set(Row,TEXT("t"),S47Dossier::TypeId(One.Type));S47J::Set(Row,TEXT("d"),One.Day);
   if(One.Hour>=0)S47J::Set(Row,TEXT("h"),One.Hour); // LOOP-DOSSIER-GIVES-20261113: optional, as the day is
   if(One.bWhere){S47J::Set(Row,TEXT("x"),FMath::RoundToDouble(One.X*10)/10);S47J::Set(Row,TEXT("z"),FMath::RoundToDouble(One.Z*10)/10);}
+  if(One.File!=FirstFileOf(One.Kind))S47J::Set(Row,TEXT("f"),One.File+1); // slice 2: not where a reader of "order" would put it
+  S47J::Set(Row,TEXT("n"),int32(&One-Kept.GetData())); // slice 2: the order it was logged in (what a later find struck is by it)
   S47J::Set(TagsOut,*One.Key,Row);
  }
  S47J::Set(Out,TEXT("tags"),TagsOut);
+ if(!Same.IsEmpty())
+ {
+  TArray<double> Flat;
+  for(const FIntPoint& Pair:Same){Flat.Add(Pair.X);Flat.Add(Pair.Y);}
+  S47J::Set(Out,TEXT("same"),Flat);
+ }
  if(!Given.IsEmpty())
  {
   const S47J::FObj ExtraOut=S47J::New();TArray<FString> SpentIds;
+  TArray<S47Dossier::EKind> Once;
   for(const S47Dossier::EKind Kind:Sequence)
   {
+   if(Once.Contains(Kind))continue;
+   Once.Add(Kind);
    if(const int32* For=Given.Find(int32(Kind)))S47J::Set(ExtraOut,S47Dossier::KindId(Kind),*For);
    if(Spent.Contains(int32(Kind)))SpentIds.Add(S47Dossier::KindId(Kind));
   }
@@ -399,14 +617,24 @@ S47J::FObj FS47Dossier::Save() const
 void FS47Dossier::Load(const S47J::FObj& Saved)
 {
  namespace Tb=S47Dossier::Tables;
- Reset();
+ const int32 KeepHabits=HabitsFrom;
+ Reset();HabitsFrom=KeepHabits;
  if(!Saved.IsValid())return;
- for(const FString& Id:S47J::Strs(Saved,TEXT("order")))
+ // Slice 2: "files" when a kind opened more than one, in number order; else "order", each kind once, as slice 1 had it.
+ if(Saved->HasField(TEXT("files")))
+ {
+  for(const FString& Id:S47J::Strs(Saved,TEXT("files")))
+  {
+   const S47Dossier::EKind Kind=S47Dossier::KindOfId(Id);
+   if(Tb::Valid(Kind)&&Sequence.Num()<Tb::MaxFiles)Sequence.Add(Kind);
+  }
+ }
+ else for(const FString& Id:S47J::Strs(Saved,TEXT("order")))
  {
   const S47Dossier::EKind Kind=S47Dossier::KindOfId(Id);
   if(Tb::Valid(Kind))Sequence.AddUnique(Kind);
  }
- TArray<FTag> Read;
+ TArray<FTag> Read;TMap<FString,int32> LoggedAt;
  if(const S47J::FObj TagsIn=S47J::Obj(Saved,TEXT("tags"));TagsIn.IsValid())for(const auto& Pair:TagsIn->Values)
  {
   const S47J::FObj* Row=nullptr;
@@ -418,11 +646,34 @@ void FS47Dossier::Load(const S47J::FObj& Saved)
   const double OnHour=S47J::Num(*Row,TEXT("h"),-1);
   One.Hour=FMath::IsFinite(OnHour)&&OnHour>=0&&OnHour<24?int32(OnHour):-1;
   if(S47J::Has(*Row,TEXT("x"))&&S47J::Has(*Row,TEXT("z"))){One.X=S47J::Num(*Row,TEXT("x"),1e99);One.Z=S47J::Num(*Row,TEXT("z"),1e99);One.bWhere=true;}
+  // slice 2: its file, when it is not the first of its own kind's; -1: that one
+  const double InFile=S47J::Num(*Row,TEXT("f"),0);
+  One.File=FMath::IsFinite(InFile)&&InFile>=1&&InFile<=Sequence.Num()?int32(InFile)-1:-1;
+  const double Logged=S47J::Num(*Row,TEXT("n"),-1);
+  LoggedAt.Add(One.Key,FMath::IsFinite(Logged)&&Logged>=0&&Logged<Tb::MaxTags?int32(Logged):-1);
   Read.Add(MoveTemp(One));
  }
- // By day, then key: the same every time, whatever order the record's fields come in. Tag refuses what is not sound.
- Read.Sort([](const FTag& A,const FTag& B){return S47Dossier::Tables::Earlier(A,B);});
- for(const FTag& One:Read){const FVector2D Where(One.X,One.Z);Tag(One.Key,One.Kind,One.Type,One.Day,One.Hour,One.bWhere?&Where:nullptr);}
+ // By day, then as logged where the record kept it (slice 2), then key: the same every time, whatever order the record's fields
+ // come in. What is not sound is left out.
+ Read.Sort([&LoggedAt](const FTag& A,const FTag& B)
+ {
+  if(A.Day!=B.Day)return A.Day<B.Day;
+  const int32 NA=LoggedAt.FindRef(A.Key),NB=LoggedAt.FindRef(B.Key);
+  if(NA>=0&&NB>=0&&NA!=NB)return NA<NB;
+  return A.Key<B.Key;
+ });
+ for(FTag& One:Read)
+ {
+  if(One.Key.IsEmpty()||One.Key.Len()>Tb::MaxKey||!Tb::Valid(One.Kind)||!Tb::Valid(One.Type)||!*S47Dossier::Signature(One.Kind,One.Type)||Kept.Num()>=Tb::MaxTags||HasTag(One.Key))continue;
+  if(One.bWhere&&!(FMath::IsFinite(One.X)&&FMath::IsFinite(One.Z)&&FMath::Abs(One.X)<Tb::MaxWhere&&FMath::Abs(One.Z)<Tb::MaxWhere)){One.bWhere=false;One.X=One.Z=0;}
+  // a tag whose kind has no file gets the next number
+  const int32 Into=One.File>=0?One.File:FirstFileOf(One.Kind);
+  Put(MoveTemp(One),Into);
+ }
+ // slice 2: the pairs kept side by side
+ const TArray<double> Flat=S47J::Nums(Saved,TEXT("same"));
+ for(int32 At=0;At+1<Flat.Num();At+=2)
+  if(FMath::IsFinite(Flat[At])&&FMath::IsFinite(Flat[At+1])&&Flat[At]>=1&&Flat[At+1]>=1&&Flat[At]<=Sequence.Num()&&Flat[At+1]<=Sequence.Num())Link(int32(Flat[At])-1,int32(Flat[At+1])-1);
  // MARKS's extra bearing, for a file there is: the night it is for, and whether it is printed
  if(const S47J::FObj ExtraIn=S47J::Obj(Saved,TEXT("extra"));ExtraIn.IsValid())for(const auto& Pair:ExtraIn->Values)
  {
@@ -455,6 +706,7 @@ int32 FS47Dossier::Rebuild(const TArray<FOld>& Findings,const TArray<FString>& C
    if(S47Dossier::ClaimKind(Id,Which,Night))Add(Id,Which,S47Dossier::EType::Shape,Night);
   }
   else if(Old.Key==TEXT("rule-still-held"))Add(Old.Key,S47Dossier::EKind::Small,S47Dossier::EType::Lamp,Old.Day);
+  else if(Old.Key==TEXT("rule-tall-froze"))Add(Old.Key,S47Dossier::EKind::Tall,S47Dossier::EType::Lamp,Old.Day); // slice 2
   else if(Old.Key.StartsWith(TEXT("road_tracks_d"),ESearchCase::CaseSensitive))
   {
    // by the record's own words (S47RoadGlimpse::TracksRecord), as S47Marginalia reads it
@@ -465,7 +717,12 @@ int32 FS47Dossier::Rebuild(const TArray<FOld>& Findings,const TArray<FString>& C
  }
  Found.Sort([](const FTag& A,const FTag& B){return S47Dossier::Tables::Earlier(A,B);});
  int32 Made=0;
- for(const FTag& One:Found)Made+=Tag(One.Key,One.Kind,One.Type,One.Day)?1:0;
+ for(FTag& One:Found)
+ {
+  if(HasTag(One.Key)||!*S47Dossier::Signature(One.Kind,One.Type))continue;
+  const int32 Into=FirstFileOf(One.Kind); // each kind into one file, as slice 1 had it
+  Made+=Put(MoveTemp(One),Into)?1:0;
+ }
  return Made;
 }
 
@@ -524,15 +781,15 @@ bool SelfTest(TArray<FString>& Lines)
  }
  { // the numbers: in the order first logged, and they never move
   FS47Dossier D;
-  const bool bFirst=D.Tag(TEXT("road_tracks_d2"),Low,Ground,2)&&D.Tag(TEXT("rule-still-held"),Small,Lamp,3)&&D.Tag(TEXT("strange.pale.n4"),Low,Shape,4);
+  const bool bFirst=D.Tag(TEXT("road_tracks_d2"),Low,Ground,2)&&D.Tag(TEXT("rule-still-held"),Small,Lamp,3)&&D.Tag(TEXT("strange.pale.n2"),Low,Shape,2); // (slice 2: the same night, so it ties)
   const bool bAgain=!D.Tag(TEXT("road_tracks_d2"),Tall,Ground,6)&&!D.Tag(FString(),Low,Lamp,2);
   const bool bThen=D.Tag(TEXT("strange.tall.n1"),Tall,Shape,1); // an earlier night logged later: the number is by logging, not by night
   Check(bFirst&&bAgain&&bThen&&D.NumberOf(Low)==1&&D.NumberOf(Small)==2&&D.NumberOf(Tall)==3&&D.NumberOf(Silver)==0&&D.Order().Num()==3&&D.Tags().Num()==4,
    TEXT("UNKNOWN 1 to 5 in the order first logged; a find is tagged once; later finds never move a number"));
   const TArray<FFile> Files=D.Files();
   Check(Files.Num()==3&&Files[0].Title==TEXT("UNKNOWN 1")&&Files[0].Boxes.Num()==TypeN&&Files[0].Boxes[int32(Ground)].bFilled&&Files[0].Boxes[int32(Ground)].Day==2&&Files[0].Boxes[int32(Ground)].How==TEXT("noted")
-   &&Files[0].Boxes[int32(Shape)].How==TEXT("on film")&&Files[0].Photos==TArray<FString>{TEXT("strange.pale.n4")}&&!Files[0].Boxes[int32(Lamp)].bFilled&&Files[0].Boxes[int32(Lamp)].Note.IsEmpty()
-   &&Files[0].Nights==2&&Files[0].Opened==2&&Files[0].Latest==4&&Files[0].Stage==TEXT("OUTLINE")&&Files[1].Boxes[int32(Lamp)].Note==Note(Small,Lamp)&&Files[2].Number==3,
+   &&Files[0].Boxes[int32(Shape)].How==TEXT("on film")&&Files[0].Photos==TArray<FString>{TEXT("strange.pale.n2")}&&!Files[0].Boxes[int32(Lamp)].bFilled&&Files[0].Boxes[int32(Lamp)].Note.IsEmpty()
+   &&Files[0].Nights==1&&Files[0].Opened==2&&Files[0].Latest==2&&Files[0].Stage==TEXT("OUTLINE")&&Files[1].Boxes[int32(Lamp)].Note==Note(Small,Lamp)&&Files[2].Number==3,
    TEXT("a file shows six boxes, the filled ones with how and when and the player's pencil, the empty ones with nothing"));
   // the save, there and back through text
   const S47J::FObj Record=S47J::Read(S47J::Write(D.Save()));
@@ -560,10 +817,10 @@ bool SelfTest(TArray<FString>& Lines)
   const bool bOneNight=D.StageOf(Low)==EStage::Outline&&D.AtMarks()==0;
   D.Tag(TEXT("d"),Low,Tape,2);
   const bool bMarks=D.StageOf(Low)==EStage::Marks&&D.AtMarks()==1&&D.TypesOf(Low)==3&&D.NightsOf(Low)==2;
-  D.Tag(TEXT("e"),Low,Geiger,3);D.Tag(TEXT("f"),Low,Animals,4);
+  D.Tag(TEXT("d3"),Low,Shape,3);D.Tag(TEXT("e"),Low,Geiger,3);D.Tag(TEXT("d4"),Low,Shape,4);D.Tag(TEXT("f"),Low,Animals,4); // (slice 2: the shape again ties each night)
   const bool bNoLamp=D.StageOf(Low)==EStage::Marks&&D.TypesOf(Low)==5;
   D.Tag(TEXT("g"),Low,Lamp,4);
-  Check(bOneNight&&bMarks&&bNoLamp&&D.StageOf(Low)==EStage::Habits&&D.Files()[0].Stage==TEXT("HABITS"),TEXT("a file's stage follows its own tags: one night is not two, and five kinds without the lamp are still MARKS"));
+  Check(bOneNight&&bMarks&&bNoLamp&&D.StageOf(Low)==EStage::Habits&&D.Files()[0].Stage==TEXT("HABITS")&&D.Order().Num()==1,TEXT("a file's stage follows its own tags: one night is not two, and five kinds without the lamp are still MARKS"));
   // the two that stop
   FS47Dossier Far;
   bool bRefused=!Far.Tag(TEXT("x"),Silver,Ground,1)&&!Far.Tag(TEXT("y"),Shining,Geiger,1)&&!Far.Tag(TEXT("z"),Silver,Animals,1)&&Far.IsEmpty();
@@ -592,7 +849,8 @@ bool SelfTest(TArray<FString>& Lines)
   const bool bUnmapped=D.Files()[0].Gave==GaveUnmapped&&D.StageOf(Low)==EStage::Outline;
   double WX=0,WZ=0;
   D.Tag(TEXT("g2"),Low,Shape,2,1,&There);
-  D.Tag(TEXT("g3"),Low,Ground,3,2,&Here); // a later night: the first place stays the first
+  D.Tag(TEXT("g2b"),Low,Shape,3,2,&Here); // a later night: the first place stays the first (slice 2: the shape again ties it)
+  D.Tag(TEXT("g3"),Low,Ground,3,2,&Here);
   const bool bMapped=D.StageOf(Low)==EStage::Outline&&D.Files()[0].Gave==GaveMapped&&D.FirstWhere(Low,WX,WZ)&&WX==There.X&&WZ==There.Y&&!D.FirstWhere(Small,WX,WZ);
   Check(bUnmapped&&bMapped,TEXT("LOOP-DOSSIER-GIVES: OUTLINE puts where the file was first logged out there on the map; one logged only at a bench says it is not on it yet"));
   D.Tag(TEXT("g4"),Low,Tape,3,3,&Here);
@@ -608,7 +866,7 @@ bool SelfTest(TArray<FString>& Lines)
    &&!S47J::Obj(S47J::Obj(Record,TEXT("tags")),TEXT("g1"))->HasField(TEXT("x"))&&S47J::Int(S47J::Obj(Record,TEXT("extra")),TEXT("pale"))==3&&S47J::Strs(Record,TEXT("spent"))==TArray<FString>{TEXT("pale")}
    &&S47J::Write(Back.Save())==S47J::Write(D.Save()),
    TEXT("LOOP-DOSSIER-GIVES: the hour and the place on each tag, and the extra bearing given and printed, survive a Continue"));
-  D.Tag(TEXT("g5"),Low,Lamp,4,4,&Here);
+  D.Tag(TEXT("g4b"),Low,Shape,4,4,&Here);D.Tag(TEXT("g5"),Low,Lamp,4,4,&Here);
   const TArray<int32> Hours=D.HoursOf(Low);
   Check(D.StageOf(Low)==EStage::Habits&&D.Files()[0].Gave==GaveHours&&HoursLine(1,Hours)==TEXT("UNKNOWN 1 / Logged so far at 23:00, 01:00, 02:00, 03:00, 04:00.")&&HoursLine(1,TArray<int32>()).IsEmpty()
    &&HoursLine(2,TArray<int32>{7,8,7,30,-1})==TEXT("UNKNOWN 2 / Logged so far at 08:00, 07:00.")&&!S47Marginalia::NamesKind(HoursLine(1,Hours))&&S47Script::LintText(HoursLine(1,Hours)).IsEmpty(),
@@ -659,13 +917,85 @@ bool SelfTest(TArray<FString>& Lines)
   Check(A.Order()==B.Order()&&S47J::Write(A.Save())==S47J::Write(B.Save())&&A.Rebuild(Old,Claims)==0,TEXT("the rebuild gives the same numbers whatever order the save's fields come in, and makes nothing twice"));
  }
  { // the binder's typed sheet
-  FS47Dossier D;D.Tag(TEXT("strange.crawler.n3"),Low,Shape,3);D.Tag(TEXT("farm_visit"),Low,Shape,5);D.Tag(TEXT("road_tracks_d4"),Low,Ground,5);D.Tag(TEXT("rule-pale-broken"),Low,Lamp,9);
+  FS47Dossier D;D.Tag(TEXT("strange.crawler.n3"),Low,Shape,3);D.Tag(TEXT("farm_visit"),Low,Shape,5);D.Tag(TEXT("road_tracks_d4"),Low,Ground,5);D.Tag(TEXT("well_visit"),Low,Shape,9);D.Tag(TEXT("rule-pale-broken"),Low,Lamp,9);
   const FFile File=D.Files()[0];
   const FString Typed=Sheet(File,TArray<FString>{TEXT("DAY 03 / ORIGINAL A-12 / IN THE ALBUM")});
   Check(File.bAtMarks&&Typed.Contains(TEXT("STAGE     MARKS"))&&Typed.Contains(TEXT("NIGHTS    3 / FIRST DAY 03 / LAST DAY 09"))&&Typed.Contains(TEXT("SHAPE     ON FILM / DAY 03"))&&Typed.Contains(TEXT("TAPE      NOTHING KEPT"))
    &&Typed.Contains(TEXT("LAMP      NOTED / DAY 09"))&&Typed.Contains(TEXT("ORIGINAL A-12"))&&Typed.Contains(Note(Low,Ground))&&Typed.Contains(NextMarks)&&!Typed.Contains(Note(Low,Tape))&&!Typed.ToLower().Contains(TEXT("pale one"))
    &&S47Script::LintText(Typed).IsEmpty()&&!S47Marginalia::NamesKind(Typed)&&Sheet(File,TArray<FString>()).Contains(TEXT("NONE IN THE ALBUM.")),
    TEXT("the binder's sheet is the same file typed: stage, six boxes, the photographs referenced, the pencil for the filled boxes only"));
+ }
+ { // slice 2: what the player could tie, kept apart, side by side, and struck through
+  FS47Dossier D;
+  const FVector2D Farm(400,-900),Road(-30,2400);
+  // a tape of something never photographed, then a photograph: two files, though the game knows they are the same
+  const bool bApart=D.Tag(TEXT("tape_1"),Small,Tape,3)&&D.Tag(TEXT("strange.roswell.n5"),Small,Shape,5)&&D.FilesOf(Small)==2&&D.NumberOf(Small)==1&&D.FileOf(TEXT("strange.roswell.n5"))==2
+   &&D.Beside().IsEmpty()&&D.Files().Num()==2&&D.Files()[1].Stage==TEXT("OUTLINE");
+  // a visit: what was seen ties to the photograph's file (the same shape), the tape to the tape's (the same notes), and so the two
+  // are shown to be one thing: kept side by side, not merged
+  D.Tag(TEXT("farm_visit"),Small,Shape,7,2,&Farm);
+  D.Tag(TEXT("tape_2"),Small,Tape,7,2,&Farm);
+  D.Tag(TEXT("farm_seen"),Small,Shape,7,3,&Farm); // seen again, got with the tape: into the lower of the two
+  const TArray<FFile> Two=D.Files();
+  const TArray<int32> Marks=Agreement(Two[0],Two[1]);
+  const bool bBeside=D.FileOf(TEXT("farm_visit"))==2&&D.FileOf(TEXT("tape_2"))==1&&D.FileOf(TEXT("farm_seen"))==1&&D.Beside().Num()==1&&D.Beside()[0]==FIntPoint(1,2)
+   &&Two.Num()==2&&Two[0].Beside==TArray<int32>{2}&&Two[1].Beside==TArray<int32>{1}&&Marks[int32(Shape)]==1&&Marks[int32(Tape)]==0&&Marks[int32(Lamp)]==0
+   &&BesideWords(Two[0],Two[1])==TEXT("UNKNOWN 1 and UNKNOWN 2 side by side. The same in: shape.")&&Sheet(Two[0],TArray<FString>()).Contains(TEXT("KEPT BESIDE UNKNOWN 2."));
+  Check(bApart&&bBeside,TEXT("slice 2: a find the player cannot tie opens its own file; one that ties two keeps them side by side, never merged, and marks where they agree"));
+  // got there that night with the rest, something else on the tape: the file's old pencil in that box is struck, the new stands
+  D.Tag(TEXT("tape_3"),Tall,Tape,7,3,&Farm);
+  const FFile One=D.Files()[0];
+  const FBox& TapeBox=One.Boxes[int32(Tape)];
+  const bool bStruck=D.FileOf(TEXT("tape_3"))==1&&TapeBox.Struck==TArray<FString>{Note(Small,Tape)}&&TapeBox.Note==Note(Tall,Tape)&&Sheet(One,TArray<FString>()).Contains(FString(TEXT("STRUCK / "))+Note(Small,Tape))
+   &&D.NumberOf(Tall)==0&&D.Order().Num()==2;
+  // far off, the same night, nothing ties: its own file
+  D.Tag(TEXT("road_tracks_d7"),Tall,Ground,7,9,&Road);
+  Check(bStruck&&D.FileOf(TEXT("road_tracks_d7"))==3&&D.NumberOf(Tall)==3,TEXT("slice 2: a find got together with a file's own but not what its box held strikes the old pencil through; far off it ties nothing"));
+  // the save: which file each went into, the pair, the order it was logged in; a reader of slice 1's fields alone sees each kind once
+  const S47J::FObj Record=S47J::Read(S47J::Write(D.Save()));
+  FS47Dossier Back;Back.Load(Record);
+  const TArray<FFile> Again=Back.Files();
+  Check(S47J::Strs(Record,TEXT("files"))==TArray<FString>{TEXT("roswell"),TEXT("roswell"),TEXT("tall")}&&S47J::Strs(Record,TEXT("order"))==TArray<FString>{TEXT("roswell"),TEXT("tall")}
+   &&S47J::Int(S47J::Obj(S47J::Obj(Record,TEXT("tags")),TEXT("tape_3")),TEXT("f"))==1&&!S47J::Obj(S47J::Obj(Record,TEXT("tags")),TEXT("tape_1"))->HasField(TEXT("f"))
+   &&Back.Beside()==D.Beside()&&Again.Num()==3&&Again[0].Boxes[int32(Tape)].Struck==TapeBox.Struck&&Back.FileOf(TEXT("farm_visit"))==2&&S47J::Write(Back.Save())==S47J::Write(D.Save()),
+   TEXT("slice 2: the files, the pair kept side by side and the struck pencil survive a Continue"));
+  // the two far ones: anything of theirs in a file holds it at MARKS, whichever opened it
+  FS47Dossier E;
+  for(int32 Night=2;Night<=4;++Night)for(const EType T:{Shape,Ground,Tape,Lamp})E.Tag(FString::Printf(TEXT("e%d%d"),Night,int32(T)),Small,T,Night,2,&Farm);
+  const bool bNear=E.StageOfFile(1)==EStage::Habits;
+  E.Tag(TEXT("e-silver"),Silver,Lamp,4,3,&Farm);
+  Check(bNear&&E.FileOf(TEXT("e-silver"))==1&&E.StageOfFile(1)==EStage::Marks&&E.Files()[0].Next==NextStops,TEXT("slice 2: a file with anything of the silver one or the shining one in it stops at MARKS"));
+  // HABITS waits for the first week with danger in it
+  FS47Dossier W;W.SetHabitsFrom(8);
+  for(int32 Night=2;Night<=7;++Night)for(const EType T:{Shape,Ground,Tape,Lamp,Geiger,Animals})W.Tag(FString::Printf(TEXT("w%d%d"),Night,int32(T)),Low,T,Night,2,&Farm);
+  const bool bWait=W.StageOfFile(1)==EStage::Marks&&W.StageOf(Low)==EStage::Marks;
+  W.Tag(TEXT("w8"),Low,Shape,8,2,&Farm);
+  Check(bWait&&W.StageOfFile(1)==EStage::Habits&&StageFor(Low,4,3,true,7,8)==EStage::Marks&&StageFor(Low,4,3,true,8,8)==EStage::Habits&&StageFor(Low,4,3,true)==EStage::Habits,
+   TEXT("slice 2: HABITS not before the night the rhythm's curve first has danger in it"));
+ }
+ { // slice 2: the channels' own words and numbers
+  bool bOmen=KindOfOmen(TEXT("visit"),0)==Small&&KindOfOmen(TEXT("visit"),1)==Low&&KindOfOmen(TEXT("visit"),2)==Tall&&KindOfOmen(TEXT("body:3"),2)==Small&&KindOfOmen(TEXT("door"),1)==Small
+   &&KindOfOmen(TEXT("peek"),0)==Small&&KindOfOmen(TEXT("director:observer"),0)==EKind::None&&KindOfOmen(TEXT("night:horizon_figure"),0)==EKind::None&&KindOfOmen(TEXT("taken"),0)==EKind::None;
+  TSet<int32> Alien;for(int32 K=0;K<KindN;++K)Alien.Add(AlienKindOf(EKind(K)));
+  bOmen&=Alien.Num()==KindN&&!Alien.Contains(-1)&&AlienKindOf(EKind::None)==-1;
+  Check(bOmen,TEXT("slice 2: the kind of a sign is known only where its source knows it, and each kind has its own sound on the tape"));
+  Check(GeigerFactor(Small)>1.f/4&&GeigerFactor(Small)<1.f&&GeigerFactor(Low)==0.f&&GeigerFactor(Tall)>1.f&&GeigerFactor(Silver)==0.f&&GeigerFactor(Shining)==0.f&&GeigerFactor(EKind::None)==1.f,
+   TEXT("slice 2: the counter: a little more for the small ones, nothing for the low one, a clear climb for the tall one, the plain reading where nobody knows"));
+  Check(GeigerReads(true,5,3.2)&&!GeigerReads(false,5,9)&&!GeigerReads(true,20,9)&&!GeigerReads(true,5,1)&&TakeHeard(S47AlienKinds::SignalFrom+4)&&!TakeHeard(S47AlienKinds::SignalFrom+1)&&!TakeHeard(-1),
+   TEXT("slice 2: tagged only when perceived: the counter out and near for a while, the take heard through"));
+ }
+ { // slice 2: the pacing, from the gates (M7)
+  const FGates G{};
+  bool bWeek1=true,bFar=true;int32 FirstMarks=99;
+  for(int32 K=0;K<KindN;++K)
+  {
+   const int32 Habits=Earliest(EKind(K),EStage::Habits,G),Marks=Earliest(EKind(K),EStage::Marks,G);
+   bWeek1&=Habits==0||Habits>7;
+   if(Marks>0)FirstMarks=FMath::Min(FirstMarks,Marks);
+   if(StopsAtMarks(EKind(K)))bFar&=Habits==0&&Marks>0;
+  }
+  bool bWeek4=true;for(const EKind Near:{Small,Low,Tall}){const int32 H=Earliest(Near,EStage::Habits,G);bWeek4&=H>7&&H<=30;}
+  Check(bWeek1&&bWeek4&&bFar&&FirstMarks<=14&&Earliest(EKind::None,EStage::Outline,G)==0,*FString::Printf(TEXT("slice 2: pacing (standard gates): no HABITS in week 1, the near three can by week 4, the far two stop at MARKS, the first MARKS by night %d"),FirstMarks));
  }
  return bOk;
 }

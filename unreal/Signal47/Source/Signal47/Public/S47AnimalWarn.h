@@ -40,6 +40,10 @@ public:
 	static constexpr double StrayClear = 5 * 60.;
 	static bool StrayClearOf(double Clock, double LastAlarmClock, double RestLeft) { return RestLeft <= 0 && Clock - LastAlarmClock >= StrayClear; }
 	static EKind Other(EKind Kind) { return Kind == EKind::Birds ? EKind::Coyote : EKind::Birds; }
+	/** EVIDENCE-DOSSIER slice 2 (14 November, pure): the animals ahead of a site visit, by who comes (FS47FarmSite's VisitWho): the
+	 *  birds go up for the tall one (2), the coyote for the crab (1); None for the small ones (0): their dogs bark and go quiet, which
+	 *  is no warning script (FS47FarmSite::WarnAnimals plays it). Nothing for any other. */
+	static EKind ForVisit(int32 VisitWho) { return VisitWho == 2 ? EKind::Birds : VisitWho == 1 ? EKind::Coyote : EKind::None; }
 
 	/** StartEvent's question, before the event's own code. True: go on. False with Why: the animals first; Due() hands the event
 	 *  back once Lead seconds are up. */

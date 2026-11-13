@@ -43,6 +43,13 @@ public:
  // Test: a visit now, past the dice. The player counts as noticed whatever they do, for the tests of what happens if it reaches them.
  void TestVisit(int32 Who=0){Visit=1;VisitAge=0;VisitUntil=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;bTestNoticed=true;}
  int32 VisitKind() const{return VisitWho;}
+ // EVIDENCE-DOSSIER slice 2 (14 November): who came to these marks, when a visit's body was out at them (0 the small ones, 1 the
+ // crab, 2 the tall one; -1 nobody known, or marks laid since). The counter over them reads by it (S47Dossier::GeigerFactor), and by
+ // daylight its prints are among them (PrintsText). Saved with the marks ("marksBy", "marksByNight").
+ int32 MarksBy() const;
+ int32 MarksByNight() const{return MarksWhoNight;}
+ static FString PrintsText(int32 Who); // one sentence, a leading space; empty for nobody
+ bool BodyOut() const{return bBodyOut;}
  // Marks that will still be there at this clock, with a visit still to come.
  bool WillStandAt(double Clock) const{return (Visit==0||bFalseCall)&&ClearAt>Clock&&Clock>=CalmUntil;}
  // The second report, on the set if the player has it. False: no marks to report.
@@ -242,6 +249,12 @@ private:
  void HideBody();
  void SayNudge();
  int32 BodyKind=0; // the kind whose body is out now, whatever VisitWho says
+ // EVIDENCE-DOSSIER slice 2: who came to the marks and the night; the animals before a visit, by who comes (FS47AnimalWarn::ForVisit),
+ // whether they went, and the dogs' quiet a moment after their barks.
+ int32 MarksWho=-1,MarksWhoNight=0,AnimalsWho=-1;
+ bool bAnimalsWent=false,bAnimalsTagged=false,bDogsHushed=true;
+ void WarnAnimals();
+ void StepAnimals(bool bAway);
  void StepVisit(double Dt,double Dist);
  void StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn);
  void LetAttentionGo();

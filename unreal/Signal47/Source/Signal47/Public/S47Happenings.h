@@ -341,7 +341,7 @@ private:
  // The counter.
  // D45-20261110: no tick debt any more (the counts are a Poisson process, S47Hap::PoissonCount): GmMeter is the dial's own count rate,
  // counts a second through its time constant, and bGmRoar whether the dense loop of counts is playing where it pegs.
- float Dose=0,Needle=0;double GmMeter=0,GeigerUpFor=0,GeigerNoteIn=0;bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false,bGeigerAway=false,bGmRoar=false;
+ float Dose=0,Needle=0;double GmMeter=0,GeigerUpFor=0,GeigerNoteIn=0,GeigerReadFor=0; /* GeigerReadFor: EVIDENCE-DOSSIER slice 2, seconds out and near what came */ bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false,bGeigerAway=false,bGmRoar=false;
  TSet<FString> GeigerNoted;
  // ---- the night ----
  void PlanTonight(int32 Night);

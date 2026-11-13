@@ -1,4 +1,7 @@
 #include "S47FarmSite.h"
+#include "S47AnimalWarn.h"
+#include "S47Animals.h"
+#include "S47EventScript.h"
 #include "S47Noise.h"
 #include "S47EventPlaces.h"
 #include "S47Rhythm.h"
@@ -285,6 +288,9 @@ void FS47FarmSite::Begin(const S47J::FObj& Saved)
  ClearAt=Saved.IsValid()?S47J::Num(Saved,TEXT("clearAt")):0;SoundIn=20;
  Visit=Saved.IsValid()&&Saved->HasField(TEXT("visit"))?S47J::Int(Saved,TEXT("visit")):4;VisitAge=VisitDwell=0;bNudged=S47J::Bool(Saved,TEXT("nudged"));bFalseCall=S47J::Bool(Saved,TEXT("falseCall"));EmptyTipNight=Saved.IsValid()?FMath::Max(0,S47J::Int(Saved,TEXT("emptyTip"))):0;bStallSet=false;HushIn=0;
  bCheckedEmpty=S47J::Bool(Saved,TEXT("checkedEmpty"));bYielded=S47J::Bool(Saved,TEXT("yielded"));bFigureAsked=false;FigureIn=0;
+ // EVIDENCE-DOSSIER slice 2: who came to the marks (absent in an older save: nobody known)
+ MarksWho=Saved.IsValid()&&Saved->HasField(TEXT("marksBy"))?FMath::Clamp(S47J::Int(Saved,TEXT("marksBy")),-1,2):-1;MarksWhoNight=Saved.IsValid()?FMath::Max(0,S47J::Int(Saved,TEXT("marksByNight"))):0;
+ bAnimalsWent=bAnimalsTagged=false;bDogsHushed=true;AnimalsWho=-1;
  Place=Saved.IsValid()?S47J::Str(Saved,TEXT("place")):FString();if(Place.IsEmpty())Place=TEXT("farm");
  Title=Saved.IsValid()?S47J::Str(Saved,TEXT("title")):FString();if(Title.IsEmpty())Title=TEXT("the Alderete place");
  AreaId=Saved.IsValid()?S47J::Str(Saved,TEXT("area")):FString();if(AreaId.IsEmpty())AreaId=TEXT("saro");
@@ -331,6 +337,7 @@ S47J::FObj FS47FarmSite::Save() const
  const FVector SavedAt=bField?Home.Middle:Middle;
  if(ClearAt>0&&bCheckedEmpty)S47J::Set(O,TEXT("checkedEmpty"),true);
  if(ClearAt>0&&bYielded)S47J::Set(O,TEXT("yielded"),true);
+ if(ClearAt>0&&MarksWho>=0){S47J::Set(O,TEXT("marksBy"),MarksWho);S47J::Set(O,TEXT("marksByNight"),MarksWhoNight);} // EVIDENCE-DOSSIER slice 2
  if(ClearAt>0){S47J::Set(O,TEXT("clearAt"),ClearAt);S47J::Set(O,TEXT("visit"),(bField?Home.Visit:Visit)==0?0:4);S47J::Set(O,TEXT("place"),bField?Home.Place:Place);S47J::Set(O,TEXT("title"),bField?Home.Title:Title);S47J::Set(O,TEXT("area"),bField?Home.Area:AreaId);S47J::Set(O,TEXT("at"),TArray<double>{SavedAt.X,SavedAt.Y,SavedAt.Z});S47J::Set(O,TEXT("nudged"),bNudged);}
  return O;
 }
@@ -557,6 +564,13 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
   {
    bFreezeTried=true;FreezeLeft=VisitBody->Creature.Clips->Seconds(ES47Clip::Freeze);
    UE_LOG(LogTemp,Display,TEXT("S47: site visit: the tall one freezes in the lamp, %.0f m off"),FVector::Dist(BodyAt,Feet));
+   // EVIDENCE-DOSSIER slice 2: what the lamp does to this one, once in the game, kept beside the two rules and tagged like them. Only
+   // when it was seen in the lamp (the attention's Watch, rendered): stopped dead in the first of the light.
+   if(M->Freeform)
+   {
+    if(!M->Freeform->HasFinding(TEXT("rule-tall-froze")))M->Freeform->RecordEvidence(TEXT("rule-tall-froze"),FString::Printf(TEXT("%s. Something tall, out past where I stood. The moment my lamp found it, it stopped dead in the middle of a step, and it stood like that while the light was on it."),*S47Text::ClockText(M->Freeform->Clock(),false)));
+    M->Freeform->TagEvidence(TEXT("rule-tall-froze"),S47Dossier::EKind::Tall,S47Dossier::EType::Lamp);
+   }
   }
   ShhLeft=FMath::Max(0.,ShhLeft-Dt);
   if(!bShhTried&&FreezeLeft<=0&&Attention.Doing()==FS47VisitAttention::EDo::Watch&&FVector::Dist(BodyAt,Feet)<ShhWithin&&VisitBody->Rendered()&&VisitBody->Creature.Clips&&VisitBody->Creature.Clips->Has(ES47Clip::Shh))
@@ -661,7 +675,9 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
    M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.At=FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z-8)});
    // The truck will not start now, the first time it is tried.
    M->World->bKeyStall=true;bStallSet=true;
+   WarnAnimals(); // EVIDENCE-DOSSIER slice 2: the animals first, by who comes
   }
+  StepAnimals(bAway);
   if(VisitAge<6)return;
   if(bAway||Dist>80){EndVisit(false);return;}
   // Out in the open there may be no cover for the small ones to come from. Something else comes instead.
@@ -848,6 +864,8 @@ void FS47FarmSite::EndVisit(bool bTaken)
  if(M&&M->Night&&M->Night->Glimpses&&bWas)M->Night->Glimpses->DevClear();
  if(!M||!M->Freeform){RestoreHome();return;}
  UE_LOG(LogTemp,Display,TEXT("S47: site visit over at %s, taken %d, seen %d"),*Place,bTaken,bVisitSeen);
+ // EVIDENCE-DOSSIER slice 2: a body was out at these marks: by daylight its prints are among them, and the counter reads by it
+ if(bWas&&!bField&&Armed()){MarksWho=VisitWho;MarksWhoNight=FS47FreeformSession::NightOf(M->Freeform->Clock());}
  // Something really came, at the farm: the herd may be one short in the morning.
  if((bWas||bTaken)&&Place==TEXT("farm")&&M->Freeform->Aftermath)M->Freeform->Aftermath->AfterFarmVisit(M->Freeform->Clock());
  if(bVisitSeen&&!bTaken&&!M->Freeform->HasFinding(FindingId()+TEXT("_visit")))
@@ -891,6 +909,68 @@ FString FS47FarmSite::DaylightText(int32 Read,bool bFarm)
   default:return TEXT("The marks by daylight. The surface in each has gone glassy and lifts in flakes. One flake is thinner than the rest, light as foil and cold. Kept for the test bench.");
  }
 }
+int32 FS47FarmSite::MarksBy() const
+{
+ // These marks: laid no later than the night it came (SiteNight), and not a field visit's open ground
+ return MarksWho>=0&&Armed()&&!bField&&MarksWhoNight>=SiteNight()?MarksWho:-1;
+}
+FString FS47FarmSite::PrintsText(int32 Who)
+{
+ // EVIDENCE-DOSSIER slice 2: the table's GROUND column, by daylight. The low one's and the tall one's as their prints on the road's
+ // shoulder are drawn (S47Hap::RoadTrackParts: fours a hand apart, about two and a half feet between them; single prints 1.15 m apart).
+ switch(Who)
+ {
+  case 0:return TEXT(" Between the marks, small bare prints, narrow, and here and there a stone turned over with its damp side up.");
+  case 1:return TEXT(" Across the ring, small prints in fours, close together, a hand apart, and at the edge they go off at a run.");
+  case 2:return TEXT(" Going away from the ring, long narrow prints, a long stride apart, nearly four feet.");
+  default:return FString();
+ }
+}
+void FS47FarmSite::WarnAnimals()
+{
+ // EVIDENCE-DOSSIER slice 2: the animals the game has, by who comes (FS47AnimalWarn::ForVisit): a covey goes up ahead of the tall one,
+ // a coyote stands and stares and then runs ahead of the crab, and ahead of the small ones the dogs bark and then all stop. Out on
+ // foot only, as the warnings for the night's events are; the coyote's and the covey's own scripts say what is thought and kept.
+ bAnimalsWent=false;bAnimalsTagged=false;bDogsHushed=true;AnimalsWho=VisitWho;
+ if(!M||!M->Player||!M->World||M->World->bDriving||!M->Freeform)return;
+ const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
+ FVector Way=Middle-Feet;Way.Y=0;
+ if(Way.SizeSquared()<4.)Way=FVector(FMath::FRandRange(-1.f,1.f),0,FMath::FRandRange(-1.f,1.f));
+ const FVector Threat=Feet+Way.GetSafeNormal()*60.;
+ const FS47AnimalWarn::EKind Ahead=FS47AnimalWarn::ForVisit(VisitWho);
+ FString Why;
+ if(Ahead!=FS47AnimalWarn::EKind::None)
+ {
+  if(!M->Animals||!M->Animals->Warn(Ahead==FS47AnimalWarn::EKind::Birds,Threat,FS47AnimalWarn::Lead,Why)){UE_LOG(LogTemp,Display,TEXT("S47: site visit: no animals ahead of it here (%s)"),*Why);return;}
+  FS47EventCtx Ctx;S47EventScript::Play(M,FS47AnimalWarn::ScriptOf(Ahead),Ctx);
+ }
+ else if(M->Audio)
+ {
+  // the dogs off that way: a few barks, then nothing (StepAnimals stops them and the night with them)
+  for(int32 K=0;K<4;++K){FS47Sound O;O.At=Threat+FVector(FMath::FRandRange(-30.f,30.f),2,FMath::FRandRange(-30.f,30.f));O.Gain=.3f;O.Rate=FMath::FRandRange(.9f,1.1f);O.When=.5f*K;M->Audio->Sfx(K%2?TEXT("dog1"):TEXT("dog0"),O);}
+  bDogsHushed=false;
+ }
+ else return;
+ bAnimalsWent=true;
+ FS47Happenings::TellOther(M,TEXT("animal warning"),Place); // M1-MEASURE-20261113: put near the player, heard or seen
+ UE_LOG(LogTemp,Display,TEXT("S47: site visit: the animals first (%s)"),Ahead==FS47AnimalWarn::EKind::Birds?TEXT("a covey goes up"):Ahead==FS47AnimalWarn::EKind::Coyote?TEXT("a coyote stands and stares"):TEXT("the dogs bark, then stop"));
+}
+void FS47FarmSite::StepAnimals(bool bAway)
+{
+ if(!bAnimalsWent||!M||!M->Freeform)return;
+ if(!bDogsHushed&&VisitAge>=2.2)
+ {
+  bDogsHushed=true;
+  if(M->Audio&&M->Audio->Night)M->Audio->Night->Hush(25,.03,.15,4.);
+  if(M->UI)M->UI->Thought(TEXT("Even the dogs went quiet."),4.f);
+ }
+ // Seen or heard by now, still there: it is the file's, by who came
+ if(!bAnimalsTagged&&VisitAge>=3.&&!bAway)
+ {
+  bAnimalsTagged=true;
+  M->Freeform->TagEvidence(FindingId()+FString::Printf(TEXT("_animals_d%d"),FS47FreeformSession::NightOf(M->Freeform->Clock())),S47Dossier::KindOfVisit(AnimalsWho),S47Dossier::EType::Animals);
+ }
+}
 FString FS47FarmSite::Label() const
 {
  if(!bActive||!Armed()||bField||Raked())return FString();
@@ -906,7 +986,10 @@ bool FS47FarmSite::Use()
  if(ByDaylight(M->Freeform->Clock()))
  {
   const FString Id=DaylightId();const int32 Read=DaylightRead(M->Freeform->Seed(),Place,M->Freeform->Day());
-  const bool bFirst=!M->Freeform->HasFinding(Id);const FString Page=DaylightText(Read,bFarm);
+  // EVIDENCE-DOSSIER slice 2: what came to the marks left its prints among them; read on the page, they are its file's GROUND
+  const int32 Who=MarksBy();
+  const bool bFirst=!M->Freeform->HasFinding(Id);const FString Page=DaylightText(Read,bFarm)+PrintsText(Who);
+  if(Who>=0)M->Freeform->TagEvidence(Id+TEXT("_prints"),S47Dossier::KindOfVisit(Who),S47Dossier::EType::Ground,MarksWhoNight);
   if(bFirst)
   {
    M->Freeform->RecordEvidence(Id,Page);
