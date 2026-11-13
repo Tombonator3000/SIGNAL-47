@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "S47RxLook.h"
 #include "S47SkyAcquire.h"
 
 // RX-LOOK-20261113 (-> M3, M6; Tom 13 November: «Få receiver til grafisk å se mer ut som bilde nr. to. Masse FX.»): the receiver's
@@ -14,6 +15,12 @@
 //
 // One thing is not as on the old flat chart, and cannot be on a sphere: a degree of azimuth is cos(elevation) degrees of arc, so
 // the rule's lock circle (plain degrees of azimuth and elevation) is narrower across on the glass the higher the source stands.
+//
+// Round 2 (13 November, the first look in the engine: «the sphere sits crooked and crowded»): the picture is the whole hemisphere
+// about a point of the equator, upright: the pole on the rim's top, the declinations to be read round the rim, the hours along
+// the foot, as on Tom's reference. It costs scale: the array's window is seven tenths of the rim across where it used to fill it,
+// so the open picture is about two thirds as large a degree (SS47SkyChart closes in further to make up for it). Under the
+// table's stars stands a faint field, so that the sky is full.
 //
 // It is a schematic on a terminal: nothing here reads or draws the game's star sky.
 
@@ -98,8 +105,7 @@ namespace S47SkySphere
 	constexpr double UtcBehindHours = 7.;    // Mountain Standard Time behind Greenwich
 	constexpr double EpochYear = 1986.33;    // the game's spring: the sky "of date"
 	constexpr double Persp = 2.5;            // the picture's point of projection, sphere radii behind its centre (a gentle perspective)
-	constexpr double RimMargin = .955;       // the array's window stays this far inside the rim
-	constexpr bool bZenithUp = false;        // false: celestial north up, as an equatorial chart; true: the zenith up
+	constexpr double RimMargin = .955;       // the array's window stays at least this far inside the rim (upright, it is well inside)
 
 	namespace Star
 	{
@@ -221,6 +227,14 @@ namespace S47SkySphere
 	inline double LstOf(int32 Year, int32 Month, int32 Day, double ClockSeconds) { return LstDeg(JulianDay(Year, Month, Day) + (ClockSeconds + UtcBehindHours * 3600.) / 86400.); }
 	// A place of date and the sidereal time give the ground's azimuth and elevation, and back.
 	inline FVector2D RaDecToAzEl(double RaDeg, double DecDeg, double Lst) { return HaDecToAzEl(Wrap180(Lst - RaDeg), DecDeg); }
+	// A place of date as a direction (x to the equinox on the equator, z to the pole) turned into the hour-angle frame for a
+	// sidereal time: what Dir(Lst - Ra, Dec) is, without working the angles out again (the picture turns a few thousand faint
+	// stars every frame).
+	inline FVector Turned(const FVector& Place, double LstDeg)
+	{
+		const double Turn = FMath::DegreesToRadians(LstDeg), CosTurn = FMath::Cos(Turn), SinTurn = FMath::Sin(Turn);
+		return FVector(Place.X * CosTurn + Place.Y * SinTurn, Place.X * SinTurn - Place.Y * CosTurn, Place.Z);
+	}
 	inline void AzElToRaDec(const FVector2D& AzEl, double Lst, double& RaDeg, double& DecDeg)
 	{
 		double Ha = 0;
@@ -253,24 +267,46 @@ namespace S47SkySphere
 	}
 
 	// ---- the galactic plane as a stippled strip: the same specks every night, more of them and a wider band toward the centre ----
-	constexpr int32 DustCount = 300;
+	// (Round 2: «no Milky Way». Three times the specks, spread so that the band reads at a glance at any hour: twice as many a
+	// degree at the centre as on the average, two thirds as many opposite it.)
+	constexpr int32 DustCount = 900;
 	struct FDust { float Lon, Lat, Bright; };
 	inline FDust Dust(int32 Index)
 	{
 		const uint32 K = uint32(Index) * 2654435761u + 0x47u;
 		const double T = 2. * Hash01(K) - 1., Spread = Hash01(K ^ 0x9e3779b9u) + Hash01(K ^ 0x85ebca6bu) - 1.; // -1..1, most of it near 0
-		const double Lon = 180. * (T - .28 * FMath::Sin(UE_DOUBLE_PI * T));
+		const double Lon = 180. * (T - .16 * FMath::Sin(UE_DOUBLE_PI * T));
 		const double Toward = FMath::Square(FMath::Cos(FMath::DegreesToRadians(Lon) * .5)); // 1 at the centre, 0 opposite it
 		FDust D;
-		D.Lon = float(Wrap360(Lon)); D.Lat = float(Spread * (3.5 + 8.5 * Toward)); D.Bright = float((.4 + .6 * Toward) * (1. - .7 * FMath::Abs(Spread)));
+		D.Lon = float(Wrap360(Lon)); D.Lat = float(Spread * (5. + 7. * Toward)); D.Bright = float((.55 + .45 * Toward) * (1. - .7 * FMath::Abs(Spread)));
 		return D;
 	}
 
+	// ---- the faint field (round 2: «a dozen visible points») ----
+	// Stars under the table's, for the picture's sake: the same every night, spread evenly over the sphere, most of them faint
+	// (right ascension and declination in degrees, brightness 0..1). The first FieldOpen stand on the open picture; the rest
+	// come in as the picture closes in, as more stars are seen in a narrower field.
+	constexpr int32 FieldCount = 2400, FieldOpen = 900;
+	struct FFaint { float Ra, Dec, Bright; };
+	inline FFaint Field(int32 Index)
+	{
+		const uint32 K = uint32(Index) * 2246822519u + 0x51edu;
+		const double Glow = Hash01(K ^ 0x85ebca6bu);
+		FFaint F;
+		F.Ra = float(360. * Hash01(K ^ 0x9e3779b9u));
+		F.Dec = float(FMath::RadiansToDegrees(FMath::Asin(FMath::Clamp(2. * Hash01(K) - 1., -1., 1.))));
+		F.Bright = float(Glow * Glow * Glow);
+		return F;
+	}
+	inline int32 FieldShown(double Zoom) { return FMath::Clamp(int32(FieldOpen * FMath::Pow(FMath::Max(Zoom, 1.), 1.6)), FieldOpen, FieldCount); }
+
 	// ---- the picture ----
-	// A gentle perspective of the sphere seen from inside, about the middle of the array's window, shown through an ellipse (the
-	// rim). With celestial north up it is drawn wider than high, so that the sphere fills the rim. Centre, Right and Up are
-	// directions in the hour-angle frame (x to the meridian on the equator, y to the west point, z to the pole): they do not turn
-	// with the sky.
+	// A gentle perspective of the sphere seen from inside, shown through an ellipse (the rim), drawn wider than high so that the
+	// sphere fills the rim. Round 2: the whole hemisphere about a point of the equator, celestial north straight up: the pole
+	// stands on the rim's top and the south pole on its foot, the rim is the two meridians a quarter turn east and west of the
+	// middle, and a circle of declination ends on the rim at its own angle round it (so the declinations are read round the
+	// rim). Centre, Right and Up are directions in the hour-angle frame (x to the meridian on the equator, y to the west
+	// point, z to the pole): they do not turn with the sky.
 	struct FView
 	{
 		FVector Centre = FVector(1, 0, 0), Right = FVector(0, 1, 0), Up = FVector(0, 0, 1);
@@ -332,44 +368,31 @@ namespace S47SkySphere
 		if (T1 < 1) { B = From + Step * T1; bCutB = true; }
 		return true;
 	}
-	// The picture for a rim on the glass: about the middle of the array's window, placed and sized so that every edge of the
-	// window stays RimMargin inside the rim (the smallest ellipse of the rim's shape round the window's edge, found by walking
-	// its middle toward the farthest point).
+	// The picture for a rim on the glass: upright, about the place on the equator half way between the east end and the west
+	// end of the array's window (so that the window stands in the middle across), the hemisphere's edge on the rim.
 	inline FView FitView(const FVector2D& RimMid, const FVector2D& RimSemi)
 	{
 		using FSky = FS47SkyAcquire;
 		FView V;
 		V.Rim = RimMid; V.Semi = FVector2D(FMath::Max(RimSemi.X, 8.), FMath::Max(RimSemi.Y, 8.));
-		double Ha = 0, Dec = 0;
-		AzElToHaDec(FVector2D((FSky::AzMin + FSky::AzMax) * .5, (FSky::ElMin + FSky::ElMax) * .5), Ha, Dec);
-		const double H = FMath::DegreesToRadians(Ha), D = FMath::DegreesToRadians(Dec);
-		V.Centre = Dir(Ha, Dec);
-		const FVector West(-FMath::Sin(H), FMath::Cos(H), 0.), North(-FMath::Sin(D) * FMath::Cos(H), -FMath::Sin(D) * FMath::Sin(H), FMath::Cos(D));
-		V.Right = West; V.Up = North;
-		double Wider = V.Semi.X / V.Semi.Y;
-		if (bZenithUp)
+		double EastEnd = 1e9, WestEnd = -1e9;
+		auto Add = [&](double Az, double El)
 		{
-			const FVector Zenith = Dir(0., FSky::Latitude);
-			const FVector Lift = (Zenith - V.Centre * FVector::DotProduct(Zenith, V.Centre)).GetSafeNormal();
-			if (!Lift.IsNearlyZero()) { V.Up = Lift; V.Right = FVector::CrossProduct(Lift, V.Centre); Wider = 1.; } // (right x up is the centre, as west x north is)
-		}
-		// the window's edge with the radius at one unit, in the rim's own measure (half its width and half its height are 1)
-		V.Radius = 1.; V.Stretch = 1.; V.Mid = FVector2D::ZeroVector;
-		TArray<FVector2D, TInlineAllocator<192>> Edge;
-		auto Add = [&](double Az, double El) { FVector2D P; if (ProjectAzEl(V, FVector2D(Az, El), P)) Edge.Add(FVector2D(P.X * Wider / V.Semi.X, P.Y / V.Semi.Y)); };
+			double Ha = 0, Dec = 0;
+			AzElToHaDec(FVector2D(Az, El), Ha, Dec);
+			Ha = Wrap180(Ha);
+			EastEnd = FMath::Min(EastEnd, Ha); WestEnd = FMath::Max(WestEnd, Ha);
+		};
 		for (double Az = FSky::AzMin; Az <= FSky::AzMax + 1e-9; Az += 2.) { Add(Az, FSky::ElMin); Add(Az, FSky::ElMax); }
 		for (double El = FSky::ElMin; El <= FSky::ElMax + 1e-9; El += 2.) { Add(FSky::AzMin, El); Add(FSky::AzMax, El); }
-		FVector2D Middle = FVector2D::ZeroVector;
-		double Reach = 1e-9;
-		for (int32 Pass = 1; Pass <= 48; ++Pass)
-		{
-			FVector2D Far = Middle; double Most = -1.;
-			for (const FVector2D& P : Edge) { const double Away = FVector2D::DistSquared(P, Middle); if (Away > Most) { Most = Away; Far = P; } }
-			Middle += (Far - Middle) / double(Pass + 1);
-		}
-		for (const FVector2D& P : Edge) Reach = FMath::Max(Reach, FVector2D::Distance(P, Middle));
-		V.Radius = RimMargin / Reach; V.Stretch = Wider;
-		V.Mid = FVector2D(V.Rim.X - Middle.X * V.Semi.X * V.Radius, V.Rim.Y - Middle.Y * V.Semi.Y * V.Radius);
+		const double MidHa = (EastEnd + WestEnd) * .5, H = FMath::DegreesToRadians(MidHa);
+		V.Centre = Dir(MidHa, 0.);
+		V.Right = FVector(-FMath::Sin(H), FMath::Cos(H), 0.); // west
+		V.Up = FVector(0., 0., 1.);                            // the pole
+		V.Mid = V.Rim;
+		// a quarter turn from the centre stands (Persp + 1) / Persp radii out: that is the rim
+		V.Radius = V.Semi.Y * Persp / (Persp + 1.);
+		V.Stretch = V.Semi.X / V.Semi.Y;
 		return V;
 	}
 	// The direction in azimuth and elevation (a unit vector, plain degrees as the rule counts them) that moves a place the given way
@@ -397,16 +420,24 @@ namespace S47SkySphere
 		return FVector2D::Distance(P0, P1) / Eps;
 	}
 
-	// ---- the readouts' words ----
+	// ---- the readouts' words (as every number on the glass: none shows a 47, S47RxLook::Clean47) ----
 	inline FString RaText(double RaDeg)
 	{
 		const int32 Total = FMath::RoundToInt32(Wrap360(RaDeg) / 15. * 3600.) % 86400;
-		return FString::Printf(TEXT("%02dh%02dm%02ds"), Total / 3600, Total / 60 % 60, Total % 60);
+		return S47RxLook::Clean47(Total, [](int32 Seconds)
+		{
+			const int32 InDay = ((Seconds % 86400) + 86400) % 86400;
+			return FString::Printf(TEXT("%02dh%02dm%02ds"), InDay / 3600, InDay / 60 % 60, InDay % 60);
+		});
 	}
 	inline FString DecText(double DecDeg)
 	{
-		const int32 Total = FMath::RoundToInt32(FMath::Abs(DecDeg) * 60.);
-		return FString::Printf(TEXT("%s%02d\u00b0%02d'"), DecDeg < 0 ? TEXT("-") : TEXT("+"), Total / 60, Total % 60);
+		const int32 Total = FMath::RoundToInt32(FMath::Clamp(DecDeg, -90., 90.) * 60.);
+		return S47RxLook::Clean47(Total, [](int32 Minutes)
+		{
+			const int32 Size = FMath::Min(FMath::Abs(Minutes), 90 * 60);
+			return FString::Printf(TEXT("%s%02d\u00b0%02d'"), Minutes < 0 ? TEXT("-") : TEXT("+"), Size / 60, Size % 60);
+		});
 	}
 
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
