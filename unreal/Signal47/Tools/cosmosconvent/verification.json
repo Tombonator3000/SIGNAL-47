@@ -1,0 +1,1093 @@
+{
+ "bytes_on_disk": 1133642134,
+ "checks": [
+  {
+   "detail": "Content/Licensed/CosmosConvent",
+   "name": "packages on disk under Content/Licensed/CosmosConvent",
+   "pass": true
+  },
+  {
+   "detail": [],
+   "name": "every package saved by UE5 (legacy file version -8 or lower)",
+   "pass": true
+  },
+  {
+   "detail": {},
+   "name": "at least one mesh passes",
+   "pass": true
+  }
+ ],
+ "destination": "/Game/Licensed/CosmosConvent",
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "failed": {},
+ "meshes": {
+  "SM_Agave01_1": {
+   "bounds_cm": {
+    "max": [
+     94.5,
+     93.9,
+     116.6
+    ],
+    "min": [
+     -117.6,
+     -104.4,
+     -1.7
+    ]
+   },
+   "lods": 4,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 21,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Agave01_1.SM_Agave01_1",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -11.5,
+     -5.2
+    ],
+    "height_above_bottom_cm": 1.7
+   },
+   "size_cm": [
+    212.1,
+    198.2,
+    118.3
+   ],
+   "triangles_lod0": 2757
+  },
+  "SM_Agave02_1": {
+   "bounds_cm": {
+    "max": [
+     111.8,
+     120.8,
+     113.8
+    ],
+    "min": [
+     -111.3,
+     -111.7,
+     -0.1
+    ]
+   },
+   "lods": 4,
+   "long_axis": "y",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 21,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Agave02_1.SM_Agave02_1",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.3,
+     4.6
+    ],
+    "height_above_bottom_cm": 0.1
+   },
+   "size_cm": [
+    223.1,
+    232.5,
+    113.9
+   ],
+   "triangles_lod0": 4239
+  },
+  "SM_AltarWallOrnament": {
+   "bounds_cm": {
+    "max": [
+     416.1,
+     9.1,
+     928.7
+    ],
+    "min": [
+     -416.1,
+     -9.0,
+     -0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 3,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 31,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_AltarWallOrnament.SM_AltarWallOrnament",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     0.0
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    832.3,
+    18.1,
+    928.7
+   ],
+   "triangles_lod0": 988
+  },
+  "SM_Barrel01_1": {
+   "bounds_cm": {
+    "max": [
+     53.6,
+     53.4,
+     127.3
+    ],
+    "min": [
+     -53.4,
+     -53.5,
+     0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 2,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 23,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Barrel01_1.SM_Barrel01_1",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.1,
+     -0.0
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    107.1,
+    107.0,
+    127.3
+   ],
+   "triangles_lod0": 4156
+  },
+  "SM_Bell": {
+   "bounds_cm": {
+    "max": [
+     196.8,
+     124.1,
+     136.8
+    ],
+    "min": [
+     -196.8,
+     -124.1,
+     -185.4
+    ]
+   },
+   "lods": 1,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 26,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Bell.SM_Bell",
+   "pivot": {
+    "at_bottom": false,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     -0.0,
+     0.0
+    ],
+    "height_above_bottom_cm": 185.4
+   },
+   "size_cm": [
+    393.6,
+    248.2,
+    322.2
+   ],
+   "triangles_lod0": 2690
+  },
+  "SM_Bench": {
+   "bounds_cm": {
+    "max": [
+     150.8,
+     12.9,
+     118.3
+    ],
+    "min": [
+     -151.0,
+     -77.4,
+     -0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 18,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Bench.SM_Bench",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -0.1,
+     -32.3
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    301.8,
+    90.3,
+    118.3
+   ],
+   "triangles_lod0": 1796
+  },
+  "SM_BenchExterior": {
+   "bounds_cm": {
+    "max": [
+     26.3,
+     142.3,
+     71.5
+    ],
+    "min": [
+     -26.3,
+     -142.2,
+     -0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "y",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 15,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_BenchExterior.SM_BenchExterior",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     0.0
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    52.6,
+    284.5,
+    71.5
+   ],
+   "triangles_lod0": 660
+  },
+  "SM_Chair": {
+   "bounds_cm": {
+    "max": [
+     28.3,
+     30.2,
+     119.1
+    ],
+    "min": [
+     -28.3,
+     -30.2,
+     -0.1
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 22,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Chair.SM_Chair",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     0.0
+    ],
+    "height_above_bottom_cm": 0.1
+   },
+   "size_cm": [
+    56.6,
+    60.3,
+    119.1
+   ],
+   "triangles_lod0": 9200
+  },
+  "SM_Chandelier": {
+   "bounds_cm": {
+    "max": [
+     247.3,
+     247.3,
+     336.3
+    ],
+    "min": [
+     -247.3,
+     -247.3,
+     -0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 22,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Chandelier.SM_Chandelier",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     0.0
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    494.7,
+    494.7,
+    336.3
+   ],
+   "triangles_lod0": 19758
+  },
+  "SM_ChapelPosaArcade_01": {
+   "bounds_cm": {
+    "max": [
+     0.0,
+     28.1,
+     450.0
+    ],
+    "min": [
+     -450.0,
+     -22.6,
+     -0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "x",
+   "material_slots": 2,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 18,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_ChapelPosaArcade_01.SM_ChapelPosaArcade_01",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -225.0,
+     2.8
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    450.0,
+    50.7,
+    450.0
+   ],
+   "triangles_lod0": 6456
+  },
+  "SM_ChurchCandle": {
+   "bounds_cm": {
+    "max": [
+     11.2,
+     11.2,
+     75.8
+    ],
+    "min": [
+     -11.1,
+     -11.1,
+     0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 22,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_ChurchCandle.SM_ChurchCandle",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     0.0
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    22.3,
+    22.3,
+    75.7
+   ],
+   "triangles_lod0": 4044
+  },
+  "SM_ChurchChalice": {
+   "bounds_cm": {
+    "max": [
+     11.1,
+     11.1,
+     31.3
+    ],
+    "min": [
+     -11.1,
+     -11.1,
+     0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 22,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_ChurchChalice.SM_ChurchChalice",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     0.0
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    22.3,
+    22.3,
+    31.3
+   ],
+   "triangles_lod0": 1980
+  },
+  "SM_ChurchCurtain": {
+   "bounds_cm": {
+    "max": [
+     43.4,
+     8.1,
+     8.1
+    ],
+    "min": [
+     -43.4,
+     -0.0,
+     -400.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 3,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 42,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_ChurchCurtain.SM_ChurchCurtain",
+   "pivot": {
+    "at_bottom": false,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     4.0
+    ],
+    "height_above_bottom_cm": 400.0
+   },
+   "size_cm": [
+    86.9,
+    8.1,
+    408.1
+   ],
+   "triangles_lod0": 2068
+  },
+  "SM_ChurchFrame01_1": {
+   "bounds_cm": {
+    "max": [
+     7.3,
+     64.8,
+     86.2
+    ],
+    "min": [
+     0.0,
+     -64.8,
+     -86.2
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 3,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 26,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_ChurchFrame01_1.SM_ChurchFrame01_1",
+   "pivot": {
+    "at_bottom": false,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     3.7,
+     0.0
+    ],
+    "height_above_bottom_cm": 86.2
+   },
+   "size_cm": [
+    7.3,
+    129.5,
+    172.5
+   ],
+   "triangles_lod0": 188
+  },
+  "SM_ChurchFrame02_1": {
+   "bounds_cm": {
+    "max": [
+     7.3,
+     64.8,
+     86.2
+    ],
+    "min": [
+     0.0,
+     -64.8,
+     -86.2
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 3,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 26,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_ChurchFrame02_1.SM_ChurchFrame02_1",
+   "pivot": {
+    "at_bottom": false,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     3.7,
+     0.0
+    ],
+    "height_above_bottom_cm": 86.2
+   },
+   "size_cm": [
+    7.3,
+    129.5,
+    172.5
+   ],
+   "triangles_lod0": 188
+  },
+  "SM_ChurchFrame03_1": {
+   "bounds_cm": {
+    "max": [
+     7.3,
+     64.8,
+     86.2
+    ],
+    "min": [
+     0.0,
+     -64.8,
+     -86.2
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 3,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 26,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_ChurchFrame03_1.SM_ChurchFrame03_1",
+   "pivot": {
+    "at_bottom": false,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     3.7,
+     0.0
+    ],
+    "height_above_bottom_cm": 86.2
+   },
+   "size_cm": [
+    7.3,
+    129.5,
+    172.5
+   ],
+   "triangles_lod0": 188
+  },
+  "SM_ChurchTableCross": {
+   "bounds_cm": {
+    "max": [
+     15.1,
+     7.3,
+     60.0
+    ],
+    "min": [
+     -15.0,
+     -7.1,
+     0.2
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 2,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 22,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_ChurchTableCross.SM_ChurchTableCross",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     0.1
+    ],
+    "height_above_bottom_cm": -0.2
+   },
+   "size_cm": [
+    30.1,
+    14.4,
+    59.8
+   ],
+   "triangles_lod0": 250
+  },
+  "SM_Cross": {
+   "bounds_cm": {
+    "max": [
+     133.1,
+     18.6,
+     537.0
+    ],
+    "min": [
+     -132.8,
+     -20.7,
+     -0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 26,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Cross.SM_Cross",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.1,
+     -1.1
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    265.9,
+    39.3,
+    537.0
+   ],
+   "triangles_lod0": 958
+  },
+  "SM_Desk": {
+   "bounds_cm": {
+    "max": [
+     141.5,
+     91.9,
+     110.5
+    ],
+    "min": [
+     -141.9,
+     -88.1,
+     -0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "x",
+   "material_slots": 3,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 34,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Desk.SM_Desk",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     -0.2,
+     1.9
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    283.4,
+    180.0,
+    110.5
+   ],
+   "triangles_lod0": 4716
+  },
+  "SM_FenceColumn_01": {
+   "bounds_cm": {
+    "max": [
+     38.6,
+     37.6,
+     348.0
+    ],
+    "min": [
+     -36.4,
+     -37.5,
+     -0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 14,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_FenceColumn_01.SM_FenceColumn_01",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     1.1,
+     0.0
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    75.0,
+    75.1,
+    348.0
+   ],
+   "triangles_lod0": 652
+  },
+  "SM_Fence_01": {
+   "bounds_cm": {
+    "max": [
+     0.0,
+     20.0,
+     251.6
+    ],
+    "min": [
+     -450.0,
+     -20.0,
+     0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 18,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Fence_01.SM_Fence_01",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -225.0,
+     0.0
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    450.0,
+    40.0,
+    251.6
+   ],
+   "triangles_lod0": 112
+  },
+  "SM_FlatWallTall_01": {
+   "bounds_cm": {
+    "max": [
+     0.0,
+     10.0,
+     450.0
+    ],
+    "min": [
+     -300.0,
+     -10.0,
+     0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 22,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_FlatWallTall_01.SM_FlatWallTall_01",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -150.0,
+     0.0
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    300.0,
+    20.0,
+    450.0
+   ],
+   "triangles_lod0": 18
+  },
+  "SM_Log": {
+   "bounds_cm": {
+    "max": [
+     12.8,
+     59.5,
+     12.8
+    ],
+    "min": [
+     -12.8,
+     -61.3,
+     -12.8
+    ]
+   },
+   "lods": 4,
+   "long_axis": "y",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 15,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Log.SM_Log",
+   "pivot": {
+    "at_bottom": false,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     -0.9
+    ],
+    "height_above_bottom_cm": 12.8
+   },
+   "size_cm": [
+    25.6,
+    120.8,
+    25.6
+   ],
+   "triangles_lod0": 44
+  },
+  "SM_OutsideTrims_01": {
+   "bounds_cm": {
+    "max": [
+     0.0,
+     19.9,
+     74.9
+    ],
+    "min": [
+     -300.0,
+     10.0,
+     0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 14,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_OutsideTrims_01.SM_OutsideTrims_01",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -150.0,
+     15.0
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    300.0,
+    9.9,
+    74.9
+   ],
+   "triangles_lod0": 74
+  },
+  "SM_PavingStoneTileBig_01": {
+   "bounds_cm": {
+    "max": [
+     0.0,
+     300.0,
+     10.0
+    ],
+    "min": [
+     -300.0,
+     0.0,
+     -0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 25,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_PavingStoneTileBig_01.SM_PavingStoneTileBig_01",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -150.0,
+     150.0
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    300.0,
+    300.0,
+    10.0
+   ],
+   "triangles_lod0": 320
+  },
+  "SM_Podium": {
+   "bounds_cm": {
+    "max": [
+     37.6,
+     25.6,
+     116.7
+    ],
+    "min": [
+     -37.6,
+     -25.6,
+     0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 14,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Podium.SM_Podium",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     -0.0
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    75.2,
+    51.2,
+    116.7
+   ],
+   "triangles_lod0": 838
+  },
+  "SM_Rope": {
+   "bounds_cm": {
+    "max": [
+     0.6,
+     0.6,
+     1462.0
+    ],
+    "min": [
+     -0.6,
+     -0.6,
+     0.0
+    ]
+   },
+   "lods": 1,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 22,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Rope.SM_Rope",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     -0.0
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    1.3,
+    1.3,
+    1462.0
+   ],
+   "triangles_lod0": 16
+  },
+  "SM_WindowTall_01": {
+   "bounds_cm": {
+    "max": [
+     0.0,
+     14.9,
+     450.0
+    ],
+    "min": [
+     -300.0,
+     -10.0,
+     0.0
+    ]
+   },
+   "lods": 4,
+   "long_axis": "z",
+   "material_slots": 4,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "convent",
+   "packages": 29,
+   "path": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_WindowTall_01.SM_WindowTall_01",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -150.0,
+     2.5
+    ],
+    "height_above_bottom_cm": -0.0
+   },
+   "size_cm": [
+    300.0,
+    24.9,
+    450.0
+   ],
+   "triangles_lod0": 774
+  }
+ },
+ "mode": "verify",
+ "passed": [
+  "SM_Agave01_1",
+  "SM_Agave02_1",
+  "SM_AltarWallOrnament",
+  "SM_Barrel01_1",
+  "SM_Bell",
+  "SM_Bench",
+  "SM_BenchExterior",
+  "SM_Chair",
+  "SM_Chandelier",
+  "SM_ChapelPosaArcade_01",
+  "SM_ChurchCandle",
+  "SM_ChurchChalice",
+  "SM_ChurchCurtain",
+  "SM_ChurchFrame01_1",
+  "SM_ChurchFrame02_1",
+  "SM_ChurchFrame03_1",
+  "SM_ChurchTableCross",
+  "SM_Cross",
+  "SM_Desk",
+  "SM_FenceColumn_01",
+  "SM_Fence_01",
+  "SM_FlatWallTall_01",
+  "SM_Log",
+  "SM_OutsideTrims_01",
+  "SM_PavingStoneTileBig_01",
+  "SM_Podium",
+  "SM_Rope",
+  "SM_WindowTall_01"
+ ],
+ "status": "PASS"
+}

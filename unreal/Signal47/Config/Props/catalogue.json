@@ -7,6 +7,11 @@
   "trashBin": {"asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Small_Trash_Bin.SM_Small_Trash_Bin", "size_cm": [39.7, 41.1, 52.9], "front": "+Y", "what": "a small round waste bin (Cosmos coffee shop)"},
   "barStool": {"asset": "/Game/Licensed/CosmosShop/CoffeeShop/Meshes/SM_Stool.SM_Stool", "size_cm": [47.8, 47.8, 77.2], "front": "+Y", "what": "a round counter stool, 77 cm (Cosmos coffee shop)"},
   "officeChair": {"asset": "/Game/Licensed/DaleRealism/SM_Dale_Chair_H31.SM_Dale_Chair_H31", "size_cm": [60, 60, 95], "front": "+Y", "what": "a worn 1980s office swivel chair, 95 cm, feet at z 0 (~60 cm across; Tools/interiors/prepare_dale_prop.py; SARO console chairs, Dale's office)"},
-  "metalStool": {"asset": "/Game/Free/Diner/metal_stool_01/StaticMeshes/metal_stool_01.metal_stool_01", "size_cm": [35.2, 35.5, 88.3], "front": "+Y", "what": "a tall round metal stool, 88 cm (free CC0, Content/Free)"}
+  "metalStool": {"asset": "/Game/Free/Diner/metal_stool_01/StaticMeshes/metal_stool_01.metal_stool_01", "size_cm": [35.2, 35.5, 88.3], "front": "+Y", "what": "a tall round metal stool, 88 cm (free CC0, Content/Free)"},
+  "churchPew": {"asset": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Bench.SM_Bench", "size_cm": [301.8, 90.3, 118.3], "front": "+Y", "what": "a plain wooden church bench, 3 m, its back to -Y (Cosmos Colonial Convent; San Isidro's pews, S47Convent)"},
+  "woodChair": {"asset": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Chair.SM_Chair", "size_cm": [56.6, 60.4, 119.2], "front": "+Y", "what": "an old turned wooden chair with a tall back, 119 cm (Cosmos Colonial Convent)"},
+  "candlestick": {"asset": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_ChurchCandle.SM_ChurchCandle", "size_cm": [22.3, 22.3, 75.8], "front": "+Y", "what": "a brass candlestick with its candle, 76 cm (Cosmos Colonial Convent)"},
+  "agave": {"asset": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Agave01_1.SM_Agave01_1", "size_cm": [212.1, 198.3, 118.3], "front": "+Y", "what": "an agave, 2 m across (Cosmos Colonial Convent; the church forecourt)"},
+  "oakBarrel": {"asset": "/Game/Licensed/CosmosConvent/Convent/Meshes/SM_Barrel01_1.SM_Barrel01_1", "size_cm": [107.0, 106.9, 127.3], "front": "+Y", "what": "a wooden barrel on end, 127 cm (Cosmos Colonial Convent)"}
  }
 }
