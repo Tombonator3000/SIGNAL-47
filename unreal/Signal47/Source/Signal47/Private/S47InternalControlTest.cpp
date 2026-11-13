@@ -10,6 +10,7 @@
 #include "S47Startup.h"
 #include "S47Inter.h"
 #include "S47FreeformAudioDesk.h"
+#include "S47SkyAcquire.h"
 #include "SS47TapeScope.h"
 #include "UnrealClient.h"
 #include "Containers/Ticker.h"
@@ -62,6 +63,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
 {
  using J=FS47FreeformSession::EJobStage;
  static double TapeFrom=0;
+ static double LookFrom=0;static bool bLookCalmWas=false; // RX-LOOK-20261113 (stages 101 to 107)
  Age+=FMath::Min(Dt,.2);if(Hold>0){Hold-=Dt;return;}
  if(Age>240){Finish(false,FString::Printf(TEXT("internal control exceeded its time bound at stage %d"),Stage));return;}
  if(!M||!M->Flow||M->Flow->bStarting||S47Startup::Blocking()||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Player||!M->UI)return;
@@ -149,6 +151,37 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(!Check(F.ReceiverPage()==1&&F.ReceiverDuePage()==3,FString::Printf(TEXT("anomalous take: RECORD is the due tab (open %d, due %d)"),F.ReceiverPage(),F.ReceiverDuePage())))return;
   if(!Check(Shows(TEXT("RECORD TAB: PRESS START RECORDING")),TEXT("TUNE's banner sends the anomaly to the RECORD tab")))return;
   Shot(TEXT("tune-anomaly-detected.png"));
+  // RX-LOOK-20261113: first a look at the sky chart before the fix. The job is pointed and a developer run does not wait for the
+  // chart, so its search is still on: the sphere while it searches, the same with Calm flashes, closed in on the crossing, and at
+  // the lock moment. Then RECORD as before (the fix is then held by hand, as in a real game).
+  if(!Click(TEXT("ACQUIRE")))return;Go(101,1.5);return;
+ }
+ if(Stage==101)
+ {
+  if(!Check(F.ReceiverPage()==0&&Shows(TEXT("EQUATORIAL CELESTIAL SPHERE"))&&Shows(TEXT("SIGNAL WATERFALL"))&&Shows(TEXT("ACQUISITION / TRACKING"))&&F.SkyFix.IsValid(),TEXT("RX-LOOK: ACQUIRE shows the celestial sphere, the waterfall and the tracking panel in the receiver's frame")))return;
+  if(!Fits(TEXT("TUNE >"),TEXT("the sky chart while it searches")))return;
+  UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: sky chart state %d, reticle %.1f degrees off the crossing"),int32(F.SkyFix->State()),F.SkyFix->Distance());
+  Shot(TEXT("acquire-searching.png"));bLookCalmWas=M->Flow->bCalmFlash;M->Flow->bCalmFlash=true;Go(102,.6);return;
+ }
+ if(Stage==102){Shot(TEXT("acquire-searching-calm.png"));Go(103,.3);return;}
+ if(Stage==103)
+ {
+  M->Flow->bCalmFlash=bLookCalmWas;
+  // the reticle put just inside the capture radius: the receiver eases it onto the crossing, the picture closes in, the fix is taken
+  F.SkyFix->Nudge(F.SkyFix->Cross()+FVector2D(4.,2.5)-F.SkyFix->ReticleAt());LookFrom=Age;Go(104,1.2);return;
+ }
+ if(Stage==104){Shot(TEXT("acquire-closing-in.png"));Go(105);return;}
+ if(Stage==105)
+ {
+  if(!F.SkyFix->Locked()&&Age-LookFrom<15)return;
+  UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: fix %s %.1f s after the reticle was put by the crossing"),F.SkyFix->Locked()?TEXT("held"):TEXT("NOT held"),Age-LookFrom);
+  Go(106,.35);return;
+ }
+ if(Stage==106){Shot(TEXT("acquire-lock-moment.png"));Go(107,2.2);return;}
+ if(Stage==107)
+ {
+  // (taken by hand, the page goes over to TUNE a moment after the fix; either way RECORD is next)
+  UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: after the fix the receiver is on page %d"),F.ReceiverPage());
   if(!Click(TEXT("RECORD")))return;Go(11,1.);return;
  }
  if(Stage==11)

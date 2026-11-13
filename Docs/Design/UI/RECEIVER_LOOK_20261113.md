@@ -77,7 +77,7 @@ Hele glassets linjer og vignett er skjermens egne fra før (`SS47CrtGlass`) og e
 
 ## Kilde og prøver
 
-`S47SkySphere.h` (tabell, projeksjon), `S47RxLook.h` (banner, effekter, skop), `SS47RxLook` (malte deler), `SS47SkyChart` (kula), `S47FreeformTerminal::RxFrame` (ramma), `FS47FreeformSession::RxLive` (alle tall). Selvtestene «sky sphere», «receiver look», «sky chart» og «sky acquire» kjøres fra `SkySelfTest`. Mottakerprøven (`-S47InternalControlTest`) finner fortsatt hver knapp på navnet og måler at sidene får plass uten rulling.
+`S47SkySphere.h` (tabell, projeksjon), `S47RxLook.h` (banner, effekter, skop), `SS47RxLook` (malte deler), `SS47SkyChart` (kula), `S47FreeformTerminal::RxFrame` (ramma), `FS47FreeformSession::RxLive` (alle tall). Selvtestene «sky sphere», «receiver look», «sky chart» og «sky acquire» kjøres fra `SkySelfTest`. Mottakerprøven (`-S47InternalControlTest`) finner fortsatt hver knapp på navnet og måler at sidene får plass uten rulling. Den tar nå også fire bilder av himmelkula før opptaket: `acquire-searching`, `acquire-searching-calm`, `acquire-closing-in`, `acquire-lock-moment`, og tar da fiksen for hånd slik et ekte spill gjør.
 
 ## Gjenstår
 
