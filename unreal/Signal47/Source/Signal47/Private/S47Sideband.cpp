@@ -14,13 +14,13 @@ namespace S47SbImpl
 	constexpr double SbPi = 3.14159265358979323846;
 	constexpr double LoopQuantum = double(S47Quantum) / 48000.; // a loop through a delay is this much longer than its delayTime
 	constexpr double PushTau = .08;                         // how fast the graph follows a band (the bands glide by themselves)
-	double Db(double X) { return FMath::Pow(10., X / 20.); }
-	double Sweep(double F0, double F1, double I) { return F0 * FMath::Pow(F1 / F0, FMath::Clamp(I, 0., 1.)); }
-	double Sat(double X) { return FMath::Clamp(X, 0., 1.); }
-	double Smooth(double A, double B, double X) { const double U = Sat((X - A) / (B - A)); return U * U * (3. - 2. * U); }
+	double SbDb(double X) { return FMath::Pow(10., X / 20.); }
+	double SbSweep(double F0, double F1, double I) { return F0 * FMath::Pow(F1 / F0, FMath::Clamp(I, 0., 1.)); }
+	double SbSat(double X) { return FMath::Clamp(X, 0., 1.); }
+	double SbSmooth(double A, double B, double X) { const double U = SbSat((X - A) / (B - A)); return U * U * (3. - 2. * U); }
 
 	// One pass of a biquad over a signal (for the levels measured once when the noise is made).
-	void Filter(ES47BiquadType Type, double Hz, double Q, TArray<float>& X)
+	void SbFilter(ES47BiquadType Type, double Hz, double Q, TArray<float>& X)
 	{
 		double K[5]; FS47BiquadFilterNode::Coefficients(Type, 48000., Hz, 0., Q, 0., K);
 		double X1 = 0, X2 = 0, Y1 = 0, Y2 = 0;
@@ -30,19 +30,19 @@ namespace S47SbImpl
 			X2 = X1; X1 = In; Y2 = Y1; Y1 = Y; V = float(Y);
 		}
 	}
-	double Rms(const TArray<float>& X, int32 From = 2000)
+	double SbRms(const TArray<float>& X, int32 From = 2000)
 	{
 		double S = 0; int32 N = 0;
 		for (int32 I = From; I < X.Num(); ++I) { S += double(X[I]) * X[I]; ++N; }
 		return FMath::Sqrt(S / FMath::Max(1, N));
 	}
-	double Peak(const TArray<float>& X)
+	double SbPeak(const TArray<float>& X)
 	{
 		double P = 0;
 		for (float V : X) P = FMath::Max(P, FMath::Abs(double(V)));
 		return P;
 	}
-	TArray<float> Channel(const FS47AudioBuffer& B, int32 C = 0)
+	TArray<float> SbChannel(const FS47AudioBuffer& B, int32 C = 0)
 	{
 		TArray<float> Out; Out.Append(B.GetChannelData(C), B.Length());
 		return Out;
@@ -110,7 +110,7 @@ namespace S47SbImpl
 		}
 		return B;
 	}
-	TArray<float> Curve(TFunctionRef<double(double)> Fn)
+	TArray<float> SbCurve(TFunctionRef<double(double)> Fn)
 	{
 		TArray<float> C; C.SetNumUninitialized(4097);
 		for (int32 I = 0; I < 4097; ++I) C[I] = float(Fn(-1. + 2. * I / 4096.));
@@ -167,9 +167,9 @@ namespace S47Sideband
 
 	void BedFor(double Near, double& LevelDb, double& Lowpass)
 	{
-		const double N = S47SbImpl::Sat(Near);
+		const double N = S47SbImpl::SbSat(Near);
 		LevelDb = -10. + 14. * N;
-		Lowpass = S47SbImpl::Sweep(200., 1000., N);
+		Lowpass = S47SbImpl::SbSweep(200., 1000., N);
 	}
 
 	double FarTrimDb(const FString& File)
@@ -189,7 +189,7 @@ namespace S47Sideband
 		FWant W;
 		if (!In.bFreeform || In.Reacts == EMode::Off) return W;
 		const bool bSeen = In.bSeen || In.bHunt;
-		const double Unease = FMath::Max(Sat(In.Omen), Sat((In.Stress - .25) / .75));
+		const double Unease = FMath::Max(SbSat(In.Omen), SbSat((In.Stress - .25) / .75));
 		// Indoors at SARO with nothing about and nothing just over: the routine, dry.
 		W.bRoutine = In.bSaroIndoors && In.Approach < .05 && In.Omen < .05 && In.Presence < .04 && !bSeen && In.Gear < .05 && !In.bPowerOut
 			&& In.AfterEncounter <= 0 && In.AfterTaken <= 0 && !In.bHiding && In.HintNudge <= 0;
@@ -197,23 +197,23 @@ namespace S47Sideband
 		if (!W.bRoutine)
 		{
 			// WORN: tired, late (nothing before 02:00, all of it by 03:30, gone again by six), uneasy; a nudge after a deniable hint
-			const double Late = Sat((In.NightHour - 26.) / 1.5) * (1. - Sat((In.NightHour - 29.) / 1.));
-			W.Bands.Worn = FMath::Min(WornCap, .40 * Sat(In.Fatigue) + .25 * Late + .20 * Unease + .15 * Sat(In.HintNudge));
+			const double Late = SbSat((In.NightHour - 26.) / 1.5) * (1. - SbSat((In.NightHour - 29.) / 1.));
+			W.Bands.Worn = FMath::Min(WornCap, .40 * SbSat(In.Fatigue) + .25 * Late + .20 * Unease + .15 * SbSat(In.HintNudge));
 			// BROKEN: how near it is, and the gear failing. Never above a small cap before midnight.
-			const double Near = FMath::Max(Sat(In.Presence), .5 * Sat(In.Approach));
-			double B = FMath::Max(.6 * Smooth(.1, .9, Near), .45 * Sat(In.Gear));
+			const double Near = FMath::Max(SbSat(In.Presence), .5 * SbSat(In.Approach));
+			double B = FMath::Max(.6 * SbSmooth(.1, .9, Near), .45 * SbSat(In.Gear));
 			if (In.bPowerOut) B = FMath::Max(B, .25);
 			if (In.bHunt) B = FMath::Max(B, BrokenFullCap);
 			// The omen silence: while the night has dropped and nothing has been seen, the silence is the tell. Hold back.
 			if (In.Hush > .5 && !bSeen) B = FMath::Min(B, HushBrokenCap);
 			W.Bands.Broken = FMath::Min(B, CapBroken);
 			// WIDE: on foot on open land, more in wind
-			W.Bands.Wide = In.bOutdoors ? FMath::Min(WideCap, Sat(In.Open) * (.35 + .45 * Sat(In.Wind))) : 0.;
+			W.Bands.Wide = In.bOutdoors ? FMath::Min(WideCap, SbSat(In.Open) * (.35 + .45 * SbSat(In.Wind))) : 0.;
 			// FAR: after a meeting, hiding, after lost time
-			W.Bands.Far = Sat(FMath::Max3(Sat(In.AfterEncounter), In.bHiding ? .55 : 0., .8 * Sat(In.AfterTaken)));
+			W.Bands.Far = SbSat(FMath::Max3(SbSat(In.AfterEncounter), In.bHiding ? .55 : 0., .8 * SbSat(In.AfterTaken)));
 		}
 		// Tension for the stems: what the player can perceive, capped by the tier.
-		double Tn = FMath::Max3(.35 * Sat(In.Approach), In.Presence > .04 ? .4 + .3 * Sat(In.Presence) : 0., .3 * Sat(In.Omen));
+		double Tn = FMath::Max3(.35 * SbSat(In.Approach), In.Presence > .04 ? .4 + .3 * SbSat(In.Presence) : 0., .3 * SbSat(In.Omen));
 		if (In.bSeen) Tn = FMath::Max(Tn, .7);
 		if (In.bHunt) Tn = 1.;
 		W.Tension = FMath::Min(Tn, In.Tier == ETier::Full ? 1. : In.Tier == ETier::Glimpse ? .6 : .3);
@@ -231,7 +231,7 @@ namespace S47Sideband
 
 	double FGlide::Step(double Dt, double Want)
 	{
-		Want = FMath::IsFinite(Want) ? S47SbImpl::Sat(Want) : 0.;
+		Want = FMath::IsFinite(Want) ? S47SbImpl::SbSat(Want) : 0.;
 		Dt = FMath::IsFinite(Dt) ? FMath::Clamp(Dt, 0., .25) : 0.;
 		if (Want > Now) Now = FMath::Min(Want, Now + Dt / FMath::Max(.05, Up));
 		else Now = FMath::Max(Want, Now - Dt / FMath::Max(.05, Down));
@@ -380,16 +380,41 @@ TSharedRef<FS47GainNode> FS47SidebandBus::Mono(const TSharedPtr<FS47AudioNode>& 
 	return N;
 }
 
+// The noise the colours need and its levels, measured once: hiss -47 dBFS RMS at full after its two filters, crackle peaking
+// at -36 dBFS, the static's band set to an RMS of 1. No lock is held here.
+void FS47SidebandBus::Prepare()
+{
+	using namespace S47SbImpl;
+	if (BufHiss.IsValid()) return;
+	BufHiss = HissBuffer(); BufCrackle = CrackleBuffer(); BufDrift = DriftBuffer(); BufDips = DipBuffer();
+	{
+		TArray<float> X = SbChannel(*BufHiss);
+		SbFilter(ES47BiquadType::Highpass, 1200., -3., X); SbFilter(ES47BiquadType::Lowpass, 8000., -3., X);
+		KHiss = SbDb(-47.) / FMath::Max(1e-6, SbRms(X));
+	}
+	{
+		TArray<float> X = SbChannel(*BufCrackle);
+		SbFilter(ES47BiquadType::Bandpass, 2800., .9, X);
+		KCrackle = SbDb(-36.) / FMath::Max(1e-6, SbPeak(X));
+	}
+	{
+		TArray<float> X = SbChannel(*BufHiss);
+		SbFilter(ES47BiquadType::Bandpass, 2400., .6, X);
+		StaticK = 1. / FMath::Max(1e-6, SbRms(X));
+	}
+}
+
 void FS47SidebandBus::Build()
 {
 	using namespace S47SbImpl;
 	if (bBuilt) return;
 	bBuilt = true;
+	Prepare(); // (the noise is made and measured before the lock is taken: the audio thread waits only for the nodes)
 	FS47AudioContext::FBatch B(*Ctx);
 	OnesBuf = MakeShared<FS47AudioBuffer>(1, S47Quantum, Ctx->SampleRate);
 	for (int32 I = 0; I < S47Quantum; ++I) OnesBuf->GetChannelData(0)[I] = 1.f;
 	Ones = G(1); Loop(OnesBuf)->Connect(Ones);
-	const TSharedRef<FS47AudioBuffer> Hiss = HissBuffer();
+	const TSharedPtr<FS47AudioBuffer> Hiss = BufHiss;
 	// The chain works at the staged level of the score's files: the shapers' numbers are for that.
 	Pre = G(1. / Level);
 	BuildWorn(Pre, Hiss);
@@ -417,39 +442,35 @@ void FS47SidebandBus::BuildWorn(const TSharedPtr<FS47AudioNode>& In, const TShar
 	auto Mod = G(0);
 	const double Wow[3][2] = { { .41, .0035 }, { .93, .0015 }, { 6.7, .0010 } };
 	for (const double* W : Wow) { auto Depth = G(W[1] / (2. * SbPi * W[0])); Osc(W[0])->Connect(Depth); Depth->Connect(Mod); }
-	{ auto Depth = G(.00035); Loop(DriftBuffer())->Connect(Depth); Depth->Connect(Mod); }
+	{ auto Depth = G(.00035); Loop(BufDrift)->Connect(Depth); Depth->Connect(Mod); }
 	Mod->Connect(Delay->DelayTime);
 	WornAims.Add({ &Mod->Gain, [](double W) { return W; } });
-	auto Dry = G(1), SatIn = G(Db(8.)), SatOut = G(0), Sum = G(1);
-	auto Tape = Add(Ctx->CreateWaveShaper()); Tape->Curve = Curve([](double X) { return FMath::Tanh(1.6 * X) / 1.6; });
+	auto Dry = G(1), SatIn = G(SbDb(8.)), SatOut = G(0), Sum = G(1);
+	auto Tape = Add(Ctx->CreateWaveShaper()); Tape->Curve = SbCurve([](double X) { return FMath::Tanh(1.6 * X) / 1.6; });
 	Delay->Connect(Dry); Dry->Connect(Sum);
 	Delay->Connect(SatIn); SatIn->Connect(Tape); Tape->Connect(SatOut); SatOut->Connect(Sum);
 	WornAims.Add({ &Dry->Gain, [](double W) { return 1. - .8 * W; } });
-	WornAims.Add({ &SatOut->Gain, [](double W) { return Db(-8.) * .8 * W; } });
+	WornAims.Add({ &SatOut->Gain, [](double W) { return SbDb(-8.) * .8 * W; } });
 	auto Lp = Bq(TEXT("lowpass"), 18000., -3.), Hp = Bq(TEXT("highpass"), 20., -3.);
-	WornAims.Add({ &Lp->Frequency, [](double W) { return Sweep(18000., 2600., W); } });
-	WornAims.Add({ &Hp->Frequency, [](double W) { return Sweep(20., 70., W); } });
+	WornAims.Add({ &Lp->Frequency, [](double W) { return SbSweep(18000., 2600., W); } });
+	WornAims.Add({ &Hp->Frequency, [](double W) { return SbSweep(20., 70., W); } });
 	auto Lvl = G(1), Wobble = G(0);
 	Osc(.31)->Connect(Wobble); Wobble->Connect(Lvl->Gain);
-	WornAims.Add({ &Lvl->Gain, [](double W) { return Db(1.4 * W); } });
-	WornAims.Add({ &Wobble->Gain, [](double W) { return .10 * W * Db(1.4 * W); } });
+	WornAims.Add({ &Lvl->Gain, [](double W) { return SbDb(1.4 * W); } });
+	WornAims.Add({ &Wobble->Gain, [](double W) { return .10 * W * SbDb(1.4 * W); } });
 	WornOut = G(1);
 	Sum->Connect(Lp); Lp->Connect(Hp); Hp->Connect(Lvl); Lvl->Connect(WornOut);
 	// hiss: -47 dBFS RMS at full after its two filters; crackle: peaks -36 dBFS at full. Both measured here, once.
 	WornNoise = G(bNoise ? 1. : 0.); WornNoise->Connect(WornOut);
 	{
-		TArray<float> X = Channel(*Hiss);
-		Filter(ES47BiquadType::Highpass, 1200., -3., X); Filter(ES47BiquadType::Lowpass, 8000., -3., X);
-		const double K = Db(-47.) / FMath::Max(1e-6, Rms(X));
+		const double K = KHiss;
 		auto Hp2 = Bq(TEXT("highpass"), 1200., -3.), Lp2 = Bq(TEXT("lowpass"), 8000., -3.); auto Gn = G(0);
 		Loop(Hiss)->Connect(Hp2); Hp2->Connect(Lp2); Lp2->Connect(Gn); Gn->Connect(WornNoise);
 		WornAims.Add({ &Gn->Gain, [K](double W) { return K * FMath::Pow(W, 1.5); } });
 	}
 	{
-		const TSharedRef<FS47AudioBuffer> Crackle = CrackleBuffer();
-		TArray<float> X = Channel(*Crackle);
-		Filter(ES47BiquadType::Bandpass, 2800., .9, X);
-		const double K = Db(-36.) / FMath::Max(1e-6, Peak(X));
+		const TSharedPtr<FS47AudioBuffer> Crackle = BufCrackle;
+		const double K = KCrackle;
 		auto Bp = Bq(TEXT("bandpass"), 2800., .9); auto Gn = G(0);
 		Loop(Crackle)->Connect(Bp); Bp->Connect(Gn); Gn->Connect(WornNoise);
 		WornAims.Add({ &Gn->Gain, [K](double W) { return K * W * W; } });
@@ -463,20 +484,20 @@ void FS47SidebandBus::BuildBroken(const TSharedPtr<FS47AudioBuffer>& Hiss)
 	using namespace S47SbImpl;
 	auto Hp = Bq(TEXT("highpass"), 20., 0.);
 	WornOut->Connect(Hp);
-	BrokenAims.Add({ &Hp->Frequency, [](double V) { return Sweep(20., 320., V); } });
+	BrokenAims.Add({ &Hp->Frequency, [](double V) { return SbSweep(20., 320., V); } });
 	auto Clean = G(1), Sum = G(1);
 	Hp->Connect(Clean); Clean->Connect(Sum);
 	BrokenAims.Add({ &Clean->Gain, [](double V) { return 1. - FMath::Pow(V, .7); } });
 	HitDrive = G(1);
-	auto Drive = G(Db(4.));
+	auto Drive = G(SbDb(4.));
 	auto Clip = Add(Ctx->CreateWaveShaper());
-	Clip->Curve = Curve([](double X) { return X >= 0 ? FMath::Tanh(2.5 * X) / FMath::Tanh(2.5) : .75 * FMath::Tanh(3.3 * X) / FMath::Tanh(3.3); });
+	Clip->Curve = SbCurve([](double X) { return X >= 0 ? FMath::Tanh(2.5 * X) / FMath::Tanh(2.5) : .75 * FMath::Tanh(3.3 * X) / FMath::Tanh(3.3); });
 	Hp->Connect(HitDrive); HitDrive->Connect(Drive); Drive->Connect(Clip);
-	BrokenAims.Add({ &Drive->Gain, [](double V) { return Db(4. + 14. * V); } });
+	BrokenAims.Add({ &Drive->Gain, [](double V) { return SbDb(4. + 14. * V); } });
 	// c: how much of the stepped copy (from b 0.25, all of it by 0.85)
-	const auto Steps = [](double V) { return Sat((V - .25) / .6); };
+	const auto Steps = [](double V) { return SbSat((V - .25) / .6); };
 	auto Smooth1 = G(1), StepG = G(0), Ring = G(1), RingDepth = G(0);
-	auto Stepper = Add(Ctx->CreateWaveShaper()); Stepper->Curve = Curve([](double X) { return FMath::RoundToDouble(X * 6.) / 6.; });
+	auto Stepper = Add(Ctx->CreateWaveShaper()); Stepper->Curve = SbCurve([](double X) { return FMath::RoundToDouble(X * 6.) / 6.; });
 	Clip->Connect(Smooth1); Smooth1->Connect(Ring);
 	Clip->Connect(Stepper); Stepper->Connect(StepG); StepG->Connect(Ring);
 	BrokenAims.Add({ &Smooth1->Gain, [Steps](double V) { return 1. - Steps(V); } });
@@ -484,15 +505,15 @@ void FS47SidebandBus::BuildBroken(const TSharedPtr<FS47AudioBuffer>& Hiss)
 	// the sawtooth into the gain is ring modulation: copies of the music round 3.7 kHz, as a sample-rate reducer's images
 	auto Saw = Osc(9000., TEXT("sawtooth"));
 	Saw->Connect(RingDepth); RingDepth->Connect(Ring->Gain);
-	BrokenAims.Add({ &Saw->Frequency, [](double V) { return Sweep(9000., 3700., V); } });
+	BrokenAims.Add({ &Saw->Frequency, [](double V) { return SbSweep(9000., 3700., V); } });
 	BrokenAims.Add({ &RingDepth->Gain, [Steps](double V) { return .5 * Steps(V); } });
 	auto DirtyHp = Bq(TEXT("highpass"), 60., -3.); auto Dirty = G(0);
 	HitLevel = G(1);
 	Ring->Connect(DirtyHp); DirtyHp->Connect(Dirty); Dirty->Connect(HitLevel); HitLevel->Connect(Sum);
-	BrokenAims.Add({ &Dirty->Gain, [](double V) { return FMath::Pow(V, .7) * Db(-8.5 - 13. * V); } });
+	BrokenAims.Add({ &Dirty->Gain, [](double V) { return FMath::Pow(V, .7) * SbDb(-8.5 - 13. * V); } });
 	// the dips: from b 0.5, no deeper after 0.8, never more than 0.55 of the way down; the same buffer lifts the static in them
-	const auto Depth = [](double V) { return .55 * Sat((V - .5) / .3); };
-	const TSharedRef<FS47AudioBuffer> Dips = DipBuffer();
+	const auto Depth = [](double V) { return .55 * SbSat((V - .5) / .3); };
+	const TSharedPtr<FS47AudioBuffer> Dips = BufDips;
 	auto DipSrc = Loop(Dips);
 	auto Gate = G(1), GateDepth = G(0);
 	DipSrc->Connect(GateDepth); GateDepth->Connect(Gate->Gain);
@@ -500,21 +521,18 @@ void FS47SidebandBus::BuildBroken(const TSharedPtr<FS47AudioBuffer>& Hiss)
 	HitHole = G(1);
 	auto Lp1 = Bq(TEXT("lowpass"), 18000., 4.), Lp2 = Bq(TEXT("lowpass"), 18000., -3.), Pk = Bq(TEXT("peaking"), 1500., 1., 0.);
 	Sum->Connect(Gate); Gate->Connect(HitHole); HitHole->Connect(Lp1); Lp1->Connect(Lp2); Lp2->Connect(Pk);
-	BrokenAims.Add({ &Lp1->Frequency, [](double V) { return Sweep(18000., 2800., V); } });
-	BrokenAims.Add({ &Lp2->Frequency, [](double V) { return Sweep(18000., 2800., V); } });
+	BrokenAims.Add({ &Lp1->Frequency, [](double V) { return SbSweep(18000., 2800., V); } });
+	BrokenAims.Add({ &Lp2->Frequency, [](double V) { return SbSweep(18000., 2800., V); } });
 	BrokenAims.Add({ &Pk->Gain, [](double V) { return 7. * V; } });
 	BrokenOut = G(1); Pk->Connect(BrokenOut);
 	// static: the hiss through a band at 2.4 kHz, set to an RMS of 1 here; -46 dB at full, -38 dB in a dip, -24 dB in the hit
-	TArray<float> X = Channel(*Hiss);
-	Filter(ES47BiquadType::Bandpass, 2400., .6, X);
-	StaticK = 1. / FMath::Max(1e-6, Rms(X));
 	const double K = StaticK;
 	auto Bp = Bq(TEXT("bandpass"), 2400., .6); auto Static = G(0), Fill = G(0);
 	BrokenNoise = G(bNoise ? 1. : 0.); BrokenNoise->Connect(BrokenOut);
 	Loop(Hiss, 12345. / 48000.)->Connect(Bp); Bp->Connect(Static); Static->Connect(BrokenNoise);
 	DipSrc->Connect(Fill); Fill->Connect(Static->Gain);
-	BrokenAims.Add({ &Static->Gain, [K](double V) { return K * Db(-46.) * V * V; } });
-	BrokenAims.Add({ &Fill->Gain, [K, Depth](double V) { return -K * Db(-38.) * Depth(V); } });
+	BrokenAims.Add({ &Static->Gain, [K](double V) { return K * SbDb(-46.) * V * V; } });
+	BrokenAims.Add({ &Fill->Gain, [K, Depth](double V) { return -K * SbDb(-38.) * Depth(V); } });
 	HitStatic = G(0); Bp->Connect(HitStatic); HitStatic->Connect(BrokenNoise);
 	// FLARES' bed and stingers join here: after BROKEN (its highpass and dips would gut them), before WIDE and FAR
 	FlareSum = G(1); BrokenOut->Connect(FlareSum);
@@ -544,7 +562,7 @@ void FS47SidebandBus::BuildWide()
 	WideAims.Add({ &Pk->Gain, [](double A) { return 6. * A; } });
 	WideOut = G(1);
 	Sum->Connect(Pk); Pk->Connect(WideOut);
-	WideAims.Add({ &WideOut->Gain, [](double A) { return Db(-2.8 * A); } });
+	WideAims.Add({ &WideOut->Gain, [](double A) { return SbDb(-2.8 * A); } });
 }
 
 // FAR: what is left dry (lowpass 18 k -> 1.5 k, drifting from side to side) | one channel -> highpass 200 -> lowpass 3 k ->
@@ -558,12 +576,12 @@ void FS47SidebandBus::BuildFar()
 	Osc(.07)->Connect(PanDepth); PanDepth->Connect(Pan->Pan);
 	WideOut->Connect(Dry); Dry->Connect(Lp); Lp->Connect(Pan); Pan->Connect(FarOut);
 	FarAims.Add({ &Dry->Gain, [](double F) { return 1. - .9 * F * F; } });
-	FarAims.Add({ &Lp->Frequency, [](double F) { return Sweep(18000., 1500., F); } });
+	FarAims.Add({ &Lp->Frequency, [](double F) { return SbSweep(18000., 1500., F); } });
 	FarAims.Add({ &PanDepth->Gain, [](double F) { return .6 * F; } });
 	// the send: one channel, the piece's own trim on it (the room is linear, so a trim here is a trim on everything wet)
 	auto Send = G(0);
 	Mono(WideOut)->Connect(Send);
-	FarAims.Add({ &Send->Gain, [this](double F) { return F * S47SbImpl::Db(TrimDb); } });
+	FarAims.Add({ &Send->Gain, [this](double F) { return F * S47SbImpl::SbDb(TrimDb); } });
 	RoomIn = G(1); Send->Connect(RoomIn); // (a stinger's send comes in here too, untrimmed)
 	auto SHp = Bq(TEXT("highpass"), 200., -3.), SLp = Bq(TEXT("lowpass"), 3000., -3.);
 	RoomIn->Connect(SHp); SHp->Connect(SLp);
@@ -771,10 +789,10 @@ void FS47SidebandBus::Hit(double When, bool bBurst)
 	};
 	if (bBurst)
 	{
-		Burst(HitDrive->Gain, 1., Db(10.), .003, .11, .04);
-		Burst(HitLevel->Gain, 1., Db(3.), .003, .11, .04);
+		Burst(HitDrive->Gain, 1., SbDb(10.), .003, .11, .04);
+		Burst(HitLevel->Gain, 1., SbDb(3.), .003, .11, .04);
 	}
-	Burst(HitStatic->Gain, 0., StaticK * Db(-24.), .003, .05, .07);
+	Burst(HitStatic->Gain, 0., StaticK * SbDb(-24.), .003, .05, .07);
 	HitHole->Gain.CancelScheduledValues(T0); HitHole->Gain.SetValueAtTime(1., T0);
 	HitHole->Gain.SetValueCurveAtTime(HoleCurve, T0 + .11, .16);
 }
@@ -784,7 +802,7 @@ void FS47SidebandBus::MomentDuck(double When)
 	FS47AudioContext::FBatch B(*Ctx);
 	const double T0 = FMath::Max(When, Ctx->CurrentTime());
 	FS47AudioParam& P = Moment->Gain;
-	const double Low = S47SbImpl::Db(-36.);
+	const double Low = S47SbImpl::SbDb(-36.);
 	P.CancelScheduledValues(T0); P.SetValueAtTime(P.ValueAt(T0), T0);
 	P.SetValueAtTime(1., T0 + .2); P.LinearRampToValueAtTime(Low, T0 + .3);
 	P.SetValueAtTime(Low, T0 + 3.3); P.LinearRampToValueAtTime(1., T0 + 7.5);
@@ -825,7 +843,7 @@ void FS47SidebandBus::TestFlares(const TSharedPtr<FS47AudioBuffer>& InStinger, c
 void FS47SidebandBus::Bed(int32 Index, double Near, bool bOn)
 {
 	using namespace S47SbImpl;
-	Near = FMath::IsFinite(Near) ? Sat(Near) : 0.;
+	Near = FMath::IsFinite(Near) ? SbSat(Near) : 0.;
 	if (!bOn || !HasBed(Index))
 	{
 		if (BedSrc && bBedOn)
@@ -860,7 +878,7 @@ void FS47SidebandBus::Bed(int32 Index, double Near, bool bOn)
 	if (!bBedOn || FMath::Abs(Near - BedNow) > .01)
 	{
 		// in over about 4 s; nearness itself glides 2 to 4 s
-		BedGain->Gain.CancelScheduledValues(At); BedGain->Gain.SetTargetAtTime(Db(LevelDb), At, bBedOn ? .9 : 1.3);
+		BedGain->Gain.CancelScheduledValues(At); BedGain->Gain.SetTargetAtTime(SbDb(LevelDb), At, bBedOn ? .9 : 1.3);
 		BedLp->Frequency.CancelScheduledValues(At); BedLp->Frequency.SetTargetAtTime(Cut, At, .9);
 		BedNow = Near; bBedOn = true;
 	}
@@ -900,8 +918,8 @@ bool FS47SidebandBus::Stinger(int32 Index, S47Sideband::ETier Tier, bool bSoft, 
 	const TSharedPtr<FS47AudioBuffer>& Buf = StingerBuf[Index];
 	StingSrc = Ctx->CreateBufferSource(); StingSrc->Buffer = Buf;
 	StingGain = Ctx->CreateGain();
-	if (bSoft) { StingGain->Gain.SetValueAtTime(0., T0); StingGain->Gain.LinearRampToValueAtTime(Db(M.LevelDb), T0 + .12); } // the front slowed to 120 ms
-	else StingGain->Gain.SetValue(Db(M.LevelDb));
+	if (bSoft) { StingGain->Gain.SetValueAtTime(0., T0); StingGain->Gain.LinearRampToValueAtTime(SbDb(M.LevelDb), T0 + .12); } // the front slowed to 120 ms
+	else StingGain->Gain.SetValue(SbDb(M.LevelDb));
 	auto Lp1 = Ctx->CreateBiquadFilter(), Lp2 = Ctx->CreateBiquadFilter();
 	for (const TSharedRef<FS47BiquadFilterNode>& Lp : { Lp1, Lp2 }) { Lp->SetType(TEXT("lowpass")); Lp->Frequency.SetValue(M.Lowpass); Lp->Q.SetValue(-3.); }
 	auto Direct = Ctx->CreateGain(); Direct->Gain.SetValue(M.Direct);

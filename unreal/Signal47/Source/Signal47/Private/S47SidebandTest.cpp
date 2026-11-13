@@ -12,7 +12,7 @@ namespace S47SbTest
 {
 	constexpr int32 Rate = 48000;
 	// The test's own signal: seven partials from 110 Hz to 7 kHz with a slow swell, both channels alike, at a deck's level.
-	TSharedRef<FS47AudioBuffer> Signal(double Secs)
+	TSharedRef<FS47AudioBuffer> SbSignal(double Secs)
 	{
 		const int32 N = int32(Secs * Rate);
 		auto B = MakeShared<FS47AudioBuffer>(2, N, float(Rate));
@@ -71,7 +71,7 @@ namespace S47SbTest
 			return true;
 		}
 	};
-	double Db(double Ratio) { return 20. * FMath::LogX(10., FMath::Max(Ratio, 1e-12)); }
+	double SbDbOf(double Ratio) { return 20. * FMath::LogX(10., FMath::Max(Ratio, 1e-12)); }
 }
 
 bool FS47Sideband::SelfTest(TArray<FString>& Lines)
@@ -246,7 +246,7 @@ bool FS47Sideband::SelfTest(TArray<FString>& Lines)
 	Check(!SpeechNow(nullptr), TEXT("no game, no voice"));
 
 	// ---------- the graph ----------
-	const TSharedRef<FS47AudioBuffer> Music = Signal(8.);
+	const TSharedRef<FS47AudioBuffer> Music = SbSignal(8.);
 	{
 		// at zero the bus is the score to the sample, and nothing of the chain exists
 		// (the signal goes round, so that there is music under every part of this)
@@ -281,7 +281,7 @@ bool FS47Sideband::SelfTest(TArray<FString>& Lines)
 			FRig R(Music);
 			FS47SidebandBands B; (Band == 0 ? B.Worn : Band == 1 ? B.Broken : Band == 2 ? B.Wide : B.Far) = 1;
 			R.Bus->Set(B); R.Go(7.);
-			Got[Band] = Db(R.Rms(3, 7) / Ref); Like[Band] = R.Likeness(3, 7); bSound &= R.Sound();
+			Got[Band] = SbDbOf(R.Rms(3, 7) / Ref); Like[Band] = R.Likeness(3, 7); bSound &= R.Sound();
 			bRoom &= R.Bus->RoomEngaged() == (Band == 3);
 		}
 		Lines.Add(FString::Printf(TEXT("INFO sideband: each band at full against dry: worn %+.1f dB, broken %+.1f dB, wide %+.1f dB (likeness %.2f), far %+.1f dB (likeness %.2f); the prototype: 0.0, -3.5, -0.5 (0.78), -11.9 (0.31)"),
@@ -296,7 +296,7 @@ bool FS47Sideband::SelfTest(TArray<FString>& Lines)
 	{
 		// the room's impulse: an 80 ms burst through FAR at full with no trim. The prototype: one second from 4 s is 16.5 dB under
 		// the first second, from 8 s 36 dB under. (A loop in this engine is one quantum longer than its delayTime: taken off.)
-		const TSharedRef<FS47AudioBuffer> Burst = Signal(.08);
+		const TSharedRef<FS47AudioBuffer> Burst = SbSignal(.08);
 		FRig R(nullptr);
 		R.Bus->FarTrim(0.); R.Bus->Set({ 0, 0, 0, 1 }); R.Go(.5);
 		// (the band is in: now the burst, from a second source)
@@ -306,8 +306,8 @@ bool FS47Sideband::SelfTest(TArray<FString>& Lines)
 		const double Off = T0;
 		const double First = R.Rms(Off + .2, Off + 1.2), At4 = R.Rms(Off + 4, Off + 5), At8 = R.Rms(Off + 8, Off + 9), At10 = R.Rms(Off + 10, Off + 11);
 		Lines.Add(FString::Printf(TEXT("INFO sideband: the room after an 80 ms burst: %.1f dB at 4 s, %.1f dB at 8 s, %.1f dB at 10 s against its first second (the prototype: -16.5, -36.2, -44.8)"),
-			Db(At4 / First), Db(At8 / First), Db(At10 / First)));
-		Check(R.Sound() && First > 1e-5 && Db(At4 / First) < -10 && Db(At4 / First) > -24 && Db(At8 / First) < -26 && Db(At8 / First) > -46 && At10 < At8,
+			SbDbOf(At4 / First), SbDbOf(At8 / First), SbDbOf(At10 / First)));
+		Check(R.Sound() && First > 1e-5 && SbDbOf(At4 / First) < -10 && SbDbOf(At4 / First) > -24 && SbDbOf(At8 / First) < -26 && SbDbOf(At8 / First) > -46 && At10 < At8,
 			TEXT("the room's tail dies as designed (about 16 dB down after 4 s, 36 dB after 8 s) and never grows"));
 		Again->Disconnect();
 	}
@@ -328,7 +328,7 @@ bool FS47Sideband::SelfTest(TArray<FString>& Lines)
 			&& R.Bus->Moment->Gain.ValueAt(T0 + 5.) < .6 && Near(R.Bus->Moment->Gain.ValueAt(T0 + 7.6), 1), TEXT("the duck: 0.2 s of music under the hit, 36 dB down for three seconds, back over four"));
 		R.Go(3.);
 		const double Before = R.Rms(.4, .9), Ducked = R.Rms(1.02 + 1., 1.02 + 3.);
-		Check(R.Sound() && Db(Ducked / Before) < -20, TEXT("rendered: the three seconds after a close sight are more than 20 dB under what was before"));
+		Check(R.Sound() && SbDbOf(Ducked / Before) < -20, TEXT("rendered: the three seconds after a close sight are more than 20 dB under what was before"));
 		FRig Plain(Music); Plain.Bus->Set({ 0, .5, 0, 0 }); Plain.Go(.5);
 		const double T1 = Plain.C->CurrentTime() + .02; Plain.Bus->Hit(T1, false);
 		Check(Near(Plain.Bus->HitDrive->Gain.ValueAt(T1 + .01), 1) && Near(Plain.Bus->HitLevel->Gain.ValueAt(T1 + .01), 1) && Plain.Bus->HitStatic->Gain.ValueAt(T1 + .02) > 0,

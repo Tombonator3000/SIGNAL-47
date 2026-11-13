@@ -34,7 +34,7 @@ namespace S47SbSession
 	using S47Sideband::EMode;
 	// A curve through (seconds, value) points, a smoothstep glide between them (the prototype's env()).
 	struct FPoint { double T, V; };
-	double Env(const TArrayView<const FPoint>& P, double At)
+	double SbEnv(const TArrayView<const FPoint>& P, double At)
 	{
 		if (At <= P[0].T) return P[0].V;
 		for (int32 I = 0; I + 1 < P.Num(); ++I)
@@ -291,10 +291,10 @@ void FS47Sideband::StepScene(double Dt)
 		SceneT = -1; Bus->Bed(-1, 0, false); Bus->StandBack(StandWant);
 		return;
 	}
-	Glide[0].Now = Env(SceneWorn, SceneT); Glide[1].Now = Env(SceneBroken, SceneT); Glide[2].Now = 0; Glide[3].Now = Env(SceneFar, SceneT);
-	Bus->StandBack(FMath::Pow(10., Env(SceneLevel, SceneT) / 20.));
+	Glide[0].Now = SbEnv(SceneWorn, SceneT); Glide[1].Now = SbEnv(SceneBroken, SceneT); Glide[2].Now = 0; Glide[3].Now = SbEnv(SceneFar, SceneT);
+	Bus->StandBack(FMath::Pow(10., SbEnv(SceneLevel, SceneT) / 20.));
 	const bool bBed = SceneT >= SceneBedFrom && SceneT < SceneBedTo && Bus->HasBed(SceneBed);
-	Bus->Bed(bBed ? SceneBed : -1, Env(SceneNear, SceneT), bBed);
+	Bus->Bed(bBed ? SceneBed : -1, SbEnv(SceneNear, SceneT), bBed);
 	if (!bSceneHit && SceneT >= SceneHit)
 	{
 		bSceneHit = true;
@@ -364,6 +364,8 @@ void FS47Sideband::Step(double Dt)
 
 	const S47Sideband::FDrive D = Read();
 	Wanted = S47Sideband::Drive(D);
+	// (the chain is made early in a Freeform session that reacts, not at the moment something first comes near)
+	if (D.bFreeform && Reacts != S47Sideband::EMode::Off && T > 2. && !bPrebuilt) { bPrebuilt = true; Bus->Warm0(); }
 	TensionNow = Wanted.Tension;
 	// the omen silence: while the night's sounds have dropped and nothing is seen, the bed keeps out of the first six seconds
 	HushFor = D.Hush > .5 && !D.bSeen && !D.bHunt ? HushFor + Dt : 0.;

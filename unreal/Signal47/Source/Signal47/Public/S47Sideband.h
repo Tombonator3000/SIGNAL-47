@@ -194,6 +194,8 @@ public:
 	void Wake();
 	bool RoomEngaged() const { return bRoom; }
 	int32 Nodes() const { return NodeCount; }
+	// Makes the chain without bringing it in (once, early in a session that will want it: not at the moment a band first moves).
+	void Warm0() { Build(); }
 	// For the tests: stand-in buffers instead of the files.
 	void TestFlares(const TSharedPtr<FS47AudioBuffer>& InStinger, const TSharedPtr<FS47AudioBuffer>& InBed);
 	static constexpr double Level = .43;        // the decks' usual gain: the chain works at the staged level (1 / this before it)
@@ -235,6 +237,9 @@ private:
 	TSharedRef<FS47BufferSourceNode> Loop(const TSharedPtr<FS47AudioBuffer>& B, double Offset = 0);
 	TSharedRef<FS47GainNode> Mono(const TSharedPtr<FS47AudioNode>& From);
 	void Build();
+	void Prepare();
+	TSharedPtr<FS47AudioBuffer> BufHiss, BufCrackle, BufDrift, BufDips;
+	double KHiss = 0, KCrackle = 0;
 	void BuildWorn(const TSharedPtr<FS47AudioNode>& In, const TSharedPtr<FS47AudioBuffer>& Hiss);
 	void BuildBroken(const TSharedPtr<FS47AudioBuffer>& Hiss);
 	void BuildWide();
@@ -303,7 +308,7 @@ private:
 	double T = 0, TensionNow = 0, GroundNow = 0, GroundWant = 0, GroundSeen = 0, EventQuiet = 0, HushFor = 0;
 	double AfterEncounter = 0, AfterHold = 0, AfterTaken = 0, HintNudge = 0, FarRise = -1;
 	double BedOutAt = -1; // after a full moment the bed dies away and stays out for the rest of that event
-	bool bOwnsGround = false, bWasTaken = false, bGroundFrame = false, bGroundHeld = false;
+	bool bOwnsGround = false, bWasTaken = false, bGroundFrame = false, bGroundHeld = false, bPrebuilt = false;
 	double AuditionV[4] = { -1, -1, -1, -1 }, AuditionLeft[4] = { 0, 0, 0, 0 };
 	double SceneT = -1, SceneDelay = -1, StandWant = 1; bool bSceneHit = false, bSceneBed = false;
 	TSharedRef<bool> bAlive = MakeShared<bool>(true);
