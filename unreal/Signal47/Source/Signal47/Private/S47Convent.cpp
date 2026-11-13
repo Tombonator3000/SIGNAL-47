@@ -49,7 +49,8 @@ namespace
 		TWeakObjectPtr<UStaticMeshComponent> Leaf;
 		FVector Root = FVector::ZeroVector, Origin = FVector::ZeroVector;
 		bool bBuilt = false, bOpen = false;
-		double K = 0, Last = -1, SeatIn = 0;
+		double K = 0, Last = -1, SeatIn = 0, Age = 0;
+		bool bGroundSaid = false;
 		int32 Applied = -1, Up = 0;
 		TArray<FLandPiece> Land;
 		TArray<FNightLamp> Night;
@@ -361,6 +362,16 @@ namespace
 				const double Z = (LandY(S.Origin, L.X, L.Z) + L.Up) * 100.0;
 				if (FMath::Abs(At.Z - Z) > .5) { At.Z = Z; C->SetWorldLocation(At); }
 			}
+		}
+		// (the town is built before Freeform's relief comes on: what the ground really does is said once, a little later)
+		S.Age += Dt;
+		if (!S.bGroundSaid && S.Age > 4)
+		{
+			S.bGroundSaid = true;
+			const FPlan& P = Plan();
+			UE_LOG(LogS47Convent, Display, TEXT("S47: church: the ground at the mission church: pad %s; under the floor's level before the door %+.2f, behind the back door %+.2f, north %+.2f, south %+.2f m"),
+				S47GroundEdits::Baked(PadId) ? TEXT("baked into the ground mesh") : TEXT("NOT in the ground mesh"), LandY(S.Origin, S.Root.X - 3, S.Root.Z) - S.Root.Y, LandY(S.Origin, S.Root.X + P.Back.X + 1, S.Root.Z) - S.Root.Y,
+				LandY(S.Origin, S.Root.X + 6, S.Root.Z - 5.5) - S.Root.Y, LandY(S.Origin, S.Root.X + 6, S.Root.Z + 5.5) - S.Root.Y);
 		}
 		const float Mask = M->Web->ExteriorDaylightMask(M->Web->FloodSet(TEXT("town")), 1);
 		if (Mask != S.LastMask)
