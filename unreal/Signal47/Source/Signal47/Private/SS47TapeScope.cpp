@@ -1,4 +1,5 @@
 #include "SS47TapeScope.h"
+#include "S47Script.h"
 #include "SS47Widgets.h"
 #include "S47Keys.h"
 #include "S47Kit.h"
@@ -130,7 +131,7 @@ int32 SS47TapeScope::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
  if(Hover>=0&&CanMark.Get(false))
  {
   Line({FVector2f(Px(Hover),Top),FVector2f(Px(Hover),Top+TraceH)},Pc.Amber*FLinearColor(1,1,1,.55f),1);
-  Label(FString::Printf(TEXT("%.1f s"),Hover),FMath::Min(Px(Hover)+6,Right-70),Top+4,Pc.Amber,17);
+  Label(FString::Printf(TEXT("%s s"),*S47Script::TapeSeconds(Hover)),FMath::Min(Px(Hover)+6,Right-70),Top+4,Pc.Amber,17);
  }
  if(Strip)return Layer;
  // D45-20261110: the band display, an LED analyzer beside the trace with a peak-hold dot per band that falls back slowly. It follows
@@ -294,7 +295,8 @@ int32 SS47TapeReels::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
  // The counter, in its own window with the unlit segments showing through, and the transport's state.
  const bool Blink=FMath::Fmod(Now,1.)<.5;
  const TCHAR* State=Rec?TEXT("REC"):Load?TEXT("LOADING"):Wind?(Gap<0?TEXT("<< REWIND"):TEXT(">> WIND")):Run?TEXT("> PLAY"):TEXT("STOP");
- const FString Count=FString::Printf(TEXT("%04d"),FMath::Clamp(int32(Shown*10+.5),0,9999));
+ // REVIEW-20261113: the counter's tenths never read 47 (S47Script::TapeSeconds, as a counter: the value before)
+ const FString Count=Shown<999.95?TEXT("0")+S47Script::TapeSeconds(FMath::Max(0.,Shown),1,true,true).Replace(TEXT("."),TEXT("")).Right(4):FString::Printf(TEXT("%04d"),FMath::Clamp(int32(Shown*10+.5),0,9999));
  const float Cw=Small?80.f:96.f,Chh=Small?24.f:32.f,Cx=Mid-Cw*.5f,Cy=My+Mh+(Small?10.f:16.f);const int32 Digit=Small?18:24;const float Pitch=Small?17.f:21.f;
  DrawWindow(Out,Layer,G,Pc,Cx,Cy,Cw,Chh);
  if(Now-RetainAt<1.&&FMath::Fmod(Now-RetainAt,.5)<.3)Label(TEXT("RETAINED"),Cx+5,Cy+(Small?3.f:5.f),Pc.Amber,Small?15:19);
@@ -305,11 +307,11 @@ int32 SS47TapeReels::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
  const FString Shown2=FString(State).Len()*GlyphW<=Room?FString(State):Rec?FString(TEXT("REC")):Load?FString(TEXT("LOAD")):Wind?(Gap<0?FString(TEXT("<<")):FString(TEXT(">>"))):Run?FString(TEXT(">")):FString(TEXT("STOP"));
  if(Rec){Box(Sx,Cy+(Small?7.f:10.f),10,10,Blink?Pc.Rec:Pc.Ghost);Label(Shown2,Sx+16,Cy+(Small?3.f:5.f),Pc.Rec,Small?15:17);}
  else Label(Shown2,Sx,Cy+(Small?3.f:5.f),Run||Wind||Load?Pc.Amber:Pc.Cream*FLinearColor(1,1,1,.7f),Small?15:17);
- if(Mid-Cw*.5f-118>CL.X+R+6)Label(FString::Printf(TEXT("%04.1f / %.0f s"),At,L),Mid-Cw*.5f-118,Cy+(Small?3.f:5.f),Pc.Cream,Small?15:17);
+ if(Mid-Cw*.5f-118>CL.X+R+6)Label(FString::Printf(TEXT("%s / %.0f s"),*S47Script::TapeSeconds(At,1,true,true),L),Mid-Cw*.5f-118,Cy+(Small?3.f:5.f),Pc.Cream,Small?15:17);
  if(Small)return Layer;
  // The deck's memory marks on the counter's window, the take's label, and the faceplate: four screws and the engraving.
  const double In=MarkIn.Get(-1.),OutAt=MarkOut.Get(-1.);
- if(!bPhosphor)Label(FString::Printf(TEXT("MEMO IN %s  OUT %s"),In<0?TEXT("--.-"):*FString::Printf(TEXT("%04.1f"),In),OutAt<0?TEXT("--.-"):*FString::Printf(TEXT("%04.1f"),OutAt)),Mid-92,Cy+Chh+3,In>=0||OutAt>=0?Pc.Amber:Pc.Cream*FLinearColor(1,1,1,.55f),15);
+ if(!bPhosphor)Label(FString::Printf(TEXT("MEMO IN %s  OUT %s"),In<0?TEXT("--.-"):*S47Script::TapeSeconds(In,1,false,true),OutAt<0?TEXT("--.-"):*S47Script::TapeSeconds(OutAt,1,false,true)),Mid-92,Cy+Chh+3,In>=0||OutAt>=0?Pc.Amber:Pc.Cream*FLinearColor(1,1,1,.55f),15);
  const FString Take=Caption.Get(FString());if(!Take.IsEmpty())Label(Take,Mid-float(Take.Len())*3.6f,Cy+Chh+21,Pc.Cream*FLinearColor(1,1,1,.8f),15);
  for(const FVector2f& Screw:{FVector2f(6,6),FVector2f(S.X-6,6),FVector2f(6,S.Y-6),FVector2f(S.X-6,S.Y-6)}){Ring(Screw,3,Pc.Cream*FLinearColor(1,1,1,.4f),1.f);Line({Screw-FVector2f(2,2),Screw+FVector2f(2,2)},Pc.Cream*FLinearColor(1,1,1,.4f),1.f);}
  Label(bPhosphor?TEXT("RX BANK 3 / TAPE TRANSPORT"):TEXT("SARO / RX-3 TAPE COMPARATOR"),CL.X+R+18,8,Pc.Cream*FLinearColor(1,1,1,.4f),14);

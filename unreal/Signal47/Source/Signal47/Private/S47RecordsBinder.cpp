@@ -221,8 +221,8 @@ FModel Build(const FSource& In)
   {
    E.Status=TEXT("AT OPS");E.StatusLine=TEXT("HELD AT OPS / NOT IN THIS BINDER");E.TodayGroup=J.Day==In.Today?3:-1;++NotFiled;
   }
-  FString Body=J.bControl?FString::Printf(TEXT("CONTROL   INDEPENDENT CONTROL %.1f/8 s"),J.ControlAt):FString(TEXT("CONTROL   NOT RECORDED"));
-  if(J.MarkStart>=0&&J.MarkEnd>J.MarkStart)Body+=FString::Printf(TEXT("\nMARK      %.2f TO %.2f s"),J.MarkStart,J.MarkEnd);
+  FString Body=J.bControl?FString::Printf(TEXT("CONTROL   INDEPENDENT CONTROL %s/8 s"),*S47Script::TapeSeconds(J.ControlAt,1,true)):FString(TEXT("CONTROL   NOT RECORDED"));
+  if(J.MarkStart>=0&&J.MarkEnd>J.MarkStart)Body+=FString::Printf(TEXT("\nMARK      %s TO %s s"),*S47Script::TapeSeconds(J.MarkStart,2),*S47Script::TapeSeconds(J.MarkEnd,2));
   Body+=FString(TEXT("\n\n"))+(J.bFiled?FiledWords:J.bPacket?PacketWords:HeldWords);
   if(!J.Original.IsEmpty())Body+=FString(TEXT("\n\nTHE ORIGINAL AS PRINTED\n"))+J.Original;
   E.Pages=Paginate(Body,SheetWide,SheetLines);

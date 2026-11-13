@@ -671,3 +671,29 @@ bool ModeHolds(const FS47ScriptTrigger& T,const FS47ScriptNow& Now,FString* Why)
  }
 }
 }
+
+bool S47Script::SaysFortySeven(const FString& Shown)
+{
+ return Shown.Replace(TEXT("."),TEXT("")).Contains(TEXT("47"));
+}
+
+FString S47Script::TapeSeconds(double Seconds, int32 Decimals, bool bRunning, bool bPad)
+{
+ Decimals=FMath::Clamp(Decimals,0,2);
+ const double Step=Decimals==0?1.:Decimals==1?.1:.01;
+ const auto Say=[Decimals,bPad](double V)
+ {
+  V=FMath::Max(0.,V);
+  FString Out=Decimals==0?FString::Printf(TEXT("%.0f"),V):Decimals==1?FString::Printf(TEXT("%.1f"),V):FString::Printf(TEXT("%.2f"),V);
+  if(bPad&&V<9.95)Out=TEXT("0")+Out;
+  return Out;
+ };
+ const FString Plain=Say(Seconds);
+ if(!SaysFortySeven(Plain))return Plain;
+ for(int32 K=1;K<=3;++K)
+ {
+  const FString Down=Say(Seconds-K*Step);if(!SaysFortySeven(Down))return Down;
+  if(!bRunning){const FString Up=Say(Seconds+K*Step);if(!SaysFortySeven(Up))return Up;}
+ }
+ return Say(FMath::FloorToDouble(Seconds)-1);
+}

@@ -35,6 +35,7 @@
 #include "S47Openings.h"
 #include "S47Outfit.h"
 #include "S47Places.h"
+#include "S47Script.h"
 #include "S47Witness.h"
 #include "S47EventPlaces.h"
 #include "S47Predecessor.h"
@@ -1417,11 +1418,11 @@ bool FS47FreeformSession::ConfirmOnTape(FJob& J)
 {
  if(!PlainAnomaly(J)||J.Stage<EJobStage::Chart||J.Stage>=EJobStage::Registered)return false;
  if(RetainWaits(J)){Feedback=TEXT("REEL DECK: Retain the take first: RECEIVER (centre PC), RECORD tab, RETAIN TAKE.");return false;}
- if(!TapeHeard(J)){Feedback=FString::Printf(TEXT("REEL DECK: Not heard yet (%.1f of 18 s). PLAY the take from the start, past the extra ticks, then RETAIN."),FMath::Min(18.,J.OriginalCovered));return false;}
+ if(!TapeHeard(J)){Feedback=FString::Printf(TEXT("REEL DECK: Not heard yet (%s of 18 s). PLAY the take from the start, past the extra ticks, then RETAIN."),*S47Script::TapeSeconds(FMath::Min(18.,J.OriginalCovered),1,true));return false;}
  // RX-ANOMALY-FLOW-20261113 (Tom: MARK IN and MARK OUT must work): marks the operator set are the operator's. Both set and the ticks
  // outside them: refused, with where they are; one set: the other is filled if that covers; none: filled from before the first tick.
  if(J.MarkStart>=0&&J.MarkEnd>=0&&!MarkCoversTicks(J.MarkStart,J.MarkEnd))
- {Feedback=FString::Printf(TEXT("REEL DECK: The marks (%.1f to %.1f s) miss the extra ticks. MARK IN before 9.3 s and MARK OUT after 12.6 s, then RETAIN."),J.MarkStart,J.MarkEnd);return false;}
+ {Feedback=FString::Printf(TEXT("REEL DECK: The marks (%s to %s s) miss the extra ticks. MARK IN before 9.3 s and MARK OUT after 12.6 s, then RETAIN."),*S47Script::TapeSeconds(J.MarkStart),*S47Script::TapeSeconds(J.MarkEnd));return false;}
  // LOOP-CAREFUL-PAYS-20261113: both marks the operator's own (none filled in below): what the packet's bearing can narrow by and name
  if(!J.bAudioReviewed)J.bOwnMarks=J.MarkStart>=0&&J.MarkEnd>=0;
  if(!MarkCoversTicks(J.MarkStart,J.MarkEnd))
@@ -1466,8 +1467,8 @@ void FS47FreeformSession::PrintJob(bool bPacket,bool bShow)
  {
   if(Specialized(J->Phenomenon))D.Page+=ControlSummary(*J)+TEXT("\nREGISTERED / PHYSICAL FILING PENDING.");
   else if(!J->bAnomaly)D.Page+=TEXT("FIRST SHIFT TRAINING COPY / ROUTINE RESULT REGISTERED AND PAID.\nTake this labelled packet to the records-room binder. Later routine work is registered digitally; discrepancies require retained originals.\nPHYSICAL FILING PENDING.");
-  else D.Page+=(J->bControl?FString::Printf(TEXT("REGISTERED / INTERNAL CONTROL %.1f SECONDS\n"),J->ControlAt):FString(TEXT("REGISTERED / CHECKED ON TAPE AT THE REEL DECK\n")))
-   +FString::Printf(TEXT("EXTRA TICKS %.1f TO %.1f SECONDS / CONCLUSION: SOURCE UNRESOLVED\nPHYSICAL FILING PENDING."),J->MarkStart,J->MarkEnd); // GAMEPLAY-LOOP-01
+  else D.Page+=(J->bControl?FString::Printf(TEXT("REGISTERED / INTERNAL CONTROL %s SECONDS\n"),*S47Script::TapeSeconds(J->ControlAt,1,true)):FString(TEXT("REGISTERED / CHECKED ON TAPE AT THE REEL DECK\n")))
+   +FString::Printf(TEXT("EXTRA TICKS %s TO %s SECONDS / CONCLUSION: SOURCE UNRESOLVED\nPHYSICAL FILING PENDING."),*S47Script::TapeSeconds(J->MarkStart),*S47Script::TapeSeconds(J->MarkEnd)); // GAMEPLAY-LOOP-01 (REVIEW-20261113: never digits that read 47)
   // LOOP-SLIP-IN-PACKET-20261113 (→ M3): the bearing the registration gave, as the packet's last section (same feed, one collect)
   if(Places)if(const FString Section=Places->PacketSection(J->Id);!Section.IsEmpty())D.Page+=TEXT("\n\n")+Section;
  }
@@ -1599,7 +1600,7 @@ bool FS47FreeformSession::MarkAudioAt(double At)
  At=FMath::Clamp(At,0.,18.);
  // RX-ANOMALY-FLOW-20261113: a click on the trace sets the next mark there (MARK IN, then MARK OUT, then a new MARK IN), in order,
  // and says what it set; the tape stays where it is.
- if(J->MarkStart<0||J->MarkEnd>=0){J->MarkStart=At;J->MarkEnd=-1;Feedback=FString::Printf(TEXT("MARK IN %.1f s. Click again after the last extra tick for MARK OUT."),At);}
+ if(J->MarkStart<0||J->MarkEnd>=0){J->MarkStart=At;J->MarkEnd=-1;Feedback=FString::Printf(TEXT("MARK IN %s s. Click again after the last extra tick for MARK OUT."),*S47Script::TapeSeconds(At));}
  else{J->MarkEnd=FMath::Max(J->MarkStart,At);J->MarkStart=FMath::Min(J->MarkStart,At);Feedback=MarkSaid(*J);}
  if(!PlainAnomaly(*J))J->bAudioReviewed=false; // GAMEPLAY-LOOP-01: the extra-tick take's marks are notes; its one listen stands
  Changed();return true;
@@ -1607,8 +1608,8 @@ bool FS47FreeformSession::MarkAudioAt(double At)
 FString FS47FreeformSession::MarkSaid(const FJob& J)
 {
  if(J.MarkStart<0)return TEXT("MARK: none yet.");
- if(J.MarkEnd<0)return FString::Printf(TEXT("MARK IN %.1f s. MARK OUT still to set."),J.MarkStart);
- return FString::Printf(TEXT("MARK %.1f to %.1f s: %s"),J.MarkStart,J.MarkEnd,MarkCoversTicks(J.MarkStart,J.MarkEnd)?TEXT("covers the extra ticks. Press RETAIN when heard."):TEXT("misses extra ticks. MARK IN before 9.3 s, MARK OUT after 12.6 s."));
+ if(J.MarkEnd<0)return FString::Printf(TEXT("MARK IN %s s. MARK OUT still to set."),*S47Script::TapeSeconds(J.MarkStart));
+ return FString::Printf(TEXT("MARK %s to %s s: %s"),*S47Script::TapeSeconds(J.MarkStart),*S47Script::TapeSeconds(J.MarkEnd),MarkCoversTicks(J.MarkStart,J.MarkEnd)?TEXT("covers the extra ticks. Press RETAIN when heard."):TEXT("misses extra ticks. MARK IN before 9.3 s, MARK OUT after 12.6 s."));
 }
 bool FS47FreeformSession::AudioAction(const FString& Action)
 {
@@ -1640,12 +1641,12 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
   if(Action==TEXT("mark_start"))
   {
    J->MarkStart=AudioCursor;if(J->MarkEnd>=0&&J->MarkEnd<J->MarkStart)J->MarkEnd=-1;
-   Feedback=J->MarkEnd<0?FString::Printf(TEXT("MARK IN %.1f s. Play on past the last extra tick and press MARK OUT."),AudioCursor):MarkSaid(*J);
+   Feedback=J->MarkEnd<0?FString::Printf(TEXT("MARK IN %s s. Play on past the last extra tick and press MARK OUT."),*S47Script::TapeSeconds(AudioCursor)):MarkSaid(*J);
   }
   else
   {
-   if(J->MarkStart>=0&&AudioCursor<J->MarkStart){Feedback=FString::Printf(TEXT("REEL DECK: MARK OUT (%.1f s) must come after MARK IN (%.1f s). Play on, or set MARK IN again."),AudioCursor,J->MarkStart);return false;}
-   J->MarkEnd=AudioCursor;Feedback=J->MarkStart<0?FString::Printf(TEXT("MARK OUT %.1f s. MARK IN still to set (rewind and press it before the first extra tick)."),AudioCursor):MarkSaid(*J);
+   if(J->MarkStart>=0&&AudioCursor<J->MarkStart){Feedback=FString::Printf(TEXT("REEL DECK: MARK OUT (%s s) must come after MARK IN (%s s). Play on, or set MARK IN again."),*S47Script::TapeSeconds(AudioCursor),*S47Script::TapeSeconds(J->MarkStart));return false;}
+   J->MarkEnd=AudioCursor;Feedback=J->MarkStart<0?FString::Printf(TEXT("MARK OUT %s s. MARK IN still to set (rewind and press it before the first extra tick)."),*S47Script::TapeSeconds(AudioCursor)):MarkSaid(*J);
   }
   if(!PlainAnomaly(*J))J->bAudioReviewed=false;
  }
@@ -1746,7 +1747,7 @@ double FS47FreeformSession::AudioLevel()const
  for(double At=PulsarPeriod;At<=18;At+=PulsarPeriod)L=FMath::Max(L,FMath::Max(0.,1-FMath::Abs(AudioCursor-At)/.06));
  if(AudioSourceIndex==0&&CurrentJob())for(double At:CurrentJob()->TraceTicks)L=FMath::Max(L,FMath::Max(0.,.8-FMath::Abs(AudioCursor-At)/.05));return L;
 }
-FString FS47FreeformSession::AudioDisplay()const{const FString Status=AudioCaptureStatus(),Note=Status.IsEmpty()?FString():TEXT(" / ")+Status;return FString::Printf(TEXT("%s %04.1f/%02d %s"),AudioSourceIndex==0?TEXT("ORG"):TEXT("REF"),AudioCursor,AudioSourceIndex==0?18:8,CaptureStartStage?TEXT("LOADING TAPE"):bAudioPlaying?TEXT("PLAY"):CurrentJob()&&CurrentJob()->bLegacyTrace?TEXT("PAUSE / LEGACY RECONSTRUCTION"):TEXT("PAUSE"))+Note;}
+FString FS47FreeformSession::AudioDisplay()const{const FString Status=AudioCaptureStatus(),Note=Status.IsEmpty()?FString():TEXT(" / ")+Status;return FString::Printf(TEXT("%s %s/%02d %s"),AudioSourceIndex==0?TEXT("ORG"):TEXT("REF"),*S47Script::TapeSeconds(AudioCursor,1,true,true),AudioSourceIndex==0?18:8,CaptureStartStage?TEXT("LOADING TAPE"):bAudioPlaying?TEXT("PLAY"):CurrentJob()&&CurrentJob()->bLegacyTrace?TEXT("PAUSE / LEGACY RECONSTRUCTION"):TEXT("PAUSE"))+Note;}
 bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
 {
  if(!RequirePower())return false;
@@ -2834,7 +2835,7 @@ void FS47FreeformSession::OpenReceiver()
   {
    const auto* J=CurrentJob();if(!J)return FString(TEXT("START RECORDING"));
    if(J->Stage==EJobStage::Integrating)return FString(TEXT("RECORDING..."));
-   if(J->bControl&&J->ControlAt<8&&J->Phenomenon!=TEXT("wrong_source"))return PlainAnomaly(*J)?FString::Printf(TEXT("REFERENCE %.1f / 8 s"),J->ControlAt):FString::Printf(TEXT("CONTROL %.1f / 8 s"),J->ControlAt);
+   if(J->bControl&&J->ControlAt<8&&J->Phenomenon!=TEXT("wrong_source"))return PlainAnomaly(*J)?FString::Printf(TEXT("REFERENCE %s / 8 s"),*S47Script::TapeSeconds(J->ControlAt,1,true)):FString::Printf(TEXT("CONTROL %s / 8 s"),*S47Script::TapeSeconds(J->ControlAt,1,true));
    if(CanRecordControl())return FString(TEXT("RECORD CONTROL / 8 s"));
    if(RetainWaits(*J))return FString(TEXT("RETAIN: RECORD TAB")); // RX-ANOMALY-FLOW-20261113: the take is retained on RECORD
    if(PlainAnomaly(*J)&&J->Stage>=EJobStage::Chart&&J->Stage<=EJobStage::Recorded&&!J->bAudioReviewed)return FString(TEXT("ON TAPE / REEL DECK")); // GAMEPLAY-LOOP-01
@@ -2916,7 +2917,7 @@ void FS47FreeformSession::OpenReceiver()
     if(X->Stage==EJobStage::Pointed)return FString(TEXT("START RECORDING"));
     if(X->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECORDING %.0f / %.0f s"),X->Elapsed,SourceSeconds());
     if(RetainWaits(*X))return FString(TEXT("RETAIN TAKE / RECORD REFERENCE 8 s"));
-    if(X->bControl&&X->ControlAt<8)return FString::Printf(TEXT("REFERENCE %.1f / 8 s"),RefTenths(*X));
+    if(X->bControl&&X->ControlAt<8)return FString::Printf(TEXT("REFERENCE %s / 8 s"),*S47Script::TapeSeconds(RefTenths(*X),1,true));
     return FString(TEXT("RETAINED / REEL DECK NEXT"));
    }),[this]{const auto* X=CurrentJob();if(X&&X->Stage==EJobStage::Pointed){if(!StartAcquisition())Changed(Feedback);}else if(!RetainTake())Changed(Feedback);},1,
    TAttribute<bool>::CreateLambda([this]{const auto* X=CurrentJob();return X&&((X->Stage==EJobStage::Pointed&&ReceiverReady())||RetainWaits(*X));}));
@@ -2925,7 +2926,7 @@ void FS47FreeformSession::OpenReceiver()
     if(X->Stage<=EJobStage::Pointed)return FString(TEXT("NOT RECORDED"));
     if(X->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECORDING %.0f / %.0f s"),X->Elapsed,SourceSeconds());
     return FString(X->bPrinted?TEXT("RETAINED / IN NOTEBOOK"):TEXT("ON TAPE / NOT RETAINED"));};
-   auto RefState=[this,RefTenths]{const auto* X=CurrentJob();if(!X||!X->bControl)return FString(TEXT("NOT RECORDED"));return X->ControlAt<8?FString::Printf(TEXT("RECORDING %.1f / 8 s"),RefTenths(*X)):FString(TEXT("ON TAPE"));};
+   auto RefState=[this,RefTenths]{const auto* X=CurrentJob();if(!X||!X->bControl)return FString(TEXT("NOT RECORDED"));return X->ControlAt<8?FString::Printf(TEXT("RECORDING %s / 8 s"),*S47Script::TapeSeconds(RefTenths(*X),1,true)):FString(TEXT("ON TAPE"));};
    // D69-20261113: TAKE and REFERENCE read as one phrase side by side; each column has its title above its status, a rule between
    auto Cell=[](const TCHAR* Title,TFunction<FString()> State){return S47Kit::Col({T::Note(FString(Title),20,TAttribute<FLinearColor>(S47Kit::Css(0x8cffa4)),false),
     T::Note(TAttribute<FString>::CreateLambda(State),26,TAttribute<FLinearColor>(S47Kit::Css(0xffb84a)),false)},2);};
@@ -2951,7 +2952,7 @@ void FS47FreeformSession::OpenReceiver()
   }
   TArray<S47Kit::FW> JobRows={
    T::Columns({{1.f,T::Value(TEXT("JOB"),J->Id,true)},{1.4f,T::Value(TEXT("STAGE"),TAttribute<FString>::CreateLambda([this]{return CurrentJob()?StageText(CurrentJob()->Stage):FString();}),true)}},10),
-   T::Columns({{1.f,T::Value(TEXT("RECORDED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%.1f / %.0f s"),X?X->Elapsed:0.,SourceSeconds());}),true)},
+   T::Columns({{1.f,T::Value(TEXT("RECORDED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%s / %.0f s"),*S47Script::TapeSeconds(X?X->Elapsed:0.,1,true),SourceSeconds());}),true)},
     {1.4f,T::Value(TEXT("ORIGINAL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();if(!X)return FString(); // RX-ANOMALY-FLOW-20261113: live, it changes on this page
      return X->bPrinted?FString(PlainAnomaly(*X)?TEXT("KEPT / IN NOTEBOOK"):TEXT("COLLECTED / IN NOTEBOOK")):RetainWaits(*X)?FString(TEXT("ON TAPE / RETAIN IT HERE")):X->Stage==EJobStage::Chart?FString(TEXT("WAITING AT PRINTER")):FString(TEXT("NOT YET RECORDED"));}),true)}},10)};
   if(!ControlPanel)JobRows.Add(SNew(SBox).Visibility_Lambda([AnomalyHere]{return AnomalyHere()?EVisibility::Collapsed:EVisibility::Visible;})[T::Small(TEXT("Originals print at the table by the service-yard door. Valid recorded seconds are retained if tuning or pointing is lost."))]);
@@ -2968,7 +2969,7 @@ void FS47FreeformSession::OpenReceiver()
     :TEXT("It runs by itself. Then listen to both recordings at the reel deck on the wall table.");
    Rows.Add(T::Panel(TEXT("INTERNAL CONTROL / THE SKY OR THE STATION?"),S47Kit::Col({
     T::Small(Why),
-    T::Value(TEXT("CONTROL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return !X||!X->bControl?FString(TEXT("NOT RECORDED")):X->ControlAt<8?FString::Printf(TEXT("RUNNING %.1f / 8 s"),X->ControlAt):FString(TEXT("COMPLETE"));}),true),
+    T::Value(TEXT("CONTROL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return !X||!X->bControl?FString(TEXT("NOT RECORDED")):X->ControlAt<8?FString::Printf(TEXT("RUNNING %s / 8 s"),*S47Script::TapeSeconds(X->ControlAt,1,true)):FString(TEXT("COMPLETE"));}),true),
     T::Small(After)})));
    if(!Beam&&!J->bControl)Rows.Add(T::DueRing(T::Big(FString(TEXT("RECORD INTERNAL CONTROL / 8 SECONDS")),[this]{if(StartControl())OpenReceiver();else Changed(NextAction());},1,true),[this]{return CanRecordControl();})); // RX-TABS-DUE-20261113
   }
@@ -3166,7 +3167,7 @@ void FS47FreeformSession::OpenTapePanel()
   {1.1f,Keyed([this]{const auto* J=CurrentJob();return J&&J->bAudioReviewed;},T::Filled(TEXT("RETAIN"),Press(TEXT("retain")),TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&PlainAnomaly(*J)&&J->Stage>=EJobStage::Chart&&J->Stage<EJobStage::Registered&&!J->bAudioReviewed;})))}},10)]);
  // E: what the mark covers and what the deck last said, in two lines at most.
  Rows.Add(SNew(SBox).HeightOverride(56)[T::Columns({
-  {1.f,T::Note(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("MARK IN before the extra ticks, MARK OUT after: the keys at the tape head, or click the trace."));if(J->MarkEnd<0)return FString::Printf(TEXT("MARK IN %.1f s / MARK OUT still to set"),J->MarkStart);return MarkCoversTicks(J->MarkStart,J->MarkEnd)?FString::Printf(TEXT("MARK %.1f-%.1f s COVERS THE TICKS"),J->MarkStart,J->MarkEnd):FString::Printf(TEXT("MARK %.1f-%.1f s MISSES TICKS: from before the first to after the last"),J->MarkStart,J->MarkEnd);}),20,TAttribute<FLinearColor>(LampOn))},
+  {1.f,T::Note(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("MARK IN before the extra ticks, MARK OUT after: the keys at the tape head, or click the trace."));if(J->MarkEnd<0)return FString::Printf(TEXT("MARK IN %s s / MARK OUT still to set"),*S47Script::TapeSeconds(J->MarkStart));const FString MarkIn=S47Script::TapeSeconds(J->MarkStart),MarkOut=S47Script::TapeSeconds(J->MarkEnd);return MarkCoversTicks(J->MarkStart,J->MarkEnd)?FString::Printf(TEXT("MARK %s-%s s COVERS THE TICKS"),*MarkIn,*MarkOut):FString::Printf(TEXT("MARK %s-%s s MISSES TICKS: from before the first to after the last"),*MarkIn,*MarkOut);}),20,TAttribute<FLinearColor>(LampOn))},
   // RX-ANOMALY-FLOW-20261113: what the deck last said comes first (a refusal, a mark set); the capture's state only when it says nothing.
   // (The first pulsar's capture status stood here all night, so a key that refused left no word on the panel.)
   {1.3f,T::Note(TAttribute<FString>::CreateLambda([this]{const FString Status=AudioCaptureStatus();return FeedbackText().IsEmpty()?Status:FeedbackText();}),20,TAttribute<FLinearColor>(Cream))}},14)]);
@@ -3229,8 +3230,8 @@ void FS47FreeformSession::OpenArchive(bool bBinderOffGlass)
  }
  for(const FJob& J:Work)if(J.bPrinted||!J.OriginalPage.IsEmpty())
  {
-  const FString Control=J.bControl?FString::Printf(TEXT("INDEPENDENT CONTROL %.1f/8 s"),J.ControlAt):J.bAnomaly&&!Specialized(J.Phenomenon)?FString(J.bAudioReviewed?TEXT("CHECKED ON TAPE"):TEXT("TAPE CHECK PENDING")):FString(TEXT("CONTROL NOT RECORDED"));
-  const FString Mark=J.MarkStart>=0&&J.MarkEnd>J.MarkStart?FString::Printf(TEXT(" / MARK %.2f–%.2f s"),J.MarkStart,J.MarkEnd):FString();
+  const FString Control=J.bControl?FString::Printf(TEXT("INDEPENDENT CONTROL %s/8 s"),*S47Script::TapeSeconds(J.ControlAt,1,true)):J.bAnomaly&&!Specialized(J.Phenomenon)?FString(J.bAudioReviewed?TEXT("CHECKED ON TAPE"):TEXT("TAPE CHECK PENDING")):FString(TEXT("CONTROL NOT RECORDED"));
+  const FString Mark=J.MarkStart>=0&&J.MarkEnd>J.MarkStart?FString::Printf(TEXT(" / MARK %s–%s s"),*S47Script::TapeSeconds(J.MarkStart,2),*S47Script::TapeSeconds(J.MarkEnd,2)):FString();
   const FString Conclusion=!J.bAnomaly?TEXT("ROUTINE RESULT"):!J.bAudioReviewed?TEXT("COMPARISON PENDING"):J.Phenomenon==TEXT("wrong_source")?TEXT("OFF-SOURCE RESPONSE"):J.Phenomenon==TEXT("time_disagreement")?TEXT("CLOCK DISAGREEMENT"):J.Phenomenon==TEXT("duplicate_print")?TEXT("DUPLICATE ORIGINAL"):TEXT("SOURCE UNRESOLVED");
   Tabs[0].Add({J.Id,FString::Printf(TEXT("%s / ORIGINAL %s-original"),*J.Id,*J.Id),Conclusion+TEXT(" / ")+StageText(J.Stage),FString::Printf(TEXT("%s%s\n%s / %s"),*Control,*Mark,*Conclusion,*StageText(J.Stage))});
  }

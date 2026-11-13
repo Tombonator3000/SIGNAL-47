@@ -993,8 +993,8 @@ FString FS47Places::TieLine(const FHeld& H)
  // points at that same thing does it say they belong together, in the operator's own marks if he set them. Never what it is.
  if(H.bSame&&H.bOwnMarks)
  {
-  const FString In=FString::Printf(TEXT("%.1f"),H.MarkIn),Out=FString::Printf(TEXT("%.1f"),H.MarkOut);
-  // (read as digits: 14.7 or 4.7 says a 47 as well as 47.0 does)
+  // (read as digits: 14.7 or 4.7 says a 47 as well as 47.0 does; REVIEW-20261113: the shared rule, S47Script::TapeSeconds)
+  const FString In=S47Script::TapeSeconds(H.MarkIn),Out=S47Script::TapeSeconds(H.MarkOut);
   const FString Digits=(In+TEXT(" ")+Out).Replace(TEXT("."),TEXT(""));
   if(!Digits.Contains(TEXT("47"))&&In!=TEXT("8.15")&&Out!=TEXT("8.15"))
    return FString::Printf(TEXT("THE EXTRA TICKS BETWEEN YOUR MARK IN AT %s S AND YOUR MARK OUT AT %s S CAME IN ON THIS BEARING."),*In,*Out);
