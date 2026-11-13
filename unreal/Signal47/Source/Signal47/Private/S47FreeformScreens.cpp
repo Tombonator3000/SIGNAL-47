@@ -83,7 +83,17 @@ FS47FreeformSession::FTerminalIdle FS47FreeformSession::TerminalIdle(int32 Scree
 }
 void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool Live,TSharedPtr<SWidget> KeysTo)
 {
- if(!M||!M->UI||!M->Web||!M->Player||!RequirePower())return;
+ if(!TerminalBegin(Screen,Title))return;
+ S47FreeformTerminal::SetClock([this]{return TerminalClock();});S47FreeformTerminal::SetStation(TerminalStation(Screen));S47FreeformTerminal::SetHumScreen(Screen);
+ auto Content=S47FreeformTerminal::Frame(Title,Body);
+ S47FreeformTerminal::SetClock(nullptr);S47FreeformTerminal::SetStation(FString());S47FreeformTerminal::SetHumScreen(-1); // the frame keeps its own copy; Story screens show no stale Freeform clock
+ TerminalShow(Screen,Content,Live,KeysTo,false);
+}
+// RX-LOOK-20261113: OpenTerminal's two halves. Begin: the station's sinks, the relay's thump and the page's chatter; false when there
+// is no room to show a terminal in. Show: the framed content on the glass (bOwnKeyRow: the frame has its own row of keys).
+bool FS47FreeformSession::TerminalBegin(int32 Screen,const FString& Title)
+{
+ if(!M||!M->UI||!M->Web||!M->Player||!RequirePower())return false;
  const TWeakObjectPtr<US47Main> Main=M;
  const bool bSame=TerminalView.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen();
  S47FreeformTerminal::SetSound([Main](int32 Kind){if(Main.IsValid())TerminalKey(Main->Audio,Kind);});
@@ -99,16 +109,18 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
  }
  if(Screen>=0&&Screen<4)LastPage[Screen]=Title; // N1110 PC-WORLD-DISPLAY-04
  if(Title!=TerminalTitle){TerminalPage(M->Audio,Title);TerminalTitle=Title;}
- S47FreeformTerminal::SetClock([this]{return TerminalClock();});S47FreeformTerminal::SetStation(TerminalStation(Screen));S47FreeformTerminal::SetHumScreen(Screen);
- auto Content=S47FreeformTerminal::Frame(Title,Body);
- S47FreeformTerminal::SetClock(nullptr);S47FreeformTerminal::SetStation(FString());S47FreeformTerminal::SetHumScreen(-1); // the frame keeps its own copy; Story screens show no stale Freeform clock
+ return true;
+}
+void FS47FreeformSession::TerminalShow(int32 Screen,TSharedRef<SWidget> Content,bool Live,TSharedPtr<SWidget> KeysTo,bool bOwnKeyRow)
+{
+ if(!M||!M->UI||!M->Web||!M->Player)return;
  if(const auto Current=TerminalView.Pin();Current.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen())
- {Current->SetScreen(Content,KeysTo.IsValid()?KeysTo:TSharedPtr<SWidget>(Content));bTelemetry=Live;return;} // (RX-ACQUIRE-SKY-20261113: the sky chart has the keys first)
+ {Current->SetScreen(Content,KeysTo.IsValid()?KeysTo:TSharedPtr<SWidget>(Content),bOwnKeyRow);bTelemetry=Live;return;} // (RX-ACQUIRE-SKY-20261113: the sky chart has the keys first)
  const TWeakObjectPtr<US47Main> Owner=M;
  const auto View=SNew(SS47ScreenView).Screen(Screen).Web(M->Web.Get()).Walker(M->Player.Get()).bUseLeaves(true).OnLeft([Owner,this]
  {if(Owner.IsValid()&&Owner->Freeform.Get()==this&&Owner->UI)Owner->UI->Close();});
  if(!View->OnGlass()){M->UI->Toast(TEXT("The physical workstation display is unavailable."),4);return;}
- View->SetScreen(Content,KeysTo.IsValid()?KeysTo:TSharedPtr<SWidget>(Content));
+ View->SetScreen(Content,KeysTo.IsValid()?KeysTo:TSharedPtr<SWidget>(Content),bOwnKeyRow);
  M->UI->Open(View,[Owner,this]
  {
   if(IsEngineExitRequested()||!Owner.IsValid()||Owner->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Owner->Freeform.Get()!=this)return;

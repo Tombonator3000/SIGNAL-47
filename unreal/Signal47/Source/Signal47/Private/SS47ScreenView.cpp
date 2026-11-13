@@ -147,7 +147,7 @@ SS47ScreenView::~SS47ScreenView()
 	Renderer = nullptr;
 }
 
-void SS47ScreenView::SetScreen(const TSharedRef<SWidget>& InContent, const TSharedPtr<SWidget>& InKeysTo)
+void SS47ScreenView::SetScreen(const TSharedRef<SWidget>& InContent, const TSharedPtr<SWidget>& InKeysTo, bool bOwnKeyRow)
 {
 	S47_USING_THEME
 	Content = InContent;
@@ -159,7 +159,9 @@ void SS47ScreenView::SetScreen(const TSharedRef<SWidget>& InContent, const TShar
 		// Controls and instructions live inside the same physical aperture. The
 		// outer image is masked by the world material, never a second HUD bezel.
 		// D48-20261110: the content out to ContentInset of the picture (was 7.5 %), the hint line stepped in from the corner
-		Window->SetContent(SNew(SS47CrtGlass)
+		// RX-LOOK-20261113: a screen with its own row of keys (the receiver's frame) has the whole height
+		if (bOwnKeyRow) Window->SetContent(SNew(SS47CrtGlass)[SNew(SBox).Padding(FMargin(Units*ContentInset,Units*.75f*ContentInset))[InContent]]);
+		else Window->SetContent(SNew(SS47CrtGlass)
 		 [SNew(SBox).Padding(FMargin(Units*ContentInset,Units*.75f*ContentInset))
 		  [SNew(SVerticalBox)
 		   +SVerticalBox::Slot().FillHeight(1)[InContent]

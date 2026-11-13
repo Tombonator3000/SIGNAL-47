@@ -39,8 +39,12 @@ public:
 	void Construct(const FArguments& InArgs);
 	virtual ~SS47ScreenView() override;
 
-	/** What the screen shows, and the widget that has the keys first. */
-	void SetScreen(const TSharedRef<SWidget>& Content, const TSharedPtr<SWidget>& KeysTo);
+	/** What the screen shows, and the widget that has the keys first. bOwnKeyRow (RX-LOOK-20261113): the content has its own row
+	 *  of keys (the receiver's frame), so the glass's line of hints is left out and the content has its height. */
+	void SetScreen(const TSharedRef<SWidget>& Content, const TSharedPtr<SWidget>& KeysTo, bool bOwnKeyRow = false);
+	/** The content's room on the glass (Slate units) with and without the line of hints, for a screen that sizes itself to it. */
+	static constexpr float HintRoom = 32.f;
+	static float ContentHigh(bool bOwnKeyRow) { return Units * .75f * (1.f - 2.f * ContentInset) - (bOwnKeyRow ? 0.f : HintRoom); }
 	/** Step back from the screen (the content's own close). */
 	void Leave();
 	bool OnGlass() const { return bWorld; }

@@ -17,6 +17,8 @@ struct FS47Doc;
 struct FS47MapView;
 
 // Separate, persistent SARO working life. Story progression never grants its jobs or facts.
+struct FS47RxLive;
+class FS47RxFeed;
 class FS47FreeformSession
 {
  // The month's assessment test (S47AssessMonthTest.cpp, profile "cases"): files the day's jobs as a fixture.
@@ -652,6 +654,14 @@ public:
  TSharedPtr<class FS47RxSearch> RxSearch;
  void StepRxSearch(double Dt);
  static bool SkySelfTest(TArray<FString>& Lines);
+ // RX-LOOK-20261113 (-> M3, M6; Tom 13 November: the receiver to look like his reference picture): what the receiver PC's frame
+ // shows this frame (S47RxLook.h): the header's clock and the array's own pointing, the state banner's words (the same order and
+ // conditions as ReceiverNextAction and the idle picture's ANOMALY DETECTED), the card's frequency, and the receiver's own numbers
+ // for the small scopes. Nothing is decided here. RxFeed: one reading a frame for every painted part. SiderealDeg: the station's
+ // sidereal time from the world's clock and date, for the sky chart's stars.
+ FS47RxLive RxLive() const;
+ TSharedRef<FS47RxFeed> RxFeed() const;
+ double SiderealDeg() const;
  bool AudioAction(const FString& Action);
  void SeekAudio(double At);
  // Marks by a place on the tape, without moving it: first click is MARK IN, second MARK OUT, a third starts over.
@@ -909,7 +919,8 @@ private:
  void SyncSkyFix();void SkyChartStep(double Dt);void SkyHeld(FJob& HeldJob,bool bByHand);void StepSkyFix();
  void LoadSkySounds();void SkySound(uint32 Events,int32 Blip);
  FString SkyPrompt() const;
- TSharedRef<class SWidget> SkyPage(TSharedPtr<class SWidget>& KeysTo);
+ // (RX-LOOK-20261113: the page reads the frame's feed, and fills the body height the frame tells it)
+ TSharedRef<class SWidget> SkyPage(TSharedPtr<class SWidget>& KeysTo,TSharedRef<FS47RxFeed> Feed,TSharedPtr<float> BodyHigh);
  int32 DataRef=0; // D48-20261110 (D46-16): the reference the receiver's DATA page shows beside the take; not saved
  // D45-20261110: ARRAY STATUS's tab (0 STATUS, 1 MAINTENANCE) and the fault picked on MAINTENANCE; presentation only, never saved
  int32 StatusTab=0;FString MaintPick;
@@ -1042,6 +1053,9 @@ private:
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);
  // KeysTo (RX-ACQUIRE-SKY-20261113): the widget on the page that has the keys first; none: the page itself, as before.
  void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false,TSharedPtr<SWidget> KeysTo=nullptr);
+ // RX-LOOK-20261113: OpenTerminal's two halves, for a screen that brings its own frame (the receiver's, S47FreeformTerminal::RxFrame).
+ bool TerminalBegin(int32 Screen,const FString& Title);
+ void TerminalShow(int32 Screen,TSharedRef<SWidget> Content,bool bLive,TSharedPtr<SWidget> KeysTo,bool bOwnKeyRow);
  void OpenWaitConfirmation(double Target);
  FS47Profile EffectiveProfile(const FJob& Job) const;
  FString JobLine(const FJob& J) const;

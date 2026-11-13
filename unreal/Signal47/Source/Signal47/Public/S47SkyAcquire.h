@@ -60,6 +60,8 @@ public:
 	static void HourAngleDec(FVector2D AzEl, double& HaHours, double& DecDeg);
 	// Geometric delay (nanoseconds) of a ground offset (metres east, north) toward a direction.
 	static double DelayNs(FVector2D Ground, FVector2D AzEl);
+	// RX-LOOK-20261113: how fast that delay changes as the sky turns (nanoseconds a second), for the tracking readout's rate.
+	static double DelayRate(FVector2D Ground, FVector2D AzEl);
 
 	// A job's search starts: the card's own place, which catalogued source it is (-1: none), and whether it is the unusual kind.
 	void Begin(uint32 InSeed, FVector2D InCard, int32 InRun, bool bInOdd);
@@ -117,6 +119,7 @@ public:
 	// The readouts: what they come to once locked (the chart counts up to them over the lock sequence).
 	double SignalToNoise() const;              // dB
 	double ArmDelayNs(int32 Arm) const;        // the arm's longest baseline toward the crossing
+	double ArmDelayRate(int32 Arm) const;      // RX-LOOK-20261113: and how fast that delay changes as the sky turns (ns a second)
 	double CatalogueOffset() const;            // degrees from the crossing to the nearest catalogued major source
 	const FSource* NearestCatalogued(FVector2D At, bool bMajorOnly) const;
 
@@ -133,6 +136,7 @@ private:
 	double Time = 0, SearchT = 0, Hold = 0, LockT = 0, NextSweep = 0, MovedAt = -10;
 	int32 Rings = 0, EventArm = -1;
 	double Hash(int32 I, int32 Salt) const;
+	FVector2D ArmReach(int32 Arm) const;       // the arm's farthest antenna on remote, from the array's middle (metres east, north)
 	void Place();
 	uint32 UpdateArms();
 };

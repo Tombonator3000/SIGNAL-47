@@ -206,7 +206,8 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  if(Stage==23)
  {
   TArray<TSharedRef<SButton>> Onward;bool OnwardSeen=false;Scan(TEXT("TUNE >"),Onward,OnwardSeen);
-  if(!Check(Shows(TEXT("SKY CHART / FIND THE SOURCE"))&&Onward.Num()==1&&Onward[0]->IsEnabled()&&F.SkyFix.IsValid()&&F.SkyAcquired(),TEXT("ACQUIRE is the sky chart: after the take its fix is held and TUNE is the way on")))return;
+  // RX-LOOK-20261113: the chart is the celestial sphere, in the receiver's own frame (the state banner, the scopes beside it)
+  if(!Check(Shows(TEXT("EQUATORIAL CELESTIAL SPHERE"))&&Shows(TEXT("SIGNAL WATERFALL"))&&Shows(TEXT("ACQUISITION / TRACKING"))&&Onward.Num()==1&&Onward[0]->IsEnabled()&&F.SkyFix.IsValid()&&F.SkyAcquired(),TEXT("ACQUIRE is the sky chart: after the take its fix is held and TUNE is the way on")))return;
   if(!Fits(TEXT("TUNE >"),TEXT("the sky chart")))return;
   Shot(TEXT("acquire-sky-chart.png"));Go(70,1.);return;
  }
