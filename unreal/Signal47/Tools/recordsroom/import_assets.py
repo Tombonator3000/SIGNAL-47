@@ -151,7 +151,7 @@ def surfaces():
     wall_macro = texture('T_Rec_WallMacro', TEX / 'T_Rec_WallMacro.png', 'rgba', 2048)
     floor_macro = texture('T_Rec_FloorMacro', TEX / 'T_Rec_FloorMacro.png', 'rgba', 2048)
     world_material('M_Rec_Block', 'wall', sets['Block'], wall_macro, (1, 1, 1), 0.35)
-    world_material('M_Rec_Floor', 'floor', sets['Floor'], floor_macro, (1, 1, 1), 0.45)
+    world_material('M_Rec_Floor', 'floor', sets['Floor'], floor_macro, (0.80, 0.78, 0.73), 0.45)   # a floor that has been walked on since 1968: a shade down from the picture
 
 
 def tx(name):
@@ -178,6 +178,7 @@ MODELS = {
         {'name': 'M_Rec_TrofferLensB', 'base_color': [1, 1, 1, 1], 'metallic': 0, 'roughness': 0.35, 'specular': 0.5, 'normal_strength': 0.6,
          'texture_tint_linear': [0.42, 0.42, 0.39], 'emission': [1, 1, 1, 1], 'emission_strength': 1.0, 'textures': LENS},
     ]),
+    'fittings': (['SM_Rec_Fittings', 'SM_Rec_ExtBracket'], [baked('Fittings')]),
     'table': (['SM_Rec_WorkTable'], [baked('WorkTable')]),
     'lamp': (['SM_Rec_BankerLamp'], [baked('BankerLamp'),
         {'name': 'M_Rec_LampGlass', 'base_color': [0.012, 0.16, 0.06, 1], 'metallic': 0, 'roughness': 0.10, 'specular': 0.6, 'emission': [0, 0, 0, 1], 'emission_strength': 0},
@@ -198,6 +199,13 @@ def model(key):
     mats = {}
     for row in rows:
         mats[row['name']] = R.material(row, DEST + '/Materials', WORK)
+        # roughness and metallic at half the atlas's size: they hold no fine print (memory)
+        for role in ('roughness', 'metallic'):
+            t = DEST + '/Materials/Textures/T_' + row['name'] + '_' + role
+            if row.get('textures', {}).get(role) and E.does_asset_exist(t):
+                tex = E.load_asset(t)
+                tex.set_editor_property('max_texture_size', max(512, tex.blueprint_get_size_x() // 2))
+                E.save_loaded_asset(tex)
     for name in names:
         src = WORK / 'Export' / (name + '.fbx')
         R.check(name + ' source', src.is_file(), str(src))
@@ -226,14 +234,65 @@ def model(key):
         unreal.log('S47: REC mesh %s %d tris %s' % (name, mesh.get_num_triangles(0), slots))
 
 
+# Tom's two single Cosmos props (Tools/recordsroom/cosmos_props.py copies them to /Game/Rocket/<dir>, git-ignored). Their zips
+# name a master material and an instance that are not in them: each mesh gets a plain PBR material of the pack's three textures.
+COSMOS = {'RPS_DeskFan': (['SM_RPS_DeskFan01_c1_LOD1', 'SM_RPS_DeskFan02_c1_LOD1'], 'T_RPS_DeskFan_2048'),
+          'RPS_FireExtinguisher': (['SM_RPS_FireExtinguisher_02_c1_LOD1'], 'T_RPS_FireExtinguisher_2048')}
+
+
+def cosmos():
+    for folder, (names, tex) in COSMOS.items():
+        root = '/Game/Rocket/' + folder
+        if not all(E.does_asset_exist(root + '/' + n) for n in names):
+            unreal.log('S47: REC cosmos ' + folder + ' not here: the room keeps its old piece')
+            continue
+        name = 'M_Rec_' + folder
+        mat = E.load_asset(root + '/' + name) if E.does_asset_exist(root + '/' + name) else T.create_asset(name, root, unreal.Material, unreal.MaterialFactoryNew())
+        for previous in list(M.get_material_expressions(mat)):
+            M.delete_material_expression(mat, previous)
+
+        def sample(suffix):
+            t = E.load_asset(root + '/' + tex + suffix)
+            R.check(name + ' texture ' + suffix, isinstance(t, unreal.Texture2D))
+            comp = t.get_editor_property('compression_settings')
+            kind = (ST.SAMPLERTYPE_NORMAL if comp == unreal.TextureCompressionSettings.TC_NORMALMAP else
+                    ST.SAMPLERTYPE_MASKS if comp == unreal.TextureCompressionSettings.TC_MASKS else
+                    ST.SAMPLERTYPE_COLOR if t.get_editor_property('srgb') else ST.SAMPLERTYPE_LINEAR_COLOR)
+            return R.expression(mat, unreal.MaterialExpressionTextureSample, texture=t, sampler_type=kind)
+        b, n, orm = sample('_B'), sample('_N'), sample('_ORM')
+        R.check(name + ' base', M.connect_material_property(b, 'RGB', unreal.MaterialProperty.MP_BASE_COLOR))
+        R.check(name + ' normal', M.connect_material_property(n, 'RGB', unreal.MaterialProperty.MP_NORMAL))
+        R.check(name + ' ao', M.connect_material_property(orm, 'R', unreal.MaterialProperty.MP_AMBIENT_OCCLUSION))
+        R.check(name + ' rough', M.connect_material_property(orm, 'G', unreal.MaterialProperty.MP_ROUGHNESS))
+        R.check(name + ' metal', M.connect_material_property(orm, 'B', unreal.MaterialProperty.MP_METALLIC))
+        errors = list(M.recompile_material(mat))
+        R.check(name + ' compiles', not errors, errors)
+        E.save_loaded_asset(mat)
+        for n_ in names:
+            mesh = E.load_asset(root + '/' + n_)
+            R.check(n_ + ' loads', isinstance(mesh, unreal.StaticMesh))
+            for index in range(len(mesh.get_editor_property('static_materials'))):
+                mesh.set_material(index, mat)
+            settings = mesh.get_editor_property('nanite_settings')
+            settings.enabled = False
+            mesh.set_editor_property('nanite_settings', settings)
+            R.check(n_ + ' saved', E.save_loaded_asset(mesh, only_if_is_dirty=False))
+            box = mesh.get_bounding_box()
+            R.report['meshes'].append({'name': n_, 'triangles': mesh.get_num_triangles(0), 'slots': len(mesh.get_editor_property('static_materials')),
+                                       'min_cm': [round(v, 2) for v in (box.min.x, box.min.y, box.min.z)], 'max_cm': [round(v, 2) for v in (box.max.x, box.max.y, box.max.z)]})
+            unreal.log('S47: REC cosmos mesh %s %d tris' % (n_, mesh.get_num_triangles(0)))
+
+
 try:
     R.flush()
-    todo = WHAT or (['surfaces', 'labels'] + [k for k, (names, _) in MODELS.items() if all((WORK / 'Export' / (n + '.fbx')).is_file() for n in names)])
+    todo = WHAT or (['surfaces', 'labels', 'cosmos'] + [k for k, (names, _) in MODELS.items() if all((WORK / 'Export' / (n + '.fbx')).is_file() for n in names)])
     for what in todo:
         if what == 'surfaces':
             surfaces()
         elif what == 'labels':
             texture('T_Rec_Labels', TEX / 'T_Rec_Labels.png', 'color', 2048)
+        elif what == 'cosmos':
+            cosmos()
         else:
             model(what)
     R.report['status'] = 'PASS'

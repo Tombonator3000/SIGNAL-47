@@ -297,7 +297,7 @@ def image(nt, coord, path, size=1.0, color=True, turn=0.0):
 
 
 def material(name, base, metal, rough, worn, worn_metal, worn_rough, wear=1.0, scratch=0.5, dust=0.6, grain=0.35, grain_scale=1400.0,
-             tex=None, tex_size=1.0, tex_turn=0.0, tint=None, tex_rough=None, rust=0.0, dust_col=(0.20, 0.17, 0.13), edge=0.0035, along=(6.0, 420.0, 420.0)):
+             tex=None, tex_size=1.0, tex_turn=0.0, tint=None, tex_rough=None, rust=0.0, dust_col=(0.20, 0.17, 0.13), edge=0.0035, along=(6.0, 420.0, 420.0), desat=0.0):
     """base (a colour, or a picture `tex` times `tint`) under worn edges and scratches, dust and rust in the corners, a fine grain."""
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
@@ -333,6 +333,8 @@ def material(name, base, metal, rough, worn, worn_metal, worn_rough, wear=1.0, s
         bw = nt.nodes.new('ShaderNodeRGBToBW')
         nt.links.new(b, bw.inputs[0])
         lum = bw.outputs[0]
+        if desat > 0:
+            b = mixc(nt, desat, b, lum)
         if tint:
             b = mixc(nt, 1.0, b, tint, 'MULTIPLY')
     col = mixc(nt, w, b, worn)
@@ -764,13 +766,13 @@ def build_ceiling():
 # ================================================================ shared looks
 def m_wood():
     return material('wood', (0.2, 0.08, 0.04), 0.0, 0.30, (0.46, 0.31, 0.18), 0.0, 0.62, wear=0.9, scratch=0.22, dust=0.35, grain=0.12, grain_scale=600.0,
-                    tex=PH / 'wood_table_001_diff_2k.jpg', tex_size=1.5, tex_turn=0.0, tex_rough=PH / 'wood_table_001_rough_2k.jpg', dust_col=(0.16, 0.12, 0.09), edge=0.006)
+                    tex=PH / 'wood_table_001_diff_2k.jpg', tex_size=1.5, tex_turn=0.0, desat=0.22, tint=(0.9, 0.9, 0.92), tex_rough=PH / 'wood_table_001_rough_2k.jpg', dust_col=(0.16, 0.12, 0.09), edge=0.006)
 
 
-def m_steel(name='steel', tint=(1.25, 1.22, 1.2), rust=0.6, wear=0.9, dust=0.7):
+def m_steel(name='steel', tint=(1.25, 1.22, 1.2), rust=0.6, wear=0.9, dust=0.7, desat=0.45, scratch=0.4):
     """Enamelled office steel: the green paint picture, lighter or greyer by `tint`, bare steel on worn edges, rust from the corners."""
-    return material(name, (0.1, 0.12, 0.1), 0.0, 0.48, (0.30, 0.29, 0.27), 0.85, 0.36, wear=wear, scratch=0.6, dust=dust, grain=0.2,
-                    tex=PH / 'green_metal_rust_diff_2k.jpg', tex_size=1.0, tint=tint, tex_rough=PH / 'green_metal_rust_rough_2k.jpg', rust=rust)
+    return material(name, (0.1, 0.12, 0.1), 0.0, 0.48, (0.30, 0.29, 0.27), 0.85, 0.36, wear=wear, scratch=scratch, dust=dust, grain=0.2,
+                    tex=PH / 'green_metal_rust_diff_2k.jpg', tex_size=1.0, tint=tint, tex_rough=PH / 'green_metal_rust_rough_2k.jpg', rust=rust, desat=desat)
 
 
 def m_chrome():
@@ -867,7 +869,7 @@ def build_lamp():
     green glass trough shade, white inside, tipped a little to the front (-Y). The glass and the inside are slots of their own:
     the game lights them with the lamp (S47RecordsRoom.cpp)."""
     reset()
-    BRASS, BLACK = m_brass(), m_black('cord', 0.5)
+    BRASS = m_brass()
     GLASS = plain('M_Rec_LampGlass', (0.02, 0.20, 0.08), 0.12)
     INNER = plain('M_Rec_LampInner', (0.85, 0.85, 0.78), 0.4, 0.0, 2.0)
     cyl('foot', 0.0, 0.016, 0.082, BRASS, n=40, bev=0.004, seg=3)
@@ -892,7 +894,6 @@ def build_lamp():
     cyl('finial', zc + 0.058, zc + 0.070, 0.008, BRASS, n=14, bev=0.002)
     cyl('chain', 0.235, 0.300, 0.0011, BRASS, at=(0.045, -0.012), n=6, bev=0)
     cyl('chain_ball', 0.226, 0.236, 0.0045, BRASS, at=(0.045, -0.012), n=10, bev=0.002)
-    pipe('cord', [(0.0, 0.07, 0.006), (0.01, 0.14, 0.004), (0.05, 0.22, 0.004)], 0.003, BLACK)
     ob = baked_asset('BankerLamp', 'SM_Rec_BankerLamp', 1024, None, keep=keep)
     export(ob, 'SM_Rec_BankerLamp')
     preview([ob], 'lamp', (('front', (0.35, -0.75, 0.42), (0, 0, 0.2), 60), ('back', (-0.4, 0.7, 0.5), (0, 0, 0.2), 60), ('under', (0.0, -0.6, 0.12), (0, 0, 0.3), 60)))
@@ -904,7 +905,7 @@ def build_typewriter():
     a 17 degree slope, a platen with its knobs, a paper bail, a ribbon carrier in the well and a sheet in the machine.
     0.47 x 0.40 x 0.30 m with the paper; front (the keyboard) to -Y."""
     reset()
-    RED = material('red', (0.50, 0.035, 0.03), 0.0, 0.34, (0.62, 0.10, 0.07), 0.0, 0.5, wear=0.7, scratch=0.5, dust=0.75, grain=0.5, grain_scale=900.0, dust_col=(0.16, 0.10, 0.08), edge=0.004)
+    RED = material('red', (0.30, 0.016, 0.014), 0.0, 0.32, (0.44, 0.05, 0.04), 0.0, 0.5, wear=0.6, scratch=0.4, dust=0.5, grain=0.5, grain_scale=900.0, dust_col=(0.09, 0.045, 0.04), edge=0.004)
     DARK, KEY = m_black('dark', 0.55), material('key', (0.03, 0.03, 0.032), 0.0, 0.5, (0.09, 0.09, 0.09), 0.0, 0.28, wear=1.2, scratch=0.3, dust=0.9, grain=0.6, grain_scale=800.0, edge=0.002)
     RUB, CHROME, PAPER = m_black('rubber', 0.85), m_chrome(), m_paper()
     WHITE = material('legend', (0.75, 0.74, 0.68), 0.0, 0.6, (0.75, 0.74, 0.68), 0.0, 0.6, wear=0.0, scratch=0.0, dust=0.3, grain=0.0)
@@ -1046,7 +1047,7 @@ def build_shelving():
     middle of its floor, the end frame's its own foot line."""
     reset()
     rng = random.Random(47)
-    STEEL = m_steel('shelf', tint=(1.12, 1.2, 1.14), rust=1.0, wear=1.0, dust=0.8)
+    STEEL = m_steel('shelf', tint=(1.3, 1.42, 1.4), rust=1.0, wear=1.0, dust=0.8, desat=0.6)
     HOLE = material('hole', (0.004, 0.004, 0.004), 0.0, 0.95, (0.004, 0.004, 0.004), 0.0, 0.95, wear=0.0, scratch=0.0, dust=0.0, grain=0.0)
     depth, height = 0.50, 2.30
     frame(-0.5, depth, height, STEEL, HOLE, 0, sign=1)
@@ -1072,7 +1073,7 @@ def build_bay2():
     stand out of sight of the door). Front (open) to -Y."""
     reset()
     rng = random.Random(53)
-    STEEL = m_steel('shelf', tint=(1.12, 1.2, 1.14), rust=0.9, wear=1.0, dust=0.8)
+    STEEL = m_steel('shelf', tint=(1.3, 1.42, 1.4), rust=0.9, wear=1.0, dust=0.8, desat=0.6)
     HOLE = material('hole', (0.004, 0.004, 0.004), 0.0, 0.95, (0.004, 0.004, 0.004), 0.0, 0.95, wear=0.0, scratch=0.0, dust=0.0, grain=0.0)
     depth, height, half = 0.45, 2.00, 0.40
     frame(-half, depth, height, STEEL, HOLE, 0, sign=1)
@@ -1093,7 +1094,7 @@ def build_cabinet(variant):
     B has its second drawer from the top 7 cm out, folders showing. Front to -Y."""
     reset()
     rng = random.Random({'A': 11, 'B': 23, 'C': 37}[variant])
-    STEEL = m_steel('cab', tint=(1.5, 1.52, 1.42), rust=0.4, wear=0.85, dust=0.6)
+    STEEL = m_steel('cab', tint=(1.62, 1.72, 1.55), rust=0.4, wear=0.85, dust=0.6, desat=0.5, scratch=0.3)
     BASE = m_steel('plinth', tint=(0.6, 0.6, 0.6), rust=0.8, wear=1.0)
     CHROME, PAPER, DARK = m_chrome(), m_paper('card', (0.74, 0.70, 0.58)), m_black('void', 0.9)
     MANILA = material('manila', (0.55, 0.40, 0.18), 0.0, 0.8, (0.66, 0.54, 0.32), 0.0, 0.85, wear=0.6, scratch=0.1, dust=0.4, grain=0.4, grain_scale=500.0, edge=0.002)
@@ -1146,7 +1147,7 @@ def build_archive():
 
     def board(name, tex, worn):
         return material(name, (0.3, 0.2, 0.1), 0.0, 0.9, worn, 0.0, 0.92, wear=1.1, scratch=0.12, dust=0.55, grain=0.3, grain_scale=500.0,
-                        tex=TEXDIR / tex, tex_size=0.5, dust_col=(0.22, 0.18, 0.12), edge=0.0045)
+                        tex=TEXDIR / tex, tex_size=0.5, tint=(0.86, 0.80, 0.74), dust_col=(0.22, 0.18, 0.12), edge=0.0045)
     KRAFT, GREY, WHITE = board('kraft', 'T_Rec_Kraft_base.png', (0.52, 0.42, 0.27)), board('grey', 'T_Rec_GreyBoard_base.png', (0.50, 0.49, 0.44)), board('white', 'T_Rec_WhiteBoard_base.png', (0.50, 0.46, 0.36))
     TAPE = material('tape', (0.40, 0.28, 0.12), 0.0, 0.28, (0.5, 0.4, 0.25), 0.0, 0.45, wear=0.3, scratch=0.3, dust=0.4, grain=0.1)
     HOLE = material('hole', (0.008, 0.006, 0.005), 0.0, 0.95, (0.008, 0.006, 0.005), 0.0, 0.95, wear=0.0, scratch=0.0, dust=0.0, grain=0.0)
@@ -1162,7 +1163,7 @@ def build_archive():
 
     def start(name):
         names.append(name)
-        offsets.append((len(names) - 1) * 0.6, )
+        offsets.append((len(names) - 1) * 0.6)
         return len(names) - 1, (len(names) - 1) * 0.6
 
     def carton(name, w, d, h, mat, lid=True, ajar=False, tape=False, crush=False, metal=False, holes=True):
@@ -1251,14 +1252,84 @@ def build_archive():
     shade(body, 42)
     unwrap(body, margin=0.002)
     bake(body, 'Archive', 4096, 'M_Rec_Archive')
-    obs = split_parts(body, names, [(o[0], 0, 0) for o in offsets])
+    obs = split_parts(body, names, [(o, 0, 0) for o in offsets])
     body.hide_render = True
     for i, o in enumerate(obs):
         o.location.x = i * 0.5
     preview(obs, 'archive', (('row', (3.0, -4.2, 1.6), (3.0, 0, 0.12), 38), ('boxes', (0.9, -1.5, 0.8), (1.0, 0, 0.12), 45), ('binders', (4.6, -1.3, 0.6), (4.7, 0, 0.14), 45)))
 
 
-ASSETS = {'ceiling': build_ceiling, 'table': build_table, 'lamp': build_lamp, 'typewriter': build_typewriter, 'shelving': build_shelving, 'bay2': build_bay2,
+# ================================================================ the room's fittings (built where they stand)
+GALV = Path(os.path.expanduser('~/scratch-bm/refs/textures-20261112/saro/galvanized.png'))
+
+
+def build_fittings():
+    """A vinyl cove base round the room, the switch's conduit up the north wall and along it under the ceiling to a junction box,
+    the cork board's panel and frame east of the door, the lamp's cord from the table to the wall behind the second shelving, and
+    (a piece of its own, SM_Rec_ExtBracket) a wall bracket with its sign for the fire extinguisher. One baked skin."""
+    reset()
+    VINYL = material('vinyl', (0.115, 0.10, 0.065), 0.0, 0.5, (0.24, 0.22, 0.16), 0.0, 0.62, wear=1.0, scratch=0.9, dust=0.9, grain=0.4, grain_scale=500.0, edge=0.003)
+    STEEL = material('galv', (0.5, 0.5, 0.5), 0.75, 0.42, (0.6, 0.6, 0.6), 0.9, 0.3, wear=0.4, scratch=0.5, dust=0.7, grain=0.2, tex=GALV, tex_size=0.4, rust=0.25)
+    CORK = material('cork', (0.4, 0.26, 0.14), 0.0, 0.92, (0.5, 0.36, 0.2), 0.0, 0.95, wear=0.3, scratch=0.0, dust=0.4, grain=1.6, grain_scale=260.0, tex=TEXDIR / 'T_Rec_Cork_base.png', tex_size=0.5)
+    OAK = material('oak', (0.2, 0.08, 0.04), 0.0, 0.42, (0.46, 0.31, 0.18), 0.0, 0.62, wear=1.0, scratch=0.3, dust=0.5, grain=0.2,
+                   tex=PH / 'wood_table_001_diff_2k.jpg', tex_size=0.9, tint=(1.5, 1.35, 1.2), edge=0.003)
+    CORD = m_black('cord', 0.5)
+    RED = material('redsign', (0.45, 0.03, 0.025), 0.0, 0.4, (0.6, 0.55, 0.5), 0.3, 0.4, wear=0.8, scratch=0.6, dust=0.6, grain=0.2)
+    WHITE = material('signwhite', (0.78, 0.76, 0.68), 0.0, 0.5, (0.78, 0.76, 0.68), 0.0, 0.5, wear=0.0, scratch=0.0, dust=0.3, grain=0.0)
+    h, t = 0.10, 0.004
+    # cove base: N wall (either side of the door's casing), E, S, W
+    runs = [('x', X0, -4.50, Z0, 1), ('x', -3.30, X1, Z0, 1), ('x', X0, X1, Z1, -1), ('z', Z0, Z1, X0, 1), ('z', Z0, Z1, X1, -1)]
+    for axis, a0, a1, at, sgn in runs:
+        if axis == 'x':
+            wbox('base', a0, a1, 0.0, h, at, at + sgn * t, VINYL, bev=0.001, seg=1)
+            wbox('toe', a0, a1, 0.0, 0.012, at + sgn * t, at + sgn * (t + 0.012), VINYL, bev=0.004, seg=2)
+        else:
+            wbox('base', at, at + sgn * t, 0.0, h, a0, a1, VINYL, bev=0.001, seg=1)
+            wbox('toe', at + sgn * t, at + sgn * (t + 0.012), 0.0, 0.012, a0, a1, VINYL, bev=0.004, seg=2)
+    # conduit: up from the switch (x -4.75), east under the ceiling to a box above the clerk's desk
+    zc, r = Z0 + 0.012, 0.0095
+    pipe('conduit', [W(-4.75, 1.435, zc), W(-4.75, 2.50, zc), W(-4.742, 2.545, zc), W(-4.72, 2.575, zc), W(-4.68, 2.59, zc), W(-1.62, 2.59, zc)], r, STEEL, n=12)
+    wbox('switch_box', -4.795, -4.705, 1.275, 1.425, Z0, Z0 + 0.021, STEEL, bev=0.002)
+    wbox('conn', -4.765, -4.735, 1.425, 1.45, Z0 + 0.001, Z0 + 0.024, STEEL, bev=0.002)
+    wbox('jbox', -1.62, -1.50, 2.53, 2.65, Z0, Z0 + 0.045, STEEL, bev=0.003)
+    wbox('jbox_lid', -1.626, -1.494, 2.524, 2.656, Z0 + 0.045, Z0 + 0.048, STEEL, bev=0.001)
+    for sx, sy in ((-1.607, 2.537), (-1.513, 2.643)):
+        cyl('jscrew', -(Z0 + 0.0505), -(Z0 + 0.048), 0.004, STEEL, at=(sx, sy), axis='Y', n=8, bev=0)
+    for x in (-4.75, ):
+        for y in (1.75, 2.3):
+            wbox('strap', x - 0.024, x + 0.024, y - 0.009, y + 0.009, Z0, Z0 + 0.024, STEEL, bev=0.002)
+    for x in (-4.2, -3.2, -2.3):
+        wbox('strap', x - 0.009, x + 0.009, 2.566, 2.614, Z0, Z0 + 0.024, STEEL, bev=0.002)
+    # the cork board: x -2.25..-1.25, y 1.20..1.90 (the export's notices hang at z 6.829 in front of it)
+    wbox('cork', -2.25, -1.25, 1.20, 1.90, Z0 + 0.002, Z0 + 0.0255, CORK, bev=0.0005, seg=1)
+    f = 0.028
+    for (xa, xb, ya, yb) in ((-2.25 - f, -1.25 + f, 1.90, 1.90 + f), (-2.25 - f, -1.25 + f, 1.20 - f, 1.20), (-2.25 - f, -2.25, 1.20, 1.90), (-1.25, -1.25 + f, 1.20, 1.90)):
+        wbox('frame', xa, xb, ya, yb, Z0, Z0 + 0.031, OAK, bev=0.004, seg=2)
+    # the lamp's cord: off the table's east edge, across the floor, in behind the second shelving
+    pipe('cord', [W(-3.02, 0.776, 8.30), W(-2.93, 0.775, 8.235), W(-2.80, 0.772, 8.22), W(-2.787, 0.70, 8.222), W(-2.785, 0.30, 8.225), W(-2.77, 0.02, 8.24),
+                  W(-2.70, 0.0045, 8.29), W(-2.35, 0.0045, 8.40), W(-2.05, 0.0045, 8.52), W(-1.84, 0.0045, 8.60), W(-1.70, 0.0045, 8.66)], 0.0032, CORD, n=8)
+    # part 1: the extinguisher's bracket and sign, on its own origin (the wall plane at y = 0, its foot at z = 0; front -Y)
+    OX = 30.0
+    box('br_plate', (OX - 0.03, -0.004, 0.10), (OX + 0.03, 0.0, 0.42), STEEL, 1, bev=0.001)
+    box('br_hook', (OX - 0.02, -0.05, 0.385), (OX + 0.02, -0.004, 0.40), STEEL, 1, bev=0.002)
+    box('br_lip', (OX - 0.02, -0.055, 0.385), (OX + 0.02, -0.05, 0.425), STEEL, 1, bev=0.002)
+    for z in (0.16, ):
+        box('br_band', (OX - 0.07, -0.004, z), (OX + 0.07, 0.0, z + 0.022), STEEL, 1, bev=0.001)
+    box('sign', (OX - 0.075, -0.003, 0.60), (OX + 0.075, 0.0, 0.70), RED, 1, bev=0.001)
+    text('sign_a', 'FIRE', 0.036, WHITE, (OX, -0.0034, 0.653), (math.radians(90), 0, 0), 1, extrude=0.0)
+    text('sign_b', 'EXTINGUISHER', 0.0135, WHITE, (OX, -0.0034, 0.617), (math.radians(90), 0, 0), 1, extrude=0.0)
+    tag_parts()
+    body = join([o for o, _ in made], 'fittings')
+    shade(body, 40)
+    unwrap(body, margin=0.002)
+    bake(body, 'Fittings', 2048, 'M_Rec_Fittings')
+    obs = split_parts(body, ['SM_Rec_Fittings', 'SM_Rec_ExtBracket'], [(0, 0, 0), (OX, 0, 0)])
+    body.hide_render = True
+    preview(obs[:1], 'fittings', (('board', (-1.9, -8.3, 1.5), (-1.75, -6.8, 1.55), 30), ('conduit', (-4.2, -7.8, 1.9), (-4.6, -6.8, 2.2), 30)),
+            lights=(((-3.5, -8.6, 2.5), 400, (1, 1, 1), 2.0),))
+
+
+ASSETS = {'ceiling': build_ceiling, 'fittings': build_fittings, 'table': build_table, 'lamp': build_lamp, 'typewriter': build_typewriter, 'shelving': build_shelving, 'bay2': build_bay2,
           'cabinetA': lambda: build_cabinet('A'), 'cabinetB': lambda: build_cabinet('B'), 'cabinetC': lambda: build_cabinet('C'), 'archive': build_archive}
 
 
