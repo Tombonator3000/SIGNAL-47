@@ -3,6 +3,7 @@
 #include "S47CalicheAccess.h"
 #include "S47CaseFieldTests.h"
 #include "S47DevEvents.h"
+#include "S47DevWaves.h"
 #include "S47DoorVisit.h"
 #include "S47EventPlaces.h"
 #include "S47OpenLand.h"
@@ -158,6 +159,7 @@ void FS47DevFreeform::ClearRunning()
 {
  auto* F=Session();if(!F)return;
  Waiting.Reset();
+ if(Waves)Waves->Stop(TEXT("another F10 line started")); // DEV TOY: the wave shooter ends, the player back where they stood
  if(M->World){M->World->TestInput=nullptr;M->World->Autopilot.Reset();}
  if(M->Player)M->Player->TestMove.Reset(); // (a line's walk, FARM-GATE's, stops with it)
  if(F->Director&&DevRun()&&F->Director->Busy())F->Director->CancelForTest();
@@ -1709,6 +1711,9 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddTv(E);
  AddTownDay(E);
  AddWeekCase(E);
+ // DEV TOY (Tom, 13 November): "Wave shooter (dev toy)", start and stop (S47DevWaves.h).
+ Waves=MakeShared<FS47DevWaves>(M);
+ Waves->AddEntries(E);
 }
 
 bool FS47DevFreeform::SelfTest(TArray<FString>& Lines)
@@ -1718,12 +1723,14 @@ bool FS47DevFreeform::SelfTest(TArray<FString>& Lines)
  Check(!PutsDownUnread(true,false,true),TEXT("Natural rhythm turned on from F10: an open F10 menu or sheet stays open (Tom 12 Nov)"));
  Check(PutsDownUnread(true,true,true)&&!PutsDownUnread(true,true,false),TEXT("a run nobody plays (-S47NaturalNight) still puts an open sheet down"));
  Check(!PutsDownUnread(false,true,true)&&!PutsDownUnread(false,false,true),TEXT("without Natural rhythm nothing is put down"));
+ bOk&=FS47DevWaves::SelfTest(Lines); // DEV TOY: the wave shooter's rules ("devWaves:")
  return bOk;
 }
 
 void FS47DevFreeform::Stop()
 {
  // A new game or the title: the session these were set on has gone.
+ if(Waves)Waves->Stop(TEXT("the session ended"));
  Waiting.Reset();bNatural=false;bUnattended=false;Speed=SpeedUsed=1;Holding.Empty();bFlagRead=false;
  if(EyeGlintClear)EyeGlintClear();
  if(TripoNewClear)TripoNewClear();
@@ -1742,6 +1749,7 @@ void FS47DevFreeform::Stop()
 void FS47DevFreeform::Step(double Dt)
 {
  if(!M)return;
+ if(Waves)Waves->Step(Dt); // DEV TOY: the wave shooter, when it runs (S47DevWaves.h)
  // Ticks only while the night runs: a menu holds them as it holds the night.
  if(M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&!M->ModalOpen()&&Dt>0)
  {

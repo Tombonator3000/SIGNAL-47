@@ -1,5 +1,6 @@
 #include "S47FreeformDirector.h"
 #include "S47DirectorCam.h"
+#include "S47DevWaves.h"
 #include <limits>
 #include "S47SmallHints.h"
 #include "S47Rhythm.h"
@@ -675,7 +676,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  // STORY steg 6: the start a story beat asks for (StartForStory) is the one that may: the beat itself is the story's script running.
  if(FS47StoryDirector::Holds(M)&&!bForStory)return false;
  // DIRECTOR-MODE-01: nor while the developer flies the director's camera.
- if(S47DirectorCam::On(M))return false;
+ if(S47DirectorCam::On(M)||FS47DevWaves::On(M))return false; // (and the F10 wave shooter, a dev toy)
  const auto* D=Definition(Id);if(!bEnabled||!D||!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!Event.IsEmpty()||M->Freeform->Held())return false;
  // CRIT9-20261109: from ten to two the night is the week's case's: no threat, major or presence on the ground before it begins.
  if(!Forced&&FS47WeekCase::HoldsFarm(M))

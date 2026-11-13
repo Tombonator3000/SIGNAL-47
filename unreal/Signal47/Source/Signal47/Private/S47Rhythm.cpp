@@ -1,5 +1,6 @@
 #include "S47Rhythm.h"
 #include "S47DirectorCam.h"
+#include "S47DevWaves.h"
 #include "S47Aftermath.h"
 #include "S47CaseFieldTests.h"
 #include "S47DoorVisit.h"
@@ -338,7 +339,7 @@ FS47RhythmNow FS47Rhythm::ReadNow() const
 bool FS47Rhythm::Allow(FName Id,FName Within)
 {
  // DIRECTOR-MODE-01: no dangerous meeting begins while the developer flies the director's camera (S47DirectorCam.h).
- if(S47DirectorCam::On(M))return false;
+ if(S47DirectorCam::On(M)||FS47DevWaves::On(M))return false;
  auto* F=M&&M->IsFreeform()&&M->Freeform?M->Freeform.Get():nullptr;
  if(!F||!F->RulesLive())return true;
  const auto* E=Rules.Find(Id);
@@ -360,7 +361,7 @@ bool FS47Rhythm::Allow(FName Id,FName Within)
 
 bool FS47Rhythm::AllowFloor(FName Id)
 {
- if(S47DirectorCam::On(M))return false;
+ if(S47DirectorCam::On(M)||FS47DevWaves::On(M))return false;
  auto* F=M&&M->IsFreeform()&&M->Freeform?M->Freeform.Get():nullptr;
  if(!F||!F->RulesLive())return true;
  const auto* E=Rules.Find(Id);

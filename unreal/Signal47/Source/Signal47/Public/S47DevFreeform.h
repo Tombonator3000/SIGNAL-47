@@ -3,6 +3,7 @@
 
 class US47Main;
 class FS47DevEvents;
+class FS47DevWaves;
 class FS47FreeformSession;
 class SWidget;
 struct FS47PlaceNeed;
@@ -32,6 +33,8 @@ public:
  double SpeedNow() const{return SpeedUsed;}
  // The text of the panel on the screen.
  FString PanelText() const;
+ // DEV TOY (Tom, 13 November): the F10 wave shooter at SARO (S47DevWaves.h). Its lines, its step and its stop go through here.
+ TSharedPtr<FS47DevWaves> Waves;
 private:
  US47Main* M=nullptr;
  FS47DevEvents* Menu=nullptr;
