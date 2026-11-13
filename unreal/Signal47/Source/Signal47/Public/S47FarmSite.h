@@ -41,7 +41,7 @@ public:
  // The warning has no body yet: what a radio breaks up on is the place itself.
  TOptional<FVector> VisitWarningAt() const{return Visit==1?TOptional<FVector>(Middle+FVector(0,1,0)):TOptional<FVector>();}
  // Test: a visit now, past the dice. The player counts as noticed whatever they do, for the tests of what happens if it reaches them.
- void TestVisit(int32 Who=0){Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;bTestNoticed=true;}
+ void TestVisit(int32 Who=0){Visit=1;VisitAge=0;VisitUntil=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;bTestNoticed=true;}
  int32 VisitKind() const{return VisitWho;}
  // Marks that will still be there at this clock, with a visit still to come.
  bool WillStandAt(double Clock) const{return (Visit==0||bFalseCall)&&ClearAt>Clock&&Clock>=CalmUntil;}
@@ -58,6 +58,12 @@ public:
  void TestRollWho(float Roll){TestRoll=Roll;}
  // No body before about two in the morning (Tom, 28 October: the evening is a normal job). Lights and sounds may.
  static bool TheirHours(double Clock);
+ // VISIT-DAWN-20261113 (play39 m1tour2: a field visit begun at 03:52 on night 9 held the ground through the day and took the
+ // player at 20:19 on day 10, so the big night planned for night 10 was slept through): a visit is over by the clock it began
+ // on, whatever its own real-second patience says: by the next six in the morning (FS47NightRhythm::EndHour), and never more
+ // than MaxVisitHours of the night's own time. A take already lifting or away runs on to its end; one not yet begun lets go.
+ static constexpr double MaxVisitHours=3;
+ static double VisitDeadline(double StartClock);
  // Who comes: 0 Roswell, 1 crab, 2 tall. The open pasture is where the crab comes; town is mostly the small ones;
  // the tall one keeps to the last of the night. Roll is 0 to 1.
  static int32 PickWho(const FString& InPlace,double Hour,float Roll);
@@ -156,6 +162,7 @@ private:
  // A visit: 0 may come, 1 the warning, 2 it sneaks toward the player, 3 it hunts, 4 over for this site.
  int32 Visit=4;
  double VisitAge=0,VisitDwell=0;
+ double VisitUntil=0; // VISIT-DAWN-20261113: the clock this visit is over by; 0 until its first step (not saved: a saved visit is over on Continue)
  bool bVisitSeen=false,bVisitTaken=false;
  int32 VisitRounds=0;
  double CalmUntil=0;
