@@ -642,10 +642,11 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 		if (!Ops.IsEmpty()) Write(TEXT("ops"), TEXT("saro"), 0, 0, Ops);
 	}
 	// The mailbox's flag.
-	if (Fs.Mail && Fs.Mail->MailIn())
+	// TASKS-TEN-20261113 (change 3): and the post going out, its flag up for the carrier (no longer a row on tonight's list)
+	if (Fs.Mail && (Fs.Mail->MailIn() || Fs.Mail->TaskLine().EndsWith(TEXT("the flag up for the carrier."))))
 	{
 		FString Area; double X = 0, Z = 0;
-		if (Fs.Mail->WorldSpot(Area, X, Z)) Write(TEXT("mail"), Area, X, Z, TEXT("mail in the box"));
+		if (Fs.Mail->WorldSpot(Area, X, Z)) Write(TEXT("mail"), Area, X, Z, Fs.Mail->MailIn() ? TEXT("mail in the box") : TEXT("mailbox: flag up for the carrier"));
 	}
 	// D48-20261110 (Tom, D46-24: told to leave the trip camera where the last record was kept, and the sheet did not say where): the
 	// place to set it out while the land test is planned, then where it stands, until it is collected.

@@ -38,9 +38,13 @@ namespace S47TonightNoteLocal
   return T.StartsWith(TEXT("MAILBOX / ")) || T.StartsWith(TEXT("MAIL ORDER / ")) || T.StartsWith(TEXT("OPS / There is a letter")) || T.StartsWith(TEXT("OPS / Dr. Ward's assessment"));
  }
  // What the station is (FS47Predecessor::TaskLine once nothing waits): not a thing to do tonight.
+ // TASKS-TEN-20261113 (change 3): and every line that says how things stand rather than what to do: the post's flag up for the carrier,
+ // a parcel due, the tired state, the card count, a file's logged hours (an open matter, not tonight's work)
  bool IsStatus(const FString& T)
  {
-  return T.StartsWith(TEXT("SARO under review")) || T.StartsWith(TEXT("SARO KEPT OPEN")) || T.StartsWith(TEXT("SARO CLOSES"));
+  return T.StartsWith(TEXT("SARO under review")) || T.StartsWith(TEXT("SARO KEPT OPEN")) || T.StartsWith(TEXT("SARO CLOSES")) || T.StartsWith(TEXT("MAIL ORDER /"))
+   || (T.StartsWith(TEXT("MAILBOX / ")) && T.EndsWith(TEXT("the flag up for the carrier."))) || T.StartsWith(TEXT("YOU / ")) || T.StartsWith(TEXT("Job cards:"))
+   || (T.StartsWith(TEXT("UNKNOWN ")) && T.Contains(TEXT(" / Logged so far at ")));
  }
  // The room as its sign has it (S47SaroDoorDetail, S47RoomLights): RECORDS, CORRIDOR, OPERATIONS.
  FString Sign(const FString& Head)
@@ -162,8 +166,8 @@ FNote BuildNote(const FIn& In, bool bAll)
    // the job cards are counted, not listed: they are the OPS list's own
    if (IsJob(Text)) { (bDone ? Filed : Open) += 1; continue; }
    // (the post is "also open", unless it is the next thing to do: Dr. Ward's letter after the first shift)
-   if (IsPost(Text) && !IsNextKey(Key(S47HudGauges::CardLine(Text)))) { if (!bDone) { FString Rest; Text.Split(TEXT(" / "), nullptr, &Rest); Post.Add(Rest.IsEmpty() ? Text : Rest); } continue; }
    if (IsStatus(Text)) continue;
+   if (IsPost(Text) && !IsNextKey(Key(S47HudGauges::CardLine(Text)))) { if (!bDone) { FString Rest; Text.Split(TEXT(" / "), nullptr, &Rest); Post.Add(Rest.IsEmpty() ? Text : Rest); } continue; }
    if (In.WaitingCases.ContainsByPredicate([&Text](const FString& Title) { return !Title.IsEmpty() && Text.StartsWith(TEXT("CASE / ") + Title); })) continue;
   }
   FWork W;
@@ -287,12 +291,9 @@ FNote BuildNote(const FIn& In, bool bAll)
 
  // What else is open: the job cards, the cases waiting on evidence, the post.
  TArray<FString> Also, AlsoKeys;
- if (Open > 0)
- {
-  FString Cards = Open == 1 ? FString(TEXT("Job cards: one open at OPS")) : FString::Printf(TEXT("Job cards: %d open at OPS"), Open);
-  if (In.EveningUp >= 0 && (Clock < 0 || (In.EveningUp > Clock && NightOf(In.EveningUp) == NightOf(Clock)))) Cards += (In.bNightWatch ? TEXT("; the night watch opens at ") : TEXT("; the evening's source is up at ")) + HourMinute(In.EveningUp);
-  Also.Add(Cards + TEXT(".")); AlsoKeys.Add(TEXT("cards"));
- }
+ // TASKS-TEN-20261113 (change 3 and 4): no "Job cards: N open" line: the cards are rows, those up now counted once, those not up named
+ // with their time (FIn::Cards)
+ static_cast<void>(Open);
  if (In.WaitingCases.Num())
  {
   TArray<FString> Titles;
@@ -386,8 +387,8 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
   TEXT("too early for the roof: the film in the lab is the next step, the roof's window waits on the note with its time and room"));
  Check(N.Lines.Num() && N.Lines[0].Mark == EMark::Done && N.Lines[0].What.Contains(TEXT("registered")), TEXT("the card filed tonight is ticked off at the top"));
  Check(N.Clock.StartsWith(TEXT("Too early: the window opens at 01:30.")), TEXT("the clock says it is too early, and when the window opens"));
- Check(N.Also.Num() == 3 && N.Also[0].Contains(TEXT("2 open at OPS")) && N.Also[0].Contains(TEXT("23:00")) && N.Also[1].Contains(TEXT("The Lost Hours")) && N.Also[2].StartsWith(TEXT("Post: One paper")),
-  TEXT("also open: the job cards with the evening's hour, the case waiting on evidence, the paper not read"));
+ Check(N.Also.Num() == 2 && N.Also[0].Contains(TEXT("The Lost Hours")) && N.Also[1].StartsWith(TEXT("Post: One paper")) && !Plain(N).Contains(TEXT("Job cards")),
+  TEXT("also open: the case waiting on evidence, the paper not read; no \"Job cards: N open\" line (TASKS-TEN change 3)"));
  Check(Find(N, TEXT("review")) == INDEX_NONE && Find(N, TEXT("FF-D0002")) == INDEX_NONE, TEXT("the station's standing and the single cards stay off the plan"));
  Check(Plain(N).Contains(TEXT("[>] PHOTO LAB:")) && Plain(N).Contains(TEXT("[x] OPS:")) && S47Script::LintText(Plain(N)).IsEmpty(), TEXT("the note as text marks done and next, and keeps to the spoiler limits"));
  // In the window: the roof is the next step (the ladder's window open now), and the clock says to be there.
@@ -408,7 +409,15 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
  Letter.Tasks = { { TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road."), false }, { TEXT("MAIL ORDER / A parcel from Western Surplus, due about Friday."), false } };
  Letter.Next = S47HudGauges::CardLine(Letter.Tasks[0].Text);
  N = Build(Letter);
- Check(N.Lines.Num() == 1 && N.Lines[0].Mark == EMark::Next && N.Lines[0].Where == TEXT("MAILBOX") && N.Also.Num() == 1 && N.Also[0].Contains(TEXT("parcel")), TEXT("the letter waiting is the next step at the mailbox; the parcel is also open"));
+ Check(N.Lines.Num() == 1 && N.Lines[0].Mark == EMark::Next && N.Lines[0].Where == TEXT("MAILBOX") && N.Also.IsEmpty() && !Plain(N).Contains(TEXT("parcel")), TEXT("the letter waiting is the next step at the mailbox; the parcel due is no row (TASKS-TEN change 3)"));
+ // TASKS-TEN-20261113 (change 3): no status rows: the station's standing, the flag up, a parcel due, YOU / Tired, a file's hours, a count
+ {
+  FIn Status; Status.bFreeform = true; Status.Clock = Day2 + 22 * 3600.;
+  Status.Tasks = { { TEXT("SARO under review / Dr. Ward assesses the station on Friday, April 25."), false }, { TEXT("MAILBOX / Your order is in the box at the road, the flag up for the carrier."), false },
+   { TEXT("MAIL ORDER / A parcel from Western Surplus, due about Friday."), false }, { TEXT("YOU / Tired"), false }, { TEXT("UNKNOWN 1 / Logged so far at 23:00."), false }, { TEXT("Job cards: 3 open"), false } };
+  const FNote S = Gather(Status, true);
+  Check(S.Lines.IsEmpty() && S.Also.IsEmpty(), TEXT("no status rows: standing, the flag up, a parcel due, YOU / Tired, a file's hours and a card count are never rows (TASKS-TEN change 3)"));
+ }
  // Many things open: six lines at most, and the rest counted.
  FIn Many; Many.bFreeform = true; Many.Clock = Day2 + 20 * 3600.;
  for (int32 I = 0; I < 11; ++I) Many.Tasks.Add({ FString::Printf(TEXT("SERVICE YARD / Check spare number %d on the rack."), I + 1), I < 3 });
@@ -488,7 +497,7 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
   {
    Gap.Clock = Day2 + H * 3600.;
    const FNote G = Build(Gap);
-   bWatchSaid &= G.Clock.StartsWith(TEXT("The night watch opens at 01:30. Until then the time is yours: the slip on the map")) && G.Also.Num() && G.Also[0].Contains(TEXT("the night watch opens at 01:30"));
+   bWatchSaid &= G.Clock.StartsWith(TEXT("The night watch opens at 01:30. Until then the time is yours: the slip on the map"));
    bNoRest &= !G.Clock.Contains(TEXT("rest")) && !Plain(G).Contains(TEXT("rest until")) && S47Script::LintText(Plain(G)).IsEmpty();
   }
   Gap.bSlip = false; Gap.Clock = Day2 + 23 * 3600.;

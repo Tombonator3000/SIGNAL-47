@@ -208,6 +208,9 @@ public:
  // Dr. Ward's letter or his assessment waiting (FS47Predecessor::TaskLine "MAILBOX / ...", "OPS / There is a letter ...", "OPS / Dr.
  // Ward's assessment ..."): the next thing to do once the first shift is done.
  static bool LetterWaits(const FString& Line);
+ // TASKS-TEN-20261113 (change 3): a line that says how things stand (SARO under review, the post's flag up, a parcel due, YOU / Tired):
+ // never a row on the night's list
+ static bool IsStatusLine(const FString& Line);
  // From day two the day's third card is a real evening's work: its source is not up until about half an hour before the
  // card's suggested time. Nothing else waits on it, it never expires, and OPS can wait for it. Developer runs leave it
  // open (their fixtures run all three cards in one sitting) unless a test asks.

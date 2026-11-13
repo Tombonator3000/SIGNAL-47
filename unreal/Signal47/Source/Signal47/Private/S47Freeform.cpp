@@ -4195,6 +4195,13 @@ bool FS47FreeformSession::SlipToFollow()const
  for(const TPair<FString,bool>& Slip:Places->SlipRows(WorldClock))if(!Slip.Value)return true;
  return false;
 }
+bool FS47FreeformSession::IsStatusLine(const FString& Line)
+{
+ // TASKS-TEN-20261113 (change 3): lines that say how things stand, or what waits on somebody else, not something to do: the station's
+ // standing, the outgoing post with its flag up, a parcel due, the tired state, a file's logged hours, the card count
+ return Line.StartsWith(TEXT("SARO under review"))||Line.StartsWith(TEXT("SARO KEPT OPEN"))||Line.StartsWith(TEXT("SARO CLOSES"))||Line.StartsWith(TEXT("MAIL ORDER /"))
+  ||(Line.StartsWith(TEXT("MAILBOX / "))&&Line.EndsWith(TEXT("the flag up for the carrier.")))||Line.StartsWith(TEXT("YOU / "))||Line.StartsWith(TEXT("Job cards:"));
+}
 bool FS47FreeformSession::LetterWaits(const FString& Line)
 {
  return Line.StartsWith(TEXT("MAILBOX / "))||Line.StartsWith(TEXT("OPS / There is a letter"))||Line.StartsWith(TEXT("OPS / Dr. Ward's assessment"));
@@ -5213,11 +5220,13 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Balloon){const FString Sonde=Balloon->TaskLine();if(!Sonde.IsEmpty())Result.Add({Sonde,false});} // D48-20261110: the balloon's instrument box and what to do with it
  if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(Gear&&Gear->AnyLeft())Result.Add({Gear->TaskLine(),false});
- if(Predecessor){const FString Line=Predecessor->TaskLine();if(!Line.IsEmpty())Result.Add({Line,false});}
+ // TASKS-TEN-20261113 (change 3): what the station is ("SARO under review", "KEPT OPEN", "CLOSES") is no task: only her papers waiting
+ if(Predecessor){const FString Line=Predecessor->TaskLine();if(!Line.IsEmpty()&&!IsStatusLine(Line))Result.Add({Line,false});}
  DossierTasks(Result); // LOOP-DOSSIER-GIVES-20261113: MARKS's extra bearing while it can come tonight, HABITS's hours (S47FreeformDossier.cpp)
  // CRIT9: a new night (or a clock gone back, a load) forgets the chores done; those that stop when done stay ticked off tonight.
  {const double C=Clock();const int32 N=NightOf(C);if(N!=ChoresNight||C+60<ChoresClock){ChoresOpen.Reset();ChoresDone.Reset();ChoresNight=N;}ChoresClock=C;}
- if(Mail){const FString Post=Mail->TaskLine();if(!Post.IsEmpty())Result.Add({Post,false});NoteChore(Result,TEXT("post"),Post.StartsWith(TEXT("MAIL ORDER /"))?FString():Post,FString());}
+ // TASKS-TEN-20261113 (change 3): the flag up for the carrier and a parcel due are no tasks: the map's mail flag and the kit say them
+ if(Mail){const FString Post=Mail->TaskLine();const bool bPost=!Post.IsEmpty()&&!IsStatusLine(Post);if(bPost)Result.Add({Post,false});NoteChore(Result,TEXT("post"),bPost?Post:FString(),FString());}
  if(Round){const FString Rounds=Round->TaskLine();if(!Rounds.IsEmpty())Result.Add({Rounds,false});}
  if(Care&&!Care->StatusLine().IsEmpty()){const FString Steps=Care->Steps(InventoryCount(TEXT("spare")),InventoryCount(TEXT("water")));Result.Add({TEXT("TRUCK / ")+(Steps.IsEmpty()?Care->StatusLine():Steps),false});}
  if(Care)NoteChore(Result,TEXT("truck"),Care->StatusLine().IsEmpty()?FString():TEXT("TRUCK / ")+Care->StatusLine(),FString());
@@ -5233,12 +5242,13 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const FString Step=CaseStep(Line).Task;!Step.IsEmpty())Result.Add({Step,false}); // CASES-OPS-20261109
  if(Director)for(const TPair<FString,bool>& Trail:Director->MysteryTrailRows())Result.Add({Trail.Key,Trail.Value}); // PT-NOTEBOOK-20261109: ticked off, not dropped
  // LOOP-NIGHT-WATCH-20261113: in the night the night's cards first, the station goal after them (NightBeforeGoal)
- const bool bNightFirst=NightBeforeGoal();const FString Goal=StationGoalLine();
+ // TASKS-TEN-20261113 (change 3): a goal that only waits for daylight is no task at night (it is the half-line after the night's last line)
+ const bool bNightFirst=NightBeforeGoal();const FString Goal=GoalWaits(WorldClock)?FString():StationGoalLine();
  if(!Goal.IsEmpty()&&!bNightFirst)Result.Add({Goal,false});
  if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("Service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});
  for(const FJob& J:Work)if(J.Day==DayNumber||J.Stage!=EJobStage::Filed)Result.Add({JobLine(J),J.Stage==EJobStage::Filed});
  if(!Goal.IsEmpty()&&bNightFirst)Result.Add({Goal,false});
- if(Fatigue){const FString Tired=Fatigue->KitLine();if(!Tired.IsEmpty())Result.Add({TEXT("YOU / ")+Tired,false});} // D46-20261110: Tired / Wide awake, coffee 2 cups
+ // TASKS-TEN-20261113 (change 3): "YOU / Tired" is no task: the tired state has its own signs (the eyelids, the kit's line, the yawns)
  return Result;
 }
 S47J::FObj FS47FreeformSession::Save()const
