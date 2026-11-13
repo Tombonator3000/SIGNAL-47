@@ -4,7 +4,18 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 13. november kl. 09:44 (d65): versjon 0.9.65, `13430204` på `claude/freeform-20261112`
+## Installert 13. november kl. 12:46 (d66): versjon 0.9.66, `a756625b` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5238 kontroller), regresjon PASS 251, pakket, røyktestet og installert. Tilbakerulling: d65 (`13430204`). Ledig disk etterpå: 121 GB. Ikke spilt av Tom.
+
+- **Mottakeren (→ M3):** ACQUIRE er et himmelkart der spilleren finner området antennene peker på (peilelinjer, sikte, lås), deretter TUNE; ni nye lyder. Sakene vises uten nummer. Gjentakelsesprøven er fjernet fra alle tre sakene (Tom).
+- **Bevismapper trinn 1 (→ M3, M4):** bevis logges der det tas, UNKNOWN 1–5 i notatboka og i permens UNKNOWNS; nøytrale bildetitler på OPS.
+- **Verden:** gjerdet langs motorveien er borte; kuene høres bare ved gården (svakt ved SARO under hendelser); verksteddøra på bensinstasjonen åpnes og lukkes; kaffemaskinen snudd, lavpoly-trakter og gammel stol byttet (felles modellkatalog).
+- **Musikk:** jazzen og nattpianoet (Cylinder One) ute; steelgitar, synth og gamle plater inne; fire egne miks av 80-tallsloopene; Toms Intro Drive.
+- **Story (→ M8):** egen stasjonsvogn og radio med stemme på kjøreturen er tilbake, med Intro Drive fra starten. Ikke prøvd i spill.
+- **Kjent:** rulledørens håndtak og hengelås henger igjen nederst når verksteddøra er oppe (krever egen del i modellen); Uuriter-sporenes lisens spriker (side CC BY 4.0, filmerker BY-NC-SA) og loop-pakkens vilkår må bekreftes før offentlig utgivelse; de gamle bytrim-meshene ved bensinstasjonen mangler i pakken (også i d65).
+
+## Tidligere: installert 13. november kl. 09:44 (d65): versjon 0.9.65, `13430204` på `claude/freeform-20261112`
 
 Editor BUILD 0, selvtest OK (5134 kontroller), regresjon PASS 251, pakket, røyktestet og installert. Tilbakerulling: d64 (`1e9a3964`). Ledig disk etterpå: 120 GB. Ikke spilt av Tom.
 
