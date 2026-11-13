@@ -822,7 +822,7 @@ FString FS47Places::SlipWhere(const FBearing& B)
  const double Metres=FVector2D::Distance(FVector2D(Sx,Sz),FVector2D(X,Z)),Mi=Metres/1609.344;
  // yards under half a mile, in fifties (never a 47); miles to a tenth above it
  const FString Far=Mi<.5?FString::Printf(TEXT("%d yards"),FMath::Max(50,FMath::RoundToInt(Metres/.9144/50)*50))
-  :FString::Printf(TEXT("%.1f"),Mi)==TEXT("1.0")?FString(TEXT("1 mile")):FString::Printf(TEXT("%.1f miles"),Mi);
+  :FString::Printf(TEXT("%.1f"),Mi)==TEXT("1.0")?FString(TEXT("1 mile")):S47Script::TapeSeconds(Mi)+TEXT(" miles"); // (4.7 miles says a 47 too: the shared formatter steps past it)
  return FString::Printf(TEXT("%s %s of SARO"),*Far,*S47FieldMap::Compass(AzimuthOf(Sx,Sz,X,Z)));
 }
 FString FS47Places::SlipNote(const FBearing& B,int32 Branches)
@@ -1277,7 +1277,7 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
     const FBearing P=StationFix(4,Clock,2,Sx,Sz,Sx+500,Sz,.5f,TEXT("windmill"));
     FHeld H;H.Job=TEXT("FF-D0004-J2");H.Branches=0;H.Steps=2;H.Why=1|2|4;H.bSame=true;H.bOwnMarks=true;H.MarkIn=9.;H.MarkOut=13.;
     const FString Full=PacketSection(P,H);
-    FHeld Loose=H;Loose.MarkOut=14.7;const FString NoNumber=PacketSection(P,Loose);
+    FHeld Loose=H;Loose.MarkOut=14.7;const FString NoNumber=PacketSection(P,Loose); // (REVIEW-20261113: shown as 14.6, the way the deck shows that mark; never 14.7)
     FHeld Other=H;Other.bSame=false;const FString Apart=PacketSection(P,Other);
     FHeld Plain0=H;Plain0.Why=4;Plain0.Steps=0;Plain0.bOwnMarks=false;const FString Teach=PacketSection(P,Plain0);
     FHeld Instr=Plain0;Instr.Why=0;Instr.bSame=false;const FString TeachSky=PacketSection(P,Instr);
@@ -1288,7 +1288,7 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
     for(const TCHAR Ch:All)bPlain&=Ch>=9&&Ch<127;
     const bool bFull=Full.StartsWith(TEXT("OFF-BEAM BEARING\n"))&&Full.Contains(SlipLine(P))&&Full.Contains(TEXT("GOOD UNTIL NOON"))&&Full.Contains(TEXT("CIRCLED ON YOUR MAP"))&&Full.Contains(TEXT("DIRECTION ONLY"))
      &&Full.Contains(TEXT("HAND FIX / MARKS TIGHT: AREA NARROWER BY TWO STEPS."))&&Full.Contains(TEXT("BETWEEN YOUR MARK IN AT 9.0 S AND YOUR MARK OUT AT 13.0 S CAME IN ON THIS BEARING."));
-    const bool bSaid=NoNumber.Contains(TEXT("BETWEEN YOUR MARK IN AND YOUR MARK OUT CAME IN ON THIS BEARING."))&&Apart.Contains(TEXT("IT DOES NOT SAY THE TWO ARE THE SAME"))&&!Apart.Contains(TEXT("CAME IN ON THIS BEARING"))
+    const bool bSaid=NoNumber.Contains(TEXT("YOUR MARK OUT AT 14.6 S CAME IN ON THIS BEARING."))&&!NoNumber.Contains(TEXT("14.7"))&&Apart.Contains(TEXT("IT DOES NOT SAY THE TWO ARE THE SAME"))&&!Apart.Contains(TEXT("CAME IN ON THIS BEARING"))
      &&Teach.Contains(TEXT("MARKS SET CLOSE ROUND THE EXTRA TICKS"))&&TeachSky.Contains(TEXT("A SKY FIX MADE BY HAND MAKES"))&&!TeachSky.Contains(TEXT("MARKS SET"))
      &&Narrowest.Contains(TEXT("HAND FIX: THE AREA IS ALREADY AS NARROW AS THE ARRAY GIVES."))&&!Silent.Contains(TEXT("HAND FIX"))&&!Silent.Contains(TEXT("A SKY FIX MADE BY HAND"));
     Check(bPlain&&bFull&&bSaid,TEXT("LOOP-SLIP-IN-PACKET: the packet's last page is OFF-BEAM BEARING with the direction, spread, circle and noon, why it is narrower, and the tie to the take in his own marks; never a 47 or what it is"));
