@@ -17,6 +17,7 @@
 // with its measures: Docs/Design/World/RecordsRoom.
 #include "S47SaroFixes.h"
 
+#include "S47Glow.h"
 #include "S47Main.h"
 #include "S47Props.h"
 #include "S47SaroLegacyCleanup.h"
@@ -123,15 +124,15 @@ namespace
   }
  }
 
- enum EPart : int32 { Surfaces, Ceiling, Lights, Table, Lamp, Typewriter, Shelving, Cabinets, Bay2, Layout, PartCount };
+ enum EPart : int32 { Surfaces, Ceiling, Lights, Table, Lamp, Typewriter, Shelving, Cabinets, Bay2, Bookcase, Fittings, Extras, Layout, PartCount };
  const TCHAR* PartNames[PartCount] = { TEXT("surfaces"), TEXT("ceiling"), TEXT("lights"), TEXT("work table"), TEXT("banker's lamp"), TEXT("typewriter"),
-  TEXT("shelving and cartons"), TEXT("filing cabinets"), TEXT("second shelving"), TEXT("layout") };
+  TEXT("shelving and cartons"), TEXT("filing cabinets"), TEXT("second shelving"), TEXT("bookcase binders"), TEXT("fittings"), TEXT("fan and extinguisher"), TEXT("layout") };
  // What each part needs of /Game/RecordsRoom (the first is the one that decides it).
  const TCHAR* const PartAssets[PartCount][3] = {
   { TEXT("Materials/M_Rec_Block"), TEXT("Materials/M_Rec_Floor"), nullptr }, { TEXT("SM_Rec_Ceiling"), nullptr, nullptr }, { TEXT("SM_Rec_Ceiling"), nullptr, nullptr },
   { TEXT("SM_Rec_WorkTable"), nullptr, nullptr }, { TEXT("SM_Rec_BankerLamp"), nullptr, nullptr }, { TEXT("SM_Rec_Typewriter"), nullptr, nullptr },
   { TEXT("SM_Rec_ShelfBay"), TEXT("SM_Rec_ShelfEnd"), TEXT("SM_Rec_BoxA") }, { TEXT("SM_Rec_CabinetA"), TEXT("SM_Rec_CabinetB"), TEXT("SM_Rec_CabinetC") },
-  { TEXT("SM_Rec_ShelfBay2"), TEXT("SM_Rec_BoxA"), nullptr }, { nullptr, nullptr, nullptr } };
+  { TEXT("SM_Rec_ShelfBay2"), TEXT("SM_Rec_BoxA"), nullptr }, { TEXT("SM_Rec_BinderA"), TEXT("SM_Rec_BinderB"), TEXT("SM_Rec_BinderC") }, { TEXT("SM_Rec_Fittings"), nullptr, nullptr }, { TEXT("SM_Rec_ExtBracket"), nullptr, nullptr }, { nullptr, nullptr, nullptr } };
 
  struct FState
  {
@@ -148,6 +149,7 @@ namespace
   TWeakObjectPtr<UTexture2D> Labels;
   TArray<TWeakObjectPtr<UPrimitiveComponent>> Made;
   int32 Seq = 0;
+  bool bLoaded = false;
  };
  TMap<TWeakObjectPtr<US47Main>, FState> States;
 
@@ -166,6 +168,31 @@ namespace
   return LoadObject<T>(nullptr, *(Package + TEXT(".") + FPackageName::GetShortName(Package)), nullptr, LOAD_NoWarn | LOAD_Quiet);
  }
  UStaticMesh* Mesh(const TCHAR* Name) { UStaticMesh* M = Asset<UStaticMesh>(Name); return M && !M->IsCompiling() ? M : nullptr; }
+
+ // Everything the room may use, loaded once and waited for: a mesh that is still compiling is not an absent one.
+ const TCHAR* const AllMeshes[] = { TEXT("SM_Rec_Ceiling"), TEXT("SM_Rec_Fittings"), TEXT("SM_Rec_ExtBracket"), TEXT("SM_Rec_WorkTable"), TEXT("SM_Rec_BankerLamp"), TEXT("SM_Rec_Typewriter"),
+  TEXT("SM_Rec_ShelfBay"), TEXT("SM_Rec_ShelfEnd"), TEXT("SM_Rec_ShelfBay2"), TEXT("SM_Rec_CabinetA"), TEXT("SM_Rec_CabinetB"), TEXT("SM_Rec_CabinetC"),
+  TEXT("SM_Rec_BoxA"), TEXT("SM_Rec_BoxB"), TEXT("SM_Rec_BoxC"), TEXT("SM_Rec_BoxD"), TEXT("SM_Rec_BoxE"), TEXT("SM_Rec_BoxF"), TEXT("SM_Rec_BoxG"), TEXT("SM_Rec_BoxH"),
+  TEXT("SM_Rec_BinderA"), TEXT("SM_Rec_BinderB"), TEXT("SM_Rec_BinderC"), TEXT("SM_Rec_Folders"), TEXT("SM_Rec_Papers") };
+ UStaticMesh* Bought(const TCHAR* Package)
+ {
+  if (!FPackageName::DoesPackageExist(Package)) return nullptr;
+  UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, *(FString(Package) + TEXT(".") + FPackageName::GetShortName(Package)), nullptr, LOAD_NoWarn | LOAD_Quiet);
+  return M && !M->IsCompiling() ? M : nullptr;
+ }
+ const TCHAR* FanPackage = TEXT("/Game/Rocket/RPS_DeskFan/SM_RPS_DeskFan01_c1_LOD1");
+ const TCHAR* ExtinguisherPackage = TEXT("/Game/Rocket/RPS_FireExtinguisher/SM_RPS_FireExtinguisher_02_c1_LOD1");
+ const TCHAR* AshtrayPackage = TEXT("/Game/Free/Office/office_assets_radio/StaticMeshes/office_assets_radio_Ashtray_27");
+ bool Loaded()
+ {
+  bool bBusy = false;
+  for (const TCHAR* Name : AllMeshes) if (const UStaticMesh* A = Asset<UStaticMesh>(Name)) bBusy |= A->IsCompiling();
+  for (const TCHAR* Package : { FanPackage, ExtinguisherPackage, AshtrayPackage })
+   if (FPackageName::DoesPackageExist(Package))
+    if (const UStaticMesh* A = LoadObject<UStaticMesh>(nullptr, *(FString(Package) + TEXT(".") + FPackageName::GetShortName(Package)), nullptr, LOAD_NoWarn | LOAD_Quiet)) bBusy |= A->IsCompiling();
+  Asset<UTexture2D>(TEXT("Textures/T_Rec_Labels"));
+  return !bBusy;
+ }
 
  bool Under(AS47Web* W, int32 Node, int32 RootNode)
  {
@@ -220,10 +247,10 @@ namespace
   for (FS47Rect& C : All) if (C.Id == Id) { C.MinX = R.X0; C.MaxX = R.X1; C.MinZ = R.Z0; C.MaxZ = R.Z1; C.bEnabled = true; return; }
   All.Add({ R.X0, R.X1, R.Z0, R.Z1, FString(Id), true });
  }
- bool Cut(AS47Web* W, const TCHAR* Id, int32 Geo, const FVector& Min, const FVector& Max, int32 Triangles)
+ bool Cut(AS47Web* W, const TCHAR* Id, int32 Geo, const FVector& Min, const FVector& Max, int32 Least, int32 Most = 0)
  {
   S47SaroLegacyCleanup::FEdit E;
-  E.Id = Id; E.RootPath = TEXT("annex.group"); E.GeometryIds = { Geo }; E.ThreeBounds = FBox(Min, Max); E.MinTriangles = Triangles; E.MaxTriangles = Triangles;
+  E.Id = Id; E.RootPath = TEXT("annex.group"); E.GeometryIds = { Geo }; E.ThreeBounds = FBox(Min, Max); E.MinTriangles = Least; E.MaxTriangles = FMath::Max(Least, Most);
   FString Why;
   const bool bOk = S47SaroLegacyCleanup::Apply(W, { E }, &Why);
   if (!bOk) UE_LOG(LogS47RecordsRoom, Display, TEXT("S47: records room: the old %s stays (%s)"), Id, *Why);
@@ -299,7 +326,7 @@ namespace
  const TCHAR* const Binders[] = { TEXT("SM_Rec_BinderA"), TEXT("SM_Rec_BinderB"), TEXT("SM_Rec_BinderC") };
  // A shelf seen from its front: Out is the Three direction the front faces, Along the direction of its run (to the viewer's right is
  // -Along x Up...; only used consistently), Front the front edge's coordinate along Out, A0..A1 the free span along Along.
- struct FShelf { FVector Out, Along; double Front, Y, A0, A1, Clear; };
+ struct FShelf { FVector Out, Along; double Front, Y, A0, A1, Clear; bool bBindersOnly = false; };
  FVector OnShelf(const FShelf& Sh, double Along, double Back, double Up) { return Sh.Out * (Sh.Front - Back) + Sh.Along * Along + FVector(0, Sh.Y + Up, 0); }
  // Fills a span with cartons (their long or short side out), a run of binders or a stack of folders, no two alike in how they stand.
  void Fill(FCtx& C, FRandomStream& Rng, const FShelf& Sh, const FString& Tag, int32& NextCard, int32& NextSlip)
@@ -315,10 +342,17 @@ namespace
    const double Left = Sh.A1 - A;
    const int32 Roll = Rng.RandRange(0, 9);
    const FString Name = FString::Printf(TEXT("%s_%d"), *Tag, N++);
-   if (Left < .27 || Roll == 9 || (Roll == 8 && Left > .5))
+   if (Sh.bBindersOnly && Roll >= 8 && Left > .5)
+   {
+    // a gap on the shelf, or a few folders lying in it
+    if (Roll == 9) Place(C, Name + TEXT("_flat"), Mesh(TEXT("SM_Rec_Folders")), OnShelf(Sh, A + .16, .17, 0), YawOut + 90 + Rng.FRandRange(-10., 10.));
+    A += Roll == 9 ? .34 : Rng.FRandRange(.08, .2);
+    continue;
+   }
+   if (Left < .27 || Roll == 9 || Sh.bBindersOnly)
    {
     // binders, spines out; the last of a run leans on its neighbours
-    const int32 Count = FMath::Min(Rng.RandRange(2, 5), FMath::FloorToInt32(Left / .079));
+    const int32 Count = FMath::Min(Rng.RandRange(2, Sh.bBindersOnly ? 6 : 4), FMath::FloorToInt32(Left / .079));
     if (Count < 1) break;
     for (int32 K = 0; K < Count; ++K)
     {
@@ -335,7 +369,7 @@ namespace
     A += Rng.FRandRange(.01, .05);
     continue;
    }
-   if (Roll == 7 && Left > .34 && Sh.Clear > .1)
+   if (Roll == 8 && Left > .34 && Sh.Clear > .1)
    {
     UStaticMesh* M = Mesh(Rng.FRand() < .6 ? TEXT("SM_Rec_Folders") : TEXT("SM_Rec_Papers"));
     Place(C, Name + TEXT("_flat"), M, OnShelf(Sh, A + .16, .19 + Rng.FRandRange(0., .05), 0), YawOut + 90 + Rng.FRandRange(-12., 12.));
@@ -346,7 +380,7 @@ namespace
    int32 Kind = Rng.RandRange(0, 7);
    if (Kinds[Kind].H > Sh.Clear - .02) Kind = 4;
    const FKind& K = Kinds[Kind];
-   const bool bEnd = Kind != 5 ? (Left < K.W + .02 || Rng.FRand() < .42) : true;
+   const bool bEnd = Kind != 5 ? (Left < K.W + .02 || Rng.FRand() < .30) : true;
    const double Wide = bEnd ? K.D : K.W, Deep = bEnd ? K.W : K.D;
    if (Wide > Left + .005) { A += .05; continue; }
    const double Back = Rng.FRand() < .12 ? -.035 : Rng.FRandRange(.004, .07);       // one in eight pulled a little out over the edge
@@ -367,7 +401,7 @@ namespace
    }
    else if (Kind != 1 && Kind != 7 && K.H + .06 < Sh.Clear && Rng.FRand() < .16)
     Place(C, Name + TEXT("_onTop"), Mesh(TEXT("SM_Rec_Folders")), At + FVector(0, K.H + .001, 0), YawOut + 90 + Rng.FRandRange(-20., 20.));
-   A += Wide + Rng.FRandRange(.012, .06);
+   A += Wide + Rng.FRandRange(.008, .045);
   }
  }
 
@@ -422,6 +456,8 @@ namespace
   // a stack of papers and one of folders where the sheets lay
   Place(C, TEXT("tablePapers"), Mesh(TEXT("SM_Rec_Papers")), FVector(-3.62, .771, 8.47), 172);
   Place(C, TEXT("tableFolders"), Mesh(TEXT("SM_Rec_Folders")), FVector(-3.40, .771, 8.83), 96);
+  // a glass ashtray by the lamp (the free office set's, CC BY, when it is here)
+  Place(C, TEXT("tableAshtray"), Bought(AshtrayPackage), FVector(-3.33, .771, 8.50), 20);
   return true;
  }
 
@@ -442,6 +478,9 @@ namespace
   if (Glass >= 0) { S.LampGlass = UMaterialInstanceDynamic::Create(L->GetMaterial(Glass), W); L->SetMaterial(Glass, S.LampGlass.Get()); }
   if (Inner >= 0) { S.LampInner = UMaterialInstanceDynamic::Create(L->GetMaterial(Inner), W); L->SetMaterial(Inner, S.LampInner.Get()); }
   for (int32 Geo : { 373, 374 }) Retire(GeoMesh(W, Geo));      // the export's foot and shade; its rod is inside the new stem
+  // the export's glow sprite hung in the air beside the old shade (a blurred halo): the glass and the pool on the table are the glow now
+  if (FS47GlowPoints* G = W->Glow(TEXT("annex.glow.points")))
+   for (int32 I = 0; I < G->Num(); ++I) if (FVector::Dist(G->Pos[I], FVector(-3.07, 1.08, 8.36)) < .05) G->SetOutputScale(I, 0.f);
   return true;
  }
 
@@ -474,7 +513,7 @@ namespace
   Place(C, TEXT("shelfEnd"), End, Lay::ShelvingAt + FVector(0, 0, -1.5), Yaw);
   Retire(Old);
   RetireNamed(W, TEXT("records:shelfCarton"));          // the dressing's cartons on the old top shelf
-  Cut(W, TEXT("records room shelf slips"), 376, FVector(-5.96, .15, 7.30), FVector(-5.37, 1.82, 9.90), 140);   // the export's loose slips and binders
+  Cut(W, TEXT("records room shelf slips"), 376, FVector(-5.96, .15, 7.30), FVector(-5.37, 1.82, 9.90), 100, 180);   // the export's loose slips and binders
   // The cartons: every shelf of every bay its own, by one seed. The middle bay's third shelf keeps z 8.36..8.84 free: the
   // STATION 01 box stands there, pulled half out, with the fire drawer behind it.
   static const double Tops[] = { .132, .632, 1.132, 1.632, 2.132 };
@@ -520,7 +559,7 @@ namespace
   }
   Retire(Old);
   // the export's drawer stood 36 cm out of the middle cabinet with a box of its own in the walk list
-  Cut(W, TEXT("records room open drawer"), 376, FVector(-4.69, .39, 9.47), FVector(-4.23, .84, 9.87), 84);
+  Cut(W, TEXT("records room open drawer"), 376, FVector(-4.69, .39, 9.47), FVector(-4.23, .84, 9.87), 60, 110);
   // cartons on top: two on the west cabinet, one on the middle one; the fan keeps the east one
   FRandomStream Rng(47);
   int32 Card = 12, Sl = 3;
@@ -555,6 +594,86 @@ namespace
    FShelf Sh; Sh.Out = FVector(0, 0, 1); Sh.Along = FVector(1, 0, 0); Sh.Front = Lay::Bay2At.Z + .219; Sh.Y = Tops[L] - .003; Sh.Clear = L < 4 ? .42 : .6;
    Sh.A0 = Lay::Bay2At.X - .365; Sh.A1 = Lay::Bay2At.X + .365;
    Fill(C, Rng, Sh, FString::Printf(TEXT("bay2_%d"), L), Card, Slip);
+  }
+  return true;
+ }
+
+ // The bookcase's middle shelf: the dressing's box binders give way to modelled ones, in runs with gaps, one leaning, folders lying.
+ bool BuildBookcase(AS47Web* W, FState& S)
+ {
+  FCtx C;
+  if (!Mesh(TEXT("SM_Rec_BinderA")) || !Mesh(TEXT("SM_Rec_BinderB")) || !Mesh(TEXT("SM_Rec_BinderC"))) { S.Why[Bookcase] = TEXT("waiting: SM_Rec_BinderA/B/C absent; the dressing's binders as before"); return false; }
+  if (!Named(W, TEXT("annex.interior"), TEXT("SM_ArchiveProps_Bookcase"))) { S.Why[Bookcase] = TEXT("waiting: SM_ArchiveProps_Bookcase not built yet"); return false; }
+  if (RetireNamed(W, TEXT("records:binder")) == 0) { S.Why[Bookcase] = TEXT("waiting: the dressing's binders are not on the shelf yet"); return false; }
+  if (!Open(C, W, S, Bookcase)) return false;
+  FRandomStream Rng(77);
+  int32 Card = 0, Slip = 2;
+  FShelf Sh; Sh.Out = FVector(0, 0, -1); Sh.Along = FVector(1, 0, 0); Sh.Front = -10.128; Sh.Y = .451; Sh.Clear = .40; Sh.A0 = -3.25; Sh.A1 = -1.44; Sh.bBindersOnly = true;
+  Fill(C, Rng, Sh, TEXT("bookcase"), Card, Slip);
+  return true;
+ }
+
+ // A bought piece whose own origin is not known here, stood by its bounds: bHang false, the bottom's middle on At; true, its top at
+ // At's height and its back (the side to Three -z) on At's z. Height: its height in metres when it is to be scaled to one (0: as it is).
+ UStaticMeshComponent* Stand(FCtx& C, const FString& Name, UStaticMesh* M, const FVector& At, double Yaw, bool bHang, double Height = 0)
+ {
+  if (!M || !C.ParentComp) return nullptr;
+  auto* Comp = NewObject<UStaticMeshComponent>(C.W, *FString::Printf(TEXT("S47Records_%d_%s"), C.S->Seq++, *Name.Replace(TEXT(":"), TEXT("_"))));
+  Comp->SetupAttachment(C.ParentComp); Comp->SetMobility(EComponentMobility::Movable); Comp->SetStaticMesh(M);
+  Comp->SetCollisionProfileName(TEXT("NoCollision")); Comp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  Comp->SetCollisionResponseToAllChannels(ECR_Ignore); Comp->SetGenerateOverlapEvents(false); Comp->SetCanEverAffectNavigation(false);
+  C.W->AddInstanceComponent(Comp); Comp->RegisterComponent();
+  const double Raw = M->GetBoundingBox().GetSize().Z / 100.0;
+  const double Scale = Height > 0 && Raw > .01 ? Height / Raw : 1.0;
+  Comp->SetWorldTransform(FTransform(FQuat(FRotator(0, Yaw, 0)), S47Three::ToUE(At), FVector(Scale)));
+  const FBox B = Comp->Bounds.GetBox(); const FVector Want = S47Three::ToUE(At);
+  FVector Delta(Want.X - B.GetCenter().X, Want.Y - B.GetCenter().Y, Want.Z - B.Min.Z);
+  if (bHang) { Delta.Y = Want.Y - B.Min.Y; Delta.Z = Want.Z - B.Max.Z; }
+  Comp->AddWorldOffset(Delta);
+  C.W->AdoptNode(Comp, C.Parent, TEXT("records:") + Name);
+  C.S->Made.Add(Comp); ++C.S->Props[C.Part];
+  return Comp;
+ }
+ bool BuildFittings(AS47Web* W, FState& S)
+ {
+  UStaticMesh* M = Mesh(TEXT("SM_Rec_Fittings"));
+  FCtx C;
+  if (!M) { S.Why[Fittings] = TEXT("waiting: SM_Rec_Fittings absent; no cove base or conduit, the export's cork board as before"); return false; }
+  if (!Open(C, W, S, Fittings)) return false;
+  Place(C, TEXT("fittings"), M, FVector::ZeroVector, 0);
+  // the export's cork board: its panel and four frame bars go (the notices at z 6.829 and their pins stay, on the new cork)
+  Cut(W, TEXT("records room cork panel"), 376, FVector(-2.26, 1.19, 6.799), FVector(-1.24, 1.91, 6.826), 1, 40);
+  Cut(W, TEXT("records room cork frame top"), 376, FVector(-2.275, 1.895, 6.799), FVector(-1.225, 1.93, 6.831), 1, 40);
+  Cut(W, TEXT("records room cork frame bottom"), 376, FVector(-2.275, 1.17, 6.799), FVector(-1.225, 1.205, 6.831), 1, 40);
+  Cut(W, TEXT("records room cork frame west"), 376, FVector(-2.28, 1.195, 6.799), FVector(-2.245, 1.905, 6.831), 1, 40);
+  Cut(W, TEXT("records room cork frame east"), 376, FVector(-1.255, 1.195, 6.799), FVector(-1.22, 1.905, 6.831), 1, 40);
+  // the old lamp's cord across the floor to the wall (ours is in the fittings)
+  Cut(W, TEXT("records room lamp cord"), 376, FVector(-3.08, -.01, 8.19), FVector(-1.0, .80, 8.71), 200, 400);
+  return true;
+ }
+
+ // Tom's two single Cosmos props (git-ignored under /Game/Rocket; Tools/recordsroom/cosmos_props.py): a fire extinguisher on a
+ // bracket of ours west of the switch, in place of the red cylinder, and a desk fan on the east cabinet, in place of the wire one.
+ bool BuildExtras(AS47Web* W, FState& S)
+ {
+  UStaticMesh* Ext = Bought(ExtinguisherPackage);
+  UStaticMesh* Fan = Bought(FanPackage);
+  UStaticMesh* Bracket = Mesh(TEXT("SM_Rec_ExtBracket"));
+  FCtx C;
+  if (!Ext && !Fan) { S.Why[Extras] = TEXT("waiting: the Cosmos fan and extinguisher are not here (bought, never in Git); the red cylinder and the wire fan as before"); return false; }
+  if (!Open(C, W, S, Extras)) return false;
+  if (Ext && Bracket)
+  {
+   constexpr double X = -5.05, Foot = .52;        // the bracket's foot; its hook .40 above, the sign over it
+   Place(C, TEXT("extBracket"), Bracket, FVector(X, Foot, Lay::Z0), Facing(0, 1));
+   Stand(C, TEXT("extinguisher"), Ext, FVector(X, Foot + .43, Lay::Z0 + .008), 0, true, .52);
+   Retire(GeoMesh(W, 375));                      // the export's red cylinder
+   if (S.bBuilt[Lamp]) Retire(GeoMesh(W, 370));  // and its bracket (that mesh holds only this and the old lamp's rod by now)
+  }
+  if (Fan && S.bBuilt[Cabinets])
+  {
+   Stand(C, TEXT("deskFan"), Fan, FVector(-3.93, 1.321, 10.17), Facing(-.45, -1), false);
+   Cut(W, TEXT("records room wire fan"), 376, FVector(-4.12, 1.375, 10.05), FVector(-3.80, 1.78, 10.26), 100, 300);
   }
   return true;
  }
@@ -596,6 +715,7 @@ void Update(US47Main* M, double Dt)
  if (bSaro && S.Retry <= 0)
  {
   S.Retry = 2;
+  if (!S.bLoaded) { S.bLoaded = Loaded(); if (!S.bLoaded) { S.Retry = .25; return; } }
   for (int32 I = 0; I < PartCount; ++I)
   {
    if (S.bBuilt[I]) continue;
@@ -612,6 +732,9 @@ void Update(US47Main* M, double Dt)
     case Shelving: bOk = BuildShelving(W, S); break;
     case Cabinets: bOk = BuildCabinets(W, S); break;
     case Bay2: bOk = BuildBay2(W, S); break;
+    case Bookcase: bOk = BuildBookcase(W, S); break;
+    case Fittings: bOk = BuildFittings(W, S); break;
+    case Extras: bOk = BuildExtras(W, S); break;
     case Layout: bOk = BuildLayout(W, S); break;
     default: break;
    }
@@ -620,14 +743,20 @@ void Update(US47Main* M, double Dt)
    else if (Old != S.Why[I]) { UE_LOG(LogS47RecordsRoom, Display, TEXT("S47: records room %s %s"), PartNames[I], *S.Why[I]); }
   }
  }
+ if (bSaro && S.Retry >= 1.99)
+ {
+  if (S.bBuilt[Shelving]) RetireNamed(W, TEXT("records:shelfCarton"));
+  if (S.bBuilt[Bookcase]) RetireNamed(W, TEXT("records:binder"));
+  if (S.bBuilt[Layout]) { RetireNamed(W, TEXT("records:flatCarton")); for (FS47Rect& R : W->CollidersMutable(TEXT("saro"))) if (R.Id == TEXT("records:flatCartons")) R.bEnabled = false; }
+ }
  // The export's own materials can come back on a node (a private copy for a story colour): the walls and floor keep the new ones.
  if (S.bBuilt[Surfaces]) { for (const auto& Wall : S.Walls) Wear(Wall.Get(), S.Block.Get()); Wear(S.FloorComp.Get(), S.Floor.Get()); }
  // The lamp's glass and its white inside glow with its light (the fixture keeps power, the dark and the dimming).
  if (URectLightComponent* L = S.LampLight.Get())
  {
   const float K = L->IsVisible() ? FMath::Clamp(L->Intensity / 12.f, 0.f, 1.5f) : 0.f;
-  if (UMaterialInstanceDynamic* G = S.LampGlass.Get()) G->SetVectorParameterValue(TEXT("EmissiveFactor"), FLinearColor(.035f, .55f, .16f) * (K * .9f));
-  if (UMaterialInstanceDynamic* In = S.LampInner.Get()) In->SetVectorParameterValue(TEXT("EmissiveFactor"), FLinearColor(1.f, .78f, .5f) * (K * 3.f));
+  if (UMaterialInstanceDynamic* G = S.LampGlass.Get()) G->SetVectorParameterValue(TEXT("EmissiveFactor"), FLinearColor(.02f, .30f, .09f) * (K * .11f));
+  if (UMaterialInstanceDynamic* In = S.LampInner.Get()) In->SetVectorParameterValue(TEXT("EmissiveFactor"), FLinearColor(1.f, .78f, .5f) * (K * 2.2f));
  }
 }
 

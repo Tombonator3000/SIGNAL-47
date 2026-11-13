@@ -32,6 +32,19 @@ namespace
   {TEXT("11-bookcase-binders"),-2.4,8.9,-2.4,0.8,10.3,70},
   {TEXT("12-ceiling-lights"),-3.5,10.0,-3.5,2.8,7.6,80},
   {TEXT("13-floor"),-2.2,7.3,-4.0,0.0,9.4,75},
+  // RECORDS-ROOM-LIFT-20261113: the lift's pieces close up, through a long lens from where one stands (21:00 only; names from h)
+  {TEXT("h01-typewriter"),-4.12,7.85,-4.12,0.86,8.68,30},
+  {TEXT("h02-bankers-lamp"),-3.05,7.80,-3.07,1.00,8.35,30},
+  {TEXT("h03-table-top"),-2.45,8.00,-3.55,0.77,8.62,45},
+  {TEXT("h04-shelving-cartons"),-4.85,8.95,-5.60,1.35,9.62,50},
+  {TEXT("h05-filing-cabinets"),-4.46,9.25,-4.62,0.95,10.0,60},
+  {TEXT("h06-desk-fan"),-3.60,9.30,-3.93,1.50,10.17,28},
+  {TEXT("h07-extinguisher-switch"),-4.60,7.95,-4.95,1.00,6.85,45},
+  {TEXT("h08-cork-board"),-2.30,7.95,-1.75,1.55,6.82,40},
+  {TEXT("h09-second-shelving-nook"),-2.30,9.45,-1.30,1.10,8.90,60},
+  {TEXT("h10-troffer"),-4.20,9.00,-4.60,2.70,8.00,50},
+  {TEXT("h11-wall-base-floor"),-2.30,9.30,-1.05,0.40,9.70,45},
+  {TEXT("h12-bookcase"),-2.40,9.30,-2.40,0.60,10.30,55},
  };
  constexpr int32 RecCount=UE_ARRAY_COUNT(RecViews);
 }
@@ -57,6 +70,7 @@ void FS47FreeformTest::StepRecordsShots(double Dt)
  const bool bDay=Stage>=300;const int32 Base=bDay?300:100;const int32 I=(Stage-Base)%100;const bool bShoot=Stage-Base>=100;
  if(Stage==1){ToHour(13.);Go(300,8.);return;}
  if(I>=RecCount){if(!bDay){Go(1,.5);return;}Finish(true,FString::Printf(TEXT("records room: %d views at 21:00 and 13:00 in %s"),RecCount,*Dir));return;}
+ if(bDay&&RecViews[I].Name[0]==TEXT('h')){Go(Stage+1,.05);return;}
  if(!bShoot){Pose(RecViews[I]);Go(Stage+100,I==0?4.:2.);return;}
  const FString Name=FString::Printf(TEXT("%s-%s"),RecViews[I].Name,bDay?TEXT("1300"):TEXT("2100"));
  FScreenshotRequest::RequestScreenshot(Dir/(Name+TEXT(".png")),false,false);
