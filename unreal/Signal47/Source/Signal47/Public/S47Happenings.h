@@ -137,6 +137,16 @@ public:
  bool DevUnease(int32 I,FString& Why);
  bool UneaseLive() const{return Uneasy.I>=0;}
  int32 UneaseDoneTonight() const{return UneaseDone.Num();}
+ // UNEASE-20261114 (URO.md's rules, pure): «høyst to til tre uroting per natt»: three at most, two on a calm night (its quiet is the
+ // night's own); never the same piece two nights running; never two within three quarters of an hour of the night's clock, so that
+ // one is not heard on top of the last. Asked of every piece that is not F10's: the night's own, the reserve at midnight and the floor.
+ static constexpr int32 UneaseMost=3,UneaseMostCalm=2;
+ static constexpr double UneaseGapS=45*60.;
+ // How many tonight wants: one in the first week, two in the second, then up to the cap. Many: the night's own roll, 0 to 1.
+ static int32 UneaseWantFor(int32 Night,float Many,bool bCalm);
+ // LastNightOfIt: the night this piece last came (0 never); LastClock: the clock the last piece of any kind came (-1e9 none).
+ static bool UneaseMayCome(int32 Night,int32 DoneTonight,bool bCalm,int32 LastNightOfIt,double LastClock,double Clock,FString* Why=nullptr);
+ static bool UneaseRulesSelfTest(TArray<FString>& Lines);
  static bool SelfTest(TArray<FString>& Lines);
  // M1-MEASURE-20261113: another system's encounter, perceived by the player (its own seen/heard/told), into tonight's summary line
  // ("other noticed"). Kind is the summary's word for it; Key makes it once a night (a place, a serial). Measurement only.
@@ -473,6 +483,8 @@ private:
  bool BeginMore(const FString& Id,const FString& Variant,bool bForced,FString& Why);
  bool StepMore(double Dt);
  void UsePhone();
+ // The clock the last piece of unease came (UNEASE-20261114; saved "uneaseClock", an older save has none).
+ double UneaseClock=-1e9;
  int32 HoodNight=0; // the truck's hood was warm tonight: the counter finds it too
  void UseSite(const FString& Kind);
  void UseCattle();

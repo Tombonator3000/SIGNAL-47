@@ -996,7 +996,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
  SitHeld.Reset();SitHeldClock=-1; // LEAD-FIX-20261110
  LeadNow=FLead();WordNight=0;WordTry=0; // CHAIN-5B-20261109
  FloorNight=NoticedNight=FloorNoneNight=0;FloorTryClock=0;bFloorTry=false;FloorWarned.Empty(); // M1-FLOOR-20261112
- HoodNight=0;Uneasy=FUneasy();UneaseOnce.Reset();UneaseDone.Reset();UneasePool.Reset();UneaseAt.Reset();UneaseNight=UneaseWant=DangerSeen=0;DangerClock=-1e9;UneaseTry=0;OutsideSince=TruckAwaySince=-1;bWasDriving=bWasIndoors=bChairUp=false;
+ HoodNight=0;Uneasy=FUneasy();UneaseOnce.Reset();UneaseDone.Reset();UneasePool.Reset();UneaseAt.Reset();UneaseNight=UneaseWant=DangerSeen=0;DangerClock=-1e9;UneaseTry=0;UneaseClock=-1e9;OutsideSince=TruckAwaySince=-1;bWasDriving=bWasIndoors=bChairUp=false;
  Serial=0;HumorNight=-100;EchoFrom=0;LateNight=0;PlanNight=0;AheadNight=0;AheadSeconds=0;bLate=false;bEchoArmed=false;HumorKind.Empty();LastArea.Empty();
  MetTotal=0;HumorSeen.Reset();GhostNight=0;UneaseLast.Reset();Cues.Reset();LateAt=24.5;bLateHush=false;ReturnedAt=-1e9;ReturnedAway=0;
  Glimpse=S47RoadGlimpse::FPlan();Paced=0;NearK=1;DangerAt=-1;Tally=FTally();NoticedSerials.Reset();RefusedSaid.Reset();LateDrawSaid.Reset();LoopsOn.Reset();SoundNext=0;HeldTips.Reset();FigureSeen.Reset();FigureSeenFor=0;SwapTry=0;RumorTry=0;
@@ -1015,6 +1015,8 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
   for(const FString& D:S47J::Strs(Saved,TEXT("deeds")))if(!D.IsEmpty()&&D.Len()<200&&Deeds.Num()<6)Deeds.Add(D);
   for(const FString& U:S47J::Strs(Saved,TEXT("uneaseOnce")))if(U==TEXT("name")||U==TEXT("note"))UneaseOnce.AddUnique(U);
   UneaseNight=FMath::Max(0,S47J::Int(Saved,TEXT("uneaseNight")));
+  // UNEASE-20261114: when the last piece came, for the gap between two; an older save has none (the gap holds from now on).
+  {const double Uc=S47J::Num(Saved,TEXT("uneaseClock"),-1e9);UneaseClock=FMath::IsFinite(Uc)&&Uc>=0&&Uc<1e8?Uc:-1e9;}
   LateNight=FMath::Max(0,S47J::Int(Saved,TEXT("lateNight")));bLate=S47J::Bool(Saved,TEXT("late"));
   MetTotal=FMath::Clamp(S47J::Int(Saved,TEXT("met")),0,10000);GhostNight=FMath::Max(0,S47J::Int(Saved,TEXT("ghostNight")));
   for(const FString& H:S47J::Strs(Saved,TEXT("humorSeen")))if((H==TEXT("car")||H==TEXT("singer")||H==TEXT("crossing")||H==TEXT("pump"))&&!HumorSeen.Contains(H))HumorSeen.Add(H);
@@ -1096,6 +1098,7 @@ S47J::FObj FS47Happenings::Save() const
  if(!Deeds.IsEmpty())S47J::Set(O,TEXT("deeds"),Deeds);
  if(!UneaseOnce.IsEmpty())S47J::Set(O,TEXT("uneaseOnce"),UneaseOnce);
  if(!UneaseDone.IsEmpty()){TArray<double> Done;for(const int32 U:UneaseDone)Done.Add(U);S47J::Set(O,TEXT("uneaseNight"),UneaseNight);S47J::Set(O,TEXT("uneaseDone"),Done);}
+ if(UneaseClock>=0)S47J::Set(O,TEXT("uneaseClock"),UneaseClock); // UNEASE-20261114
  if(!UneaseLast.IsEmpty()){auto U=S47J::New();for(const auto& KV:UneaseLast)S47J::Set(U,*FString::FromInt(KV.Key),KV.Value);S47J::Set(O,TEXT("uneaseLast"),U);}
  if(LateNight>0){S47J::Set(O,TEXT("lateNight"),LateNight);if(bLate)S47J::Set(O,TEXT("late"),true);}
  if(MetTotal>0)S47J::Set(O,TEXT("met"),MetTotal);
@@ -4708,7 +4711,8 @@ void FS47Happenings::PlanUnease(int32 Night)
  const float Many=FS47NightRhythm::Roll(Seed,Night,0x554e5754u);
  // M7, the rhythm review: as many in the first week as in the fourth was flat. One a night in the first week, two in the second,
  // then up to three and four toward the end.
- UneaseWant=FMath::Min(4,1+(Night>=8?1:0)+(Night>=15&&Many>.4f?1:0)+(Night>=22&&Many>.7f?1:0));
+ // UNEASE-20261114 (URO.md): never more than three, two on a calm night (UneaseWantFor).
+ UneaseWant=UneaseWantFor(Night,Many,F->QuietNight(Night));
  UneaseAt.Reset();
  // Spread from half past eight to half past five, so they do not all fall in one hour.
  // D45-20261110 (D45-26): the first night's one before midnight, between 22:00 and 23:15 and not on top of the burst
@@ -4749,7 +4753,7 @@ void FS47Happenings::StepUnease(double Dt)
   return;
  }
  const double H=HourOfNight(Clock);
- const bool bSlot=UneaseDone.Num()<FMath::Min(UneaseWant,4)&&UneaseAt.IsValidIndex(UneaseDone.Num())&&H>=UneaseAt[UneaseDone.Num()]&&H<29.8;
+ const bool bSlot=UneaseDone.Num()<FMath::Min(UneaseWant,UneaseMost)&&UneaseAt.IsValidIndex(UneaseDone.Num())&&H>=UneaseAt[UneaseDone.Num()]&&H<29.8;
  FString Why;
  // What waits for a moment: getting into the truck, coming back into SARO after a while out, walking back up to the truck.
  if(bSlot&&Uneasy.I<0)
@@ -4786,6 +4790,11 @@ bool FS47Happenings::FireUnease(int32 I,bool bForced,FString& Why)
  {
   if(UneaseDone.Contains(I)){Why=TEXT("already tonight");return false;}
   if(UneaseOnce.Contains(Id)){Why=TEXT("once in a game, and it has been");return false;}
+  // UNEASE-20261114 (URO.md): the night's cap, never the same piece two nights running, and a gap after the last one.
+  {
+   const int32 Nt=FS47FreeformSession::NightOf(Clock);
+   if(!UneaseMayCome(Nt,UneaseNight==Nt?UneaseDone.Num():0,F->QuietNight(Nt),UneaseLast.FindRef(I),UneaseClock,Clock,&Why))return false;
+  }
   // Never on top of something else, nor a moment after anything began, of this or any other system.
   if(!Now.Id.IsEmpty()){Why=TEXT("something else is on");return false;}
   const double Since=M->Rhythm?Clock-M->Rhythm->LastStart():1e9;
@@ -5067,7 +5076,7 @@ bool FS47Happenings::FireUnease(int32 I,bool bForced,FString& Why)
  default:return No(TEXT("no such thing"));
  }
  if(bLasting)Uneasy=U;
- if(!bForced){UneaseDone.AddUnique(I);UneaseLast.Add(I,FS47FreeformSession::NightOf(Clock));if(I==2||I==19)UneaseOnce.AddUnique(Id);}
+ if(!bForced){UneaseDone.AddUnique(I);UneaseLast.Add(I,FS47FreeformSession::NightOf(Clock));UneaseClock=Clock;if(I==2||I==19)UneaseOnce.AddUnique(Id);}
  Noticed();
  // Counted as a start, and followed by the short rest like anything else (one that lasts, when it is over: EndUneasy).
  if(M->Rhythm){M->Rhythm->Began(TEXT("unease"));if(!bLasting&&!bForced)M->Rhythm->Ended(TEXT("unease"));}
@@ -5199,6 +5208,48 @@ void FS47Happenings::EndUneasy()
  if(I>=0&&!bForced&&Life.IsValid()&&M&&M->Rhythm)M->Rhythm->Ended(TEXT("unease"));
 }
 bool FS47Happenings::DevUnease(int32 I,FString& Why){return FireUnease(I,true,Why);}
+// UNEASE-20261114: URO.md's rules by themselves (FireUnease asks them of every piece but F10's).
+int32 FS47Happenings::UneaseWantFor(int32 Night,float Many,bool bCalm)
+{
+ // M7, the rhythm review: one a night in the first week, two in the second, then more toward the end, never past the cap.
+ const int32 Want=1+(Night>=8?1:0)+(Night>=15&&Many>.4f?1:0)+(Night>=22&&Many>.7f?1:0);
+ return FMath::Clamp(Want,1,bCalm?UneaseMostCalm:UneaseMost);
+}
+bool FS47Happenings::UneaseMayCome(int32 Night,int32 DoneTonight,bool bCalm,int32 LastNightOfIt,double LastClock,double Clock,FString* Why)
+{
+ const auto No=[Why](const TCHAR* Text){if(Why)*Why=Text;return false;};
+ if(DoneTonight>=(bCalm?UneaseMostCalm:UneaseMost))return No(TEXT("as many tonight as a night has"));
+ if(Night>1&&LastNightOfIt==Night-1)return No(TEXT("it came last night"));
+ if(Clock-LastClock<UneaseGapS)return No(TEXT("too soon after the last one"));
+ return true;
+}
+bool FS47Happenings::UneaseRulesSelfTest(TArray<FString>& Lines)
+{
+ bool OK=true;
+ const auto Check=[&](bool B,const TCHAR* What){OK&=B;Lines.Add(FString::Printf(TEXT("%s happenings unease: %s"),B?TEXT("PASS"):TEXT("FAIL"),What));};
+ bool bCap=true;
+ for(int32 Night=1;Night<=31;++Night)for(const float Many:{0.f,.5f,.8f,1.f})
+ {
+  const int32 W=UneaseWantFor(Night,Many,false),C=UneaseWantFor(Night,Many,true);
+  bCap&=W>=1&&W<=UneaseMost&&C>=1&&C<=UneaseMostCalm&&C<=W&&(Night>=8||W==1);
+ }
+ Check(bCap&&UneaseWantFor(25,1.f,false)==3&&UneaseWantFor(25,1.f,true)==2&&UneaseWantFor(9,0.f,false)==2,TEXT("URO.md: one a night in the first week, never more than three (it was four in the fourth week), two on a calm night"));
+ const double Clock=5*86400.+23*3600.;
+ FString Why;
+ Check(UneaseMayCome(6,0,false,0,-1e9,Clock)&&UneaseMayCome(6,2,false,4,-1e9,Clock)&&!UneaseMayCome(6,3,false,0,-1e9,Clock,&Why)&&!Why.IsEmpty()&&!UneaseMayCome(6,2,true,0,-1e9,Clock),
+  TEXT("the night's cap holds for the night's own, the reserve and the floor alike, and is lower on a calm night"));
+ Check(!UneaseMayCome(6,0,false,5,-1e9,Clock)&&UneaseMayCome(6,0,false,6,-1e9,Clock)&&UneaseMayCome(1,0,false,0,-1e9,Clock),
+  TEXT("never the same piece two nights running (within a night, never two alike as before)"));
+ Check(!UneaseMayCome(6,1,false,0,Clock-20*60.,Clock)&&UneaseMayCome(6,1,false,0,Clock-UneaseGapS,Clock)&&!UneaseMayCome(6,1,false,0,Clock-UneaseGapS+1,Clock),
+  TEXT("two pieces of unease are never within three quarters of an hour of each other"));
+ {
+  FS47Happenings A(nullptr);A.Begin(nullptr);A.UneaseClock=Clock;
+  FS47Happenings B(nullptr);B.Begin(S47J::Read(S47J::Write(A.Save())));
+  FS47Happenings C(nullptr);C.Begin(nullptr);FS47Happenings D(nullptr);D.Begin(S47J::Read(S47J::Write(C.Save())));
+  Check(FMath::IsNearlyEqual(B.UneaseClock,Clock)&&D.UneaseClock<0&&!C.Save()->HasField(TEXT("uneaseClock")),TEXT("the last piece's clock survives a Continue; an older save has none and writes none"));
+ }
+ return OK;
+}
 
 // ---------------------------------------------------------------- the counter (GEIGER-20261108)
 bool FS47Happenings::ToggleCounter()
@@ -5940,6 +5991,8 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
  OK&=FirstDaySelfTest(Lines);
  // M1-FLOOR-20261112: the night's floor.
  OK&=FloorSelfTest(Lines);
+ // UNEASE-20261114: URO.md's caps, gap and no repeat on the next night.
+ OK&=UneaseRulesSelfTest(Lines);
  // M1-MEASURE-20261113: the other systems' encounters in the summary, behind the fields the tour reads.
  {
   FS47Happenings H(nullptr);H.Tally.Night=4;H.Tally.NStarted=2;H.Tally.NNoticed=1;
