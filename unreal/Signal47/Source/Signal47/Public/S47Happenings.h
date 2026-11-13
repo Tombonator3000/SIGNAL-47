@@ -292,6 +292,30 @@ public:
  static double FirstRealMinutes(double Hour);
  static bool FirstDaySelfTest(TArray<FString>& Lines);
 
+ // NIGHT31-PLACES-20261114 (S47NightPlaces.cpp; TODO NIGHT31-20261108 and ANYWHERE-20261108, Tom 8 November: «hendelser ved gården
+ // kan komme hvor som helst i verdenen»). Nine more of the night's happenings, each at one place of the catalogue beyond the farm and
+ // made of what the world already has: its sounds, its lamps, the gas station's bay door, the needle's history, the night log.
+ //   Heard  windmill_knock (the Baca windmill), school_swing (the school's playground), mine_knock (the old mine), bay_door (the gas
+ //          station's service bay): heard from within a band of the place, stopped when the player comes up to it.
+ //   Lit    cemetery_lamp (a lamp among the graves), shack_lamp (a lamp in the line shack), road_flare (a flare on the shoulder ahead):
+ //          seen by their own light, out when the player comes up.
+ //   Mark   cairn_stones (stones laid in a ring round the cairn), trough_birds (dead birds round the trough): left out there unseen,
+ //          found close to in light, by day or by the lamp; they stir the needle while they stand.
+ // Each one noticed leaves a night record (OUT ON THE LAND, the night log's SEEN AND HEARD, Dr. Ward's remark), something the
+ // cb_echo voice can say back, and its place on the needle's history; the bay door stays up (a way into the station through the
+ // bay, saved by the town's doors); the birds nobody found are talked of the next evening. Tiers, weeks and hours are director.json's.
+ enum class EPlaceShape:uint8{Heard,Lit,Mark};
+ struct FPlaceDef{const TCHAR* Id;const TCHAR* Place;EPlaceShape Shape;int32 FromDay;float Usual;double From,Span;bool bCalm;const TCHAR* Key;};
+ static const TArray<FPlaceDef>& PlaceDefs();
+ static const FPlaceDef* PlaceDef(const FString& Id);
+ // The record one leaves (its key: Key followed by the night). Outcome 0: heard or seen from off; 1: walked up to it; 2: a mark found
+ // after it was heard. Pure.
+ static FString PlaceRecord(const FString& Id,const FString& Clock,int32 Outcome,const FString& Title);
+ // The clock as a record says it, never on the minute that reads as Story's number.
+ static FString PlaceClock(double Clock);
+ static uint32 PlaceSalt(const FString& Id);
+ static bool PlaceSelfTest(TArray<FString>& Lines);
+
  // A place for one of these, with what it needs: the catalogue's, or the land's own.
  struct FSpot{FString Place,Title;double X=0,Z=0;bool bSet=false;};
  struct FProp;
@@ -483,6 +507,13 @@ private:
  bool BeginMore(const FString& Id,const FString& Variant,bool bForced,FString& Why);
  bool StepMore(double Dt);
  void UsePhone();
+ // NIGHT31-PLACES-20261114 (S47NightPlaces.cpp): the nine at their places, what each does while it holds the ground, and the marks.
+ bool BeginPlace(const FString& Id,bool bForced,FString& Why);
+ bool StepPlace(double Dt);
+ void EndPlace(int32 Outcome);
+ void StepPlaceMarks();
+ // Every lamp of a prop at K of its strength (S47Happenings.cpp, where a prop's insides are known).
+ void PropLamps(FProp& P,float K);
  // The clock the last piece of unease came (UNEASE-20261114; saved "uneaseClock", an older save has none).
  double UneaseClock=-1e9;
  int32 HoodNight=0; // the truck's hood was warm tonight: the counter finds it too

@@ -156,7 +156,8 @@ namespace S47Hap
  // What does not hold the ground: lasting things out on the land, the clock, a word on the radio.
  bool Background(const FString& Id)
  {
-  static const TCHAR* const L[]={TEXT("clock_ahead"),TEXT("cattle_ring"),TEXT("stranded_rv"),TEXT("carcass"),TEXT("house_lit"),TEXT("cinema_film"),TEXT("missing_person"),TEXT("truck_tracks"),TEXT("hood_warm"),TEXT("am_caller")};
+  static const TCHAR* const L[]={TEXT("clock_ahead"),TEXT("cattle_ring"),TEXT("stranded_rv"),TEXT("carcass"),TEXT("house_lit"),TEXT("cinema_film"),TEXT("missing_person"),TEXT("truck_tracks"),TEXT("hood_warm"),TEXT("am_caller"),
+   TEXT("cairn_stones"),TEXT("trough_birds")}; // (NIGHT31-PLACES-20261114: the marks left out there)
   for(const TCHAR* X:L)if(Id==X)return true;
   return false;
  }
@@ -164,7 +165,8 @@ namespace S47Hap
  const TCHAR* SiteKindOf(const FString& Id)
  {
   return Id==TEXT("cattle_ring")?TEXT("cattle"):Id==TEXT("stranded_rv")?TEXT("rv"):Id==TEXT("carcass")?TEXT("carcass"):Id==TEXT("house_lit")?TEXT("houselit")
-   :Id==TEXT("cinema_film")?TEXT("cinema"):Id==TEXT("missing_person")?TEXT("missing"):Id==TEXT("truck_tracks")?TEXT("tracks"):TEXT("");
+   :Id==TEXT("cinema_film")?TEXT("cinema"):Id==TEXT("missing_person")?TEXT("missing"):Id==TEXT("truck_tracks")?TEXT("tracks")
+   :Id==TEXT("cairn_stones")?TEXT("cairnring"):Id==TEXT("trough_birds")?TEXT("deadbirds"):TEXT("");
  }
  // A bearing in whole degrees, 0 to 359, that never reads as Story's number (47, 147 ...): a degree on is as good a bearing.
  double Bearing(double Az)
@@ -211,6 +213,7 @@ const TCHAR* const NightKeys[]={TEXT("cattle_ring_d"),TEXT("car_dies_d"),TEXT("c
  TEXT("animals_flee_d"),TEXT("car_light_d"),TEXT("dust_devil_d"),TEXT("missing_d"),TEXT("dogs_hush_d"),TEXT("phone_empty_d"),TEXT("geiger_landing_"),TEXT("geiger_trace_"),TEXT("geiger_sample_"),
  TEXT("figure_near_d"),TEXT("lights_trace_bignight_d"),TEXT("big_felt_d"),TEXT("road_glimpse_d"),TEXT("road_tracks_d"),
  TEXT("eyes_window_d"),TEXT("beam_figure_d"),TEXT("dish_lights_d"), // N1110 (N1110-3): the camera moments' findings
+ TEXT("windmill_knock_d"),TEXT("school_swing_d"),TEXT("mine_knock_d"),TEXT("bay_door_d"),TEXT("cemetery_lamp_d"),TEXT("shack_lamp_d"),TEXT("road_flare_d"),TEXT("cairn_stones_d"),TEXT("trough_birds_d"), // NIGHT31-PLACES-20261114
  TEXT("answer_d")}; // LOOP-3-20261109: the answer on the monitor channel (S47Answer) is a night record of OUT ON THE LAND too
 // What a line may not say (the text critic, 8 November): the answer for the player, and the motifs another system owns. One line.
 const TCHAR* const Concludes[]={TEXT("nobody in it"),TEXT("nobody lives there"),TEXT("nobody with it"),TEXT("it had it right"),TEXT("seemed embarrassed"),TEXT("nothing behind the station"),TEXT("looks like your handwriting"),TEXT("the way the lights came down"),TEXT("as if a film were running"),TEXT("does not seem to have heard"),TEXT("nothing out there for anyone")};
@@ -507,6 +510,32 @@ bool Concluding(const FString& Text){const FString L=Text.ToLower();for(const TC
   {TEXT("roadkill"),TEXT("A dead animal on the road, then not")},{TEXT("lamps_out"),TEXT("Caliche's lamps go out one by one")},{TEXT("dark_car"),TEXT("A car without lights behind you")},
   {TEXT("birds"),TEXT("All the birds go up at once")},
  };
+ // NIGHT31-PLACES-20261114: eight stones laid on the ground in a ring round the cairn, evenly, each a little different; and fourteen small
+ // birds dead round the trough, on their backs, a wing out on some. Both from the thing's own middle, flat on the ground.
+ TArray<FPiece> CairnRingParts()
+ {
+  TArray<FPiece> Out;
+  for(int32 I=0;I<8;++I)
+  {
+   const double A=I*2.*UE_DOUBLE_PI/8.,R=2.6;
+   const double Sz=.22+.05*FMath::Sin(I*2.1);
+   Out.Add({Ball,FVector(FMath::Cos(A)*R,Sz*.32,FMath::Sin(A)*R),FVector(Sz*1.2,Sz*.7,Sz),A*.7,0,0,I%2?0x77716au:0x6a645cu,0,false});
+  }
+  return Out;
+ }
+ TArray<FPiece> DeadBirdParts()
+ {
+  TArray<FPiece> Out;const uint32 Body=0x3d342b,Belly=0x8a7a63,Wing=0x2c2620;
+  for(int32 I=0;I<14;++I)
+  {
+   const double A=I*2.*UE_DOUBLE_PI/14.+.4*FMath::Sin(I*1.3),R=2.3+.9*FMath::Abs(FMath::Sin(I*2.7));
+   const FVector C(FMath::Cos(A)*R,.035,FMath::Sin(A)*R);const double Yaw=I*1.9;
+   Out.Add({Ball,C,FVector(.07,.045,.12),Yaw,0,0,Belly,0,false});
+   Out.Add({Ball,C+FVector(0,.012,.07*FMath::Cos(Yaw)),FVector(.045,.04,.045),Yaw,0,0,Body,0,false});
+   if(I%3==0)Out.Add({Cube,C+FVector(.07,-.02,0),FVector(.13,.006,.05),Yaw+.6,0,0,Wing,0,false});
+  }
+  return Out;
+ }
  // M7, the big night (S47BigNight.cpp). A column of pale light some nine hundred metres high, a brighter core in it, and the ground
  // lit white where it stands; the parts are placed from its foot so that it grows up off the land as its height is scaled.
  TArray<FPiece> BigColumnParts()
@@ -982,7 +1011,9 @@ const TArray<FString>& FS47Happenings::Ids()
   // GLIMPSE-ROAD-20261109: at the wheel, something crosses the road far ahead in the lights (S47RoadGlimpse).
   TEXT("road_glimpse"),
   // M7: the first big night, once in a game on night 2 or 3 (S47BigNight.cpp).
-  TEXT("big_night")};
+  TEXT("big_night"),
+  // NIGHT31-PLACES-20261114: the nine at their places beyond the farm (S47NightPlaces.cpp).
+  TEXT("windmill_knock"),TEXT("school_swing"),TEXT("mine_knock"),TEXT("bay_door"),TEXT("cemetery_lamp"),TEXT("shack_lamp"),TEXT("road_flare"),TEXT("cairn_stones"),TEXT("trough_birds")};
  return L;
 }
 double FS47Happenings::LastFalseAlarmAt() const{return Calm.IsValid()?Calm->LastAlarmAt():-1e9;}
@@ -1050,7 +1081,8 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
    S.bFound=S47J::Bool(O,TEXT("found"));S.bDone=S47J::Bool(O,TEXT("done"));S.bHeard=S47J::Bool(O,TEXT("heard"));
    // Before a landing's bearing was set as it came down, a bearing on it meant it was known.
    S.bKnown=O->HasField(TEXT("known"))?S47J::Bool(O,TEXT("known")):S.Az>=0;
-   const bool bKind=S.Kind==TEXT("landing")||S.Kind==TEXT("truck")||S.Kind==TEXT("rv")||S.Kind==TEXT("cattle")||S.Kind==TEXT("carcass")||S.Kind==TEXT("houselit")||S.Kind==TEXT("cinema")||S.Kind==TEXT("missing")||S.Kind==TEXT("tracks")||S.Kind==TEXT("burst")||S.Kind==TEXT("bigmark")||S.Kind==TEXT("roadtracks");
+   const bool bKind=S.Kind==TEXT("landing")||S.Kind==TEXT("truck")||S.Kind==TEXT("rv")||S.Kind==TEXT("cattle")||S.Kind==TEXT("carcass")||S.Kind==TEXT("houselit")||S.Kind==TEXT("cinema")||S.Kind==TEXT("missing")||S.Kind==TEXT("tracks")||S.Kind==TEXT("burst")||S.Kind==TEXT("bigmark")||S.Kind==TEXT("roadtracks")
+    ||S.Kind==TEXT("cairnring")||S.Kind==TEXT("deadbirds"); // NIGHT31-PLACES-20261114
    if(bKind&&S.Night>0&&FMath::IsFinite(S.X)&&FMath::IsFinite(S.Z)&&FMath::Abs(S.X)<1e5&&FMath::Abs(S.Z)<1e5&&FMath::IsFinite(S.Until)&&Sites.Num()<16)Sites.Add(S);
   }
   // What was on when it was saved, if it can carry on (S47Hap::Resumable): otherwise it may be drawn again.
@@ -1621,6 +1653,13 @@ FS47Happenings::FProp* FS47Happenings::Prop(const FString& Kind)
   Spec.Add({Body,FVector::ZeroVector,FVector(1),0,0,0,Kind==TEXT("glimpse_shadow")?0x0c0c0eu:0u,0,false});
  }
  else if(Kind==TEXT("roadtracks_low")||Kind==TEXT("roadtracks_tall"))Spec=S47Hap::RoadTrackParts(Kind==TEXT("roadtracks_low"));
+ // NIGHT31-PLACES-20261114 (S47NightPlaces.cpp): a lamp carried low among the graves, a lamp in the line shack's window (as the lit
+ // window's, its own so that the houses' does not hide it), a road flare on the shoulder, the cairn's ring of stones, the dead birds.
+ else if(Kind==TEXT("lantern")){Spec.Add({S47Hap::Ball,FVector(0,0,0),FVector(.11,.15,.11),0,0,0,0xffc77au,18.f,false});Lamps.Add({FVector(0,.05,0),0xffb466,320.f,45.f});}
+ else if(Kind==TEXT("shacklamp")){Spec=S47Hap::WindowParts();Lamps.Add({FVector(0,0,.6),0xffc27a,1600.f,600.f});}
+ else if(Kind==TEXT("flare")){Spec.Add({Cyl,FVector(0,.04,0),FVector(.035,.3,.035),0,0,1.45,0xff3a22u,30.f,false});Spec.Add({S47Hap::Ball,FVector(.14,.05,0),FVector(.07),0,0,0,0xff6a3au,45.f,false});Lamps.Add({FVector(.14,.3,0),0xff4a26,1600.f,110.f});}
+ else if(Kind==TEXT("cairnring"))Spec=S47Hap::CairnRingParts();
+ else if(Kind==TEXT("deadbirds"))Spec=S47Hap::DeadBirdParts();
  else if(Kind==TEXT("geiger"))
  {
   // Local to the instrument: x right, y up, z toward the eye. The needle is last (PoseGeiger turns it about its At, its pivot).
@@ -1855,6 +1894,12 @@ void FS47Happenings::ShowProp(FProp& P,bool bOn)
  // The far beam is the road glimpse's to turn on (StepMore road_glimpse); it never outlasts the body.
  if(!bHere)if(USpotLightComponent* Sp=P.FarBeam.Get()){Sp->SetIntensity(0);Sp->SetVisibility(false);}
 }
+// NIGHT31-PLACES-20261114: a prop's lamps at K of their strength (a lamp that sways, a flare that sputters), while it is shown.
+void FS47Happenings::PropLamps(FProp& P,float K)
+{
+ if(!P.bShown)return;
+ for(FProp::FLamp& L:P.Lamps)if(UPointLightComponent* Lc=L.L.Get())Lc->SetIntensity(L.Lumens*FMath::Clamp(K,0.f,1.5f));
+}
 // The big night's drawn things: posed with each part's place and size times Scale (a column that grows up off the ground), the
 // lamps at LampK of their strength. Not PoseProp's pose: its next call poses it again from scratch.
 bool FS47Happenings::ShowBig(const FString& Kind,const FVector& Foot,double Yaw,const FVector& Scale,float LampK,bool bOn)
@@ -1956,6 +2001,9 @@ void FS47Happenings::PlanTonight(int32 Night)
   Draw(TEXT("landing"),0x4c414e44u,2,.24f,22.5,5.,bNoLanding&&Night>=5?.6f:0.f);
   Draw(TEXT("stranded_rv"),0x52564e54u,3,.14f,19.5,3.);
  }
+ // NIGHT31-PLACES-20261114 (S47NightPlaces.cpp): the nine at their places, each by its own chance and hours (director.json); a calm
+ // night keeps to the ones that are only heard (no lights, no marks left out there).
+ for(const FPlaceDef& Def:PlaceDefs())if(!bCalm||Def.bCalm)Draw(Def.Id,PlaceSalt(Def.Id),Def.FromDay,Def.Usual,Def.From,Def.Span);
  // The night's one danger of these (Tom's critics, 8 November: none of M1's was ever met, and none on foot): a slot at an hour in
  // their hours, kept until five, and taken by the first of them that fits where the player is then. How likely the slot is grows
  // week by week (curve "danger"); which shapes it may take tonight is each one's own per_night. M7: the same slot is the indoor
@@ -2328,7 +2376,8 @@ void FS47Happenings::PutAway(const FString& Id)
   {TEXT("humor"),TEXT("car")},{TEXT("humor"),TEXT("singer")},{TEXT("humor"),TEXT("hairy")},{TEXT("humor"),TEXT("zet")},{TEXT("phone_empty"),TEXT("phone")},{TEXT("horizon_figure"),TEXT("shade")},
   {TEXT("room6_tv"),TEXT("tvlight")},{TEXT("animals_flee"),TEXT("rabbits")},{TEXT("dust_devil"),TEXT("devil")},{TEXT("figure_near"),TEXT("shade")},{TEXT("figure_near"),TEXT("lander")},
   {TEXT("big_night"),TEXT("bigglow_column")},{TEXT("big_night"),TEXT("bigglow_fall")},{TEXT("big_night"),TEXT("bigglow_rise")},{TEXT("big_night"),TEXT("bigflash")},
-  {TEXT("eyes_window"),TEXT("eyes")},{TEXT("beam_figure"),TEXT("shade")},{TEXT("dish_lights"),TEXT("lander")}}; // (N1110: the camera moments')
+  {TEXT("eyes_window"),TEXT("eyes")},{TEXT("beam_figure"),TEXT("shade")},{TEXT("dish_lights"),TEXT("lander")}, // (N1110: the camera moments')
+  {TEXT("cemetery_lamp"),TEXT("lantern")},{TEXT("shack_lamp"),TEXT("shacklamp")},{TEXT("road_flare"),TEXT("flare")}}; // NIGHT31-PLACES-20261114
  if(M&&IsValid(M->Web.Get()))for(const auto& W:What)if(Id==W[0])for(const auto& P:Props)if(P&&P->Kind==W[1])ShowProp(*P,false);
  // The body a figure or a glimpse was given (glimpse_*), whichever it was.
  if((Id==TEXT("horizon_figure")||Id==TEXT("figure_near")||Id==TEXT("road_glimpse")||Id==TEXT("beam_figure"))&&M&&IsValid(M->Web.Get()))for(const auto& P:Props)if(P&&P->Kind.StartsWith(TEXT("glimpse_")))ShowProp(*P,false);
@@ -2478,7 +2527,9 @@ void FS47Happenings::Step(double Dt)
   SitHeldClock=bSitHolds?F->Clock():-1.;
   static const TCHAR* const Order[]={TEXT("figure_near"),TEXT("hitchhiker"),TEXT("cb_echo"),TEXT("car_light"),TEXT("car_dies"),TEXT("road_glimpse"),TEXT("cb_stranded"),TEXT("landing"),TEXT("humor"),TEXT("array_burst"),
    TEXT("dogs_hush"),TEXT("phone_empty"),TEXT("horizon_figure"),TEXT("eyes_window"),TEXT("beam_figure"),TEXT("dish_lights"),TEXT("room6_tv"),TEXT("town_blackout"),TEXT("animals_flee"),TEXT("dust_devil"),
-   TEXT("cattle_ring"),TEXT("stranded_rv"),TEXT("carcass"),TEXT("house_lit"),TEXT("cinema_film"),TEXT("missing_person"),TEXT("truck_tracks"),TEXT("hood_warm"),TEXT("am_caller")};
+   TEXT("cattle_ring"),TEXT("stranded_rv"),TEXT("carcass"),TEXT("house_lit"),TEXT("cinema_film"),TEXT("missing_person"),TEXT("truck_tracks"),TEXT("hood_warm"),TEXT("am_caller"),
+   // NIGHT31-PLACES-20261114
+   TEXT("road_flare"),TEXT("bay_door"),TEXT("school_swing"),TEXT("windmill_knock"),TEXT("mine_knock"),TEXT("cemetery_lamp"),TEXT("shack_lamp"),TEXT("cairn_stones"),TEXT("trough_birds")};
   for(const TCHAR* Id:Order)
   {
    if(!Due(Id)||Paced<TryAt.FindRef(Id))continue;
@@ -2596,6 +2647,9 @@ namespace S47HapFloor
   {TEXT("horizon_figure"),S47Hap::NeedFoot,false},{TEXT("horizon_figure"),S47Hap::NeedSaro|S47Hap::NeedIndoors,false},
   {TEXT("cattle_ring"),S47Hap::NeedFoot,false},{TEXT("dish_lights"),S47Hap::NeedSaro,false},
   {TEXT("cinema_film"),S47Hap::NeedTown,false},{TEXT("room6_tv"),S47Hap::NeedMotel,false},
+  // NIGHT31-PLACES-20261114: the gas station's bay door going up, heard in Caliche's street (its hours run to three); the knocking in
+  // the old mine, heard on foot out there.
+  {TEXT("bay_door"),S47Hap::NeedTown,true},{TEXT("mine_knock"),S47Hap::NeedFoot,true},
  };
 }
 bool FS47Happenings::FloorHeard(const FString& Id)
@@ -2746,6 +2800,14 @@ uint32 FS47Happenings::NeedMask(const FString& Id)
  if(Id==TEXT("array_burst"))return NeedSaro;
  if(Id==TEXT("humor"))return NeedTown|NeedMotel|NeedDrive;
  if(Id==TEXT("road_glimpse"))return NeedDrive;
+ // NIGHT31-PLACES-20261114: heard at the player near its place (small: a calm night may have them), seen from off, or left out there.
+ if(Id==TEXT("windmill_knock"))return NeedFoot|NeedSmall|NeedNear;
+ if(Id==TEXT("mine_knock"))return NeedFoot|NeedNear;
+ if(Id==TEXT("school_swing")||Id==TEXT("bay_door"))return NeedTown|NeedSmall|NeedNear;
+ if(Id==TEXT("cemetery_lamp"))return NeedTown;
+ if(Id==TEXT("shack_lamp"))return NeedFoot|NeedDrive;
+ if(Id==TEXT("road_flare"))return NeedDrive|NeedNear;
+ if(Id==TEXT("cairn_stones")||Id==TEXT("trough_birds"))return NeedFoot|NeedDrive|NeedIndoors|NeedSaro|NeedTown;
  // What follows from something else (the clock, the hood, the tracks) is never drawn in another's place.
  return 0;
 }
@@ -2950,6 +3012,7 @@ void FS47Happenings::StepSites(double Dt)
    M->RequestAutosave();
   }
  }
+ StepPlaceMarks(); // NIGHT31-PLACES-20261114: the cairn's ring and the birds at the trough, found, or talked of
 }
 
 // What a lasting thing sounds like, from near enough to hear it: the herd's lowing and its bell, the camper's generator, the
@@ -3064,6 +3127,9 @@ void FS47Happenings::PlaceSites()
   else if(S.Kind==TEXT("carcass"))Show(TEXT("deadcow"),At,S.Yaw);
   else if(S.Kind==TEXT("missing"))Show(TEXT("pickup"),At,S.Yaw);
   else if(S.Kind==TEXT("tracks"))Show(TEXT("tracks"),At,S.Yaw);
+  // NIGHT31-PLACES-20261114: stones laid in a ring round the cairn, dead birds round the trough.
+  else if(S.Kind==TEXT("cairnring"))Show(TEXT("cairnring"),At,S.Yaw);
+  else if(S.Kind==TEXT("deadbirds"))Show(TEXT("deadbirds"),At,S.Yaw);
   // GLIMPSE-ROAD-20261109: the prints going off the shoulder where something crossed (S.Yaw: along them, away from the road).
   else if(S.Kind==TEXT("roadtracks"))Show(S.Variant==TEXT("low")?TEXT("roadtracks_low"):TEXT("roadtracks_tall"),At,S.Yaw);
   // The big night's mark, in its own shape (S47BigNight.cpp).
@@ -3097,7 +3163,7 @@ void FS47Happenings::PlaceSites()
    }
   }
  }
- for(const TCHAR* K:{TEXT("ring"),TEXT("embers"),TEXT("cattle"),TEXT("rig"),TEXT("driver"),TEXT("handset"),TEXT("rv"),TEXT("litwin"),TEXT("cinemalight"),TEXT("deadcow"),TEXT("pickup"),TEXT("tracks"),TEXT("roadtracks_low"),TEXT("roadtracks_tall"),TEXT("bigmark_column"),TEXT("bigmark_fall"),TEXT("bigmark_rise")})if(!Want.Contains(K))if(FProp* P=FindProp(K))ShowProp(*P,false);
+ for(const TCHAR* K:{TEXT("ring"),TEXT("embers"),TEXT("cattle"),TEXT("rig"),TEXT("driver"),TEXT("handset"),TEXT("rv"),TEXT("litwin"),TEXT("cinemalight"),TEXT("deadcow"),TEXT("pickup"),TEXT("tracks"),TEXT("roadtracks_low"),TEXT("roadtracks_tall"),TEXT("bigmark_column"),TEXT("bigmark_fall"),TEXT("bigmark_rise"),TEXT("cairnring"),TEXT("deadbirds")})if(!Want.Contains(K))if(FProp* P=FindProp(K))ShowProp(*P,false);
 }
 // D45-20261110: a ring's coals now (Hot, S47Hap::EmberHeat): each material's glow at that heat, flickering slowly and out of step with the
 // others, duller red as they cool; the light over each nest with them; and the smoke over the nests while there is any (SmokeK).
@@ -4421,6 +4487,8 @@ bool FS47Happenings::BeginMore(const FString& Id,const FString& Variant,bool bFo
    FString::Printf(TEXT("The county is looking for a man from Magdalena who did not come home: a blue half-ton pickup, last seen headed toward %s."),*Spoken(S.Title)));
   return true;
  }
+ // NIGHT31-PLACES-20261114: the nine at their places (S47NightPlaces.cpp).
+ if(PlaceDef(Id))return BeginPlace(Id,bForced,Why);
  Why=TEXT("no such happening");
  return false;
 }
@@ -4676,7 +4744,8 @@ bool FS47Happenings::StepMore(double Dt)
   if(Now.Age>=Now.Len)EndEvent(Now.Stage>0);
   return true;
  }
- static_cast<void>(Dt);
+ // NIGHT31-PLACES-20261114
+ if(PlaceDef(Id))return StepPlace(Dt);
  return false;
 }
 void FS47Happenings::UsePhone()
@@ -5757,7 +5826,7 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
  // it that is not a log line or a path. Nothing named, no make or brand, American spelling, nothing from Story's far side.
  {
   int32 Read=0;TArray<FString> Bad,Tells;
-  for(const TCHAR* File:{TEXT("Signal47/Private/S47Happenings.cpp"),TEXT("Signal47/Private/S47HappeningsDev.cpp"),TEXT("Signal47/Private/S47BigNight.cpp"),TEXT("Signal47/Private/S47RoadGlimpse.cpp"),TEXT("Signal47/Private/S47FirstDay.cpp")})
+  for(const TCHAR* File:{TEXT("Signal47/Private/S47Happenings.cpp"),TEXT("Signal47/Private/S47HappeningsDev.cpp"),TEXT("Signal47/Private/S47BigNight.cpp"),TEXT("Signal47/Private/S47RoadGlimpse.cpp"),TEXT("Signal47/Private/S47FirstDay.cpp"),TEXT("Signal47/Private/S47NightPlaces.cpp")})
   {
    FString Src;if(!FFileHelper::LoadFileToString(Src,*(FPaths::GameSourceDir()/File)))continue;
    TArray<FString> SrcLines;Src.ParseIntoArrayLines(SrcLines,false);
@@ -5991,8 +6060,9 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
  OK&=FirstDaySelfTest(Lines);
  // M1-FLOOR-20261112: the night's floor.
  OK&=FloorSelfTest(Lines);
- // UNEASE-20261114: URO.md's caps, gap and no repeat on the next night.
+ // UNEASE-20261114: URO.md's caps, gap and no repeat on the next night; NIGHT31-PLACES-20261114: the nine at their places.
  OK&=UneaseRulesSelfTest(Lines);
+ OK&=PlaceSelfTest(Lines);
  // M1-MEASURE-20261113: the other systems' encounters in the summary, behind the fields the tour reads.
  {
   FS47Happenings H(nullptr);H.Tally.Night=4;H.Tally.NStarted=2;H.Tally.NNoticed=1;
