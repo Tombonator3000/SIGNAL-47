@@ -38,7 +38,7 @@ namespace S47TapeLocal
 	// The record of a take whose odd sound was heard through at the desk (and the self-test's sweep of it).
 	FString HeardText(int32 N, const FString& Where, int32 Day, double Clock, double OddAt, const FString& Words)
 	{
-		return FString::Printf(TEXT("Cassette %d, recorded %s, day %d, %s. Played back at SARO: at %s on the counter there is %s. I did not hear it out there. It is on the tape."),
+		return FString::Printf(TEXT("Cassette %d, recorded %s, day %d, %s. Played back at SARO: at %s on the counter you can hear %s. I did not hear it out there. It is on the tape."),
 			N, *Where, Day, *ClockText(Clock), *Counter(OddAt), *Words);
 	}
 }
@@ -78,7 +78,7 @@ FString FS47Tape::OddWordsOf(const FString& Sound, const FString& KindId)
 	// EVIDENCE-DOSSIER slice 2: what each one's signature is like on a cassette, as the table's TAPE column has it. Never what it was.
 	switch (S47Dossier::KindOfId(KindId))
 	{
-	case S47Dossier::EKind::Small: return TEXT("short runs of notes, each climbing a step and ending like a question, and a pause after each as if for an answer");
+	case S47Dossier::EKind::Small: return TEXT("short runs of notes, each climbing a step and ending like a question, and a pause after each");
 	case S47Dossier::EKind::Low: return TEXT("a double beat like a heart, quick, and breath that rasps close to the microphone");
 	case S47Dossier::EKind::Tall: return TEXT("slow deep pulses, two low notes grinding on each other, and something like metal creaking");
 	default: return OddWords(Sound);
@@ -463,7 +463,7 @@ bool FS47Tape::SelfTest(TArray<FString>& Lines)
 		// EVIDENCE-DOSSIER slice 2: each known one has its own words, in Freeform's limits; an unknown kind keeps the plain ones
 		const FString S = OddWordsOf(TEXT("voices"), TEXT("roswell")), P = OddWordsOf(TEXT("voices"), TEXT("pale")), T = OddWordsOf(TEXT("voices"), TEXT("tall"));
 		Check(S != P && P != T && S != T && OddWordsOf(TEXT("voices"), FString()) == OddWords(TEXT("voices")) && OddWordsOf(TEXT("voices"), TEXT("nordic")) == OddWords(TEXT("voices"))
-			&& S47Dossier::LintWords({ S, P, T }).IsEmpty() && HeardThrough(35.5, 31.5f) && !HeardThrough(33, 31.5f) && !HeardThrough(99, -1),
+			&& S47Dossier::LintWords({ S, P, T }).IsEmpty() && !S.Contains(TEXT("as if")) && S47TapeLocal::HeardText(1, TEXT("x"), 2, 0, 0, T).Contains(TEXT("you can hear slow deep pulses")) && HeardThrough(35.5, 31.5f) && !HeardThrough(33, 31.5f) && !HeardThrough(99, -1),
 			TEXT("EVIDENCE-DOSSIER slice 2: the small ones, the low one and the tall one each sound their own on the tape, in plain words, heard through only past it"));
 	}
 	{
