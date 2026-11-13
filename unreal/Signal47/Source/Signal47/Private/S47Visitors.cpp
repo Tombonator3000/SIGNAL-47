@@ -118,6 +118,15 @@ bool FS47Visitors::Cleared(const FString& Place, int32 Night) const
 	return Visits.ContainsByPredicate([&](const FVisit& V) { return V.Place == Place && V.Night == Night && !V.bLooked && Now >= V.Start; });
 }
 
+bool FS47Visitors::RakedRecently(int32 Nights) const
+{
+	if (!M || !M->Freeform) return false;
+	const double Now = M->Freeform->Clock();
+	const int32 Tonight = FS47FreeformSession::NightOf(Now);
+	// Gone by late morning (StepMilitary), whether or not a Continue has kept bGone.
+	return Visits.ContainsByPredicate([&](const FVisit& V) { return !V.bLooked && (V.bGone || Now > V.Start + 5 * 3600.) && Tonight - V.Night <= Nights; });
+}
+
 void FS47Visitors::RakeAt(const FString& Place, int32 Night, double RoadX, double RoadZ)
 {
 	for (FVisit& V : Visits)

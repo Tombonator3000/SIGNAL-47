@@ -6,6 +6,8 @@ namespace S47StationFiles
  // Canon kept (10 Nov): 27 antennas S-01 to S-27, the 1962 annex, the March 1979 feeder trouble, the 1983 receivers, the 1984 carrier,
  // Station 01 of the survey, the hill man's years ('58, '66, '73, '79), initials at the rock back to 1951, population 412, the couch
  // at the gate, eleven years of field maintenance. New here: first antennas 1958, the last in 1971, one contract operator from 1984.
+ // M7-SPREAD-20261113 (M7): released over the month (days 1, 1, 20, 2, 9, 5, 13, 1, 24), not all in the first week: the history, the
+ // generator memo and the card on the first day; the terms, Dale, the leaflet, the reports, Norway and the town after.
  // D45-20261110: Tom found the terse lines clumsy ("Read it once", "The form does not ask why they leave"); plain memo English now, same facts.
  static const FFile Files[]=
  {
@@ -47,7 +49,7 @@ So here is the rule. When the lamps dip and the sky is clear, do not go to the w
 If the station goes dark, nothing is recorded. Then as far as anyone can prove, we saw nothing.
 
 - D.)TXT")},
-  {TEXT("station-03"),TEXT("03 THE VALLEY IN NORWAY"),3,TEXT(R"TXT(SARO / STATION FILE 03
+  {TEXT("station-03"),TEXT("03 THE VALLEY IN NORWAY"),20,TEXT(R"TXT(SARO / STATION FILE 03
 MEMORANDUM
 TO: The duty officer
 FROM: Records
@@ -67,7 +69,7 @@ Recommendation: the night operator's duties to include field work. A camera in t
 Whatever this valley is, it is this country's Hessdalen, and it has been at it longer.
 
 Noted. Approved for the next contract. - W.)TXT")},
-  {TEXT("station-04"),TEXT("04 OPERATOR'S TERMS"),1,TEXT(R"TXT(SARO / STATION FILE 04
+  {TEXT("station-04"),TEXT("04 OPERATOR'S TERMS"),2,TEXT(R"TXT(SARO / STATION FILE 04
 CONTRACT NIGHT OPERATOR: TERMS OF ENGAGEMENT
 Form 4-N, revised 1985
 
@@ -89,7 +91,7 @@ Operators hired on this form since 1984: seven.
 Longest stay: five months.
 Shortest: one night.
 None of them gave a reason for leaving.)TXT")},
-  {TEXT("station-05"),TEXT("05 TOWN LEAFLET"),4,TEXT(R"TXT(SARO / STATION FILE 05
+  {TEXT("station-05"),TEXT("05 TOWN LEAFLET"),9,TEXT(R"TXT(SARO / STATION FILE 05
 CLIPPING, KEPT BY RECORDS
 Caliche Chamber of Commerce, visitor leaflet, 1985
 
@@ -123,7 +125,7 @@ He has been asked more than once why he stays. The answer on record: "Because th
 He does not come in after dark. He does answer the telephone.
 
 Assessment: keep him. Don't try to explain anything to him. He will shout, and then he will turn out to be right.)TXT")},
-  {TEXT("station-07"),TEXT("07 REPORTS BY YEAR"),2,TEXT(R"TXT(SARO / STATION FILE 07
+  {TEXT("station-07"),TEXT("07 REPORTS BY YEAR"),13,TEXT(R"TXT(SARO / STATION FILE 07
 REPORTS RECEIVED, BY YEAR (EXTRACT)
 Kept by Records from telephone calls, the sheriff's substation and the station's own night log.
 
@@ -161,7 +163,7 @@ A story on its own counts for nothing. Two of these that agree are enough to ope
 4. BACK AT THE DESKS. Develop the film in the photo lab. Register what you found on OPS. It goes to RECORDS, PHOTOGRAPHS or the CASE BOARD, and the board tells you what would settle it. Then the terminals send you out again.
 
 The jobs are what you're paid for. The rest is why the station stays open.)TXT")},
-  {TEXT("station-09"),TEXT("09 THE TOWN"),2,TEXT(R"TXT(SARO / STATION FILE 09
+  {TEXT("station-09"),TEXT("09 THE TOWN"),24,TEXT(R"TXT(SARO / STATION FILE 09
 THE TOWN, FOR NEW STAFF
 
 Caliche is older than this station by a long way.
@@ -188,11 +190,17 @@ The furniture at the gate is theirs. Leave it.
    const FString T(F.Text);
    if(const FString Why=S47Script::LintText(T);!Why.IsEmpty())Bad+=FString::Printf(TEXT("%s: %s | "),F.Key,*Why);
    for(const TCHAR* W:Not)if(T.Contains(W))Bad+=FString::Printf(TEXT("%s: says '%s' | "),F.Key,W);
-   if(Keys.Contains(F.Key)||F.Day<1||F.Day>7||T.Len()<300||T.Len()>1800||!T.StartsWith(FString::Printf(TEXT("SARO / STATION FILE %s"),*FString(F.Title).Left(2))))Bad+=FString::Printf(TEXT("%s: key, day, length or heading | "),F.Key);
+   if(Keys.Contains(F.Key)||F.Day<1||F.Day>24||T.Len()<300||T.Len()>1800||!T.StartsWith(FString::Printf(TEXT("SARO / STATION FILE %s"),*FString(F.Title).Left(2))))Bad+=FString::Printf(TEXT("%s: key, day, length or heading | "),F.Key);
    Keys.Add(F.Key);
    for(const TCHAR Ch:T)if(Ch>126){Bad+=FString::Printf(TEXT("%s: a character the tube's font may lack | "),F.Key);break;}
   }
   if(Get(1).Day!=1||Get(7).Day!=1)Bad+=TEXT("the generator memo and the operator's card are there from the first day | ");
+  // M7-SPREAD-20261113 (M7): released over the month, something new in each of the four weeks, the last by day 24.
+  {
+   bool bWeek[4]={false,false,false,false};int32 Last=0;
+   for(const FFile& F:Files){bWeek[FMath::Clamp((F.Day-1)/7,0,3)]=true;Last=FMath::Max(Last,F.Day);}
+   if(!bWeek[0]||!bWeek[1]||!bWeek[2]||!bWeek[3]||Last>24)Bad+=TEXT("the files are released in every week of the month, the last by day 24 | ");
+  }
   return Bad;
  }
 }

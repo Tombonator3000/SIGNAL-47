@@ -17,6 +17,8 @@ public:
  static constexpr int32 DailyCount=3;
  // Source override is meaningful only for slot 2: HI(2) or Virgo(3).
  static FCard Make(int32 Seed,int32 Day,int32 Slot,int32 Source=-1);
+ // M7-SPREAD-20261113: slot 2's own survey for that day's week (days 1-7, 8-14, ...): HI(2) and Virgo(3) by turns, from the seed.
+ static int32 WeekSource(int32 Seed,int32 Day);
  static TArray<FCard> Generate(int32 Seed,int32 Day);
  static FString ControlText(EControl Control);
  static bool Valid(const FCard& Card);

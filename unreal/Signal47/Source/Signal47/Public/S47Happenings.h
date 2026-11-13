@@ -215,7 +215,8 @@ public:
  static FBigPlan BigPlanFor(int32 Seed);
  // CHAIN-4-20261109 (SAMMENFLETTING step 4): the same night again in week two (Round 1, nights 9 to 12) and week three (Round 2, 16 to
  // 19), each in a shape the player has not had (Had: the shapes that came) and somewhere it has not stood. Round 0 is BigPlanFor.
- static constexpr int32 BigRounds=3;
+ // M7-SPREAD-20261113: and week four (Round 3, nights 23 to 26), in any shape but the last one's once all three have come.
+ static constexpr int32 BigRounds=4;
  static FBigPlan BigPlanAt(int32 Seed,int32 Round,const TArray<int32>& Had);
  static const TCHAR* BigVariantName(int32 Variant);
  static int32 BigVariantOf(const FString& Name);

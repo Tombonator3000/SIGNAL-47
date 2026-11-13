@@ -43,8 +43,9 @@ FString FS47FreeformJobs::ControlText(EControl Control)
 FS47FreeformJobs::FCard FS47FreeformJobs::Make(int32 Seed,int32 Day,int32 Slot,int32 Source)
 {
  FCard Out;Out.Day=FMath::Max(1,Day);Out.Slot=FMath::Clamp(Slot,0,DailyCount-1);
- auto Choice=Stream(Seed,Out.Day,Out.Slot,-1);
- Out.Source=Out.Slot<2?Out.Slot:(Source==2||Source==3?Source:Choice.RandRange(2,3));
+ // M7-SPREAD-20261113 (M7): the third card's survey by the week, not the day: a week of hydrogen drift, then a week of Virgo A,
+ // which the game's seed starts on; the OPS choice (ChooseThird) still swaps it for the day.
+ Out.Source=Out.Slot<2?Out.Slot:(Source==2||Source==3?Source:WeekSource(Seed,Out.Day));
  const auto& Run=FS47Observing::Runs()[Out.Source];const auto& Rule=Rules[Out.Source];
  auto Random=Stream(Seed,Out.Day,Out.Slot,Out.Source);Out.Receiver=Run.P;
  auto& P=Out.Receiver;
@@ -66,6 +67,11 @@ FS47FreeformJobs::FCard FS47FreeformJobs::Make(int32 Seed,int32 Day,int32 Slot,i
  P.Card=FString::Printf(TEXT("SARO / D%02d OBSERVATION %d / %s\nSUGGESTED %02d:%02d / FULL PAY FOR TWO DAYS\nF %.3f MHz / AZ %.1f / EL %.1f\nGAIN %.0f-%.0f / BW %.0f-%.0f kHz\nINTEGRATION %.0f s\n%s"),Out.Day,Out.Slot+1,Run.Source,Minute/60,Minute%60,P.F,Az,Out.El,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1],Out.Seconds,*ControlText(Out.Control));
  P.Note=TEXT("Observation card retains its original settings and source identity. Normal measurements remain valid; an anomaly requires independent control before interpretation.");
  return Out;
+}
+int32 FS47FreeformJobs::WeekSource(int32 Seed,int32 Day)
+{
+ const uint32 Week=uint32(FMath::Max(0,FMath::Max(1,Day)-1)/7);
+ return 2+int32((Mix(uint32(Seed)^0x5745454bu)+Week)&1u);
 }
 TArray<FS47FreeformJobs::FCard> FS47FreeformJobs::Generate(int32 Seed,int32 Day)
  {TArray<FCard> Out;for(int32 Slot=0;Slot<DailyCount;++Slot)Out.Add(Make(Seed,Day,Slot));return Out;}
@@ -102,6 +108,21 @@ bool FS47FreeformJobs::SelfTest(TArray<FString>& Results)
   for(int32 Source:{2,3}){const auto Override=Make(Seed,Day,2,Source);Good&=Valid(Override)&&Same(Override,Make(Seed,Day,2,Source))&&Override.Source==Source;}
  }
  Good&=bHI&&bVirgo&&bDifferent;
+ // M7-SPREAD-20261113: the third card keeps its survey through a week and changes with the next (both seeds' first weeks occur).
+ {
+  bool bWeekly=true,bStartsHI=false,bStartsVirgo=false;
+  for(int32 Seed:{0,1,2,3,47,-1,MAX_int32})
+  {
+   bStartsHI|=WeekSource(Seed,1)==2;bStartsVirgo|=WeekSource(Seed,1)==3;
+   for(int32 Day=1;Day<=30;++Day)
+   {
+    const int32 Src=Make(Seed,Day,2).Source;
+    bWeekly&=Src==WeekSource(Seed,Day)&&(Day%7==0?Make(Seed,Day+1,2).Source!=Src:Make(Seed,Day+1,2).Source==Src);
+   }
+  }
+  Good&=bWeekly&&bStartsHI&&bStartsVirgo;
+  Results.Add(FString::Printf(TEXT("%s / Freeform jobs: the third card's survey holds for a week and turns with the next (M7)"),bWeekly&&bStartsHI&&bStartsVirgo?TEXT("PASS"):TEXT("FAIL")));
+ }
  Results.Add(FString::Printf(TEXT("%s / %d deterministic legal daily cards, JSON seed/day replay, measured off-frequency/off-azimuth rejection, both survey choices, stable overrides, source-correct controls, pulsar recording retained"),Good?TEXT("PASS"):TEXT("FAIL"),Cards));
  return Good;
 }

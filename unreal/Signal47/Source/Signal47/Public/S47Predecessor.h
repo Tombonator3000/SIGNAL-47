@@ -47,7 +47,11 @@ public:
  // M7, weeks three and four (S47PredecessorLate.cpp): the late cases from LateCaseDay, somebody gone from a post in town between
  // PostFrom and PostUntil when nobody has gone since AwayRest days, the Sky Watch's bulletin from LateCaseDay (from BulletinBy
  // whatever the van saw), wagon 23's trip meter from LateTripDay, and the thermos's letter ThermosReplyDays after it went.
- static constexpr int32 LateCaseDay=12,PostFrom=15,PostUntil=20,AwayRest=7,BulletinBy=15,LateTripDay=15,ThermosReplyDays=3;
+ // M7-SPREAD-20261113 (M7): the bulletin by day 13 (its minute the night of day 15, not 17); and a late case nobody has gone to see
+ // opens at the rack, the receiver log printing by itself, from PostOpenBy (somebody gone since an earlier day) and from RakedOpenBy
+ // (the military in the last three nights, gone, and their ground not read): StepLateRack, LateRackDue.
+ static constexpr int32 LateCaseDay=12,PostFrom=15,PostUntil=20,AwayRest=7,BulletinBy=13,LateTripDay=15,ThermosReplyDays=3,PostOpenBy=12,RakedOpenBy=18;
+ static_assert(PostOpenBy>=LateCaseDay&&RakedOpenBy>=LateCaseDay&&BulletinBy>=LateCaseDay,"never before the late cases' own day");
  // What the station can show the county: cases carried through, the array mended, records that can be read, a few photographs,
  // and the work, which counts once it is there and no more for being piled up.
  static int32 Points(const FTally& T);
@@ -208,6 +212,9 @@ private:
  void StepLateMinute(int32 Today);
  void StepLateRaked(int32 Today);
  void StepLateRack();
+ // M7-SPREAD-20261113: whether the rack prints Line's receiver log for a case not yet open (PostOpenBy, RakedOpenBy). Static, for
+ // the tests: Today, how long somebody has been gone (GoneDay, 0: nobody), the military's last three nights and their ground read.
+ static bool LateRackDue(int32 Line,int32 Today,int32 GoneDay,bool bMilitaryGone,bool bGroundRead);
  void StepLateThermos(int32 Today);
  // Keeps a late line's trace (its text from the case's seeded reading) with what the player saw or heard. False: kept already.
  bool LateKeep(int32 Line,int32 Clue,const FString& Toast);

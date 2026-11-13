@@ -1934,6 +1934,7 @@ void FS47Happenings::PlanTonight(int32 Night)
   Draw(TEXT("house_lit"),0x484f5553u,2,.25f,21.5,5.5);
   Draw(TEXT("horizon_figure"),0x484f525au,2,.2f,24.5,4.);
   // N1110 (N1110-3): the camera moments, each seldom and at most once a night (director.json: eyes_window from two, the others from midnight and one).
+  // M7-SPREAD-20261113: director.json holds them, and room6_tv, town_blackout and carcass, to later weeks (PerNight is 0 before from_day).
   Draw(TEXT("eyes_window"),0x45594553u,2,.22f,26.,2.5);
   Draw(TEXT("beam_figure"),0x4245414du,2,.25f,24.,4.);
   Draw(TEXT("dish_lights"),0x44534c54u,2,.2f,25.,3.5);
@@ -1962,6 +1963,8 @@ void FS47Happenings::PlanTonight(int32 Night)
   for(const TCHAR* Id:{TEXT("figure_near"),TEXT("hitchhiker"),TEXT("car_light"),TEXT("cb_echo")})
   {
    if(FString(Id)==TEXT("cb_echo")&&!bEcho)continue;
+   // M7-SPREAD-20261113: a shape the file holds back to a later week (director.json from_day) is not drawn before it.
+   if(M->Rhythm)if(const FS47RhythmEvent* Shp=M->Rhythm->Data().Find(FName(Id)))if(Night<Shp->FromDay)continue;
    // The shape's own number, not the curve's: the slot's chance has the week's danger in it already.
    const float Shape=M->Rhythm?M->Rhythm->PerNight(FName(Id),.6f,-1):.6f;
    if(FS47NightRhythm::Roll(Seed,Night,S47Hap::SaltOf(Id)^0x53484150u)<Shape)Plan.Add(Id,DangerAt);
@@ -2623,6 +2626,8 @@ void FS47Happenings::StepFloor()
  const auto TryEvent=[&](const FString& Id)
  {
   if(LastDays.FindRef(Id)==F->Day()){Tried.Add(Id+TEXT(": today already"));return false;}
+  // M7-SPREAD-20261113: one held back to a later week is simply not offered yet (the rhythm would say too_early_day).
+  if(M->Rhythm)if(const FS47RhythmEvent* Ev=M->Rhythm->Data().Find(FName(*Id)))if(F->Day()<Ev->FromDay){Tried.Add(FString::Printf(TEXT("%s: from day %d"),*Id,Ev->FromDay));return false;}
   FString Why;
   bFloorTry=true;const bool bWent=StartEvent(Id,FString(),false,Why);bFloorTry=false;
   if(bWent){Offer(Id,FloorHeard(Id)?TEXT("heard at the player"):TEXT("to be seen"),true);return true;}
@@ -5522,6 +5527,14 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
   Check(N[0]>3&&N[1]>3&&N[2]>=1&&H0<H1&&H1<H2,FString::Printf(TEXT("each night builds toward their hours: small things from %.1f, what is seen from %.1f, what comes near from %.1f on average"),H0,H1,H2));
   const FS47RhythmEvent* Fig=D.Find(TEXT("figure_near"));
   Check(Fig&&Fig->Level==ES47RhythmLevel::Danger&&Fig->Needs.Contains(FName(TEXT("on_foot")))&&Fig->FromDay>=8,TEXT("there is a danger for a player on foot, from the second week"));
+  // M7-SPREAD-20261113 (M7): each week brings something it did not have; the first night keeps its own (array_burst above).
+  {
+   const auto DayOf=[&D](const TCHAR* Which){const FS47RhythmEvent* Row=D.Find(FName(Which));return Row?Row->FromDay:0;};
+   const auto In=[&DayOf](const TCHAR* Which,int32 Lo,int32 Hi){const int32 Got=DayOf(Which);return Got>=Lo&&Got<=Hi;};
+   Check(In(TEXT("eyes_window"),6,9)&&In(TEXT("dish_lights"),6,9)&&In(TEXT("beam_figure"),6,9)&&DayOf(TEXT("figure_near"))==10&&In(TEXT("hitchhiker"),12,15)&&In(TEXT("cb_echo"),12,15)
+    &&DayOf(TEXT("room6_tv"))>=16&&DayOf(TEXT("town_blackout"))>=16&&DayOf(TEXT("carcass"))>=16&&DayOf(TEXT("array_burst"))==1&&DayOf(TEXT("phone_one_ring"))==1,
+    TEXT("director.json: the camera moments from days 6 to 9, the figure from 10, the hitchhiker and the CB's voice from 12 to 15, room 6, the blackout and the cow from 16 (M7)"));
+  }
   // GLIMPSE-ROAD-20261109: the crossing far ahead is a glimpse, at the wheel, at most once a week, and no danger.
   const FS47RhythmEvent* Cross=D.Find(TEXT("road_glimpse"));
   Check(Cross&&Cross->Tier==ES47Allowed::Glimpse&&!Cross->bEarly&&Cross->MinNights>=7&&Cross->Needs.Contains(FName(TEXT("driving")))&&Cross->Level!=ES47RhythmLevel::Danger,TEXT("something crossing the road far ahead is a glimpse, at the wheel, at most once a week"));
