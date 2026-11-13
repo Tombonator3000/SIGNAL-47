@@ -326,6 +326,14 @@ bool FS47Sideband::SelfTest(TArray<FString>& Lines)
 			TEXT("with its burst of drive (+10 dB for a tenth of a second), its static, and a soft dip to a fifth (no hole)"));
 		Check(Near(R.Bus->Moment->Gain.ValueAt(T0 + .1), 1) && Near(R.Bus->Moment->Gain.ValueAt(T0 + .31), FMath::Pow(10., -1.8), 1e-4) && Near(R.Bus->Moment->Gain.ValueAt(T0 + 3.2), FMath::Pow(10., -1.8), 1e-4)
 			&& R.Bus->Moment->Gain.ValueAt(T0 + 5.) < .6 && Near(R.Bus->Moment->Gain.ValueAt(T0 + 7.6), 1), TEXT("the duck: 0.2 s of music under the hit, 36 dB down for three seconds, back over four"));
+		{
+			// SIDEBAND-20261113 (d69: -10.4/-9.9 dB at 2-4/4-6 s against the prototype's -12.6/-16.5): the way back is the prototype's,
+			// a glide in dB (-33 dB at +4 s, -10.4 dB at +6 s), not a straight line in gain (-15 and -3.7 dB there)
+			bool bCurve = true;
+			for (const double T : { 3.5, 4., 5., 6., 7. }) bCurve &= FMath::Abs(SbDbOf(FMath::Max(1e-9, double(R.Bus->Moment->Gain.ValueAt(T0 + T)))) - S47Sideband::DuckDbAt(T)) < .6;
+			Check(bCurve && S47Sideband::DuckDbAt(4.) < -32 && S47Sideband::DuckDbAt(6.) < -9.5 && S47Sideband::DuckDbAt(6.) > -11.5,
+				TEXT("the duck comes back as the prototype's does: in dB over 4.2 s (-33 dB 4 s after, -10 dB 6 s after), not sooner"));
+		}
 		R.Go(3.);
 		const double Before = R.Rms(.4, .9), Ducked = R.Rms(1.02 + 1., 1.02 + 3.);
 		Check(R.Sound() && SbDbOf(Ducked / Before) < -20, TEXT("rendered: the three seconds after a close sight are more than 20 dB under what was before"));
@@ -354,6 +362,13 @@ bool FS47Sideband::SelfTest(TArray<FString>& Lines)
 		Check(R.Bus->FlaresLoaded() == 12 && R.Bus->HasStinger(0) && R.Bus->HasBed(2) && !R.Bus->HasStinger(9) && !R.Bus->HasBed(-1), TEXT("FLARES' twelve sounds, by index"));
 		const bool bStarted = R.Bus->Stinger(0, ETier::Full, false, 0.);
 		const bool bSecond = R.Bus->Stinger(1, ETier::Full, false, 0.);
+		{
+			// SIDEBAND-20261113 (click ratio 11.7 against the prototype's 7.0): the stinger's gain comes up over the prototype's 3 ms
+			const double S0 = R.C->CurrentTime(), Top = FMath::Pow(10., S47Sideband::TierMix(ETier::Full, false, S47Sideband::Stingers()[0].TrimDb).LevelDb / 20.);
+			FS47AudioParam& G = R.Bus->StingGain->Gain;
+			Check(bStarted && G.ValueAt(S0) < Top * .02 && Near(G.ValueAt(S0 + .0015), Top * .5, Top * .1) && Near(G.ValueAt(S0 + .004), Top, Top * .01),
+				TEXT("a full stinger's gain rises over 3 ms (raised cosine), as the prototype's front, never from its level at the first sample"));
+		}
 		R.Go(1.);
 		// 0.1 at +9.5 dB, direct at 1, back to the decks' level: an RMS of 0.091 (the prototype's chain on the same tone)
 		const double Loud = R.Rms(.3, .8);

@@ -14,6 +14,7 @@ namespace S47SbImpl
 	constexpr double SbPi = 3.14159265358979323846;
 	constexpr double LoopQuantum = double(S47Quantum) / 48000.; // a loop through a delay is this much longer than its delayTime
 	constexpr double PushTau = .08;                         // how fast the graph follows a band (the bands glide by themselves)
+	constexpr double StingerFront = .003;                   // SIDEBAND-20261113: the stinger's front, the prototype's 3 ms raised cosine
 	double SbDb(double X) { return FMath::Pow(10., X / 20.); }
 	double SbSweep(double F0, double F1, double I) { return F0 * FMath::Pow(F1 / F0, FMath::Clamp(I, 0., 1.)); }
 	double SbSat(double X) { return FMath::Clamp(X, 0., 1.); }
@@ -797,15 +798,43 @@ void FS47SidebandBus::Hit(double When, bool bBurst)
 	HitHole->Gain.SetValueCurveAtTime(HoleCurve, T0 + .11, .16);
 }
 
+namespace S47SbImpl
+{
+	// SIDEBAND-20261113 (d69: the duck was -10.4/-9.9 dB at 2-4/4-6 s against the prototype's -12.6/-16.5): the prototype's curves
+	// (colour2/s47dsp.py env: a smoothstep glide between points). The score's Gain glides in dB (a linear ramp in gain came back
+	// from -36 dB to -6 dB in the first half of the four seconds); the bed's in gain, as the prototype's "on" curve is.
+	TArray<float> SbGlide(double From, double To, bool bInDb, int32 Points = 129)
+	{
+		TArray<float> C; C.SetNumUninitialized(Points);
+		for (int32 I = 0; I < Points; ++I)
+		{
+			double U = double(I) / (Points - 1); U = U * U * (3. - 2. * U);
+			C[I] = float(bInDb ? SbDb(From + (To - From) * U) : From + (To - From) * U);
+		}
+		return C;
+	}
+}
+
+double S47Sideband::DuckDbAt(double T)
+{
+	// the prototype's duck_points: 0.2 s of music under the hit, down 36 dB in 0.1 s, held 3 s, back over 4.2 s (dB, smoothstep)
+	const auto Glide = [](double U) { U = FMath::Clamp(U, 0., 1.); return U * U * (3. - 2. * U); };
+	if (T < .2) return 0;
+	if (T < .3) return -36. * Glide((T - .2) / .1);
+	if (T < 3.3) return -36.;
+	return -36. * (1. - Glide((T - 3.3) / 4.2));
+}
+
 void FS47SidebandBus::MomentDuck(double When)
 {
+	using namespace S47SbImpl;
 	FS47AudioContext::FBatch B(*Ctx);
 	const double T0 = FMath::Max(When, Ctx->CurrentTime());
 	FS47AudioParam& P = Moment->Gain;
-	const double Low = S47SbImpl::SbDb(-36.);
+	const double Low = SbDb(-36.);
 	P.CancelScheduledValues(T0); P.SetValueAtTime(P.ValueAt(T0), T0);
-	P.SetValueAtTime(1., T0 + .2); P.LinearRampToValueAtTime(Low, T0 + .3);
-	P.SetValueAtTime(Low, T0 + 3.3); P.LinearRampToValueAtTime(1., T0 + 7.5);
+	P.SetValueAtTime(1., T0 + .2); P.SetValueCurveAtTime(SbGlide(0., -36., true, 33), T0 + .2, .1);
+	P.SetValueAtTime(Low, T0 + 3.3); P.SetValueCurveAtTime(SbGlide(-36., 0., true), T0 + 3.3, 4.2);
 }
 
 // ---------------------------------------------------------------- FLARES' voices
@@ -891,8 +920,11 @@ void FS47SidebandBus::BedMoment(double When)
 	const double T0 = FMath::Max(When, Ctx->CurrentTime());
 	FS47AudioParam& P = BedDuck->Gain;
 	P.CancelScheduledValues(T0); P.SetValueAtTime(P.ValueAt(T0), T0);
-	P.SetValueAtTime(1., T0 + .2); P.LinearRampToValueAtTime(.1, T0 + .6);
-	P.SetValueAtTime(.1, T0 + 3.3); P.LinearRampToValueAtTime(.55, T0 + 7.5); P.LinearRampToValueAtTime(0., T0 + 13.);
+	// SIDEBAND-20261113: the prototype's "on" curve after the moment (make_flares.py: 1 at +0.2, 0.1 at +0.6, held to +3.3, 0.55 at
+	// +6.0, out by +13), each leg a smoothstep glide; the old 0.55 at +7.5 in straight lines was the engine's own
+	P.SetValueAtTime(1., T0 + .2); P.SetValueCurveAtTime(S47SbImpl::SbGlide(1., .1, false, 33), T0 + .2, .4);
+	P.SetValueAtTime(.1, T0 + 3.3); P.SetValueCurveAtTime(S47SbImpl::SbGlide(.1, .55, false, 65), T0 + 3.3, 2.7);
+	P.SetValueCurveAtTime(S47SbImpl::SbGlide(.55, 0., false), T0 + 6., 7.);
 }
 
 void FS47SidebandBus::StopBed()
@@ -918,8 +950,14 @@ bool FS47SidebandBus::Stinger(int32 Index, S47Sideband::ETier Tier, bool bSoft, 
 	const TSharedPtr<FS47AudioBuffer>& Buf = StingerBuf[Index];
 	StingSrc = Ctx->CreateBufferSource(); StingSrc->Buffer = Buf;
 	StingGain = Ctx->CreateGain();
-	if (bSoft) { StingGain->Gain.SetValueAtTime(0., T0); StingGain->Gain.LinearRampToValueAtTime(SbDb(M.LevelDb), T0 + .12); } // the front slowed to 120 ms
-	else StingGain->Gain.SetValue(SbDb(M.LevelDb));
+	// the front: the prototype's raised cosine (s47flares.py shape(): sin² over 3 ms; the soft mode's over 120 ms). The gain used to
+	// stand at its level from the first sample, so a buffer that does not start at zero struck (click ratio 11.7 against 7.0).
+	StingGain->Gain.SetValueAtTime(0., T0);
+	{
+		TArray<float> Front; Front.SetNumUninitialized(33);
+		for (int32 I = 0; I < 33; ++I) Front[I] = float(SbDb(M.LevelDb) * FMath::Square(FMath::Sin(SbPi * .5 * I / 32.)));
+		StingGain->Gain.SetValueCurveAtTime(Front, T0, bSoft ? .12 : StingerFront);
+	}
 	auto Lp1 = Ctx->CreateBiquadFilter(), Lp2 = Ctx->CreateBiquadFilter();
 	for (const TSharedRef<FS47BiquadFilterNode>& Lp : { Lp1, Lp2 }) { Lp->SetType(TEXT("lowpass")); Lp->Frequency.SetValue(M.Lowpass); Lp->Q.SetValue(-3.); }
 	auto Direct = Ctx->CreateGain(); Direct->Gain.SetValue(M.Direct);
