@@ -93,6 +93,15 @@ public:
 	// and out (0 to 1). Off: the mix file, as before. A piece that is playing keeps the form it started in.
 	void SetStems(bool bOn, double InTension);
 	int32 StemsPlaying() const;
+	// SIDEBAND-20261113 (d69: a render of the scene had no music for its first 8 s and lost it at 58 s): a developer render owns the
+	// score. Own(piece): that piece (a TRACKS key, "coldDish", or its file's name, "s47_cold_dish") starts now, in a twentieth of a
+	// second, through the stems when they may play, and keeps playing: what the night wants, a listening hold, a fade, a pause or a
+	// stop asked by anything else is held off (and logged) until Own(empty) lets go. False: no such piece, or it cannot play.
+	bool Own(const FString& Piece);
+	bool Owned() const { return !OwnTrack.IsEmpty(); }
+	// The TRACKS key for a key or a file's name; empty: none. The first pool (cue) that has it.
+	static FString TrackOf(const FString& Piece);
+	static FString CueOf(const FString& InTrack);
 	static bool SelfTest(TArray<FString>& Lines);
 	static bool RenderTour(const FString& Path, TArray<FString>& Lines);
 
@@ -125,6 +134,8 @@ private:
 	TSharedRef<bool> bAlive = MakeShared<bool>(true);
 	TFunction<bool(const FS47ScoreTrack&)> HasFile; // the self-test's stand-in for the files on disk; unset: MediaPresent
 	void Done(double Quiet);
+	void StopNow();
+	FString OwnTrack, OwnCue; bool bOwnStemsTried = false;
 	void RetireOutgoing();
 	void Begin(const FString& Cue, const FString& InTrack, double FadeSeconds);
 	double TransitionAt(bool bUrgent) const;

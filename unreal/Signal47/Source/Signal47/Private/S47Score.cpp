@@ -136,7 +136,7 @@ FString FS47Score::PlayingFile() const
 FS47Score::~FS47Score()
 {
 	*bAlive = false;
-	Stop();
+	StopNow();
 	Insert(nullptr, nullptr);
 }
 
@@ -174,8 +174,60 @@ double FS47Score::TransitionAt(bool bUrgent) const
 	return Now + (bUrgent ? FMath::Min(0.35, Wait) : Wait);
 }
 
+FString FS47Score::TrackOf(const FString& Piece)
+{
+	if (S47Score::TRACKS.Contains(Piece)) return Piece;
+	const FString Want = FPaths::GetBaseFilename(Piece);
+	for (const TPair<FString, FS47ScoreTrack>& T : S47Score::TRACKS) if (FPaths::GetBaseFilename(T.Value.File) == Want) return T.Key;
+	return FString();
+}
+
+FString FS47Score::CueOf(const FString& InTrack)
+{
+	for (const TCHAR* Cue : { TEXT("night"), TEXT("eerie"), TEXT("tension"), TEXT("motel"), TEXT("drive"), TEXT("town"), TEXT("dawn") })
+		if (const TArray<FString>* Pool = S47Score::CUES.Find(Cue); Pool && Pool->Contains(InTrack)) return Cue;
+	return FString();
+}
+
+bool FS47Score::Own(const FString& Piece)
+{
+	if (Piece.IsEmpty())
+	{
+		if (!OwnTrack.IsEmpty()) UE_LOG(LogTemp, Display, TEXT("S47: score: the render lets go of %s"), *OwnTrack);
+		OwnTrack.Empty(); OwnCue.Empty(); bOwnStemsTried = false;
+		return true;
+	}
+	const FString Key = TrackOf(Piece), Cue = CueOf(Key);
+	if (Key.IsEmpty() || Cue.IsEmpty() || !Present(Key) || !S47Score::bScoreOn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("S47: score: the render asked for %s, which cannot play (%s)"), *Piece, Key.IsEmpty() ? TEXT("no such piece") : TEXT("its file is not staged"));
+		return false;
+	}
+	OwnTrack.Empty(); // (so that the stop below is not held)
+	if (bPaused) Pause(false);
+	if (El && Track == Key && Playing == Cue && !(bStemsOn && !Stems)) { OwnTrack = Key; OwnCue = Cue; return true; }
+	StopNow();
+	Begin(Cue, Key, .05);
+	OwnTrack = Key; OwnCue = Cue; bOwnStemsTried = bStemsOn;
+	UE_LOG(LogTemp, Display, TEXT("S47: score: the render owns the score: %s (%s), %s"), *Key, *Cue, Stems ? TEXT("as its stems") : TEXT("as its mix"));
+	return El.IsValid();
+}
+
 void FS47Score::Update(double Dt, const FString& InWant, bool bHeld)
 {
+	if (!OwnTrack.IsEmpty())
+	{
+		// SIDEBAND-20261113: the render's piece, whatever the night asks; once more through the stems if they came on after it began
+		if (bPaused) Pause(false);
+		if (!El || Track != OwnTrack || (bStemsOn && !Stems && !bOwnStemsTried))
+		{
+			bOwnStemsTried = bStemsOn;
+			const FString Key = OwnTrack; OwnTrack.Empty(); StopNow(); Begin(OwnCue, Key, .05); OwnTrack = Key;
+			UE_LOG(LogTemp, Display, TEXT("S47: score: the render's piece %s again, %s"), *Key, Stems ? TEXT("as its stems") : TEXT("as its mix"));
+		}
+		RequestedMood.Empty(); RequestedSeverity = 0;
+		return;
+	}
 	if (bPaused)
 	{
 		if (Cosmic) Cosmic->Pause(true);
@@ -287,6 +339,7 @@ bool FS47Score::Present(const FString& InTrack) const
 void FS47Score::Start(const FString& Cue, const FString& InTrack)
 {
 	if (!S47Score::bScoreOn) return;
+	if (!OwnTrack.IsEmpty()) { UE_LOG(LogTemp, Display, TEXT("S47: score: %s held off: the render owns the score"), *Cue); return; }
 	const FString Next = InTrack.IsEmpty() ? Pick(Cue) : InTrack;
 	if (!S47Score::TRACKS.Contains(Next) || !KnownCue(Cue)) return;
 	if (El && Track == Next) Stop(); // Explicit named replay; adaptive Begin keeps its position.
@@ -347,6 +400,7 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 // Explicit fades and listening holds fade both decks. The generation protects replacements.
 void FS47Score::Fade(double Secs, double Quiet)
 {
+	if (!OwnTrack.IsEmpty()) { UE_LOG(LogTemp, Display, TEXT("S47: score: a fade of %.1f s held off: the render owns the score"), Secs); return; }
 	if (Cosmic) Cosmic->Set(FString(), true);
 	if (!El || !Gain || bFading) return;
 	Secs = FMath::IsFinite(Secs) ? FMath::Clamp(Secs, 0.01, 30.0) : 0.35;
@@ -366,6 +420,12 @@ void FS47Score::Fade(double Secs, double Quiet)
 
 void FS47Score::Stop()
 {
+	if (!OwnTrack.IsEmpty()) { UE_LOG(LogTemp, Display, TEXT("S47: score: a stop held off: the render owns the score")); return; }
+	StopNow();
+}
+
+void FS47Score::StopNow()
+{
 	if (Cosmic) { FS47AudioContext::FBatch Batch(*Ctx); Cosmic->Disconnect(); Cosmic.Reset(); }
 	FS47AudioContext::FBatch B(*Ctx);
 	++Generation;
@@ -379,6 +439,7 @@ void FS47Score::Stop()
 void FS47Score::Pause(bool bOn)
 {
 	if (bOn == bPaused) return;
+	if (bOn && !OwnTrack.IsEmpty()) { UE_LOG(LogTemp, Display, TEXT("S47: score: a pause held off: the render owns the score")); return; }
 	FS47AudioContext::FBatch B(*Ctx);
 	const double Now = Ctx->CurrentTime();
 	bPaused = bOn;
@@ -408,7 +469,7 @@ void FS47Score::Done(double Quiet)
 	// A natural track gap keeps the same texture, seed and reference timeline.
 	const bool WasPaused = bPaused;
 	auto KeepCosmic = MoveTemp(Cosmic);
-	Stop(); Cosmic = MoveTemp(KeepCosmic); bPaused = WasPaused; Rest = Quiet;
+	StopNow(); Cosmic = MoveTemp(KeepCosmic); bPaused = WasPaused; Rest = Quiet;
 }
 
 // main.ts musicWant: keep these tests in the same order as the original.
@@ -512,7 +573,10 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 	const TSharedRef<FS47AudioContext> C = FS47AudioContext::Make();
 	FS47Score S(nullptr, C, C->Destination);
 	Check(S47Score::TRACKS.Num() == 28 && S47Score::CUES.Num() == 7 && !S47Score::TRACKS.Contains(TEXT("nowhere")), TEXT("28 tracks and seven cues; the town's jazz is not among them"));
-	Check(S47Score::CUES.FindChecked(TEXT("night"))[0] == TEXT("cylEight") && S47Score::CUES.FindChecked(TEXT("town"))[0] == TEXT("neon") && S47Score::CUES.FindChecked(TEXT("town"))[1] == TEXT("lookBack"), TEXT("cue order"));
+	// SIDEBAND-20261113: the render names its piece by key or by file, and plays it in its first pool
+	Check(TrackOf(TEXT("s47_cold_dish")) == TEXT("coldDish") && TrackOf(TEXT("coldDish")) == TEXT("coldDish") && TrackOf(TEXT("nothing_such")).IsEmpty() && CueOf(TEXT("coldDish")) == TEXT("night")
+		&& !S.Owned() && !S.Own(TEXT("nothing_such")) && !S.Owned(), TEXT("a render's piece by key or file name, in its first pool; an unknown one is refused and owns nothing"));
+	Check(S47Score::CUES.FindChecked(TEXT("night"))[0] == TEXT("cylEight") &&S47Score::CUES.FindChecked(TEXT("town"))[0] == TEXT("neon") && S47Score::CUES.FindChecked(TEXT("town"))[1] == TEXT("lookBack"), TEXT("cue order"));
 	// MUSIC-20261113: the jazz and the night's solo keyboard are gone from the table and every pool; the pools stand without the optional files
 	{
 		bool bGone = !S47Score::TRACKS.Contains(TEXT("docks")) && !S47Score::TRACKS.Contains(TEXT("cylOne")), bTwo = true, bInGit = true, bFilesOnce = true, bOptionalLast = true;

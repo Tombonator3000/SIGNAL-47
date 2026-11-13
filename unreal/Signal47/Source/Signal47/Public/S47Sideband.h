@@ -314,6 +314,7 @@ private:
 	bool bOwnsGround = false, bWasTaken = false, bGroundFrame = false, bGroundHeld = false, bPrebuilt = false;
 	double AuditionV[4] = { -1, -1, -1, -1 }, AuditionLeft[4] = { 0, 0, 0, 0 };
 	double SceneT = -1, SceneDelay = -1, StandWant = 1; bool bSceneHit = false, bSceneBed = false;
+	bool bScoreOwned = false; double OwnUntil = -1; // SIDEBAND-20261113: the command line's scene owns the score (FS47Score::Own) until then
 	TSharedRef<bool> bAlive = MakeShared<bool>(true);
 	const void* SinkOn = nullptr; // the FS47FieldRadio whose encounter sound asks this session
 	FString RecordPath; bool bRecordAsked = false;

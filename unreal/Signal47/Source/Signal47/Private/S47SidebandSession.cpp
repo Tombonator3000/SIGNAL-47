@@ -54,9 +54,13 @@ namespace S47SbSession
 	const FPoint SceneNear[] = { { 0, 0 }, { 28, .05 }, { 40, .5 }, { 46, 1 }, { 48, 1 }, { 62, .2 }, { 80, .2 } };
 	constexpr double SceneHit = 46., SceneBedFrom = 28., SceneBedTo = 63., SceneEnd = 80.;
 	constexpr int32 SceneStinger = 2, SceneBed = 2; // full_glass_low over bed_cold_tone
-	// -S47SidebandRender=<dir> [-S47SidebandRenderSecs=<n>] [-S47SidebandScene=<s>]: keep the bus output of a run as a WAVE file,
-	// and start the audition scene this many seconds after play begins.
-	struct FAsked { FString Dir; double Secs = 90, SceneAfter = -1; bool bRead = false, bDone = false; };
+	// -S47SidebandRender=<dir> [-S47SidebandRenderSecs=<n>] [-S47SidebandScene=<s>] [-S47SidebandSceneLen=<s>] [-S47SidebandPiece=<p>]:
+	// keep the bus output of a run as a WAVE file, and start the audition scene this many seconds after play begins (time for the
+	// world to settle). SIDEBAND-20261113 (d69: an 80 s request recorded 10 s of the scene, the first 8 s had no music and a dev event
+	// stopped it at 58 s): with a scene the recording starts with the scene and runs its whole length (SceneLen, default the scene's
+	// 80 s and 4 s of tail), and the piece (default s47_cold_dish, the prototype's) owns the score from the scene's first second to
+	// the recording's end (FS47Score::Own: through the stems when they may play; nothing else stops it meanwhile).
+	struct FAsked { FString Dir, Piece; double Secs = 90, SceneAfter = -1, SceneLen = -1; bool bRead = false, bDone = false; };
 	FAsked& Asked()
 	{
 		static FAsked A;
@@ -66,6 +70,9 @@ namespace S47SbSession
 			FParse::Value(FCommandLine::Get(), TEXT("S47SidebandRender="), A.Dir);
 			FParse::Value(FCommandLine::Get(), TEXT("S47SidebandRenderSecs="), A.Secs);
 			FParse::Value(FCommandLine::Get(), TEXT("S47SidebandScene="), A.SceneAfter);
+			FParse::Value(FCommandLine::Get(), TEXT("S47SidebandSceneLen="), A.SceneLen);
+			FParse::Value(FCommandLine::Get(), TEXT("S47SidebandPiece="), A.Piece);
+			if (A.SceneAfter >= 0 && A.Piece.IsEmpty()) A.Piece = TEXT("s47_cold_dish");
 		}
 		return A;
 	}
@@ -375,10 +382,28 @@ void FS47Sideband::Step(double Dt)
 	if (!Ask.bDone && bPlay && (!Ask.Dir.IsEmpty() || Ask.SceneAfter >= 0))
 	{
 		Ask.bDone = true;
-		if (!Ask.Dir.IsEmpty()) Record(Ask.Secs, Ask.Dir / TEXT("sideband_bus.wav"));
+		if (!Ask.Dir.IsEmpty() && Ask.SceneAfter < 0) Record(Ask.Secs, Ask.Dir / TEXT("sideband_bus.wav"));
 		if (Ask.SceneAfter >= 0) SceneDelay = Ask.SceneAfter;
 	}
-	if (SceneDelay >= 0) { SceneDelay -= Dt; if (SceneDelay < 0) StartScene(); }
+	if (SceneDelay >= 0)
+	{
+		SceneDelay -= Dt;
+		if (SceneDelay < 0)
+		{
+			// the piece first (it starts in a twentieth of a second), then the recording and the scene on the same frame
+			if (!Ask.Piece.IsEmpty() && M && M->Score) bScoreOwned = M->Score->Own(Ask.Piece);
+			const double Len = Ask.SceneLen > 0 ? Ask.SceneLen : S47SbSession::SceneEnd + 4.;
+			if (!Ask.Dir.IsEmpty()) Record(Len, Ask.Dir / TEXT("sideband_bus.wav"));
+			UE_LOG(LogS47SidebandSession, Display, TEXT("S47: SIDEBAND scene from the command line: %.0f s%s, piece %s"), Len, Ask.Dir.IsEmpty() ? TEXT("") : TEXT(" recorded"), Ask.Piece.IsEmpty() ? TEXT("(what plays)") : *Ask.Piece);
+			StartScene();
+			if (Ask.Dir.IsEmpty()) OwnUntil = T + Len;
+		}
+	}
+	if (bScoreOwned && ((OwnUntil >= 0 && T >= OwnUntil) || (OwnUntil < 0 && !bRecordAsked)))
+	{
+		bScoreOwned = false; OwnUntil = -1;
+		if (M && M->Score) M->Score->Own(FString());
+	}
 
 	if (SceneRunning()) StepScene(Dt);
 	else
