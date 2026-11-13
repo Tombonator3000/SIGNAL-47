@@ -4,7 +4,18 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 13. november kl. 01:34 (d64): versjon 0.9.64, `1e9a3964` på `claude/freeform-20261112`
+## Installert 13. november kl. 09:44 (d65): versjon 0.9.65, `13430204` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5134 kontroller), regresjon PASS 251, pakket, røyktestet og installert. Tilbakerulling: d64 (`1e9a3964`). Ledig disk etterpå: 120 GB. Ikke spilt av Tom.
+
+- **M1:** fjerde naturlige rundtur ga 23 netter uten én tom natt (1–4 lagt merke til per natt); reserven åpner kl. 02 og har alltid noe som passer der spilleren er; nattsummen teller møter fra alle systemer.
+- **M7:** innholdet er spredd over 30 dager (hendelser låses opp uke for uke, stasjonsfilene til dag 24, sene saker åpner senest dag 12/15/18, fjerde store natt dag 23–26, jobbkort roterer per uke). Faren og regelen for å bli borte er ikke endret (Tom avgjør).
+- **M2–M5:** skikkelsen på åpen mark venter lenger når spilleren huker med lykta av; en forstørrelse fra negativet kan registreres på OPS; kirkegården er hendelsessted med et funn; måne og sand avgjør hvor langt de små ser.
+- **Ellers:** Reyes' notatbok som spor gjennom måneden, San Isidro-kirkegården bak kirken (Cosmos-gravminner, utenfor Git), fototeksturer i Caliche, besøk på gården slutter senest kl. 06.
+- **Utviklerlek (bare F10):** bølgeskyting ved SARO med egen karabin, HUD og lyder. Sett i automatiske kjøringer på bølge 1 og 2; resten er kodet, ikke sett. Lydene er ikke hørt av noen.
+- **Lærdom:** maskinen gikk i hvile 05:22–08:41 (30 minutter uten tastetrykk). Skift starter nå med `systemd-inhibit`, se nattskift-skillen.
+
+## Tidligere: installert 13. november kl. 01:34 (d64): versjon 0.9.64, `1e9a3964` på `claude/freeform-20261112`
 
 Ikke merget (PR #514 åpen); rask levering. I tillegg til d63: kartet viser saksforsøk og logger, gjort arbeid strøket over, tegnforklaring; hinderlista uten falske treff; SARO med Toms fototeksturer (blokkhud ute, østfløyen, kontorsettet); ingen tomme netter (en liten hendelse ved spilleren kl. 03 når ingenting er merket); Free100-gange for sheriffen bak `-S47Free100=walk,idle` (standard uendret); 14 rettinger etter kritikk (bl.a. lys på bilen etter alien, bilpanelet med pakke, peilegrensen). Selvtest 5041, regresjon PASS 251. Tilbakerulling: d63 (`ac5663cd`). Ikke spilt av Tom.
 
