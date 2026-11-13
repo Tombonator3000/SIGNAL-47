@@ -157,6 +157,8 @@ bool FS47AnimalWarn::SelfTest(TArray<FString>& Lines)
 	}
 	Check(bSame && Birds > 60 && Birds < 140, TEXT("which animal comes first is seeded, the same each time that night is asked, and both come"));
 	Check(Other(EKind::Birds) == EKind::Coyote && Other(EKind::Coyote) == EKind::Birds, TEXT("the other animal is the fallback"));
+	Check(ForVisit(2) == EKind::Birds && ForVisit(1) == EKind::Coyote && ForVisit(0) == EKind::None && ForVisit(-1) == EKind::None && ForVisit(7) == EKind::None && *ScriptOf(ForVisit(2)) && *ScriptOf(ForVisit(1)) && !*ScriptOf(ForVisit(0)),
+		TEXT("EVIDENCE-DOSSIER slice 2: ahead of a visit the birds go up for the tall one, the coyote for the crab; for the small ones the dogs (no script)"));
 	int32 Strays = 0;
 	for (int32 N = 1; N <= 300; ++N) Strays += StrayNight(47, N) && StrayNight(47, N) == StrayNight(47, N);
 	Check(Strays > 70 && Strays < 130, TEXT("on about one night in three the warning comes alone, with no event after it (seeded)"));

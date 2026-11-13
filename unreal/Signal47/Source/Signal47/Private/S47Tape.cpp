@@ -1,6 +1,9 @@
 #include "S47Tape.h"
+#include "S47AlienKinds.h"
 #include "S47Audio.h"
+#include "S47Dossier.h"
 #include "S47EventPlaces.h"
+#include "S47FarmSite.h"
 #include "S47Freeform.h"
 #include "S47Inter.h"
 #include "S47Kit.h"
@@ -23,6 +26,9 @@ namespace S47TapeLocal
 	const TCHAR* const DeskProp = TEXT("cassette");   // Config/Props/saro.json: the portable recorder by the array's PC
 	const TCHAR* const DeskUse = TEXT("ff:tape:desk");
 	const TCHAR* const HissKey = TEXT("tape-hiss"), * const BedKey = TEXT("tape-bed");
+	const TCHAR* const SigKey = TEXT("tape"); // EVIDENCE-DOSSIER slice 2: a known one's signature at the desk (S47AlienKinds::Follow)
+	// The odd-sound generator's kind for a take whose one is known, -1 for none.
+	int32 AlienOf(const FS47Tape::FTake& Tk) { return Tk.Odd.IsEmpty() ? -1 : S47Dossier::AlienKindOf(S47Dossier::KindOfId(Tk.OddKind)); }
 	// A cassette's sound: the top end gone, the level down a little.
 	constexpr float TapeLp = 3800, TapeGain = .7f;
 	FString Counter(double Seconds)
@@ -67,6 +73,18 @@ FString FS47Tape::OddWords(const FString& Sound)
 	return TEXT("a slow pulse, regular, under everything else");
 }
 
+FString FS47Tape::OddWordsOf(const FString& Sound, const FString& KindId)
+{
+	// EVIDENCE-DOSSIER slice 2: what each one's signature is like on a cassette, as the table's TAPE column has it. Never what it was.
+	switch (S47Dossier::KindOfId(KindId))
+	{
+	case S47Dossier::EKind::Small: return TEXT("short runs of notes, each climbing a step and ending like a question, and a pause after each as if for an answer");
+	case S47Dossier::EKind::Low: return TEXT("a double beat like a heart, quick, and breath that rasps close to the microphone");
+	case S47Dossier::EKind::Tall: return TEXT("slow deep pulses, two low notes grinding on each other, and something like metal creaking");
+	default: return OddWords(Sound);
+	}
+}
+
 int32 FS47Tape::OddHeardCount() const
 {
 	int32 Count = 0;
@@ -96,6 +114,7 @@ void FS47Tape::Begin(const S47J::FObj& Saved)
 			Tk.bPlaced = (*O)->HasField(TEXT("x")) && FMath::IsFinite(Tk.RoadX) && FMath::IsFinite(Tk.RoadZ) && FMath::Abs(Tk.RoadX) < 1e6 && FMath::Abs(Tk.RoadZ) < 1e6;
 			Tk.Seconds = FMath::Clamp(float(S47J::Num(*O, TEXT("seconds"))), 0.f, SideSeconds);
 			Tk.Odd = S47J::Str(*O, TEXT("odd")).Left(40); Tk.OddAt = float(S47J::Num(*O, TEXT("oddAt"), -1)); Tk.OddGain = FMath::Clamp(float(S47J::Num(*O, TEXT("oddGain"))), 0.f, 1.f);
+			{ const FString Kind = S47J::Str(*O, TEXT("oddKind")); if (!Tk.Odd.IsEmpty() && S47Dossier::KindOfId(Kind) != S47Dossier::EKind::None) Tk.OddKind = Kind; } // slice 2
 			Tk.bPlayed = S47J::Bool(*O, TEXT("played")); Tk.bOddHeard = S47J::Bool(*O, TEXT("oddHeard"));
 			for (const auto& Sv : S47J::Arr(*O, TEXT("sounds")))
 			{
@@ -138,7 +157,7 @@ S47J::FObj FS47Tape::Save() const
 		S47J::Set(E, TEXT("n"), Tk.N); S47J::Set(E, TEXT("day"), Tk.Day); S47J::Set(E, TEXT("clock"), Tk.Clock); S47J::Set(E, TEXT("where"), Tk.Where);
 		S47J::Set(E, TEXT("out"), Tk.bOutdoors); S47J::Set(E, TEXT("seconds"), double(Tk.Seconds));
 		if (Tk.bPlaced) { S47J::Set(E, TEXT("x"), FMath::RoundToDouble(Tk.RoadX * 10) / 10); S47J::Set(E, TEXT("z"), FMath::RoundToDouble(Tk.RoadZ * 10) / 10); }
-		if (!Tk.Odd.IsEmpty()) { S47J::Set(E, TEXT("odd"), Tk.Odd); S47J::Set(E, TEXT("oddAt"), double(Tk.OddAt)); S47J::Set(E, TEXT("oddGain"), double(Tk.OddGain)); }
+		if (!Tk.Odd.IsEmpty()) { S47J::Set(E, TEXT("odd"), Tk.Odd); S47J::Set(E, TEXT("oddAt"), double(Tk.OddAt)); S47J::Set(E, TEXT("oddGain"), double(Tk.OddGain)); if (!Tk.OddKind.IsEmpty()) S47J::Set(E, TEXT("oddKind"), Tk.OddKind); }
 		S47J::Set(E, TEXT("played"), Tk.bPlayed); S47J::Set(E, TEXT("oddHeard"), Tk.bOddHeard);
 		TArray<TSharedPtr<FJsonValue>> Snds;
 		for (const FSound& Clip : Tk.Sounds)
@@ -270,7 +289,7 @@ bool FS47Tape::ToggleRecord()
 		return true;
 	}
 	if (!IsValid(M->Audio)) return false;
-	bRec = true; RecT = 0; SenseTry = 0; BestSense = 0; BestSource.Empty();
+	bRec = true; RecT = 0; SenseTry = 0; BestSense = 0; BestSource.Empty(); BestKind.Empty();
 	Rec = FTake();
 	Rec.N = Next; Rec.Day = M->Freeform->Day(); Rec.Clock = M->Freeform->Clock(); Rec.Where = PlaceTitle();
 	Rec.bOutdoors = !(M->World && M->World->Indoors(Ear()));
@@ -308,8 +327,8 @@ void FS47Tape::Finish()
 	if (M && IsValid(M->Audio)) { M->Audio->Tap = nullptr; M->Audio->Play(TEXT("click"), .45f); }
 	Rec.Seconds = float(FMath::Min(RecT, double(SideSeconds)));
 	// What the microphone had that the player did not: the nearest it came, if it came at all.
-	if (BestSense > 0) { Rec.Odd = OddSound(BestSource); Rec.OddGain = float(FMath::Clamp(BestSense, .15, .6)); }
-	else { Rec.Odd.Empty(); Rec.OddAt = -1; }
+	if (BestSense > 0) { Rec.Odd = OddSound(BestSource); Rec.OddGain = float(FMath::Clamp(BestSense, .15, .6)); Rec.OddKind = BestKind; }
+	else { Rec.Odd.Empty(); Rec.OddAt = -1; Rec.OddKind.Empty(); }
 	if (Rec.Seconds >= 2)
 	{
 		Kept.Add(Rec); ++Next;
@@ -340,6 +359,7 @@ void FS47Tape::StopPlay()
 	if (PlayIndex == INDEX_NONE) return;
 	if (Kept.IsValidIndex(PlayIndex)) Kept[PlayIndex].bPlayed = true;
 	PlayIndex = INDEX_NONE;
+	S47AlienKinds::Hush(S47TapeLocal::SigKey); // EVIDENCE-DOSSIER slice 2
 	if (M && IsValid(M->Audio) && !IsEngineExitRequested()) { M->Audio->Stop(S47TapeLocal::HissKey, .1f); M->Audio->Stop(S47TapeLocal::BedKey, .1f); M->Audio->Play(TEXT("click"), .5f, Desk()); }
 }
 
@@ -368,6 +388,9 @@ void FS47Tape::Step(double Dt)
 					const double D = FVector::DistSquared(Src.At, From);
 					if (D < Nearest) { Nearest = D; BestSource = Src.Id; }
 				}
+				// EVIDENCE-DOSSIER slice 2: which one, where its source knows, at this moment (the visit's kind is the visit's now)
+				const S47Dossier::EKind Was = S47Dossier::KindOfOmen(BestSource, M->Freeform && M->Freeform->FarmSite ? M->Freeform->FarmSite->VisitKind() : 0);
+				BestKind = Was == S47Dossier::EKind::None ? FString() : FString(S47Dossier::KindId(Was));
 			}
 		}
 		if (RecT >= SideSeconds) Finish();
@@ -383,19 +406,33 @@ void FS47Tape::Step(double Dt)
 			FS47Sound O; O.Gain = Clip.Gain * S47TapeLocal::TapeGain; O.Rate = Clip.Rate; O.At = At; O.Lp = Clip.Lp > 0 ? FMath::Min(Clip.Lp, S47TapeLocal::TapeLp) : S47TapeLocal::TapeLp;
 			M->Audio->Sfx(Clip.Name, O);
 		}
+		const int32 Alien = S47TapeLocal::AlienOf(Tk);
 		if (!Tk.Odd.IsEmpty() && !bOddPlayed && Tk.OddAt >= 0 && PlayT >= Tk.OddAt)
 		{
 			bOddPlayed = true;
-			FS47Sound O; O.Gain = Tk.OddGain * .55f; O.Rate = .85f; O.At = At; O.Lp = 900; O.Dur = 7.f;
-			M->Audio->Sfx(Tk.Odd, O);
-			UE_LOG(LogS47Tape, Display, TEXT("S47: tape %d at %s: %s"), Tk.N, *S47TapeLocal::Counter(Tk.OddAt), *Tk.Odd);
+			// EVIDENCE-DOSSIER slice 2: a known one's own signature plays in its place (below), at the level of the hour it was taped
+			if (Alien < 0) { FS47Sound O; O.Gain = Tk.OddGain * .55f; O.Rate = .85f; O.At = At; O.Lp = 900; O.Dur = 7.f; M->Audio->Sfx(Tk.Odd, O); }
+			UE_LOG(LogS47Tape, Display, TEXT("S47: tape %d at %s: %s%s"), Tk.N, *S47TapeLocal::Counter(Tk.OddAt), *Tk.Odd, Alien >= 0 ? *FString::Printf(TEXT(", the signature of %s"), *Tk.OddKind) : TEXT(""));
+		}
+		if (Alien >= 0 && Tk.OddAt >= 0)
+		{
+			const float Level = S47AlienKinds::TierLevel(S47NightTiers::AtClock(Tk.Clock, FS47FreeformSession::NightOf(Tk.Clock))) * FMath::Clamp(Tk.OddGain / .45f, .35f, 1.f);
+			S47AlienKinds::Follow(M->Audio, S47TapeLocal::SigKey, true, PlayT - Tk.OddAt + S47AlienKinds::SignalFrom, ES47AlienKind(Alien), S47AlienKinds::TakeSeed(M->Freeform->Seed(), FString::Printf(TEXT("tape%d"), Tk.N)), Level);
 		}
 		// Heard through to a little past it: it is in the record now, as the player has it.
-		if (bOddPlayed && !Tk.bOddHeard && PlayT >= Tk.OddAt + 4)
+		if (bOddPlayed && !Tk.bOddHeard && HeardThrough(PlayT, Tk.OddAt))
 		{
 			Tk.bOddHeard = true;
-			M->Freeform->RecordEvidence(FString::Printf(TEXT("tape_%d"), Tk.N), FString::Printf(TEXT("Cassette %d, recorded %s, day %d, %s. Played back at SARO: at %s on the counter there is %s. I did not hear it out there. It is on the tape."),
-				Tk.N, *Tk.Where, Tk.Day, *S47TapeLocal::ClockText(Tk.Clock), *S47TapeLocal::Counter(Tk.OddAt), *OddWords(Tk.Odd)));
+			const FString Key = FString::Printf(TEXT("tape_%d"), Tk.N);
+			M->Freeform->RecordEvidence(Key, FString::Printf(TEXT("Cassette %d, recorded %s, day %d, %s. Played back at SARO: at %s on the counter there is %s. I did not hear it out there. It is on the tape."),
+				Tk.N, *Tk.Where, Tk.Day, *S47TapeLocal::ClockText(Tk.Clock), *S47TapeLocal::Counter(Tk.OddAt), *OddWordsOf(Tk.Odd, Tk.OddKind)));
+			// EVIDENCE-DOSSIER slice 2: heard, a known one's tape goes in the files, with the hour and the place it was taped
+			if (Alien >= 0)
+			{
+				const FVector2D Taped(Tk.RoadX, Tk.RoadZ);
+				const int32 Hour = FMath::Clamp(int32(FMath::Fmod(FMath::Max(0., Tk.Clock), 86400.) / 3600.), 0, 23);
+				M->Freeform->TagEvidenceAt(Key, S47Dossier::KindOfId(Tk.OddKind), S47Dossier::EType::Tape, Tk.Day, Hour, Tk.bPlaced ? &Taped : nullptr);
+			}
 			M->RequestAutosave();
 		}
 		if (PlayT >= Tk.Seconds + .5) StopPlay();
@@ -424,14 +461,35 @@ bool FS47Tape::SelfTest(TArray<FString>& Lines)
 	}
 	Check(bWords, TEXT("what is on the tape is a sound and plain words for it, never what it was"));
 	{
+		// EVIDENCE-DOSSIER slice 2: each known one has its own words, in Freeform's limits; an unknown kind keeps the plain ones
+		const FString S = OddWordsOf(TEXT("voices"), TEXT("roswell")), P = OddWordsOf(TEXT("voices"), TEXT("pale")), T = OddWordsOf(TEXT("voices"), TEXT("tall"));
+		Check(S != P && P != T && S != T && OddWordsOf(TEXT("voices"), FString()) == OddWords(TEXT("voices")) && OddWordsOf(TEXT("voices"), TEXT("nordic")) == OddWords(TEXT("voices"))
+			&& S47Dossier::LintWords({ S, P, T }).IsEmpty() && HeardThrough(35.5, 31.5f) && !HeardThrough(33, 31.5f) && !HeardThrough(99, -1),
+			TEXT("EVIDENCE-DOSSIER slice 2: the small ones, the low one and the tall one each sound their own on the tape, in plain words, heard through only past it"));
+	}
+	{
 		FS47Tape A(nullptr);
 		A.bCarried = true; A.Next = 3;
-		FTake Tk; Tk.N = 2; Tk.Day = 4; Tk.Clock = 23 * 3600.; Tk.Where = TEXT("the windmill on the Baca lease"); Tk.Seconds = 64; Tk.Odd = TEXT("drone_52"); Tk.OddAt = 31.5f; Tk.OddGain = .4f; Tk.bOddHeard = true;
+		FTake Tk; Tk.N = 2; Tk.Day = 4; Tk.Clock = 23 * 3600.; Tk.Where = TEXT("the windmill on the Baca lease"); Tk.Seconds = 64; Tk.Odd = TEXT("drone_52"); Tk.OddAt = 31.5f; Tk.OddGain = .4f; Tk.bOddHeard = true; Tk.OddKind = TEXT("tall");
 		FSound Clip; Clip.At = 12.25f; Clip.Name = TEXT("dog0"); Clip.Gain = .3f; Tk.Sounds.Add(Clip);
 		A.Kept.Add(Tk);
 		FS47Tape B(nullptr);
 		B.Begin(S47J::Read(S47J::Write(A.Save())));
-		Check(B.bCarried && B.Next == 3 && B.Kept.Num() == 1 && B.Kept[0].Odd == TEXT("drone_52") && FMath::IsNearlyEqual(B.Kept[0].OddAt, 31.5f) && B.Kept[0].Sounds.Num() == 1 && B.Kept[0].Sounds[0].Name == TEXT("dog0") && B.OddHeardCount() == 1, TEXT("the recorder, its tapes and what was heard on them survive a Continue"));
+		Check(B.bCarried && B.Next == 3 && B.Kept.Num() == 1 && B.Kept[0].Odd == TEXT("drone_52") && FMath::IsNearlyEqual(B.Kept[0].OddAt, 31.5f) && B.Kept[0].Sounds.Num() == 1 && B.Kept[0].Sounds[0].Name == TEXT("dog0") && B.OddHeardCount() == 1
+			&& B.Kept[0].OddKind == TEXT("tall") && S47TapeLocal::AlienOf(B.Kept[0]) == int32(ES47AlienKind::Tall), TEXT("the recorder, its tapes and what was heard on them survive a Continue (EVIDENCE-DOSSIER slice 2: and which one it was)"));
+		// EVIDENCE-DOSSIER slice 2: an older tape has no kind and plays the plain sound; a kind with nothing odd on the tape is not kept
+		{
+			const S47J::FObj Was = S47J::Read(S47J::Write(A.Save()));
+			const TArray<TSharedPtr<FJsonValue>> Takes = S47J::Arr(Was, TEXT("takes"));
+			const S47J::FObj* First = nullptr;
+			if (Takes.Num() == 1 && Takes[0]->TryGetObject(First) && First) { (*First)->RemoveField(TEXT("oddKind")); }
+			FS47Tape Old(nullptr); Old.Begin(Was);
+			FTake Plain; Plain.N = 5; Plain.Day = 2; Plain.Seconds = 30; Plain.OddKind = TEXT("pale");
+			FS47Tape Odd(nullptr); Odd.Kept.Add(Plain); Odd.bCarried = true;
+			FS47Tape Back(nullptr); Back.Begin(S47J::Read(S47J::Write(Odd.Save())));
+			Check(Old.Kept.Num() == 1 && Old.Kept[0].OddKind.IsEmpty() && S47TapeLocal::AlienOf(Old.Kept[0]) == -1 && Back.Kept.Num() == 1 && Back.Kept[0].OddKind.IsEmpty(),
+				TEXT("EVIDENCE-DOSSIER slice 2: a tape from before has no kind and plays as it did; no kind is kept without something odd on it"));
+		}
 		FS47Tape Cn(nullptr);
 		Cn.Begin(nullptr);
 		Check(Cn.Save()->Values.Num() == 0 && !Cn.Carried(), TEXT("an older save has the recorder on the desk and writes nothing"));

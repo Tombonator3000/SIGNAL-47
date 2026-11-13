@@ -879,6 +879,8 @@ void FS47FreeformSession::Step(double Dt)
   const bool bSigReel=bSigTake&&bAudioPlaying&&bAudioOpen&&!Held()&&HasPower()&&AudioDesk&&AudioDesk->ListeningPosition()&&AudioSourceIndex==0;
   S47AlienKinds::Follow(M->Audio,TEXT("take"),bSigLive,SigJob?SigJob->Elapsed:0.,SigKind,SigSeed,SigLevel);
   S47AlienKinds::Follow(M->Audio,TEXT("reel"),bSigReel,AudioCursor,SigKind,SigSeed,SigLevel);
+  // EVIDENCE-DOSSIER slice 2: heard through, it is the far two's tape in the files (the near three's is on the field tape)
+  if(bSigTake&&(bSigLive||bSigReel))DossierHeardTake(SigNight,SigJob->Id,int32(SigKind),int32(S47NightTiers::AtClock(SigJob->ReferenceClock,SigNight)),bSigLive?SigJob->Elapsed:AudioCursor);
  }
  if(Field)Field->Step(D);
  if(CaseField)CaseField->Step(D);

@@ -76,10 +76,7 @@ namespace Tables
  const TCHAR* const ExtraSlip=TEXT("THE STATION KNOWS WHAT TO LISTEN FOR NOW: ONE MORE BEARING TONIGHT THAN THE NIGHT GIVES.");
  const TCHAR* const ExtraSaid=TEXT("The station knows what to listen for now: one more bearing tonight.");
  const TCHAR* const ExtraTask=TEXT("ARRAY / The station knows what to listen for now: one more bearing slip can come tonight.");
- // Slice 2: a pair kept side by side, on the binder's sheet; and what is read aloud of it on THEM.
- const TCHAR* const BesideTyped=TEXT("KEPT BESIDE UNKNOWN %d.");
- const TCHAR* const BesideSaid=TEXT("%s and %s side by side.");
- const TCHAR* const BesideAlike=TEXT(" The same in: %s.");
+ // Slice 2: a contradicted pencil on the binder's typed sheet (the pair's words are BesideLine and BesideWords).
  const TCHAR* const StruckTyped=TEXT("STRUCK / ");
  const int32 MaxTags=4096,MaxKey=160,MaxDay=36500,MaxFiles=24;
  const double MaxWhere=1e6;
@@ -269,11 +266,11 @@ FString BesideWords(const FFile& A,const FFile& B)
  const TArray<int32> Marks=Agreement(A,B);
  TArray<FString> Alike;
  for(int32 T=0;T<Marks.Num();++T)if(Marks[T]==1)Alike.Add(FString(Tables::TypeLabels[T]).ToLower());
- FString Out=FString::Printf(Tables::BesideSaid,*A.Title,*B.Title);
- if(!Alike.IsEmpty())Out+=FString::Printf(Tables::BesideAlike,*FString::Join(Alike,TEXT(", ")));
+ FString Out=A.Title+TEXT(" and ")+B.Title+TEXT(" side by side.");
+ if(!Alike.IsEmpty())Out+=TEXT(" The same in: ")+FString::Join(Alike,TEXT(", "))+TEXT(".");
  return Out;
 }
-FString BesideLine(int32 Number){return FString::Printf(Tables::BesideTyped,Number);}
+FString BesideLine(int32 Number){return FString::Printf(TEXT("KEPT BESIDE UNKNOWN %d."),Number);}
 FString Sheet(const FFile& File,const TArray<FString>& PhotoLines)
 {
  FString Out=FString::Printf(TEXT("STAGE     %s\n"),*File.Stage);

@@ -18,6 +18,7 @@ struct FS47MapView;
 
 // Separate, persistent SARO working life. Story progression never grants its jobs or facts.
 struct FS47RxLive;
+struct FS47RhythmData;
 class FS47RxFeed;
 class FS47FreeformSession
 {
@@ -167,6 +168,12 @@ public:
  // asks DossierExtraOpen and DossierSpendExtra), the hours on tonight's note (DossierTasks).
  bool TagEvidence(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Night=0,bool bHere=true);
  bool TagPhotoClaim(const FString& ClaimId,bool bHere=true);
+ // EVIDENCE-DOSSIER slice 2 (14 November): with the hour and the place given (Hour -1, Where null: not kept), as a tape played back
+ // at the desk has them from where it was recorded. The file is the one the player could tie it to (FS47Dossier::Tag).
+ bool TagEvidenceAt(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Night,int32 Hour,const FVector2D* Where);
+ // The receiver's unusual take, heard (S47AlienKinds' kind as an int, the tier of its hour as ES47Allowed): the far two's TAPE.
+ void DossierHeardTake(int32 SigNight,const FString& JobId,int32 AlienKind,int32 TierCode,double Cursor);
+ static int32 DossierHabitsFrom(const FS47RhythmData& Rules); // the curve's first week with danger in it
  void DossierMap(FS47MapView& View) const;
  void DossierTasks(TArray<FS47Task>& Out) const;
  bool DossierExtraOpen(int32 Night) const;

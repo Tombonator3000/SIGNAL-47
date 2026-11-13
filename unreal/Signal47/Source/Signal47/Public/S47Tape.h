@@ -30,6 +30,10 @@ public:
   double RoadX=0,RoadZ=0;bool bPlaced=false; // where it ran, road-local metres (the case board's place for it)
   TArray<FSound> Sounds;
   FString Odd;float OddAt=-1,OddGain=0; // what is on it that nobody heard: its sound, where on the tape, how loud
+  // EVIDENCE-DOSSIER slice 2 (14 November): which one it was, where the source knew (S47Dossier::KindOfOmen: a site visit's kind, the
+  // small ones' bodies, at the door and the window): the dossier's id ("roswell", "pale", "tall"); empty for anything else. Played
+  // back, it is that one's own signature (S47AlienKinds::Render) in place of the plain sound. Saved as "oddKind"; older tapes have none.
+  FString OddKind;
   bool bPlayed=false,bOddHeard=false;
  };
  // One side of a C-60: about two minutes as the player lives them, half an hour of the night's clock.
@@ -64,6 +68,10 @@ public:
  // What it sounds like on the tape, from the kind of thing it was: a buffer the game has. Never words.
  static FString OddSound(const FString& SourceId);
  static FString OddWords(const FString& Sound);
+ // EVIDENCE-DOSSIER slice 2: the words for a known one's signature (the table's TAPE column, as heard); else OddWords(Sound).
+ static FString OddWordsOf(const FString& Sound,const FString& KindId);
+ // Played back far enough past it to have heard it through: then it is in the record (and in its file, when the kind is known).
+ static bool HeardThrough(double PlayT,float OddAt){return OddAt>=0&&PlayT>=OddAt+4;}
  // F10 and tests.
  void DevGive();
  static bool SelfTest(TArray<FString>& Lines);
@@ -75,7 +83,7 @@ private:
  // The take being recorded.
  FTake Rec;
  double RecT=0,SenseTry=0,BestSense=0;
- FString BestSource;
+ FString BestSource,BestKind; // BestKind: EVIDENCE-DOSSIER slice 2, the dossier's id for the source at its nearest, when known
  // The take being played on the desk.
  int32 PlayIndex=INDEX_NONE,PlayNext=0;
  double PlayT=0;

@@ -3945,6 +3945,8 @@ void FS47Happenings::StepFigure(double Dt)
   const bool bLamp=M->Night&&M->Night->Flashlight&&M->Night->Flashlight->bOn&&Seen(Now.At+FVector(0,1,0),400,7);
   const bool bSeen=SeenLit(Now.At+FVector(0,1.6,0),340,30,LitGround|LitSky,*Shade);
   FigureSeenFor=bSeen||bLamp?FigureSeenFor+Dt:FMath::Max(0.,FigureSeenFor-Dt*.5);
+  // EVIDENCE-DOSSIER slice 2: the shining one seen with no lamp on it: by its own light, its file's LAMP
+  if(bSeen&&!bLamp&&Now.Variant==TEXT("cosmic"))F->TagEvidence(FString::Printf(TEXT("figure_ownlight_d%d"),F->Day()),S47Dossier::EKind::Shining,S47Dossier::EType::Lamp);
   if(bSeen&&FigureStageSeen!=Now.Stage)
   {
    // What was there, where and how far: raw, in the order it came.
@@ -3958,6 +3960,8 @@ void FS47Happenings::StepFigure(double Dt)
   const double Wait=Now.Stage==0?45:Now.Stage==2?35:7;
   if(FigureSeenFor>.6||(bLamp&&FigureSeenFor>.2)||Now.Age-Now.Yaw>Wait||Away<(Now.Stage==4?6:14))
   {
+   // EVIDENCE-DOSSIER slice 2: the silver one gone because it was looked at, or the lamp put on it: its file's LAMP
+   if(Now.Variant==TEXT("nordic")&&(FigureSeenFor>.6||(bLamp&&FigureSeenFor>.2)))F->TagEvidence(FString::Printf(TEXT("figure_gone_d%d"),F->Day()),S47Dossier::EKind::Silver,S47Dossier::EType::Lamp);
    FigureSeenFor=0;
    if(Now.Stage==4)
    {
@@ -5253,7 +5257,17 @@ float FS47Happenings::DoseAt(const FVector& Foot,FString& Near,double& NearM) co
  auto* F=M->Freeform.Get();
  if(HoodNight==F->Day()&&M->World)if(FS47Truck* T=M->World->TruckHere())Add(T->Position,.3f,3.,TEXT("hood"));
  // Marks left at a site by a visit, as the magnetometer has them (FS47Places::StepNeedle): in the frame the player stands in.
- if(F->FarmSite&&F->FarmSite->Armed()&&!F->FarmSite->Raked())Add(F->FarmSite->Centre(),.35f,8.,FString::Printf(TEXT("marks:%d"),F->Day()));
+ // EVIDENCE-DOSSIER slice 2: by who came to them, when a body was out at them (S47Dossier::GeigerFactor; nobody known: as before)
+ if(F->FarmSite&&F->FarmSite->Armed()&&!F->FarmSite->Raked())Add(F->FarmSite->Centre(),.35f*S47Dossier::GeigerFactor(S47Dossier::KindOfVisit(F->FarmSite->MarksBy())),8.,FString::Printf(TEXT("marks:%d"),F->Day()));
+ // EVIDENCE-DOSSIER slice 2: and a visit's body itself, close by: a little for the small ones, nothing for the crab, a climb for the tall one
+ if(F->FarmSite&&F->FarmSite->VisitWantsGround())
+ {
+  const int32 Who=F->FarmSite->VisitKind();
+  const float Of=.3f*S47Dossier::GeigerFactor(S47Dossier::KindOfVisit(Who));
+  const FString Visit=FString::Printf(TEXT("visit:%d"),Who);
+  if(const TOptional<FVector> BodyEye=F->FarmSite->VisitBodyEye();BodyEye.IsSet())Add(*BodyEye,Of,4.,Visit);
+  else if(Who==0&&M->Night&&M->Night->Glimpses)for(const FS47RoswellGroup::FView& One:M->Night->Glimpses->Individuals())Add(One.Pos,Of,4.,Visit);
+ }
  // The marks a landing_trace left, where the Director put them (its anchor, in its own scene), while they lie there.
  // Gone over by the military first (S47Visitors::Cleared): nothing there for the counter either.
  if(F->Director&&F->Director->ActiveEvent()==TEXT("landing_trace")&&F->Director->AnchorHere()&&!F->Director->TraceRaked())
@@ -5277,7 +5291,7 @@ void FS47Happenings::StepGeiger(double Dt)
  US47Audio* A=M->Audio.Get();
  if(!bCan)
  {
-  Dose=0;GeigerUpFor=0;GmMeter=0;PoseGeiger(false);
+  Dose=0;GeigerUpFor=0;GmMeter=0;GeigerReadFor=0;PoseGeiger(false);
   if(bGmRoar&&A)A->Stop(S47Hap::GmRoarKey,.1f);
   bGmRoar=false;return;
  }
@@ -5320,9 +5334,19 @@ void FS47Happenings::StepGeiger(double Dt)
  PoseGeiger(GeigerUpFor>0);
  GeigerNoteIn-=Dt;
  if(Dose>.12f&&GeigerNoteIn<=0&&M->UI){M->UI->Toast(Dose>.85f?TEXT("COUNTER / Pegged."):TEXT("COUNTER / It's climbing."),3);GeigerNoteIn=Dose>.85f?20.:40.;}
+ auto* F=M->Freeform.Get();
+ // EVIDENCE-DOSSIER slice 2: out and ticking (held up, or up on its own as it climbs), close to what came (its marks, or itself) for a
+ // few seconds: what the counter made of it is that one's GEIGER, nothing as much as a climb. The marks' night is the visit's.
+ {
+  S47Dossier::EKind Read=S47Dossier::EKind::None;int32 ReadNight=0;FString ReadKey;
+  if(What.StartsWith(TEXT("marks:"))&&F->FarmSite&&F->FarmSite->MarksBy()>=0){Read=S47Dossier::KindOfVisit(F->FarmSite->MarksBy());ReadNight=F->FarmSite->MarksByNight();ReadKey=FString::Printf(TEXT("geiger_read_marks_d%d"),ReadNight);}
+  else if(What.StartsWith(TEXT("visit:"))){Read=S47Dossier::KindOfVisit(FCString::Atoi(*What.RightChop(6)));ReadNight=FS47FreeformSession::NightOf(F->Clock());ReadKey=FString::Printf(TEXT("geiger_read_visit_d%d"),ReadNight);}
+  const bool bOut=GeigerUpFor>0||bGeigerHeld;
+  GeigerReadFor=Read!=S47Dossier::EKind::None&&bOut&&NearM<=S47Dossier::GeigerNearM?GeigerReadFor+Dt:0.;
+  if(Read!=S47Dossier::EKind::None&&S47Dossier::GeigerReads(bOut,NearM,GeigerReadFor)&&!F->Unknowns.HasTag(ReadKey))F->TagEvidence(ReadKey,Read,S47Dossier::EType::Geiger,ReadNight);
+ }
  // What it has read is kept, once each.
  if(Dose<.5f||What.IsEmpty())return;
- auto* F=M->Freeform.Get();
  FString Key,Page;
  if(What.StartsWith(TEXT("landing:")))
  {
