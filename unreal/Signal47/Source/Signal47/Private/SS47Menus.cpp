@@ -519,7 +519,7 @@ void SS47Pause::Construct(const FArguments& InArgs)
 		const bool bMatters = LastKind >= 0 || Note.Matters.Num() > 0;
 		Card->AddSlot().AutoHeight().Padding(44 * U, 2 * U, 0, 0)
 		[
-			SNew(STextBlock).Text(FText::FromString(FString::Printf(bMatters ? TEXT("+%d open matters in the notebook") : TEXT("+%d more in the notebook"), Note.More))).Font(Hand(26)).ColorAndOpacity(Css(0x233a7a))
+			SNew(STextBlock).Text(FText::FromString(bMatters ? FString::Printf(TEXT("+%d open matters in the notebook"), Note.More) : FString::Printf(TEXT("+%d more in the notebook"), Note.More))).Font(Hand(26)).ColorAndOpacity(Css(0x233a7a))
 		];
 	}
 	if (Note.Also.Num())

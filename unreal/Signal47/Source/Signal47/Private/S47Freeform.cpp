@@ -6367,8 +6367,9 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
      const TArray<FS47Task> WalkTasks=Walk.Tasks();const FString WalkGoal=Walk.StationGoalLine();const FString WatchLine=Watch?Walk.JobLine(*Watch):FString();
      const int32 GoalRow=WalkTasks.IndexOfByPredicate([&WalkGoal](const FS47Task& T){return T.Text==WalkGoal;});
      const int32 WatchRow=WalkTasks.IndexOfByPredicate([&WatchLine](const FS47Task& T){return T.Text==WatchLine;});
+     // (TASKS-TEN-20261113, change 3: from one in the morning the goal only waits for daylight: no row of its own, only the half-line)
      bGoalAfter&=Line.Find(TEXT("STATION GOAL / "))>Line.Find(TEXT("BE BACK IN THE CONTROL ROOM BY"))&&Line.Contains(H<25.?TEXT("REPAIR THE"):TEXT("WAITS FOR DAYLIGHT"))
-      &&WatchRow>=0&&GoalRow>WatchRow;
+      &&WatchRow>=0&&(H<25.?GoalRow>WatchRow:GoalRow==INDEX_NONE);
     }
    }
    Walk.TestAdvance(FMath::Max(0.,86400.+25.8*3600.-Walk.Clock()));

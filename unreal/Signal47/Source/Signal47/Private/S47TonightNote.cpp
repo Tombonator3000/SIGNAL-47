@@ -165,7 +165,7 @@ FString S47TonightNote::Plain(const FNote& Note)
  for (const FLine& L : Note.Lines)
  {
   const FString Tag = TagText(L);
-  Out.Add((L.Mark == EMark::Done ? TEXT("[x] ") : L.Mark == EMark::Next ? TEXT("[>] ") : TEXT("[ ] ")) + (L.bPinned ? TEXT("* ") : TEXT("")) + LineText(L) + (Tag.IsEmpty() ? FString() : TEXT("  (") + Tag + TEXT(")")));
+  Out.Add(FString(L.Mark == EMark::Done ? TEXT("[x] ") : L.Mark == EMark::Next ? TEXT("[>] ") : TEXT("[ ] ")) + (L.bPinned ? TEXT("* ") : TEXT("")) + LineText(L) + (Tag.IsEmpty() ? FString() : TEXT("  (") + Tag + TEXT(")")));
  }
  // TASKS-TEN-20261113 (change 6): Freeform's count is the open matters (and tonight's rows with no room), which NOW has in full
  if (Note.More > 0) Out.Add(Note.Matters.Num() || Note.Lines.ContainsByPredicate([](const FLine& L) { return !L.Giver.IsEmpty(); }) ? FString::Printf(TEXT("+%d open matters in the notebook"), Note.More) : FString::Printf(TEXT("+%d more in the notebook"), Note.More));
