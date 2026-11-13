@@ -2824,10 +2824,10 @@ void FS47FreeformSession::OpenReceiver()
   // RX-LOOK-20261113: the zoomed spectrum stays the main thing here; the waterfall stands beside it (the same window, centred on the
   // dial, so the line slides to the middle as the dial comes onto the card), and the next step is the frame's own line.
   Rows.Add(SNew(SBox).HeightOverride(232)[SNew(SHorizontalBox)
-   +SHorizontalBox::Slot().FillWidth(1).Padding(0,0,8,0)[T::RxPanel(TEXT("FINE TUNING / SPECTRUM ZOOM (MHz)"),T::TuneZoom([this]{return M->Story->Rx;},[this]{return EffectiveProfile(*CurrentJob());},Quality,206),
-    FString::Printf(TEXT("TARGET %.3f +/- %.3f  |  GAIN %.0f-%.0f  |  BW %.0f-%.0f kHz"),P.F,P.FTol,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1]))]
+   +SHorizontalBox::Slot().FillWidth(1).Padding(0,0,8,0)[T::RxPanel(TEXT("FINE TUNING (MHz)"),T::TuneZoom([this]{return M->Story->Rx;},[this]{return EffectiveProfile(*CurrentJob());},Quality,206),
+    FString::Printf(TEXT("TARGET %s +/- %s  |  GAIN %s-%s  |  BW %s-%s kHz"),*S47RxLook::Num(P.F,3),*S47RxLook::Num(P.FTol,3),*S47RxLook::Num(P.Gain[0]),*S47RxLook::Num(P.Gain[1]),*S47RxLook::Num(P.Bw[0]),*S47RxLook::Num(P.Bw[1])))]
    +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(300)[T::RxPanel(TEXT("SIGNAL WATERFALL"),SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxFall).Feed(Feed)],
-    TAttribute<FString>::CreateLambda([Feed]{return FString::Printf(TEXT("DIAL +/- %.0f kHz"),1000.*S47RxLook::HalfSpan(Feed->Now().Scope.FTol));}))]]]);
+    TAttribute<FString>::CreateLambda([Feed]{return FString::Printf(TEXT("+/- %s kHz"),*S47RxLook::Num(1000.*S47RxLook::HalfSpan(Feed->Now().Scope.FTol)));}))]]]);
   Rows.Add(Controls());
   // D45-20261110 (Tom: record the control at the receiver right after the take): the same key records an unusual take's control.
   auto Start=T::Big(TAttribute<FString>::CreateLambda([this]
@@ -2866,8 +2866,21 @@ void FS47FreeformSession::OpenReceiver()
   const TAttribute<EVisibility> TracesShown=TAttribute<EVisibility>::CreateLambda([StripShown]{return StripShown.Get()==EVisibility::Visible?EVisibility::Collapsed:EVisibility::Visible;});
   Rows.Add(SNew(SBox).Visibility(TracesShown).HeightOverride(78)[SNew(SHorizontalBox)
    +SHorizontalBox::Slot().FillWidth(1).Padding(0,0,8,0)[T::RxPanel(TEXT("I (IN-PHASE)"),SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxIq).Feed(Feed)],
-    TAttribute<FString>::CreateLambda([Feed]{return FString::Printf(TEXT("LOCK %.0f %%"),100.*FMath::Clamp(Feed->Now().Scope.Strength,0.,1.));}))]
+    TAttribute<FString>::CreateLambda([Feed]{return FString::Printf(TEXT("LOCK %s %%"),*S47RxLook::Num(100.*FMath::Clamp(Feed->Now().Scope.Strength,0.,1.)));}))]
    +SHorizontalBox::Slot().FillWidth(1)[T::RxPanel(TEXT("Q (QUADRATURE)"),SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxIq).Feed(Feed).bQuadrature(true)])]]);
+  // RX-LOOK round 2 (13 November, the first look in the engine: an empty band of some 70 units stood between the strips and the
+  // next step's line): the page takes the frame's whole body. The dials, the readouts and the strip keep their own heights; the
+  // zoomed spectrum and the waterfall beside it have everything they leave (232 units before, about 290 now).
+  {
+   const TSharedRef<SVerticalBox> TunePage=SNew(SVerticalBox);
+   for(int32 I=0;I<Rows.Num();++I)
+   {
+    if(I==0)TunePage->AddSlot().FillHeight(1)[Rows[I]];
+    else TunePage->AddSlot().AutoHeight().Padding(0,6,0,0)[Rows[I]];
+   }
+   const S47Kit::FW Whole=SNew(SBox).HeightOverride(TAttribute<FOptionalSize>::CreateLambda([BodyHigh]{return FOptionalSize(FMath::Max(430.f,*BodyHigh-2.f));}))[TunePage];
+   Rows.Reset();Rows.Add(Whole);
+  }
  }
  else if(ReceiverTab==2)
  {
