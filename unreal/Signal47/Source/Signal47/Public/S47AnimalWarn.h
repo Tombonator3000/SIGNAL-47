@@ -44,6 +44,9 @@ public:
 	/** StartEvent's question, before the event's own code. True: go on. False with Why: the animals first; Due() hands the event
 	 *  back once Lead seconds are up. */
 	bool Hold(const FString& Id, const FString& Variant, bool bOnFoot, FString& Why);
+	/** M1-FLOOR-20261113: whether Hold could still send the animals ahead of this event tonight (not yet asked, none used, none waiting).
+	 *  StartEvent asks the rhythm first then, so that the animals never go up for something the rhythm would not let follow. */
+	bool WouldAsk(const FString& Id, int32 NightNo) const;
 	/** An event whose lead is up, to be started now. */
 	bool Due(FString& OutId, FString& OutVariant);
 	/** A new game, another area: nothing is waiting. */

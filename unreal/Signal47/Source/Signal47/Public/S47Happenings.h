@@ -152,13 +152,14 @@ public:
  static double FirstBurstHour(int32 Seed);
  static double FirstUneaseHour(int32 Seed);
  bool FirstBurstOwed(int32 Night) const;
- // M1-FLOOR-20261112 (TODO «Milepæler for Freeform», M1: something every night that the player notices). If by three on the night's
- // clock nothing the player noticed has happened tonight (Noticed, the night's tally), the rhythm loosens (FS47Rhythm::Loosens) for one
+ // M1-FLOOR-20261112 (TODO «Milepæler for Freeform», M1: something every night that the player notices). If by two on the night's
+ // clock (M1-FLOOR-20261113: was three; the full tier's first hour, so that two hours are left for it before four) nothing the player
+ // noticed has happened tonight (Noticed, the night's tally), the rhythm loosens (FS47Rhythm::Loosens) for one
  // small thing where the player is now: one of FloorOrder's events or a piece of unease (FloorUneaseFits), each asked by its own
  // conditions as the night would ask them, tiers and hours included. Never a danger, never on a Story night, the big night's night or
  // the first night (each is authored). Once a night at most, saved ("floorNight"; and "noticedNight", so that a Continue knows
  // something was noticed already). Until half past five; after that nothing more is made up for.
- static constexpr double FloorFrom=27.,FloorUntil=29.5;
+ static constexpr double FloorFrom=26.,FloorUntil=29.5;
  static bool FloorOpen(double Hour,int32 Night,bool bNoticedTonight,int32 FloorDone,bool bAuthored);
  // The events the floor may offer where the player is (SituationNow's bits), in tonight's order (the seed's): those heard or felt at
  // the player as they start first (FloorHeard), then those that must be seen. A calm night: only the small ones.
@@ -166,6 +167,8 @@ public:
  static bool FloorHeard(const FString& Id);
  // The unease the floor may offer: heard or seen at the player at once (not the strong once-a-game ones, nor those that wait for a moment).
  static bool FloorUneaseFits(int32 I);
+ // M1-FLOOR-20261113: where each of them can be had (SituationNow's bits, all of them; 0: not the floor's), as FireUnease asks it.
+ static uint32 FloorUneaseWhere(int32 I);
  static bool FloorSelfTest(TArray<FString>& Lines);
  // The magnetometer's history (FS47Places::Use): something has happened near a place in the last two nights, whether or not anyone
  // saw it (what stands out there now, and what stood there and has gone). Road-local metres; Day as FS47FreeformSession::Day. Not a
