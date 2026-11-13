@@ -63,9 +63,10 @@ namespace
 		}
 	};
 
-	// The banner's letters are written once when the state changes, not every time a page is built again (a tab, a key): what
-	// was last written and when is kept here for the one receiver there is.
-	FString S47RxLBannerShown;
+	// The banner's letters are written once when the state changes, not every time a page is built again (a tab, a key) and not
+	// when only a number in it moves (the seconds recorded, the degrees to go): which state was last written and when is kept
+	// here for the one receiver there is.
+	int32 S47RxLBannerState = -1;
 	double S47RxLBannerAt = -1e9;
 
 	// The waterfall's rows, kept for the one receiver there is, so that a tab changed does not start the picture again.
@@ -174,7 +175,7 @@ int32 SS47RxBanner::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	const float StateWide = FMath::Min(344.f, Sz.X * .34f);
 	const FLinearColor Tone = Now.State.bAmber ? S47RxLAmber : S47RxLGreen;
 	Pen.Rect(FVector2f(7, 7), FVector2f(StateWide, Sz.Y - 14), Tone, 2.f, 1, true);
-	if (Now.State.Text != S47RxLBannerShown) { S47RxLBannerShown = Now.State.Text; S47RxLBannerAt = T; }
+	if (int32(Now.State.Id) != S47RxLBannerState) { S47RxLBannerState = int32(Now.State.Id); S47RxLBannerAt = T; }
 	const int32 Len = Now.State.Text.Len(), Typed = S47RxLook::Typed(Len, T - S47RxLBannerAt, Now.bCalm);
 	// the size that keeps the longest state inside its box
 	const int32 Big = S47RxLWide(Len, 38) > StateWide - 24 ? 32 : 38;

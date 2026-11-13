@@ -13,7 +13,7 @@ Alt er tegnet i kode (strøk, bokser, tekst). Ingen nye assets. Hvert element vi
 | Hode | Parabol tegnet i strøk, «SARO OPS», «SOUTHWEST ASTRONOMICAL RESEARCH OBSERVATORY / NEW MEXICO» (som portskiltet), terminalnavn, dato og klokke | `TerminalStation`, `TerminalClock` (uendret tekst) |
 | STN / EL / AZ | Hvor arrayen faktisk peker | Middel av antennene på fjernstyring (`RxLive`, `DishAz`/`DishEl`) |
 | Fanerad | Sidetittel i rav boks, så ACQUIRE, TUNE, ARRAY, RECORD, DATA | Samme navn, valgt stil og pulsmerke som før (`RxDueTab`) |
-| Tilstandsbanner | NO JOB, NO POWER, SOURCE NOT UP, POINT THE ARRAY, ARRAY SLEWING, ARRAY SETTLING, SEARCHING, TAKING THE FIX, FIX HELD, SOURCE LOCK, ANOMALY DETECTED, RECORDING n/N s, REFERENCE n/8 s, TAKE ON TAPE | `S47RxLook::StateOf`, samme rekkefølge og vilkår som `ReceiverNextAction`. ANOMALY DETECTED bare der skjermen på rommet allerede sier det (`TerminalLines`) |
+| Tilstandsbanner | NO JOB, NO POWER, SOURCE NOT UP, POINT THE ARRAY, SLEWING n° TO GO, ARRAY SETTLING, SEARCHING, TAKING THE FIX, FIX HELD, SOURCE LOCK, ANOMALY DETECTED, RECORDING n/N s, REFERENCE n/8 s, TAKE ON TAPE | `S47RxLook::StateOf`, samme rekkefølge og vilkår som `ReceiverNextAction`. ANOMALY DETECTED bare der skjermen på rommet allerede sier det (`TerminalLines`) |
 | ARRAY n/27, RATE | Antenner på fjernstyring og målehastighet | `AvailableDishCount`, `ArrayMeasurementRate` |
 | Frekvens, linje, bølgelengde | Kortets frekvens i store sifre, «H I» eller «CONT», bølgelengde i cm | Kortet (`EffectiveProfile`), regnet ut (`WavelengthCm`) |
 | Neste steg | Én eller to linjer i rav ramme | `ReceiverNextAction`, på ACQUIRE `SkyPrompt` (uendret tekst) |

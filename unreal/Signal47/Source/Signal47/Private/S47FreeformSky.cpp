@@ -326,6 +326,8 @@ FS47RxLive FS47FreeformSession::RxLive() const
 		if (LookJob->Stage == EJobStage::Integrating) Look.Ticks = LookJob->TraceTicks;
 	}
 	Look.State = S47RxLook::StateOf(In);
+	// (D45-20261110: while the array comes round the receiver says how far it has to go, as its old line beside the tabs did)
+	if (Look.State.Id == S47RxLook::EState::Slewing) Look.State.Text = FString::Printf(TEXT("SLEWING %.1f\u00b0 TO GO"), ArrayErrorDeg());
 	return Look;
 }
 
