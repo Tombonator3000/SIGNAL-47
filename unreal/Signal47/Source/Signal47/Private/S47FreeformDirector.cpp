@@ -1861,10 +1861,20 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
  // Director's own is in the frame, the strange things out there are: each by the same rules (in the frame, large enough, in the
  // clear, lit enough to read in Photo), one claim a group a night, the best-paying one in the frame.
  FString StrangeKey,StrangeTitle;bool bStrangeLamps=false;
+ // ENLARGE-20261108: the largest strange thing in the clear that is too small to make out, for the darkroom's enlarger.
+ FString SmallKey;double SmallSize=0;FVector2D SmallAt(.5,.5);
  if(TaggedQuality<.025&&M->Freeform)
  {
   const int32 NightNo=FS47FreeformSession::NightOf(M->Freeform->Clock());
   double BestQ=0;int32 BestPay=0;FBox2D BestRegion(ForceInit);
+  auto Small=[&](const FString& Group,double Size,const FVector2D& At)
+  {
+   if(Size<SmallSubject||Size>=.025||Size<=SmallSize)return;
+   const FString Key=FString::Printf(TEXT("strange.%s.n%d"),*Group,NightNo);
+   const auto* Have=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==Key;});
+   if(PhotoReward(Key,.025)<=0||(Have&&Have->bPaid))return;
+   SmallKey=Key;SmallSize=Size;SmallAt=At;
+  };
   auto Offer=[&](const FString& Group,const FString& Title,bool bLamps,double Q,const FBox2D& Region,const FString& Extra=FString())
   {
    if(Q<.025)return;
@@ -1879,8 +1889,9 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
   auto Body=[&](const FString& Group,const FString& Title,const FVector& At,double Height,const UPrimitiveComponent* C)
   {
    TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);
-   const double Q=C?Qualify(At,Height,C):0.;
-   Offer(Group,Title,false,Q,TaggedRegion);
+   const double Q=C?Qualify(At,Height,C,SmallSubject):0.;
+   if(Q>=.025)Offer(Group,Title,false,Q,TaggedRegion);
+   else if(Q>0){const auto P=Camera->Project(At);Small(Group,Q,FVector2D(P.U,P.V));}
    TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);
   };
   // Boxes of drawn props (UE centimetres), any of whose parts may stand in the line.
@@ -1901,9 +1912,10 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
    if(!Front||!Bounds.bIsValid)return;
    // How large it is in the frame: its taller side, a ground mark counted by its width.
    const double Size=FMath::Clamp(FMath::Max(Bounds.Max.X-Bounds.Min.X,Bounds.Max.Y-Bounds.Min.Y),0.,1.);
-   if(Size<.025)return;
+   if(Size<SmallSubject)return;
    FHitResult Hit;FCollisionQueryParams Params(SCENE_QUERY_STAT(FreeformPhotoSight),true);if(M->Player)Params.AddIgnoredActor(M->Player);
    if(M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Camera->PhotoLoc,S47Three::ToUE(At),ECC_Visibility,Params)&&!Parts.Contains(Hit.Component.Get()))return;
+   if(Size<.025){Small(Group,Size,FVector2D(P.U,P.V));return;}
    Offer(Group,Title,bLamps,Size,Bounds);
   };
   // The small ones: the glimpses' bodies, wherever they came from (the base, the cabinets, a site's cover, a window).
@@ -1961,7 +1973,12 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
    Offer(TEXT("aftermath"),TEXT("what was left out there"),false,.08,FBox2D(FVector2D(.2,.2),FVector2D(.8,.8)));
   TaggedQuality=BestQ;TaggedRegion=BestRegion;
  }
- if(TaggedQuality<.025)return;
+ if(TaggedQuality<.025)
+ {
+  // Nothing to make out on the print; what is too small for it is kept with the frame (ENLARGE-20261108, EnlargedSubject).
+  if(!SmallKey.IsEmpty())Shot.Targets.Add({FString::Printf(TEXT("%s%d:%s"),SmallPrefix,FMath::RoundToInt(SmallSize*10000),*SmallKey),SmallAt});
+  return;
+ }
  TaggedShot=Shot.Id;TaggedIncident=!StrangeKey.IsEmpty()?StrangeKey:RoadPhoto?RoadIncident:IncidentId;
  TaggedTitle=!StrangeKey.IsEmpty()?StrangeTitle:RoadPhoto?FString(TEXT("highway light")):Event.Replace(TEXT("_"),TEXT(" "));
  bTaggedLamps=bStrangeLamps||(StrangeKey.IsEmpty()&&(RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights")||Event==TEXT("farm_lights")||Event==TEXT("town_lights")));
@@ -2028,6 +2045,61 @@ bool FS47FreeformDirector::RegisterFieldRecord(const FString& Id)
  Changed();
  if(M->UI)M->UI->Toast(Paid>0?FString::Printf(TEXT("OPS registered the field record: $%d field allowance."),Paid):FString(TEXT("OPS registered the field record. This week's field allowance is used up: no payment.")),5);
  return true;
+}
+// ENLARGE-20261108 (-> M3, 13 Nov): what the print was too small for, made legible by the enlarger.
+FString FS47FreeformDirector::EnlargedSubject(const TArray<TPair<FString,FVector2D>>& Targets,double U,double V,int32 Power,double& OutSize,FVector2D& OutAt)
+{
+ OutSize=0;OutAt=FVector2D(.5,.5);
+ if(Power<2)return {};
+ // The window as FS47Enlarger::Crop takes it: a 1/Power of the frame each way, kept inside the frame.
+ const double Frac=1./Power,Cu=FMath::Clamp(U,Frac*.5,1-Frac*.5),Cv=FMath::Clamp(V,Frac*.5,1-Frac*.5);
+ FString Best;
+ for(const auto& T:Targets)
+ {
+  if(!T.Key.StartsWith(SmallPrefix))continue;
+  const FString Rest=T.Key.Mid(FCString::Strlen(SmallPrefix));int32 Colon=INDEX_NONE;
+  if(!Rest.FindChar(TEXT(':'),Colon)||Colon<1)continue;
+  const double Size=FCString::Atoi(*Rest.Left(Colon))/10000.;const FString Claim=Rest.Mid(Colon+1);
+  if(Claim.IsEmpty()||Size<SmallSubject||Size>=.025||Size*Power<.025)continue;
+  // Its middle well inside the enlarged part, not at its very edge.
+  const double Du=T.Value.X-(Cu-Frac*.5),Dv=T.Value.Y-(Cv-Frac*.5);
+  if(Du<Frac*.08||Du>Frac*.92||Dv<Frac*.08||Dv>Frac*.92)continue;
+  if(Size*Power>OutSize){OutSize=Size*Power;OutAt=FVector2D(Du/Frac,Dv/Frac);Best=Claim;}
+ }
+ return Best;
+}
+FString FS47FreeformDirector::EnlargedClaim(const FS47AlbumShot& Source,double U,double V,int32 Power,const TArray<FColor>& Pixels,int32 W,int32 H,FVector2D& OutAt,int32& OutReward)
+{
+ OutReward=0;OutAt=FVector2D(.5,.5);
+ if(!M||!M->Freeform||Source.bUnavailable||!Source.Enlarged.IsEmpty())return {};
+ double Size=0;const FString Key=EnlargedSubject(Source.Targets,U,V,Power,Size,OutAt);
+ if(Key.IsEmpty())return {};
+ const auto* Have=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==Key;});
+ if(Have&&Have->bPaid)return {};
+ const double Q=FMath::Clamp(Size,0.,1.);
+ // The light rule of any frame (Photo): a body or a mark must read against the night, lamps carry themselves.
+ if(!Key.StartsWith(TEXT("strange.bigglow.")))
+ {
+  const FVector2D Half(Q*.5*H/FMath::Max(1,W),Q*.5);
+  const double Mean=SubjectMean(Pixels,W,H,FBox2D(OutAt-Half,OutAt+Half));
+  if(Mean>=0&&Mean<(M->Freeform->HasKit(TEXT("film"))?8:15))return {};
+ }
+ if(Have&&Have->Quality>=Q)return {};
+ OutReward=PhotoReward(Key,Q);
+ return OutReward>0?Key:FString();
+}
+void FS47FreeformDirector::ClaimEnlargement(const FString& ClaimId,const FString& EnlargedId,double Quality)
+{
+ if(ClaimId.IsEmpty()||EnlargedId.IsEmpty())return;
+ auto* Existing=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==ClaimId;});
+ if(Existing&&Existing->bPaid)return;
+ FString G=ClaimId.Mid(8);int32 Dot=INDEX_NONE;if(G.FindChar('.',Dot))G.LeftInline(Dot);
+ // The bodies' and the ground's own words, as TagPhoto names them; the props' from their table.
+ const FString Title=G==TEXT("roswell")?FString(TEXT("grey visitor")):G==TEXT("pale")?FString(TEXT("pale visitor")):G==TEXT("tall")?FString(TEXT("tall visitor")):G==TEXT("marks")?FString(TEXT("marks in the ground")):StrangeTitleOf(G);
+ if(!Existing){FPhotoClaim C;C.Id=ClaimId;C.Title=Title;Claims.Add(C);Existing=&Claims.Last();}
+ Existing->PhotoId=EnlargedId;Existing->Quality=Quality;Existing->Reward=PhotoReward(ClaimId,Quality);
+ UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: enlargement %s is the photograph of %s now ($%d)"),*EnlargedId,*ClaimId,Existing->Reward);
+ Changed();
 }
 // Public declaration: bool PlanPhotoControl(const FString& Id);
 bool FS47FreeformDirector::PlanPhotoControl(const FString& Id)
@@ -2303,6 +2375,23 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   FPhotoClaim A;A.Id=TEXT("strange.tall.n2");A.PhotoId=TEXT("album9");A.Title=TEXT("tall visitor");A.Quality=.2;Wonder.Claims.Add(A);
   FS47FreeformDirector StrangeCopy(nullptr);StrangeCopy.Begin(S47J::Read(S47J::Write(Wonder.Save())));
   Check(StrangeCopy.Claims.Num()==1&&StrangeCopy.Claims[0].Reward==PhotoReward(A.Id,.2)&&StrangeCopy.Claims[0].Reward>StrangeCopy.PhotoReward(TEXT("strange.roswell.n2"),.2),TEXT("D48: a strange claim's pay follows its quality after Continue without a new save field; one claim a group a night keeps its id"));
+  // ENLARGE-20261108 (-> M3, 13 Nov): a pale one 1.2% of the frame high in the upper right of the frame: too small for the print.
+  {
+   const TArray<TPair<FString,FVector2D>> Small={{FString::Printf(TEXT("%s%d:strange.pale.n3"),SmallPrefix,120),FVector2D(.82,.2)}};
+   double Sz=0;FVector2D In;
+   Check(EnlargedSubject(Small,5/6.,1/6.,2,Sz,In).IsEmpty(),TEXT("ENLARGE: at 2x a thing 1.2% of the frame is still too small to make out (2.4%)"));
+   const FString Got=EnlargedSubject(Small,5/6.,1/6.,4,Sz,In);
+   Check(Got==TEXT("strange.pale.n3")&&FMath::IsNearlyEqual(Sz,.048,1e-6)&&In.X>.08&&In.X<.92&&In.Y>.08&&In.Y<.92,TEXT("ENLARGE: at 4x its part of the frame shows it legible, at four times its size, inside the enlargement"));
+   Check(EnlargedSubject(Small,1/6.,5/6.,4,Sz,In).IsEmpty()&&EnlargedSubject(Small,.5,.5,4,Sz,In).IsEmpty(),TEXT("ENLARGE: another part of the frame does not show it"));
+   const TArray<TPair<FString,FVector2D>> Junk={{FString(SmallPrefix)+TEXT("x"),FVector2D(.82,.2)},{FString(SmallPrefix)+TEXT("40:"),FVector2D(.82,.2)},{FString(SmallPrefix)+TEXT("10:strange.pale.n3"),FVector2D(.82,.2)},{TEXT("freeform:strange.pale.n3"),FVector2D(.82,.2)}};
+   Check(EnlargedSubject(Junk,5/6.,1/6.,4,Sz,In).IsEmpty(),TEXT("ENLARGE: a broken, empty or too-tiny mark, or a legible claim, makes nothing of an enlargement"));
+   FS47FreeformDirector Lab(nullptr);Lab.Begin(nullptr);
+   Lab.ClaimEnlargement(TEXT("strange.pale.n3"),TEXT("enl7@9000"),.048);
+   FS47FreeformDirector LabCopy(nullptr);LabCopy.Begin(S47J::Read(S47J::Write(Lab.Save())));
+   Check(LabCopy.Claims.Num()==1&&LabCopy.Claims[0].PhotoId==TEXT("enl7@9000")&&LabCopy.Claims[0].Title==TEXT("pale visitor")&&!LabCopy.Claims[0].bPaid&&LabCopy.Claims[0].Reward==PhotoReward(TEXT("strange.pale.n3"),.048),TEXT("ENLARGE: the enlargement is the claim's photograph, due at OPS, and survives a Continue"));
+   Lab.Claims[0].bPaid=true;Lab.ClaimEnlargement(TEXT("strange.pale.n3"),TEXT("enl8@9000"),.09);
+   Check(Lab.Claims.Num()==1&&Lab.Claims[0].PhotoId==TEXT("enl7@9000"),TEXT("ENLARGE: a claim already paid is not paid again for a new enlargement"));
+  }
  }
  // Pure selection/serialization fixtures: not native image/render qualification.
  FS47FreeformDirector FocusModel(nullptr);FocusModel.Begin(nullptr);

@@ -164,6 +164,19 @@ public:
  FString PhotoControlFocusId() const;
  bool CanRegisterPhotoControl(const FString& Id,const FString& ControlPhotoId) const;
  bool RegisterPhotoControl(const FString& Id,const FString& ControlPhotoId);
+ // ENLARGE-20261108 (-> M3, 13 Nov): a strange thing in the clear but too small in the frame to make out (a quarter of the legible
+ // size or more, under it) pays nothing as the print is; TagPhoto keeps it on the frame as "freeform-small:<size x 10000>:<claim>"
+ // at its place in the frame. Enlarged in the darkroom from the negative, with it inside the enlarged part and the enlargement
+ // making it legible, the enlargement is that claim's photograph, registered at OPS as any (EnlargedClaim, from FS47Enlarger::Print).
+ static constexpr double SmallSubject=.025/4;
+ static constexpr const TCHAR* SmallPrefix=TEXT("freeform-small:");
+ // Pure: the small subject inside the window an enlargement of Frac (1/power) centred on U, V shows (kept in the frame as
+ // FS47Enlarger::Crop keeps it), legible at Power; its claim id and its size in the enlargement, or empty.
+ static FString EnlargedSubject(const TArray<TPair<FString,FVector2D>>& Targets,double U,double V,int32 Power,double& OutSize,FVector2D& OutAt);
+ // The enlargement EnlargedId of Source, part centred on U, V at Power: its claim (made, or a better frame for one not yet paid)
+ // and the target to put on the enlargement; empty when it shows nothing that pays. Pixels: the enlargement, for the light rule.
+ FString EnlargedClaim(const FS47AlbumShot& Source,double U,double V,int32 Power,const TArray<FColor>& Pixels,int32 W,int32 H,FVector2D& OutAt,int32& OutReward);
+ void ClaimEnlargement(const FString& ClaimId,const FString& EnlargedId,double Quality);
  void TagPhoto(FS47AlbumShot& Shot); // rendered exposures only, before album persistence
  void Photo(const FS47AlbumShot& Shot);
  double LastPhotoSubjectMean() const { return PhotoSubjectMean; } // last non-emissive exposure, -1 if no valid region

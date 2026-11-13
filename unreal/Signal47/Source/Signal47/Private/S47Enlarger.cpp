@@ -3,6 +3,7 @@
 #include "S47Darkroom.h"
 #include "S47FieldCamera.h"
 #include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 #include "S47Image.h"
 #include "S47Kit.h"
 #include "S47Main.h"
@@ -119,11 +120,24 @@ FString FS47Enlarger::Print(const FS47AlbumShot& Sh, int32 Part, int32 Power)
 	if (!Make(Sh, Part, Power, Px, Wd, Hgt, bNeg)) return FString();
 	if (!M->Freeform->Spend(S47EnlargerLocal::PaperCost)) { if (M->UI) M->UI->Toast(TEXT("PHOTO LAB: No money left for paper."), 3.5f); return FString(); }
 	const FS47AlbumShot From = Sh; // the album grows: keep a copy
-	const FString Id = M->Night->Album->AddEnlargement(From, Px, Wd, Hgt, Caption(From, Part, Power));
+	// ENLARGE-20261108 (-> M3, 13 Nov): a strange thing the print was too small for, legible now, makes this its photograph for OPS.
+	// Only off the negative: the print has nothing more in it than it shows.
+	FString Claim; FVector2D ClaimAt(.5, .5); int32 Reward = 0;
+	const FVector2D At = PartCentre(Part);
+	if (bNeg && M->Freeform->Director) Claim = M->Freeform->Director->EnlargedClaim(From, At.X, At.Y, Power, Px, Wd, Hgt, ClaimAt, Reward);
+	const TPair<FString, FVector2D> Target = Claim.IsEmpty() ? TPair<FString, FVector2D>() : TPair<FString, FVector2D>(TEXT("freeform:") + Claim, ClaimAt);
+	const FString Id = M->Night->Album->AddEnlargement(From, Px, Wd, Hgt, Caption(From, Part, Power), Target);
 	UE_LOG(LogS47Enlarger, Display, TEXT("S47: enlarger: %s, part %d at %dx from the %s, printed as %s"), *From.Id, Part, Power, bNeg ? TEXT("negative") : TEXT("print"), *Id);
 	if (!Id.IsEmpty())
 	{
-		if (M->UI) M->UI->Toast(TEXT("PHOTO LAB: The enlargement is in your album, beside the first print."), 4.5f);
+		if (!Claim.IsEmpty() && M->Freeform->Director)
+		{
+			double Size = 0; FVector2D Unused;
+			FS47FreeformDirector::EnlargedSubject(From.Targets, At.X, At.Y, Power, Size, Unused);
+			M->Freeform->Director->ClaimEnlargement(Claim, Id, Size);
+		}
+		if (M->UI) M->UI->Toast(Claim.IsEmpty() ? FString(TEXT("PHOTO LAB: The enlargement is in your album, beside the first print."))
+			: FString::Printf(TEXT("PHOTO LAB: The enlargement is in your album. It shows more than the print did. Register it at OPS for $%d."), Reward), 5.5f);
 		M->RequestAutosave();
 	}
 	return Id;

@@ -131,7 +131,8 @@ public:
 	static constexpr int32 ROLL = 36, MostNegatives = 12;
 	/** The darkroom's enlarger: a new print made from part of an old one. It uses no film (it is printed on paper); it keeps the
 	 *  first print's time, place and pose. Its id, or empty. */
-	FString AddEnlargement(const FS47AlbumShot& From, const TArray<FColor>& Px, int32 W, int32 H, const FString& Text);
+	// Target: what the enlargement shows that the print could not (ENLARGE-20261108, FS47FreeformDirector::EnlargedClaim); empty: none.
+	FString AddEnlargement(const FS47AlbumShot& From, const TArray<FColor>& Px, int32 W, int32 H, const FString& Text, const TPair<FString, FVector2D>& Target = TPair<FString, FVector2D>());
 	static const TCHAR* NOBODY;
 	/** The caption on the print with the face: the words under the figures far off, now under a face at the lens. */
 	static const TCHAR* FACE_LINE;
