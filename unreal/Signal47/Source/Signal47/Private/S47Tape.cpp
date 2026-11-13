@@ -38,8 +38,11 @@ namespace S47TapeLocal
 	// The record of a take whose odd sound was heard through at the desk (and the self-test's sweep of it).
 	FString HeardText(int32 N, const FString& Where, int32 Day, double Clock, double OddAt, const FString& Words)
 	{
+		// (the cassette's number is counted past any that would read 47, so no two cassettes share a number)
+		int32 Shown=0;
+		for(int32 K=0;K<FMath::Clamp(N,0,5000);++K){++Shown;while(FString::FromInt(Shown).Contains(TEXT("47"))){++Shown;}}
 		return FString::Printf(TEXT("Cassette %d, recorded %s, day %d, %s. Played back at SARO: at %s on the counter you can hear %s. I did not hear it out there. It is on the tape."),
-			N, *Where, Day, *ClockText(Clock), *Counter(OddAt), *Words);
+			Shown, *Where, Day, *ClockText(Clock), *Counter(OddAt), *Words);
 	}
 }
 
@@ -470,7 +473,8 @@ bool FS47Tape::SelfTest(TArray<FString>& Lines)
 		// REVIEW (dossier slice 2, 14 Nov): every minute of the day and every counter from 0:00 to 20:00, through the heard line with
 		// each kind's words: never digits that read 47, never 08:15 or 8:15; a :47 shows a minute (or a second) on, and only that
 		bool bClean = true, bNear = true;
-		const auto Clean = [](const FString& Line) { return !Line.Contains(TEXT("47")) && !Line.Contains(TEXT("8:15")) && !Line.Contains(TEXT("8.15")); };
+		// (18:15 is a quarter past six in the evening, or eighteen minutes on the counter: not the hour the rule keeps out)
+		const auto Clean = [](const FString& Line) { return !Line.Contains(TEXT("47")) && !Line.Replace(TEXT("18:15"), TEXT("")).Contains(TEXT("8:15")) && !Line.Contains(TEXT("8.15")); };
 		const FString Place = TEXT("the windmill on the Baca lease");
 		for (const TCHAR* Kind : { TEXT("roswell"), TEXT("pale"), TEXT("tall"), TEXT("") })
 		{

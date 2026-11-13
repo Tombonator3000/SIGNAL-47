@@ -716,7 +716,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   if(StillHeld>=5.&&M->Freeform&&!M->Freeform->HasFinding(TEXT("rule-still-held")))
   {
    if(M->UI)M->UI->Thought(TEXT("It has lost me. The lamp is off, I am standing still, and it is looking past me."),5.f);
-   M->Freeform->RecordEvidence(TEXT("rule-still-held"),FString::Printf(TEXT("%s. A small one came near the place I stood. I had the lamp off and I kept still, and it looked past me. Lamp off, stand still, and the small ones pass."),*S47Text::ClockText(M->Freeform->Clock(),false)));
+   M->Freeform->RecordEvidence(TEXT("rule-still-held"),FString::Printf(TEXT("%s. A small one came near the place I stood. I had the lamp off and I kept still, and it looked past me. Lamp off, stand still, and the small ones pass."),*S47Script::PlayerClock(M->Freeform->Clock())));
    M->Freeform->TagEvidence(TEXT("rule-still-held"),S47Dossier::EKind::Small,S47Dossier::EType::Lamp); // EVIDENCE-DOSSIER: what the lamp does, in its file
    UE_LOG(LogTemp,Display,TEXT("S47: rule taught: lamp off and still, the small one passed"));
   }
@@ -744,7 +744,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
     bRuleBrokenThisSession=true; // (spent for the session even if the finding cap refuses the record)
     if(M->UI)M->UI->Thought(TEXT("It has stopped. It is facing away."),3.f);
     // the record says what was done only if it was: still and dark, and the stop is the moment of the break
-    if(bNothingToGoOn)M->Freeform->RecordEvidence(TEXT("rule-pale-broken"),FString::Printf(TEXT("%s. I did what had worked: lamp off, standing still. This one was not small like the other. It stopped dead and turned to where I was. It did not pass. Standing still is not enough."),*S47Text::ClockText(Clock,false)));
+    if(bNothingToGoOn)M->Freeform->RecordEvidence(TEXT("rule-pale-broken"),FString::Printf(TEXT("%s. I did what had worked: lamp off, standing still. This one was not small like the other. It stopped dead and turned to where I was. It did not pass. Standing still is not enough."),*S47Script::PlayerClock(Clock)));
     // EVIDENCE-DOSSIER: the low one's own answer to standing still. The tall one may break the rule as well (N1110), and that is not its mark.
     if(bNothingToGoOn&&VisitWho==1)M->Freeform->TagEvidence(TEXT("rule-pale-broken"),S47Dossier::EKind::Low,S47Dossier::EType::Lamp);
     UE_LOG(LogTemp,Display,TEXT("S47: rule broken once: the %s stopped %.0f m off and turned (night %d)"),VisitWho==2?TEXT("Tall One"):TEXT("Pale One"),To,Rule.Night);
@@ -1203,7 +1203,7 @@ void FS47FarmSite::StepLure(double Dt)
   if(M->Freeform->Attention)M->Freeform->Attention->Add(6,TEXT("a visit's body struck the idling truck"));
   if(M->UI&&Flat(Feet,Mid)<90)M->UI->Thought(TEXT("A bang from the truck. The engine has stopped, and the lights with it."),5.f);
   if(Flat(Feet,Mid)<90&&!bTestNoticed)FS47Happenings::TellOther(M,TEXT("idle lure"),Place); // M1-MEASURE-20261113
-  M->Freeform->RecordEvidence(FindingId()+TEXT("_dent"),FString::Printf(TEXT("%s, %s. I had left the truck running with the lights on. Something came to it, went round it and stood in the lights, then struck the hood. The engine died. There is a dent in the hood the size of a hand, and a handprint in the frost on the glass."),*S47Text::ClockText(Clock,false),*Title));
+  M->Freeform->RecordEvidence(FindingId()+TEXT("_dent"),FString::Printf(TEXT("%s, %s. I had left the truck running with the lights on. Something came to it, went round it and stood in the lights, then struck the hood. The engine died. There is a dent in the hood the size of a hand, and a handprint in the frost on the glass."),*S47Script::PlayerClock(Clock),*Title));
   UE_LOG(LogTemp,Display,TEXT("S47: idle lure: it struck the hood, the engine stalled (the key wants turning)"));
  }
  if(Lure.TakeLetGo()){EndLure();UE_LOG(LogTemp,Display,TEXT("S47: idle lure: over, touched %d, struck %d"),Lure.bDidTouch,Lure.bDidStrike);return;}
