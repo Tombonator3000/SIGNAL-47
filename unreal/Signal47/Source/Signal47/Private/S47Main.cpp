@@ -350,6 +350,7 @@ void US47Main::InitRadio()
 	{
 		Sideband = MakeShared<FS47Sideband>(this, Audio->Ctx.ToSharedRef());
 		Score->Insert(Sideband->Bus->Head, Sideband->Bus->Out);
+		if (Flow) Flow->ApplySideband();
 	}
 	if (World) World->OnRadio = [this] { TurnRadio(); };
 	FParse::Value(FCommandLine::Get(), TEXT("S47Radio="), RadioTest);

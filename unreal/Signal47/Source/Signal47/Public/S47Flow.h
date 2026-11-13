@@ -119,6 +119,9 @@ public:
 
 	// the settings (main.ts store), as they are now
 	float Volume = 0.8f, MusicLevel = 0.7f, RadioLevel = 1.f, Sens = 1.f, PadLookSpeed = 1.f, BaseFov = 70.f;
+	// SIDEBAND-20261113: "Music reacts" on | soft | off, and "Stingers" full | soft | off (S47Sideband.h)
+	FString MusicReacts = TEXT("on"), Stingers = TEXT("full");
+	void ApplySideband(); // to the session's music system, once it is there (US47Main::InitRadio calls it too)
 	bool bInvertY = false, bPadInvertY = false, bLargeText = false, bCalmFlash = false, bStillShots = false, bHeadMotion = true, bAbductOn = true;
 	bool bCameraMoments = true;   // N1110: the short snaps of the view in events (FS47CameraMoment; settings "cameraMoments")
 	bool bLocationCards = true;   // UI-20261112 (Tom): the place's name typed out on arriving (S47LocationCards; settings "locationCards")
