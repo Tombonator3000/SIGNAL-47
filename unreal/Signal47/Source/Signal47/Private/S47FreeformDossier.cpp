@@ -233,7 +233,7 @@ bool FS47FreeformSession::DossierSelfTest(TArray<FString>& Lines)
    TEXT("LOOP-DOSSIER-GIVES: OUTLINE's pencil mark and title on the map, the extras given and printed, and the hours survive a Continue"));
   TArray<FS47Task> NoteLines;Back.DossierTasks(NoteLines);
   Check(NoteLines.ContainsByPredicate([&Hours](const FS47Task& T){return T.Text==Hours;})&&Hours.StartsWith(TEXT("UNKNOWN 1 / Logged so far at 08:00"))&&S47Script::LintText(Hours).IsEmpty(),
-   TEXT("LOOP-DOSSIER-GIVES: a file at HABITS puts the hours it was logged at on tonight's note, in the fiction's words"));
+   TEXT("LOOP-DOSSIER-GIVES: a file at HABITS gives the hours it was logged at, in the fiction's words (TASKS-TEN-20261113: an open matter under Unknowns on NOW, no row tonight)"));
   Back.Stop();
  }
  return bOk;

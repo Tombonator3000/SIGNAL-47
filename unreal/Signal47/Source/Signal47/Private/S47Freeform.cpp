@@ -5861,7 +5861,16 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   P.RecordEvidence(TEXT("pulse-review"),TEXT("reviewed"));
   Check(P.CaseStep(0).Step==ECaseStep::ChooseTest&&P.CaseAwaitingChoice()==0&&P.CaseStep(0).Task.Contains(TEXT("choose a test"))&&!P.HudObjective().Contains(TEXT("\n")),TEXT("CaseStep: an opened case asks for a test on its own row, and the HUD card keeps one line (TASKS-TEN change 5)"));
   const int32 Truth=P.CaseFile().Get(0)->Truth;
+  const int32 UpBefore=P.CardsUp();
   Check(P.PlanCaseTest(0,1)&&P.CaseStep(0).Step==ECaseStep::RunPlan&&P.CaseAwaitingChoice()<0&&P.Tasks().ContainsByPredicate([](const FS47Task& T){return T.Text.Contains(TEXT(": run job "));}),TEXT("CaseStep: a planned test is run, and the case board's star is off"));
+  {
+   // TASKS-TEN-20261113 (change 8): a planned case test is never an "unfinished observation": the cards up stay as they were, and the
+   // test is the case's own row (WORK, the station's), the ladder's step naming it (a job case test has no dated window: Tom withdrew
+   // the repeat's on 13 November; the field controls' windows are FieldWindowWaits')
+   P.WorkActivities(nullptr);
+   Check(P.CardsUp()==UpBefore&&P.PickRow==P.CaseStep(0).Task&&P.CaseStep(0).Task.Contains(TEXT(": run job ")),
+    TEXT("TASKS-TEN (change 8): a planned case test is not counted among the cards up; it is named on its own row, and the ladder's step is that row"));
+  }
   auto St=P.Save();const auto List=S47J::Arr(S47J::Obj(St,TEXT("cases")),TEXT("cases"));
   TArray<TSharedPtr<FJsonValue>> Kept;
   // (tests 1 and 3 kept: the third is the withdrawn repeat, an older save's result, still evidence)

@@ -182,7 +182,7 @@ namespace S47TonightNoteLocal
  // bearing, what Dale asked: 1) or YOUR OWN TIME (the camera, a repair with the parts, the round, the post: 2); or an open matter
  // (Cases, Station, Post, Unknowns, Ward) that stays until it is closed. Who gives it and what it is worth, in the fixed short form.
  struct FClass { uint8 Kind = 0; FString Matter, Giver, Span, Worth; };
- bool Ward(const FString& Up) { return Up.Contains(TEXT("DR. WARD")) || Up.Contains(TEXT("COUNTY INSPECTOR")); }
+ bool IsWardPaper(const FString& Up) { return Up.Contains(TEXT("DR. WARD")) || Up.Contains(TEXT("COUNTY INSPECTOR")); }
  FString Dollars(const FString& Up)
  {
   int32 At = INDEX_NONE;
@@ -201,7 +201,7 @@ namespace S47TonightNoteLocal
   if (IsPost(Source))
   {
    C.Kind = 2; C.Matter = TEXT("Post");
-   if (Ward(Up)) { C.Giver = TEXT("WARD"); C.Span = Up.Contains(TEXT("MONDAY")) ? TEXT("by Monday") : TEXT("open"); C.Worth = TEXT("counts for the review"); }
+   if (IsWardPaper(Up)) { C.Giver = TEXT("WARD"); C.Span = Up.Contains(TEXT("MONDAY")) ? TEXT("by Monday") : TEXT("open"); C.Worth = TEXT("counts for the review"); }
    else Land(2, TEXT("open"));
    return C;
   }
