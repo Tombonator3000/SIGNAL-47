@@ -1,4 +1,5 @@
-# run_photo_tex_import.py <set> <lived texture dir> -- photo_tex_import.py in the editor's python, behind the reservation
+# run_photo_tex_import.py <set> <texture dir> -- photo_tex_import.py (saro) or photo_town_import.py (town; the dir is
+# `photo_tex.py town <dir>`'s) in the editor's python, behind the reservation
 # (run it through ~/.claude/skills/signal47-nattskift/scripts/q.py). Log: Saved/photo-tex-import.log.
 import json,os,sys
 from pathlib import Path
@@ -13,13 +14,13 @@ log=P/'Saved'/'photo-tex-import.log';rep=P/'Saved'/'photo-tex-import.json'
 if rep.exists():rep.unlink()
 with HeavyReservation('Photo texture import '+kind) as l:
  env=os.environ.copy();env.update(l.environment());os.environ.update(env)
- r=run_owned([str(ue),str(P/'Signal47.uproject'),'-run=pythonscript','-script='+str(SP/'photo_tex_import.py'),'-S47PhotoSet='+kind,'-S47PhotoLived='+lived,'-nullrhi','-unattended','-nosplash','-NoSound','-AllowCommandletRendering'],log,timeout=1800,env=env,cwd=P)
+ r=run_owned([str(ue),str(P/'Signal47.uproject'),'-run=pythonscript','-script='+str(SP/('photo_town_import.py' if kind=='town' else 'photo_tex_import.py')),'-S47PhotoSet='+kind,'-S47PhotoLived='+lived,'-nullrhi','-unattended','-nosplash','-NoSound','-AllowCommandletRendering'],log,timeout=1800,env=env,cwd=P)
 print('import RC',r.get('returncode'),round(r.get('wall_seconds',0)))
 for line in log.read_text(errors='replace').splitlines():
  if 'S47 PHOTOTEX' in line or ('Error:' in line and 'LogPython' in line):print(line[-200:])
 if rep.exists():
  d=json.loads(rep.read_text());print(d['status'],len(d['textures']),'textures')
- for t in d['textures']:
+ for t in d['textures']+d.get('materials',[]):
   if not t['pass']:print('FAIL',t)
  sys.exit(0 if d['status']=='PASS' else 1)
 sys.exit(1)

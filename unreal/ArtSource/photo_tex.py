@@ -12,6 +12,7 @@ A generator asks surface(key, old=...) and keeps its painted texture when that r
 
 numpy only; Pillow or Blender's bpy reads the picture, whichever is there. Outside Blender:
   /home/tom/stable-diffusion-webui-forge/venv/bin/python3 photo_tex.py saro [dir]    (the SARO textures without a generator hook; dir: lived_tex.py's output folder, for the east wing's wall)
+  /home/tom/stable-diffusion-webui-forge/venv/bin/python3 photo_tex.py town <dir>    (Caliche: texture sets and town-photo.json for photo_town_import.py)
   /home/tom/stable-diffusion-webui-forge/venv/bin/python3 photo_tex.py check         (what each picture's seams and grid look like)
 S47_PHOTO_DIR moves the picture folder; S47_PHOTO_OFF=1 gives the painted textures again.
 """
@@ -62,6 +63,34 @@ SURFACES = {
                                  grid=None, match=1.0, rough=(0.93, 0.99), relief=0.00006),
     'M_Office_FloorLinoleum': dict(target=(.235, .255, .232), file='saro/vct_floor.png', mosaic=(4, 3, 0.05), span=(1.2, 1.2), uv=(1.0, 1.0), size=1024,
                                    grid=None, match=1.0, contrast=0.5, rough=(0.45, 0.75), relief=0.00001),   # its streaks at half strength: the picture's pattern is loud
+    # Caliche, /Game/TownBuildings and /Game/CalicheHomes (`photo_tex.py town <dir>`, photo_town_import.py). The town's
+    # materials each tinted one of nine near-white painted textures over the meshes' 1 m UVs; a wall picture is 2 to 3 m and
+    # has a dust band at the ground, so these are mapped in the mesh's own space instead (see TOWN): uv = span, nothing repeated.
+    #        fade: (u, v) axes that may be cross-faded (a wall with a dust band is never faded up-down); limit: seam ratio that asks for it
+    #        notch: (cycles, width) a repeat across the picture that is taken out (the tin's ribs: the sheets' profile is geometry)
+    'Town_StuccoBeige': dict(file='town/stucco_beige.png', crop=None, span=(3.0, 3.0), uv=(3.0, 3.0), size=2048, grid=None,
+                             fade=(True, False), limit=2.3, match=0.0, rough=(0.86, 0.97), relief=0.0012),
+    'Town_StuccoWhite': dict(file='town/stucco_white.png', crop=None, span=(3.0, 3.0), uv=(3.0, 3.0), size=2048, grid=None,
+                             limit=2.3, match=0.0, rough=(0.84, 0.96), relief=0.0016),
+    'Town_Adobe': dict(file='town/adobe.png', crop=None, span=(2.0, 2.0), uv=(2.0, 2.0), size=2048, grid=None,
+                       limit=2.3, match=0.0, rough=(0.90, 0.99), relief=0.0022),
+    # The church's boards are geometry, 15 cm to the weather from z 0.33 m: ten whole boards of the picture (150 px each) are
+    # laid on them, lap line on lap line, so the picture is 2.05 m wide by 1.5 m (its own boards would be 11 cm).
+    'Town_Clapboard': dict(file='town/clapboard_white.png', crop=(0, 2048, 161, 1658), span=(2.05, 1.5), uv=(2.05, 1.5), size=2048,
+                           grid=(None, 10), limit=2.3, match=0.0, rough=(0.62, 0.90), relief=0.0012, grain=0.3),
+    'Town_RoofTar': dict(file='town/roof_tar.png', crop=None, span=(2.0, 2.0), uv=(2.0, 2.0), size=1024, grid=None,
+                         limit=2.3, match=0.0, rough=(0.82, 0.97), relief=0.0020),
+    'Town_TinRust': dict(file='town/tin_rust.png', crop=None, span=(1.0, 1.0), uv=(1.0, 1.0), size=1024, grid=None,
+                         notch=(20, 3), limit=2.3, match=0.0, rough=(0.38, 0.90), relief=0.00025),
+    # The terrazzo picture is two colours, red above row 1016 and cream below: one square of each.
+    'Town_TerrazzoRed': dict(file='town/terrazzo.png', crop=(0, 1000, 0, 1000), span=(0.73, 0.73), uv=(0.73, 0.73), size=1024,
+                             grid=None, limit=1.0, flat=50, match=0.0, rough=(0.30, 0.55), relief=0.00003),
+    'Town_TerrazzoCream': dict(file='town/terrazzo.png', crop=(0, 1000, 1046, 2046), span=(0.73, 0.73), uv=(0.73, 0.73), size=1024,
+                               grid=None, limit=1.0, flat=50, match=0.0, rough=(0.30, 0.55), relief=0.00003),
+    'Town_HomeTan': dict(file='homes/stucco_tan.png', crop=None, span=(3.0, 3.0), uv=(3.0, 3.0), size=2048, grid=None,
+                         fade=(True, False), limit=2.3, match=0.0, rough=(0.88, 0.98), relief=0.0012),
+    'Town_HomeCream': dict(file='homes/stucco_cream.png', crop=None, span=(3.0, 3.0), uv=(3.0, 3.0), size=2048, grid=None,
+                           fade=(True, False), limit=2.3, match=0.0, rough=(0.86, 0.97), relief=0.0010),
 }
 # Kept painted, on purpose (12 Nov): M_Lived_VCTFloor (vct_floor.py). The control room's floor is one picture of the whole
 # 12 x 9 m room with its walked lanes, caster arcs, burns and coffee; a repeating photo would lose all of it.
@@ -156,6 +185,15 @@ def seamless(a, grid=None, u=True, v=True, limit=1.8):
     return a
 
 
+def notch(a, cycles, width):
+    """Take a repeat across the picture out (`cycles` of it over the width, and its overtones, each +- `width`):
+    corrugation that the mesh already has as geometry. Rust, streaks and dents stay."""
+    F = np.fft.rfft(a, axis=1)
+    for k in range(cycles, F.shape[1], cycles):
+        F[:, max(1, k - width):k + width + 1] = 0
+    return np.clip(np.fft.irfft(F, n=a.shape[1], axis=1), 0, 1).astype(np.float32)
+
+
 def match_mean(a, old, amount=1.0):
     """Pull the picture's mean colour towards the old texture's (per channel, in linear light); its detail stays."""
     if amount <= 0 or old is None:
@@ -246,7 +284,11 @@ def surface(key, old=None, size=None, green=1.0):
         if s.get('crop'):
             x0, x1, y0, y1 = s['crop']
             a = a[y0:y1, x0:x1]
-        a = seamless(a, s.get('grid'))
+        if s.get('notch'):
+            a = notch(a, *s['notch'])
+        if s.get('flat'):
+            a = np.clip(a - blur_plain(a, s['flat']) + a.reshape(-1, 3).mean(0), 0, 1)
+        a = seamless(a, s.get('grid'), *s.get('fade', (True, True)), limit=s.get('limit', 1.8))
         reps = (max(1, round(s['uv'][0] / s['span'][0])), max(1, round(s['uv'][1] / s['span'][1])))
         a = resample(np.tile(a, (reps[1], reps[0], 1)), N, N)
     a = np.clip(match_mean(a, s.get('target', old), s.get('match', 0)), 0, 1)
@@ -287,12 +329,92 @@ def shell_masonry(out):
     return ['EW_Shell_Masonry']
 
 
+# Caliche: which materials take which picture. The town's materials are whole graphs (townintegration/import_assets.py), one per
+# name, each a tint over a shared painted texture; photo_town_import.py rebuilds the graphs named here around the picture,
+# mapped in the mesh's own space: along the wall and up from the floor (band: the picture is not repeated upwards, its dust
+# band stays at the ground and the wall above 3 m takes the picture's upper part mirrored), or flat on roofs and floors.
+#   family: (main material, its variants): the main one's tint goes `pull` of the way (in log) from the picture's colour to the
+#   old tint x old texture (TOWN_PULL, or the entry's own: the feed store is to be adobe, not the old tan); a variant keeps its old ratio to the main one (patches, plinth, worn boards).
+#   homes: MI_Homes_* are instances of the town's graphs and cannot swap a texture: they get a new parent with the picture.
+TOWN_SRC = HERE.parent / 'Signal47/Tools/townbuildings'
+TOWN = [
+    dict(set='Town_StuccoBeige', band=True, families=[('SheriffStucco', ['SheriffStuccoPatch', 'SheriffCoping', 'SheriffStuccoBase']),
+                                                         ('CinemaStucco', ['CinemaStain'])]),
+    dict(set='Town_StuccoWhite', band=False, families=[('Stucco', [])]),
+    dict(set='Town_Adobe', band=False, pull=0.2, families=[('FeedStucco', ['FeedStuccoPatch', 'FeedStuccoBase', 'FeedAdobe'])]),
+    dict(set='Town_Clapboard', band=False, phase=0.33, families=[('ChurchWhiteBoard', ['ChurchWornBoard'])]),
+    dict(set='Town_RoofTar', band=False, families=[('CinemaRoofTar', []), ('SheriffRoofing', [])]),
+    dict(set='Town_TinRust', band=False, families=[('RustTin', []), ('FeedRustTin', [])]),
+    dict(set='Town_TerrazzoRed', band=False, families=[('CinemaTerrazzoRed', [])]),
+    dict(set='Town_TerrazzoCream', band=False, families=[('CinemaTerrazzoCream', []), ('Terrazzo', [])]),
+    dict(set='Town_HomeTan', band=True, parent='PhotoStuccoTan', like='Stucco', homes=[('TanStucco', [185, 143, 104]), ('TanWear', [169, 132, 100])]),
+    dict(set='Town_HomeCream', band=True, parent='PhotoStuccoCream', like='Stucco',
+         homes=[('CreamStucco', [220, 201, 166]), ('CreamWear', [198, 182, 151]), ('DoorMasonry', [203, 188, 158])]),
+]
+# Kept as they were (13 Nov): the church's brick is a row of modelled soldier bricks, no wall for brick_red (the school has one);
+# the laundromat's floor is 30 cm vinyl squares laid as geometry in two materials, tile_green_cream is a ceramic wall tile with
+# a band; bell bronze and galvanized trim still tint the painted tin; streaks, cracks and grime are thin tinted overlays.
+TOWN_PULL = 0.5
+
+
+def town(out):
+    """The Caliche texture sets (T_<set>_base_color/roughness/normal.png) and town-photo.json into `out` (outside Git)."""
+    import glob, json
+    out = Path(out); out.mkdir(parents=True, exist_ok=True)
+    rows = {}
+    for f in [TOWN_SRC / 'materials.json'] + sorted(glob.glob(str(TOWN_SRC / 'tb2' / 'materials_*.json'))):
+        for r in json.loads(Path(f).read_text()):
+            rows[r['name'].removeprefix('M_Town_')] = r
+    old_mean = {}
+    def eff(name, tint=None):   # the old look: tint x the painted texture's mean, linear
+        r = rows[name]; t = r['textures']['base_color']
+        if t not in old_mean:
+            old_mean[t] = srgb2lin(load(TOWN_SRC / t)).reshape(-1, 3).mean(0)
+        return np.asarray(tint if tint is not None else r['texture_tint_linear'][:3], np.float32) * old_mean[t]
+    man = {'textures': [], 'materials': []}
+    for T in TOWN:
+        P = surface(T['set'])
+        if P is None:
+            continue
+        s = SURFACES[T['set']]
+        files = {}
+        for role, a in (('base_color', P['base']), ('roughness', P['rough']), ('normal', P['normal'])):
+            files[role] = str(out / ('T_%s_%s.png' % (T['set'], role))); save(files[role], a)
+        man['textures'].append({'set': T['set'], 'files': files, 'size': s['size'], 'picture': s['file']})
+        mean = srgb2lin(P['base']).reshape(-1, 3).mean(0)
+        def tint_of(e):
+            return np.clip(np.power(np.maximum(e, 1e-4) / mean, T.get('pull', TOWN_PULL)), 0.25, 1.6)
+        common = {'set': T['set'], 'span': list(s['uv']), 'band': bool(T['band']), 'phase': T.get('phase', 0.0)}
+        for main, variants in T.get('families', []):
+            tm = tint_of(eff(main)); t0 = np.asarray(rows[main]['texture_tint_linear'][:3], np.float32)
+            for name in [main] + variants:
+                r = rows[name]
+                t = tm * np.asarray(r['texture_tint_linear'][:3], np.float32) / t0
+                man['materials'].append(dict(common, kind='material', name='M_Town_' + name, tint=[round(float(x), 4) for x in t],
+                                             metallic=r.get('metallic', 0), specular=r.get('specular', .28), roughness=r.get('roughness', .9)))
+        if T.get('homes'):
+            r = rows[T['like']]
+            man['materials'].append(dict(common, kind='material', name='M_Town_' + T['parent'], tint=[1, 1, 1], new=True,
+                                         metallic=r.get('metallic', 0), specular=r.get('specular', .28), roughness=r.get('roughness', .9)))
+            m0 = T['homes'][0][1]; tm = tint_of(eff(T['like'], srgb2lin(np.asarray(m0, np.float32) / 255)))
+            for name, rgb in T['homes']:
+                t = tm * srgb2lin(np.asarray(rgb, np.float32) / 255) / srgb2lin(np.asarray(m0, np.float32) / 255)
+                man['materials'].append({'kind': 'instance', 'name': 'MI_Homes_' + name, 'parent': 'M_Town_' + T['parent'],
+                                         'tint': [round(float(x), 4) for x in t]})
+    (out / 'town-photo.json').write_text(json.dumps(man, indent=1))
+    for m in man['materials']:
+        print('S47PHOTO town', m['name'], m.get('set', m.get('parent')), m['tint'])
+    return man
+
+
 if __name__ == '__main__':
     what = sys.argv[1] if len(sys.argv) > 1 else 'check'
     if what == 'saro':
         print('office:', office())
         if len(sys.argv) > 2:
             print('shell:', shell_masonry(sys.argv[2]))
+    elif what == 'town':
+        town(sys.argv[2])
     else:
         for key, s in SURFACES.items():
             p = PHOTO_DIR / s['file']
@@ -301,6 +423,6 @@ if __name__ == '__main__':
             a = load(p)
             if s.get('crop'):
                 x0, x1, y0, y1 = s['crop']; a = a[y0:y1, x0:x1]
-            b = seamless(a, s.get('grid'))
+            b = seamless(a, s.get('grid'), *s.get('fade', (True, True)), limit=s.get('limit', 1.8))
             print('%-24s %-24s %4dx%-4d seam u %.1f v %.1f -> %.1f %.1f' % (key, s['file'], a.shape[1], a.shape[0],
                   seam_ratio(a, 1), seam_ratio(a, 0), seam_ratio(b, 1), seam_ratio(b, 0)))
