@@ -7,6 +7,7 @@
 #include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47Media.h"
+#include "S47ScoreStems.h"
 #include "S47Story.h"
 #include "S47Taken.h"
 #include "S47Walker.h"
@@ -116,6 +117,15 @@ void FS47Score::Insert(const TSharedPtr<FS47AudioNode>& In, const TSharedPtr<FS4
 	if (InsertIn) { Mix->Connect(InsertIn); InsertOut->Connect(Bus); }
 	else Mix->Connect(Bus);
 }
+
+void FS47Score::SetStems(bool bOn, double InTension)
+{
+	bStemsOn = bOn; Tension = FMath::IsFinite(InTension) ? FMath::Clamp(InTension, 0., 1.) : 0.;
+	// (with the stems switched off while a piece plays as stems, all of them come back in: it is the mix again)
+	if (Stems && !bPaused) Stems->Step(bStemsOn ? Tension : 0.);
+}
+
+int32 FS47Score::StemsPlaying() const { return Stems.IsValid() ? Stems->Num() : 0; }
 
 FString FS47Score::PlayingFile() const
 {
@@ -288,6 +298,7 @@ void FS47Score::RetireOutgoing()
 {
 	FS47AudioContext::FBatch B(*Ctx);
 	SilenceDeck(Outgoing, OutgoingGain); OutgoingUntil = 0; OutgoingCue.Empty();
+	if (OutgoingStems) { OutgoingStems->Close(); OutgoingStems.Reset(); }
 }
 
 void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSeconds)
@@ -297,7 +308,9 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 	// A piece may suit two moods. Recategorize it without replaying its intro.
 	// Explicit developer Start still restarts because it calls Stop first.
 	if (El && Track == InTrack) { Playing = Cue; return; }
-	const TSharedPtr<FS47MediaSource> NewEl = FS47MediaSource::Open(Ctx, TEXT("music/") + C->File);
+	// SIDEBAND-20261113: an own mix as its stems when they are staged (the first of them leads, as El); else the mix file
+	const TSharedPtr<FS47ScoreStems> NewStems = bStemsOn ? FS47ScoreStems::Open(Ctx, C->File, Tension) : nullptr;
+	const TSharedPtr<FS47MediaSource> NewEl = NewStems ? NewStems->Leader() : FS47MediaSource::Open(Ctx, TEXT("music/") + C->File);
 	if (!NewEl) { if (!El) Rest = 120; return; }
 	FS47AudioContext::FBatch B(*Ctx);
 	// An interrupted transition keeps the louder deck under the incoming music, instead of
@@ -306,18 +319,21 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 	if (Outgoing && OutgoingGain && Gain && OutgoingGain->Gain.ValueAt(Now) > Gain->Gain.ValueAt(Now))
 	{
 		Swap(El, Outgoing); Swap(Gain, OutgoingGain); Swap(Playing, OutgoingCue); // Playing is set again below
+		Swap(Stems, OutgoingStems);
 	}
 	RetireOutgoing(); ++Generation; bFading = false;
 	if (El)
 	{
-		Outgoing = El; OutgoingGain = Gain; OutgoingCue = Playing;
+		Outgoing = El; OutgoingGain = Gain; OutgoingCue = Playing; OutgoingStems = Stems;
 		Outgoing->OnEnded = nullptr; Outgoing->OnError = nullptr;
 		OutgoingGain->Gain.CancelAndHoldAtTime(Now);
 		OutgoingGain->Gain.LinearRampToValueAtTime(0, Now + FadeSeconds);
 		OutgoingUntil = Now + FadeSeconds;
 	}
 	const TSharedPtr<FS47GainNode> G = Ctx->CreateGain(); G->Gain.SetValue(0);
-	NewEl->Connect(G); G->Connect(Mix);
+	if (NewStems) NewStems->Out()->Connect(G); else NewEl->Connect(G);
+	G->Connect(Mix);
+	Stems = NewStems;
 	G->Gain.SetValueAtTime(0, Now); G->Gain.LinearRampToValueAtTime(C->Gain, Now + FadeSeconds);
 	RampUntil = Now + FadeSeconds; TargetGain = C->Gain;
 	const TWeakPtr<FS47MediaSource> WeakEl = NewEl;
@@ -354,6 +370,7 @@ void FS47Score::Stop()
 	FS47AudioContext::FBatch B(*Ctx);
 	++Generation;
 	SilenceDeck(El, Gain); RetireOutgoing();
+	if (Stems) { Stems->Close(); Stems.Reset(); }
 	Playing.Empty(); Pending.Empty(); Candidate.Empty(); RequestedMood.Empty(); RequestedSeverity = 0;
 	bFading = false; bPaused = false; bRecovering = false; ActionUntil = RecoveryUntil = 0;
 }

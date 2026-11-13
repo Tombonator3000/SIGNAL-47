@@ -6,6 +6,7 @@
 class US47Main;
 class FS47MediaSource;
 class FS47CosmicAmbient;
+class FS47ScoreStems;
 
 // core/score.ts: the pieces, and what each place plays. Empty cue means TypeScript's null.
 struct FS47ScoreTrack
@@ -88,6 +89,10 @@ public:
 	bool Inserted() const { return InsertIn.IsValid(); }
 	// The file of the piece that plays (empty: none), for what is set per piece.
 	FString PlayingFile() const;
+	// SIDEBAND-20261113, channels: whether an own mix may play as its stems (S47ScoreStems.h), and the tension that lets them in
+	// and out (0 to 1). Off: the mix file, as before. A piece that is playing keeps the form it started in.
+	void SetStems(bool bOn, double InTension);
+	int32 StemsPlaying() const;
 	static bool SelfTest(TArray<FString>& Lines);
 	static bool RenderTour(const FString& Path, TArray<FString>& Lines);
 
@@ -98,6 +103,9 @@ private:
 	TSharedPtr<FS47GainNode> Bus; // every deck passes this, so a duck leaves deck fades alone
 	TSharedPtr<FS47GainNode> Mix; // the decks' sum, before the bus (SIDEBAND-20261113)
 	TSharedPtr<FS47AudioNode> InsertIn, InsertOut;
+	TSharedPtr<FS47ScoreStems> Stems, OutgoingStems; // the decks El and Outgoing lead, when the piece plays as stems
+	bool bStemsOn = false;
+	double Tension = 0;
 	TSharedPtr<FS47CosmicAmbient> Cosmic;
 	TSharedPtr<FS47MediaSource> El;
 	TSharedPtr<FS47GainNode> Gain;

@@ -245,6 +245,8 @@ void US47Main::Step(double Dt)
 			const double Danger = FieldRadio ? FieldRadio->ObservedThreat() : 0;
 			Score->RequestMood(Danger >= 1 ? TEXT("action") : Danger > 0 ? TEXT("tension") : FString(), Danger);
 		}
+		// SIDEBAND-20261113, channels: in Freeform, with "Music reacts" on, an own mix plays as its stems and the tension lets them in and out
+		Score->SetStems(bFree && Sideband && Sideband->Reacts == S47Sideband::EMode::On, Sideband ? Sideband->Tension() : 0.);
 		Score->Update(bPausedByMenu ? 0 : Dt, Score->MusicWant(), Score->MusicHeld());
 		// Critics, 10 Nov: the bought ground under a meeting is the music then (Tom's idea); the score stands back to a third.
 		// D45-20261110: in Freeform a place's own piece (town, dawn, the motel, the drive) goes all but under it, and already as
