@@ -7,6 +7,7 @@
 #include "S47FreeformJobs.h"
 #include "S47FreeformCases.h"
 #include "S47RecordsBinder.h"
+#include "S47Dossier.h"
 class US47Main;
 class FS47FreeformDirector;
 class FS47FreeformWorld;
@@ -143,6 +144,19 @@ public:
  S47Binder::FSource BinderSource() const;
  TSharedRef<S47Binder::FView> BinderView=MakeShared<S47Binder::FView>();
  static bool BinderSelfTest(TArray<FString>& Lines); // the stamps across a Continue, and what the session hands the binder
+ // EVIDENCE-DOSSIER-20261113 (-> M3, M4), slice 1: one file for each unknown thing the player has logged (S47Dossier.h; the session's
+ // part is S47FreeformDossier.cpp). TagEvidence puts a find in its file where the source already knows which one it was, and stamps
+ // it on the screen there and then (the file's number and the kind of evidence, nothing else); a find tagged already is left alone.
+ // Night 0: today. TagPhotoClaim: a photograph claim ("strange.<group>.n<night>"), when its group is one of the five. Saved as
+ // "dossier" once there is a tag; a save from before is rebuilt from what it kept (FS47Dossier::Rebuild).
+ FS47Dossier Unknowns;
+ bool TagEvidence(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Night=0);
+ bool TagPhotoClaim(const FString& ClaimId);
+ void BinderUnknowns(S47Binder::FSource& Src) const; // the files as the binder's UNKNOWNS divider has them
+ void LoadDossier(const S47J::FObj& Saved);
+ void SaveDossier(const S47J::FObj& Record) const;
+ FString TestFillDossier(); // F10: sample evidence for three files; what it says
+ static bool DossierSelfTest(TArray<FString>& Lines);
  // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS. FIX10-10 (12 Nov): the files opened are saved
  // (stationFilesSeen, by key), so a released file stays marked until it is read, across days and Continue.
  uint32 StationFilesSeen=0;bool StationFileDue() const;

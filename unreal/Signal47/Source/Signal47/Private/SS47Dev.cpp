@@ -24,7 +24,7 @@ namespace
 			{ TEXT("SKY AND LIGHTS"), { TEXT("Sky"), TEXT("UFO formations"), TEXT("Tripo craft"), TEXT("Massive light"), TEXT("Lights over"), TEXT("Low lights"), TEXT("Reach and skies"), TEXT("Moon") } },
 			{ TEXT("NIGHT EVENTS"), { TEXT("Night events"), TEXT("Unease"), TEXT("First big night"), TEXT("Week case"), TEXT("Late cases") } },
 			{ TEXT("TOWN AND PLACES"), { TEXT("Places out"), TEXT("Anywhere:"), TEXT("What the shops"), TEXT("Town"), TEXT("Visitors"), TEXT("Motel"), TEXT("Farm"), TEXT("Mail:") } },
-			{ TEXT("CASES AND PAPERWORK"), { TEXT("Reyes:"), TEXT("Ward"), TEXT("Map and night log"), TEXT("Tape"), TEXT("Case board"), TEXT("Enlarger"), TEXT("Answer"), TEXT("Economy") } },
+			{ TEXT("CASES AND PAPERWORK"), { TEXT("Reyes:"), TEXT("Ward"), TEXT("Map and night log"), TEXT("Tape"), TEXT("Case board"), TEXT("Enlarger"), TEXT("Answer"), TEXT("Economy"), TEXT("Evidence dossier") } },
 			{ TEXT("WORLD AND SENSES"), { TEXT("Gear near"), TEXT("Night sounds"), TEXT("Animals"), TEXT("Weather"), TEXT("Physics"), TEXT("Looks"), TEXT("World fixes") } },
 		};
 		return All;

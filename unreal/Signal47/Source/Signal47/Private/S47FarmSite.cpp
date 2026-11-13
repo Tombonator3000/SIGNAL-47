@@ -700,6 +700,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   {
    if(M->UI)M->UI->Thought(TEXT("It has lost me. The lamp is off, I am standing still, and it is looking past me."),5.f);
    M->Freeform->RecordEvidence(TEXT("rule-still-held"),FString::Printf(TEXT("%s. A small one came near the place I stood. I had the lamp off and I kept still, and it looked past me. Lamp off, stand still, and the small ones pass."),*S47Text::ClockText(M->Freeform->Clock(),false)));
+   M->Freeform->TagEvidence(TEXT("rule-still-held"),S47Dossier::EKind::Small,S47Dossier::EType::Lamp); // EVIDENCE-DOSSIER: what the lamp does, in its file
    UE_LOG(LogTemp,Display,TEXT("S47: rule taught: lamp off and still, the small one passed"));
   }
   for(const auto& I:G->Individuals())
@@ -727,6 +728,8 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
     if(M->UI)M->UI->Thought(TEXT("It has stopped. It is facing away."),3.f);
     // the record says what was done only if it was: still and dark, and the stop is the moment of the break
     if(bNothingToGoOn)M->Freeform->RecordEvidence(TEXT("rule-pale-broken"),FString::Printf(TEXT("%s. I did what had worked: lamp off, standing still. This one was not small like the other. It stopped dead and turned to where I was. It did not pass. Standing still is not enough."),*S47Text::ClockText(Clock,false)));
+    // EVIDENCE-DOSSIER: the low one's own answer to standing still. The tall one may break the rule as well (N1110), and that is not its mark.
+    if(bNothingToGoOn&&VisitWho==1)M->Freeform->TagEvidence(TEXT("rule-pale-broken"),S47Dossier::EKind::Low,S47Dossier::EType::Lamp);
     UE_LOG(LogTemp,Display,TEXT("S47: rule broken once: the %s stopped %.0f m off and turned (night %d)"),VisitWho==2?TEXT("Tall One"):TEXT("Pale One"),To,Rule.Night);
    }
    if(RuleBreak.TakeTurned()&&M->UI)M->UI->Thought(TEXT("It is looking at me. Move."),4.f);
@@ -859,6 +862,8 @@ void FS47FarmSite::EndVisit(bool bTaken)
   else if(Lure.bDidTouch)Did+=TEXT(" It went to my truck, where I had left it running with the lights on, and put its hand on the hood. The lights stuttered.");
   FString Page=FString::Printf(TEXT("%s, after dark%s. Something came toward me.%s Then it was gone."),*Title,bField?TEXT(""):TEXT(", the night of the lights"),*Did);Page[0]=FChar::ToUpper(Page[0]);
   M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),Page);
+  // EVIDENCE-DOSSIER: it was seen (bVisitSeen), and the visit knows which one came: its shape, in its file.
+  M->Freeform->TagEvidence(FindingId()+TEXT("_visit"),S47Dossier::KindOfVisit(VisitWho),S47Dossier::EType::Shape);
  }
  RestoreHome();
  M->RequestAutosave();

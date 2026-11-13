@@ -1,10 +1,51 @@
 # Feltbevis som skiller de ukjente (Freeform)
 
-**Status:** Uavklart (forslag til Tom). **Gjelder:** Freeform, feltarbeid, notatboka, arkivpermen og Wards vurdering. **Sist kontrollert:** 13. november 2026 mot kilden på `claude/freeform-20261112` (lest, ikke bygget eller spilt).
+**Status:** Under arbeid. Besluttet av Tom 13. november 2026. Trinn 1 er kodet, ikke bygget og ikke spilt av Tom; trinn 2 og 3 er ikke startet. **Gjelder:** Freeform, feltarbeid, notatboka, arkivpermen og Wards vurdering. **Sist kontrollert:** 13. november 2026 mot kilden på `claude/freeform-20261112` (lest og skrevet, ikke bygget eller spilt).
 
 Toms idé 13. november: bevis av ulike slag fra feltet (bilder, geiger, målinger, prøver) logges og legges i arkivet med bilder og tegninger, slik at spilleren gradvis forstår hva slags vesener han har med å gjøre. Inspirasjon er løkka i UFOPHILIA (måle → utelukke → fotografere). Vi tar bare den generelle ideen om å utelukke ut fra bevis. Arter, navn, bevistabell, grensesnitt og ordlyd lages fra det spillet vårt allerede har.
 
 Gjeldende regler som dette må følge: [DECISIONS](../../Active/DECISIONS.md) (tidsnivåer 9. november, Freeform etter Story, vev inn det som finnes), [milepælene](../../Active/TODO.md) og [game bible](../GAME_BIBLE.md) (vanlige forklaringer kan være riktige; et avvik fastslår ikke art eller hensikt).
+
+## Besluttet av Tom 13. november
+
+Tom godkjente forslaget 13. november 2026 med disse svarene på de fem spørsmålene i del 6:
+
+1. **Veiglimtets «crawler» er den lave, og «tallfigure» er den høye.** De deler mappe med den lave og den høye fra stedsbesøkene.
+2. **Sølvmannen og den som lyser får egne mapper som stopper på MARKS.** De kan aldri arkiveres som ferdige.
+3. **Skyggen får aldri en mappe.** Den blir stående uløst under SHADOWS.
+4. **Navnet er spillerens egen tekst,** med et forslag fylt inn på forhånd. Det kommer i trinn 3.
+5. **Ward gir ett poeng for to arkiverte mapper og to poeng for alle tre som kommer nær.** Det kommer i trinn 3.
+
+### Trinn 1 slik det er kodet (13. november, ikke bygget, ikke spilt av Tom)
+
+Hva spilleren får:
+
+- **Stempel der beviset tas:** `UNKNOWN 2 / GROUND.`, med «New file in the notebook.» første gang og «The file is at MARKS now.» når trinnet stiger. Stempelet sier bare nummer og bevistype.
+- **Notatboka (TAB › Knowledge › Who & what, høyre side THEM):** én ramme per mappe øverst på siden, med nummer, trinn, seks blyantbokser (SHAPE, TAPE, GROUND, LAMP, GEIGER, ANIMALS), blyantnotat for de fylte boksene og én linje om hva neste trinn krever.
+- **Permen (skillearket UNKNOWNS etter FIELD + BENCH):** de samme mappene maskinskrevet, bare lesing, med bildene henvist til albumets original.
+- **Ward:** én setning i ukenotatet fra første mappe på MARKS.
+- **OPS-kvitteringen for bilder:** nøytrale titler («small figure», «low shape on the ground», «still figure»).
+
+Hvor det ligger:
+
+- Ren modell og selvtest: `Public/S47Dossier.h`, `Private/S47Dossier.cpp`.
+- Øktas del (merke, stempel, lagring, gjenoppbygging, permens ark): `Private/S47FreeformDossier.cpp`.
+- Merker ved kilden: bilde i `FS47FreeformDirector::Photo` og `ClaimEnlargement`, veispor i `S47Happenings.cpp` (`road_tracks_d<natt>`), `rule-still-held`, `rule-pale-broken` og feltsiden `<sted>_visit` i `S47FarmSite.cpp`.
+- Visning: `SS47Notebook.cpp` (THEM), `S47RecordsBinder.h/.cpp` og `SS47Binder.cpp` (UNKNOWNS), `S47PredecessorText.cpp` (`Apart`).
+- F10: gruppen «Evidence dossier (M3)» med prøvebevis for tre mapper (`S47DossierDev.cpp`).
+- Lagring: `dossier: { order: [...], tags: { "<nøkkel>": { k, t, d } } }`. Feltet skrives først når noe er merket. En eldre lagring bygges opp igjen fra fotokravene (`strange.<gruppe>.n<natt>`), `rule-still-held` og veisporene.
+
+Avvik fra forslaget, og hvorfor:
+
+- **Første boks heter SHAPE og fylles av bilde eller syn.** Et fotografi gir «on film», og stedsbesøkets feltside gir «seen». Forslaget sa at feltsiden skulle merkes, men ikke med hvilken bevistype. Sidens ord om lykta er like for alle vesener (`S47VisitAttention`) og kan derfor ikke være et LAMP-trekk. I lagringen heter typen `shape`; et bilde kjennes på nøkkelen.
+- **`rule-pale-broken` merkes bare når det var den lave.** Den høye kan også bryte regelen i koden (N1110), men det er ikke dens LAMP-trekk i matrisen. I en eldre lagring merkes funnet ikke, fordi verken nøkkel eller tekst sier hvem det var.
+- **Veisporene registreres i `S47Happenings.cpp`,** ikke i `S47RoadGlimpse.cpp`, som bare har teksten. Stedet husker bare «low» eller «tall». Lange smale spor går derfor til den høye også når kroppen som krysset veien, var sølvmannen eller den som lyser.
+- **Stempelet bruker skråstrek,** slik spillets andre stempler gjør.
+- **Feltsiden skrives én gang per sted.** Et senere besøk på samme sted gir derfor ikke noe nytt merke i trinn 1.
+- **Wards setning står sammen med de andre setningene hennes** (`LeverWords`). Den kommer derfor også når spilleren spør henne på telefonen om vurderingen.
+- **Kvitteringer som alt er lagret, beholder teksten sin.** Nye kvitteringer og fotokrav lest fra eldre lagringer får nøytral tittel.
+- **Ikke med i trinn 1:** betaling per bevistype under ukas tak, boksen satt til «gir ikke noe», UNPLACED og tilordning. Sammenligningen passer, strider eller ukjent finnes i modellen og er prøvd, men vises først i trinn 2.
+- **Med trinn 1 alene kan bare den lave nå MARKS** (form, veispor og regelbruddet). De små har to bevistyper, og den høye, sølvmannen og den som lyser har én eller to. Trinn 2 gir resten.
 
 ## 1. Mål og løkke
 
@@ -211,7 +252,7 @@ Kobling til milepæler:
 - **Belønning for fare:** penger bare under det eksisterende taket, så det ikke lønner seg å oppsøke bortføring.
 - **For mange vesener:** vi lager ingen nye. Crawler og tallfigure slås sammen med den lave og den høye.
 
-### Åpne spørsmål til Tom (anbefalt standard i parentes)
+### Spørsmålene til Tom (besvart 13. november, se «Besluttet av Tom 13. november»; anbefalt standard i parentes)
 
 1. **Er veiglimtets «crawler» den lave og «tallfigure» den høye, altså samme mappe?** (Ja. Det gir færre vesener og bedre spor på veien.)
 2. **Skal sølvmannen og den som lyser ha egne mapper som stopper på MARKS uten arkivering?** (Ja. De kommer aldri nær av seg selv, så de forblir rare.)

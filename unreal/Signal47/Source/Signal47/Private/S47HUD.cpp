@@ -284,6 +284,7 @@ void AS47HUD::Start()
 		bOk &= FS47FreeformJobs::SelfTest(Lines);
 		bOk &= FS47FreeformCases::SelfTest(Lines);
 		bOk &= S47Binder::SelfTest(Lines) & FS47FreeformSession::BinderSelfTest(Lines); // (RECORDS-BINDER: the records-room binder's dividers, order, filing and stamps)
+		bOk &= S47Dossier::SelfTest(Lines) & FS47FreeformSession::DossierSelfTest(Lines); // (EVIDENCE-DOSSIER: the files of the unknown, their stages, the save and an older save)
 		bOk &= FS47EastWing::SelfTest(Lines);
 		bOk &= FS47FreeformDirector::SelfTest(Lines);
 		bOk &= FS47CaseFieldTests::SelfTest(Lines);

@@ -73,6 +73,7 @@ S47Binder::FSource FS47FreeformSession::BinderSource() const
   Src.Files.Add({File.Key,File.Title,File.Text,File.Day,At<32&&(StationFilesSeen&(1u<<At))!=0});
  }
  if(Predecessor)Src.Older=Predecessor->ArchiveLabel();
+ BinderUnknowns(Src); // EVIDENCE-DOSSIER-20261113: the files of the unknown, behind UNKNOWNS (S47FreeformDossier.cpp)
  return Src;
 }
 void FS47FreeformSession::OpenBinder()

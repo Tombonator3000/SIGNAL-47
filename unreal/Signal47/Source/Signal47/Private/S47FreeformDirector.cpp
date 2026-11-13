@@ -44,6 +44,7 @@
 #include "S47Docs.h"
 #include "S47Flow.h"
 #include "S47SaroSave.h"
+#include "S47Marginalia.h"
 #include "S47ScriptPlayer.h"
 #include "S47Fx.h"
 #include "NiagaraComponent.h"
@@ -407,6 +408,8 @@ struct FS47FreeformDirector::FEffects
 
 FS47FreeformDirector::FS47FreeformDirector(US47Main* Main):Effects(MakeUnique<FEffects>()),M(Main){Effects->M=Main;Random.Initialize(4701986);}
 FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
+// EVIDENCE-DOSSIER-20261113: a photograph's title never says what the thing is (below, by the table of what is strange enough to pay).
+namespace { FString StrangeTitleOf(const FString& G); }
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
  Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;bEveningTold=false;Event.Empty();PhotoId.Empty();PlaceId.Empty();NextPlace.Empty();bTracePlaced=false;Scene=TEXT("saro");DangerNight=DangerCount=SlotNight=PeekNight=0;PointNight=PointCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
@@ -427,6 +430,8 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
    const S47J::FObj* C=nullptr;if(!V.IsValid()||!V->TryGetObject(C)||!C)continue;
    FPhotoClaim P;P.Id=S47J::Str(*C,TEXT("id"));P.PhotoId=S47J::Str(*C,TEXT("photo"));P.Title=S47J::Str(*C,TEXT("title"));P.bPaid=S47J::Bool(*C,TEXT("paid"));
    P.Quality=S47J::Num(*C,TEXT("quality"));P.Reward=PhotoReward(P.Id,P.Quality);
+   // EVIDENCE-DOSSIER-20261113: a claim from before, titled by what it was ("grey visitor", "Nordic figure"): by what it looked like.
+   if(P.Id.StartsWith(TEXT("strange."))&&S47Marginalia::NamesKind(P.Title)){FString Group=P.Id.Mid(8);int32 GroupEnd=INDEX_NONE;if(Group.FindChar(TEXT('.'),GroupEnd))Group.LeftInline(GroupEnd);P.Title=StrangeTitleOf(Group);}
    P.LocalNoiseOriginalId=S47J::Str(*C,TEXT("localNoiseOriginal")).Left(128);P.LocalNoisePlannedAt=S47J::Num(*C,TEXT("localNoisePlannedAt"),-1);
    if(!FMath::IsFinite(P.LocalNoisePlannedAt)||P.LocalNoisePlannedAt<0||P.LocalNoiseOriginalId.IsEmpty()){P.LocalNoisePlannedAt=-1;P.LocalNoiseOriginalId.Empty();}
    P.ControlOriginalId=S47J::Str(*C,TEXT("controlOriginal"));P.ControlPhotoId=S47J::Str(*C,TEXT("controlPhoto"));P.ControlPlannedAt=S47J::Num(*C,TEXT("controlPlannedAt"),-1);
@@ -1767,8 +1772,11 @@ namespace
  FString StrangeTitleOf(const FString& G)
  {
   static const TPair<const TCHAR*,const TCHAR*> Names[]={
-   {TEXT("nordic"),TEXT("Nordic figure")},{TEXT("cosmic"),TEXT("Cosmic figure")},{TEXT("tallfigure"),TEXT("tall figure")},{TEXT("shadow"),TEXT("shadow figure")},
-   {TEXT("crawler"),TEXT("low crawler")},{TEXT("shade"),TEXT("figure on the height")},{TEXT("cattle"),TEXT("dead cow")},{TEXT("scorch"),TEXT("scorched ring")},
+   // EVIDENCE-DOSSIER-20261113 (Tom): what it looked like, never what it is. The game hands out no name for any of them
+   // (S47Marginalia::NamesKind; the self-test reads every title here).
+   {TEXT("roswell"),TEXT("small figure")},{TEXT("pale"),TEXT("low shape on the ground")},{TEXT("tall"),TEXT("tall figure")},
+   {TEXT("nordic"),TEXT("still figure")},{TEXT("cosmic"),TEXT("lit figure")},{TEXT("tallfigure"),TEXT("tall figure")},{TEXT("shadow"),TEXT("shadow figure")},
+   {TEXT("crawler"),TEXT("low shape on four legs")},{TEXT("shade"),TEXT("figure on the height")},{TEXT("cattle"),TEXT("dead cow")},{TEXT("scorch"),TEXT("scorched ring")},
    {TEXT("prints"),TEXT("prints on the shoulder")},{TEXT("cowlift"),TEXT("cow in the light")},{TEXT("bigglow"),TEXT("big light")},{TEXT("bigmark"),TEXT("big night marks")}};
   for(const auto& N:Names)if(G==N.Key)return N.Value;
   return G;
@@ -1921,12 +1929,12 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
   };
   // The small ones: the glimpses' bodies, wherever they came from (the base, the cabinets, a site's cover, a window).
   if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered)
-   Body(TEXT("roswell"),TEXT("grey visitor"),I.Eye-FVector(0,.5,0),1.2,M->Night->Glimpses->ControlledPhotoBody(I.Id));
+   Body(TEXT("roswell"),StrangeTitleOf(TEXT("roswell")),I.Eye-FVector(0,.5,0),1.2,M->Night->Glimpses->ControlledPhotoBody(I.Id));
   // The crab and the tall one in the open: their own skinned bodies (S47FarmSite).
   if(M->Freeform->FarmSite)if(const auto Eye=M->Freeform->FarmSite->VisitBodyEye())if(const UPrimitiveComponent* Mesh=M->Freeform->FarmSite->VisitPhotoBody())
   {
    const bool bCrab=M->Freeform->FarmSite->VisitKind()==1;
-   Body(bCrab?TEXT("pale"):TEXT("tall"),bCrab?TEXT("pale visitor"):TEXT("tall visitor"),*Eye-FVector(0,bCrab?.35:.95,0),bCrab?.55:1.9,Mesh);
+   Body(bCrab?TEXT("pale"):TEXT("tall"),StrangeTitleOf(bCrab?TEXT("pale"):TEXT("tall")),*Eye-FVector(0,bCrab?.35:.95,0),bCrab?.55:1.9,Mesh);
   }
   // PHOTO-02 (N1110): a cow lifted into the air. It pays only with the lift really up there to be seen: the craft and the beam drawn, the
   // cow clear of the grass, and the cow herself inside the frame. The craft is the body that must stand in the clear (Qualify).
@@ -2014,6 +2022,8 @@ void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
  if(!Existing){FPhotoClaim C;C.Id=TaggedIncident;C.PhotoId=Shot.Id;C.Title=TaggedTitle;C.Quality=TaggedQuality;C.Reward=PhotoReward(C.Id,C.Quality);Claims.Add(C);Existing=&Claims.Last();}
  else if(!Existing->bPaid&&TaggedQuality>Existing->Quality){Existing->PhotoId=Shot.Id;Existing->Quality=TaggedQuality;Existing->Reward=PhotoReward(Existing->Id,Existing->Quality);}
  Changed();if(M&&M->UI)M->UI->Toast(Existing->bPaid?FString(TEXT("Already registered. The new photograph stays in the album; no extra credit.")):FString::Printf(TEXT("Photograph taken. Develop it in the PHOTO LAB, then register it at OPS for $%d."),Existing->Reward),5);
+ // EVIDENCE-DOSSIER-20261113: logged where it was taken, in the file of the one it shows (none for the shade or the sky); once a claim.
+ if(M&&M->Freeform)M->Freeform->TagPhotoClaim(Existing->Id);
 }
 bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
 {
@@ -2096,11 +2106,12 @@ void FS47FreeformDirector::ClaimEnlargement(const FString& ClaimId,const FString
  if(Existing&&Existing->bPaid)return;
  FString G=ClaimId.Mid(8);int32 Dot=INDEX_NONE;if(G.FindChar('.',Dot))G.LeftInline(Dot);
  // The bodies' and the ground's own words, as TagPhoto names them; the props' from their table.
- const FString Title=G==TEXT("roswell")?FString(TEXT("grey visitor")):G==TEXT("pale")?FString(TEXT("pale visitor")):G==TEXT("tall")?FString(TEXT("tall visitor")):G==TEXT("marks")?FString(TEXT("marks in the ground")):StrangeTitleOf(G);
+ const FString Title=G==TEXT("marks")?FString(TEXT("marks in the ground")):StrangeTitleOf(G);
  if(!Existing){FPhotoClaim C;C.Id=ClaimId;C.Title=Title;Claims.Add(C);Existing=&Claims.Last();}
  Existing->PhotoId=EnlargedId;Existing->Quality=Quality;Existing->Reward=PhotoReward(ClaimId,Quality);
  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: enlargement %s is the photograph of %s now ($%d)"),*EnlargedId,*ClaimId,Existing->Reward);
  Changed();
+ if(M&&M->Freeform)M->Freeform->TagPhotoClaim(ClaimId); // EVIDENCE-DOSSIER-20261113: an enlargement that makes it out is its photograph
 }
 // Public declaration: bool PlanPhotoControl(const FString& Id);
 bool FS47FreeformDirector::PlanPhotoControl(const FString& Id)
@@ -2376,6 +2387,19 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   FPhotoClaim A;A.Id=TEXT("strange.tall.n2");A.PhotoId=TEXT("album9");A.Title=TEXT("tall visitor");A.Quality=.2;Wonder.Claims.Add(A);
   FS47FreeformDirector StrangeCopy(nullptr);StrangeCopy.Begin(S47J::Read(S47J::Write(Wonder.Save())));
   Check(StrangeCopy.Claims.Num()==1&&StrangeCopy.Claims[0].Reward==PhotoReward(A.Id,.2)&&StrangeCopy.Claims[0].Reward>StrangeCopy.PhotoReward(TEXT("strange.roswell.n2"),.2),TEXT("D48: a strange claim's pay follows its quality after Continue without a new save field; one claim a group a night keeps its id"));
+  // EVIDENCE-DOSSIER-20261113 (Tom): no photograph's title says what the thing is; a claim an older save titled that way reads by its look.
+  {
+   bool bNeutralTitles=true;FString NamingTitle;
+   for(const TCHAR* GroupId:{TEXT("roswell"),TEXT("pale"),TEXT("tall"),TEXT("nordic"),TEXT("cosmic"),TEXT("tallfigure"),TEXT("shadow"),TEXT("crawler"),TEXT("shade"),TEXT("cattle"),TEXT("scorch"),TEXT("prints"),TEXT("cowlift"),TEXT("bigglow"),TEXT("bigmark")})
+   {
+    const FString TitleNow=StrangeTitleOf(GroupId);
+    if(TitleNow.IsEmpty()||TitleNow==GroupId||S47Marginalia::NamesKind(TitleNow)||!S47Script::LintText(TitleNow).IsEmpty()||TitleNow.ToLower().Contains(TEXT("grey"))||TitleNow.ToLower().Contains(TEXT("roswell"))){bNeutralTitles=false;NamingTitle=TitleNow;}
+   }
+   for(const TCHAR* OldTitle:{TEXT("grey visitor"),TEXT("pale visitor"),TEXT("tall visitor"),TEXT("Nordic figure"),TEXT("Cosmic figure"),TEXT("low crawler")})bNeutralTitles&=S47Marginalia::NamesKind(OldTitle);
+   Check(bNeutralTitles&&StrangeCopy.Claims.Num()==1&&StrangeCopy.Claims[0].Title==TEXT("tall figure")&&StrangeTitleOf(TEXT("roswell"))==TEXT("small figure")&&StrangeTitleOf(TEXT("nordic"))==TEXT("still figure"),
+    TEXT("EVIDENCE-DOSSIER: a photograph is titled by what it looked like, never by what it is, and an older save's claim is renamed when read"));
+   if(!NamingTitle.IsEmpty())Lines.Add(TEXT("     ")+NamingTitle);
+  }
   // ENLARGE-20261108 (-> M3, 13 Nov): a pale one 1.2% of the frame high in the upper right of the frame: too small for the print.
   {
    const TArray<TPair<FString,FVector2D>> Small={{FString::Printf(TEXT("%s%d:strange.pale.n3"),SmallPrefix,120),FVector2D(.82,.2)}};
@@ -2389,7 +2413,7 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
    FS47FreeformDirector Lab(nullptr);Lab.Begin(nullptr);
    Lab.ClaimEnlargement(TEXT("strange.pale.n3"),TEXT("enl7@9000"),.048);
    FS47FreeformDirector LabCopy(nullptr);LabCopy.Begin(S47J::Read(S47J::Write(Lab.Save())));
-   Check(LabCopy.Claims.Num()==1&&LabCopy.Claims[0].PhotoId==TEXT("enl7@9000")&&LabCopy.Claims[0].Title==TEXT("pale visitor")&&!LabCopy.Claims[0].bPaid&&LabCopy.Claims[0].Reward==PhotoReward(TEXT("strange.pale.n3"),.048),TEXT("ENLARGE: the enlargement is the claim's photograph, due at OPS, and survives a Continue"));
+   Check(LabCopy.Claims.Num()==1&&LabCopy.Claims[0].PhotoId==TEXT("enl7@9000")&&LabCopy.Claims[0].Title==TEXT("low shape on the ground")&&!LabCopy.Claims[0].bPaid&&LabCopy.Claims[0].Reward==PhotoReward(TEXT("strange.pale.n3"),.048),TEXT("ENLARGE: the enlargement is the claim's photograph, due at OPS, and survives a Continue"));
    Lab.Claims[0].bPaid=true;Lab.ClaimEnlargement(TEXT("strange.pale.n3"),TEXT("enl8@9000"),.09);
    Check(Lab.Claims.Num()==1&&Lab.Claims[0].PhotoId==TEXT("enl7@9000"),TEXT("ENLARGE: a claim already paid is not paid again for a new enlargement"));
   }

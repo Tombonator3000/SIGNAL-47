@@ -2316,6 +2316,13 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		X.People = Folk;
 		// MARGINALIA-20261109: WHO & WHAT's pencil, PEOPLE and THEM, from what has really happened (S47Marginalia; nothing new is saved)
 		if (M->Story) S47Marginalia::Fill(S47Marginalia::FactsOf(*M->Freeform, M->Story->Docs()), X.Scribbles);
+		// EVIDENCE-DOSSIER-20261113: THEM's files of the unknown as they stand now (S47Dossier): always in the pocket, never a trip to a PC
+		for (const S47Dossier::FFile& UnknownFile : M->Freeform->Unknowns.Files())
+		{
+			FS47NbUnknown Sheet; Sheet.Title = UnknownFile.Title; Sheet.Stage = UnknownFile.Stage; Sheet.Next = UnknownFile.Next;
+			for (const S47Dossier::FBox& Slot : UnknownFile.Boxes) Sheet.Boxes.Add({ Slot.Label, Slot.How, Slot.Note, Slot.bFilled });
+			X.Unknowns.Add(Sheet);
+		}
 		// PT-NOTEBOOK-20261109: DOCUMENTS is the papers only, as the tray by the pinboard has them: the field records are Knowledge's
 		if (M->Freeform->PinBoard) X.Papers = M->Freeform->PinBoard->Papers();
 		// D48-20261110 (D46-19): the EVENTS page: what the player has met, by date, time, place and kind, and a way to log one by hand

@@ -718,7 +718,9 @@ int32 FS47Predecessor::FiscalEndDay() const
 }
 FString FS47Predecessor::LeverWords(const FTally& C) const
 {
- return X::Levers(C.Logs>=LogsForPoint,C.Tapes>=2,FS47WardReport::PointsFor(C.Trust),C.Photos>=3,C.Guessed,C.Arrears,FS47FreeformSession::ArrearsCap);
+ // EVIDENCE-DOSSIER-20261113: and one line once a file of the unknown has reached MARKS (X::Apart; it changes no point of hers in slice 1).
+ return X::Levers(C.Logs>=LogsForPoint,C.Tapes>=2,FS47WardReport::PointsFor(C.Trust),C.Photos>=3,C.Guessed,C.Arrears,FS47FreeformSession::ArrearsCap)
+  +X::Apart(M&&M->Freeform?M->Freeform->Unknowns.AtMarks():0);
 }
 void FS47Predecessor::Close()
 {
@@ -1676,6 +1678,7 @@ TArray<FString> FS47Predecessor::AllText()
  // M7: the levers in her words, the notes after KEPT OPEN, what the Stays letter says of what was found, and the inspector.
  const FString AllLevers=X::Levers(false,false,0,false,1,60,80)+X::Levers(true,true,2,true,0,0,80)+X::Levers(false,false,-1,false,0,0,80);
  Out.Add(AllLevers);Out.Add(X::WeekNote(4,20,1,25,18,45,2,D,6,PointsToStay,3,2,false,AllLevers));Out.Add(X::WeekNote(4,20,1,25,18,0,2,D,7,PointsToStay,0,0,true,AllLevers));
+ Out.Add(X::Apart(1));Out.Add(X::Apart(2));Out.Add(X::Apart(5)); // EVIDENCE-DOSSIER-20261113
  Out.Add(X::KeptNote(5,30,26,0,D,1,AllLevers));Out.Add(X::Stays(D,30,2,25,0,true,X::Followed(true,true,true,true,true)));
  // T16-17: what the places and the binder say of Reyes's notebook, and the locker's cover.
  for(const X::FBookStep& S:X::Book()){if(S.Find)Out.Add(S.Find);if(S.Take)Out.Add(S.Take);}

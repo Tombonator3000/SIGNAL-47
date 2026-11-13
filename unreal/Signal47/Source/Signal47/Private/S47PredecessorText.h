@@ -53,6 +53,9 @@ namespace S47PredecessorText
  // One sentence of hers per thing the assessment reads besides the numbers on the sheet, no figures but money: the night sheets,
  // the tapes, the weekly reports, the photographs, a filing with nothing behind it, and the limit of the carried line.
  FString Levers(bool bLogsCount,bool bTapesCount,int32 TrustPoints,bool bPhotosCount,int32 Guessed,int32 Arrears,int32 Cap);
+ // EVIDENCE-DOSSIER-20261113: her one line on the operator's files of the unknown, from the first that reaches MARKS (Files: how many
+ // have; 0: nothing said). What she reads is that they are kept apart, never what any of them is. It follows Levers (a leading space).
+ FString Apart(int32 Files);
  // The Monday sheet after KEPT OPEN: shorter, and nothing to win.
  FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString& FiscalEnd,int32 Taken,const FString& Levers);
  // What the Stays letter says of what was found (M7): wagon 23, the deputy's file, the routed pay, Ortiz's thermos sent on. Only the
