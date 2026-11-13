@@ -5271,7 +5271,7 @@ FString FS47FreeformSession::NextAction()const
  // TASKS-TEN-20261113 (change 2): a window open now comes before a card only selected (not begun, or still waiting for its source);
  // work under way keeps its place (blocking now)
  {const FJob* J=CurrentJob();FString Open;if((J->Stage==EJobStage::New||EveningGated(*J))&&(WindowOpenStep(Open)||!TelexLine().IsEmpty()||(bPinLive&&!PinKey.IsEmpty())))return AvailableActivities();}
- if(const FJob* J=CurrentJob())PickRow=J->CaseTest>=0?CaseStep(J->CaseLine).Task:EveningGated(*J)?TEXT("card:")+J->Id:TEXT("cards");
+ if(const FJob* J=CurrentJob())PickRow=J->CaseTest>=0?CaseStep(J->CaseLine).Task:EveningGated(*J)?TEXT("card:")+J->Id:FString(TEXT("cards"));
  return ReceiverNextAction();
 }
 // RX-ANOMALY-FLOW-20261113 (Tom 13 November): after the take, RECORD on the receiver (retain it with its reference), the reel deck
