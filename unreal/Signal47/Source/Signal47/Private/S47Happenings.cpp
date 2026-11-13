@@ -2874,6 +2874,8 @@ void FS47Happenings::StepSites(double Dt)
    const double Hr=S47Hap::HourOf(Clock);
    Noticed(TEXT("road_glimpse"),Away,TEXT("sight"),S.Serial);
    F->RecordEvidence(FString::Printf(TEXT("road_tracks_d%d"),S.Night),S47RoadGlimpse::TracksRecord(S.Variant==TEXT("low"),S47Hap::ClockText(Clock),Hr>=6.2&&Hr<19.6));
+   // EVIDENCE-DOSSIER: prints in fours are the low one's, the long narrow ones the tall one's (Tom, 13 November): the ground, in its file.
+   F->TagEvidence(FString::Printf(TEXT("road_tracks_d%d"),S.Night),S.Variant==TEXT("low")?S47Dossier::EKind::Low:S47Dossier::EKind::Tall,S47Dossier::EType::Ground);
    Deed(TEXT("You looked at the prints on the shoulder of the highway."));
    UE_LOG(LogS47Happen,Display,TEXT("S47: happening road_glimpse: the prints on the shoulder found at %.0f m (%s)"),Away,*S.Variant);
    M->RequestAutosave();

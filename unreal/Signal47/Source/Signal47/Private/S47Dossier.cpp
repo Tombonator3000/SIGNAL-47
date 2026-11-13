@@ -55,7 +55,7 @@ namespace Tables
    {TEXT(""),TEXT("")},
    {TEXT(""),TEXT("")}}};
  const TCHAR* const HowFilm=TEXT("on film");
- const TCHAR* const HowSeen=TEXT("seen close");
+ const TCHAR* const HowSeen=TEXT("seen"); // the visit's field page: it was seen, near or far, and no frame of it is kept
  const TCHAR* const HowNoted=TEXT("noted");
  const TCHAR* const NextOutline=TEXT("Three kinds of evidence from two nights make MARKS.");
  const TCHAR* const NextMarks=TEXT("Four kinds from three nights, the lamp among them, make HABITS.");

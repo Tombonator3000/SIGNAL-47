@@ -13,7 +13,7 @@
 // Tom's decisions of 13 November: the road's crawler is the low one and the road's tall figure the tall one (one file each); the
 // silver man and the one that shines have files that stop at MARKS and can never be filed complete; the shade never has a file.
 //
-// Six kinds of evidence, one box each: SHAPE (a photograph, or seen close), TAPE, GROUND, LAMP, GEIGER, ANIMALS. A file's stage:
+// Six kinds of evidence, one box each: SHAPE (a photograph, or seen on a site visit), TAPE, GROUND, LAMP, GEIGER, ANIMALS. A file's stage:
 //   OUTLINE  one kind of evidence
 //   MARKS    three kinds, from at least two nights
 //   HABITS   four kinds with LAMP among them, from at least three nights (never the two that stop at MARKS)
@@ -56,7 +56,7 @@ namespace S47Dossier
  // ---------- a file as the notebook and the binder show it ----------
  struct FBox
  {
-  FString Label,How,Note; // How: "on film", "seen close", "noted"; Note: the pencil for it. Both empty while the box is.
+  FString Label,How,Note; // How: "on film", "seen", "noted"; Note: the pencil for it. Both empty while the box is.
   int32 Day=0;            // the first night it was logged
   bool bFilled=false;
  };
