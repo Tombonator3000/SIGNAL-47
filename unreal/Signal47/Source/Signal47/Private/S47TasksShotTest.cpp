@@ -65,9 +65,16 @@ void FS47FreeformTest::StepTasksShots(double Dt)
  if(Stage==6){Shoot(TEXT("04-notebook-now-2030-pinned"));Go(7,.4);return;}
  if(Stage==7){M->UI->Close();M->UI->NotebookAt(TEXT("map"));M->Flow->OpenNotebook();Go(8,1.2);return;}
  if(Stage==8){Shoot(TEXT("05-notebook-map-2030"));Go(9,.4);return;}
- if(Stage==9){M->UI->Close();F.PinRow(F.PinnedKey(),FString());To(2,25.+40./60.);Go(10,2.);return;}
+ if(Stage==9){M->UI->Close();Go(90,2.);return;}
+ if(Stage==90)
+ {
+  if(!Check(F.HudObjective().StartsWith(TEXT("BEARING SLIP")),TEXT("with the bearing slip pinned the HUD's card is the pinned matter (change 10); got ")+F.HudObjective()))return;
+  Shoot(TEXT("05b-hud-2030-pinned"));Go(91,.4);return;
+ }
+ if(Stage==91){F.PinRow(F.PinnedKey(),FString());To(2,25.+40./60.);Go(10,2.);return;}
  if(Stage==10){Shoot(TEXT("06-hud-0140-bright"));Go(11,8.);return;}
- if(Stage==11){Shoot(TEXT("07-hud-0140-dim"));M->Flow->OpenPause();Go(12,1.);return;}
+ if(Stage==11){Shoot(TEXT("07-hud-0140-dim"));Go(111,.4);return;} // (a screenshot is taken on a later frame: the pause waits for it)
+ if(Stage==111){M->Flow->OpenPause();Go(12,1.);return;}
  if(Stage==12){Shoot(TEXT("08-pause-tonight-0140"));Go(13,.4);return;}
  if(Stage==13){M->UI->Close();M->UI->NotebookAt(TEXT("tasks"));M->Flow->OpenNotebook();Go(14,1.);return;}
  if(Stage==14){Shoot(TEXT("09-notebook-now-0140"));Go(15,.4);return;}
