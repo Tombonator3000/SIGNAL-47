@@ -4369,7 +4369,13 @@ void FS47FreeformSession::StepPin()
  if(PinKey==TEXT("cards"))bLive=CardsUp()>0;
  else if(PinKey.StartsWith(TEXT("card:"))){const FString Id=PinKey.Mid(5);bLive=Work.ContainsByPredicate([&Id](const FJob& J){return J.Id==Id&&J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected;});}
  else if(PinKey==TEXT("matter:station"))bLive=!StationGoalLine().IsEmpty()||ServiceGuide==1;
- else if(PinKey.StartsWith(TEXT("matter:")))bLive=true; // Ward's: until 08:00
+ else if(PinKey.StartsWith(TEXT("matter:")))
+ {
+  // REVIEW-20261113: Ward's: until 08:00, or until the matter is gone (the week's report sent, the assessment made)
+  TArray<int32> Unsent;
+  if(WardReport)for(const FS47WardReport::FReport& R:WardReport->Reports())if(R.Sent<0)Unsent.Add(R.Week);
+  bLive=MatterLive(PinKey,Unsent,Predecessor?Predecessor->TaskLine():FString());
+ }
  else{const TArray<FS47Task> Now=Tasks();bLive=Now.ContainsByPredicate([this](const FS47Task& T){return T.Text==PinText&&!T.bDone;});}
  if(bLive!=bPinLive){bPinLive=bLive;Changed();}
 }
@@ -4396,6 +4402,12 @@ bool FS47FreeformSession::PinnedStep(FString& Full,FString& Short)const
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line){const FCaseStep S=CaseStep(Line);if(!S.Task.IsEmpty()&&S.Task==PinText){Full=S.Next;Short=S.Card;return !Full.IsEmpty();}}
  Full=PinText;
  return !Full.IsEmpty();
+}
+bool FS47FreeformSession::MatterLive(const FString& Key,const TArray<int32>& Unsent,const FString& Standing)
+{
+ if(Key.StartsWith(TEXT("matter:report-")))return Unsent.Contains(FCString::Atoi(*Key.Mid(14)));
+ if(Key==TEXT("matter:assessment"))return Standing.StartsWith(TEXT("SARO under review / "));
+ return true;
 }
 FString FS47FreeformSession::CloseSoonLine()const
 {
@@ -6497,6 +6509,10 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    FS47FreeformSession PinBack(nullptr);PinBack.Begin(S47J::Read(S47J::Write(Pn.Save())));PinBack.TestAdvance(FMath::Max(0.,Pn.Clock()-PinBack.Clock()));
    const bool bKept=PinBack.PinnedKey()==Pn.PinnedKey();
    PinBack.TestAdvance(FMath::Max(0.,2*86400.+8.25*3600.-PinBack.Clock()));PinBack.StepPin();
+   // REVIEW-20261113: a pinned Ward matter goes inert when it is gone (that week's report sent; the assessment made)
+   Check(MatterLive(TEXT("matter:report-2"),{2},FString())&&!MatterLive(TEXT("matter:report-2"),{3},FString())&&!MatterLive(TEXT("matter:report-2"),{},FString())
+    &&MatterLive(TEXT("matter:assessment"),{},TEXT("SARO under review / Dr. Ward assesses the station on Monday."))&&!MatterLive(TEXT("matter:assessment"),{},TEXT("SARO KEPT OPEN / yours through June 30."))&&MatterLive(TEXT("matter:station"),{},FString()),
+    TEXT("TASKS-TEN (REVIEW): a pinned weekly report or assessment stays live only while it still stands (sent or made: inert)"));
    Check(bShows&&bMarked&&bBreaks&&bKept&&PinBack.PinnedKey().IsEmpty(),
     TEXT("TASKS-TEN (change 10): a pinned row is the HUD's step and the note's starred Next; paper on the printer breaks through; kept over a Continue; cleared at 08:00"));
    Pn.Stop();PinBack.Stop();

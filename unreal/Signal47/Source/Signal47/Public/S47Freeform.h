@@ -265,6 +265,9 @@ public:
  // shut stays inert and clears at 08:00. Saved with the notebook's state ("notePlan"). Pin again (the same key) to take it off.
  void PinRow(const FString& Key,const FString& Row);
  FString PinnedKey() const { return bPinLive?PinKey:FString(); }
+ // REVIEW-20261113: whether a pinned Ward matter still stands: "matter:report-N" while week N's report is unsent (Unsent), and
+ // "matter:assessment" while the predecessor's line says the station is under review (Standing); any other matter key: true. Pure.
+ static bool MatterLive(const FString& Key,const TArray<int32>& Unsent,const FString& Standing);
  bool PinnedStep(FString& Full,FString& Short) const;
  FString CloseSoonLine() const;
  // The soonest of the cards waiting for the evening, and the next time it comes up; null if none is.
