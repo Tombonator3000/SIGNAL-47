@@ -280,7 +280,7 @@ FNote BuildNote(const FIn& In, bool bAll)
  if (Open > 0)
  {
   FString Cards = Open == 1 ? FString(TEXT("Job cards: one open at OPS")) : FString::Printf(TEXT("Job cards: %d open at OPS"), Open);
-  if (In.EveningUp >= 0 && (Clock < 0 || (In.EveningUp > Clock && NightOf(In.EveningUp) == NightOf(Clock)))) Cards += TEXT("; the evening's source is up at ") + HourMinute(In.EveningUp);
+  if (In.EveningUp >= 0 && (Clock < 0 || (In.EveningUp > Clock && NightOf(In.EveningUp) == NightOf(Clock)))) Cards += (In.bNightWatch ? TEXT("; the night watch opens at ") : TEXT("; the evening's source is up at ")) + HourMinute(In.EveningUp);
   Also.Add(Cards + TEXT(".")); AlsoKeys.Add(TEXT("cards"));
  }
  if (In.WaitingCases.Num())
@@ -307,9 +307,13 @@ FNote BuildNote(const FIn& In, bool bAll)
   else if (Soon)
   {
    const FString At = NightOf(Soon->Start) != NightOf(Clock) ? FString::Printf(TEXT("%s on shift day %d"), *HourMinute(Soon->Start), NightOf(Soon->Start)) : HourMinute(Soon->Start);
-   Say = TEXT("Too early: the window opens at ") + At + TEXT(". Do a job or rest until then.");
+   // LOOP-NIGHT-WATCH-20261113: no rest while the night watch is still to come tonight
+   const bool bWatchAhead = In.bNightWatch && In.EveningUp > Clock && NightOf(In.EveningUp) == NightOf(Clock);
+   Say = TEXT("Too early: the window opens at ") + At + (bWatchAhead ? TEXT(". Do a job until then.") : TEXT(". Do a job or rest until then."));
   }
-  else if (In.EveningUp > Clock && NightOf(In.EveningUp) == NightOf(Clock)) Say = TEXT("The evening's source is up at ") + HourMinute(In.EveningUp) + TEXT(". Day work until then.");
+  else if (In.EveningUp > Clock && NightOf(In.EveningUp) == NightOf(Clock))
+   Say = In.bNightWatch ? TEXT("The night watch opens at ") + HourMinute(In.EveningUp) + (In.bSlip ? TEXT(". Until then the time is yours: the slip on the map, the camera, the town.") : TEXT(". Until then the time is yours: the camera, the town."))
+    : TEXT("The evening's source is up at ") + HourMinute(In.EveningUp) + TEXT(". Day work until then.");
   else if (In.bAntennasWait) Say = TEXT("The antennas wait for daylight. Stay in the building until morning.");
   else if (Hour >= 4 && Hour < 8) Say = TEXT("Late in the shift: finish what is under way. New paid work comes with the morning.");
   if (!Say.IsEmpty() && Clean(In, Say)) N.Clock = Say;
@@ -456,6 +460,28 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
   Check(LongSlip != INDEX_NONE && Long.Lines[LongSlip].What.EndsWith(TEXT("Drive out and look before noon.")) && Short.Lines[Bear].What == TEXT("New circle on your map, 1.1 miles south-southwest of SARO.")
    && TickedSlip != INDEX_NONE && Ticked.Lines[TickedSlip].Mark == EMark::Done && Ticked.Lines[TickedSlip].Key == Long.Lines[LongSlip].Key && S47Script::LintText(Plain(Long)).IsEmpty(),
    TEXT("NOW has the slip's whole words, the note its first sentence; ticked off it keeps its key"));
+ }
+ // LOOP-NIGHT-WATCH-20261113: an ordinary night after the two early cards. From 20:30 to the watch at 01:30 the hours are his own: the
+ // note says when the watch opens and what is open till then, never rest; once the watch is up the old evening line is not said.
+ {
+  FIn Gap; Gap.bFreeform = true; Gap.EveningUp = Day2 + 86400. + 1.5 * 3600.; Gap.bNightWatch = true; Gap.bSlip = true;
+  Gap.Tasks = { { TEXT("D02 / FF-D0002-0002 / VIR A / NEW"), false } };
+  bool bWatchSaid = true, bNoRest = true;
+  for (const double H : { 20.5, 22., 23.75, 24.5, 25.25 })
+  {
+   Gap.Clock = Day2 + H * 3600.;
+   const FNote G = Build(Gap);
+   bWatchSaid &= G.Clock.StartsWith(TEXT("The night watch opens at 01:30. Until then the time is yours: the slip on the map")) && G.Also.Num() && G.Also[0].Contains(TEXT("the night watch opens at 01:30"));
+   bNoRest &= !G.Clock.Contains(TEXT("rest")) && !Plain(G).Contains(TEXT("rest until")) && S47Script::LintText(Plain(G)).IsEmpty();
+  }
+  Gap.bSlip = false; Gap.Clock = Day2 + 23 * 3600.;
+  const FNote NoSlip = Build(Gap);
+  Gap.Windows = { { TEXT("CONTROL ROOM: LISTEN UNDER THE ROOF."), Day2 + 86400. + 1. * 3600., Day2 + 86400. + 3. * 3600. } };
+  const FNote CaseFirst = Build(Gap);
+  Gap.Windows.Reset(); Gap.Clock = Day2 + 86400. + 1.75 * 3600.;
+  const FNote Up = Build(Gap);
+  Check(bWatchSaid && bNoRest && NoSlip.Clock.EndsWith(TEXT("the time is yours: the camera, the town.")) && CaseFirst.Clock.EndsWith(TEXT("Do a job until then.")) && !Up.Clock.Contains(TEXT("night watch opens")),
+   TEXT("20:30 to 01:30: the night watch's hour and the slip, the camera and the town, never rest (a case window too); once it is up the note stops saying it"));
  }
  // Story (chapter 2): the list's own order, the first thing not done is next with the objective's place; Story's words are its own.
  FIn Story;

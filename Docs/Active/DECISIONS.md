@@ -204,3 +204,10 @@ Story bygger på Freeform, Tom 11. november: alt Freeform har av ressurser og fu
 ## Gjentakelsesprøven fjernet, 13. november
 
 Tom 13. november: gjentakelsesprøven er fjernet («bare fjern prøven, den er for dårlig til gameplay»). «Repeat in the same window» tilbys ikke lenger i THE REPEATED INTERVAL, THE SAME MINUTE eller THE PRINTED MINUTE, og saksbrett, kveldens plan, HUD, notatlapp og records-telex nevner den ikke. De to prøvene som er igjen (aggregatstrøm og ved siden av kilden) skiller alle tre forklaringene i hver av de tre sakene. Tittelen THE REPEATED INTERVAL står, den beskriver signalet. Eldre lagringer: en planlagt gjentakelsesprøve fjernes stille ved Continue, et allerede tatt opptak blir vanlig arbeid, og et lagret resultat gjelder fortsatt som bevis.
+
+## Tom 13. november: spilløkka etter kritikerrunden
+
+Tom godkjente anbefalingene etter de to kritikerne 13. november («gjør som du anbefaler»).
+
+- **Nattevakta (LOOP-NIGHT-WATCH, kritikerfunn 2): arbeidet flyttes mot natta.** Fra dag 2 er det ukentlige tredjekortet (hydrogendrift eller Virgo A) nattevakta: kilden er oppe mellom 01:15 og 01:45 (foreslått 01:45–02:15), kortet arbeides på SARO inn i to-timen, og det venter fra 04:00 til neste natt. Samme kort, samme lønn og samme trinn; bare vinduet flyttes. Kortet hører til skiftets dag (08:00–08:00) og betaler som på sin dag. OPS foreslår ikke hvile fra 19:00 til 02:30 fra dag 2, med mindre spilleren er utslitt (trøtthetsregelen); hvilereglene og prisene er uendret. Første natt (dag 1, også Story-netter) beholder sine egne korttider, og lagrede kort beholder tidene de fikk.
+- **Tett kveld (LOOP-NIGHT-WATCH, kritikerfunn 5): de to første kortene åpner nesten samtidig.** Pekekorset er oppe kl. 19:00 og pulsaren rundt 19:30 (19:20–19:40). Fra omtrent 20:30 til nattevakta er tiden spillerens egen: peilelappen på kartet, kameraet eller byen. OPS og notatlappen sier det rett ut.

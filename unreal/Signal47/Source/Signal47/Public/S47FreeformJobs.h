@@ -20,6 +20,10 @@ public:
  // M7-SPREAD-20261113: slot 2's own survey for that day's week (days 1-7, 8-14, ...): HI(2) and Virgo(3) by turns, from the seed.
  static int32 WeekSource(int32 Seed,int32 Day);
  static TArray<FCard> Generate(int32 Seed,int32 Day);
+ // LOOP-NIGHT-WATCH-20261113: a clock of day on the shift's clock, which runs from 08:00 to 08:00: the small hours after 24:00.
+ static double ShiftClock(double DayClock){return DayClock<8*3600.?DayClock+86400.:DayClock;}
+ // The third card from day 2 is the night watch: its suggested time is in the small hours, after midnight on its own shift day.
+ static bool NightWatch(const FCard& Card){return Card.Slot==2&&Card.SuggestedClock<8*3600.;}
  static FString ControlText(EControl Control);
  static bool Valid(const FCard& Card);
  static bool SelfTest(TArray<FString>& Results);

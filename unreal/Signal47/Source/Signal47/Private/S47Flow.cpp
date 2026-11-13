@@ -1563,7 +1563,7 @@ namespace S47FlowNotebook
 				In.Windows.Add({ Step.Task, Start, End });
 			}
 			double Up = 0;
-			if (F.NextEveningCard(Up)) In.EveningUp = Up;
+			if (const FS47FreeformSession::FJob* SoonCard = F.NextEveningCard(Up)) { In.EveningUp = Up; In.bNightWatch = FS47FreeformSession::NightWatch(*SoonCard); In.bSlip = F.SlipToFollow(); }
 			In.bAntennasWait = FS47FreeformSession::GoalWaits(F.Clock()) && !F.StationGoalLine().IsEmpty();
 			In.Done = &S47TonightNote::Tonight();
 			In.Game = (uint64(uint32(M->Flow ? M->Flow->CaseId : 0)) << 32) | uint32(F.Seed());

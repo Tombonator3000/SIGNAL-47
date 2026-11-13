@@ -197,9 +197,20 @@ public:
  // From day two the day's third card is a real evening's work: its source is not up until about half an hour before the
  // card's suggested time. Nothing else waits on it, it never expires, and OPS can wait for it. Developer runs leave it
  // open (their fixtures run all three cards in one sitting) unless a test asks.
- static constexpr double EveningLead=30*60.,EveningOpens=19*3600.,EveningCloses=23.5*3600.;
- // The clock of day this card's source comes up: never before seven in the evening.
- static double EveningUp(const FJob& Job){return FMath::Max(EveningOpens,Job.Card.SuggestedClock-EveningLead);}
+ // LOOP-NIGHT-WATCH-20261113 (→ M1, M7): from day 2 the third card is the night watch (FS47FreeformJobs::NightWatch): its source is
+ // up between 01:15 and 01:45, after midnight on its own shift day, and one not begun by 04:00 (NightWatchCloses) waits for the next
+ // night. Both times are on the shift's clock (FS47FreeformJobs::ShiftClock: 08:00 to 08:00, the small hours after 24:00).
+ static constexpr double EveningLead=30*60.,EveningOpens=19*3600.,EveningCloses=23.5*3600.,NightWatchCloses=28*3600.;
+ // The clock of day this card's source comes up, on the shift's clock: never before seven in the evening.
+ static double EveningUp(const FJob& Job){return FMath::Max(EveningOpens,FS47FreeformJobs::ShiftClock(Job.Card.SuggestedClock)-EveningLead);}
+ // When one not begun by then waits for the next evening (or night), on the shift's clock.
+ static double EveningShut(const FJob& Job){return NightWatch(Job)?NightWatchCloses:EveningCloses;}
+ static bool NightWatch(const FJob& Job){return Job.bGenerated&&Job.CaseTest<0&&FS47FreeformJobs::NightWatch(Job.Card);}
+ // LOOP-NIGHT-WATCH-20261113: whether OPS may say "or rest" now: not from 19:00 until 02:30 of a shift from day 2 (the night watch
+ // keeps him up into the full hours), unless he is worn out (FS47Fatigue at S47Thoughts::ExhaustedFrom). Pure.
+ static bool RestSuggestedAt(double AtClock,int32 ShiftDay,bool bLive,bool bWorn);
+ // A live bearing slip whose circle on the map has not been stood in yet (FS47Places::SlipRows).
+ bool SlipToFollow() const;
  // The soonest of the cards waiting for the evening, and the next time it comes up; null if none is.
  const FJob* NextEveningCard(double& Up) const;
  // The rules a real game plays by. Developer fixtures keep the fixed ones unless a test asks (TestLiveRules).
