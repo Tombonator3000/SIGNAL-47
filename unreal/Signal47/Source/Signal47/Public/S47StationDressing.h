@@ -30,16 +30,26 @@ public:
 	struct FPiece
 	{
 		FString Id, Asset;
+		FString Model; // PROPS-REUSE-20261113: the shared catalogue id the asset came from ("model"), empty for a path ("asset")
 		FVector Town = FVector::ZeroVector; // three metres in the town's terms (x, y up, z), where the piece's pivot goes
 		double Yaw = 0, Pitch = 0, Roll = 0, Scale = 1;
 		bool bCollide = false, bPivot = false;
 		FString AnchorOf; // another piece whose bounds place this one (a drawer with its register)
+		// PROPS-REUSE-20261113: the old low-poly stand-in this piece replaces, as a part of the station model of its own
+		// (/Game/Free/Town/gas_station/...): shown only while the piece's model is not here. bWaitForStandin: the piece waits until
+		// that part exists (until then the stand-in is baked into the station mesh and the two would overlap).
+		FString Standin;
+		bool bWaitForStandin = false;
 	};
 	/** Config/Props/gas_cosmos.json read: the station model's origin in town metres and the pieces. False when it does not read. */
 	static bool ReadFile(FVector& Origin, TArray<FPiece>& Out, FString* Error = nullptr);
 	/** The file reads; every piece has an id, a licensed asset path, a sane scale and stands inside the shop off the game's card patch
 	 *  and the attendant's place; and how many of the assets are here (passes with and without them). */
 	static bool SelfTest(TArray<FString>& Lines);
+
+	/** PROPS-REUSE-20261113: what stands for a piece: its real model, or its old stand-in (never both). */
+	struct FUse { bool bModel = false, bStandin = false; };
+	static FUse Decide(bool bModelHere, bool bHasStandin, bool bStandinHere, bool bWait);
 
 	int32 Shown() const { return Comps.Num(); }
 
