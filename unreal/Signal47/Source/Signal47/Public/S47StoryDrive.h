@@ -84,7 +84,11 @@ private:
 	FS47EveningVisual* Visual() const;
 	void Arrive();
 	void StepRadio(bool bHostOn);
-	void StopBeds();
+	// REVIEW-20261113: bFade: down over about 50 ms first, then stopped (the arrival); else at once (teardown)
+	void StopBeds(bool bFade = false);
+	// REVIEW-20261113: a bed heard or not, without a click: in, its gain glides to Level (about 45 ms); out, it glides to nothing and
+	// is paused once it is there (a later tick)
+	void Gate(const TSharedPtr<FS47MediaSource>& Src, const TSharedPtr<FS47GainNode>& Level, bool bOn, double Want);
 	// -S47StoryDriveTest: the live check's lines, once each (S47: story drive test PASS/FAIL ...).
 	TSet<FString> Told;
 	void Tell(bool bPass, const FString& What);

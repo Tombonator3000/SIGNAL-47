@@ -1691,6 +1691,7 @@ FS47PauseOpts US47Flow::Settings()
 	O.Volume = Volume; O.Sens = Sens;
 	O.OnVolume = [this](float V) { Volume = V; ApplyVolume(); StoreSet(TEXT("vol"), double(V)); };
 	O.Music = MusicLevel;
+	O.NowPlaying = M->Score ? M->Score->NowPlaying() : FString(); // MUSIC-20261113
 	O.OnMusic = [this](float V) { MusicLevel = V; if (M->Audio) M->Audio->SetMusic(V); StoreSet(TEXT("music"), double(V)); };
 	O.Radio = RadioLevel;
 	O.OnRadio = [this](float V) { RadioLevel = V; if (M->Audio) M->Audio->SetRadio(V); StoreSet(TEXT("radioVol"), double(V)); };
@@ -2573,11 +2574,8 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			TSet<FString> Used;
 			const auto Add = [&](const FString& Group, const S47TonightNote::FLine& L)
 			{
-				FS47NbNowLine N; N.Group = Group; N.Rank = L.Rank; N.Text = S47TonightNote::LineText(L); N.When = L.When; N.Where = L.Where; N.What = L.What; N.Key = L.Key;
-				if (L.Key == TEXT("cards")) N.Fold = TEXT("cards"); // TASKS-TEN-20261113 (change 4): the cards up open under their row
-				N.Tag = S47TonightNote::TagText(L); N.bPinned = L.bPinned; // TASKS-TEN-20261113 (changes 9 and 10)
-				N.Why = L.Source == TEXT("filed cards") || L.Source == TEXT("cards") || L.Source.StartsWith(TEXT("card:")) ? FString() : S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What; // (a row known only by its key, "cards", says no key as WHY) N.Item = L.Key == TEXT("matter:station") ? FindItem(TEXT("array/")) : ItemFor(L.Source); N.bDone = L.Mark == EMark::Done; // (the list's whole words, within the spoiler limits as the line is)
-				if (!L.Matter.IsEmpty()) N.bSummary = true; // an open matter: a dash, no box, never ticked
+				// REVIEW-20261113: built by S47TonightNote::NowLine (its Item and bDone once sat behind a comment and were never set)
+				const FS47NbNowLine N = S47TonightNote::NowLine(Group, L, L.Key == TEXT("matter:station") ? FindItem(TEXT("array/")) : ItemFor(L.Source));
 				if (!N.Item.IsEmpty()) Used.Add(N.Item);
 				X.Now.Add(N);
 			};
@@ -2718,6 +2716,11 @@ FS47MapView US47Flow::MapView() const
 		// Freeform has no Story chapter clues. It has the survey sheet (MAP-20261108): where the player and the truck are, exactly,
 		// on the land's one frame, and the player's own marks.
 		V.bStation = true; V.bField = true;
+		if (M->Freeform)
+		{
+			const bool bDaleOut = M->Freeform->DaleAsks().ContainsByPredicate([F = M->Freeform](const FS47FreeformSession::FDaleAsk& A) { return A.Kind == TEXT("look") && !A.bDone && A.Night == FS47FreeformSession::NightOf(F->Clock()); });
+			V.bDeskStamp = S47FieldMap::DeskStampShows(M->Freeform->InTutorial(), M->Freeform->SlipToFollow(), bDaleOut); // D69-20261113
+		}
 		double X = 0, Z = 0, Heading = 0; FString Area; bool bDriving = false;
 		if (S47FieldMap::Me(M, X, Z, Heading, Area, bDriving)) { V.bMe = true; V.MeX = X; V.MeZ = Z; V.MeHeading = Heading; V.MeArea = Area; V.bDriving = bDriving; }
 		if (S47FieldMap::Truck(M, X, Z, Heading)) { V.bTruck = true; V.TruckX = X; V.TruckZ = Z; V.TruckHeading = Heading; }
@@ -3003,9 +3006,15 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 	}
 	// SIDEBAND-20261113: the two music settings default to on and full, and each of their three values survives the file and the menu
 	{
+		// REVIEW-20261113: on a fresh settings file, not the player's own (a machine set to "off" failed here), and the player's two
+		// values put back and applied afterwards
+		const FString WasReacts = Flow->MusicReacts, WasStingers = Flow->Stingers;
+		const S47J::FObj Blank = S47J::New();
+		Flow->MusicReacts = S47Sideband::ReactsId(S47Sideband::ModeFrom(S47J::Str(Blank, TEXT("musicReacts"), TEXT("on"))));
+		Flow->Stingers = S47Sideband::StingersId(S47Sideband::ModeFrom(S47J::Str(Blank, TEXT("stingers"), TEXT("full"))));
 		const FS47PauseOpts Fresh = Flow->Settings();
 		Check(TEXT("old settings default to music reacts on and stingers full"), Fresh.MusicReacts == TEXT("on") && Fresh.Stingers == TEXT("full")
-			&& S47Sideband::ModeFrom(S47J::Str(Flow->Store, TEXT("musicReacts"), TEXT("on"))) == S47Sideband::EMode::On && bool(Fresh.OnMusicReacts) && bool(Fresh.OnStingers));
+			&& bool(Fresh.OnMusicReacts) && bool(Fresh.OnStingers));
 		bool bKept = true;
 		for (const TCHAR* Id : { TEXT("on"), TEXT("soft"), TEXT("off") })
 		{
@@ -3018,7 +3027,7 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 			const FS47PauseOpts MusicOpts = Flow->Settings();
 			bKept &= Flow->MusicReacts == Id && MusicOpts.MusicReacts == Id && MusicOpts.Stingers == Sting && (Sting == TEXT("full")) == (FString(Id) == TEXT("on"));
 		}
-		Flow->MusicReacts = TEXT("on"); Flow->Stingers = TEXT("full");
+		Flow->MusicReacts = WasReacts; Flow->Stingers = WasStingers; Flow->ApplySideband();
 		Check(TEXT("music reacts on, soft and off and stingers full, soft and off survive settings JSON and pause options"), bKept);
 		Check(TEXT("a music setting that is no known word reads as the default"),
 			S47Sideband::ModeFrom(TEXT("loud")) == S47Sideband::EMode::On && FString(S47Sideband::StingersId(S47Sideband::ModeFrom(TEXT("")))) == TEXT("full"));

@@ -242,6 +242,9 @@ public:
  // note marks that one), as the ladder chose it: "cards" (the cards up), "card:<id>" (a card not up yet), a task line's own words,
  // or empty (the step is no row of the list: the note writes it as the HUD has it).
  FString ObjectiveRow() const;
+ // D69-20261113: whether the ladder has a step above a deadline (paper on the printer, the telex, a window open now, a paid card
+ // up, a planned case test's job, the night's cards from 19:00): Dr. Ward's unread letter waits under those, with the deadlines.
+ bool StepAheadOfLetter() const;
  // The field test whose dated window is open now, its step in Next. False: none.
  bool WindowOpenStep(FString& Next) const;
  // A field test made ready whose window has not opened: it waits, named with its time; it is no next step before then.
@@ -262,6 +265,9 @@ public:
  // shut stays inert and clears at 08:00. Saved with the notebook's state ("notePlan"). Pin again (the same key) to take it off.
  void PinRow(const FString& Key,const FString& Row);
  FString PinnedKey() const { return bPinLive?PinKey:FString(); }
+ // REVIEW-20261113: whether a pinned Ward matter still stands: "matter:report-N" while week N's report is unsent (Unsent), and
+ // "matter:assessment" while the predecessor's line says the station is under review (Standing); any other matter key: true. Pure.
+ static bool MatterLive(const FString& Key,const TArray<int32>& Unsent,const FString& Standing);
  bool PinnedStep(FString& Full,FString& Short) const;
  FString CloseSoonLine() const;
  // The soonest of the cards waiting for the evening, and the next time it comes up; null if none is.

@@ -39,6 +39,7 @@ struct FS47PauseOpts
 {
 	TFunction<void()> OnResume, OnTitle;
 	float Volume = 0.8f, Sens = 1.f, Music = 0.7f, Radio = 1.f;
+	FString NowPlaying; // MUSIC-20261113 (Tom: which piece is that?): "Floating Cities (Kevin MacLeod)", said under the Music slider's help; empty: none
 	TFunction<void(float)> OnVolume, OnSens, OnMusic, OnRadio; FString MusicReacts = TEXT("on"), Stingers = TEXT("full"); TFunction<void(const FString&)> OnMusicReacts, OnStingers; // SIDEBAND-20261113: on | soft | off, and full | soft | off
 	bool bCharacters = true, bSerling = true, bArtBell = true, bRadioCast = true;
 	TFunction<void(bool)> OnCharacters, OnSerling, OnArtBell, OnRadioCast;
@@ -99,6 +100,7 @@ struct FS47MapView
 	// Freeform: the survey sheet instead of the sketch. Where the player is and which way they face (degrees from north,
 	// clockwise), and where the truck stands, all road-local, whatever area each is in (S47FieldMap::Me).
 	bool bField = false, bMe = false, bTruck = false, bDriving = false;
+	bool bDeskStamp = false; // D69-20261113: the night desk's "not to leave the building" stamp is on the sheet (S47FieldMap::DeskStampShows)
 	double MeX = 0, MeZ = 0, MeHeading = 0, TruckX = 0, TruckZ = 0, TruckHeading = 0;
 	FString MeArea;
 	TArray<FS47MapNote> Notes;

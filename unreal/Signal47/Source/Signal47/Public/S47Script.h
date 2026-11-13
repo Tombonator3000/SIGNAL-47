@@ -186,6 +186,12 @@ namespace S47Script
 
  // Empty when the words keep to Freeform's limits; otherwise what they touch, for the editor ("the 47 seconds are Story's").
  SIGNAL47_API FString LintText(const FString& Text);
+ // REVIEW-20261113: tape seconds as player text ("4.6", "14.8"), Decimals 0 to 2, never digits that read 47 (4.7, 14.7, 0.47 with
+ // the point taken out: FS47Places::TieLine's rule). bRunning: a counter going up shows the value before (4.6, then 4.8); otherwise
+ // (a mark) the shown value moves a step down, or up when that is clean. Only what is shown changes: the stored value never does.
+ // bPad: a leading zero under ten ("04.6", the deck's counter windows).
+ SIGNAL47_API FString TapeSeconds(double Seconds, int32 Decimals = 1, bool bRunning = false, bool bPad = false);
+ SIGNAL47_API bool SaysFortySeven(const FString& Shown);
  // Everything wrong with a script: its words (LintText), and fields it cannot play with. Warnings: what will hold it back but is
  // not wrong (a figure in hours that never reach two in the morning).
  SIGNAL47_API TArray<FString> Lint(const FS47Script& S,TArray<FString>* Warnings=nullptr);

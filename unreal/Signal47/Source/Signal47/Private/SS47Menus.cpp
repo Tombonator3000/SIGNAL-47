@@ -510,7 +510,8 @@ void SS47Pause::Construct(const FArguments& InArgs)
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString((L.bPinned ? TEXT("* ") : TEXT("")) + S47TonightNote::LineText(L))).TextStyle(&LineStyle).AutoWrapText(true).LineHeightPercentage(1.1f)]
-				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Visibility(Tag.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible).Text(FText::FromString(Tag)).Font(Term(13, 1)).ColorAndOpacity(Css(0x6d7895))]
+				// D69-20261113: the tag one step larger, with a little air under the line (more under NEXT); four rows still fit the card
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, (bNext ? 3 : 2) * U, 0, 0)[SNew(STextBlock).Visibility(Tag.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible).Text(FText::FromString(Tag)).Font(Term(14, 1)).ColorAndOpacity(Css(0x6d7895))]
 			]
 		];
 	}

@@ -1,4 +1,5 @@
 #include "S47FreeformAudioDesk.h"
+#include "S47Script.h"
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
 #include "S47Observing.h"
@@ -229,16 +230,16 @@ void FS47FreeformAudioDesk::Step(double Dt)
  {
   const auto& O=*M->Observing;Source=O.AudioSource();Cursor=O.AudioPosition();Playing=O.AudioPlaying();Reviewed=O.AudioReviewed();HeardO=O.AudioHeard(0);HeardC=O.AudioHeard(1);MarkIn=O.AudioMarkedStart();MarkOut=O.AudioMarkedEnd();Control=O.ControlElapsed();Original=O.LoopStage()>=FS47Observing::ELoopStage::Rack;
  }
- FString Line=Powered()?FString::Printf(TEXT("%s / %s / %04.1f s\nHEARD O %.1f/18  C %.1f/8\nMARK %.1f - %.1f / %s"),Source==0?TEXT("ORIGINAL"):TEXT("CONTROL"),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),Cursor,HeardO,HeardC,MarkIn,MarkOut,Reviewed?TEXT("RETAINED"):TEXT("COMPARE")):TEXT("NO POWER\nRESTORE FEEDER OR GENERATOR");
+ FString Line=Powered()?FString::Printf(TEXT("%s / %s / %s s\nHEARD O %s/18  C %s/8\nMARK %s - %s / %s"),Source==0?TEXT("ORIGINAL"):TEXT("CONTROL"),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),*S47Script::TapeSeconds(Cursor,1,true,true),*S47Script::TapeSeconds(HeardO,1,true),*S47Script::TapeSeconds(HeardC,1,true),*(MarkIn<0?FString(TEXT("--.-")):S47Script::TapeSeconds(MarkIn)),*(MarkOut<0?FString(TEXT("--.-")):S47Script::TapeSeconds(MarkOut)),Reviewed?TEXT("RETAINED"):TEXT("COMPARE")):TEXT("NO POWER\nRESTORE FEEDER OR GENERATOR");
  if(Powered()&&!Original)Line=TEXT("NO RETAINED ANOMALOUS ORIGINAL\nCOLLECT ITS CHART AT THE PRINTER\nTHEN RECORD A RACK CONTROL");
- else if(Powered()&&Control<8)Line=FString::Printf(TEXT("INDEPENDENT CONTROL REQUIRED\nUSE RECEIVER RACK / %.1f OF 8 s\nORIGINAL WILL REMAIN INTACT"),Control);
+ else if(Powered()&&Control<8)Line=FString::Printf(TEXT("INDEPENDENT CONTROL REQUIRED\nUSE RECEIVER RACK / %s OF 8 s\nORIGINAL WILL REMAIN INTACT"),*S47Script::TapeSeconds(Control,1,true));
  if(Powered()&&M->IsFreeform()&&M->Freeform)
  {
   // GAMEPLAY-LOOP-01: the extra-tick take is on the deck from the end of the take; one listen confirms it, no control asked for
   const auto* J=M->Freeform->CurrentJob();
   if(!J||!FS47FreeformSession::PlainAnomaly(*J)||J->Stage<FS47FreeformSession::EJobStage::Chart)Line=M->Freeform->NextAction();
   else if(FS47FreeformSession::RetainWaits(*J))Line=TEXT("TAKE NOT RETAINED YET\nRECEIVER (CENTRE PC), RECORD TAB\nRETAIN TAKE, THEN PLAY IT HERE"); // RX-ANOMALY-FLOW-20261113
-  else Line=FString::Printf(TEXT("%s / %s / %04.1f s\nHEARD %.1f/18  REF %.1f/8\n%s"),Source==0?TEXT("ORIGINAL"):TEXT("REFERENCE"),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),Cursor,HeardO,HeardC,Reviewed?TEXT("ANOMALY CONFIRMED / TO OPS"):TEXT("PLAY, MARK THE TICKS, RETAIN"));
+  else Line=FString::Printf(TEXT("%s / %s / %s s\nHEARD %s/18  REF %s/8\n%s"),Source==0?TEXT("ORIGINAL"):TEXT("REFERENCE"),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),*S47Script::TapeSeconds(Cursor,1,true,true),*S47Script::TapeSeconds(HeardO,1,true),*S47Script::TapeSeconds(HeardC,1,true),Reviewed?TEXT("ANOMALY CONFIRMED / TO OPS"):TEXT("PLAY, MARK THE TICKS, RETAIN"));
   if(J&&FS47FreeformSession::PlainAnomaly(*J)&&J->bLegacyTrace)Line+=TEXT("\nLEGACY AUDIO RECONSTRUCTION");
   const FString CaptureStatus=M->Freeform->AudioCaptureStatus();if(!CaptureStatus.IsEmpty())Line+=TEXT("\n")+CaptureStatus;
 

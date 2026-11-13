@@ -118,6 +118,9 @@ namespace S47Sideband
 	// The tier's chain for a stinger (colour2 NOTES, "The tiers"): level on the baked buffer in dB, lowpass, direct and room send.
 	struct FTierMix { double LevelDb, Lowpass, Direct, Send; };
 	SIGNAL47_API FTierMix TierMix(ETier Tier, bool bSoft, double TrimDb);
+	// SIDEBAND-20261113: the moment's duck on the score as the prototype has it (colour2 s47flares.py duck_points through s47dsp env),
+	// in dB, T seconds after the stinger's start. For the self-test.
+	SIGNAL47_API double DuckDbAt(double T);
 	// The bed's level (dB on the baked loop) and lowpass (Hz) for a nearness 0 to 1.
 	SIGNAL47_API void BedFor(double Near, double& LevelDb, double& Lowpass);
 	// The wet trim of FAR for a piece of the score (dB; a held pad rings up more than a plucked guitar). By the file's name.
@@ -249,7 +252,8 @@ private:
 	void LetGo();
 	void Room(bool bOn);
 	void Push(TArray<FAim>& Aims, double V, double At);
-	void StopBed();
+	// REVIEW-20261113: bFade: an audible bed (another event's bed takes its place) goes down over 50 ms first and is stopped after
+	void StopBed(bool bFade = false);
 	void EndStinger();
 };
 
@@ -311,6 +315,7 @@ private:
 	bool bOwnsGround = false, bWasTaken = false, bGroundFrame = false, bGroundHeld = false, bPrebuilt = false;
 	double AuditionV[4] = { -1, -1, -1, -1 }, AuditionLeft[4] = { 0, 0, 0, 0 };
 	double SceneT = -1, SceneDelay = -1, StandWant = 1; bool bSceneHit = false, bSceneBed = false;
+	bool bScoreOwned = false; double OwnUntil = -1; // SIDEBAND-20261113: the command line's scene owns the score (FS47Score::Own) until then
 	TSharedRef<bool> bAlive = MakeShared<bool>(true);
 	const void* SinkOn = nullptr; // the FS47FieldRadio whose encounter sound asks this session
 	FString RecordPath; bool bRecordAsked = false;

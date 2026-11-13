@@ -61,7 +61,10 @@ public:
  FString PacketSection(const FString& Job) const;
  // The packet is collected: the held bearing goes on the map, into the field record and the toast. OutPage/OutDay/bOutExtra: the
  // section and the slip's day, for the notebook's "Bearing slip, D0N". True if there was one.
- bool ReleasePacket(const FString& Job,FString* OutPage=nullptr,int32* OutDay=nullptr,bool* bOutExtra=nullptr);
+ // REVIEW-20261113: collected after its noon (the packet waited on the printer), the bearing's time on the map starts again from the
+ // collection: live until the next noon (ColdAt), so "before noon" stays true and the circle is not off the map as it arrives.
+ // AtClock: the collection's clock (-1: the session's).
+ bool ReleasePacket(const FString& Job,FString* OutPage=nullptr,int32* OutDay=nullptr,bool* bOutExtra=nullptr,double AtClock=-1);
  int32 HeldCount() const{return Held.Num();}
  // WEEKLY-CASE-20261109: the evening after the first big night the night's one pointing-out is the week's case's (FS47WeekCase): a
  // slip from SARO toward Target (road-local ToX, ToZ), its sector over it, the spread by the mended branches as a registration's.

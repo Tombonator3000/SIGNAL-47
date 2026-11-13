@@ -993,8 +993,8 @@ FString FS47Places::TieLine(const FHeld& H)
  // points at that same thing does it say they belong together, in the operator's own marks if he set them. Never what it is.
  if(H.bSame&&H.bOwnMarks)
  {
-  const FString In=FString::Printf(TEXT("%.1f"),H.MarkIn),Out=FString::Printf(TEXT("%.1f"),H.MarkOut);
-  // (read as digits: 14.7 or 4.7 says a 47 as well as 47.0 does)
+  // (read as digits: 14.7 or 4.7 says a 47 as well as 47.0 does; REVIEW-20261113: the shared rule, S47Script::TapeSeconds)
+  const FString In=S47Script::TapeSeconds(H.MarkIn),Out=S47Script::TapeSeconds(H.MarkOut);
   const FString Digits=(In+TEXT(" ")+Out).Replace(TEXT("."),TEXT(""));
   if(!Digits.Contains(TEXT("47"))&&In!=TEXT("8.15")&&Out!=TEXT("8.15"))
    return FString::Printf(TEXT("THE EXTRA TICKS BETWEEN YOUR MARK IN AT %s S AND YOUR MARK OUT AT %s S CAME IN ON THIS BEARING."),*In,*Out);
@@ -1019,11 +1019,14 @@ FString FS47Places::PacketSection(const FString& Job) const
  const FHeldFix* H=Held.FindByPredicate([&Job](const FHeldFix& X){return X.Info.Job==Job;});
  return H?PacketSection(H->B,H->Info):FString();
 }
-bool FS47Places::ReleasePacket(const FString& Job,FString* OutPage,int32* OutDay,bool* bOutExtra)
+bool FS47Places::ReleasePacket(const FString& Job,FString* OutPage,int32* OutDay,bool* bOutExtra,double AtClock)
 {
  const int32 I=Held.IndexOfByPredicate([&Job](const FHeldFix& X){return X.Info.Job==Job;});
  if(I==INDEX_NONE)return false;
- const FHeldFix H=Held[I];Held.RemoveAt(I);
+ FHeldFix H=Held[I];Held.RemoveAt(I);
+ // REVIEW-20261113: a packet fetched after the bearing's noon brings it live until the next noon, not already cold
+ const double Now=AtClock>=0?AtClock:M&&M->Freeform?M->Freeform->Clock():-1;
+ if(Now>=0&&H.B.Until>=0&&H.B.Until<=Now+3600.)H.B.Until=FMath::Max(H.B.Until,ColdAt(Now));
  if(OutPage)*OutPage=PacketSection(H.B,H.Info);
  if(OutDay)*OutDay=H.B.Day;
  if(bOutExtra)*bOutExtra=H.Info.bExtra;
@@ -1299,6 +1302,15 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
     HoldAgain.FillMapAt(Out,Clock+60);
     const bool bShown=bOut&&Page.StartsWith(TEXT("OFF-BEAM BEARING"))&&PageDay==4&&!bPageExtra&&!HoldAgain.HeldFor(H.Job)&&HoldAgain.Bearings().Num()==1&&Out.Sectors.Num()==1&&S47FieldMap::SlipCircles(Out).Num()==1
      &&HoldAgain.SlipRows(Clock+60).Num()==1&&FS47Places(nullptr).HeldCount()==0;
+    {
+     // REVIEW-20261113: the packet left on the printer past the bearing's noon: collected at 14:00, the bearing is live (to the next
+     // noon), on the map and on NOW, not cold as it arrives
+     FS47Places Late(nullptr);Late.Begin(nullptr);FHeldFix Lf=Hf;Late.Held.Add(Lf);
+     const double After=P.Until+2*3600.;
+     FS47MapView LateMap;const bool bLateOut=Late.ReleasePacket(H.Job,nullptr,nullptr,nullptr,After);Late.FillMapAt(LateMap,After+60);
+     Check(bLateOut&&Late.Bearings().Num()==1&&Late.Bearings()[0].Until>After&&Late.Bearings()[0].Until==ColdAt(After)&&LateMap.Sectors.Num()==1&&Late.SlipRows(After+60).Num()==1,
+      TEXT("REVIEW: a packet collected after its bearing's noon brings the bearing live to the next noon: on the map and on NOW, never cold on arrival"));
+    }
     FS47Places OldSave(nullptr);OldSave.Begin(S47J::Read(S47J::Write(Map.Save())));
     Check(bWaits&&bShown&&OldSave.HeldCount()==0&&!Map.Save()->HasField(TEXT("held")),TEXT("LOOP-SLIP-IN-PACKET: held for its packet the bearing is off the map and NOW, kept over a Continue, then on the map with its circle once the packet is collected; an older save has none"));
    }

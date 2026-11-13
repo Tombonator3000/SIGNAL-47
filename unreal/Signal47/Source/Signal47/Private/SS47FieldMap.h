@@ -58,6 +58,10 @@ namespace S47FieldMap
 	// The land's height at a road-local point, as the sheet's contours have it (metres, the road's datum), and in feet above sea level.
 	double LandHeight(double X, double Z);
 	double Feet(double Height);
+	// D69-20261113: the purple stamp "SARO / NIGHT DESK, NOT TO LEAVE THE BUILDING" is the desk copy's mark from the first shift, when
+	// the sheet's work is done at the desk. It is on the sheet only while that is true: the first shift (no free time yet), and nothing
+	// tells the player to go out (a live bearing slip to drive to, Dale asking him to get outside and look). Pure.
+	bool DeskStampShows(bool bFirstShift, bool bSlipLive, bool bDaleOut);
 	bool SelfTest(TArray<FString>& Lines);
 }
 
