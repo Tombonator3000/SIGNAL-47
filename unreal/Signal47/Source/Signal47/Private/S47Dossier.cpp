@@ -385,8 +385,18 @@ bool FS47Dossier::Put(FTag&& One,int32 File)
 {
  if(File==INDEX_NONE)
  {
-  if(Sequence.Num()>=S47Dossier::Tables::MaxFiles)return false;
-  File=Sequence.Add(One.Kind); // it opens a file: the next number
+  if(Sequence.Num()>=S47Dossier::Tables::MaxFiles)
+  {
+   // REVIEW (14 Nov): no room for another file: into the lowest-numbered file of its kind, never dropped without a word
+   File=FirstFileOf(One.Kind);
+   if(File==INDEX_NONE)
+   {
+    UE_LOG(LogTemp,Display,TEXT("S47: dossier: %d files, none of %s: %s is not kept"),Sequence.Num(),S47Dossier::KindId(One.Kind),*One.Key);
+    return false;
+   }
+   UE_LOG(LogTemp,Display,TEXT("S47: dossier: %d files, no room for another: %s goes in file %d"),Sequence.Num(),*One.Key,File+1);
+  }
+  else File=Sequence.Add(One.Kind); // it opens a file: the next number
  }
  if(!Sequence.IsValidIndex(File))return false;
  One.File=File;
@@ -1038,6 +1048,15 @@ bool SelfTest(TArray<FString>& Lines)
    const S47J::FObj Out=S47J::Read(S47J::Write(Held.Save()));
    Check(bKept&&S47J::Nums(Out,TEXT("reached"))==TArray<double>{3.}&&S47J::Write(HeldBack.Save())==S47J::Write(Held.Save())&&!S47J::Read(S47J::Write(H.Save()))->HasField(TEXT("reached")),
     TEXT("REVIEW: a file's stage never drops: a later find may strike a box, never take back HABITS or what it gave"));
+  }
+  {
+   // REVIEW (14 Nov): every file there can be is open: a find that ties nothing goes in the lowest-numbered file of its kind
+   TArray<FString> Full;for(int32 N=0;N<MaxFiles;++N)Full.Add(TEXT("roswell"));
+   const S47J::FObj FullRecord=S47J::New();S47J::Set(FullRecord,TEXT("files"),Full);S47J::Set(FullRecord,TEXT("tags"),S47J::New());
+   FS47Dossier Crowded;Crowded.Load(FullRecord);
+   const bool bRoom=Crowded.Order().Num()==MaxFiles&&Crowded.Tag(TEXT("full-small"),Small,Shape,3)&&Crowded.FileOf(TEXT("full-small"))==1&&Crowded.Order().Num()==MaxFiles
+    &&!Crowded.Tag(TEXT("full-low"),Low,Shape,3)&&!Crowded.HasTag(TEXT("full-low"));
+   Check(bRoom,TEXT("REVIEW: with every file open a find that ties nothing goes in its kind's lowest-numbered file (logged), never silently dropped"));
   }
   // HABITS waits for the first week with danger in it
   FS47Dossier W;W.SetHabitsFrom(8);
