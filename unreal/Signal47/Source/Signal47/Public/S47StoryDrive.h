@@ -15,7 +15,7 @@ class FS47EveningVisual;
 // The wagon's radio is 1420's local evening host, as the old drive had it (FS47Evening::RadioStep): the story's radio scenes (I01_DRIVE,
 // I10_BACK_ON_ROAD, played by FS47StoryScene) are voiced from their recorded takes on the radio bus (channel car-radio), the line as a
 // subtitle; under them a music bed. The bed is Tom's own "Intro Drive" (IntroBed, from the git-ignored licensed folder when it is there),
-// once in full from the start of the drive, the host held until its last IntroTail seconds; then the old bed (LoopBed) looped, paused
+// once in full from the start of the drive, the host held for its first IntroLead seconds and then heard over it, ducked; then the old bed (LoopBed) looped, paused
 // while the host speaks. Without the Intro Drive file the old bed plays throughout. The radio key turns it on and off; the general car
 // radio (US47Main::CarRadio) is silent while this one owns the dial.
 //
@@ -31,6 +31,7 @@ public:
 	static constexpr double LoopGain = 0.23;   // the old bed's level on the radio bus (FS47Evening::RadioStep)
 	static constexpr double IntroGain = 0.08;  // Tom's tracks are mastered louder (the menu's own track: 0.2 against the old 0.6)
 	static constexpr double IntroDuck = 0.4;   // the intro's level under the host's voice, as a share of IntroGain
+	static constexpr double IntroLead = 20;    // the track is 3:06: the host leaves its opening alone for this long, then talks over it ducked
 	static constexpr double IntroTail = 4;     // the host may come in over the intro's last seconds, never over its opening
 	static constexpr int32 Dial = 1420;
 
@@ -60,7 +61,7 @@ public:
 	bool RadioOn() const { return bRadioOn; }
 	// At the wheel, radio on, no panel up: the host and the bed are heard.
 	bool Audible() const;
-	// The host may speak now: the Intro Drive is over, or in its last IntroTail seconds (or there is none).
+	// The host may speak now: the Intro Drive is past its first IntroLead seconds (or its last IntroTail, for a short one), or there is none.
 	bool HostMayTalk() const;
 	// The radio key on the drive (US47Main::TurnRadio).
 	void ToggleRadio();
@@ -70,7 +71,7 @@ public:
 	// The Intro Drive file, or empty when it is not in this build.
 	static FString IntroFile();
 	// Whether the host waits for the intro (pure; the self-test's).
-	static bool IntroHolds(bool bIntro, bool bIntroDone, double At, double Len) { return bIntro && !bIntroDone && Len - At > IntroTail; }
+	static bool IntroHolds(bool bIntro, bool bIntroDone, double At, double Len) { return bIntro && !bIntroDone && At < FMath::Min(IntroLead, Len - IntroTail); }
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:

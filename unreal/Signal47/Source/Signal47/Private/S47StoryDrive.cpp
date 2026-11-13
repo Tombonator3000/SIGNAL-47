@@ -9,6 +9,7 @@
 #include "S47Audio.h"
 #include "S47Media.h"
 #include "S47Radio.h"
+#include "S47Score.h"
 #include "S47UI.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
@@ -54,6 +55,10 @@ FS47EveningVisual* FS47StoryDrive::Visual() const
 
 FString FS47StoryDrive::IntroFile()
 {
+	// MUSIC-20261113 stages Tom's track with the score's media (Tools/music/build_music.py): the mono copy narrowed to AM is the
+	// car radio's; the full recording if only that is there. (A media name, as LoopBed: FS47MediaSource::Open resolves it.)
+	if (S47Score::MediaPresent(S47Score::IntroDriveRadioFile)) return S47Score::IntroDriveRadioFile;
+	if (S47Score::MediaPresent(S47Score::IntroDriveFile)) return S47Score::IntroDriveFile;
 	// As the menu's own track (lic:signal47_menu): the licensed folder's index names the file; a bare file of the id's name also does.
 	const FString Dir = FPaths::ProjectContentDir() / TEXT("Licensed/Raw");
 	FString Text;
@@ -346,7 +351,7 @@ bool FS47StoryDrive::SelfTest(TArray<FString>& Lines)
 	const auto Check = [&](bool bPass, const FString& What) { Lines.Add(FString::Printf(TEXT("%s %s"), bPass ? TEXT("PASS") : TEXT("FAIL"), *What)); bOk &= bPass; };
 	Check(Of(nullptr) == nullptr, TEXT("STORY-DRIVE-OWN-CAR: without a Story night's director there is no wagon and no evening host (Freeform keeps its truck and its radio)"));
 	// The host never talks over the Intro Drive's opening; over its last seconds, or after it, or without it, he may.
-	Check(IntroHolds(true, false, 10, 83) && !IntroHolds(true, false, 80, 83) && !IntroHolds(true, true, 0, 83) && !IntroHolds(false, false, 0, 83),
+	Check(IntroHolds(true, false, 10, 186) && !IntroHolds(true, false, 30, 186) && IntroHolds(true, false, 2, 8) && !IntroHolds(true, false, 5, 8) && !IntroHolds(true, true, 0, 186) && !IntroHolds(false, false, 0, 186),
 		TEXT("STORY-DRIVE-OWN-CAR: the host waits for the Intro Drive and comes in over its tail; without it (or after it) he speaks at once"));
 	Check(FString(LoopBed) == TEXT("radio/bama_country.mp3") && FString(IntroBed) == TEXT("signal47_intro_drive") && LoopGain == 0.23,
 		TEXT("STORY-DRIVE-OWN-CAR: the drive's beds are named constants: Intro Drive first, the old bed at 0.23 after it"));
