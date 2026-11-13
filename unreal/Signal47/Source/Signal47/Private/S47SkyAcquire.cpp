@@ -344,7 +344,7 @@ double FS47SkyAcquire::SignalToNoise() const
 	return bOdd ? Base - 2.2 + 1.4 * FMath::Sin(Time * 2.1) : Base;
 }
 
-FVector2D FS47SkyAcquire::ArmReach(int32 Arm) const
+FVector2D FS47SkyAcquire::ArmFarthest(int32 Arm) const
 {
 	FVector2D Centre = FVector2D::ZeroVector; int32 N = 0;
 	for (const FDish& D : Array) { Centre += D.Ground; ++N; }
@@ -361,12 +361,12 @@ FVector2D FS47SkyAcquire::ArmReach(int32 Arm) const
 
 double FS47SkyAcquire::ArmDelayNs(int32 Arm) const
 {
-	return DelayNs(ArmReach(Arm), Cross());
+	return DelayNs(ArmFarthest(Arm), Cross());
 }
 
 double FS47SkyAcquire::ArmDelayRate(int32 Arm) const
 {
-	return DelayRate(ArmReach(Arm), Cross());
+	return DelayRate(ArmFarthest(Arm), Cross());
 }
 
 const FS47SkyAcquire::FSource* FS47SkyAcquire::NearestCatalogued(FVector2D At, bool bMajorOnly) const

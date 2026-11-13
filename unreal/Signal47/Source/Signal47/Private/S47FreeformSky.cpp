@@ -18,6 +18,7 @@
 #include "S47Web.h"
 #include "S47WebAudio.h"
 #include "SS47RxLook.h"
+#include "SS47ScreenView.h"
 #include "SS47SkyChart.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -454,6 +455,10 @@ bool FS47FreeformSession::SkySelfTest(TArray<FString>& Lines)
 		Check(Bare.bJob && Bare.CardMhz > 1419. && Bare.CardMhz < 1421. && !Bare.Source.IsEmpty() && Bare.Clock == S.TerminalClock() && Bare.Term.StartsWith(TEXT("V4.2")) && !Bare.bPointing && !Bare.bRecording && Bare.Ticks.IsEmpty() && Bare.Scope.Strength == 0.,
 			TEXT("the receiver's frame reads the job's card, the terminal's clock and name; with no station round it there is no pointing, no source on the scopes and nothing recorded"));
 		Check(bSky && FMath::Abs(Morning - Almanac) < 1e-6 && Morning > 21. && Morning < 23., *FString::Printf(TEXT("the station's sidereal time follows the world's clock and date (the first morning: %.2f h)"), Morning));
+		// the frame on the glass: with its own row of keys the screen has no second one, and what the frame's rows leave is the
+		// body every tab has to fit (the sky chart fills it; TUNE, RECORD and DATA are lower)
+		const float Glass = SS47ScreenView::ContentHigh(true), Body = SkyT::RxBodyRoom(Glass);
+		Check(Glass > SS47ScreenView::ContentHigh(false) + 20.f && Body >= 560.f && Body < Glass - 200.f, *FString::Printf(TEXT("the receiver's frame leaves %.0f of the glass's %.0f units for the page"), Body, Glass));
 		// the banner never says more than the receiver's own line: with the job back at the start it asks for the pointing
 		Check(Bare.State.Id == S47RxLook::EState::Point || Bare.State.Id == S47RxLook::EState::NotUp || Bare.State.Id == S47RxLook::EState::NoPower, TEXT("a job that is not pointed: the banner asks for the array, or says why not"));
 	}

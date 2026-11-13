@@ -136,7 +136,7 @@ private:
 	double Time = 0, SearchT = 0, Hold = 0, LockT = 0, NextSweep = 0, MovedAt = -10;
 	int32 Rings = 0, EventArm = -1;
 	double Hash(int32 I, int32 Salt) const;
-	FVector2D ArmReach(int32 Arm) const;       // the arm's farthest antenna on remote, from the array's middle (metres east, north)
+	FVector2D ArmFarthest(int32 Arm) const;       // the arm's farthest antenna on remote, from the array's middle (metres east, north)
 	void Place();
 	uint32 UpdateArms();
 };

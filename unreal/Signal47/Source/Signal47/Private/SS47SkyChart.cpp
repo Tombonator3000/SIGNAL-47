@@ -78,15 +78,15 @@ namespace
 	}
 	// RX-LOOK-20261113: the table's stars and the galactic plane's specks as places of date (the sky of the game's spring), worked
 	// out once.
-	struct FS47SkyPlace { double Ra = 0, Dec = 0; float Bright = 1.f; };
-	const TArray<FS47SkyPlace>& S47SkyStarPlaces()
+	struct FS47ChartPlace { double Ra = 0, Dec = 0; float Bright = 1.f; };
+	const TArray<FS47ChartPlace>& S47SkyStarPlaces()
 	{
-		static const TArray<FS47SkyPlace> List = []
+		static const TArray<FS47ChartPlace> List = []
 		{
-			TArray<FS47SkyPlace> Made;
+			TArray<FS47ChartPlace> Made;
 			for (const S47SkySphere::FStar& St : S47SkySphere::Stars)
 			{
-				FS47SkyPlace P; P.Ra = St.RaHours * 15.; P.Dec = St.Dec; P.Bright = St.Mag; // (for a star: its magnitude)
+				FS47ChartPlace P; P.Ra = St.RaHours * 15.; P.Dec = St.Dec; P.Bright = St.Mag; // (for a star: its magnitude)
 				S47SkySphere::FromJ2000(P.Ra, P.Dec);
 				Made.Add(P);
 			}
@@ -94,15 +94,15 @@ namespace
 		}();
 		return List;
 	}
-	const TArray<FS47SkyPlace>& S47SkyDustPlaces()
+	const TArray<FS47ChartPlace>& S47SkyDustPlaces()
 	{
-		static const TArray<FS47SkyPlace> List = []
+		static const TArray<FS47ChartPlace> List = []
 		{
-			TArray<FS47SkyPlace> Made;
+			TArray<FS47ChartPlace> Made;
 			for (int32 I = 0; I < S47SkySphere::DustCount; ++I)
 			{
 				const S47SkySphere::FDust D = S47SkySphere::Dust(I);
-				FS47SkyPlace P; P.Bright = D.Bright;
+				FS47ChartPlace P; P.Bright = D.Bright;
 				S47SkySphere::GalToEq(D.Lon, D.Lat, P.Ra, P.Dec);
 				S47SkySphere::FromJ2000(P.Ra, P.Dec);
 				Made.Add(P);
@@ -401,7 +401,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 		S47SkyText(Out, L, G, FString::Printf(TEXT("%02dh"), Hour), Best->X < Rim.X ? Best->X - 22 : Best->X - 4, Best->Y + 4, 15, LabelTone);
 	}
 	// ---- the galactic plane: a stippled band ----
-	for (const FS47SkyPlace& Speck : S47SkyDustPlaces())
+	for (const FS47ChartPlace& Speck : S47SkyDustPlaces())
 	{
 		FVector2f P;
 		if (!AtHour(Lst - Speck.Ra, Speck.Dec, P) || !InRim(P, .985)) continue;
@@ -420,7 +420,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	}
 	// ---- the stars, by magnitude, with a soft shimmer, and the stick figures between them ----
 	{
-		const TArray<FS47SkyPlace>& StarList = S47SkyStarPlaces();
+		const TArray<FS47ChartPlace>& StarList = S47SkyStarPlaces();
 		TArray<FVector2f, TInlineAllocator<256>> StarAt;
 		TArray<uint8, TInlineAllocator<256>> StarSeen;
 		StarAt.SetNumZeroed(StarList.Num()); StarSeen.SetNumZeroed(StarList.Num());
