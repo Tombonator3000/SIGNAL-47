@@ -256,10 +256,12 @@ def material(name, base, metal, rough, worn, worn_metal, worn_rough, wear=1.0, s
     return mat
 
 
-STEEL = material('steel', (0.030, 0.032, 0.036), 0.92, 0.50, (0.46, 0.46, 0.47), 1.0, 0.30, wear=1.0, scratch=0.6, dust=0.55, grain=0.5, grain_scale=1700.0)
+# (a phosphated finish is a dull dark coat, not bare metal: in daylight metallic 0.9 at roughness 0.5 read as polished silver down the sights;
+# only the worn edges and scratches show the steel under it)
+STEEL = material('steel', (0.034, 0.036, 0.040), 0.35, 0.70, (0.46, 0.46, 0.47), 1.0, 0.30, wear=1.0, scratch=0.6, dust=0.55, grain=0.5, grain_scale=1700.0)
 POLY = material('polymer', (0.022, 0.024, 0.022), 0.0, 0.62, (0.075, 0.078, 0.072), 0.0, 0.40, wear=0.8, scratch=0.45, dust=0.75, grain=1.0, grain_scale=900.0)
 BRIGHT = material('bright', (0.36, 0.36, 0.37), 1.0, 0.30, (0.62, 0.62, 0.63), 1.0, 0.20, wear=0.7, scratch=0.9, dust=0.35, grain=0.2)
-MAGM = material('magsteel', (0.040, 0.046, 0.058), 0.9, 0.42, (0.42, 0.42, 0.44), 1.0, 0.28, wear=1.0, scratch=1.0, dust=0.5, grain=0.3)
+MAGM = material('magsteel', (0.040, 0.046, 0.058), 0.45, 0.48, (0.42, 0.42, 0.44), 1.0, 0.28, wear=1.0, scratch=1.0, dust=0.5, grain=0.3)
 RUBBER = material('rubber', (0.012, 0.012, 0.012), 0.0, 0.86, (0.05, 0.05, 0.05), 0.0, 0.7, wear=0.5, scratch=0.2, dust=0.9, grain=1.4, grain_scale=600.0)
 PAINT = material('paint', (0.62, 0.60, 0.52), 0.0, 0.6, (0.05, 0.05, 0.055), 0.6, 0.45, wear=1.6, scratch=1.6, dust=0.5, grain=0.3)
 LENS = material('lens', (0.75, 0.74, 0.66), 0.0, 0.08, (0.75, 0.74, 0.66), 0.0, 0.2, wear=0.0, scratch=0.2, dust=0.3, grain=0.0)
