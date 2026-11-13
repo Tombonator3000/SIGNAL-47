@@ -10,7 +10,7 @@
 namespace
 {
 	// The workstation's phosphor (S47FreeformTerminal's palette, which keeps its own copies).
-	const FLinearColor S47SkyGreen = S47Kit::Css(0x8cffa4), S47SkyAmber = S47Kit::Css(0xffb84a), S47SkyLine = S47Kit::Css(0x3f9a5a), S47SkyDim = S47Kit::Css(0x1d4a2b), S47SkyBlack = S47Kit::Css(0x020a05);
+	const FLinearColor S47SkyGreen = S47Kit::Css(0x8cffa4), S47SkyAmber = S47Kit::Css(0xffb84a), S47SkyLine = S47Kit::Css(0x3f9a5a), S47SkyDim = S47Kit::Css(0x1d4a2b);
 	const FSlateBrush* S47SkyFill() { static const FSlateColorBrush B(FLinearColor::White); return &B; }
 	FLinearColor S47SkyFade(FLinearColor C, float A) { C.A = A; return C; }
 	void S47SkyText(FSlateWindowElementList& Out, int32 L, const FGeometry& G, const FString& S, float X, float Y, int32 Size, const FLinearColor& C)
@@ -349,13 +349,14 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 		const int32 HaMin = FMath::RoundToInt32(FMath::Abs(Ha) * 60);
 		Row(TEXT("PHASE CENTRE"), S47SkyLine * 1.5f);
 		Row(FString::Printf(TEXT("AZ %05.1f   EL %04.1f"), R.X, R.Y), S47SkyGreen);
-		Row(FString::Printf(TEXT("HA %c%02dH%02dM DEC %+05.1f"), Ha < 0 ? TEXT('-') : TEXT('+'), HaMin / 60, HaMin % 60, Dec), S47SkyGreen);
+		Row(FString::Printf(TEXT("HA %s%02dH%02dM DEC %+05.1f"), Ha < 0 ? TEXT("-") : TEXT("+"), HaMin / 60, HaMin % 60, Dec), S47SkyGreen);
 		Y += 6;
+		static const TCHAR* const ArmName[FSky::ArmCount] = { TEXT("A"), TEXT("B"), TEXT("C") };
 		Row(bBearings ? FString::Printf(TEXT("BEARINGS %02d/%02d IN"), K.InCount(), K.OnCount()) : FString(TEXT("BEARINGS --/--")), S47SkyGreen);
 		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm)
 		{
 			const bool bSolid = K.ArmSolid(Arm);
-			Row(FString::Printf(TEXT("ARM %c  %s"), TCHAR(TEXT('A') + Arm), !bBearings ? TEXT("--") : bSolid ? TEXT("LOCKED") : TEXT("SWEEPING")), bSolid ? S47SkyGreen : S47SkyGreen * .75f);
+			Row(FString::Printf(TEXT("ARM %s  %s"), ArmName[Arm], !bBearings ? TEXT("--") : bSolid ? TEXT("LOCKED") : TEXT("SWEEPING")), bSolid ? S47SkyGreen : S47SkyGreen * .75f);
 		}
 		Row(bBearings ? FString::Printf(TEXT("SPREAD %4.1f DEG"), K.MeanOff()) : FString(TEXT("SPREAD --")), S47SkyGreen);
 		if (bLocking || bLocked)
@@ -363,7 +364,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			Y += 6;
 			const double Part = K.LockProgress();
 			for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm)
-				Row(FString::Printf(TEXT("DELAY %c %+07.1f NS"), TCHAR(TEXT('A') + Arm), K.ArmDelayNs(Arm) * Part), S47SkyGreen);
+				Row(FString::Printf(TEXT("DELAY %s %+07.1f NS"), ArmName[Arm], K.ArmDelayNs(Arm) * Part), S47SkyGreen);
 			Row(FString::Printf(TEXT("S/N %4.1f DB"), K.SignalToNoise() * Part), S47SkyGreen);
 			Row(FString::Printf(TEXT("RESIDUAL %.2f DEG"), K.MeanOff()), S47SkyGreen);
 			if (Part > .75)

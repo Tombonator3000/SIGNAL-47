@@ -32,8 +32,8 @@ public:
 	static constexpr double LockSeconds = 3.4;    // rings closing, readouts counting
 	static constexpr double HintAfter = 6., AssistAfter = 11., AssistFull = 24.; // seconds of searching with a steady array
 	static constexpr double AssistSpeed = 16.;    // degrees a second at full assist
-	static constexpr double SlewRate = 38.;       // the reticle after the pointer, degrees a second at most
-	static constexpr double KeyRate = 30.;        // the reticle by keys, degrees a second
+	static constexpr double SlewRate = 26.;       // the reticle after the pointer, degrees a second at most
+	static constexpr double KeyRate = 24.;        // the reticle by keys, degrees a second
 	static constexpr double BoxRadius = 3.;       // the catalogue's box round a card source (every card lies inside its own)
 	static constexpr double OddResidual = .55;    // unusual: the bearings never come nearer than this
 	static constexpr double OddOffMin = 1.4, OddOffMax = 2.8; // unusual: the crossing stands this far outside the box
