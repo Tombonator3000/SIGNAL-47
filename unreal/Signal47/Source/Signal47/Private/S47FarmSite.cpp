@@ -48,6 +48,7 @@
 #include "S47EngineSound.h"
 #include "S47WeekCase.h"
 #include "S47Happenings.h"
+#include "S47Script.h"
 #include "S47NightTiers.h"
 #include "Components/LocalFogVolumeComponent.h"
 #include "Components/PoseableMeshComponent.h"
@@ -568,7 +569,7 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
    // when it was seen in the lamp (the attention's Watch, rendered): stopped dead in the first of the light.
    if(M->Freeform)
    {
-    if(!M->Freeform->HasFinding(TEXT("rule-tall-froze")))M->Freeform->RecordEvidence(TEXT("rule-tall-froze"),FString::Printf(TEXT("%s. Something tall, out past where I stood. The moment my lamp found it, it stopped dead in the middle of a step, and it stood like that while the light was on it."),*S47Text::ClockText(M->Freeform->Clock(),false)));
+    if(!M->Freeform->HasFinding(TEXT("rule-tall-froze")))M->Freeform->RecordEvidence(TEXT("rule-tall-froze"),FString::Printf(TEXT("%s. Something tall, out past where I stood. The moment my lamp found it, it stopped dead in the middle of a step, and it stood like that while the light was on it."),*S47Script::PlayerClock(M->Freeform->Clock()))); // REVIEW (dossier slice 2): never a :47
     M->Freeform->TagEvidence(TEXT("rule-tall-froze"),S47Dossier::EKind::Tall,S47Dossier::EType::Lamp);
    }
   }

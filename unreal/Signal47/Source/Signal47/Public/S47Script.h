@@ -192,6 +192,11 @@ namespace S47Script
  // bPad: a leading zero under ten ("04.6", the deck's counter windows).
  SIGNAL47_API FString TapeSeconds(double Seconds, int32 Decimals = 1, bool bRunning = false, bool bPad = false);
  SIGNAL47_API bool SaysFortySeven(const FString& Shown);
+ // REVIEW (dossier slice 2, 14 Nov): a clock in player text, "HH:MM" from seconds after midnight (wraps at 24 h), never a minute or
+ // digits that read 47 and never 08:15 or 20:15 (FS47Places::SlipClock's rule): a minute on (03:47 shows 03:48). And a tape
+ // counter, "M:SS" from seconds, the same way a second on (0:47 shows 0:48; never 8:15). Only what is shown moves.
+ SIGNAL47_API FString PlayerClock(double Clock);
+ SIGNAL47_API FString PlayerCounter(double Seconds);
  // Everything wrong with a script: its words (LintText), and fields it cannot play with. Warnings: what will hold it back but is
  // not wrong (a figure in hours that never reach two in the morning).
  SIGNAL47_API TArray<FString> Lint(const FS47Script& S,TArray<FString>* Warnings=nullptr);

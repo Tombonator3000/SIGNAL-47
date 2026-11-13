@@ -697,3 +697,31 @@ FString S47Script::TapeSeconds(double Seconds, int32 Decimals, bool bRunning, bo
  }
  return Say(FMath::FloorToDouble(Seconds)-1);
 }
+
+FString S47Script::PlayerClock(double Clock)
+{
+ int32 S=FMath::IsFinite(Clock)?int32(FMath::Fmod(FMath::Fmod(Clock,86400.)+86400.,86400.)):0;
+ S=S/60*60;
+ FString T;
+ for(int32 Try=0;Try<4;++Try)
+ {
+  T=FString::Printf(TEXT("%02d:%02d"),(S/3600)%24,(S/60)%60);
+  if(!SaysFortySeven(T.Replace(TEXT(":"),TEXT("")))&&T!=TEXT("08:15")&&T!=TEXT("20:15"))break;
+  S+=60;
+ }
+ return T;
+}
+
+FString S47Script::PlayerCounter(double Seconds)
+{
+ int32 Whole=FMath::IsFinite(Seconds)?FMath::Clamp(FMath::RoundToInt(Seconds),0,99*60):0;
+ if(Whole/60==47)Whole=48*60; // forty-seven minutes on the counter: past them
+ FString T;
+ for(int32 Try=0;Try<4;++Try)
+ {
+  T=FString::Printf(TEXT("%d:%02d"),Whole/60,Whole%60);
+  if(!SaysFortySeven(T.Replace(TEXT(":"),TEXT("")))&&T!=TEXT("8:15"))break;
+  ++Whole;
+ }
+ return T;
+}
