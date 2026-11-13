@@ -60,9 +60,18 @@ namespace S47FreeformTerminal
  bool SelfTest(TArray<FString>& Report);
 
  // --- Workstation layout (UI-03) ---
- struct FNav { FString Label; bool bSelected=false; TFunction<void()> Action; bool bAttention=false; };
+ // RX-TABS-DUE-20261113: Due (live; tabs only) marks the tab that holds the next step: an amber "*" stays beside its label while the
+ // label and its frame breathe amber at 1 Hz (DueLevel). Never on the selected tab. The label text itself is unchanged.
+ struct FNav { FString Label; bool bSelected=false; TFunction<void()> Action; bool bAttention=false; TFunction<bool()> Due; };
  FW Nav(const TArray<FNav>& Items);                 // vertical menu, selected item filled amber
  FW Tabs(const TArray<FNav>& Items);                // horizontal tabs, selected filled green
+ // RX-TABS-DUE-20261113: the calm-flash setting, asked while painting (the owner sets it; none: not calm). DueLevel is the due cue's
+ // brightness 0..1: a sine at 1 Hz (two changes of direction a second), held at 1 when calm. DueRing lays that breathing amber frame
+ // over a key while Due() says it is the one to press; it takes no clicks and moves no layout.
+ void SetCalm(TFunction<bool()> Calm);
+ bool CalmNow();
+ float DueLevel(double Seconds,bool bCalm);
+ FW DueRing(FW Inner,TFunction<bool()> Due);
  FW Panel(const FString& Title,FW Body,bool bFilledHeader=false);
  FW Heading(const FString& Value,int32 Size=30);    // amber section title
  FW Banner(TAttribute<FString> Value,TAttribute<bool> Urgent=true); // amber framed status line, pulses when urgent

@@ -878,6 +878,24 @@ private:
  bool PointReady() const;
  bool ReceiverReady() const;
  FString ReceiverNextAction() const;
+ // RX-TABS-DUE-20261113 (Tom 13 Nov: the receiver tab to use next blinks): the receiver tab that holds the next step, read from the
+ // same predicates and in the same order as ReceiverNextAction (and CanRecordControl after the take); -1 when there is nothing to do
+ // at this receiver, or the step's tab is the one already open. Tabs: 0 ACQUIRE, 1 TUNE, 2 ARRAY, 3 RECORD, 4 DATA.
+ enum ERxTab : int32 { RxAcquire=0, RxTune=1, RxArray=2, RxRecord=3, RxData=4 };
+ struct FRxDueIn
+ {
+  bool bJob=false,bGated=false,bTutorialGate=false,bPower=true,bCaseWaits=false,bArrayBlocked=false;
+  bool bPointReady=false,bSettled=false,bSky=false,bTuned=false,bCrossRunning=false,bCanControl=false,bDataAsk=false;
+  EJobStage Stage=EJobStage::New;int32 Open=-1;
+ };
+ static int32 RxDueTab(const FRxDueIn& In);
+ int32 ReceiverDueTab() const;
+ bool RxDataAsk(const FJob& J) const; // an unusual take on tape with its case open and comparisons left, its DATA page not yet seen
+ FString RxDataSeenJob; // not saved: the job whose DATA page was opened
+ mutable uint64 RxDueFrame=~0ull;mutable int32 RxDueCache=-1;
+ // The OPS PC's DAILY WORK line is due while the job's next step is an OPS one there (confirm, register, compare): JobNextAction's own words.
+ static bool OpsWorkDueFor(EJobStage Stage,const FString& Next);
+ bool OpsWorkDue() const;
  bool EncodersAt(double Az,double El) const;
  void PointBeamControl();
  void CollectDuplicate();

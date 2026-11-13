@@ -1184,6 +1184,58 @@ FString FS47FreeformSession::ReceiverNextAction() const
  if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set BANDWIDTH between %.0f and %.0f kHz (now %.0f)."),P.Bw[0],P.Bw[1],R.Bandwidth);
  return TEXT("RECEIVER (centre PC): Fine-tune until the received carrier reaches 100%.");
 }
+// RX-TABS-DUE-20261113 (Tom 13 Nov: «På receiver: tab som Tuning etc. må blinke når de skal brukes»): ReceiverNextAction's steps, in its
+// order, as the tab that holds each one. A step done elsewhere (tracking, the reel deck, OPS, the printer, the binder) or a wait marks
+// no tab; nor does the tab already open (its own key carries the cue there: START RECORDING, RECORD INTERNAL CONTROL).
+int32 FS47FreeformSession::RxDueTab(const FRxDueIn& In)
+{
+ auto Pick=[&In](int32 Tab){return Tab==In.Open?-1:Tab;};
+ if(!In.bJob||In.bGated||In.bTutorialGate)return -1;
+ // After the take: JobNextAction. Only the internal control is the receiver's (its RECORD tab); an unusual take with its case open
+ // may be compared on DATA until that page has been seen.
+ if(In.Stage>=EJobStage::Chart)return In.bCanControl?Pick(RxRecord):In.bDataAsk?Pick(RxData):-1;
+ if(!In.bPower||In.bCaseWaits)return -1;
+ if(In.bArrayBlocked)return Pick(RxArray); // isolated antennas: the ARRAY tab shows which
+ if(In.Stage==EJobStage::New)return Pick(RxArray); // not pointed: ARRAY says so, and where the pointing is commanded
+ if(In.Stage==EJobStage::Integrating)
+ {
+  if(!In.bTuned)return Pick(RxTune);
+  if(!In.bPointReady||!In.bSettled)return In.bCrossRunning?-1:Pick(RxArray); // the reference scan is a wait
+  return -1; // recording: nothing to do but keep it valid
+ }
+ if(!In.bPointReady)return Pick(RxArray); // slewing
+ if(!In.bSky)return Pick(RxAcquire);
+ return Pick(RxTune); // tune the card, then START RECORDING (ANOMALY DETECTED or not), both on TUNE
+}
+bool FS47FreeformSession::RxDataAsk(const FJob& J)const
+{
+ if(!PlainAnomaly(J)||J.TraceTicks.IsEmpty()||J.Stage<EJobStage::Chart||RxDataSeenJob==J.Id)return false;
+ const auto* C=Cases.Get(0);return C&&C->bOpen&&!C->bConcluded&&Cases.RefTriesLeft(0)>0;
+}
+int32 FS47FreeformSession::ReceiverDueTab()const
+{
+ // Asked by each tab every frame: worked out once a frame.
+ if(RxDueFrame==GFrameCounter)return RxDueCache;
+ FRxDueIn In;In.Open=ReceiverTab;
+ if(const FJob* J=CurrentJob())
+ {
+  In.bJob=true;In.Stage=J->Stage;In.bGated=EveningGated(*J);In.bTutorialGate=Tutorial==1;In.bPower=HasPower();
+  In.bCaseWaits=J->CaseTest>=0&&J->Stage<=EJobStage::Pointed&&!CasePrecondition(*J).IsEmpty();
+  In.bArrayBlocked=M&&M->Web&&J->Stage<=EJobStage::Integrating&&ArrayBlocked();
+  In.bPointReady=PointReady();In.bSettled=Settle>=1;In.bSky=SkyAcquired();
+  In.bTuned=M&&M->Story&&M->Story->Rx.Pass(EffectiveProfile(*J));
+  In.bCrossRunning=bCrossRunning;In.bCanControl=CanRecordControl();In.bDataAsk=RxDataAsk(*J);
+ }
+ RxDueFrame=GFrameCounter;RxDueCache=RxDueTab(In);return RxDueCache;
+}
+bool FS47FreeformSession::OpsWorkDueFor(EJobStage Stage,const FString& Next)
+{
+ return (Stage==EJobStage::Chart||Stage==EJobStage::Recorded)&&(Next.StartsWith(TEXT("OPS (corner PC)"))||Next.StartsWith(TEXT("OPS / DAILY WORK")));
+}
+bool FS47FreeformSession::OpsWorkDue()const
+{
+ const FJob* J=CurrentJob();return J&&Tutorial==0&&OpsWorkDueFor(J->Stage,JobNextAction(*J));
+}
 bool FS47FreeformSession::FirstPulseDue(const FJob& Candidate) const
 {
  // The game's first question: the first pulsar anyone records here has the extra ticks on it. Never again by this rule, and
@@ -1872,7 +1924,7 @@ TSharedRef<SWidget> FS47FreeformSession::OpsShell(int32 Section,TSharedRef<SWidg
  const bool CaseWaiting=CaseAwaitingChoice()>=0;
  TArray<T::FNav> Items;
  Items.Add({TEXT("OVERVIEW"),Section==0,[this]{Feedback.Empty();OpsSection=0;OpenOperations();}});
- Items.Add({TEXT("DAILY WORK"),Section==1,[this]{Feedback.Empty();OpsSection=1;OpenOperations();}});
+ Items.Add({TEXT("DAILY WORK"),Section==1,[this]{Feedback.Empty();OpsSection=1;OpenOperations();},Section!=1&&OpsWorkDue()}); // RX-TABS-DUE-20261113: confirm, register, compare
  Items.Add({TEXT("CASE BOARD"),Section==2,[this]{Feedback.Empty();OpenCaseBoard(-1);},CaseWaiting});
  Items.Add({TEXT("RECORDS"),Section==3,[this]{Feedback.Empty();if(StationFileDue())ArchiveTab=4;OpenArchive();},StationFileDue()}); // CASES-OPS-20261109: was CASE ARCHIVE
  // D48-20261110 (Tom): no SERVICE here; the array PC's MAINTENANCE tab owns service. OVERVIEW keeps the summary that points there (OpenServiceGuide).
@@ -2595,7 +2647,9 @@ void FS47FreeformSession::OpenReceiver()
  {const FString TabKey=CurrentJob()->Id+(SkyAcquired()?TEXT("+"):TEXT("-"));if(TabKey!=SkyTabKey){SkyTabKey=TabKey;ReceiverTab=SkyAcquired()?1:0;}}
  TSharedPtr<SWidget> SkyKeys;
  static const TCHAR* TabNames[]={TEXT("ACQUIRE"),TEXT("TUNE"),TEXT("ARRAY"),TEXT("RECORD"),TEXT("DATA")};
- TArray<T::FNav> TabItems;for(int32 I=0;I<5;++I)TabItems.Add({TabNames[I],ReceiverTab==I,[this,I]{ReceiverTab=I;OpenReceiver();}});
+ // RX-TABS-DUE-20261113: the tab that holds the next step breathes amber with a marker until it is opened (ReceiverDueTab).
+ if(ReceiverTab==RxData)RxDataSeenJob=CurrentJob()->Id;
+ TArray<T::FNav> TabItems;for(int32 I=0;I<5;++I){T::FNav Tab{TabNames[I],ReceiverTab==I,[this,I]{ReceiverTab=I;OpenReceiver();}};Tab.Due=[this,I]{return ReceiverDueTab()==I;};TabItems.Add(Tab);}
  TArray<S47Kit::FW> Rows;Rows.Add(T::Tabs(TabItems));
  // D45-20261110 (Tom: the target showed only once the array had locked): what the array is doing stands beside the measurement
  // line on every tab, from the job's selection on. Recording keeps its strict rule (ReceiverReady).
@@ -2635,6 +2689,7 @@ void FS47FreeformSession::OpenReceiver()
    if(PlainAnomaly(*J)&&J->Stage>=EJobStage::Chart&&J->Stage<=EJobStage::Recorded&&!J->bAudioReviewed)return FString(TEXT("ON TAPE / REEL DECK")); // GAMEPLAY-LOOP-01
    return J->Stage>=EJobStage::Chart?FString(TEXT("RECORDING RETAINED")):FString(TEXT("START RECORDING"));
   }),[this]{if(CanRecordControl())StartControl();else StartAcquisition();},1,TAttribute<bool>::CreateLambda([this]{return ReceiverReady()||CanRecordControl();}));
+  Start=T::DueRing(Start,[this]{return ReceiverReady()||CanRecordControl();}); // RX-TABS-DUE-20261113: the key the TUNE page is due for
   Rows.Add(T::Split({
    {1.15f,T::Readout(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{const int32 Percent=S47Signal::CarrierPercent(Quality());return FString::Printf(TEXT("%d %% %s"),Percent,Percent>=100?TEXT("LOCKED"):Percent>=70?TEXT("CLOSE"):TEXT("SEARCHING"));}))},
    {.9f,T::Readout(TEXT("OFF TARGET"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("%+.3f MHz"),M->Story->Rx.Frequency-EffectiveProfile(*J).F):FString();}))},
@@ -2720,7 +2775,7 @@ void FS47FreeformSession::OpenReceiver()
     T::Small(Why),
     T::Value(TEXT("CONTROL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return !X||!X->bControl?FString(TEXT("NOT RECORDED")):X->ControlAt<8?FString::Printf(TEXT("RUNNING %.1f / 8 s"),X->ControlAt):FString(TEXT("COMPLETE"));}),true),
     T::Small(After)})));
-   if(!Beam&&!J->bControl)Rows.Add(T::Big(FString(TEXT("RECORD INTERNAL CONTROL / 8 SECONDS")),[this]{if(StartControl())OpenReceiver();else Changed(NextAction());},1,true));
+   if(!Beam&&!J->bControl)Rows.Add(T::DueRing(T::Big(FString(TEXT("RECORD INTERNAL CONTROL / 8 SECONDS")),[this]{if(StartControl())OpenReceiver();else Changed(NextAction());},1,true),[this]{return CanRecordControl();})); // RX-TABS-DUE-20261113
   }
   if(!ControlPanel||J->bControl||J->Phenomenon==TEXT("wrong_source"))Rows.Add(Banner());
  }
@@ -5187,6 +5242,54 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   }
   Check(LoopOrder,TEXT("GAMEPLAY-LOOP-01: ANOMALY DETECTED on the receiver, then the reel deck (no control, no chart), one listen, OPS's one button, the packet, the binder"));
   Loop.Stop();
+  { // RX-TABS-DUE-20261113: the receiver tab that holds the next step (state to due tab), and the OPS line after the take
+   using E=EJobStage;
+   auto Due=[](E Stage,int32 Open,TFunction<void(FRxDueIn&)> Set){FRxDueIn In;In.bJob=true;In.Stage=Stage;In.Open=Open;if(Set)Set(In);return RxDueTab(In);};
+   bool Rule=RxDueTab(FRxDueIn())==-1; // no job: nothing
+   Rule&=Due(E::New,RxAcquire,nullptr)==RxArray&&Due(E::New,RxArray,nullptr)==-1; // TRACKING next: ARRAY shows it is not pointed; never the open tab
+   Rule&=Due(E::Pointed,RxAcquire,nullptr)==RxArray; // slewing
+   Rule&=Due(E::Pointed,RxTune,[](FRxDueIn& X){X.bPointReady=true;})==RxAcquire; // settling, then the sky chart
+   Rule&=Due(E::Pointed,RxTune,[](FRxDueIn& X){X.bPointReady=X.bSettled=true;})==RxAcquire; // on the card: find it on the chart
+   Rule&=Due(E::Pointed,RxAcquire,[](FRxDueIn& X){X.bPointReady=X.bSettled=X.bSky=true;})==RxTune; // after the fix: TUNE
+   Rule&=Due(E::Pointed,RxTune,[](FRxDueIn& X){X.bPointReady=X.bSettled=X.bSky=X.bTuned=true;})==-1; // tuned on TUNE: START RECORDING (its key carries the cue)
+   Rule&=Due(E::Pointed,RxData,[](FRxDueIn& X){X.bPointReady=X.bSettled=X.bSky=X.bTuned=true;})==RxTune; // ANOMALY DETECTED / START RECORDING lives on TUNE
+   Rule&=Due(E::Pointed,RxTune,[](FRxDueIn& X){X.bPower=false;})==-1&&Due(E::New,RxTune,[](FRxDueIn& X){X.bGated=true;})==-1
+    &&Due(E::Pointed,RxTune,[](FRxDueIn& X){X.bCaseWaits=true;})==-1&&Due(E::New,RxTune,[](FRxDueIn& X){X.bTutorialGate=true;})==-1; // power, evening, case test, first shift: elsewhere
+   Rule&=Due(E::Pointed,RxTune,[](FRxDueIn& X){X.bArrayBlocked=true;})==RxArray; // isolated antennas
+   Rule&=Due(E::Integrating,RxTune,[](FRxDueIn& X){X.bPointReady=X.bSettled=X.bSky=X.bTuned=true;})==-1; // recording: nothing to do
+   Rule&=Due(E::Integrating,RxArray,[](FRxDueIn& X){X.bPointReady=X.bSettled=X.bSky=true;})==RxTune; // tuning lost
+   Rule&=Due(E::Integrating,RxTune,[](FRxDueIn& X){X.bTuned=X.bSky=true;})==RxArray&&Due(E::Integrating,RxTune,[](FRxDueIn& X){X.bTuned=X.bSky=X.bCrossRunning=true;})==-1; // pointing lost; the reference scan waits
+   Rule&=Due(E::Recorded,RxTune,[](FRxDueIn& X){X.bCanControl=true;})==RxRecord&&Due(E::Recorded,RxRecord,[](FRxDueIn& X){X.bCanControl=true;})==-1; // the internal control
+   Rule&=Due(E::Chart,RxTune,nullptr)==-1&&Due(E::Registered,RxTune,[](FRxDueIn& X){X.bDataAsk=true;})==RxData&&Due(E::Registered,RxData,[](FRxDueIn& X){X.bDataAsk=true;})==-1;
+   Check(Rule,TEXT("RX-TABS-DUE-20261113: the due receiver tab: ARRAY while not pointed or slewing, ACQUIRE until the fix, TUNE to tune and record, RECORD for the control, DATA to compare; never the open tab, nothing while waiting"));
+   FS47FreeformSession Flow(nullptr);Flow.Begin(nullptr);Flow.Tutorial=0;
+   const int32 FI=Flow.Work.IndexOfByPredicate([](const FJob& X){return X.Source==1&&X.CaseTest<0;});
+   bool Chain=FI!=INDEX_NONE;
+   if(Chain)
+   {
+    Flow.Selected=FI;FJob& FJ=Flow.Work[FI];Flow.ReceiverTab=RxTune;
+    auto Rx=[&Flow]{Flow.RxDueFrame=~0ull;return Flow.ReceiverDueTab();};
+    // ANOMALY DETECTED on a tuned, settled, fixed receiver: TUNE has START RECORDING
+    Chain&=Due(E::Pointed,RxAcquire,[](FRxDueIn& X){X.bPointReady=X.bSettled=X.bSky=X.bTuned=true;})==RxTune;
+    FJ.bAnomaly=true;FJ.Phenomenon=TEXT("extra_pulse");for(double At:Ticks)FJ.TraceTicks.Add(At);
+    FJ.Stage=E::Recorded;FJ.Elapsed=18;FJ.bPrinted=true;FJ.ChartFeed=PrinterSeconds;
+    // (DATA only while the take's case is open with comparisons left and its page unseen: RxDataAsk; a fresh station has no case open)
+    auto Data=[&Flow,&FJ]{return Flow.RxDataAsk(FJ)?int32(RxData):-1;};
+    Chain&=Rx()==Data()&&!Flow.OpsWorkDue(); // on tape: the reel deck, no receiver tab to do, not OPS yet
+    FJ.bAudioReviewed=true;
+    Chain&=Rx()==Data()&&Flow.OpsWorkDue(); // heard: OPS, DAILY WORK
+    FJ.Stage=E::Registered;Chain&=!Flow.OpsWorkDue()&&Rx()==Data(); // the printer
+    FJ.Stage=E::Packet;Chain&=!Flow.OpsWorkDue()&&Rx()==Data(); // the binder
+    Flow.RxDataSeenJob=FJ.Id;Chain&=Rx()==-1; // its DATA page seen: no more
+    // a routine take waiting to be registered marks DAILY WORK; one still at the printer does not
+    FJ.bAnomaly=false;FJ.Phenomenon.Empty();FJ.TraceTicks.Reset();FJ.bAudioReviewed=false;FJ.Stage=E::Recorded;Chain&=Flow.OpsWorkDue()&&Rx()==-1;
+    FJ.Stage=E::Chart;FJ.ChartFeed=0;Chain&=!Flow.OpsWorkDue();
+   }
+   Check(Chain,TEXT("RX-TABS-DUE-20261113: the anomaly chain: TUNE for START RECORDING, no receiver tab at the reel deck, DAILY WORK marked at OPS once heard, none at the printer or binder"));
+   Flow.Stop();
+   Check(OpsWorkDueFor(E::Recorded,TEXT("OPS (corner PC): CONFIRM THE ANOMALY IN DAILY WORK"))&&!OpsWorkDueFor(E::Filed,TEXT("OPS (corner PC): SELECT DAILY WORK OR RECORDS"))&&!OpsWorkDueFor(E::Recorded,TEXT("REEL DECK (wall table): PLAY THE TAKE ONCE TO CONFIRM IT")),
+    TEXT("RX-TABS-DUE-20261113: OPS marks DAILY WORK only for an OPS step after the take (confirm, register, compare)"));
+  }
   Check(Workflow.ReceiverApproach()==0&&Workflow.ArrayErrorDeg()==0,TEXT("D45: with no array loaded the receiver shows nothing of the source and no slew"));
  }
  Check(TerminalNextLine(TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK AND ACCEPT YOUR FIRST JOB"),3)==TEXT("NEXT / USE THIS PC"),TEXT("NEXT line reads past the first-shift counter"));

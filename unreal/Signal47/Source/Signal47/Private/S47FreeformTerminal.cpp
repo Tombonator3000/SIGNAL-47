@@ -47,6 +47,7 @@ namespace S47FreeformTerminal
   // D45-20261110: the tracking plot's search tone and how near the pointer is to the source (the owner's), and the screen the
   // next frame is for (its hum bar keeps the phase of the idle picture on the same monitor); -1 for none.
   TFunction<void(float)> ProbeSink;TFunction<double(FVector2D)> NearSource;int32 HumScreen=-1;
+  TFunction<bool()> CalmSource; // RX-TABS-DUE-20261113 (SetCalm)
   void Key(int32 Kind)
   {
    const double T=Now();if(Kind==3&&T-KeyAt<.07)return; // a dragged knob ticks, it does not buzz
@@ -204,8 +205,38 @@ namespace S47FreeformTerminal
   if(Open>0&&Open<1)Box({0.f,Mid+Half-1},{Size.X,3.f},Beam,Layer+1);
   Box({0.f,0.f},Size,Glow,Layer+1);
  }
+ void SetCalm(TFunction<bool()> Calm){CalmSource=MoveTemp(Calm);}
+ bool CalmNow(){return CalmSource&&CalmSource();}
+ float DueLevel(double Seconds,bool bCalm)
+ {
+  if(bCalm||!FMath::IsFinite(Seconds))return 1.f;
+  return .5f-.5f*float(FMath::Cos(Seconds*2.*UE_DOUBLE_PI)); // 1 Hz, soft at both ends
+ }
+ FW DueRing(FW Inner,TFunction<bool()> Due)
+ {
+  const FLinearColor AmberNow=Amber;
+  auto Level=[Due]{return Due&&Due()?DueLevel(Now(),CalmNow()):-1.f;};
+  return SNew(SOverlay)
+   +SOverlay::Slot()[Inner]
+   +SOverlay::Slot()[SNew(SBorder).Visibility(EVisibility::HitTestInvisible).BorderImage(Fill()).BorderBackgroundColor_Lambda([Level,AmberNow]{const float L=Level();FLinearColor C=AmberNow;C.A=L<0?0.f:.16f*L;return FSlateColor(C);})]
+   +SOverlay::Slot()[SNew(SBorder).Visibility(EVisibility::HitTestInvisible).BorderImage(Outline()).BorderBackgroundColor_Lambda([Level,AmberNow]{const float L=Level();FLinearColor C=FMath::Lerp(AmberNow,S47Kit::Css(0xffe2b0),L<0?0.f:L);C.A=L<0?0.f:.35f+.65f*L;return FSlateColor(C);})];
+ }
  bool SelfTest(TArray<FString>& Report)
  {
+  bool bDueOk=true;
+  { // RX-TABS-DUE-20261113: the due cue breathes at 1 Hz, softly, never more than three changes a second; calm holds it lit
+   float Lo=1,Hi=0,Step=0,Was=DueLevel(100.,false);int32 Turns=0,Dir=0;bool bCalm=true;
+   for(int32 I=1;I<=1200;++I)
+   {
+    const double T=100.+I/120.;const float L=DueLevel(T,false);Lo=FMath::Min(Lo,L);Hi=FMath::Max(Hi,L);Step=FMath::Max(Step,FMath::Abs(L-Was));
+    const int32 D=L>Was?1:L<Was?-1:Dir;if(Dir!=0&&D!=Dir)++Turns;Dir=D;Was=L;bCalm&=DueLevel(T,true)==1.f;
+   }
+   const bool bBreath=Lo<.02f&&Hi>.98f&&Step<.03f&&Turns<=3*10&&Turns>=15;
+   Report.Add(FString::Printf(TEXT("%s freeform terminal: the due tab breathes 0..1 (%.2f..%.2f), largest step %.3f at 120 Hz, %d turns in 10 s (at most 3 a second)"),bBreath?TEXT("ok"):TEXT("FAIL"),Lo,Hi,Step,Turns));
+   const bool bHeld=bCalm&&DueLevel(std::numeric_limits<double>::quiet_NaN(),false)==1.f;
+   Report.Add(FString::Printf(TEXT("%s freeform terminal: with calm flash the due tab does not pulse, it is held lit with its marker"),bHeld?TEXT("ok"):TEXT("FAIL")));
+   bDueOk=bBreath&&bHeld;
+  }
   // D45-20261110: the hum bar is rare, faint and smooth on every screen, and it does come now and then
   bool bOk=true;
   for(int32 Sd=0;Sd<4;++Sd)
@@ -219,7 +250,7 @@ namespace S47FreeformTerminal
   }
   const bool bSafe=HumBar(std::numeric_limits<double>::quiet_NaN(),0,900).A==0&&HumBar(1000,0,0).A==0;
   Report.Add(FString::Printf(TEXT("%s freeform terminal: no hum bar for a clock that is not a number or a screen with no height"),bSafe?TEXT("ok"):TEXT("FAIL")));
-  return bOk&&bSafe;
+  return bOk&&bSafe&&bDueOk;
  }
  // What a tube does that a drawing of one does not: the picture opens from a line when the set comes on, a faint hum bar drifts
  // through it now and then, and what is on the air tonight tears lines out of it. A page change is just the new page, as on a real
@@ -315,7 +346,7 @@ namespace S47FreeformTerminal
     [SNew(SButton).ButtonStyle(Sel?&SelectedStyle():&PlainStyle()).ContentPadding(FMargin(12,8)).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Act]{Key(2);if(Act)Act();return FReply::Handled();})
      [SNew(SHorizontalBox)
       +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text(FText::FromString(I.Label)).Font(S47Style::Mono(26)).ColorAndOpacity(Sel?Ink:Green)]
-      +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(Attention?TEXT("*"):TEXT(""))).Font(S47Style::Mono(26)).ColorAndOpacity_Lambda([Sel]{return FSlateColor((Sel?Ink:Amber)*Pulse(5));})]]];
+      +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(Attention?TEXT("*"):TEXT(""))).Font(S47Style::Mono(26)).ColorAndOpacity_Lambda([Sel]{return FSlateColor((Sel?Ink:Amber)*(CalmNow()?1.f:Pulse(5)));})]]]; // RX-TABS-DUE-20261113: held when calm
    Box->AddSlot().AutoHeight().Padding(8,0)[Rule(Dim)];
   }
   return Box;
@@ -326,9 +357,20 @@ namespace S47FreeformTerminal
   for(const FNav& I:Items)
   {
    const bool Sel=I.bSelected;const TFunction<void()> Act=I.Action;
+   // RX-TABS-DUE-20261113: the due tab (never the selected one). The marker has its own text block and a fixed place, so the label
+   // reads as before (the tests find tabs by it) and nothing moves when a tab becomes due.
+   const TFunction<bool()> Due=Sel?TFunction<bool()>():I.Due;
+   auto Level=[Due]{return Due&&Due()?DueLevel(Now(),CalmNow()):-1.f;};
+   const FLinearColor GreenNow=Green,AmberNow=Amber;
+   const TSharedRef<SWidget> TabKey=SNew(SButton).ButtonStyle(Sel?&FilledStyle():&PlainStyle()).ContentPadding(FMargin(0,2,16,2)).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Act]{Key(2);if(Act)Act();return FReply::Handled();})
+     [SNew(SHorizontalBox)
+      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SBox).WidthOverride(16)[SNew(STextBlock).Text_Lambda([Level]{return FText::FromString(Level()<0?TEXT(""):TEXT("*"));}).Font(S47Style::Mono(26)).ColorAndOpacity(AmberNow)]]
+      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(I.Label)).Font(S47Style::Mono(26))
+       .ColorAndOpacity_Lambda([Sel,Level,GreenNow,AmberNow]{if(Sel)return FSlateColor(Ink);const float L=Level();return FSlateColor(L<0?GreenNow:FMath::Lerp(GreenNow,AmberNow,.35f+.65f*L));})]];
    Box->AddSlot().AutoWidth().Padding(0,0,10,0)
-    [SNew(SButton).ButtonStyle(Sel?&FilledStyle():&PlainStyle()).ContentPadding(FMargin(16,2)).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Act]{Key(2);if(Act)Act();return FReply::Handled();})
-     [SNew(STextBlock).Text(FText::FromString(I.Label)).Font(S47Style::Mono(26)).ColorAndOpacity(Sel?Ink:Green)]];
+    [SNew(SOverlay)
+     +SOverlay::Slot()[TabKey]
+     +SOverlay::Slot()[SNew(SBorder).Visibility(EVisibility::HitTestInvisible).BorderImage(Outline()).BorderBackgroundColor_Lambda([Level,AmberNow]{const float L=Level();FLinearColor C=AmberNow;C.A=L<0?0.f:.25f+.75f*L;return FSlateColor(C);})]];
   }
   return SNew(SVerticalBox)+SVerticalBox::Slot().AutoHeight()[Box]+SVerticalBox::Slot().AutoHeight().Padding(0,3,0,6)[Rule()];
  }

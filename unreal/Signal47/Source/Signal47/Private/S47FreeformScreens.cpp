@@ -4,6 +4,7 @@
 #include "S47FreeformDirector.h"
 #include "S47Aftermath.h"
 #include "S47FreeformTerminal.h"
+#include "S47Flow.h"
 #include "S47FreeformWorld.h"
 #include "S47Docs.h"
 #include "S47Inter.h"
@@ -87,6 +88,7 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
  const bool bSame=TerminalView.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen();
  S47FreeformTerminal::SetSound([Main](int32 Kind){if(Main.IsValid())TerminalKey(Main->Audio,Kind);});
  S47FreeformTerminal::SetInterference([Main]{return Main.IsValid()&&Main->Freeform?Main->Freeform->ScreenInterference():0.f;});
+ S47FreeformTerminal::SetCalm([Main]{return Main.IsValid()&&Main->Flow&&Main->Flow->bCalmFlash;}); // RX-TABS-DUE-20261113: the due tab is held, not pulsed
  S47FreeformTerminal::SetProbeSound([Main](float Near){if(Main.IsValid())TerminalProbe(Main->Audio,Near);});
  S47FreeformTerminal::SetNearness([Main](FVector2D AzEl){return Main.IsValid()&&Main->Freeform?Main->Freeform->AimNearness(AzEl):0.;});
  if(!bSame)
