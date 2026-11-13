@@ -97,6 +97,7 @@ private:
 	int32 LastVanishDay = -100, CheckedNight = 0;
 	double StepIn = 0;
 	void Publish();
+	void StepGrave(); // M4: the cemetery behind the church, once the waitress has told of it
 	// The town's own figures as who is gone says: the deputy's car and window, the man on the stoop. bAll: everyone back (Stop).
 	void ShowPosts(bool bAll);
 	struct FLine { FString Key, Text; int32 Rank = 0; };

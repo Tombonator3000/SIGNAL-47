@@ -138,6 +138,19 @@ namespace S47TownsfolkLocal
 		TEXT("The cook is working the counter as well as the grill. \"She's not in. Don't ask me.\""),
 		TEXT("The substation is locked. The patrol car isn't out front. A note on the door: CALL SOCORRO."),
 		TEXT("Nobody on the stoop. The ashtray is full and nobody has emptied it. The lights are on inside.") };
+	// M4 (CHURCH, 13 November): the San Isidro cemetery behind the church. The waitress's kitchen looks out on it (her house is the next
+	// lot south): from day 2 she tells, once, of a broom out there after dark and a ring swept round one stone by morning. The look is
+	// the player's own (StepGrave): standing in it keeps what is there as a field record, and she has a word for that after. Nothing in
+	// it is more than somebody could have done with a broom; whatever else comes to the cemetery comes as to any place on the catalogue.
+	const TCHAR* const GraveKey = TEXT("grave:cemetery");
+	const TCHAR* const GraveSeenKey = TEXT("graveseen:cemetery");
+	const TCHAR* const GraveFind = TEXT("cemetery_swept");
+	const TCHAR* const GravePlace = TEXT("cemetery");
+	constexpr double GraveWithinM = 11; // inside its fence, about (the plot is 22 m by 21)
+	const TCHAR* const GraveLine = TEXT("Somebody's out in San Isidro with a broom after dark. I hear it from my kitchen. By morning there's a ring swept round one old stone. Go look. In daylight.");
+	const TCHAR* const GraveSeenLine = TEXT("You went out to San Isidro? Then it's not just me. Don't tell the deputy I sent you.");
+	const TCHAR* const GraveDay = TEXT("At the back of the cemetery behind the church: a ring of ground ten feet across swept smooth round one old stone, every stroke of the broom going the same way round. A jar of fresh flowers on the stone. Prints come in at the north gap and stop at the edge of the ring. None go in.");
+	const TCHAR* const GraveDark = TEXT("At the back of the cemetery behind the church, by flashlight: a ring of ground ten feet across swept smooth round one old stone, every stroke going the same way round. Flowers in a jar on the stone, the water still cold. Prints come in at the north gap and stop at the edge of the ring.");
 	const TCHAR* const NotSaid[] = { TEXT("chevy"), TEXT("ford"), TEXT("dodge"), TEXT("jeep"), TEXT("coke"), TEXT("pepsi"), TEXT("alien"), TEXT("ufo"), TEXT("saucer"), TEXT("tyre"), TEXT("grey"), TEXT("colour"), TEXT("petrol") };
 }
 
@@ -323,6 +336,7 @@ void FS47Townsfolk::Step(double Dt)
 			UE_LOG(LogS47Townsfolk, Display, TEXT("S47: townsfolk: %s back on day %d"), *Gone[I].Who, Today);
 			Returned.Add(Gone[I]); Gone.RemoveAt(I); Publish(); M->RequestAutosave();
 		}
+	StepGrave();
 	// Once a night is over (from four in the morning after it): did something come to one of their places that night? Then perhaps
 	// it took them. Every night over since the last one settled, so that a rest straight to 08:00 does not sleep through it (critics,
 	// round 3: the morning check used to look only between four and eight, and a rest or a motel room jumps past it).
@@ -340,6 +354,23 @@ void FS47Townsfolk::Step(double Dt)
 		Vanish(Who, NightPlaceOf(Who));
 		break;
 	}
+}
+
+// M4: the player standing in the cemetery once the waitress has told of it: what is there, by day or by flashlight, kept once.
+void FS47Townsfolk::StepGrave()
+{
+	using namespace S47TownsfolkLocal;
+	FS47FreeformSession& F = *M->Freeform;
+	if (!F.EventPlaces || F.HasFinding(GraveFind) || !Told.Contains(FString(TEXT("waitress:")) + GraveKey)) return;
+	const FS47EventPlace* P = F.EventPlaces->Find(GravePlace);
+	const double Dist = P ? F.EventPlaces->DistanceFromPlayer(*P) : -1;
+	if (Dist < 0 || Dist > GraveWithinM) return;
+	const double Hour = FMath::Fmod(F.Clock(), 86400.) / 3600.;
+	const bool bDay = Hour >= 6.5 && Hour < 18.5;
+	F.RegisterFinding(GraveFind, bDay ? GraveDay : GraveDark);
+	UE_LOG(LogS47Townsfolk, Display, TEXT("S47: townsfolk: the swept ring in the cemetery found (%s, %.0f m in)"), bDay ? TEXT("by day") : TEXT("after dark"), Dist);
+	if (M->UI) M->UI->Toast(TEXT("A ring swept round one old stone at the back. Kept as a field record."), 6.f);
+	M->RequestAutosave();
 }
 
 // ---------- what they say ----------
@@ -388,6 +419,12 @@ TArray<FS47Townsfolk::FLine> FS47Townsfolk::Lines(const FString& Who) const
 			const FString Text = Fill(Said, Where).Replace(TEXT("{A}"), *Cap(Where));
 			Add(FString::Printf(TEXT("rumor:%s:%d"), *P.Id, Last), Cap(Text), 60 + Last);
 		}
+	// M4: the cemetery behind the church, from the waitress only, from day 2 (see GraveLine).
+	if (Who == TEXT("waitress") && Today >= 2 && F.EventPlaces && F.EventPlaces->Find(GravePlace))
+	{
+		if (F.HasFinding(GraveFind)) Add(GraveSeenKey, GraveSeenLine, 37);
+		else Add(GraveKey, GraveLine, 36);
+	}
 	// What the player has done.
 	if (F.Tips) for (const FS47RadioTips::FGiven& G : F.Tips->Given()) if (G.Stage >= 1) Add(TEXT("tip:") + G.Place, Cap(Fill(TipLines[I], TitleOf(G.Place))), 55);
 	for (const FString& Kept : F.FindingIdsFrom(0))
@@ -452,6 +489,8 @@ FString FS47Townsfolk::CardLine(const FString& Who, const TArray<FString>& Keys,
 		else if (K.StartsWith(TEXT("tip:"))) { Say = FString::Printf(TEXT("Heard my call to the radio about %s."), *TitleOf(Part(K, 1))); R = 55; }
 		else if (K.StartsWith(TEXT("found:"))) { Say = FString::Printf(TEXT("Knew I had been out to %s."), *TitleOf(Part(K, 1))); R = 50; }
 		else if (K.StartsWith(TEXT("shop:"))) { Say = TEXT("Noticed what I picked up in town."); R = 45; }
+		else if (K.StartsWith(TEXT("graveseen:"))) { Say = TEXT("Sent me to the swept graves. Not a word to the deputy."); R = 37; }
+		else if (K.StartsWith(TEXT("grave:"))) { Say = TEXT("Hears a broom in the cemetery after dark. Said to look in daylight."); R = 36; }
 		else if (K.StartsWith(TEXT("hear:"))) { Say = FString::Printf(TEXT("Told me about %s. On my map with a question mark."), *TitleOf(Part(K, 1))); R = 30; }
 		else if (K.StartsWith(TEXT("chat:")))
 		{
@@ -628,6 +667,7 @@ bool FS47Townsfolk::SelfTest(TArray<FString>& Lines)
 		for (const auto* Set : { &GoneLines, &SelfBackLines, &BackLines, &RumorLines, &DoorRumorLines, &FigureRumorLines, &StockRumorLines, &TipLines, &FoundLines, &HelpLines, &TakenLines, &HearLines, &SpacemanLines, &LureLines, &TourLines, &PrintLines, &GoneMinding, &GonePost })
 			for (int32 I = 0; I < 4; ++I) All.Add((*Set)[I]);
 		for (int32 I = 0; I < 4; ++I) { All.Add(Chatter[I][0]); All.Add(Chatter[I][1]); }
+		All.Add(GraveLine); All.Add(GraveSeenLine);
 		for (const TCHAR* Said : All)
 		{
 			FString Word;
@@ -641,6 +681,18 @@ bool FS47Townsfolk::SelfTest(TArray<FString>& Lines)
 			bClean &= FCString::Strlen(Said) < 200;
 		}
 		Check(bClean, bClean ? FString(TEXT("every line short, in American English, with no brand names, and nobody says what it was")) : TEXT("not said here: ") + Bad);
+	}
+	// M4: the cemetery's lines and what is found there keep to Freeform's limits, say no more than a broom could do, and have a box line.
+	{
+		bool bGrave = true;
+		for (const TCHAR* Said : { GraveLine, GraveSeenLine, GraveDay, GraveDark })
+			bGrave &= S47Script::LintText(Said).IsEmpty() && !FString(Said).Contains(TEXT("taken")) && FCString::Strlen(Said) < 320;
+		const auto NoTitle = [](const FString&) { return FString(TEXT("a place out there")); };
+		bGrave &= CardLine(TEXT("waitress"), { GraveKey }, 3, 0, NoTitle).Contains(TEXT("broom")) && CardLine(TEXT("waitress"), { GraveKey, GraveSeenKey }, 3, 0, NoTitle).Contains(TEXT("swept graves"));
+		// (the record names the place by its catalogue title, so the case paper finds it there: S47Mail)
+		bGrave &= FString(GraveDay).Contains(TEXT("the cemetery behind the church")) && FString(GraveDark).Contains(TEXT("the cemetery behind the church"));
+		bGrave &= FString(GraveKey) != GraveSeenKey && !FString(GraveSeenKey).StartsWith(TEXT("grave:")) && GraveWithinM > 8 && GraveWithinM < 16;
+		Check(bGrave, TEXT("M4: the waitress's word about the cemetery, its sequel and the swept ring found there are plain and clean, and the notebook box says them"));
 	}
 	Check(WeekdayOf(1, false) == TEXT("Monday") && WeekdayOf(7, false) == TEXT("Sunday") && WeekdayOf(9, false) == TEXT("Tuesday"), TEXT("day 1 is Monday, April 28, 1986"));
 	Check(WeekdayOf(1, true) == TEXT("Sunday") && WeekdayOf(2, true) == TEXT("Monday") && WeekdayOf(5, true) == TEXT("Thursday"), TEXT("M7: on the old calendar day 1 is Sunday, April 13, 1986, as the HUD has it"));
