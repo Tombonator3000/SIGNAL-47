@@ -97,6 +97,15 @@ namespace
 	}
 }
 
+// SIDEBAND-20261113: what grouped decks share (FS47MediaSource::Group). All of it under the context's lock.
+struct FS47MediaSync
+{
+	TArray<TWeakPtr<FS47MediaSource>> Members; // the first one leads
+	int64 Quantum = -1;                        // the quantum Pos and bGo were set for
+	double Pos = 0;
+	bool bGo = false;
+};
+
 FS47MediaSource::FS47MediaSource(const TSharedRef<FS47AudioContext>& InCtx) : FS47AudioNode(InCtx) {}
 FS47MediaSource::~FS47MediaSource()
 {
@@ -114,7 +123,52 @@ TSharedPtr<FS47MediaSource> FS47MediaSource::Open(const TSharedRef<FS47AudioCont
 	return M;
 }
 
+bool FS47MediaSource::Group(const TArray<TSharedPtr<FS47MediaSource>>& Decks)
+{
+	if (Decks.Num() < 2) return false;
+	for (const TSharedPtr<FS47MediaSource>& D : Decks)
+	{
+		if (!D.IsValid() || !D->Stream.IsValid() || D->Sync.IsValid() || D->Ctx != Decks[0]->Ctx) return false;
+		if (D->Stream->Frames != Decks[0]->Stream->Frames || D->Stream->Rate != Decks[0]->Stream->Rate) return false;
+	}
+	FS47AudioContext::FBatch B(*Decks[0]->Ctx);
+	const TSharedPtr<FS47MediaSync> S = MakeShared<FS47MediaSync>();
+	for (const TSharedPtr<FS47MediaSource>& D : Decks) { S->Members.Add(D); D->Sync = S; D->bPlaying = false; D->Pos = Decks[0]->Pos; }
+	return true;
+}
+
+bool FS47MediaSource::Leads() const
+{
+	return Sync.IsValid() && Sync->Members.Num() > 0 && Sync->Members[0].HasSameObject(this);
+}
+
+// The chunks a quantum from At needs are in memory (asks for the ones that are not).
+bool FS47MediaSource::ReadyAt(double At, double Step) const
+{
+	if (!Stream.IsValid() || bFailed) return false;
+	if (At >= Stream->Frames) return true; // at its end: nothing to wait for
+	const int64 First = int64(At) / ChunkFrames, Last = FMath::Min(int64(At + Step * S47Quantum), Stream->Frames - 1) / ChunkFrames;
+	bool bHave = true;
+	for (int64 I = First; I <= Last; ++I)
+	{
+		bool bIn;
+		{ FScopeLock L(&Stream->Lock); bIn = Stream->Chunks.Contains(I); }
+		if (!bIn) { Request(Stream, I); bHave = false; }
+	}
+	return bHave;
+}
+
 bool FS47MediaSource::Play()
+{
+	if (!Leads()) return PlaySelf();
+	// one hold of the lock: every deck of the group is playing when the audio thread next looks, or none is
+	FS47AudioContext::FBatch B(*Ctx);
+	bool bOk = true;
+	for (const TWeakPtr<FS47MediaSource>& W : Sync->Members) if (const TSharedPtr<FS47MediaSource> D = W.Pin()) bOk &= D->PlaySelf();
+	return bOk;
+}
+
+bool FS47MediaSource::PlaySelf()
 {
 	double NeedSeek = -1;
 	{
@@ -128,7 +182,7 @@ bool FS47MediaSource::Play()
 			if (!bReady) NeedSeek = Pos / Stream->Rate;
 		}
 	}
-	if (NeedSeek >= 0) Seek(NeedSeek);
+	if (NeedSeek >= 0) SeekSelf(NeedSeek);
 	FS47AudioContext::FBatch B(*Ctx);
 	if (bFailed) return false;
 	if (!bPlaying) ++Serial;
@@ -136,8 +190,21 @@ bool FS47MediaSource::Play()
 	return true;
 }
 
-void FS47MediaSource::Pause(bool bOn) { if (!bOn) { Play(); return; } FS47AudioContext::FBatch B(*Ctx); bPlaying = false; }
+void FS47MediaSource::Pause(bool bOn)
+{
+	if (!bOn) { Play(); return; }
+	FS47AudioContext::FBatch B(*Ctx);
+	bPlaying = false;
+	if (Leads()) for (const TWeakPtr<FS47MediaSource>& W : Sync->Members) if (const TSharedPtr<FS47MediaSource> D = W.Pin()) D->bPlaying = false;
+}
+
 void FS47MediaSource::Seek(double Seconds)
+{
+	if (!Leads()) { SeekSelf(Seconds); return; }
+	for (const TWeakPtr<FS47MediaSource>& W : Sync->Members) if (const TSharedPtr<FS47MediaSource> D = W.Pin()) D->SeekSelf(Seconds);
+}
+
+void FS47MediaSource::SeekSelf(double Seconds)
 {
 	if (!Stream.IsValid() || !FMath::IsFinite(Seconds)) return;
 	// First chunks load on the game thread without the context lock. Audio can keep rendering
@@ -159,7 +226,12 @@ void FS47MediaSource::Seek(double Seconds)
 	bFailed = bReadFailed;
 }
 
-void FS47MediaSource::Stop() { FS47AudioContext::FBatch B(*Ctx); bPlaying = false; Pos = 0; ++Serial; }
+void FS47MediaSource::Stop()
+{
+	FS47AudioContext::FBatch B(*Ctx);
+	bPlaying = false; Pos = 0; ++Serial;
+	if (Leads()) for (const TWeakPtr<FS47MediaSource>& W : Sync->Members) if (const TSharedPtr<FS47MediaSource> D = W.Pin()) { D->bPlaying = false; D->Pos = 0; ++D->Serial; }
+}
 double FS47MediaSource::Duration() const { return Stream.IsValid() ? double(Stream->Frames) / Stream->Rate : 0; }
 double FS47MediaSource::CurrentTime() const { FS47AudioContext::FBatch B(*Ctx); return Stream.IsValid() ? Pos / Stream->Rate : 0; }
 bool FS47MediaSource::Paused() const { FS47AudioContext::FBatch B(*Ctx); return !bPlaying; }
@@ -184,10 +256,25 @@ void FS47MediaSource::Notify(bool bError)
 
 void FS47MediaSource::Process(int64 Quantum)
 {
-	(void)Quantum;
 	Out.Zero(Stream.IsValid() ? Stream->Channels : 1);
 	if (!bPlaying || !Stream.IsValid()) return;
 	const auto S = Stream; const double Step = double(S->Rate) / Ctx->SampleRate;
+	if (Sync.IsValid())
+	{
+		// SIDEBAND-20261113: the first deck of the group pulled in a quantum speaks for all of them: its position is theirs, and
+		// they play this quantum only if every one of them has its samples (else media time stands still for all)
+		if (Sync->Quantum != Quantum)
+		{
+			Sync->Quantum = Quantum; Sync->Pos = Pos; Sync->bGo = true;
+			for (const TWeakPtr<FS47MediaSource>& W : Sync->Members)
+			{
+				const TSharedPtr<FS47MediaSource> D = W.Pin();
+				if (D.IsValid() && !D->ReadyAt(Pos, Step)) Sync->bGo = false;
+			}
+		}
+		else Pos = Sync->Pos;
+		if (!Sync->bGo) return;
+	}
 	int64 CachedIndex = -1;
 	FChunkPtr Chunk, Next;
 	for (int32 I = 0; I < S47Quantum; ++I)
@@ -243,6 +330,42 @@ bool FS47MediaSource::SelfTest(TArray<FString>& Lines)
 		S->Seek((Frames - 128.0) / 48000);
 		bool bEnded = false; S->OnEnded = [&bEnded] { bEnded = true; }; Ctx->Render(Out, 128); Ctx->Render(Out, 128); Check(!bEnded, TEXT("ended waits for game thread")); Ctx->Tick(0); Check(bEnded, TEXT("ended dispatched on context tick"));
 		S->Stop(); Check(S->Paused() && S->CurrentTime() == 0, TEXT("stop resets position")); S->Disconnect();
+	}
+	{
+		// SIDEBAND-20261113: grouped decks (the stems of a piece) start in one quantum and stay on one position
+		auto C = FS47AudioContext::Make();
+		auto A = Open(C, FPaths::ConvertRelativePathToFull(Path)), B2 = Open(C, FPaths::ConvertRelativePathToFull(Path)), Alone = Open(C, FPaths::ConvertRelativePathToFull(Path));
+		if (A.IsValid() && B2.IsValid() && Alone.IsValid())
+		{
+			// A to the left, B2 to the right (through a panner each): equal channels mean equal positions
+			auto PanA = C->CreateStereoPanner(), PanB = C->CreateStereoPanner(); PanA->Pan.SetValue(-1); PanB->Pan.SetValue(1);
+			A->Connect(PanA); B2->Connect(PanB); PanA->Connect(C->Destination); PanB->Connect(C->Destination);
+			Check(Group({ A, B2 }) && A->Grouped() && B2->Grouped() && !Group({ A, Alone }), TEXT("two decks of one length group, and a grouped deck is not grouped twice"));
+			TArray<float> Pcm; Pcm.SetNumZeroed(4096 * 2);
+			C->Render(Pcm.GetData(), 256, 2);
+			bool bSilent = true; for (int32 I = 0; I < 512; ++I) bSilent &= Pcm[I] == 0;
+			A->Play();
+			Check(bSilent && !A->Paused() && !B2->Paused(), TEXT("playing the first of a group starts every deck of it"));
+			bool bEqual = true, bMoved = false; int32 Quanta = 0;
+			// (the reader's thread brings the next chunks in: render on, a quantum at a time, until the boundary is well behind)
+			for (int32 Try = 0; Try < 4000 && A->CurrentTime() < (ChunkFrames + 4096.0) / 48000; ++Try)
+			{
+				C->Render(Pcm.GetData(), 128, 2); ++Quanta;
+				for (int32 I = 0; I < 128; ++I) { bEqual &= Pcm[I * 2] == Pcm[I * 2 + 1]; bMoved |= Pcm[I * 2] != 0; }
+				bEqual &= A->CurrentTime() == B2->CurrentTime();
+				if (Try % 8 == 7) FPlatformProcess::Sleep(0.001f);
+			}
+			Check(bEqual && bMoved && A->CurrentTime() >= (ChunkFrames + 4096.0) / 48000, TEXT("grouped decks give the same samples and the same position across a streamed chunk boundary"));
+			A->Pause(); const double Held = A->CurrentTime(); C->Render(Pcm.GetData(), 256, 2);
+			Check(B2->Paused() && B2->CurrentTime() == Held && A->CurrentTime() == Held, TEXT("pausing the first holds every deck at one position"));
+			A->Pause(false); C->Render(Pcm.GetData(), 128, 2);
+			bEqual = true; for (int32 I = 0; I < 128; ++I) bEqual &= Pcm[I * 2] == Pcm[I * 2 + 1];
+			Check(bEqual && A->CurrentTime() == B2->CurrentTime() && A->CurrentTime() > Held, TEXT("and they go on together"));
+			A->Stop(); Check(B2->Paused() && B2->CurrentTime() == 0, TEXT("stopping the first stops the group"));
+			A->Disconnect(); B2->Disconnect();
+		}
+		else Check(false, TEXT("group test sources open"));
+		C->Close();
 	}
 	{
 		auto C = FS47AudioContext::Make(96000); auto R = Open(C, FPaths::ConvertRelativePathToFull(Path));

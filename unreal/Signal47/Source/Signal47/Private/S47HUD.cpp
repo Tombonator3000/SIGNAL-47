@@ -157,6 +157,7 @@
 #include "S47Radio.h"
 #include "S47TripRadio.h"
 #include "S47Score.h"
+#include "S47Sideband.h"
 #include "S47Media.h"
 #include "S47Phones.h"
 #include "S47Station.h"
@@ -311,6 +312,7 @@ void AS47HUD::Start()
 		bOk &= FS47Omen::SelfTest(Lines) & FS47GearFlicker::SelfTest(Lines) & FS47Soundscape::SelfTest(Lines) & FS47Animals::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
+		bOk &= FS47Sideband::SelfTest(Lines); // SIDEBAND-20261113 (the stems' own test with it)
 		bOk &= FS47Taken::SelfTest(Lines);
 		bOk &= FS47NightRhythm::SelfTest(Lines);
 		bOk &= S47NightTiers::SelfTest(Lines); // (TIERS-20261109: hint, glimpse, full by the clock and the week)

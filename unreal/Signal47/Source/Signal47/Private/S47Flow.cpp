@@ -89,6 +89,7 @@
 #include "S47Roadside.h"
 #include "S47TripRadio.h"
 #include "S47Score.h"
+#include "S47Sideband.h"
 #include "S47World.h"
 #include "S47Phones.h"
 #include "S47Picture.h"
@@ -311,6 +312,9 @@ void US47Flow::Init(US47Main* InM)
 	Volume = float(S47J::Num(Store, TEXT("vol"), 0.8));
 	MusicLevel = float(S47J::Num(Store, TEXT("music"), 0.7));
 	RadioLevel = float(S47J::Num(Store, TEXT("radioVol"), 1));
+	// SIDEBAND-20261113 (anything unknown in the file reads as the default)
+	MusicReacts = S47Sideband::ReactsId(S47Sideband::ModeFrom(S47J::Str(Store, TEXT("musicReacts"), TEXT("on"))));
+	Stingers = S47Sideband::StingersId(S47Sideband::ModeFrom(S47J::Str(Store, TEXT("stingers"), TEXT("full"))));
 	bRadioCast = S47J::Bool(Store, TEXT("radioCallerVoices"), true);
 	bAbductOn = S47J::Bool(Store, TEXT("abductions"), true);
 	Sens = float(S47J::Num(Store, TEXT("sens"), 1));
@@ -341,6 +345,7 @@ void US47Flow::Init(US47Main* InM)
 	ApplyGraphics(Graphics, false);
 	ApplyVolume();
 	if (M->Audio) { M->Audio->SetMusic(MusicLevel); M->Audio->SetRadio(RadioLevel); }
+	ApplySideband();
 	if (M->Radio) { M->Radio->SetHostVoice(bArtBell); M->Radio->SetCallerVoice(bRadioCast); }
 	ApplyLook();
 	// the Unreal version's own settings: the brightness, and the keys as the player has bound them
@@ -1665,6 +1670,13 @@ FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
 	return O;
 }
 
+void US47Flow::ApplySideband()
+{
+	if (!M || !M->Sideband) return;
+	M->Sideband->Reacts = S47Sideband::ModeFrom(MusicReacts);
+	M->Sideband->Stingers = S47Sideband::ModeFrom(Stingers);
+}
+
 FS47PauseOpts US47Flow::Settings()
 {
 	FS47PauseOpts O;
@@ -1682,6 +1694,10 @@ FS47PauseOpts US47Flow::Settings()
 	O.OnMusic = [this](float V) { MusicLevel = V; if (M->Audio) M->Audio->SetMusic(V); StoreSet(TEXT("music"), double(V)); };
 	O.Radio = RadioLevel;
 	O.OnRadio = [this](float V) { RadioLevel = V; if (M->Audio) M->Audio->SetRadio(V); StoreSet(TEXT("radioVol"), double(V)); };
+	O.MusicReacts = MusicReacts;
+	O.OnMusicReacts = [this](const FString& V) { MusicReacts = S47Sideband::ReactsId(S47Sideband::ModeFrom(V)); ApplySideband(); StoreSet(TEXT("musicReacts"), MusicReacts); };
+	O.Stingers = Stingers;
+	O.OnStingers = [this](const FString& V) { Stingers = S47Sideband::StingersId(S47Sideband::ModeFrom(V)); ApplySideband(); StoreSet(TEXT("stingers"), Stingers); };
 	O.OnSens = [this](float V) { Sens = V; ApplyLook(); StoreSet(TEXT("sens"), double(V)); };
 	O.Graphics = Graphics;
 	O.OnGraphics = [this](const FS47GraphicsSettings& G) { ApplyGraphics(G); };
@@ -2984,6 +3000,28 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 		const FS47PauseOpts MotionOpts = Flow->Settings();
 		Check(bMotion ? TEXT("head motion on survives settings JSON and pause options") : TEXT("head motion off survives settings JSON and pause options"),
 			Flow->bHeadMotion == bMotion && MotionOpts.bHeadMotion == bMotion && bool(MotionOpts.OnHeadMotion));
+	}
+	// SIDEBAND-20261113: the two music settings default to on and full, and each of their three values survives the file and the menu
+	{
+		const FS47PauseOpts Fresh = Flow->Settings();
+		Check(TEXT("old settings default to music reacts on and stingers full"), Fresh.MusicReacts == TEXT("on") && Fresh.Stingers == TEXT("full")
+			&& S47Sideband::ModeFrom(S47J::Str(Flow->Store, TEXT("musicReacts"), TEXT("on"))) == S47Sideband::EMode::On && bool(Fresh.OnMusicReacts) && bool(Fresh.OnStingers));
+		bool bKept = true;
+		for (const TCHAR* Id : { TEXT("on"), TEXT("soft"), TEXT("off") })
+		{
+			const S47J::FObj MusicSettings = S47J::New();
+			const FString Sting = S47Sideband::StingersId(S47Sideband::ModeFrom(Id));
+			S47J::Set(MusicSettings, TEXT("musicReacts"), Id); S47J::Set(MusicSettings, TEXT("stingers"), Sting);
+			const S47J::FObj Back = S47J::Read(S47J::Write(MusicSettings));
+			Flow->MusicReacts = S47Sideband::ReactsId(S47Sideband::ModeFrom(S47J::Str(Back, TEXT("musicReacts"), TEXT("on"))));
+			Flow->Stingers = S47Sideband::StingersId(S47Sideband::ModeFrom(S47J::Str(Back, TEXT("stingers"), TEXT("full"))));
+			const FS47PauseOpts MusicOpts = Flow->Settings();
+			bKept &= Flow->MusicReacts == Id && MusicOpts.MusicReacts == Id && MusicOpts.Stingers == Sting && (Sting == TEXT("full")) == (FString(Id) == TEXT("on"));
+		}
+		Flow->MusicReacts = TEXT("on"); Flow->Stingers = TEXT("full");
+		Check(TEXT("music reacts on, soft and off and stingers full, soft and off survive settings JSON and pause options"), bKept);
+		Check(TEXT("a music setting that is no known word reads as the default"),
+			S47Sideband::ModeFrom(TEXT("loud")) == S47Sideband::EMode::On && FString(S47Sideband::StingersId(S47Sideband::ModeFrom(TEXT("")))) == TEXT("full"));
 	}
 	Check(TEXT("old settings default to vehicle mirrors on"), S47J::Bool(Flow->Store, TEXT("vehicleMirrors"), true));
 	for (const bool bMirrors : { false, true })

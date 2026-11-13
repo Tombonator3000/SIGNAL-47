@@ -6,6 +6,15 @@
   build_music.py mixes [--bundle DIR]   our own arrangements of the bought loops: four from the "1984 Retro Music Production Bundle"
                                         and "ABYSS", and five quiet ones that lay the 1980s loops over the dark ones
   build_music.py quiet [--bundle DIR]   only those five
+  build_music.py stems [--bundle DIR]   SIDEBAND-20261113: the nine own mixes again as stems (channels), two to four per piece,
+                                        to DIR/Audio/Raw/media/music/stems/<piece>__<stem>.wav with stems.json beside them. The
+                                        stems sum to the mix before the bus; they carry the bus's linear parts and the mix's own
+                                        gain curves, and the game runs the one tape curve over their sum (FS47ScoreStems). Every
+                                        stem is an arrangement of two loops or more: no bought loop is staged alone. Checked here:
+                                        the sum against the bus, the rebuilt mix against the staged file, the game's sum against it.
+                                        Staged at half the mixes' rate (22.05 kHz, 16 bit; see STEM_RATE below for why and how), a
+                                        stem whose sides are 30 dB or more under its middle as one channel; checked as staged and
+                                        as the game plays them.
   build_music.py all                    free, own and mixes
   build_music.py index                  only media.json's rows for what is staged
   --content DIR    the project's Content (default: this project's); the files go to DIR/Audio/Raw/media/{music,radio}/<name>.wav,
@@ -72,6 +81,31 @@ FREE = [
 ]
 # Tom's own track: the score's copy, and one narrowed to AM for a set that plays it as the radio does
 OWN_OUT = [('music/signal47_intro_drive', False), ('radio/signal47_intro_drive', True)]
+# SIDEBAND-20261113: which layers (in the order they are added below) make which stem. Every stem is two loops or more.
+STEMS = {
+    's47_night_freight': [('bed', (0, 1, 4)), ('low', (2, 10)), ('arps', (3, 8, 9)), ('drums', (5, 6, 7, 11))],
+    's47_cold_dish': [('ground', (0, 1)), ('pads', (2, 3)), ('high', (4, 5))],
+    's47_carrier_lock': [('bed', (1, 6, 7)), ('pulse', (2, 3, 8)), ('arp', (0, 4, 5, 9))],
+    's47_county_road': [('bed', (0, 1, 11)), ('low', (3, 6)), ('arps', (2, 7, 9)), ('drums', (4, 5, 8, 10))],
+    's47_third_shift': [('ground', (0, 1)), ('inside', (2, 3, 4))],
+    's47_dry_lake': [('ground', (0, 1, 3)), ('lights', (2, 4)), ('low', (5, 6))],
+    's47_vacancy': [('ground', (0, 1)), ('chords', (2, 3, 4))],
+    's47_grey_hour': [('ground', (0, 1, 2)), ('pads', (3, 4)), ('top', (5, 6))],
+    's47_standing_wave': [('ground', (0, 1)), ('low', (2, 3)), ('far', (4, 5))],
+}
+# SIDEBAND-20261113 (Tom: can the stems take less space?). The stems are staged at half the mixes' rate. Measured on the nine
+# pieces as the game sums them: what lies above 11.025 kHz is 47 to 70 dB under the whole (-71 to -94 dBFS): the bus's 9.5 kHz
+# low-pass is baked into every stem (linear() in master). 24 kHz was tried and gains nothing (what lies between 11 and 12 kHz is
+# 50 dB under the whole in the brightest piece, and its images are no lower). The engine plays a file by linear interpolation to
+# its own 48 kHz (FS47MediaSource::Process), which takes 1.5 dB at 5 kHz and 3.9 dB at 8 kHz from a 22.05 kHz file (0.4 and 1.0 dB
+# from a 44.1 kHz one) and leaves images above 12 kHz. So: the game runs a fourth-order low-pass at STEM_LOWPASS_HZ over the stems'
+# sum (S47ScoreStems.cpp, two BiquadFilterNodes) against the images, and an equaliser baked into the stems here gives back what
+# the interpolation and that low-pass take, magnitude and phase, down to what a 44.1 kHz file keeps. Measured as the game plays
+# them: level per band within 0.1 dB of the 44.1 kHz stems up to 10 kHz, nothing added above 12 kHz.
+STEM_RATE = 22050
+STEM_LOWPASS_HZ = 11000.0
+STEM_LOWPASS_Q = (0.5411961, 1.3065630)   # a fourth-order Butterworth as two sections (S47ScoreStems.cpp has the same two, in dB)
+STEM_MONO_SIDE_DB = -30.0                 # a stem whose sides are this far under its middle over the whole file is staged as one channel
 MIXES = ['music/s47_night_freight', 'music/s47_cold_dish', 'music/s47_carrier_lock', 'music/s47_county_road', 'radio/s47_night_freight',
          'music/s47_third_shift', 'music/s47_dry_lake', 'music/s47_vacancy', 'music/s47_grey_hour', 'music/s47_standing_wave']
 
@@ -215,7 +249,7 @@ def own(media, src, previews):
 SR = 44100
 
 
-def mixes(media, bundle, previews, first=True, quiet=True):
+def mixes(media, bundle, previews, first=True, quiet=True, stems=False):
     retro = os.path.join(bundle, '1984 Retro Music Production Bundle')
     abyss = os.path.join(bundle, 'ABYSS - Dark Cinematic', 'Loops')
     scifi = os.path.join(bundle, 'Ambience & SFX', 'Ambience SciFi')
@@ -224,7 +258,7 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         return
     try:
         import numpy as np
-        from scipy.signal import butter, fftconvolve, sosfilt
+        from scipy.signal import butter, fftconvolve, freqz, lfilter, resample_poly, sosfilt, welch
     except ImportError:
         print('S47 music: numpy and scipy are needed for the mixes: left out (see this file\'s head)')
         return
@@ -256,13 +290,29 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         t = np.sin(np.linspace(0, np.pi / 2, max(2, n))) ** 2
         return t if up else t[::-1]
 
+    def split_of(name, n):
+        # stems mode: one bus per stem, and which stem each layer goes to
+        rows = STEMS[name] if stems else []
+        where = {layer: k for k, (_, layers) in enumerate(rows) for layer in layers}
+        return [np.zeros((n, 2)) for _ in rows], where
+
     class Piece:
-        def __init__(self, bpm, bars):
+        def __init__(self, bpm, bars, name):
             self.spb = SR * 240.0 / bpm
             self.bars = bars
+            self.bpm = bpm
             self.n = int(round(bars * self.spb))
             self.bus = np.zeros((self.n, 2))
             self.used = []
+            self.name = name
+            self.parts, self.where = split_of(name, self.n)
+
+        def named(self):
+            if not stems:
+                return None
+            if sorted(self.where) != list(range(len(self.used))):
+                sys.exit('S47 music: %s: STEMS does not name every layer once' % self.name)
+            return dict(bpm=self.bpm, parts=[(STEMS[self.name][k][0], x, [self.used[i] for i in STEMS[self.name][k][1]]) for k, x in enumerate(self.parts)])
 
         def at(self, bar):
             return int(round(bar * self.spb))
@@ -271,6 +321,7 @@ def mixes(media, bundle, previews, first=True, quiet=True):
             """spans: (from bar, to bar, fade-in bars, fade-out bars). open_from/close_to: (Hz, bars) low-pass that opens over the
             first span's first bars or closes over the last span's last bars."""
             x = load(path)
+            layer = len(self.used)
             self.used.append(os.path.relpath(path, bundle))
             x = x * 10 ** ((level - loud_rms(x)) / 20)
             if width != 1.0:
@@ -305,21 +356,30 @@ def mixes(media, bundle, previews, first=True, quiet=True):
                 n = min(len(seg), max(int(0.005 * SR), int(fout * self.spb)))
                 seg[-n:] *= ramp(n, False)[:, None]
                 self.bus[s:e] += seg
+                if self.parts:
+                    self.parts[self.where[layer]][s:e] += seg
 
-    def measure(x):
+    def measure(x, rate=SR):
         raw = (np.clip(x, -1, 1)).astype('<f4').tobytes()
-        r = run(['ffmpeg', '-hide_banner', '-nostats', '-f', 'f32le', '-ar', str(SR), '-ac', '2', '-i', '-', '-af', 'ebur128=peak=true', '-f', 'null', '-'], input=raw)
+        r = run(['ffmpeg', '-hide_banner', '-nostats', '-f', 'f32le', '-ar', str(rate), '-ac', '2', '-i', '-', '-af', 'ebur128=peak=true', '-f', 'null', '-'], input=raw)
         tail = r.stderr.decode('utf-8', 'replace')
         tail = tail[tail.rfind('Summary:'):]
         return float(re.search(r'I:\s+(-?[\d.]+) LUFS', tail).group(1)), float(re.search(r'Peak:\s+(-?[\d.]+) dBFS', tail).group(1))
 
-    def master(x, name, wow=0.0006, ceiling=-1.0):
-        x = sosfilt(sos('highpass', 30), x, axis=0)
-        mid, side = x.mean(axis=1), (x[:, 0] - x[:, 1]) / 2
-        x = np.stack([mid + side * 0.85, mid - side * 0.85], axis=1)
-        x = sosfilt(sos('lowpass', 9500), x, axis=0)
+    def master(x, name, wow=0.0006, ceiling=-1.0, split=None):
+        raw = x
+
+        def linear(v):
+            # the bus's linear parts, the same for the mix and for every stem
+            v = sosfilt(sos('highpass', 30), v, axis=0)
+            vm, vs = v.mean(axis=1), (v[:, 0] - v[:, 1]) / 2
+            v = np.stack([vm + vs * 0.85, vm - vs * 0.85], axis=1)
+            return sosfilt(sos('lowpass', 9500), v, axis=0)
+
+        x = linear(x)
         # work at a known level: the loudest half at -18 dBFS
-        x *= 10 ** ((-18 - loud_rms(x)) / 20)
+        scale = 10 ** ((-18 - loud_rms(x)) / 20)
+        x *= scale
         x = np.tanh(x * 1.6) / 1.6  # tape-like: the peaks round off, the body is left alone
         # wow: a slow drift in pitch of about 0.06 %, as a deck's capstan gives
         t = np.arange(len(x), dtype=np.float64)
@@ -338,7 +398,8 @@ def mixes(media, bundle, previews, first=True, quiet=True):
             g += (want[i] - g) * (ka if want[i] < g else kr)
             got[i] = g
         gain = np.interp(np.arange(len(x)), np.arange(n) * hop + hop / 2, got)
-        x *= (10 ** (gain / 20))[:, None]
+        comp = 10 ** (gain / 20)
+        x *= comp[:, None]
         # ceiling: 5 ms look-ahead, nothing over -4 dBFS at this working level
         peak = np.abs(x).max(axis=1)
         look = int(0.005 * SR)
@@ -348,13 +409,18 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         need = np.minimum(1.0, 10 ** (-4 / 20) / np.maximum(blk, 1e-9))
         for i in range(1, n2):  # 80 ms release
             need[i] = min(need[i], need[i - 1] + (1 - need[i - 1]) * 0.06) if need[i] > need[i - 1] else need[i]
-        x *= np.interp(np.arange(len(x)), np.arange(n2) * look, need)[:, None]
+        ceil = np.interp(np.arange(len(x)), np.arange(n2) * look, need)
+        x *= ceil[:, None]
         lufs, _ = measure(x)
-        x *= 10 ** ((MUSIC_LUFS - lufs) / 20)
+        final = 10 ** ((MUSIC_LUFS - lufs) / 20)
+        x *= final
         lufs, peak = measure(x)
         if peak > ceiling:
             sys.exit('S47 music: %s peaks at %.1f dBTP' % (name, peak))
         dst = os.path.join(media, 'music', name + '.wav')
+        if split is not None:
+            write_stems(x, raw, name, split, linear, scale, src, t, comp * ceil, final, dst)
+            return dst
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         tmpdst = dst + '.tmp-%d.wav' % os.getpid()
         r = run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '2', '-i', '-', '-af', 'aresample=osf=s16:dither_method=triangular',
@@ -367,13 +433,169 @@ def mixes(media, bundle, previews, first=True, quiet=True):
             preview(dst, os.path.join(previews, 'mix_' + name + '.mp3'))
         return dst
 
+    def under(a, ref):
+        return 10 * np.log10((a ** 2).mean() / ((ref ** 2).mean() + 1e-30) + 1e-30)
+
+    def stem_lowpass():
+        # the game's two BiquadFilterNodes ('lowpass', Q in dB there) at its 48 kHz: (b, a) each
+        rows = []
+        for q in STEM_LOWPASS_Q:
+            w0 = 2 * np.pi * STEM_LOWPASS_HZ / 48000.0
+            al, cs = np.sin(w0) / (2 * q), np.cos(w0)
+            rows.append((np.array([(1 - cs) / 2, 1 - cs, (1 - cs) / 2]) / (1 + al), np.array([1 + al, -2 * cs, 1 - al]) / (1 + al)))
+        return rows
+
+    def stem_equaliser(taps=255, hold=10500.0, nfft=4096):
+        """What the stems are given before they are staged, at STEM_RATE: the inverse of the engine's linear interpolation from that
+        rate (sinc squared) and of the game's low-pass (magnitude and phase), down to what interpolation from 44.1 kHz leaves, so
+        that a stem sounds in the game as its 44.1 kHz form did. The magnitude is held from `hold` up."""
+        f = np.arange(nfft // 2 + 1) * STEM_RATE / nfft
+        fc = np.minimum(f, hold)
+        mag = np.sinc(fc / float(SR)) ** 2 / np.sinc(fc / float(STEM_RATE)) ** 2
+        low, low_held = np.ones(len(f), dtype=complex), np.ones(len(f), dtype=complex)
+        for b, a in stem_lowpass():
+            low = low * freqz(b, a, worN=np.minimum(f, STEM_RATE / 2.0 - 1), fs=48000.0)[1]
+            low_held = low_held * freqz(b, a, worN=fc, fs=48000.0)[1]
+        want = mag / np.abs(low_held) * np.exp(-1j * np.unwrap(np.angle(low)))
+        want = want * np.exp(-2j * np.pi * f / STEM_RATE * ((taps - 1) / 2))
+        return np.fft.irfft(want, nfft)[:taps] * np.kaiser(taps, 6.0)
+
+    def equalise(y, h):
+        k = (len(h) - 1) // 2
+        return np.stack([np.convolve(y[:, c], h, mode='full')[k:k + len(y)] for c in range(y.shape[1])], axis=1)
+
+    def engine_play(x, rate, n48):
+        # FS47MediaSource::Process: the position moves rate / 48000 a frame, linear interpolation between two frames
+        pos = np.arange(n48) * (rate / 48000.0)
+        pos = pos[pos < len(x) - 1]
+        i = pos.astype(np.int64)
+        f = (pos - i)[:, None]
+        y = x[i] * (1 - f) + x[i + 1] * f
+        return np.concatenate([y, np.zeros((n48 - len(y), x.shape[1]))])
+
+    def band_levels(x48):
+        f, P = welch(x48, 48000, nperseg=8192, axis=0)
+        P = P.sum(axis=1)
+        return [10 * np.log10(P[(f >= a) & (f < b)].sum() * (f[1] - f[0]) + 1e-30) for a, b in ((2000, 6000), (6000, 10000), (12000, 24000))]
+
+    def write_wav16(path, y, rate):
+        import wave
+        q = np.clip(np.round(y * 32768.0), -32768, 32767).astype('<i2')
+        with wave.open(path, 'wb') as w:
+            w.setnchannels(y.shape[1])
+            w.setsampwidth(2)
+            w.setframerate(rate)
+            w.writeframes(q.tobytes())
+        return q.astype(np.float64) / 32768.0   # as the game reads it back
+
+    def write_stems(mix, raw, name, split, linear, scale, src, t, curve, final, staged):
+        """SIDEBAND-20261113. Each stem gets the bus's linear parts, the working level, the wow and the mix's own gain curves
+        (compression, ceiling, level), but not the tape curve: that cannot be shared out between stems, so the game runs it once
+        over their sum, at the working level (stems.json's "level" is the gain between that level and the staged one)."""
+        parts = split['parts']
+        total = sum(x for _, x, _ in parts)
+        before = under(total - raw, raw)
+        if before > -200:
+            sys.exit('S47 music: %s: the stems do not sum to the mix before the bus (%.0f dB)' % (name, before))
+        out, files = [], []
+        for label, x, loops in parts:
+            if len(loops) < 2:
+                sys.exit('S47 music: %s: stem %s is one loop alone' % (name, label))
+            v = linear(x) * scale
+            v = np.stack([np.interp(src, t, v[:, 0]), np.interp(src, t, v[:, 1])], axis=1)
+            out.append((label, v * curve[:, None] * final, loops))
+        # what the game makes of them: the sum, to the working level, through the tape curve, back
+        game = np.tanh(sum(v for _, v, _ in out) / final * 1.6) / 1.6 * final
+        after = under(game - mix, mix)
+        lufs_game, peak_game = measure(game)
+        lufs_mix, _ = measure(mix)
+        rebuilt = None
+        if os.path.isfile(staged):
+            was = np.frombuffer(run(['ffmpeg', '-v', 'error', '-i', staged, '-ac', '2', '-ar', str(SR), '-f', 'f32le', '-']).stdout, dtype=np.float32).astype(np.float64).reshape(-1, 2)
+            m = min(len(was), len(mix))
+            rebuilt = under(mix[:m] - was[:m], was[:m])
+        if after > -30 or abs(lufs_game - lufs_mix) > 0.5 or peak_game > -0.5:
+            sys.exit('S47 music: %s: the stems through the tape curve are %.1f dB from the mix (%.1f against %.1f LUFS, peak %.1f)' % (name, after, lufs_game, lufs_mix, peak_game))
+        folder = os.path.join(media, 'music', 'stems')
+        os.makedirs(folder, exist_ok=True)
+        # the staged form: half the rate, the equaliser, one channel where the sides are far enough under the middle, 16 bit
+        h = stem_equaliser()
+        n48 = int(len(mix) * 48000 // SR)
+        played, lin_got, lin_ref, size, frames, ends, pending = np.zeros((n48, 2)), 0.0, 0.0, 0, 0, 0.0, []
+        for label, v, loops in out:
+            mid, side = v.mean(axis=1), (v[:, 0] - v[:, 1]) / 2
+            side_db = float(under(side, mid))
+            likeness = float((v[:, 0] * v[:, 1]).sum() / (np.sqrt((v[:, 0] ** 2).sum() * (v[:, 1] ** 2).sum()) + 1e-30))
+            mono = side_db <= STEM_MONO_SIDE_DB
+            whole = equalise(resample_poly(v, 1, 2, axis=0), h)
+            y = equalise(resample_poly(mid[:, None], 1, 2, axis=0), h) if mono else whole
+            if np.abs(y).max() >= 1.0:
+                sys.exit('S47 music: %s: stem %s would clip as staged' % (name, label))
+            dst = os.path.join(folder, '%s__%s.wav' % (name, label))
+            z = write_wav16(dst + '.new', y, STEM_RATE)   # (beside the old one until this piece has passed its checks)
+            pending.append(dst)
+            both = np.repeat(z, 2, axis=1) if mono else z   # (a one-channel deck goes to both speakers as it is: no pan law)
+            lin_got, lin_ref = lin_got + both, lin_ref + whole
+            played += engine_play(both, STEM_RATE, n48)
+            edge = int(0.005 * STEM_RATE)
+            ends = max(ends, float(np.abs(z[:edge]).max()), float(np.abs(z[-edge:]).max()))
+            size += os.path.getsize(dst + '.new')
+            frames = len(z)
+            files.append(dict(stem=label, file='%s__%s.wav' % (name, label), loops=len(loops), lufs=round(measure(v)[0], 1), channels=1 if mono else 2,
+                              mono=bool(mono), side_under_mid_db=round(side_db, 1), likeness=round(likeness, 3),
+                              why='sides %.1f dB under the middle: %s' % (-side_db, 'one channel' if mono else 'kept in two (needs %.0f)' % -STEM_MONO_SIDE_DB)))
+        # as staged: the staged stems against the full stems through the same resampling and equaliser (what rounding and folding cost)
+        staged_db = float(under(lin_got - lin_ref, lin_ref))
+        # as the game plays them: each deck interpolated to 48 kHz, summed, the low-pass, the tape curve; against the mix file played the same way
+        for b, a in stem_lowpass():
+            played = lfilter(b, a, played, axis=0)
+        heard = np.tanh(played / final * 1.6) / 1.6 * final
+        mix48 = engine_play(mix, SR, n48)
+        heard_db = float(under(heard - mix48, mix48))
+        heard_lu = measure(heard, 48000)[0] - measure(mix48, 48000)[0]
+        hb, mb = band_levels(heard), band_levels(mix48)
+        seconds_off = abs(frames / float(STEM_RATE) - len(mix) / float(SR))
+        # (a band is held to the mix's level unless both are under -80 dBFS there: then it is only the 16 bits' own floor)
+        level_ok = all(abs(x - y) <= 0.5 or max(x, y) < -80 for x, y in zip(hb[:2], mb[:2])) and (hb[2] - mb[2] <= 6 or hb[2] < -80)
+        if staged_db > -60 or heard_db > -30 or abs(heard_lu) > 0.5 or not level_ok or seconds_off > 1.0 / STEM_RATE or ends > 0.002:
+            for dst in pending:
+                os.remove(dst + '.new')
+            sys.exit('S47 music: %s: the staged stems fail their checks: as staged %.1f dB, as played %.1f dB and %+.2f LU against the mix, bands %s, '
+                     'length off by %.6f s, ends %.4f' % (name, staged_db, heard_db, heard_lu, ['%+.1f' % (x - y) for x, y in zip(hb, mb)], seconds_off, ends))
+        for dst in pending:
+            os.replace(dst + '.new', dst)
+        index_path = os.path.join(folder, 'stems.json')
+        rows = json.load(open(index_path, encoding='utf-8')) if os.path.isfile(index_path) else {}
+        rows.setdefault('pieces', {})[name] = dict(level=float(final), bpm=split['bpm'], frames=int(frames), rate=STEM_RATE, lowpass_hz=STEM_LOWPASS_HZ, stems=files,
+                                                   seconds=round(frames / float(STEM_RATE), 4), bytes=int(size),
+                                                   sum_before_bus_db=round(float(before), 0), game_sum_against_mix_db=round(float(after), 1),
+                                                   rebuilt_mix_against_staged_db=None if rebuilt is None else round(float(rebuilt), 1),
+                                                   staged_against_full_stems_db=round(staged_db, 1), played_against_mix_db=round(heard_db, 1),
+                                                   played_against_mix_lu=round(float(heard_lu), 2),
+                                                   played_bands_against_mix_db=dict(zip(('2_6k', '6_10k', 'over_12k'), [round(float(x - y), 1) for x, y in zip(hb, mb)])),
+                                                   ends_peak=round(ends, 5))
+        rows['format'] = dict(rate=STEM_RATE, bits=16, mono_when_sides_under_middle_db=-STEM_MONO_SIDE_DB, lowpass_hz=STEM_LOWPASS_HZ,
+                              note='half the mixes\' rate; an equaliser baked in gives back what the game\'s interpolation and its low-pass take (build_music.py)')
+        rows['made_by'] = 'Tools/music/build_music.py stems'
+        tmp = index_path + '.tmp-%d' % os.getpid()
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(rows, f, indent=1, sort_keys=True)
+        os.replace(tmp, index_path)
+        print('S47 music: %-22s %d stems (%s); sum before the bus %.0f dB, the game\'s sum against the mix %.1f dB (%.1f against %.1f LUFS)%s' % (
+            name, len(out), ', '.join('%s %d' % (label, len(loops)) for label, _, loops in out), before, after, lufs_game, lufs_mix,
+            '' if rebuilt is None else ', this build against the staged mix %.1f dB' % rebuilt), flush=True)
+        print('S47 music:   staged at %d Hz, %.1f MB (%s); as staged %.1f dB from the full stems; as the game plays them %.1f dB and %+.2f LU from the mix, '
+              'bands 2-6k %+.1f, 6-10k %+.1f, over 12k %+.1f dB; ends %.5f' % (
+                  STEM_RATE, size / 1e6, ', '.join('%s %s %.1f' % (f['stem'], 'mono' if f['mono'] else 'stereo', f['side_under_mid_db']) for f in files),
+                  staged_db, heard_db, heard_lu, hb[0] - mb[0], hb[1] - mb[1], hb[2] - mb[2], ends), flush=True)
+
     used = {}
     if first:
         # (a) "Night Freight": the late truck radio. Neon Highway kit 5, 80 BPM, F#-E-B-D, 72 bars = 3:36.
         # intro 0-8 (pad, air) / A 8-24 (bass, arp; shaker and high pad from 16) / B 24-40 (kick; lead and snare from 32) /
         # break 40-48 (pads and the high arp) / C 48-64 (all; lead from 56) / outro 64-72
         k5 = os.path.join(retro, 'Function Loops - Neon Highway', 'FL_NHW_KIT05_80BPM_F#-E-B-D', 'FL_NHW_KIT05_80BPM_LOOPS', 'FL_NHW_KIT05_80_')
-        p = Piece(80, 72)
+        p = Piece(80, 72, 's47_night_freight')
         p.add(k5 + 'F#-E-B-D_LOW NOTE PAD.wav', -23, [(0, 72, 4, 7)])
         p.add(k5 + 'ATMO SFX.wav', -33, [(0, 16, 2, 2), (40, 48, 1, 1)])
         p.add(k5 + 'F#-E-B-D_BASS.wav', -21, [(8, 40, 0.1, 0.25), (48, 64, 0.1, 1)], open_from=(260, 6))
@@ -386,27 +608,27 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         p.add(k5 + 'F#_HIGH ARP.wav', -33, [(40, 56, 1, 2)])
         p.add(k5 + 'F#-E-B-D_MID BASS.wav', -30, [(48, 64, 1, 1)])
         p.add(k5 + 'CRASH.wav', -36, [(24, 28, 0, 1), (48, 52, 0, 1)], perc=True, once=True)
-        freight = master(p.bus, 's47_night_freight')
+        freight = master(p.bus, 's47_night_freight', split=p.named())
         used['s47_night_freight'] = p.used
 
         # (b) "Cold Dish": the observatory's night bed, no drums. ABYSS, 100 BPM, D# minor (D#m, D#m, B, G#m every 8 bars), 88 bars = 3:31.
         # pedal 0-8 / sub 8-16 / first pad 16-32 / second pad over it 32-48 / thin and high 48-56 / darker pair 56-72 / down 72-88
         pad = os.path.join(abyss, 'Pad Loops', 'FL_ABB_Pad_100_D#_Obsidian_')
-        p = Piece(100, 88)
+        p = Piece(100, 88, 's47_cold_dish')
         p.add(pad + '21_8bars.wav', -23, [(0, 88, 4, 8)])
         p.add(os.path.join(abyss, 'Bass Loops', 'FL_ABB_Bass_100_D#_Void_08_4bars.wav'), -25, [(8, 48, 4, 4), (56, 80, 4, 6)], lp=140)
         p.add(pad + '01_8bars.wav', -23, [(16, 48, 4, 3), (56, 82, 3, 8)])
         p.add(pad + '18_8bars.wav', -26, [(32, 48, 4, 3)])
         p.add(pad + '19_8bars.wav', -27, [(46, 58, 2, 3), (72, 82, 3, 6)])
         p.add(pad + '02_8bars.wav', -25, [(56, 72, 3, 3)])
-        master(p.bus, 's47_cold_dish', wow=0.0004)
+        master(p.bus, 's47_cold_dish', wow=0.0004, split=p.named())
         used['s47_cold_dish'] = p.used
 
         # (c) "Carrier Lock": tension, a pulse over a C pedal. Retrowave, 100 BPM, C minor, 72 bars = 2:53.
         # arp alone 0-8 / pulse 8-16 / heartbeat kick 16-24 / B 24-40 (bass and pad move C, C, Eb, F) / break 40-48 /
         # pulse again 48-64 / out 64-72
         rw = os.path.join(retro, 'Function Loops - Retrowave', 'Loops')
-        p = Piece(100, 72)
+        p = Piece(100, 72, 's47_carrier_lock')
         p.add(os.path.join(rw, 'Synth Loops', 'Arps', 'FL_SKY_100_Synth_Arp_Analog_Cm.wav'), -26, [(0, 72, 3, 6)], open_from=(500, 8), close_to=(600, 6))
         p.add(os.path.join(rw, 'Synth Loops', 'Pads', 'FL_SKY_100_Synth_Pad_Velvet_Cmin.wav'), -25, [(0, 24, 4, 1), (40, 48, 0.5, 1), (64, 72, 1, 6)])
         p.add(os.path.join(rw, 'Bass Loops', 'FL_SKY_100_Bass_Synth_Pulse_Cm_Bas.wav'), -21, [(8, 24, 0.5, 0.1), (48, 64, 0.5, 1)], open_from=(220, 4))
@@ -417,14 +639,14 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         p.add(os.path.join(rw, 'Synth Loops', 'Pads', 'FL_SKY_100_Synth_Pad_Starlit_Cmin.wav'), -25, [(24, 40, 1, 1)])
         p.add(os.path.join(rw, 'Drum Loops', 'Hats', 'FL_SKY_100_Drum_Hat_Textured.wav'), -40, [(24, 40, 1, 1)], perc=True)
         p.add(os.path.join(rw, 'Synth Loops', 'Leads', 'FL_SKY_100_Synth_Lead_Slowdive_Cmin.wav'), -29, [(40, 48, 0.5, 1)], lp=5000)
-        master(p.bus, 's47_carrier_lock')
+        master(p.bus, 's47_carrier_lock', split=p.named())
         used['s47_carrier_lock'] = p.used
 
         # (d) "County Road": the drive. Neon Highway kit 4, 124 BPM, A-C-D, 96 bars = 3:06.
         # pad 0-4 / arp 4-16 / bass 16-24 / kick and hat 24-40 (mid bass, pluck from 32) / lead and snare 40-56 /
         # break 56-64 / all 64-88 (lead and snare from 72) / out 88-96
         k4 = os.path.join(retro, 'Function Loops - Neon Highway', 'FL_NHW_KIT04_124BPM_A-C-D', 'FL_NHW_KIT04_124BPM_LOOPS', 'FL_NHW_KIT04_124_')
-        p = Piece(124, 96)
+        p = Piece(124, 96, 's47_county_road')
         p.add(k4 + 'A-C-D_PAD.wav', -21, [(0, 96, 2, 7)])
         p.add(k4 + 'ATMO SFX.wav', -30, [(0, 16, 1, 2), (56, 64, 1, 1)])
         p.add(k4 + 'A_ARP.wav', -26, [(4, 96, 4, 7)], open_from=(800, 8))
@@ -437,12 +659,13 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         p.add(k4 + 'A-C-D_LEAD.wav', -28, [(40, 56, 0.5, 0.5), (72, 88, 0.5, 1)], lp=4500)
         p.add(k4 + 'CRASH.wav', -36, [(24, 28, 0, 1), (64, 68, 0, 1)], perc=True, once=True)
         p.add(k4 + 'FLYBY.wav', -33, [(56, 64, 0, 1)], once=True)
-        master(p.bus, 's47_county_road')
+        master(p.bus, 's47_county_road', split=p.named())
         used['s47_county_road'] = p.used
 
         # the radio's copy of (a): the far station's late record
-        stage(freight, os.path.join(media, 'radio', 's47_night_freight.wav'), RADIO_LUFS, AM, 1.0, 22050, 1)
-        if previews:
+        if not stems:
+            stage(freight, os.path.join(media, 'radio', 's47_night_freight.wav'), RADIO_LUFS, AM, 1.0, 22050, 1)
+        if previews and not stems:
             preview(os.path.join(media, 'radio', 's47_night_freight.wav'), os.path.join(previews, 'radio_am_s47_night_freight_30s.mp3'), 80, 30)
 
     # ---------------------------------------------------------------- the quiet ones
@@ -482,12 +705,30 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         return np.stack([fftconvolve(send, ir[:, c])[:len(send)] for c in (0, 1)], axis=1)
 
     class Bed:
-        def __init__(self, secs):
+        def __init__(self, secs, name):
             self.n = int(round(secs * SR))
             self.bus = np.zeros((self.n, 2))
             self.send = np.zeros(self.n)
             self.used = []
             self.stems = []
+            self.name = name
+            self.parts, self.where = split_of(name, self.n)
+            self.sends = [np.zeros(self.n) for _ in self.parts]
+
+        def named(self, wet=0.5):
+            # each stem with its own share of the room, and the piece's own edges (all linear: they sum to mix())
+            if not stems:
+                return None
+            if sorted(self.where) != list(range(len(self.used))):
+                sys.exit('S47 music: %s: STEMS does not name every layer once' % self.name)
+            edge = int(1.0 * SR)
+            rows = []
+            for k, x in enumerate(self.parts):
+                x = x + wet * room(self.sends[k])
+                x[:edge] *= ramp(edge)[:, None]
+                x[-edge:] *= ramp(edge, False)[:, None]
+                rows.append((STEMS[self.name][k][0], x, [self.used[i] for i in STEMS[self.name][k][1]]))
+            return dict(bpm=0, parts=rows)
 
         def add(self, path, level, spans, semi=0, lock=False, xf=2.0, hp=None, lp=None, move=None, far=0.0, width=1.0, sway=None):
             """level: dB of its loudest half, after its filters at their most open. spans: (from s, to s, fade-in s, fade-out s).
@@ -495,6 +736,7 @@ def mixes(media, bundle, previews, first=True, quiet=True):
             the room. sway: (dB, period s, phase 0..1), a slow breath in its level."""
             x = load(path, semi)
             name = os.path.relpath(path, bundle) + (' (%+d semitones)' % semi if semi else '')
+            layer = len(self.used)
             self.used.append(name)
             # safe in mono: no layer is wider than a correlation of 0.3 between its two channels (two of the beds come wider than 0)
             mid, side = x.mean(axis=1), (x[:, 0] - x[:, 1]) / 2
@@ -539,6 +781,9 @@ def mixes(media, bundle, previews, first=True, quiet=True):
                 seg[-n:] *= ramp(n, False)[:, None]
                 self.bus[s:e] += seg * (1 - 0.6 * far)
                 self.send[s:e] += seg.mean(axis=1) * far
+                if self.parts:
+                    self.parts[self.where[layer]][s:e] += seg * (1 - 0.6 * far)
+                    self.sends[self.where[layer]][s:e] += seg.mean(axis=1) * far
                 stem[s:e] += (seg ** 2).mean(axis=1)
             self.stems.append((name, stem))
 
@@ -565,7 +810,7 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         bed.table(name)
         used[name] = bed.used
         # (the same bus as the four above, so the nine are one score; a true peak of -7 dBTP at the most, like the calm ones there)
-        return master(bed.mix(), name, wow=wow, ceiling=-7.0)
+        return master(bed.mix(), name, wow=wow, ceiling=-7.0, split=bed.named())
 
     if quiet:
         sci = os.path.join(scifi, 'FL_GFX_Ambience_SciFi_')
@@ -582,7 +827,7 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         # (e) "Third Shift": inside SARO at night. C, unresolved: a chord of fourths (G C F Bb D) that never lands. 100 BPM, 4:29.
         # the bed alone 0-19 / ABYSS' C minor pad 19-125 and 197-254 / the Retrowave fifth, pulsing like a machine two rooms
         # away, 48-134 and 202-257 / the Retrowave pad's four chords 110-192 / a low C with a B against it, far off, 154-202
-        b = Bed(268.8)
+        b = Bed(268.8, 's47_third_shift')
         b.add(sci + 'Retro_Smoothness_Cm.wav', -24, [(0, 268.8, 14, 20)], lp=(700, 4000), move=[(0, .15), (60, .6), (130, .9), (200, .5), (268, .1)], sway=(1.5, 47, 0))
         b.add(opad + 'Gm_Obsidian_41_8bars.wav', -25, [(19.2, 124.8, 14, 16), (196.8, 254.4, 16, 20)], xf=PAD, lp=3000)
         b.add(rarp + 'Electric_Cm.wav', -27, [(48, 134.4, 16, 16), (201.6, 256.8, 14, 18)], lock=True, lp=(500, 1500),
@@ -595,7 +840,7 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         # the bed 0-300 / ABYSS' drone, a semitone down, 10-150 / the Neon Highway arpeggio (90 BPM) as lights far out, 40-112
         # and 228-284 / the pedal 100-190 / the Retrowave arpeggio opening and closing 136-214, alone with the bed near 195 /
         # the fifth and a slow sub 200-282
-        b = Bed(300)
+        b = Bed(300, 's47_dry_lake')
         b.add(sci + 'Gloomy_Silence_Dm.wav', -24, [(0, 300, 14, 20)], lp=(600, 3500), move=[(0, .2), (80, .7), (160, .4), (230, .9), (300, .1)], sway=(1.5, 53, .25))
         b.add(orhy + 'D#_Neural_04_8bars.wav', -27, [(10, 150, 16, 20)], semi=-1, sway=(2, 37, 0))
         b.add(nhw2 + 'D_ARP.wav', -27, [(40, 112, 18, 18), (228, 284, 16, 20)], lock=True, lp=1600, far=.7)
@@ -608,7 +853,7 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         # (g) "Vacancy": the motel room. A minor over C, the warmest of the five: a major seventh that stays. 100 BPM, 4:10.
         # the bed 0-250 / the Retrowave pad (Am, C, F, F) 14-110 and 197-240 / ABYSS' still chord, a semitone up, 72-156 /
         # three long notes going down (C, A, F), far, 126-204 / the dark Retrowave chords 149-228
-        b = Bed(249.6)
+        b = Bed(249.6, 's47_vacancy')
         b.add(sci + 'Broken_Core_Am.wav', -24, [(0, 249.6, 12, 18)], lp=(800, 3500), move=[(0, .3), (70, .8), (150, .5), (210, .8), (249, .2)], sway=(1.2, 41, 0))
         b.add(rpad + 'Midnight_Amin.wav', -25, [(14.4, 110.4, 16, 18), (196.8, 240, 14, 18)], xf=PAD, lp=(900, 2600),
               move=[(14, .2), (60, 1), (110, .3), (196, .2), (220, .7), (240, .2)])
@@ -621,7 +866,7 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         # G sharp every half minute and lets it go). Free time, 4:24.
         # the bed 0-264, opening / a sub 0-105 / the pedal, a semitone up, 18-135 / the Darkwave pad opening 62-196 /
         # ABYSS' thin pad (Em, C, Am) 122-240 / the Retrowave arpeggio, far, 166-244 / a high shimmer, two semitones down, 204-254
-        b = Bed(264)
+        b = Bed(264, 's47_grey_hour')
         b.add(sci + 'Soft_Space_Em.wav', -24, [(0, 264, 12, 20)], lp=(700, 4500), move=[(0, .1), (100, .5), (200, 1), (264, .4)], sway=(1.2, 49, .5))
         b.add(obas + 'D#_Void_08_4bars.wav', -28, [(0, 105, 10, 30)], semi=1, xf=PAD, lp=130)
         b.add(opad + 'D#_Obsidian_21_8bars.wav', -26, [(18, 135, 16, 26)], semi=1)
@@ -634,7 +879,7 @@ def mixes(media, bundle, previews, first=True, quiet=True):
         # (i) "Standing Wave": nearly still, for the archive and wherever the game waits. D#, one note and its fifth. Free time, 3:42.
         # the bed 0-222 / ABYSS' drone 6-214 and its pedal 30-196, each breathing at its own rate / a sub 20-204 /
         # the Retrowave pulse, a semitone up and nearly closed, 52-176 / a high drone, far, 88-204
-        b = Bed(222)
+        b = Bed(222, 's47_standing_wave')
         b.add(sci + 'Ellegant_Space_D#m.wav', -24, [(0, 222, 14, 20)], lp=(700, 3200), move=[(0, .3), (110, .7), (222, .3)], sway=(1.2, 61, 0))
         b.add(orhy + 'D#_Neural_04_8bars.wav', -26, [(6, 214, 16, 20)], sway=(2, 43, .5))
         b.add(opad + 'D#_Obsidian_21_8bars.wav', -27, [(30, 196, 18, 22)], sway=(2, 59, .2))
@@ -649,7 +894,7 @@ def mixes(media, bundle, previews, first=True, quiet=True):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('what', choices=('free', 'own', 'mixes', 'quiet', 'all', 'index'))
+    ap.add_argument('what', choices=('free', 'own', 'mixes', 'quiet', 'stems', 'all', 'index'))
     ap.add_argument('--content', default=os.path.join(PROJECT, 'Content'))
     ap.add_argument('--inbox', default=INBOX)
     ap.add_argument('--own', default=OWN)
@@ -665,6 +910,8 @@ def main():
         own(media, args.own, args.previews)
     if args.what in ('mixes', 'quiet', 'all'):
         mixes(media, args.bundle, args.previews, first=args.what != 'quiet')
+    if args.what == 'stems':
+        mixes(media, args.bundle, None, stems=True)
     index(media)
 
 

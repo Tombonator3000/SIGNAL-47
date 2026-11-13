@@ -39,7 +39,7 @@ struct FS47PauseOpts
 {
 	TFunction<void()> OnResume, OnTitle;
 	float Volume = 0.8f, Sens = 1.f, Music = 0.7f, Radio = 1.f;
-	TFunction<void(float)> OnVolume, OnSens, OnMusic, OnRadio;
+	TFunction<void(float)> OnVolume, OnSens, OnMusic, OnRadio; FString MusicReacts = TEXT("on"), Stingers = TEXT("full"); TFunction<void(const FString&)> OnMusicReacts, OnStingers; // SIDEBAND-20261113: on | soft | off, and full | soft | off
 	bool bCharacters = true, bSerling = true, bArtBell = true, bRadioCast = true;
 	TFunction<void(bool)> OnCharacters, OnSerling, OnArtBell, OnRadioCast;
 	TFunction<void()> OnSave, OnLoad;     // unset: not offered

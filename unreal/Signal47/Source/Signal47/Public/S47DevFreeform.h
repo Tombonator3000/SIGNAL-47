@@ -107,6 +107,8 @@ private:
  void AddFarmGate(FS47DevEvents& E);
  // DREAD-20261110: "Dread sound (T)": the bought ground and each hit by itself, to set their levels by ear (S47DreadDev.cpp).
  void AddDread(FS47DevEvents& E);
+ // SIDEBAND-20261113: "Sideband (music)": each band at a value, a flare of each tier, the 80 s night scene, the bus as a WAVE file (S47SidebandDev.cpp).
+ void AddSideband(FS47DevEvents& E);
  // TV-CHANNEL-20261110: "Television (T)": the sign-off at any hour, something on the air near the sets, Dale's switch (S47TvDev.cpp).
  void AddTv(FS47DevEvents& E);
  // WEEKLY-CASE-20261109: "Week case (T)": start now, way out A to the morning, stop and clean (S47WeekCaseDev.cpp).
