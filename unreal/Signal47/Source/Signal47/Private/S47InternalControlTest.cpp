@@ -355,6 +355,8 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   // 10: the packet at the printer, then the binder
   if(F.PrinterProgress()<1)return;
   if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Packet&&F.JobNextAction(*F.CurrentJob()).Contains(TEXT("BINDER")),TEXT("the printer gives the packet and the binder is next")))return;
+  // LOOP-SLIP-IN-PACKET-20261113: no separate bearing slip waits behind the anomaly's packet (its bearing, where there is one, is the packet's last page)
+  if(!Check(!F.ResultSheets().ContainsByPredicate([](const FS47FreeformSession::FResultSheet& Sh){return FS47FreeformSession::IsBearingSlip(Sh);})&&!F.NextAction().Contains(TEXT("BEARING SLIP")),TEXT("no separate bearing slip after the anomaly's packet")))return;
   M->UI->Close(true);
   Finish(true,TEXT("Unusual take: ANOMALY DETECTED, RECORD tab due, recorded and retained there with its 8-second reference, reel deck by the pointer (play, MARK IN / OUT, reference, marks by clicks, RETAIN), confirmed at OPS, packet printed; the binder is next."));return;
  }

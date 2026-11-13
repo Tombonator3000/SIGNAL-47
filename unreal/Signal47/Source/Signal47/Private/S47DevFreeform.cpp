@@ -1098,7 +1098,9 @@ void FS47DevFreeform::StepCards()
   const bool bOk=F->RegisterComparison(Conclusion);
   const auto* Now=F->Jobs().FindByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==CardsId;});
   const auto* B=F->Places&&F->Places->Bearings().Num()>Before?&F->Places->Bearings().Last():nullptr;
-  Say(FString::Printf(TEXT("registered %d as %s, discrepancy %d, stage %d, bearing slip %s%s"),bOk?1:0,*Conclusion,bWasAnomaly?1:0,Now?int32(Now->Stage):-1,B?TEXT("toward "):TEXT("NONE"),B?*B->Target:TEXT("")));
+  // LOOP-SLIP-IN-PACKET-20261113: a discrepancy's bearing waits for its packet (on the map once the packet is collected)
+  const bool bHeld=!B&&F->Places&&F->Places->HeldFor(CardsId);
+  Say(FString::Printf(TEXT("registered %d as %s, discrepancy %d, stage %d, bearing slip %s%s"),bOk?1:0,*Conclusion,bWasAnomaly?1:0,Now?int32(Now->Stage):-1,B?TEXT("toward "):bHeld?TEXT("IN THE PACKET"):TEXT("NONE"),B?*B->Target:TEXT("")));
   if(M->UI)M->UI->Close(true);
   if(!bOk){Give(TEXT("registration refused"));return;}
   CardsWait=F->Clock();
