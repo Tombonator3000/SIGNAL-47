@@ -2392,11 +2392,21 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		// MARGINALIA-20261109: WHO & WHAT's pencil, PEOPLE and THEM, from what has really happened (S47Marginalia; nothing new is saved)
 		if (M->Story) S47Marginalia::Fill(S47Marginalia::FactsOf(*M->Freeform, M->Story->Docs()), X.Scribbles);
 		// EVIDENCE-DOSSIER-20261113: THEM's files of the unknown as they stand now (S47Dossier): always in the pocket, never a trip to a PC
-		for (const S47Dossier::FFile& UnknownFile : M->Freeform->Unknowns.Files())
+		const TArray<S47Dossier::FFile> UnknownFiles = M->Freeform->Unknowns.Files();
+		for (const S47Dossier::FFile& UnknownFile : UnknownFiles)
 		{
 			FS47NbUnknown Sheet; Sheet.Title = UnknownFile.Title; Sheet.Stage = UnknownFile.Stage; Sheet.Next = UnknownFile.Next; Sheet.Gave = UnknownFile.Gave; // LOOP-DOSSIER-GIVES-20261113
-			for (const S47Dossier::FBox& Slot : UnknownFile.Boxes) Sheet.Boxes.Add({ Slot.Label, Slot.How, Slot.Note, Slot.bFilled });
+			for (const S47Dossier::FBox& Slot : UnknownFile.Boxes) { Sheet.Boxes.Add({ Slot.Label, Slot.How, Slot.Note, Slot.bFilled }); Sheet.Boxes.Last().Struck = Slot.Struck; } // (slice 2: the struck pencil)
 			X.Unknowns.Add(Sheet);
+		}
+		// EVIDENCE-DOSSIER slice 2: the pairs a find showed to be one thing, side by side, never merged: where their boxes agree
+		for (const FIntPoint& Pair : M->Freeform->Unknowns.Beside())
+		{
+			if (!UnknownFiles.IsValidIndex(Pair.X - 1) || !UnknownFiles.IsValidIndex(Pair.Y - 1)) continue;
+			const S47Dossier::FFile& LeftFile = UnknownFiles[Pair.X - 1]; const S47Dossier::FFile& RightFile = UnknownFiles[Pair.Y - 1];
+			FS47NbUnknownPair Two; Two.Left = LeftFile.Title; Two.Right = RightFile.Title; Two.Said = S47Dossier::BesideWords(LeftFile, RightFile); Two.Marks = S47Dossier::Agreement(LeftFile, RightFile);
+			for (int32 BoxAt = 0; BoxAt < LeftFile.Boxes.Num() && BoxAt < RightFile.Boxes.Num(); ++BoxAt) { Two.Labels.Add(LeftFile.Boxes[BoxAt].Label); Two.LeftFilled.Add(LeftFile.Boxes[BoxAt].bFilled); Two.RightFilled.Add(RightFile.Boxes[BoxAt].bFilled); }
+			X.UnknownPairs.Add(Two);
 		}
 		// PT-NOTEBOOK-20261109: DOCUMENTS is the papers only, as the tray by the pinboard has them: the field records are Knowledge's
 		if (M->Freeform->PinBoard) X.Papers = M->Freeform->PinBoard->Papers();
