@@ -2568,7 +2568,11 @@ FS47NbExtras US47Flow::NotebookExtras() const
 				for (int32 C = 0; Open < 0 && C < FS47FreeformCases::CaseCount; ++C)
 					if (const FS47FreeformCases::FCase* K = F->CaseFile().Get(C); K && K->bOpen && !K->bConcluded) Open = C;
 				if (Open >= 0) { Goal.CaseTitle = FS47FreeformCases::Def(Open).Title; Goal.CaseQuestion = F->CaseFile().QuestionText(Open); }
-				X.Goals = S47GoalLine::Make(Goal).Lines();
+				// TASKS-TEN-20261113 (change 5): of the three goal lines only the week's stays over NOW (tonight's is the arrow below, the
+				// question is the case's open matter)
+				const S47GoalLine::FGoals Made = S47GoalLine::Make(Goal);
+				X.Goals.Reset();
+				if (!Made.Week.IsEmpty()) X.Goals.Add(Made.Week);
 			}
 			// D45-20261110: a line NOW has not shown before is NEW, and the notebook opens on NOW for it (SS47Notebook, which counts it
 			// seen once shown). A game just begun or loaded counts what it has at first as seen, so that only what comes after is new.
@@ -2583,20 +2587,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 					if (bFresh) Shown.Keys.Add(N.Key); else N.bNew = !Shown.Keys.Contains(N.Key);
 				}
 			}
-			// D45-20261110: the field guide starts with tonight's list (Enter turns to NOW), whatever Tom calls the book
-			{
-				static const TCHAR* const Heads[] = { TEXT("DO FIRST"), TEXT("TONIGHT"), TEXT("WHEN YOU CAN") };
-				TArray<FString> Plan;
-				for (const FS47NbNowLine& N : X.Now) if (N.Group == TEXT("next")) Plan.Add(TEXT("NEXT: ") + N.Text);
-				for (uint8 R = 0; R < 3; ++R)
-				{
-					TArray<FString> Rows;
-					for (const FS47NbNowLine& N : X.Now) if (N.Group == Ranks[R] && !N.bDone) Rows.Add(TEXT("- ") + N.Text);
-					if (Rows.Num()) Plan.Add(FString(Heads[R]) + TEXT("\n") + FString::Join(Rows, TEXT("\n")));
-				}
-				if (!Note.Clock.IsEmpty()) Plan.Add(Note.Clock);
-				X.GuideEntries.Insert(FS47NbGuideEntry{ TEXT("guide:tonight"), TEXT("Tonight's list"), (Plan.Num() ? FString::Join(Plan, TEXT("\n\n")) : FString(TEXT("Nothing on tonight's list. The clock and OPS will bring the next thing."))) + TEXT("\n\nEnter or A: turn to NOW, the same list with its details.") }, 0);
-			}
+			// TASKS-TEN-20261113 (change 5): the field guide no longer opens on a third copy of tonight's list ("Tonight's list"): NOW is the list
 		}
 		X.OnFollow = [Self](const FString& Id)
 		{

@@ -899,8 +899,8 @@ void FS47FreeformSession::Step(double Dt)
  }
  StepRxSearch(D); // RX-SEARCH-SOUND-20261113: Tom's search layer, heard where the monitor is (S47FreeformSky.cpp)
  // M7-HUD-20261109: the card gets the short line; the pause menu and the notebook keep the whole of it
- // CASES-OPS-20261109: and a second line for the most pressing case not already on it (HudCaseLine), whatever the first line says
- if(M->UI&&M->Mode==US47Main::EMode::Play){const FString Card=HudObjective();const FString Case=HudCaseLine(Card);M->UI->Objective(Case.IsEmpty()?Card:Card+TEXT("\n")+Case);}
+ // TASKS-TEN-20261113 (change 5): one line only: the second line for a case (HudCaseLine) is gone; the cases are on NOW's open matters
+ if(M->UI&&M->Mode==US47Main::EMode::Play)M->UI->Objective(HudObjective());
 }
 int32 FS47FreeformSession::PendingPrint(const FJob& J)
 {
@@ -3427,25 +3427,6 @@ int32 FS47FreeformSession::UrgentCase(bool bActionOnly)const
  }
  return Best;
 }
-FString FS47FreeformSession::HudCaseLine(const FString& FirstLine)const
-{
- if(bDead||Tutorial>0)return FString();
- // TELEX-20261109: a paper on the telex is the second line until it is torn off: "TELEX: A reply is waiting".
- if(const FString Telex=TelexLine();!Telex.IsEmpty()&&!FirstLine.Contains(TEXT("TELEX")))return Telex;
- // The most pressing case not already on the card: a case is never out of sight while one is open.
- TArray<TPair<int32,FCaseStep>> Order;
- for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(FCaseStep S=CaseStep(Line);CaseStepRank(S.Step)>0)Order.Add({Line,MoveTemp(S)});
- Order.StableSort([](const TPair<int32,FCaseStep>& A,const TPair<int32,FCaseStep>& B){return CaseStepRank(A.Value.Step)>CaseStepRank(B.Value.Step);});
- for(const auto& Each:Order)
- {
-  const FCaseStep& S=Each.Value;
-  if(S.Short.IsEmpty()||FirstLine.Contains(FS47FreeformCases::Def(Each.Key).Title))continue;
-  FString Out=S.Short;
-  if(Out.Len()>S47HudGauges::CardMost){Out=Out.Left(S47HudGauges::CardMost-3);int32 Space=INDEX_NONE;if(Out.FindLastChar(TEXT(' '),Space)&&Space>20)Out.LeftInline(Space);Out+=TEXT("...");}
-  return Out;
- }
- return FString();
-}
 FString FS47FreeformSession::CaseRecordLine(const FString& Key)const
 {
  if(!FS47FreeformCases::IsCaseRecord(Key))return FString();
@@ -4299,6 +4280,9 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // receiver's own steps, before this ladder: Objective, NextAction.)
  if(!CaseSheets.IsEmpty()&&IsBearingSlip(CaseSheets[0])){if(SheetIndex()==0)return Say(FString(TEXT("PRINTER: COLLECT THE BEARING SLIP.")),TEXT("PRINTER // BEARING SLIP."));}
  else if(!CaseSheets.IsEmpty())return Say(FString::Printf(TEXT("PRINTER: COLLECT THE RESULT SHEET FOR %s."),FS47FreeformCases::Def(CaseSheets[0].Line).Title),TEXT("PRINTER // CASE RESULT SHEET."));
+ // TELEX-20261109 (Tom's words on the HUD, "TELEX: A reply is waiting"): once the HUD's second line, now (TASKS-TEN-20261113, change 5)
+ // a paper waiting like the printer's
+ if(const FString Telex=TelexLine();!Telex.IsEmpty())return Say(TEXT("TELEX (control room): ")+Telex+TEXT(". TEAR IT OFF AT THE TELEX."),TEXT("TELEX // ")+Telex.Mid(7).ToUpper()+TEXT("."));
  // 2. A WINDOW OPEN NOW (TASKS-TEN-20261113): be there for it.
  {FString Open;if(WindowOpenStep(Open))return Say(Open);}
  const int32 Urgent=UrgentCase(true);const FCaseStep Step=Urgent>=0?CaseStep(Urgent):FCaseStep();
@@ -5128,7 +5112,7 @@ FString FS47FreeformSession::NextAction()const
  if(!CurrentJob()||CurrentJob()->Stage==EJobStage::Filed)return AvailableActivities();
  // TASKS-TEN-20261113 (change 2): a window open now comes before a card only selected (not begun, or still waiting for its source);
  // work under way keeps its place (blocking now)
- {const FJob* J=CurrentJob();FString Open;if((J->Stage==EJobStage::New||EveningGated(*J))&&WindowOpenStep(Open))return AvailableActivities();}
+ {const FJob* J=CurrentJob();FString Open;if((J->Stage==EJobStage::New||EveningGated(*J))&&(WindowOpenStep(Open)||!TelexLine().IsEmpty()))return AvailableActivities();}
  if(const FJob* J=CurrentJob())PickRow=J->CaseTest>=0?CaseStep(J->CaseLine).Task:EveningGated(*J)?TEXT("card:")+J->Id:TEXT("cards");
  return ReceiverNextAction();
 }
@@ -5873,9 +5857,9 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   // registers as routine work and records nothing for the closed case. Tom, 13 November: the repeat is withdrawn, never planned, and
   // an older save's repeat job goes on Continue without a word (or, already recorded, is routine work).
   FS47FreeformSession P(nullptr);P.Begin(nullptr);P.Tutorial=0;
-  Check(P.CaseStep(0).Step==ECaseStep::Closed&&P.UrgentCase()<0&&P.HudCaseLine(FString()).IsEmpty(),TEXT("CaseStep: no case, no step and no second HUD line"));
+  Check(P.CaseStep(0).Step==ECaseStep::Closed&&P.UrgentCase()<0&&!P.HudObjective().Contains(TEXT("\n")),TEXT("CaseStep: no case, no step, and the HUD card has one line (TASKS-TEN change 5)"));
   P.RecordEvidence(TEXT("pulse-review"),TEXT("reviewed"));
-  Check(P.CaseStep(0).Step==ECaseStep::ChooseTest&&P.CaseAwaitingChoice()==0&&P.HudCaseLine(TEXT("OPS // 2 OBSERVATIONS WAITING.")).Contains(TEXT("CHOOSE A TEST")),TEXT("CaseStep: an opened case asks for a test, on the HUD's second line too"));
+  Check(P.CaseStep(0).Step==ECaseStep::ChooseTest&&P.CaseAwaitingChoice()==0&&P.CaseStep(0).Task.Contains(TEXT("choose a test"))&&!P.HudObjective().Contains(TEXT("\n")),TEXT("CaseStep: an opened case asks for a test on its own row, and the HUD card keeps one line (TASKS-TEN change 5)"));
   const int32 Truth=P.CaseFile().Get(0)->Truth;
   Check(P.PlanCaseTest(0,1)&&P.CaseStep(0).Step==ECaseStep::RunPlan&&P.CaseAwaitingChoice()<0&&P.Tasks().ContainsByPredicate([](const FS47Task& T){return T.Text.Contains(TEXT(": run job "));}),TEXT("CaseStep: a planned test is run, and the case board's star is off"));
   auto St=P.Save();const auto List=S47J::Arr(S47J::Obj(St,TEXT("cases")),TEXT("cases"));
@@ -6072,14 +6056,14 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Check(X.HasFinding(FString::Printf(TEXT("case%d-reply"),ML+1))&&X.CaseFile().Get(ML)->bReplied&&X.OnTelex(Doc)&&!X.InTelexTray(Doc)&&X.TelexTray().IsEmpty()&&!X.TelexReady()&&!X.TearOffTelex(),
    TEXT("Telex: the morning reply comes in on the telex, not straight into the tray, and cannot be torn off while it prints"));
   const FCaseStep XS=X.CaseStep(ML);
-  Check(XS.Step==ECaseStep::AwaitReply&&XS.Task.Contains(TEXT("tear off the reply at the telex"))&&X.CaseNextLine(ML).Contains(TEXT("TEAR IT OFF AT THE TELEX"))&&X.HudCaseLine(TEXT("OPS // 2 OBSERVATIONS WAITING.")).StartsWith(TEXT("TELEX: A reply is waiting"))
-   &&X.TonightPlan().StartsWith(TEXT("TELEX / A REPLY IS WAITING"))&&X.Label(TEXT("telex"))==TEXT("The telex is printing"),TEXT("Telex: CaseStep, the HUD's second line, TONIGHT'S PLAN and the machine say a reply is waiting there"));
+  Check(XS.Step==ECaseStep::AwaitReply&&XS.Task.Contains(TEXT("tear off the reply at the telex"))&&X.CaseNextLine(ML).Contains(TEXT("TEAR IT OFF AT THE TELEX"))&&X.AvailableActivities().StartsWith(TEXT("TELEX (control room): A reply is waiting"))
+   &&X.TonightPlan().StartsWith(TEXT("TELEX / A REPLY IS WAITING"))&&X.Label(TEXT("telex"))==TEXT("The telex is printing"),TEXT("Telex: CaseStep, the HUD's one line (paper waiting, blocking now: TASKS-TEN change 5), TONIGHT'S PLAN and the machine say a reply is waiting there"));
   FS47FreeformSession Y(nullptr);Y.Begin(S47J::Read(S47J::Write(X.Save())));Y.Tutorial=0;
   Check(Y.OnTelex(Doc)&&Y.TelexQueue().Num()==1&&Y.TelexQueue()[0].Page==X.TelexQueue()[0].Page&&!Y.InTelexTray(Doc)&&Y.CaseStep(ML).Step==ECaseStep::AwaitReply,TEXT("Telex: a paper on the machine survives Save and Continue, still not in the tray"));
   Y.TelexSheets[0].Feed=TelexSeconds;
   FS47Doc Torn;
   Check(Y.TelexReady()&&Y.Label(TEXT("telex"))==TEXT("Tear off the telex")&&Y.TearOffTelex(&Torn)&&Torn.Id==Doc&&Torn.Kind==TEXT("telex")&&Torn.Page==X.TelexQueue()[0].Page&&!Y.OnTelex(Doc)&&Y.InTelexTray(Doc)
-   &&Y.TelexLine().IsEmpty()&&Y.HudCaseLine(FString()).IsEmpty()&&Y.CaseStep(ML).Step==ECaseStep::Closed,TEXT("Telex: torn off, the reply is a document for the notebook and lies in the OPS tray; the case has nothing left"));
+   &&Y.TelexLine().IsEmpty()&&!Y.AvailableActivities().StartsWith(TEXT("TELEX"))&&Y.CaseStep(ML).Step==ECaseStep::Closed,TEXT("Telex: torn off, the reply is a document for the notebook and lies in the OPS tray; the case has nothing left"));
   FS47FreeformSession Z(nullptr);Z.Begin(S47J::Read(S47J::Write(Y.Save())));
   Check(Z.InTelexTray(Doc)&&Z.TelexQueue().IsEmpty()&&Z.TelexTray().Last().Page==Torn.Page,TEXT("Telex: the torn-off paper is still in the tray after Continue"));
   Check(Z.QueueTelex(TEXT("telex-selftest-1"),TEXT("Test"),TEXT("TELEX"),TEXT("PAGE"))&&!Z.QueueTelex(TEXT("telex-selftest-1"),TEXT("Test"),TEXT("TELEX"),TEXT("PAGE"))&&!Z.QueueTelex(Doc,TEXT("Test"),TEXT("TELEX"),TEXT("PAGE")),

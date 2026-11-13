@@ -1754,8 +1754,7 @@ void SS47Notebook::Activate()
 	if (Tab == TEXT("guide") && X.GuideEntries.IsValidIndex(I))
 	{
 		if (X.MarkRead) X.MarkRead(X.GuideEntries[I].Id);
-		// D45-20261110: the field guide's first entry is tonight's list; Enter turns to it on NOW
-		if (X.GuideEntries[I].Id == TEXT("guide:tonight") && X.bNow) { Show(TEXT("tasks")); return; }
+		// (TASKS-TEN-20261113, change 5: the field guide has no "Tonight's list" of its own any more; NOW is the list)
 		Build(); return;
 	}
 
@@ -2266,13 +2265,13 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 			Nx.Now = { Line(TEXT("first"), TEXT("FEEDER: Power is out.")), Line(TEXT("tonight"), TEXT("BEARING SLIP: New circle on your map.")), Line(TEXT("later"), TEXT("STATION GOAL: Array 19 of 27.")),
 				Line(TEXT("done"), TEXT("OPS: One job card registered and filed."), true) };
 			Nx.Now[1].bNew = true; Nx.Now[1].Key = TEXT("d45-selftest:slip");
-			Nx.GuideEntries = { { TEXT("guide:tonight"), TEXT("Tonight's list"), TEXT("TONIGHT\n- BEARING SLIP: New circle on your map.") }, { TEXT("guide:records"), TEXT("Records"), TEXT("Keep originals.") } };
+			Nx.GuideEntries = { { TEXT("guide:records"), TEXT("Records"), TEXT("Keep originals.") } };
 			FS47NbExtras Looked = Nx; Looked.Now[1].bNew = false;
 			Check(TEXT("Freeform: the notebook opens on NOW when something new is on it, even after the field guide; otherwise where it was left"),
 				OpenOn(Nx, TEXT("guide")) == TEXT("tasks") && OpenOn(Looked, TEXT("guide")) == TEXT("guide") && OpenOn(FS47NbExtras(), TEXT("map")) == TEXT("map"));
 			const auto Ranked = SNew(SS47Notebook).Docs(All).Extras(Nx);
 			Ranked->Show(TEXT("guide")); Ranked->Choose(0); Ranked->Activate();
-			Check(TEXT("Freeform field guide: its first entry is tonight's list, and it turns to NOW"), Ranked->Tab == TEXT("tasks") && Ranked->Count() == Nx.Now.Num(), Ranked->Tab);
+			Check(TEXT("Freeform field guide: no copy of tonight's list; its entries stay entries (TASKS-TEN change 5)"), Ranked->Tab == TEXT("guide"), Ranked->Tab);
 		}
 		bool bLint = true;
 		for (const FS47NbNowLine& N : Fx.Now) bLint &= S47Script::LintText(N.Text).IsEmpty();

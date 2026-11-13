@@ -448,7 +448,7 @@ public:
  bool CaseFromField(int32 Line) const;
  FString TonightPlan() const;
  // CASES-OPS-20261109 (Docs/Research/Gameplay/SAKER_OPS_2026-11-09.md): where an open case stands and its next step, worked out from
- // the case file and the work list as they are (nothing saved). The OPS banner and the HUD (Objective, HudCaseLine), the task list
+ // the case file and the work list as they are (nothing saved). The OPS banner and the HUD (Objective), the task list
  // (Tasks), TONIGHT'S PLAN and the pause menu's note, the notebook's Now and the case board's star (CaseAwaitingChoice) all read it.
  // CHOOSE_TEST: a test (or control) can be planned; for a mystery, or a filing. RUN_PLAN: the planned test can be run now.
  // CONCLUDE: a trial case with one explanation left. FILE: a mystery with one
@@ -468,8 +468,7 @@ public:
  // The open case whose step is most pressing: CONCLUDE, RUN_PLAN, FILE, CHOOSE_TEST, then (bActionOnly false) AWAIT_REPLY; the
  // lower line first among equals. -1: none.
  int32 UrgentCase(bool bActionOnly=false) const;
- // The HUD card's second line while a case is open: the most pressing case not already on the card's first line. Empty: none.
- FString HudCaseLine(const FString& FirstLine) const;
+ // (TASKS-TEN-20261113, change 5: the HUD card's second line for a case, HudCaseLine, is gone: one line, from one arbiter)
  // A case record kept (FS47FreeformCases::IsCaseRecord) as one line under the night log's WORK: "THE REPEATED INTERVAL:
  // off-source pointing registered; rules out Follows the sky source." Empty for any other finding.
  FString CaseRecordLine(const FString& Key) const;
