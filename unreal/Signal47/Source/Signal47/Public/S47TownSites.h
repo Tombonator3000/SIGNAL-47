@@ -29,6 +29,7 @@ namespace S47TownSites
 		bool bRound = false;                        // a cylinder (the tank, a pole) instead of a box
 		FString Use;                                // N1110: what a look at it picks (an interactable's id, FS47Breather's); empty: none
 		bool bKeep = false;                         // stays up beside the site's real model (a flagpole); the others are its stand-in
+		bool bGround = false;                       // CHURCH: gravel laid on the land (a decal that follows it) where the lot gravel is here; the flat box otherwise
 		FString Group;                              // "merry": the piece of the outside it belongs to; a bought piece that replaces the group hides it (FDress)
 	};
 	// Words on a board or a wall: where, which way they face (degrees clockwise from north, before the site is turned), how big.
@@ -81,7 +82,8 @@ namespace S47TownSites
 		// Git-ignored, loaded only if present), from Config/Props/<DressFile>: where the bottom centre of each piece's turned bounds goes
 		// in the site's metres, its yaw on top of the site's, a walk block, and the group of boxes it stands in for. Without the asset
 		// the boxes stay.
-		struct FDress { FString Id, Asset, Replaces; double X = 0, Z = 0, Yaw = 0, Scale = 1; bool bCollide = false; };
+		// CHURCH (the cemetery): BoxW, BoxD, BoxH: a plain grey box that size (metres, before the yaw) stands there while the asset is not here.
+		struct FDress { FString Id, Asset, Replaces; double X = 0, Z = 0, Yaw = 0, Scale = 1; bool bCollide = false; double BoxW = 0, BoxD = 0, BoxH = 0; };
 		FString DressFile; TArray<FDress> Dress;
 	};
 	// SCHOOL-V2 stage 3: the sites whose real model stands (set by Build; the walls, floors and footprint above count only then).

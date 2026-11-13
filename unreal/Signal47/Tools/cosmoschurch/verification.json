@@ -1,0 +1,257 @@
+{
+ "bytes_on_disk": 199403272,
+ "checks": [
+  {
+   "detail": "Content/Licensed/CosmosChurch",
+   "name": "packages on disk under Content/Licensed/CosmosChurch",
+   "pass": true
+  },
+  {
+   "detail": [],
+   "name": "every package saved by UE5 (legacy file version -8 or lower)",
+   "pass": true
+  },
+  {
+   "detail": {},
+   "name": "at least one mesh passes",
+   "pass": true
+  }
+ ],
+ "destination": "/Game/Licensed/CosmosChurch",
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "failed": {},
+ "meshes": {
+  "SM_Cemetery01": {
+   "bounds_cm": {
+    "max": [
+     52.9,
+     125.0,
+     69.9
+    ],
+    "min": [
+     -52.9,
+     -125.0,
+     -0.1
+    ]
+   },
+   "lods": 6,
+   "long_axis": "y",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "demonic",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosChurch/Village/Meshes/Cemetery/SM_Cemetery01.SM_Cemetery01",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     0.0
+    ],
+    "height_above_bottom_cm": 0.1
+   },
+   "size_cm": [
+    105.9,
+    249.9,
+    69.9
+   ],
+   "triangles_lod0": 6936
+  },
+  "SM_Cemetery04": {
+   "bounds_cm": {
+    "max": [
+     36.8,
+     20.7,
+     181.7
+    ],
+    "min": [
+     -37.1,
+     -5.2,
+     6.1
+    ]
+   },
+   "lods": 6,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "demonic",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosChurch/Village/Meshes/Cemetery/SM_Cemetery04.SM_Cemetery04",
+   "pivot": {
+    "at_bottom": false,
+    "at_footprint_centre": false,
+    "footprint_centre_from_pivot_cm": [
+     -0.1,
+     7.7
+    ],
+    "height_above_bottom_cm": -6.1
+   },
+   "size_cm": [
+    74.0,
+    25.9,
+    175.6
+   ],
+   "triangles_lod0": 65110
+  },
+  "SM_Cemetery08": {
+   "bounds_cm": {
+    "max": [
+     44.8,
+     32.4,
+     92.1
+    ],
+    "min": [
+     -44.8,
+     -32.4,
+     -0.4
+    ]
+   },
+   "lods": 6,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "demonic",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosChurch/Village/Meshes/Cemetery/SM_Cemetery08.SM_Cemetery08",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     -0.0
+    ],
+    "height_above_bottom_cm": 0.4
+   },
+   "size_cm": [
+    89.5,
+    64.8,
+    92.5
+   ],
+   "triangles_lod0": 8496
+  },
+  "SM_Cemetery09": {
+   "bounds_cm": {
+    "max": [
+     50.3,
+     32.2,
+     45.3
+    ],
+    "min": [
+     -50.3,
+     -32.2,
+     -0.0
+    ]
+   },
+   "lods": 6,
+   "long_axis": "x",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "demonic",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosChurch/Village/Meshes/Cemetery/SM_Cemetery09.SM_Cemetery09",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     -0.0
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    100.6,
+    64.4,
+    45.3
+   ],
+   "triangles_lod0": 1008
+  },
+  "SM_Cemetery10": {
+   "bounds_cm": {
+    "max": [
+     36.8,
+     7.7,
+     110.7
+    ],
+    "min": [
+     -36.7,
+     -7.7,
+     -0.0
+    ]
+   },
+   "lods": 1,
+   "long_axis": "z",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "demonic",
+   "packages": 11,
+   "path": "/Game/Licensed/CosmosChurch/Village/Meshes/Cemetery/SM_Cemetery10.SM_Cemetery10",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     0.0,
+     0.0
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    73.5,
+    15.3,
+    110.7
+   ],
+   "triangles_lod0": 45120
+  },
+  "SM_bench": {
+   "bounds_cm": {
+    "max": [
+     15.0,
+     103.0,
+     44.6
+    ],
+    "min": [
+     -15.9,
+     -96.6,
+     -0.0
+    ]
+   },
+   "lods": 6,
+   "long_axis": "y",
+   "material_slots": 1,
+   "materials_resolved": true,
+   "nanite": false,
+   "pack": "demonic",
+   "packages": 9,
+   "path": "/Game/Licensed/CosmosChurch/Village/Meshes/Props/SM_bench.SM_bench",
+   "pivot": {
+    "at_bottom": true,
+    "at_footprint_centre": true,
+    "footprint_centre_from_pivot_cm": [
+     -0.4,
+     3.2
+    ],
+    "height_above_bottom_cm": 0.0
+   },
+   "size_cm": [
+    30.9,
+    199.6,
+    44.6
+   ],
+   "triangles_lod0": 1284
+  }
+ },
+ "mode": "verify",
+ "passed": [
+  "SM_Cemetery01",
+  "SM_Cemetery04",
+  "SM_Cemetery08",
+  "SM_Cemetery09",
+  "SM_Cemetery10",
+  "SM_bench"
+ ],
+ "status": "PASS"
+}

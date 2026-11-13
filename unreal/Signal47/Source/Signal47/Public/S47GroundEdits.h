@@ -21,6 +21,9 @@ namespace S47GroundEdits
 
 	/** A site's edits, replacing what it gave before. An empty pair takes them away. */
 	SIGNAL47_API void Set(const FString& Id, const TArray<FPad>& Pads, const TArray<FCut>& Cuts);
+	/** CHURCH: ground a site keeps bare of plants without moving the land (a graveyard on the slope as it lies). Only Clears follows it:
+	 *  no height changes, nothing for the mesh tool, not among ClearBoxes. An empty list takes it away. */
+	SIGNAL47_API void SetBare(const FString& Id, const TArray<FRect>& Bare);
 	/** The land's height Y at a point with every edit on it (S47RoadTerrain::SurfaceY calls this on the desert's own branch). */
 	SIGNAL47_API double Apply(double X, double Z, double Y);
 	/** On a pad, a bank or a cut, or within Margin of one: no plant, rock or tuft belongs here. False while the relief is off. */

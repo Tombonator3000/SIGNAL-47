@@ -1,0 +1,10 @@
+{
+ "_doc": "The grave markers layout.py deals out. yaw: what turns the marker's face to the west (its wide side along z). most: how many at most (the heavy meshes are few). weight: how often it is drawn. east: moved this far east of its line (a lying stone, its head at the line).",
+ "kinds": [
+  {"mesh": "SM_Cemetery08", "what": "a small cross on a stepped base", "yaw": 90, "most": 12, "weight": 5},
+  {"mesh": "SM_Cemetery09", "what": "a low stone block", "yaw": 90, "most": 9, "weight": 3},
+  {"mesh": "SM_Cemetery10", "what": "a ringed stone cross", "yaw": 90, "most": 5, "weight": 2},
+  {"mesh": "SM_Cemetery04", "what": "an upright headstone with a round top", "yaw": 90, "most": 5, "weight": 2},
+  {"mesh": "SM_Cemetery01", "what": "a lying grave cover", "yaw": 90, "most": 3, "weight": 1, "east": 0.9}
+ ]
+}
