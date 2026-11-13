@@ -73,9 +73,8 @@ TArray<TPair<FString, FString>> SS47Ending::CreditsRows(bool bBoughtSfx)
 		{ TEXT("Music"), TEXT("Scott Buckley, CC BY 4.0 (scottbuckley.com.au): \"Signal to Noise\", and from \"Shadows and Dust\", \"Decoherence\", \"The Old Ones\", \"In Search of Solitude\", \"Neon\" and \"Hymn to the Dawn\"") },
 		{ TEXT(""), TEXT("Chris Zabriskie, CC BY 4.0 (chriszabriskie.com): \"Cylinder Two\" and \"Cylinder Eight\" from Cylinders") },
 		{ TEXT(""), TEXT("Kevin MacLeod, CC BY 4.0 (incompetech.com): \"Floating Cities\", \"Ossuary 1 - A Beginning\", \"Ossuary 5 - Rest\", \"Long Note Four\", \"Lightless Dawn\" and \"Phantom from Space\"; on the radio \"Drankin Song\", \"Bama Country\", \"Cattails\" and \"Anamalie\"") },
-		{ TEXT(""), TEXT("Shane Ivers, CC BY 4.0 (silvermansound.com): \"Signs To Nowhere\"") },
 		// MUSIC-20261113: the steel guitar and the drones (links in CREDITS.txt), Tom's own piece and the game's own arrangements
-		// of the bought loops, and the old records on the AM dial. "Night on the Docks" and "Cylinder One" are no longer played.
+		// of the bought loops, and the old records on the AM dial. "Night on the Docks", "Signs To Nowhere" and "Cylinder One" are no longer played.
 		{ TEXT(""), TEXT("Lobo Loco, CC BY 4.0 (freemusicarchive.org): \"Look Back Steelguitar Organ (F 35)\" and \"Stumping Slow Deltablues - Guitar Steelguitar (F 30)\" from Completely FREE 2") },
 		{ TEXT(""), TEXT("Uuriter, CC BY 4.0 (freemusicarchive.org): \"Standby Mode\" and \"Routine Drone\" from Analog Fields") },
 		// (13 Nov: the five quiet ones are in the same row, so the row count and the bought credit's place in the self-test stand)
@@ -431,7 +430,7 @@ bool SS47Ending::SelfTest(TArray<FString>& Lines)
 	E->Advance(100);
 	Check(E->Disposed() && Done == 4 && !E->Skip(), TEXT("dispose cancels pending callbacks and the overlay"));
 	const TArray<TPair<FString, FString>> Free = CreditsRows(false), Bought = CreditsRows(true);
-	Check(Free.Num() == 24 && Bought.Num() == 25 && Bought[17].Value == TEXT("Ultimate SFX for Games, Function Loops"), TEXT("bought SFX credit is conditional and follows the recording credits"));
+	Check(Free.Num() == 23 && Bought.Num() == 24 && Bought[16].Value == TEXT("Ultimate SFX for Games, Function Loops"), TEXT("bought SFX credit is conditional and follows the recording credits"));
 	{
 		// MUSIC-20261113
 		FString Music; for (const TPair<FString, FString>& Row : Free) Music += Row.Value + TEXT("\n");

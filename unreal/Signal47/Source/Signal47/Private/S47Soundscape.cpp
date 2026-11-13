@@ -29,7 +29,7 @@ namespace S47SoundscapeLocal
 	// CATTLE-FARM-ONLY-20261113: the far lowing carried 1100 m from three spots (two of them with no cattle), through a panner whose
 	// inverse fall (ref 80, rolloff .5) still left an eighth of it at 1100 m: heard over nearly the whole land. Now the farm's pen only,
 	// faded to nothing by CattleFar on top of the panner's fall; at SARO a whisper (CattleAtSaro of the gain) while the herd is uneasy.
-	constexpr double MillReach = 600, WireReach = 70, CattleNear = 180, CattleFar = 420, CattleRef = 40, OwlReach = 650, CoyoteNear = 220, CoyoteFar = 1500;
+	constexpr double MillReach = 240, WireReach = 70, CattleNear = 180, CattleFar = 420, CattleRef = 40, OwlReach = 650, CoyoteNear = 220, CoyoteFar = 1500;
 	constexpr double CattleAtSaro = .25, CattleSaroReach = 160, CattleUneasy = .05;
 	// The onset is as dangerous as FS47Omen's; the hush holds this long after the last of it, and our own voices wait after.
 	constexpr double HushSeverity = 0.35, HushHoldSeconds = 2.0, AfterHushSeconds = 25, BreathSeconds = 28;
@@ -321,7 +321,9 @@ void FS47Soundscape::StepVoices(double Dt, double Hour)
 		if (Mill && (Next -= Dt) <= 0)
 		{
 			Next = FMath::FRandRange(5.f, 13.f) / FMath::Max(0.2, Activity(TEXT("windmill"), Hour));
-			Night.MillCreak(Ear, Here(*Mill, 9.5), FMath::Clamp(1.0 - Best / MillReach, 0.25, 1.0));
+			// Tom 13 November (d67): the creak carried far too far (600 m, never under a quarter strength). It is the farm's own sound:
+			// gone by MillReach, and falling off fast on the way there.
+			Night.MillCreak(Ear, Here(*Mill, 9.5), FMath::Clamp(FMath::Square(1.0 - Best / MillReach), 0.04, 1.0));
 			Counts.FindOrAdd(TEXT("windmill"))++;
 		}
 	}

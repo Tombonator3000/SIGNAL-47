@@ -819,7 +819,7 @@ void FS47Ambience::TrainAt(const FVector& Listener, const FVector& Where)
 void FS47Ambience::MillCreak(const FVector& Listener, const FVector& Where, double Strength)
 {
 	FS47AudioContext::FBatch Batch(*Ctx);
-	const double Sk = FMath::Clamp(Strength, 0.1, 1.0);
+	const double Sk = FMath::Clamp(Strength, 0.03, 1.0);
 	// a desert windmill squeaking as its head turns (recorded in Arizona); else the old door's creak slowed to a long dry groan,
 	// or one made here
 	if (const TSharedPtr<FS47AudioBuffer> Clip = NightClip(TEXT("mill")))

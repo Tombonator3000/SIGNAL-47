@@ -31,7 +31,6 @@ namespace S47Score
 		{ TEXT("longNote"), { TEXT("long_note_four.mp3"), TEXT("Long Note Four"), TEXT("Kevin MacLeod"), 0.5 } },
 		{ TEXT("lightless"), { TEXT("lightless_dawn.mp3"), TEXT("Lightless Dawn"), TEXT("Kevin MacLeod"), 0.45 } },
 		{ TEXT("phantom"), { TEXT("phantom_from_space.mp3"), TEXT("Phantom from Space"), TEXT("Kevin MacLeod"), 0.4 } },
-		{ TEXT("nowhere"), { TEXT("signs_to_nowhere.mp3"), TEXT("Signs To Nowhere"), TEXT("Shane Ivers"), 0.38 } },
 		// MUSIC-20261113 (Tom, 13 Nov: take the jazz out, and the piano piece at night too): "Night on the Docks (Sax)" (docks, the
 		// town's) and "Cylinder One" (cylOne, eerie and the motel: the one solo keyboard piece, single ringing notes in slow broken
 		// chords) are out of the table; their files stay where they are. In their place, all optional (never in Git, staged by
@@ -65,8 +64,9 @@ namespace S47Score
 		{ TEXT("tension"), { TEXT("oldOnes"), TEXT("longNote"), TEXT("lightless"), TEXT("phantom"), TEXT("routine"), TEXT("carrierLock") } },
 		{ TEXT("motel"), { TEXT("solitude"), TEXT("ossuary5"), TEXT("cylTwo"), TEXT("vacancy") } },
 		{ TEXT("drive"), { TEXT("neon"), TEXT("cylTwo"), TEXT("floating"), TEXT("cylEight"), TEXT("lookBack"), TEXT("stumping"), S47Score::IntroDriveId, TEXT("countyRoad"), TEXT("nightFreight") } },
-		// (without the staged steel guitar the town has "Signs To Nowhere" alone, with the score's own quiet between its turns)
-		{ TEXT("town"), { TEXT("nowhere"), TEXT("lookBack"), TEXT("stumping") } },
+		// Tom 13 November (d67): "Signs To Nowhere" was jazz too and is gone from the town. Without the staged steel guitar the town
+		// has "Neon" alone, with the score's own quiet between its turns.
+		{ TEXT("town"), { TEXT("neon"), TEXT("lookBack"), TEXT("stumping") } },
 		{ TEXT("dawn"), { TEXT("hymn"), TEXT("cylEight"), TEXT("floating"), TEXT("greyHour") } },
 	};
 	bool MediaPresent(const FString& WebName)
@@ -474,8 +474,8 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 	auto Check = [&Lines, &bOk](bool bPass, const TCHAR* What) { Lines.Add(FString::Printf(TEXT("%s score: %s"), bPass ? TEXT("PASS") : TEXT("FAIL"), What)); bOk &= bPass; };
 	const TSharedRef<FS47AudioContext> C = FS47AudioContext::Make();
 	FS47Score S(nullptr, C, C->Destination);
-	Check(S47Score::TRACKS.Num() == 29 && S47Score::CUES.Num() == 7, TEXT("29 tracks and seven cues"));
-	Check(S47Score::CUES.FindChecked(TEXT("night"))[0] == TEXT("cylEight") && S47Score::CUES.FindChecked(TEXT("town"))[0] == TEXT("nowhere") && S47Score::CUES.FindChecked(TEXT("town"))[1] == TEXT("lookBack"), TEXT("cue order"));
+	Check(S47Score::TRACKS.Num() == 28 && S47Score::CUES.Num() == 7 && !S47Score::TRACKS.Contains(TEXT("nowhere")), TEXT("28 tracks and seven cues; the town's jazz is not among them"));
+	Check(S47Score::CUES.FindChecked(TEXT("night"))[0] == TEXT("cylEight") && S47Score::CUES.FindChecked(TEXT("town"))[0] == TEXT("neon") && S47Score::CUES.FindChecked(TEXT("town"))[1] == TEXT("lookBack"), TEXT("cue order"));
 	// MUSIC-20261113: the jazz and the night's solo keyboard are gone from the table and every pool; the pools stand without the optional files
 	{
 		bool bGone = !S47Score::TRACKS.Contains(TEXT("docks")) && !S47Score::TRACKS.Contains(TEXT("cylOne")), bTwo = true, bInGit = true, bFilesOnce = true, bOptionalLast = true;
@@ -543,10 +543,10 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 	}
 	// (the picks below are the same on a machine with the staged files and on one without: the test says which are there)
 	S.HasFile = [](const FS47ScoreTrack&) { return true; };
-	S.Track = TEXT("nowhere"); S.Last.Add(TEXT("lookBack"), 0);
+	S.Track = TEXT("neon"); S.Last.Add(TEXT("lookBack"), 0);
 	Check(S.Pick(TEXT("town")) == TEXT("stumping"), TEXT("does not immediately repeat a piece"));
-	S.Track.Empty(); S.Last.Add(TEXT("nowhere"), -1000); S.Last.Add(TEXT("stumping"), 0);
-	Check(S.Pick(TEXT("town")) == TEXT("nowhere"), TEXT("longest unheard wins beyond the random 120 seconds"));
+	S.Track.Empty(); S.Last.Add(TEXT("neon"), -1000); S.Last.Add(TEXT("stumping"), 0);
+	Check(S.Pick(TEXT("town")) == TEXT("neon"), TEXT("longest unheard wins beyond the random 120 seconds"));
 	{
 		bool bEveryPiece = true;
 		for (const auto& Cue : S47Score::CUES) for (const FString& K : Cue.Value) bEveryPiece &= S.Present(K);
@@ -554,12 +554,12 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 		S.HasFile = [](const FS47ScoreTrack&) { return false; };
 		bool bNoOptional = true;
 		for (int32 I = 0; I < 40; ++I) for (const auto& Cue : S47Score::CUES) { const FS47ScoreTrack* Tr = S47Score::TRACKS.Find(S.Pick(Cue.Key)); bNoOptional &= Tr && !Tr->bOptional; }
-		Check(bNoOptional && !S.Present(TEXT("lookBack")) && S.Present(TEXT("nowhere")), TEXT("without the staged files no pool picks an optional piece, and none is left empty"));
-		S.Track = TEXT("nowhere");
-		Check(S.Pick(TEXT("town")) == TEXT("nowhere"), TEXT("a pool down to one piece plays it again rather than nothing"));
+		Check(bNoOptional && !S.Present(TEXT("lookBack")) && S.Present(TEXT("neon")), TEXT("without the staged files no pool picks an optional piece, and none is left empty"));
+		S.Track = TEXT("neon");
+		Check(S.Pick(TEXT("town")) == TEXT("neon"), TEXT("a pool down to one piece plays it again rather than nothing"));
 		S.Track.Empty();
 		S.HasFile = [](const FS47ScoreTrack& Tr) { return Tr.File == TEXT("look_back_steelguitar.mp3"); };
-		S.Last.Add(TEXT("nowhere"), 0); S.Last.Add(TEXT("lookBack"), -1000);
+		S.Last.Add(TEXT("neon"), 0); S.Last.Add(TEXT("lookBack"), -1000);
 		Check(S.Pick(TEXT("town")) == TEXT("lookBack") && S.Present(TEXT("lookBack")) && !S.Present(TEXT("stumping")), TEXT("a staged optional piece joins its pool, and only that one"));
 		S.HasFile = [](const FS47ScoreTrack&) { return false; };
 	}
