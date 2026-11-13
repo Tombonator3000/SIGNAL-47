@@ -18,7 +18,10 @@
 #include "S47Outfit.h"
 #include "S47RoomDecor.h"
 #include "S47Three.h"
+#include "S47StoryDirector.h"
+#include "S47TownDay.h"
 #include "S47Townsfolk.h"
+#include "S47Visitors.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -670,6 +673,13 @@ void FS47TownUse::OpenFeed()
 		return;
 	}
 	Rows.Add(S47Kit::Paper(TEXT("FEED & SEED. Range cubes on a pallet, salt blocks stacked like bricks, rolls of wire, a rack of tools. The man behind the counter writes every sale in a receipt book with a carpenter's pencil and asks after the weather out your way.")));
+	// NPC-DAY-FOLLOW-20261109: Eloy Baca's noon in town (S47TownDay::EloyAt), unless he is gone or it is a Story night.
+	if (M->Freeform->Visitors && !M->Freeform->Visitors->BacaGone() && !FS47StoryDirector::Of(M) && S47TownDay::EloyAt(Hour()) == TEXT("feed"))
+	{
+		Rows.Add(S47Kit::Text(TEXT("An old man in a pressed shirt at the end of the counter, a sack of range cubes on his shoulder, arguing the price. Eloy Baca, from under the east rim.")));
+		const TSharedPtr<FS47Visitors> Visitors = M->Freeform->Visitors;
+		Rows.Add(S47Kit::Button(TEXT("Walk out with Eloy Baca"), [Visitors] { if (Visitors) Visitors->OpenBaca(true); }));
+	}
 	BasketRows(Feed, FeedWares(), Rows, [this] { OpenFeed(); });
 	Rows.Add(S47Kit::Small(TEXT("He sells spades, jacks and lug wrenches too. SARO's set rides behind your seat already. A lantern takes the same cells.")));
 	Rows.Add(S47Kit::Button(TEXT("Leave"), [this] { if (M && M->UI) M->UI->Close(); }));

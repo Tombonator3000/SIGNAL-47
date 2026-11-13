@@ -49,10 +49,15 @@ const TArray<FRow>& Table()
     TEXT("Never seen him. Only the voice. Yells about the logs like someone reads them. WHO reads them?"), TEXT(""), NoFollow, TEXT("") },
   { TEXT("earl"), People, TEXT("EARL, 1420 AM"), TEXT("The night show out of Caliche"), TEXT("earl"), TEXT("earl:call"), Hint,
     TEXT("Takes calls about lights like they're the weather. Never laughs at one. Why not?"), TEXT(""), NoFollow, TEXT("") },
+  // NPC-DAY-FOLLOW-20261109: where and when, as their day has them (S47TownDay): once met, the player knows their hours.
+  { TEXT("earl_hours"), People, TEXT("EARL, 1420 AM"), TEXT("The night show out of Caliche"), TEXT("earl"), TEXT("earl:call"), Hint,
+    TEXT("On the air midnight to four. Before that the evening man plays records and Earl's lamp is lit at home."), TEXT(""), NoFollow, TEXT("") },
   { TEXT("deputy"), People, TEXT("THE DEPUTY"), TEXT("Deputy at the substation"), TEXT("deputy"), TEXT("told:deputy:"), Hint,
     TEXT("Writes everything down. Every car, every time. Who reads HIS notebook?"), TEXT(""), NoFollow, TEXT("") },
   { TEXT("waitress"), People, TEXT("THE WAITRESS"), TEXT("Waitress at the Mesa Diner"), TEXT("waitress"), TEXT("told:waitress:"), Hint,
     TEXT("Asked what I do at night. Said: radio. She didn't buy it."), TEXT(""), NoFollow, TEXT("") },
+  { TEXT("waitress_hours"), People, TEXT("THE WAITRESS"), TEXT("Waitress at the Mesa Diner"), TEXT("waitress"), TEXT("told:waitress:"), Hint,
+    TEXT("Counter's hers from about seven at night till five. Days the cook pours through the hatch and says nothing."), TEXT(""), NoFollow, TEXT("") },
   { TEXT("shop"), People, TEXT("THE SHOP MAN"), TEXT("Runs the souvenir shop"), TEXT("souvenir_man"), TEXT("told:souvenir_man:"), Hint,
     TEXT("Sells little gray men for four dollars. Laughed too long when I looked at the shelf."), TEXT(""), NoFollow, TEXT("") },
   { TEXT("shop_guess"), People, TEXT("THE SHOP MAN"), TEXT("Runs the souvenir shop"), TEXT("souvenir_man"), TEXT("told:souvenir_man:"), Hint,
@@ -61,6 +66,8 @@ const TArray<FRow>& Table()
     TEXT("Waited four years for one of us to come out. Sure of every story. Was sure of the last one too."), TEXT(""), NoFollow, TEXT("") },
   { TEXT("baca_look"), People, TEXT("ELOY BACA"), TEXT("Ranch under the east rim"), TEXT("baca"), TEXT("baca_look_"), Hint,
     TEXT("Says go and look, and when. Says the sky keeps a schedule. Old men and schedules."), TEXT(""), ToMap, TEXT("Where he said to look: on my map with a ?") },
+  { TEXT("baca_hours"), People, TEXT("ELOY BACA"), TEXT("Ranch under the east rim"), TEXT("baca"), TEXT("baca:told"), Hint,
+    TEXT("Porch at first light. Noon he's in town at the Feed and Seed counter. Won't open the door after ten."), TEXT(""), NoFollow, TEXT("") },
   { TEXT("baca_gone"), People, TEXT("ELOY BACA"), TEXT("Ranch under the east rim"), TEXT("baca"), TEXT("gone:baca"), Hint,
     TEXT("Door open at the Baca place. Nobody home. Nobody asks."), TEXT(""), NoFollow, TEXT("") },
   { TEXT("ward"), People, TEXT("DR. WARD"), TEXT("The district office. Office hours only"), TEXT("ward"), TEXT("ward:talk"), Hint,
@@ -210,7 +217,7 @@ bool SelfTest(TArray<FString>& Lines)
  const auto Ids = [&T](const FFacts& F) { TArray<FString> Out; for (const int32 I : Shown(F)) Out.Add(T[I].Id); return Out; };
  int32 NPeople = 0, NThem = 0;
  for (const FRow& R : T) (R.Side == People ? NPeople : NThem) += 1;
- Check(T.Num() >= 18 && T.Num() <= 26 && NPeople >= 8 && NThem >= 10, FString::Printf(TEXT("about twenty scribbles, both pages (%d people, %d them)"), NPeople, NThem));
+ Check(T.Num() >= 18 && T.Num() <= 30 && NPeople >= 8 && NThem >= 10, FString::Printf(TEXT("about twenty scribbles, both pages (%d people, %d them)"), NPeople, NThem)); // (NPC-DAY-FOLLOW-20261109: three of hours)
  // Nothing without its trigger: no facts, nothing; every other find there but this row's, and this row is not shown; with its own
  // find too, it is.
  TArray<FS47NbScribble> None; Fill(FFacts(), None);

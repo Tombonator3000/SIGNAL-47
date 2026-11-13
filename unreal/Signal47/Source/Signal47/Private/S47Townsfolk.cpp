@@ -597,11 +597,29 @@ void FS47Townsfolk::OpenDiner()
 	if (!M || !M->UI || !M->Freeform) return;
 	if (ShowAway(TEXT("waitress"))) return;
 	TArray<TSharedRef<SWidget>> Rows;
+	// NPC-DAY-FOLLOW-20261109: her shift is the night (S47TownDay, about seven at night to five). By day the cook pours through the
+	// hatch and has nothing to say; before the kitchen opens, and on the cook's break, nobody is behind the counter and the coffee is cold.
+	const FString Behind = S47TownDay::Counter();
+	if (Behind != TEXT("waitress"))
+	{
+		const double Hour = FMath::Fmod(M->Freeform->Clock(), 86400.) / 3600.;
+		Rows.Add(S47Kit::Paper(Behind == TEXT("cook") ? DinerLine(TEXT("cook"), Hour) : DinerLine(FString(), Hour)));
+		Rows.Add(S47Kit::Button(Behind == TEXT("cook") ? TEXT("Leave a quarter and go") : TEXT("Leave"), [this] { if (M && M->UI) M->UI->Close(); }));
+		M->UI->Open(S47Kit::Shell(M->UI, Behind == TEXT("cook") ? TEXT("MESA DINER / THE COOK") : TEXT("MESA DINER"), S47Kit::Col(Rows), 800));
+		return;
+	}
 	Rows.Add(S47Kit::Paper(TEXT("MESA DINER. She pours your coffee without asking and leaves the pot where you can reach it.")));
 	const FString Said = Gossip(TEXT("waitress"));
 	if (!Said.IsEmpty()) Rows.Add(S47Kit::Text(Said));
 	Rows.Add(S47Kit::Button(TEXT("Leave a quarter and go"), [this] { if (M && M->UI) M->UI->Close(); }));
 	M->UI->Open(S47Kit::Shell(M->UI, TEXT("MESA DINER / THE WAITRESS"), S47Kit::Col(Rows), 820));
+}
+
+FString FS47Townsfolk::DinerLine(const FString& Behind, double Hour)
+{
+	if (Behind == TEXT("cook")) return TEXT("MESA DINER. Nobody at the counter. The cook leans out through the hatch, pours you a cup from the kitchen pot and goes back to the grill without a word. The counter is the waitress's from about seven at night.");
+	if (Hour < 12) return TEXT("MESA DINER. The chairs are still up on the tables and the coffee machine is cold, the pot upside down on the drainer. Nobody comes out. The kitchen light comes on at six.");
+	return TEXT("MESA DINER. Nobody behind the counter. Cigarette smoke drifts in from the back door: the cook is on a break. What is left in the pot has gone cold.");
 }
 
 void FS47Townsfolk::FillMap(FS47MapView& V) const
@@ -716,6 +734,14 @@ bool FS47Townsfolk::SelfTest(TArray<FString>& Lines)
 	{
 		FS47Townsfolk T(nullptr); FGone R; R.Who = TEXT("deputy"); R.Day = 2; R.Back = 4; T.Returned.Add(R);
 		Check(!T.Has(TEXT("away_deputy")) && T.Has(TEXT("back_deputy")), TEXT("back at his post: the radio no longer asks after him, it says he is back"));
+	}
+	{
+		// NPC-DAY-FOLLOW-20261109: the Mesa's counter off her shift: three plain lines, the cold machine only when nobody pours.
+		const FString Cook = DinerLine(TEXT("cook"), 10), Early = DinerLine(FString(), 5.5), Break = DinerLine(FString(), 15.1);
+		bool bClean = true;
+		for (const FString& L : { Cook, Early, Break }) bClean &= S47Script::LintText(L).IsEmpty() && !L.Contains(TEXT("47"));
+		Check(bClean && Cook != Early && Early != Break && Early.Contains(TEXT("cold")) && Break.Contains(TEXT("cold")) && !Cook.Contains(TEXT("cold")) && Cook.Contains(TEXT("seven at night")),
+			TEXT("off her shift the counter says who pours (the cook through the hatch) or that nobody does and the coffee is cold"));
 	}
 	return bAll;
 }

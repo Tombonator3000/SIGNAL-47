@@ -241,8 +241,10 @@ void FS47TripoNpcs::Update()
   }
   else if (R == TEXT("dale"))
   {
+   // NPC-DAY-FOLLOW-20261109: Dale is a voice on the phone and the walkie and is never met (DECISIONS); in Freeform his mannequin
+   // is not stood in his office. Story keeps it as it was (a decision for Tom: TODO NPC-DAY-FOLLOW-20261109).
    USceneComponent* Room = Named(TEXT("OperationsRoomRoot"));
-   if (Room) Place(Slot, FVector(1.07,.02,7.88), S47Three::Euler(0,PI,0), Shown(Room));
+   if (Room) Place(Slot, FVector(1.07,.02,7.88), S47Three::Euler(0,PI,0), Shown(Room) && !M->IsFreeform());
   }
   else if (R == TEXT("waitress"))
   {
@@ -277,8 +279,11 @@ void FS47TripoNpcs::Update()
     // Door is a 2.2m-high proxy centred 1.10m above the real floor, not a feet anchor.
     // The seated bake's pelvis height comes from its private preparation manifest.
     const double Floor=Door.WorldPosition().Y-1.10;
-    Place(Slot,FVector(8022.8,Floor+.585-.5741413869501052,2037.55),S47Three::Euler(0,-PI/2,0),
-     TownGroup.Shown() && M->Story && S47Timeline::EarlOnDuty(M->Story->Clock()));
+    // NPC-DAY-FOLLOW-20261109: in a running Freeform day, by his own plan (S47TownDay::Present: midnight to four, never swapped
+    // in the player's sight); otherwise the Night Line's hours as before.
+    bool bOnAir=M->Story && S47Timeline::EarlOnDuty(M->Story->Clock());
+    if (bool bDay=false; S47TownDay::Present(TEXT("earl"),bDay)) bOnAir=bDay;
+    Place(Slot,FVector(8022.8,Floor+.585-.5741413869501052,2037.55),S47Three::Euler(0,-PI/2,0),TownGroup.Shown() && bOnAir);
    }
   }
   else if (R == TEXT("deputy"))

@@ -11,6 +11,7 @@
 #include "S47Sneak.h"
 #include "S47Stress.h"
 #include "S47Thoughts.h"
+#include "S47TownDay.h"
 #include "S47Townsfolk.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -381,6 +382,7 @@ void FS47Fatigue::AtDiner()
 	if (!M || !M->IsFreeform() || !M->Freeform) return;
 	if (M->Evening && M->Evening->Commute()) return; // the evening's own supper scene
 	if (M->Freeform->Townsfolk && M->Freeform->Townsfolk->Away(TEXT("waitress"))) return; // nobody pours it
+	if (S47TownDay::Counter().IsEmpty()) return; // NPC-DAY-FOLLOW-20261109: before the kitchen opens, or the cook's break: the machine is cold
 	const double Clock = M->Freeform->Clock();
 	// the pot is left in reach: one cup a visit, and a visit is a half hour or so
 	if (Clock - DinerAt < 30 * 60) return;
