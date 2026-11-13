@@ -224,5 +224,7 @@ Tom: «Heretter kalles den Sideband.» Navnet gjelder det iMUSE-aktige musikksys
 
 - **Hva det er:** musikken er bærebølgen, og spillets tilstand former den. Systemet har to deler: fargebussen (fire bånd som farger musikken i sanntid: WORN, BROKEN, WIDE, FAR) og kanalene (lagene i de egne stykkene, som tas inn og ut etter spenningen og bytter på taktstrekene).
 - **Navn i kode og dokumenter:** `S47Sideband`. Brukes fra første linje når fargebussen bygges.
-- **Status:** plan godkjent av Tom; lydprøver lages først, ingenting er bygget.
+- **Status:** Tom hørte begge prøverundene 13. november og godkjente dem: «Likte alt. Bygg Sideband og Flares.» Kodet samme dag, ikke bygget og ikke hørt i spill. Beskrivelsen står i [SIDEBAND](../Design/Audio/SIDEBAND_20261113.md).
+- **FLARES er den tredje delen:** en mørk bunn som bare finnes inne i en hendelse, og høyst ett musikalsk slag per hendelse, valgt etter tidstrinnene (hint, glimt, fullt). Den milde BROKEN gjelder. FLARES tar over bunnen og treffet fra den kjøpte møtelyden når filene finnes: én eier per jobb, aldri to bunner eller to treff for samme hendelse.
+- **Lisens:** Tom bekreftet 13. november at Function Loops-lisensen tillater kommersiell bruk. Råfilene fra pakken legges aldri i Git og følger aldri med spillet; bare bakte og bearbeidede former gjør det.
 - **Grenser:** fargingen skal aldri dekke tale eller signallyder, og det skal finnes en innstilling for å skru den av.

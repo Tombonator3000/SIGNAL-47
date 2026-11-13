@@ -96,6 +96,10 @@ Det som står om vilkår, står i prosjektets egne notater, ikke i pakken: `web/
 
 Lisensforbeholdet over gjelder uendret for alle ni: **bare ferdige miks følger med spillet, aldri råløkkene**, ingen lyd i Git, og Tom må bekrefte vilkårene mot Function Loops' gjeldende EULA før en offentlig utgave.
 
+**Tom 13. november 2026: lisensen tillater kommersiell bruk.** Tom har bekreftet at Function Loops-lisensen for pakken tillater kommersiell bruk. Det avklarer spørsmålet over for miksene, stammene og FLARES-lydene. Grensen står som før: råfilene fra pakken legges aldri i Git og følger aldri med spillet; bare bakte og bearbeidede former gjør det.
+
+**SIDEBAND, 13. november 2026 (SIDEBAND-20261113):** tolv lyder til FLARES er bakt med [`Tools/sideband/build_flares.py`](../../../unreal/Signal47/Tools/sideband/build_flares.py): ni slag fra «Horror Screamers» (07, 15, 20, 25, 26), «Orchestral Braams» (01 og 05 i D#m) og «Orchestral Impacts» (01, 05, 19), og tre bunner fra «Horror Ambience» (18, 20, 26). Hver lyd er trimmet, lagt i lag der oppskriften sier det, smalnet, sendt gjennom miksenes bussoppskrift, formet og forkortet. De ni egne miksene finnes dessuten som 27 stammer (`build_music.py stems`), hver et arrangement av minst to løkker. Alt ligger i den Git-ignorerte lydmappa (`Content/Audio/Raw/media/sideband` og `media/music/stems`). «Monsters, Boss & Zombies» er ikke brukt: spillet sier aldri hva vesenene er. Se [SIDEBAND](../../Design/Audio/SIDEBAND_20261113.md).
+
 ## Kortlister
 
 Tall i tabellene er fra `sfx_catalog.csv`. «Sentroide» = spektral tyngdepunkt (lavt = mørkt). Nivåsvingning = standardavvik i dB over 100 ms-vinduer (lavt = jevnt). Start/slutt-diff = nivåforskjell første/siste del (lavt = lett å løkke).
