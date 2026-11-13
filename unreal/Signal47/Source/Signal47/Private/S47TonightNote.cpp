@@ -164,6 +164,19 @@ FString S47TonightNote::PlaceText(const FLine& Line)
  return Line.Source.Mid(Start, To + 8 - Start);
 }
 
+FS47NbNowLine S47TonightNote::NowLine(const FString& Group, const FLine& L, const FString& Item)
+{
+ FS47NbNowLine N; N.Group = Group; N.Rank = L.Rank; N.Text = LineText(L); N.When = L.When; N.Where = PlaceText(L); N.What = L.What; N.Key = L.Key;
+ if (L.Key == TEXT("cards")) N.Fold = TEXT("cards"); // TASKS-TEN-20261113 (change 4): the cards up open under their row
+ N.Tag = TagText(L); N.bPinned = L.bPinned; // TASKS-TEN-20261113 (changes 9 and 10)
+ // the list's whole words, within the spoiler limits as the line is (a row known only by its key, "cards", says no key as WHY)
+ N.Why = L.Source == TEXT("filed cards") || L.Source == TEXT("cards") || L.Source.StartsWith(TEXT("card:")) ? FString() : S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What;
+ N.Item = Item;
+ N.bDone = L.Mark == EMark::Done;
+ if (!L.Matter.IsEmpty()) N.bSummary = true; // an open matter: a dash, no box, never ticked
+ return N;
+}
+
 const TCHAR* S47TonightNote::KindHead(uint8 Kind)
 {
  return Kind == 0 ? TEXT("WORK") : Kind == 1 ? TEXT("FOLLOW-UP") : TEXT("YOUR OWN TIME");
@@ -699,6 +712,18 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
   Order.Tasks[7].bDone = true;
   const FNote Ticked = Gather(Order, true);
   const int32 TickedSlip = Find(Ticked, TEXT("New circle"));
+  {
+   // REVIEW-20261113: NOW's rows keep their work item and their tick (Item and bDone were once never set: rows done tonight not struck,
+   // Enter pinned instead of following, items listed twice)
+   Check(LongSlip != INDEX_NONE, TEXT("the slip is on NOW (for its row's item and tick)"));
+   if (LongSlip != INDEX_NONE)
+   {
+   FLine DoneLine = Long.Lines[LongSlip]; DoneLine.Mark = EMark::Done;
+   const FS47NbNowLine Struck = NowLine(TEXT("done"), DoneLine, TEXT("slip/1")), Open = NowLine(TEXT("follow"), Long.Lines[LongSlip], TEXT("slip/1"));
+   Check(Struck.bDone && Struck.Item == TEXT("slip/1") && !Open.bDone && Open.Item == TEXT("slip/1") && Open.Where == TEXT("1.1 miles south-southwest of SARO") && Open.Why == Slip,
+    TEXT("NOW's row from a note's line keeps its work item, its WHY and its tick: a done line is struck (REVIEW 13 Nov)"));
+   }
+  }
   // D69-20261113: NOW's WHERE for the slip is the circle's place, not "BEARING SLIP"
   Check(LongSlip != INDEX_NONE && PlaceText(Long.Lines[LongSlip]) == TEXT("1.1 miles south-southwest of SARO"), TEXT("the bearing slip's WHERE is the circle's place words, not the paper's name (D69)"));
   Check(LongSlip != INDEX_NONE && Long.Lines[LongSlip].What == TEXT("New circle on your map, 1.1 miles south-southwest of SARO.") && Long.Lines[LongSlip].Source == Slip && Short.Lines[Bear].What == Long.Lines[LongSlip].What

@@ -10,6 +10,7 @@
 // FS47Predecessor, FS47Mail and FS47DayRound's TaskLine), the HUD's objective card (S47HudGauges::CardLine) and the case windows
 // (FS47FreeformSession::CaseTestWindow). Nothing is saved. In Freeform every line keeps to the spoiler limits (S47Script::LintText):
 // a line that does not is left off the note.
+struct FS47NbNowLine;
 namespace S47TonightNote
 {
  enum class EMark : uint8 { Open, Next, Done };
@@ -117,6 +118,8 @@ namespace S47TonightNote
  // D69-20261113: where the row is, for NOW's WHERE: the place, not the paper: a bearing slip's row gives the circle's (or the line's)
  // place words it already has ("1.2 miles south-southwest of SARO"); any other row its Where
  SIGNAL47_API FString PlaceText(const FLine& Line);
+ // REVIEW-20261113: one of NOW's rows from a note's line, in Group, with its work item (empty: none); done lines are struck (bDone)
+ SIGNAL47_API FS47NbNowLine NowLine(const FString& Group, const FLine& Line, const FString& Item);
  // The group's head as the card and NOW print it: "WORK", "FOLLOW-UP", "YOUR OWN TIME"
  SIGNAL47_API const TCHAR* KindHead(uint8 Kind);
  SIGNAL47_API FString HourMinute(double Clock);
