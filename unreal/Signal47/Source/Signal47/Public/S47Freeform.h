@@ -883,6 +883,11 @@ private:
  // N1110 (PLAY-31-34): the control room's ceiling tubes that have gone out for good in this game (indices 2 to 7 of room.tubes; 0 and 1 are the
  // working light and never go). Saved "brokenTubes", absent = none; AS47Web::TubeLit keeps them dark through a power return, Continue and a change of area.
  TSet<int32> BrokenTubes;
+ // PLAY-31-34 (14 November, Tom's «Vurder»): those of BrokenTubes that burned out of age (FS47Calm's tube_wear, from week 2): the day
+ // shift puts new ones in at the next 08:00 (AddDay), and Dale says a dry word that evening (tube_wear_dale). Saved "wornTubes",
+ // "tubeWornDay", "tubeRemarkDay"; absent = none.
+ TSet<int32> WornTubes;
+ int32 TubeWornDay=0,TubeRemarkDay=0;
 public:
  bool TubeBroken(int32 K) const{return BrokenTubes.Contains(K);}
  int32 BrokenTubeCount() const{return BrokenTubes.Num();}
@@ -891,7 +896,15 @@ public:
  // N1110: the next N still-working tubes of 2 to 7, lowest first (what every sabotage puts out: {"beat":"tube","next":2}); nothing is changed.
  TArray<int32> NextTubes(int32 N) const{TArray<int32> Out;for(int32 K=2;K<=7&&Out.Num()<N;++K)if(!BrokenTubes.Contains(K))Out.Add(K);return Out;}
  // N1110: a pair of tubes from the store (PARTS STORAGE) puts back the last N that went out, highest first. Returns how many came back.
- int32 MendTubes(int32 N){int32 Mended=0;for(int32 K=7;K>=2&&Mended<N;--K)if(BrokenTubes.Remove(K))++Mended;return Mended;}
+ int32 MendTubes(int32 N){int32 Mended=0;for(int32 K=7;K>=2&&Mended<N;--K)if(BrokenTubes.Remove(K)){WornTubes.Remove(K);++Mended;}return Mended;}
+ // PLAY-31-34 (14 November): a tube burned out of age on shift day Day: dark as a broken one (TubeLit), until the day shift.
+ bool WearTube(int32 K,int32 Day){if(!BreakTube(K))return false;WornTubes.Add(K);TubeWornDay=Day;return true;}
+ bool TubeWorn(int32 K) const{return WornTubes.Contains(K);}
+ int32 WornTubeCount() const{return WornTubes.Num();}
+ // At the turn to shift day Day (08:00): the day shift replaces what burned out before it; returns how many. Dale remarks that evening.
+ int32 DayShiftTubes(int32 Day){if(WornTubes.IsEmpty()||Day<=TubeWornDay)return 0;const int32 N=WornTubes.Num();for(const int32 K:WornTubes)BrokenTubes.Remove(K);WornTubes.Reset();TubeWornDay=0;TubeRemarkDay=Day;return N;}
+ bool TubeRemarkDue(int32 Day) const{return TubeRemarkDay>0&&TubeRemarkDay==Day;}
+ void TubeRemarkSaid(){TubeRemarkDay=0;}
  static TSet<int32> TubesFrom(const TArray<double>& Saved);
  static TArray<double> TubesToSave(const TSet<int32>& Broken);
 private:

@@ -59,6 +59,9 @@ public:
 	// The waitress has no talk of her own in Freeform: the diner's counter (FS47FreeformSession::Use, "diner:waitress").
 	bool Use(const FString& Id);
 	void OpenDiner();
+	// NPC-DAY-FOLLOW-20261109: the counter's panel when she is not on her shift (S47TownDay::Counter): Behind "cook" (by day,
+	// through the hatch), else nobody (before the kitchen opens, Hour before noon, or the cook's break).
+	static FString DinerLine(const FString& Behind, double Hour);
 	// For a counter's panel: a line of the attendant's or the souvenir man's, or who is minding it while they are gone.
 	FString CounterLine(const FString& Who);
 	// The odds and the wait, worked out from the game's seed: whether a night's event at their place takes them, how long they stay away.

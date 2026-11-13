@@ -62,6 +62,16 @@ struct FS47TubeFlicker
 		return 0.f;
 	}
 
+	// PLAY-31-34 (14 November): a tube that burns out of age (FS47FreeformSession::WearTube) sparks once and is dark: one short
+	// flash at full (80 ms), then nothing. With calm flashes one smooth fade, never brighter than it was.
+	static double SparkSecs(bool bCalm) { return bCalm ? 1.2 : .3; }
+	static float SparkLevel(double T, bool bCalm)
+	{
+		if (T < 0 || T >= SparkSecs(bCalm)) return 0.f;
+		if (bCalm) { const float U = float(1. - T / SparkSecs(true)); return U * U; }
+		return T < .08 ? 1.f : 0.f;
+	}
+
 private:
 	bool bInit = false, bOn = false;
 	double Changed = 0, Start = -100.0;

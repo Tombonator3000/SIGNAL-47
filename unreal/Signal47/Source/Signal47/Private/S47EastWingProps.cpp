@@ -142,6 +142,9 @@ namespace
  // (3413 px/m). Same print: cream paper, dark green bar, condensed caps, red Sundays, a red ballpoint ring on today.
  // No notes, no Story text: the month, the year, the weekdays and the dates only.
  constexpr int32 CalW=1024,CalH=816;
+ // T16-08 (14 November): the print's footer. It said "ROUTE 47": no number on a player's wall prints 47 (the text rules), so the
+ // feed store's town instead, as its tow tickets have it.
+ const TCHAR* const CalFooter=TEXT("CALICHE FEED & SUPPLY  ·  CALICHE, N. MEX.");
  constexpr double CalBladeW=.298,CalBladeH=.238; // overlay size in metres (CalW:CalH)
  void DrawCalendar(const FDateTime& Today,TArray<FColor>& Out)
  {
@@ -178,7 +181,7 @@ namespace
    }
   }
   G.SetFont(TEXT("Oswald-Regular.ttf"),30);G.TextAlign=FS47Canvas::EAlign::Center;
-  G.SetFill(0x3c3830);G.FillText(TEXT("CALICHE FEED & SUPPLY  \u00b7  ROUTE 47"),CalW/2,CalH-30);
+  G.SetFill(0x3c3830);G.FillText(CalFooter,CalW/2,CalH-30);
   Out=MoveTemp(G.Px);
   // the print's aged edge: a soft darkening over the outer 40 px
   for(int32 Y=0;Y<CalH;++Y)for(int32 X=0;X<CalW;++X)
@@ -350,5 +353,18 @@ bool FS47EastWingProps::SelfTest(TArray<FString>& Lines)
  }
  Good&=Count==2;
  if(Count!=2)Lines.Add(FString::Printf(TEXT("FAIL / Wall calendars: %d placed, the wing's and the control room's expected"),Count));
+ // T16-08 (14 November): what the sheet prints never says 47 (its footer, a month's heading, any day number: they stop at 31) and
+ // it is the game's own 1986 (a Freeform game's first and last weeks, and one begun before the new date).
+ {
+  bool Clean=!FString(CalFooter).Contains(TEXT("47"));
+  for(int32 Day=1;Day<=60;++Day)for(const bool bOld:{false,true})
+  {
+   const FDateTime D=S47Game::GameDate(true,Day,0,bOld);
+   int32 First=0,Days=0,Rows=0;S47Game::MonthGrid(D.GetYear(),D.GetMonth(),First,Days,Rows);
+   Clean&=D.GetYear()==1986&&Days<=31&&!FString::Printf(TEXT("%d"),D.GetYear()).Contains(TEXT("47"));
+  }
+  Lines.Add(FString::Printf(TEXT("%s / Wall calendars print no 47 (footer \"%s\", the month, the year, days 1 to 31) and follow the game's 1986"),Clean?TEXT("PASS"):TEXT("FAIL"),CalFooter));
+  Good&=Clean;
+ }
  return Good;
 }

@@ -43,7 +43,11 @@ public:
 	void FillMap(FS47MapView& V) const;
 
 	// ---- the neighbor ----
-	void OpenBaca();
+	// NPC-DAY-FOLLOW-20261109: at noon he is in town (S47TownDay::EloyAt "feed"): his door does not answer, a card in it says where;
+	// bInTown: met at the Feed & Seed counter instead (S47TownUse), the same one thing a day.
+	void OpenBaca(bool bInTown = false);
+	// Pure: the card in his screen door while he is in town.
+	static FString BacaInTownCard();
 	bool BacaGone() const { return BacaBack > 0; }
 	// One thing he says (and whether it is true, for the tests): from what has gone on, by the game's seed and the day.
 	struct FTale { FString Key, Text, Place; bool bTrue = true; };

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "id": "tube_wear_dale",
+  "name": "Dale on the new ceiling tube",
+  "notes": "PLAY-31-34 (14 November). Played by FS47Calm once, the evening after the day shift replaced a tube that burned out of age (FS47FreeformSession::TubeRemarkDue), between 19:00 and 23:00, not at the wheel and not over anything else. Dale's dry word over the walkie. No finding, no danger.",
+  "enabled": true,
+  "gates": { "from_day": 9, "tier": "hint" },
+  "beats": [
+    { "at": 0, "do": "line", "who": "dale", "text": "Day shift says one of your ceiling tubes went in the night. They put a new one in. Tubes cost money. Do not stare at them. Over." }
+  ]
+}

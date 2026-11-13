@@ -393,6 +393,8 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal,bool bOneNi
  if(!Gear)Gear=MakeShared<FS47LeftGear>(M);Gear->Begin(S47J::Obj(Saved,TEXT("gear")));
  Kit.Reset();for(const FString& Have:S47J::Strs(Saved,TEXT("kit")))if(FS47Openings::Def(Have))Kit.Add(Have);
  BrokenTubes=TubesFrom(S47J::Nums(Saved,TEXT("brokenTubes"))); // N1110: optional, absent = none
+ WornTubes=TubesFrom(S47J::Nums(Saved,TEXT("wornTubes")));WornTubes=WornTubes.Intersect(BrokenTubes); // PLAY-31-34 (14 Nov): optional, absent = none
+ TubeWornDay=WornTubes.IsEmpty()?0:FMath::Clamp(S47J::Int(Saved,TEXT("tubeWornDay")),0,1000000);TubeRemarkDay=FMath::Clamp(S47J::Int(Saved,TEXT("tubeRemarkDay")),0,1000000);
  if(!Places)Places=MakeShared<FS47Places>(M);Places->Begin(S47J::Obj(Saved,TEXT("places")));
  if(!EventPlaces)EventPlaces=MakeShared<FS47EventPlaces>(M);EventPlaces->Begin(S47J::Obj(Saved,TEXT("eventPlaces")));
  if(!Balloon)Balloon=MakeShared<FS47Balloon>(M);Balloon->Begin(S47J::Obj(Saved,TEXT("balloon"))); // D48-20261110 (after Places: it stands where the place does)
@@ -585,6 +587,9 @@ bool FS47FreeformSession::RequirePower()
 }
 void FS47FreeformSession::AddDay(int32 Number)
 {
+ // PLAY-31-34 (14 Nov): the day shift puts in new tubes for those that burned out of age before this 08:00 (every way the day turns
+ // comes through here: the clock, a rest, a wait); a tube put out by sabotage stays out until a pair from the store.
+ if(const int32 Back=DayShiftTubes(Number))UE_LOG(LogTemp,Display,TEXT("S47: day shift replaced %d burned-out ceiling tube%s for day %d"),Back,Back==1?TEXT(""):TEXT("s"),Number);
  if(Work.ContainsByPredicate([&](const FJob& J){return J.Day==Number;}))return;
  for(const auto& Card:FS47FreeformJobs::Generate(JobSeed,Number)){FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-J%d"),Number,Card.Slot+1);J.Day=Number;J.Slot=Card.Slot;J.Source=Card.Source;J.Card=Card;J.bGenerated=true;Work.Add(J);}
 }
@@ -5553,6 +5558,8 @@ S47J::FObj FS47FreeformSession::Save()const
  if(Tape){const auto Cassettes=Tape->Save();if(Cassettes->Values.Num()>0)S47J::Set(O,TEXT("tape"),Cassettes);}
  if(Fatigue)S47J::Set(O,TEXT("fatigue"),S47J::FObj(Fatigue->Save()));
  if(!BrokenTubes.IsEmpty())S47J::Set(O,TEXT("brokenTubes"),TubesToSave(BrokenTubes)); // N1110: optional, absent = none
+ if(!WornTubes.IsEmpty()){S47J::Set(O,TEXT("wornTubes"),TubesToSave(WornTubes));S47J::Set(O,TEXT("tubeWornDay"),TubeWornDay);} // PLAY-31-34 (14 Nov): optional
+ if(TubeRemarkDay>0)S47J::Set(O,TEXT("tubeRemarkDay"),TubeRemarkDay);
  if(Attention){const S47J::FObj Heed=Attention->Save();if(Heed->Values.Num()>0)S47J::Set(O,TEXT("attention"),Heed);} // N1110: optional, absent = nothing yet
  if(PinBoard){const auto Pinned=PinBoard->Save();if(Pinned->Values.Num()>0)S47J::Set(O,TEXT("pinBoard"),Pinned);}
  if(Darkroom){const auto Dark=Darkroom->Save();if(Dark->Values.Num()>0)S47J::Set(O,TEXT("darkroom"),Dark);} // D45-20261110: optional, absent = white
@@ -5623,6 +5630,18 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    Check(bOrder&&bNone&&Back2==2&&!Dark.TubeBroken(6)&&!Dark.TubeBroken(7)&&Dark.TubeBroken(5)&&Dark.NextTubes(2).Num()==2&&Dark.MendTubes(9)==4&&Dark.BrokenTubes.IsEmpty(),TEXT("Tubes: each sabotage puts out the next two working ones until the room is dark but for the working light; a pair from the store puts the last two back"));
   }
   Check(Back.Num()==1&&Back.Contains(3)&&TubesFrom({0.,1.,2.,9.,-1.,NAN}).Num()==1&&TubesFrom({}).IsEmpty(),TEXT("Tubes: the break is saved and read back; an older save has none; nonsense is dropped"));
+  { // PLAY-31-34 (14 Nov): a tube burned out of age stays dark through a Continue and the rest of the night, comes back at the next 08:00
+   // (not the same day's), and Dale's word is due that evening only; a sabotaged tube is not the day shift's to replace.
+   FS47FreeformSession Old(nullptr);
+   const bool bWore=Old.WearTube(2,9),bWorkLight=Old.WearTube(1,9);Old.BreakTube(3);
+   FS47FreeformSession Kept(nullptr);Kept.BrokenTubes=TubesFrom(TubesToSave(Old.BrokenTubes));Kept.WornTubes=TubesFrom(TubesToSave(Old.WornTubes)).Intersect(Kept.BrokenTubes);Kept.TubeWornDay=Old.TubeWornDay;
+   const bool bSameDay=Kept.DayShiftTubes(9)==0&&Kept.TubeBroken(2)&&!Kept.TubeRemarkDue(9);
+   const bool bNextDay=Kept.DayShiftTubes(10)==1&&!Kept.TubeBroken(2)&&Kept.TubeBroken(3)&&!Kept.TubeWorn(2)&&Kept.TubeRemarkDue(10)&&!Kept.TubeRemarkDue(11);
+   Kept.TubeRemarkSaid();
+   FS47FreeformSession Mend(nullptr);Mend.WearTube(2,4);Mend.MendTubes(1);
+   Check(bWore&&!bWorkLight&&bSameDay&&bNextDay&&!Kept.TubeRemarkDue(10)&&Kept.DayShiftTubes(11)==0&&Mend.WornTubeCount()==0&&!Mend.TubeBroken(2),
+    TEXT("Tubes: one burned out of age keeps through a save and the night, the day shift puts it back at the next 08:00, Dale's word is due that evening once; sabotage's stays out"));
+  }
  }
  S47CaptureSound::FTrack SoundPolicy;SoundPolicy.Begin(TEXT("sound-policy-original"),false,{});
  for(int I=0;I<360;++I)SoundPolicy.Append(I*.05,(I+1)*.05,.05,1,1420.11,50,50,1);SoundPolicy.Complete=true;

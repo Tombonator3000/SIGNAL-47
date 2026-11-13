@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "tube_wear",
+  "name": "A ceiling tube in the control room burns out",
+  "notes": "PLAY-31-34 (Tom's suggestion, 14 November). Played by FS47Calm in a false alarm's slot, from week 2 (day 8), on about one night in four that asks (odds), only with the player in the control room and a tube of 2 and 3 still lit (2 over the middle of the room first, then 3 over the phone desk, which keeps its desk lamp). The night holds still, one tube sparks once (the tube beat, kind worn: one 80 ms flash, a slow fade with calm flashes) and that end of the room stays dim; a line goes on tonight's night log. The day shift puts a new one in at 08:00, and Dale says a word about it that evening (tube_wear_dale). A pair from the store puts it back sooner. The breaker does not: a burned tube is not a tripped one. No finding, no danger, no camera.",
+  "enabled": true,
+  "gates": { "from_day": 8, "hours": ["19:30", "01:30"], "tier": "hint", "areas": ["saro"], "odds": 0.3, "if": ["indoors"] },
+  "beats": [
+    { "at": 0, "do": "silence", "secs": 2.5 },
+    { "at": 2.2, "do": "tube", "next": 1, "kind": "worn" },
+    { "at": 4, "do": "thought", "text": "That tube was old. The day shift can put a new one in.", "secs": 4.5 }
+  ]
+}

@@ -10,6 +10,7 @@
 #include "S47Keys.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47NightLog.h"
 #include "S47NightRhythm.h"
 #include "S47Omen.h"
 #include "S47Places.h"
@@ -303,7 +304,8 @@ static TArray<FString> LintAs(const FS47EventScript& S,TArray<FString>* Warnings
    Need(!B.Name.IsEmpty()&&B.Name.Len()<=200&&B.Kind.Len()<=96,TEXT("needs title (at most 200 characters); stamp is at most 96"));
    break;
   }
-  case ES47Beat::Tube:Need((B.Tube>=2&&B.Tube<=7&&B.Next==0)||(B.Tube<0&&B.Next>=1&&B.Next<=6),TEXT("needs tube, 2 to 7, or next, 1 to 6, not both (tubes 0 and 1 are the working light and are never put out)"));break; // N1110
+  case ES47Beat::Tube:Need((B.Tube>=2&&B.Tube<=7&&B.Next==0)||(B.Tube<0&&B.Next>=1&&B.Next<=6),TEXT("needs tube, 2 to 7, or next, 1 to 6, not both (tubes 0 and 1 are the working light and are never put out)"));
+   Need(B.Kind.IsEmpty()||B.Kind==TEXT("worn"),TEXT("kind is worn (burned out of age, back from the day shift at 08:00) or none (out for good)"));break; // N1110; PLAY-31-34 (14 Nov)
   default:break;
   }
   // The story's text by its own check (it may carry the story's words, which Freeform's refuses); an objective may be empty (it clears).
@@ -725,7 +727,11 @@ void FS47EventBeats::Fire(const FS47Beat& B,const FRun& R)
   else if(!F||B.Tube<2||B.Tube>7){Log(TEXT("no such tube"));break;}
   for(const int32 K:Hit)
   {
-   if(R.Ctx.bKeep)F->BreakTube(K);
+   // PLAY-31-34 (14 Nov): "kind": "worn", a tube burned out of age: one spark, dark until the day shift's new one at 08:00, and a
+   // line on tonight's night log (FS47NightLog::Note). Else put out for good, as a sabotage does.
+   const bool bWorn=B.Kind==TEXT("worn");
+   if(R.Ctx.bKeep&&bWorn&&F->WearTube(K,F->Day())&&F->NightLog)F->NightLog->Note(K==2?TEXT("A ceiling tube over the middle of the control room burned out. Left for the day shift."):TEXT("A ceiling tube in the control room burned out. Left for the day shift."));
+   else if(R.Ctx.bKeep&&!bWorn)F->BreakTube(K);
    if(M->Audio&&FS47FieldRadio::InSaroBuilding(M))
    {
     // The spark sounds at the tube itself (AS47Web::TubeLocation): the wall switch's snap (Audio/Raw switch.wav) as the

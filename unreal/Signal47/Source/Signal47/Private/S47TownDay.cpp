@@ -8,13 +8,16 @@
 #include "S47Main.h"
 #include "S47Props.h"
 #include "S47RoadTerrain.h"
+#include "S47StoryDirector.h"
 #include "S47Three.h"
+#include "S47Timeline.h"
 #include "S47Town.h"
 #include "S47TownLayer.h"
 #include "S47TownUse.h"
 #include "S47Townsfolk.h"
 #include "S47UI.h"
 #include "S47Walker.h"
+#include "S47Weather.h"
 #include "S47Web.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -234,6 +237,10 @@ namespace S47TownDayLocal
  // NPC-ANIM: day keys whose body walks on its own clips: whether its sit clip sits, and how far it is lowered then (metres).
  struct FRig { bool bSeatInClip = false; double SitLower = 0; };
  TMap<FString, FRig> Rigged;
+ // NPC-DAY-FOLLOW-20261109: whether each body drawn by others is shown now (S47TownDay::Present), and where it is drawn (for Seen).
+ TMap<FString, bool> BodyShown;
+ struct FBody { const TCHAR* Who; double X, Z; };
+ const FBody Bodies[] = { { TEXT("mesa_waitress"), 7974.7, 1999.95 }, { TEXT("earl"), 8022.8, 2037.55 }, { TEXT("bench_woman"), 7986.0, 2130.5 } };
 
  const FSpot* SpotOf(const FString& Id) { return S47TownDay::Spot(Id); }
  bool Visible(const FSpot* S) { return S && S->Kind != FSpot::Hidden && S->Kind != FSpot::Away; }
@@ -383,30 +390,26 @@ const TArray<FString>& S47TownDay::People()
 const TArray<S47TownDay::FHabit>& S47TownDay::Routine()
 {
  static const TArray<FHabit> T = {
-  // Dale: never met. Only his pickup, his porch light and when the phone rings.
-  { TEXT("dale"), 0, 6, TEXT("county road"), TEXT("The porch light out on the county road is still on, long after anyone sensible would be up.") },
-  { TEXT("dale"), 6, 8, TEXT("county road"), TEXT("A pickup goes by on the county road with its headlights on, the same time every morning, and does not slow for anything.") },
-  { TEXT("dale"), 8, 18, TEXT("county road"), TEXT("The truck is gone from the yard out on the county road. The porch light is off.") },
-  { TEXT("dale"), 18, 21, TEXT("county road"), TEXT("The porch light out on the county road comes on at dusk, and the truck is back in the yard.") },
-  { TEXT("dale"), 21, 24, TEXT("county road"), TEXT("If the phone is going to ring tonight, it rings about now, never before nine.") },
-  // Earl, 1420 AM: the station building (a low block building east of the road, the mast behind it) and his car.
-  { TEXT("earl"), 8, 11, TEXT("home"), TEXT("His car is in the yard of the sixth house, under a blanket of dust. The curtains are shut.") },
-  { TEXT("earl"), 11, 19, TEXT("home"), TEXT("His lamp is lit and the radio inside is going: he is up, and not yet at work.") },
-  { TEXT("earl"), 19, 21, TEXT("radio"), TEXT("His car pulls up at the station building a little after seven, and the sign lights up in the window.") },
-  { TEXT("earl"), 21, 24, TEXT("radio"), TEXT("The 1420 window is lit and the mast light blinks over the roof. He is on the air.") },
-  { TEXT("earl"), 1, 4, TEXT("radio"), TEXT("The 1420 window is lit and the mast light blinks over the roof. He is on the air.") },
+  // Dale: never seen (DECISIONS: phone and walkie only). He has no place in the world to be met at, only his voice.
+  { TEXT("dale"), 0, 24, TEXT("phone"), TEXT("Never seen him. A voice on the phone and the walkie, from wherever field maintenance is.") },
+  // Earl, 1420 AM: the Night Line, midnight to four (the studio's card, S47Timeline::EarlOnDuty); the evening man has the air before.
+  { TEXT("earl"), 0, 4, TEXT("radio"), TEXT("The 1420 window is lit and the mast light blinks over the roof. He is on the air.") },
   { TEXT("earl"), 4, 5, TEXT("home"), TEXT("The station goes dark and his car goes down the road home.") },
-  // The bench woman: her radio and her blanket.
+  { TEXT("earl"), 5, 11, TEXT("home"), TEXT("His car is in the yard of the sixth house, under a blanket of dust. The curtains are shut.") },
+  { TEXT("earl"), 11, 24, TEXT("home"), TEXT("His lamp is lit and the radio inside is going: he listens to the evening man and waits for midnight.") },
+  // The bench woman: her radio and her blanket (at home instead in a shower or blowing sand: BenchWeather).
   { TEXT("bench_woman"), 13, 18, TEXT("home"), TEXT("Her lamp is lit, and she is hanging wash on the line behind the house.") },
   { TEXT("bench_woman"), 18, 20, TEXT("bench"), TEXT("She sits down on the laundromat bench at six with her radio and her blanket, the same way every evening.") },
   { TEXT("bench_woman"), 20, 24, TEXT("bench"), TEXT("She turns the radio down when somebody walks by, and up again when they have passed.") },
   { TEXT("bench_woman"), 0, 4, TEXT("bench"), TEXT("She is still on the bench, blanket to her chin, the radio turned low.") },
-  // Eloy Baca: under the east rim.
+  // Eloy Baca: under the east rim, and in town at noon (EloyAt: every hour from six on has one place).
   { TEXT("eloy"), 6, 8, TEXT("baca"), TEXT("Coffee on the porch at first light, with his hat on the rail.") },
-  { TEXT("eloy"), 8, 12, TEXT("baca"), TEXT("He is on the porch, looking at the sky as if it owed him something.") },
-  { TEXT("eloy"), 12, 17, TEXT("baca"), TEXT("The truck is in the shed with the hood up, and he is somewhere under it.") },
+  { TEXT("eloy"), 8, 11.75, TEXT("baca"), TEXT("He is on the porch, looking at the sky as if it owed him something.") },
+  { TEXT("eloy"), 11.75, 13.25, TEXT("feed"), TEXT("At noon his truck is gone from the shed: he is at the Feed and Seed counter in town, arguing the price of range cubes.") },
+  { TEXT("eloy"), 13.25, 18, TEXT("baca"), TEXT("The truck is in the shed with the hood up, and he is somewhere under it.") },
   { TEXT("eloy"), 18, 19, TEXT("baca"), TEXT("He feeds the dog at the windmill every evening at six, whatever the weather.") },
   { TEXT("eloy"), 19, 22, TEXT("baca"), TEXT("The kitchen lamp is lit at the Baca place, and it goes out at ten.") },
+  { TEXT("eloy"), 22, 24, TEXT("baca"), TEXT("The house is dark. He does not come to the door after ten.") },
   // The Mesa waitress, nights, and the day cook.
   { TEXT("mesa_waitress"), 13, 18, TEXT("home"), TEXT("Her lamp is lit in the afternoon, and her shoes are on the step.") },
   { TEXT("mesa_waitress"), 19, 23, TEXT("diner"), TEXT("She wipes the same stretch of counter whenever nobody is talking to her.") },
@@ -420,6 +423,40 @@ FString S47TownDay::HabitAt(const FString& Who, double Hour, FString* OutPlace)
 {
  for (const FHabit& H : Routine()) if (Who == H.Who && Hour >= H.From && Hour < H.To) { if (OutPlace) *OutPlace = H.Place; return H.Seen; }
  return FString();
+}
+bool S47TownDay::BodyAt(const FString& Who, const FString& SpotId)
+{
+ return (Who == TEXT("mesa_waitress") && SpotId == TEXT("diner.night")) || (Who == TEXT("earl") && SpotId == TEXT("radio.air")) || (Who == TEXT("bench_woman") && SpotId == TEXT("bench"));
+}
+bool S47TownDay::BenchWeather(int32 Seed, int32 Day, double Hour)
+{
+ // TownDay's calendar day Day is the weather's Day + 1 (FS47WeatherLive: floor(clock / a day) + 1); its small hours are that day's.
+ const S47Weather::FNow W = S47Weather::Now(Seed, Day + 1, FMath::Clamp(Hour, 0., 23.999) * 3600.);
+ return W.Rain > .15 || W.Dust > .3;
+}
+FString S47TownDay::EloyAt(double Hour)
+{
+ FString Place;
+ HabitAt(TEXT("eloy"), FMath::Fmod(FMath::Fmod(Hour, 24.) + 24., 24.), &Place);
+ return Place.IsEmpty() ? FString(TEXT("baca")) : Place; // (before six he is at home, asleep)
+}
+bool S47TownDay::Present(const FString& Who, bool& bOut)
+{
+ using namespace S47TownDayLocal;
+ const bool* B = bActive ? BodyShown.Find(Who) : nullptr;
+ if (!B) return false;
+ bOut = *B;
+ return true;
+}
+FString S47TownDay::Counter()
+{
+ using namespace S47TownDayLocal;
+ bool bWaitress = true;
+ if (!bActive || !Present(TEXT("mesa_waitress"), bWaitress)) return TEXT("waitress");
+ if (bWaitress) return TEXT("waitress");
+ const FWalker* Cook = Walkers.Find(TEXT("cook"));
+ // The cook at the range or the hatch pours through it; out the back on her break, or not in yet, nobody does.
+ return Cook && PlaceOf(Cook->Target) == TEXT("diner") && Cook->Target != TEXT("diner.back") && !FS47Townsfolk::AwayNow(TEXT("cook")) ? TEXT("cook") : TEXT("");
 }
 const TArray<S47TownDay::FSpot>& S47TownDay::Spots() { return S47TownDayLocal::AllSpots; }
 FString S47TownDay::HomeOf(const FString& Who) { return S47TownDayLocal::HouseOf(S47TownDayLocal::DayKey(Who)); }
@@ -524,10 +561,12 @@ TArray<S47TownDay::FRow> S47TownDay::Plan(int32 Seed, int32 Day, int32 WeekDay, 
  }
  else if (Who == TEXT("earl"))
  {
-  // 1420 AM's night line: on the air from a little after seven until four (S47Timeline::EarlOnDuty), home to sleep it off.
-  const double Off = J(4.0, 4.15), Bed = J(4.6, 5.0), Up = J(11.3, 11.9), On = J(19.15, 19.4);
+  // 1420 AM's Night Line: on the air from midnight until four (S47Timeline::EarlOnDuty and the studio's card, "MIDNIGHT TO FOUR";
+  // the evening man has the air before), home to sleep it off. NPC-DAY-FOLLOW-20261109: no longer "on the air" from seven, which
+  // the card, the studio window and his body in the chair (FS47TripoNpcs, by midnight) all said otherwise of.
+  const double Off = J(4.0, 4.15), Bed = J(4.6, 5.0), Up = J(11.3, 11.9);
   Add(Rows, 0, Off, TEXT("radio.air")); Add(Rows, Off, Bed, TEXT("home.earl")); Add(Rows, Bed, Up, TEXT("sleep.earl"));
-  Add(Rows, Up, On, TEXT("home.earl")); Add(Rows, On, 24, TEXT("radio.air"));
+  Add(Rows, Up, 24, TEXT("home.earl"));
  }
  else if (Who == TEXT("bench_woman"))
  {
@@ -536,6 +575,9 @@ TArray<S47TownDay::FRow> S47TownDay::Plan(int32 Seed, int32 Day, int32 WeekDay, 
   const double Bed = J(5.3, 5.7), Up = J(12.8, 13.4);
   Add(Rows, 0, Off, TEXT("bench")); Add(Rows, Off, Bed, TEXT("home.bench_woman")); Add(Rows, Bed, Up, TEXT("sleep.bench_woman"));
   Add(Rows, Up, On, TEXT("home.bench_woman")); Add(Rows, On, 24, TEXT("bench"));
+  // NPC-DAY-FOLLOW-20261109: in a shower or blowing sand the bench is empty and she is at home, lamp lit, until it passes.
+  for (double H = 0; H < 24; H += .25)
+   if (BodyAt(Who, SpotIn(Rows, H + .125)) && BenchWeather(Seed, Day, H + .125)) Overlay(Rows, H, H + .25, TEXT("home.bench_woman"));
  }
  else if (Who == TEXT("regular"))
  {
@@ -560,11 +602,16 @@ void S47TownDay::Stop()
   FS47Town& Town = *M->TownLayer->Town;
   Town.SetCarHeld(false);
   // The man on the stoop as FS47Townsfolk::ShowPosts has him in Freeform without the day (-S47TownDayOff): there unless gone.
-  if (M->IsFreeform() && !Town.bSmokerIn && !FS47Townsfolk::AwayNow(TEXT("souvenir_man"))) Town.SetPeople(Town.bWomanIn, true);
+  // NPC-DAY-FOLLOW-20261109: and the woman on her bench as Freeform had her without the day (always there).
+  if (M->IsFreeform())
+  {
+   const bool bSmoker = Town.bSmokerIn || !FS47Townsfolk::AwayNow(TEXT("souvenir_man"));
+   if (!Town.bWomanIn || bSmoker != Town.bSmokerIn) Town.SetPeople(true, bSmoker);
+  }
  }
  for (const auto& Pair : Lamp) S47CalicheAccess::SetRoomLamp(Pair.Key, 1);
  if (auto* C = LunchBox.Get()) C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
- bActive = false; bLunchOn = false; Walkers.Reset(); Plans.Reset(); Lamp.Reset(); PlanDay = -1; LastClock = -1;
+ bActive = false; bLunchOn = false; Walkers.Reset(); Plans.Reset(); Lamp.Reset(); BodyShown.Reset(); PlanDay = -1; LastClock = -1;
 }
 
 void S47TownDay::Step(US47Main* M, double Dt)
@@ -645,6 +692,30 @@ void S47TownDay::Step(US47Main* M, double Dt)
   const FWalker* Sm = Walkers.Find(TEXT("souvenir_man"));
   const bool bStoop = Sm && !FS47Townsfolk::AwayNow(TEXT("souvenir_man")) && Sm->Target == TEXT("souv.stoop") && Sm->Arrived == Sm->Target && Sm->Path.IsEmpty() && !Sm->bHidden;
   if (Town.bSmokerIn != bStoop) Town.SetPeople(Town.bWomanIn, bStoop);
+ }
+ // NPC-DAY-FOLLOW-20261109: the bodies drawn by others, by their own plan, never swapped in the player's sight. Not on a Story
+ // night (its town is the story's own): there the woman is put back on her bench, as Freeform had her, and nothing is held.
+ if (FS47StoryDirector::Of(M))
+ {
+  if (BodyShown.Num() && M->TownLayer && M->TownLayer->Town && !M->TownLayer->Town->bWomanIn) M->TownLayer->Town->SetPeople(true, M->TownLayer->Town->bSmokerIn);
+  BodyShown.Reset();
+ }
+ else
+ {
+  for (const FBody& B : Bodies)
+  {
+   const FString Who = B.Who;
+   const bool bWant = BodyAt(Who, SpotIn(Plans.FindRef(Who), Hour)) && !FS47Townsfolk::AwayNow(FolkOf(Who));
+   bool* Was = BodyShown.Find(Who);
+   if (!Was || bJump) BodyShown.Add(Who, bWant);
+   else *Was = HeldShow(*Was, bWant, Seen(FVector2D(B.X, B.Z)));
+  }
+  if (M->TownLayer && M->TownLayer->Town)
+  {
+   FS47Town& Town = *M->TownLayer->Town;
+   const bool bBench = BodyShown.FindRef(TEXT("bench_woman"));
+   if (Town.bWomanIn != bBench) Town.SetPeople(bBench, Town.bSmokerIn);
+  }
  }
  // Each house's lamp while its owner is home and awake; the substation's while he is in.
  for (const FString& Who : People())
@@ -863,6 +934,7 @@ bool S47TownDay::SelfTest(TArray<FString>& Lines)
     if (FString(H.Who) == TEXT("dale") || FString(H.Who) == TEXT("eloy")) continue;
     for (int32 Seed : Seeds) for (int32 Day = 0; Day < 14; ++Day)
     {
+     if (FString(H.Who) == TEXT("bench_woman") && BenchWeather(Seed, Day, (H.From + H.To) * .5)) continue; // (home out of the weather)
      const FString Place = PlaceOf(SpotIn(Plan(Seed, Day, Day % 7, H.Who), (H.From + H.To) * .5));
      if (Place != H.Place) { bPlan = false; Bad = FString::Printf(TEXT("%s %.2f seed %d day %d: %s"), H.Who, (H.From + H.To) * .5, Seed, Day, *Place); }
     }
@@ -871,6 +943,56 @@ bool S47TownDay::SelfTest(TArray<FString>& Lines)
    Check(bRows && bFolks && bPlan && HabitAt(TEXT("cook"), 15.1).Contains(TEXT("smokes")) && HabitAt(TEXT("eloy"), 18.2).Contains(TEXT("dog")) && HabitAt(TEXT("dale"), 12.).Len() > 0,
     TEXT("hours to places and one noticeable habit each for Dale, Earl, the bench woman, Eloy Baca, the waitress and the cook, following their plans") + (Bad.IsEmpty() ? FString() : TEXT(" (") + Bad + TEXT(")")));
   }
+ {
+  // NPC-DAY-FOLLOW-20261109 (14 November): a place for every quarter hour from 06 to 24 for the five who had no day; one place at a
+  // time (the body drawn where the plan has it is never also at home with the lamp lit); the swap held in sight; Eloy in town only
+  // in the Feed & Seed's hours; Earl on the air only in the Night Line's; the bench empty in the weather.
+  bool bEvery = true, bOne = true, bEloy = true, bEarl = true, bWeather = true, bDry = false, bWet = false; FString Bad;
+  for (int32 Seed : Seeds) for (int32 Day = 0; Day < 14; ++Day)
+  {
+   for (const TCHAR* Who : { TEXT("earl"), TEXT("bench_woman"), TEXT("mesa_waitress"), TEXT("cook") })
+   {
+    const TArray<FRow> Rows = Plan(Seed, Day, Day % 7, Who);
+    for (double H = 6; H < 24; H += .25)
+    {
+     const FString S = SpotIn(Rows, H);
+     if (PlaceOf(S).IsEmpty()) { bEvery = false; Bad = FString::Printf(TEXT("%s at %.2f"), Who, H); }
+     if (BodyAt(Who, S) && (HomeAwake(S) || PlaceOf(S) == TEXT("home"))) bOne = false;
+     if (FString(Who) == TEXT("earl")) bEarl &= !BodyAt(Who, S) && !S47Timeline::EarlOnDuty(H * 3600.);
+    }
+    for (double H = 0; H < 4; H += .25) if (FString(Who) == TEXT("earl")) bEarl &= BodyAt(Who, SpotIn(Rows, H)) && S47Timeline::EarlOnDuty(H * 3600.);
+   }
+  }
+  // The weather: over two months of a few seeds, every bench hour (18:00 to 04:50) with and without rain or sand.
+  for (int32 Seed : Seeds) for (int32 Day = 0; Day < 60; ++Day)
+  {
+   const TArray<FRow> Rows = Plan(Seed, Day, Day % 7, TEXT("bench_woman"));
+   for (double H = .125; H < 24; H += .25)
+   {
+    if (H > 4.75 && H < 18) continue;
+    const bool bBad = BenchWeather(Seed, Day, H), bOn = BodyAt(TEXT("bench_woman"), SpotIn(Rows, H));
+    (bBad ? bWet : bDry) = true;
+    bWeather &= bOn != bBad;
+   }
+  }
+  for (double H = 6; H < 24; H += .25)
+  {
+   FString Place; HabitAt(TEXT("eloy"), H, &Place); bEvery &= !Place.IsEmpty() && !HabitAt(TEXT("dale"), H).IsEmpty();
+   const FString E = EloyAt(H);
+   bEloy &= (E == TEXT("baca") || E == TEXT("feed")) && (E != TEXT("feed") || FS47TownUse::OpenAt(TEXT("feed"), H));
+  }
+  bEloy &= EloyAt(10) == TEXT("baca") && EloyAt(12.5) == TEXT("feed") && EloyAt(23) == TEXT("baca") && EloyAt(3) == TEXT("baca");
+  Check(bEvery, TEXT("Earl, the bench woman, the waitress, the cook, Eloy Baca and Dale (a voice) have a place for every quarter hour 06 to 24") + (Bad.IsEmpty() ? FString() : TEXT(" (") + Bad + TEXT(")")));
+  Check(bOne && bEarl, TEXT("never two places at once: a body drawn where its plan has it is never at home too; Earl in the studio's chair only midnight to four"));
+  Check(bEloy, TEXT("Eloy Baca on his porch in the morning and at the Feed & Seed counter at noon, inside its hours, home again by half past one"));
+  Check(bWeather && bDry && bWet, TEXT("the bench woman is on her bench on a dry evening and at home in a shower or blowing sand (both seen in these seeds)"));
+  Check(HeldShow(true, false, true) && !HeldShow(false, true, true) && !HeldShow(true, false, false) && HeldShow(false, true, false),
+   TEXT("a body is never swapped in the player's sight: seen, it stays as it was; unseen, it goes by the plan"));
+  // Story nights: nothing of this runs there (Step, with FS47StoryDirector::Of, resets it), and out of the day nobody is held.
+  bool bIgnored = false;
+  Check(FString(Bodies[0].Who) == TEXT("mesa_waitress") && (bActive || (!Present(TEXT("earl"), bIgnored) && Counter() == TEXT("waitress"))),
+   TEXT("out of a running Freeform day (Story, -S47TownDayOff) the bodies and the Mesa's counter keep their own rule"));
+ }
  {
   bool bRoutes = true;
   for (const FString& Who : People())

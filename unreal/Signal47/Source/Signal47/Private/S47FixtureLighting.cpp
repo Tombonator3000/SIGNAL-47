@@ -239,7 +239,9 @@ void AS47Web::UpdateFixtureLighting()
 				P.bBreakSeen = true; P.bBroken = bNowBroken;
 				const bool bCalm = Main && Main->Flow && Main->Flow->bCalmFlash;
 				const bool bPowered = TubePowered.IsValidIndex(P.Tube) && TubePowered[P.Tube];
-				if (!TubeLit(P.Tube)) K = bNowBroken && bPowered ? K * FS47TubeFlicker::BreakLevel(Now - P.BrokeAt, bCalm) : 0.f;
+				// PLAY-31-34 (14 Nov): one burned out of age (FS47FreeformSession::TubeWorn) sparks once instead.
+				P.bWorn = bNowBroken && Main->Freeform->TubeWorn(P.Tube);
+				if (!TubeLit(P.Tube)) K = bNowBroken && bPowered ? K * (P.bWorn ? FS47TubeFlicker::SparkLevel(Now - P.BrokeAt, bCalm) : FS47TubeFlicker::BreakLevel(Now - P.BrokeAt, bCalm)) : 0.f;
 			}
 		}
 		// Mask only the finished ceiling output. The upstream drivers still represent
@@ -263,7 +265,7 @@ void AS47Web::UpdateFixtureLighting()
 		{
 			const double Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
 			const float Shown = P.Flicker.Apply(Now, K, uint32(P.Node));
-			const bool bSputter = P.bBroken && Now - P.BrokeAt < FS47TubeFlicker::BreakSecs(false) + .5;
+			const bool bSputter = P.bBroken && Now - P.BrokeAt < (P.bWorn ? FS47TubeFlicker::SparkSecs(true) : FS47TubeFlicker::BreakSecs(false)) + .5;
 			if (!bSputter) K = Shown;
 		}
 		L->SetVisibility(K > 0.0001f);
