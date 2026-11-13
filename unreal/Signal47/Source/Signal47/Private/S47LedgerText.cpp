@@ -81,6 +81,14 @@ const TArray<S47LedgerText::FItemDef>& S47LedgerText::Locals()
   {TEXT("Members of the Caliche Homemakers will judge pies at the June fair and are taking applications from people who like pie."),nullptr,0,0},
   {TEXT("The Little League has two teams this year and one set of catcher's gear. Parents with a spare mask are asked to call the coach."),nullptr,0,0},
   {TEXT("The county fair board has set the dates for August and is looking for a new announcer. The old one says his voice has gone."),nullptr,0,0},
+  // REAL-1986-20261108 (14 Nov): the world outside the county, in a wire brief's words: facts only, no names, no quotes, nothing sold.
+  // Each is printed on or after its real date (the paper is Thursday, May 1 and on); the raid, the shuttle and the price are already past.
+  {TEXT("WIRE: The Soviet Union said April 28 that an accident at a nuclear power plant in the Ukraine damaged a reactor. Sweden measured higher than normal radiation in the air first."),nullptr,428,531},
+  {TEXT("Halley's comet is fading as it pulls away from the sun, astronomers say. It can still be found low in the southern sky on a dark night with binoculars."),nullptr,0,531},
+  {TEXT("WIRE: Security at airports and U.S. embassies abroad remains tight since the air raid on Libya on the night of April 15, officials say."),nullptr,0,531},
+  {TEXT("WIRE: The space shuttle fleet remains grounded since the Challenger accident in January. A review panel is still at work and no launch date has been set."),nullptr,0,0},
+  {TEXT("WIRE: Organizers say people will join hands in a line across the country on Sunday, May 25, to raise money for the hungry and homeless. The line is to cross New Mexico."),nullptr,0,525},
+  {TEXT("WIRE: Regular gasoline averaged about 90 cents a gallon in a national survey, down sharply from a year ago, as oil prices fall."),nullptr,0,0},
   // N1110 (Caliche history, approved by Tom 10 November; Docs/Lore/CALICHE_HISTORIE.md section 4): the paper's column "From Our Files",
   // one notice at a time out of the same pot as the rest. The years are the paper's own; nothing here is a spoiler.
   {TEXT("FROM OUR FILES, 1926: Lights were seen again over the salt flat Tuesday night, four in a row. Mr. Baca says they were not his. The editor has no further theory and would welcome one."),nullptr,0,0},

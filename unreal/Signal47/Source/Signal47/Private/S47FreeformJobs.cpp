@@ -43,7 +43,7 @@ FString FS47FreeformJobs::ControlText(EControl Control)
  switch(Control)
  {
  case EControl::PointingCross:return TEXT("Five-point physical pointing cross; preserve its measured chart.");
- case EControl::PulsarTiming:return TEXT("Compare retained timing record to the 1.18791 s reference; if extra ticks occur, use the receiver-rack internal control.");
+ case EControl::PulsarTiming:return TEXT("Compare retained timing record to the 1.18791 s reference; if extra ticks occur, RETAIN TAKE on the RECEIVER RECORD tab.");
  default:return TEXT("Retain the original measurement; use the receiver-rack internal reference if a discrepancy occurs.");
  }
 }
