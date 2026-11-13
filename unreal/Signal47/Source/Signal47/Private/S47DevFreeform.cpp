@@ -1020,8 +1020,12 @@ void FS47DevFreeform::StepCards()
   // GAMEPLAY-LOOP-01 (Tom, 12 November): the extra-tick take is kept as it ends, with no chart: straight to the reel deck
   if(Card.Stage==J::Recorded&&FS47FreeformSession::PlainAnomaly(Card))
   {
-   Say(FString::Printf(TEXT("anomaly on tape: original kept %d, control %d, next %s"),Card.bPrinted?1:0,Card.bControl?1:0,*F->NextAction().Left(160)));
-   if(M->UI)M->UI->Close(true);F->SelectJob(CardsJob);CardsStage=26;CardsWait=F->Clock();return;
+   // RX-ANOMALY-FLOW-20261113: retained on the receiver's RECORD tab with its 8-second reference first, then the reel deck
+   if(M->UI)M->UI->Close(true);F->SelectJob(CardsJob);
+   const bool bKept=FS47FreeformSession::RetainWaits(Card)?F->RetainTake():Card.bPrinted;
+   Say(FString::Printf(TEXT("anomaly on tape: retained at the receiver %d, reference %d, next %s"),bKept?1:0,Card.bControl?1:0,*F->NextAction().Left(160)));
+   if(!bKept){Give(*(FString(TEXT("RETAIN TAKE on the receiver's RECORD tab refused: "))+F->FeedbackText()));return;}
+   CardsStage=26;CardsWait=F->Clock();return;
   }
   if(Card.Stage!=J::Chart||F->PrinterProgress()<1)
   {
@@ -1040,7 +1044,8 @@ void FS47DevFreeform::StepCards()
  }
  if(CardsStage==26)
  {
-  // The reel deck: the take, played once from the start, confirms the anomaly by itself (no control, no second reel, no marks).
+  // The reel deck: the take, played once from the start; then RETAIN (the marks are filled in when none are set).
+  if(FS47FreeformSession::RetainWaits(Card)&&!F->RetainTake()){Give(*(FString(TEXT("RETAIN TAKE refused: "))+F->FeedbackText()));return;}
   if(F->AudioDesk){const FVector P=F->AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(P.X,P.Z-1.2,0);}
   F->OpenAudio();F->AudioAction(TEXT("original"));F->AudioAction(TEXT("play"));CardsStage=27;CardsOlder=0;return;
  }
@@ -1051,10 +1056,11 @@ void FS47DevFreeform::StepCards()
   if(!Card.bAudioReviewed&&!FS47FreeformSession::TapeHeard(Card)&&++CardsOlder<4){F->OpenAudio();F->AudioAction(TEXT("original"));F->AudioAction(TEXT("play"));return;}
   if(!Card.bAudioReviewed&&!FS47FreeformSession::TapeHeard(Card))Say(FString::Printf(TEXT("the take stopped at %.1f of 18 s: %s"),Card.OriginalCovered,*F->AudioStopReason()));
   CardsOlder=0;
+  if(!Card.bAudioReviewed&&FS47FreeformSession::TapeHeard(Card))F->AudioAction(TEXT("confirm")); // RX-ANOMALY-FLOW-20261113: RETAIN
   const bool bOk=Card.bAudioReviewed;
   Say(FString::Printf(TEXT("take heard once (%.0f s), anomaly confirmed %d, marks %.1f-%.1f, next %s"),Card.OriginalCovered,bOk?1:0,Card.MarkStart,Card.MarkEnd,*F->NextAction().Left(120)));
   if(M->UI)M->UI->Close(true);
-  if(!bOk){Give(TEXT("one listen at the reel deck did not confirm the anomaly"));return;}
+  if(!bOk){Give(*(FString(TEXT("RETAIN at the reel deck did not confirm the anomaly: "))+F->FeedbackText()));return;}
   CardsStage=9;return;
  }
  if(CardsStage==40)

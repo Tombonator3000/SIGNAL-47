@@ -12,28 +12,67 @@
 #include "S47FreeformAudioDesk.h"
 #include "SS47TapeScope.h"
 #include "UnrealClient.h"
+#include "Containers/Ticker.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Framework/Application/SlateUser.h"
+#include "Layout/WidgetPath.h"
+#include "Widgets/SWindow.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 
-// GAMEPLAY-LOOP-01 (Tom, 12 November): one unusual observation along its six steps, each one thing at one place: ANOMALY DETECTED on
-// the receiver, record it there, one listen at the reel deck, confirm at OPS, the packet at the printer (the binder is walked in the
-// card player, S47DevFreeform). No control to record, no second reel, no chart to fetch. (The name is the old internal-control test's.)
+namespace
+{
+ // RX-ANOMALY-FLOW-20261113: a hand's click on the reel deck panel (it stands over the game, not on a CRT's glass): the pointer moves
+ // there, the button goes down now and comes up a frame later, and Slate hit-tests the place, so an overlay, a clipped box or a
+ // disabled key takes or drops the click as it would for Tom.
+ void IcPointerAt(const FVector2D& At)
+ {
+  FSlateApplication& App=FSlateApplication::Get();const TSet<FKey> None,Left={EKeys::LeftMouseButton};
+  App.ProcessMouseMoveEvent(FPointerEvent(0,At,At-FVector2D(1,0),None,EKeys::Invalid,0.f,App.GetModifierKeys()));
+  App.ProcessMouseButtonDownEvent(nullptr,FPointerEvent(0,At,At,Left,EKeys::LeftMouseButton,0.f,App.GetModifierKeys()));
+  FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([At](float)
+  {
+   if(!FSlateApplication::IsInitialized())return false;
+   FSlateApplication& UpApp=FSlateApplication::Get();
+   UpApp.ProcessMouseButtonUpEvent(FPointerEvent(0,At,At,TSet<FKey>(),EKeys::LeftMouseButton,0.f,UpApp.GetModifierKeys()));
+   return false;
+  }));
+ }
+ // The widget is what Slate finds under the pointer at that place (it, or one of its children, is on the hit path).
+ bool IcUnderPointer(const TSharedRef<SWidget>& W,const FVector2D& At)
+ {
+  FSlateApplication& App=FSlateApplication::Get();
+  const FWidgetPath Path=App.LocateWindowUnderMouse(At,App.GetInteractiveTopLevelWindows());
+  if(!Path.IsValid())return false;
+  for(int32 I=0;I<Path.Widgets.Num();++I)if(&Path.Widgets[I].Widget.Get()==&W.Get())return true;
+  return false;
+ }
+}
+
+// GAMEPLAY-LOOP-01 (Tom, 12 November) and RX-ANOMALY-FLOW-20261113 (Tom, 13 November: «Må gå fra RECORD på receiver til bekreft lyd
+// på reel ... MARK IN og MARK OUT og også trykke på stedet der lyden har avvik ... referanselyd»): one unusual observation along its
+// steps, each one thing at one place, through the keys a player uses: ANOMALY DETECTED on the receiver, its RECORD tab due; START
+// RECORDING there; RETAIN TAKE / RECORD REFERENCE 8 s there; the reel deck: PLAY the take, MARK IN and MARK OUT at the tape head,
+// the reference on its own key, marks by clicks on the trace, RETAIN (refused while the marks miss the ticks); confirm at OPS; the
+// packet at the printer (the binder is walked in the card player, S47DevFreeform). The receiver is clicked by SimulateClick (its
+// glass is a virtual window reached by the camera's ray); the reel deck panel by real Slate pointer events. (The name is the old
+// internal-control test's.)
 void FS47FreeformTest::StepInternalControl(double Dt)
 {
  using J=FS47FreeformSession::EJobStage;
  static double TapeFrom=0;
  Age+=FMath::Min(Dt,.2);if(Hold>0){Hold-=Dt;return;}
- if(Age>150){Finish(false,FString::Printf(TEXT("internal control exceeded its time bound at stage %d"),Stage));return;}
+ if(Age>240){Finish(false,FString::Printf(TEXT("internal control exceeded its time bound at stage %d"),Stage));return;}
  if(!M||!M->Flow||M->Flow->bStarting||S47Startup::Blocking()||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Player||!M->UI)return;
  auto& F=*M->Freeform;
  auto Shot=[&](const TCHAR* Name){FScreenshotRequest::RequestScreenshot(Root/Name,true,false);};
+ // what a player can see: collapsed widgets (the other half of a page that swaps) are not looked into
  auto Scan=[&](const FString& Label,TArray<TSharedRef<SButton>>& Found,bool& TextSeen)
  {
   TFunction<void(TSharedRef<SWidget>)> Visit=[&](TSharedRef<SWidget> X)
   {
+   if(!X->GetVisibility().IsVisible())return;
    if(X->GetTypeAsString()==TEXT("STextBlock")&&StaticCastSharedRef<STextBlock>(X)->GetText().ToString().Contains(Label))TextSeen=true;
    if(X->GetTypeAsString()==TEXT("SButton"))
    {
@@ -53,6 +92,38 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   Found[0]->SimulateClick();return true;
  };
  auto Shows=[&](const FString& Text){TArray<TSharedRef<SButton>> Found;bool TextSeen=false;Scan(Text,Found,TextSeen);return TextSeen;};
+ // the reel deck by the pointer: the key must be the one thing Slate finds under its centre, and enabled
+ auto Hand=[&](const FString& Label)
+ {
+  TArray<TSharedRef<SButton>> Found;bool TextSeen=false;Scan(Label,Found,TextSeen);
+  if(!Check(Found.Num()==1&&Found[0]->IsEnabled(),TEXT("reel deck: unique enabled key ")+Label))return false;
+  const FGeometry G=Found[0]->GetCachedGeometry();const FVector2D At=G.LocalToAbsolute(G.GetLocalSize()*.5f);
+  if(!Check(G.GetLocalSize().X>4&&IcUnderPointer(Found[0],At),TEXT("reel deck: the key is under the pointer at its own centre (nothing over it): ")+Label))return false;
+  IcPointerAt(At);return true;
+ };
+ auto FindScope=[&]
+ {
+  TSharedPtr<SS47TapeScope> Found;
+  TFunction<void(TSharedRef<SWidget>)> Find=[&](TSharedRef<SWidget> X){if(X->GetTypeAsString()==TEXT("SS47TapeScope"))Found=StaticCastSharedRef<SS47TapeScope>(X);FChildren* Ch=X->GetChildren();for(int32 I=0;Ch&&I<Ch->Num();++I)Find(Ch->GetChildAt(I));};
+  FSlateApplication::Get().ForEachUser([&](FSlateUser& User){auto W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;Find(W.ToSharedRef());},true);
+  return Found;
+ };
+ // a click on the drawn trace at a tape second, through hit testing
+ auto Trace=[&](double Seconds)
+ {
+  const TSharedPtr<SS47TapeScope> Scope=FindScope();if(!Check(Scope.IsValid(),TEXT("the reel deck shows the signal trace")))return false;
+  const FGeometry G=Scope->GetCachedGeometry();const FVector2D At=G.LocalToAbsolute(FVector2D(Scope->LocalAt(Seconds,FVector2f(G.GetLocalSize()))));
+  if(!Check(IcUnderPointer(Scope.ToSharedRef(),At),FString::Printf(TEXT("reel deck: the trace is under the pointer at %.1f s"),Seconds)))return false;
+  IcPointerAt(At);return true;
+ };
+ auto Fits=[&](const FString& Label,const TCHAR* What)
+ {
+  TArray<TSharedRef<SButton>> Keys;bool Seen=false;Scan(Label,Keys,Seen);if(!Check(Keys.Num()==1,FString(What)+TEXT(": its key ")+Label))return false;
+  TSharedPtr<SWidget> Up=Keys[0];while(Up.IsValid()&&Up->GetTypeAsString()!=TEXT("SScrollBox"))Up=Up->GetParentWidget();
+  const float Over=Up.IsValid()?StaticCastSharedPtr<SScrollBox>(Up)->GetScrollOffsetOfEnd():-1.f;
+  UE_LOG(LogTemp,Display,TEXT("S47 receiver %s: %.1f units past the glass"),What,Over);
+  return Check(Up.IsValid()&&Over<1.f,FString::Printf(TEXT("%s fits the glass without scrolling (%.1f over)"),What,Over));
+ };
  if(Stage==0)
  {
   if(Age<3)return;M->UI->Close(true);F.Director->Stop();
@@ -66,34 +137,63 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  }
  if(Stage==1)
  {
-  // 1: ANOMALY DETECTED, on the HUD's line and on the receiver's glass, once the card is tuned and the array steady
+  // 1: ANOMALY DETECTED, on the HUD's line and on the receiver's glass, once the card is tuned and the array steady; RECORD is due
   if(!F.TerminalLines(1).Contains(TEXT("ANOMALY DETECTED")))return;
   const FString Said=F.JobNextAction(*F.CurrentJob());
-  if(!Check(F.AnomalyAhead()&&Said.StartsWith(TEXT("RECEIVER"))&&Said.Contains(TEXT("ANOMALY DETECTED")),TEXT("the tuned receiver says ANOMALY DETECTED before the take: ")+Said))return;
-  // 2: record it there
-  if(!Check(F.StartAcquisition()&&F.CurrentJob()->bAnomaly&&F.JobNextAction(*F.CurrentJob()).Contains(TEXT("ANOMALY DETECTED")),TEXT("START RECORDING takes the unusual take, still marked as such: ")+F.JobNextAction(*F.CurrentJob())))return;
-  Go(2);return;
+  if(!Check(F.AnomalyAhead()&&Said.StartsWith(TEXT("RECEIVER"))&&Said.Contains(TEXT("ANOMALY DETECTED"))&&Said.Contains(TEXT("RECORD TAB")),TEXT("the tuned receiver says ANOMALY DETECTED and names its RECORD tab: ")+Said))return;
+  M->Player->Place(0,-2.15,0);F.OpenReceiver();Go(10,1.);return;
  }
- if(Stage==2)
+ if(Stage==10)
  {
-  if(F.CurrentJob()->Stage!=J::Recorded)return;
-  const auto* Take=F.CurrentJob();
-  if(!Check(Take->bAnomaly&&Take->bPrinted&&!Take->OriginalPage.IsEmpty()&&!Take->bControl&&!F.CanRecordControl()&&F.PrinterJobId()!=Take->Id,TEXT("the take is kept as it ends: original in the notebook, no chart at the printer, no control asked for")))return;
-  if(!Check(F.JobNextAction(*Take).StartsWith(TEXT("REEL DECK"))&&F.JobLocation(*Take).StartsWith(TEXT("Reel deck"))&&F.TerminalLines(1).Contains(TEXT("ANOMALY DETECTED")),TEXT("hint and location name the reel deck: ")+F.JobNextAction(*Take)))return;
-  M->Player->Place(0,-2.15,0);F.OpenReceiver();Go(20,1.);return;
+  // the receiver opens on TUNE (the fix is held); the due cue points at RECORD, not at TUNE's own key
+  if(!Check(F.ReceiverPage()==1&&F.ReceiverDuePage()==3,FString::Printf(TEXT("anomalous take: RECORD is the due tab (open %d, due %d)"),F.ReceiverPage(),F.ReceiverDuePage())))return;
+  if(!Check(Shows(TEXT("RECORD TAB: PRESS START RECORDING")),TEXT("TUNE's banner sends the anomaly to the RECORD tab")))return;
+  Shot(TEXT("tune-anomaly-detected.png"));
+  if(!Click(TEXT("RECORD")))return;Go(11,1.);return;
  }
- if(Stage==20){if(!Click(TEXT("TUNE")))return;Go(21,1.);return;} // RX-ACQUIRE-SKY-20261113: the recording key and the tape strip are TUNE's now
+ if(Stage==11)
+ {
+  if(!Check(F.ReceiverPage()==3&&F.ReceiverDuePage()==-1&&Shows(TEXT("ANOMALY / RECORD IT, THEN RETAIN IT"))&&!Shows(TEXT("TAKE LIST")),TEXT("RECORD holds the anomaly (its panel in the take list's place) and is no longer due once open")))return;
+  if(!Fits(TEXT("START RECORDING"),TEXT("RECORD with the anomaly before the take")))return;
+  Shot(TEXT("record-before-take.png"));
+  // 2: record it there
+  if(!Click(TEXT("START RECORDING")))return;Go(12,.5);return;
+ }
+ if(Stage==12)
+ {
+  if(!Check(F.CurrentJob()->Stage==J::Integrating&&F.CurrentJob()->bAnomaly&&F.JobNextAction(*F.CurrentJob()).Contains(TEXT("RETAIN IT ON RECORD")),TEXT("START RECORDING on RECORD takes the unusual take; the hint names RETAIN on the RECORD tab: ")+F.JobNextAction(*F.CurrentJob())))return;
+  Go(13,.2);return;
+ }
+ if(Stage==13)
+ {
+  if(F.CurrentJob()->Stage==J::Integrating)return;
+  // 3: the take ended waits on RECORD: nothing retained by itself, no chart, no control asked for, the deck and OPS refuse it with the reason
+  const auto* Take=F.CurrentJob();
+  if(!Check(Take->Stage==J::Recorded&&FS47FreeformSession::RetainWaits(*Take)&&!Take->bPrinted&&Take->OriginalPage.IsEmpty()&&!Take->bControl&&!F.CanRecordControl()&&F.PrinterJobId()!=Take->Id,TEXT("the take ends on tape, waiting to be retained; no chart, nothing kept by itself")))return;
+  if(!Check(F.JobNextAction(*Take).Contains(TEXT("RECORD TAB, RETAIN THE TAKE"))&&F.JobLocation(*Take).Contains(TEXT("RECORD tab"))&&F.ReceiverDuePage()==-1&&F.TerminalLines(1).Contains(TEXT("ANOMALY DETECTED")),TEXT("hint and location name RETAIN on the RECORD tab: ")+F.JobNextAction(*Take)))return;
+  if(!Check(!F.AudioAction(TEXT("play"))&&F.FeedbackText().Contains(TEXT("RETAIN TAKE"))&&!F.RegisterComparison(TEXT("unresolved"))&&F.FeedbackText().Contains(TEXT("RECORD tab")),TEXT("the reel deck and OPS refuse a take not retained, and say where to retain it")))return;
+  if(!Fits(TEXT("RETAIN TAKE / RECORD REFERENCE 8 s"),TEXT("RECORD after the take")))return;
+  Shot(TEXT("record-retain-due.png"));
+  if(!Click(TEXT("RETAIN TAKE / RECORD REFERENCE 8 s")))return;Go(14,.5);return;
+ }
+ if(Stage==14)
+ {
+  // 4: retained there: the original page in the notebook, the 8-second station reference recording; then the reel deck
+  const auto* Take=F.CurrentJob();
+  if(!Check(Take->bPrinted&&!Take->OriginalPage.IsEmpty()&&Take->bControl&&!FS47FreeformSession::RetainWaits(*Take)&&F.JobNextAction(*Take).StartsWith(TEXT("REEL DECK"))&&F.JobLocation(*Take).StartsWith(TEXT("Reel deck")),TEXT("RETAIN TAKE keeps the original, records its reference and names the reel deck: ")+F.JobNextAction(*Take)))return;
+  if(Take->ControlAt<8)return;
+  if(!Check(Shows(TEXT("RETAINED / REEL DECK NEXT"))&&F.ReceiverDuePage()==-1,TEXT("RECORD says the take is retained and the reel deck is next; no receiver tab is due")))return;
+  Shot(TEXT("record-retained.png"));Go(20,.3);return;
+ }
+ if(Stage==20){if(!Click(TEXT("TUNE")))return;Go(21,1.);return;} // RX-ACQUIRE-SKY-20261113: the recording key and the tape strip are TUNE's too
  if(Stage==21)
  {
   TArray<TSharedRef<SButton>> Keys;bool KeySeen=false;Scan(TEXT("ON TAPE / REEL DECK"),Keys,KeySeen);
   if(!Check(Keys.Num()==1&&!Keys[0]->IsEnabled(),TEXT("TUNE says the take is on tape and the reel deck is next; nothing to press here")))return;
   TArray<TSharedRef<SButton>> Control;bool ControlSeen=false;Scan(TEXT("RECORD CONTROL / 8 s"),Control,ControlSeen);
-  if(!Check(Control.Num()==0,TEXT("the receiver offers no control for the unusual take")))return;
-  TSharedPtr<SWidget> Up=Keys[0];while(Up.IsValid()&&Up->GetTypeAsString()!=TEXT("SScrollBox"))Up=Up->GetParentWidget();
-  const float Over=Up.IsValid()?StaticCastSharedPtr<SScrollBox>(Up)->GetScrollOffsetOfEnd():-1.f;
-  UE_LOG(LogTemp,Display,TEXT("S47 receiver TUNE with the tape strip: %.1f units past the glass"),Over);
-  if(!Check(Up.IsValid()&&Over<1.f,FString::Printf(TEXT("TUNE with the tape strip fits the glass without scrolling (%.1f over)"),Over)))return;
-  if(!Check(Shows(TEXT("ANOMALY ON TAPE")),TEXT("the receiver's banner names the anomaly on tape")))return;
+  if(!Check(Control.Num()==0,TEXT("the receiver offers no second control for the unusual take")))return;
+  if(!Fits(TEXT("ON TAPE / REEL DECK"),TEXT("TUNE with the tape strip")))return;
+  if(!Check(Shows(TEXT("PLAY TAKE AND REFERENCE")),TEXT("the receiver's banner names the reel deck's steps")))return;
   Shot(TEXT("tune-after-take.png"));Go(22,1.);return;
  }
  // RX-ACQUIRE-SKY-20261113: ACQUIRE is the sky chart; after the take it shows the fix as held, fits the glass, and leads on to TUNE.
@@ -102,10 +202,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   TArray<TSharedRef<SButton>> Onward;bool OnwardSeen=false;Scan(TEXT("TUNE >"),Onward,OnwardSeen);
   if(!Check(Shows(TEXT("SKY CHART / FIND THE SOURCE"))&&Onward.Num()==1&&Onward[0]->IsEnabled()&&F.SkyFix.IsValid()&&F.SkyAcquired(),TEXT("ACQUIRE is the sky chart: after the take its fix is held and TUNE is the way on")))return;
-  TSharedPtr<SWidget> Up=Onward[0];while(Up.IsValid()&&Up->GetTypeAsString()!=TEXT("SScrollBox"))Up=Up->GetParentWidget();
-  const float Over=Up.IsValid()?StaticCastSharedPtr<SScrollBox>(Up)->GetScrollOffsetOfEnd():-1.f;
-  UE_LOG(LogTemp,Display,TEXT("S47 receiver ACQUIRE sky chart: %.1f units past the glass"),Over);
-  if(!Check(Up.IsValid()&&Over<1.f,FString::Printf(TEXT("the sky chart fits the glass without scrolling (%.1f over)"),Over)))return;
+  if(!Fits(TEXT("TUNE >"),TEXT("the sky chart")))return;
   Shot(TEXT("acquire-sky-chart.png"));Go(70,1.);return;
  }
  if(Stage==70)
@@ -141,7 +238,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  }
  if(Stage==73)
  {
-  if(!Check(Shows(TEXT("PLAY THE TAKE ONCE"))&&Shows(TEXT("CONFIRMED: TO OPS"))&&Shows(TEXT("KNOWN SOUNDS TO COMPARE BY EAR")),TEXT("panel says what to do first")))return;
+  if(!Check(Shows(TEXT("1 PLAY THE TAKE"))&&Shows(TEXT("2 PLAY THE REFERENCE"))&&Shows(TEXT("3 MARK THE TICKS, RETAIN"))&&Shows(TEXT("KNOWN SOUNDS TO COMPARE BY EAR")),TEXT("panel says the steps: the take, its reference, marks and RETAIN")))return;
   // D45-20261110: one faceplate, no scrolling: its last row stands above the way out
   TArray<TSharedRef<SButton>> Last,Out;bool LastSeen=false,OutSeen=false;Scan(TEXT("NEXT REFERENCE"),Last,LastSeen);Scan(TEXT("ESC / RETURN TO ROOM"),Out,OutSeen);
   if(!Check(Last.Num()==1&&Out.Num()==1,TEXT("D45: the deck has its references row and its way out")))return;
@@ -149,68 +246,116 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   const FVector2D LastBottom=LastG.LocalToAbsolute(FVector2D(LastG.GetLocalSize())),OutTop=OutG.LocalToAbsolute(FVector2D(0,0));
   UE_LOG(LogTemp,Display,TEXT("S47 D45 reel deck: last row ends at %.1f, the way out starts at %.1f"),LastBottom.Y,OutTop.Y);
   if(!Check(LastG.GetLocalSize().Y>10&&LastBottom.Y<=OutTop.Y+.5,FString::Printf(TEXT("D45: the whole deck fits its faceplate (last row %.1f, way out %.1f)"),LastBottom.Y,OutTop.Y)))return;
-  Shot(TEXT("deck-panel.png"));Go(74,.5);return;
+  Shot(TEXT("deck-panel.png"));
+  // 5: the take, by the pointer
+  if(!Hand(TEXT("PLAY")))return;Go(74,3.);return;
  }
- if(Stage==74){if(!Click(TEXT("PLAY")))return;TapeFrom=F.AudioPosition();Go(75,3.);return;}
+ if(Stage==74)
+ {
+  if(!Check((F.AudioPlaying()||F.AudioPreparing())&&!F.Held(),TEXT("PLAY by the pointer: the tape runs with the panel open")))return;
+  if(!Check(F.AudioPlaying()&&F.AudioPosition()>0,FString::Printf(TEXT("tape position advances, %.1f s"),F.AudioPosition())))return;
+  TapeFrom=F.AudioPosition();Shot(TEXT("deck-panel-playing.png"));Go(75);return;
+ }
  if(Stage==75)
  {
-  if(!Check((F.AudioPlaying()||F.AudioPreparing())&&!F.Held(),TEXT("tape keeps running with the panel open")))return;
-  if(!Check(F.AudioPlaying()&&F.AudioPosition()>TapeFrom,FString::Printf(TEXT("tape position advances, %.1f s"),F.AudioPosition())))return;
-  Shot(TEXT("deck-panel-playing.png"));Go(76,.5);return;
+  // MARK IN by its key as the tape reaches the ticks
+  if(F.AudioPosition()<9.f)return;
+  if(!Hand(TEXT("MARK IN")))return;Go(76,.25);return;
  }
- if(Stage==76){if(!Click(TEXT("STOP")))return;Go(760,.3);return;}
+ if(Stage==76)
+ {
+  const auto* Take=F.CurrentJob();
+  if(!Check(Take->MarkStart>=9.&&Take->MarkStart<=9.3&&Take->MarkEnd<0&&F.FeedbackText().StartsWith(TEXT("MARK IN"))&&Shows(TEXT("MARK OUT still to set"))&&F.AudioPlaying(),FString::Printf(TEXT("MARK IN by its key sets the start at the tape head (%.2f s), says so on the panel, and the tape plays on"),Take->MarkStart)))return;
+  Go(760);return;
+ }
  if(Stage==760)
  {
-  // Real pointer events on the drawn trace, right to left: the mark still reads left to right, and the tape stays put.
-  TSharedPtr<SS47TapeScope> Scope;
-  TFunction<void(TSharedRef<SWidget>)> Find=[&](TSharedRef<SWidget> X){if(X->GetTypeAsString()==TEXT("SS47TapeScope"))Scope=StaticCastSharedRef<SS47TapeScope>(X);FChildren* Ch=X->GetChildren();for(int32 I=0;Ch&&I<Ch->Num();++I)Find(Ch->GetChildAt(I));};
-  FSlateApplication::Get().ForEachUser([&](FSlateUser& User){auto W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;Find(W.ToSharedRef());},true);
-  if(!Check(Scope.IsValid(),TEXT("the panel shows the signal trace")))return;
-  const FGeometry G=Scope->GetTickSpaceGeometry();const double Tape=F.AudioPosition();
-  auto Press=[&](double At){const FVector2D P=G.LocalToAbsolute(FVector2D(Scope->LocalAt(At,FVector2f(G.GetLocalSize()))));return Scope->OnMouseButtonDown(G,FPointerEvent(0,0,P,P,TSet<FKey>{EKeys::LeftMouseButton},EKeys::LeftMouseButton,0.f,FModifierKeysState())).IsEventHandled();};
-  if(!Check(Press(13)&&F.CurrentJob()->MarkEnd<0,TEXT("first click on the trace sets one end")))return;
-  if(!Check(Press(9)&&FMath::IsNearlyEqual(F.CurrentJob()->MarkStart,9.,.05)&&FMath::IsNearlyEqual(F.CurrentJob()->MarkEnd,13.,.05),FString::Printf(TEXT("second click completes the mark, %.2f to %.2f s"),F.CurrentJob()->MarkStart,F.CurrentJob()->MarkEnd)))return;
-  if(!Check(FMath::IsNearlyEqual(F.AudioPosition(),Tape),TEXT("marking does not move the tape")))return;
-  if(!Check(Shows(TEXT("COVERS THE TICKS")),TEXT("the panel says the mark covers the ticks")))return;
-  Shot(TEXT("deck-panel-marked.png"));Go(77,.3);return;
+  if(F.AudioPosition()<13.f)return;
+  if(!Hand(TEXT("MARK OUT")))return;Go(77,.25);return;
  }
  if(Stage==77)
+ {
+  const auto* Take=F.CurrentJob();
+  if(!Check(Take->MarkEnd>=13.&&Take->MarkEnd<=13.6&&Shows(TEXT("COVERS THE TICKS")),FString::Printf(TEXT("MARK OUT by its key sets the end (%.2f s); the deck says the mark covers the ticks"),Take->MarkEnd)))return;
+  Go(78);return;
+ }
+ if(Stage==78)
+ {
+  if(F.AudioPlaying()||F.AudioPreparing())return;
+  const auto* Take=F.CurrentJob();
+  // heard through: nothing is confirmed by itself; RETAIN is the operator's
+  if(!Check(!Take->bAudioReviewed&&FS47FreeformSession::TapeHeard(*Take)&&!F.HasFinding(TEXT("pulse-review")),TEXT("the take heard through leaves RETAIN to the operator")))return;
+  // 6: the reference, on its own key
+  if(!Hand(TEXT("REFERENCE 8 s")))return;Go(79,.4);return;
+ }
+ if(Stage==79)
+ {
+  if(!Check(F.AudioSource()==1,TEXT("REFERENCE 8 s loads the take's station reference")))return;
+  if(!Trace(4.))return;Go(790,.3);return; // a click on the reference's trace: it is not the take
+ }
+ if(Stage==790)
+ {
+  if(!Check(F.FeedbackText().Contains(TEXT("reference is loaded"))&&F.CurrentJob()->MarkStart>=9.&&F.CurrentJob()->MarkStart<=9.3&&F.CurrentJob()->MarkEnd>=13.,TEXT("a click on the reference's trace marks nothing and says why")))return;
+  if(!Hand(TEXT("PLAY")))return;Go(791,2.);return;
+ }
+ if(Stage==791)
+ {
+  if(F.AudioPlaying()||F.AudioPreparing())return;
+  if(!Check(F.CurrentJob()->ControlCovered>=8&&F.AudioSource()==1,FString::Printf(TEXT("the reference plays through (%.1f of 8 s heard)"),F.CurrentJob()->ControlCovered)))return;
+  if(!Hand(TEXT("ORIGINAL 18 s")))return;Go(80,.4);return;
+ }
+ // 7: marks by clicks on the trace: two that miss the ticks, refused at RETAIN with the reason; two that cover them, kept
+ if(Stage==80){if(!Check(F.AudioSource()==0,TEXT("ORIGINAL 18 s loads the take again")))return;if(!Trace(10.5))return;Go(801,.3);return;}
+ if(Stage==801){if(!Check(F.CurrentJob()->MarkEnd<0&&FMath::IsNearlyEqual(F.CurrentJob()->MarkStart,10.5,.1),FString::Printf(TEXT("a click on the trace starts a new mark there (%.2f s)"),F.CurrentJob()->MarkStart)))return;if(!Trace(11.5))return;Go(802,.3);return;}
+ if(Stage==802)
+ {
+  if(!Check(FMath::IsNearlyEqual(F.CurrentJob()->MarkEnd,11.5,.1)&&Shows(TEXT("MISSES TICKS")),TEXT("the second click ends it; the deck says it misses the ticks")))return;
+  if(!Hand(TEXT("RETAIN")))return;Go(803,.3);return;
+ }
+ if(Stage==803)
+ {
+  if(!Check(!F.CurrentJob()->bAudioReviewed&&F.FeedbackText().Contains(TEXT("miss the extra ticks"))&&Shows(TEXT("miss the extra ticks")),TEXT("RETAIN refuses marks that miss the ticks and says so on the panel")))return;
+  TapeFrom=F.AudioPosition();if(!Trace(13.))return;Go(804,.3);return;
+ }
+ if(Stage==804){if(!Trace(9.))return;Go(805,.3);return;}
+ if(Stage==805)
+ {
+  const auto* Take=F.CurrentJob();
+  if(!Check(FMath::IsNearlyEqual(Take->MarkStart,9.,.1)&&FMath::IsNearlyEqual(Take->MarkEnd,13.,.1)&&Shows(TEXT("COVERS THE TICKS"))&&FMath::IsNearlyEqual(F.AudioPosition(),TapeFrom),FString::Printf(TEXT("two clicks right to left mark %.2f to %.2f s, the tape stays put"),Take->MarkStart,Take->MarkEnd)))return;
+  Shot(TEXT("deck-panel-marked.png"));
+  // 8: RETAIN, the operator's press
+  if(!Hand(TEXT("RETAIN")))return;Go(81,.4);return;
+ }
+ if(Stage==81)
+ {
+  const auto* Take=F.CurrentJob();
+  if(!Check(Take->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&FMath::IsNearlyEqual(Take->MarkStart,9.,.1)&&FMath::IsNearlyEqual(Take->MarkEnd,13.,.1)&&F.FeedbackText().Contains(TEXT("Confirm anomaly")),TEXT("RETAIN confirms the anomaly, keeps the hand marks and names OPS")))return;
+  if(!Check(F.JobNextAction(*Take).StartsWith(TEXT("OPS"))&&Shows(TEXT("3 RETAINED: TO OPS")),TEXT("then OPS: ")+F.JobNextAction(*Take)))return;
+  Shot(TEXT("deck-panel-retained.png"));Go(82,.3);return;
+ }
+ if(Stage==82)
  {
   if(!Click(TEXT("ESC / RETURN TO ROOM")))return;
   if(!Check(!F.TapePanelOpen()&&!M->ModalOpen(),TEXT("the visible button leaves the panel and clears its hold exemption")))return;
   if(!Check(F.AudioDesk->Use(TEXT("ff:audio:station"))&&F.TapePanelOpen(),TEXT("the deck opens again")))return;
-  Go(78,.3);return;
+  Go(83,.3);return;
  }
- if(Stage==78)
+ if(Stage==83)
  {
   FSlateApplication& App=FSlateApplication::Get();const FKeyEvent Esc(EKeys::Escape,FModifierKeysState(),0,false,0,0);
   App.ProcessKeyDownEvent(Esc);App.ProcessKeyUpEvent(Esc);
   if(!Check(!F.TapePanelOpen()&&!M->ModalOpen()&&!M->bPausedByMenu,TEXT("a real Escape press leaves the panel without opening the pause menu")))return;
-  Go(8,.3);return;
- }
- if(Stage==8)
- {
-  // 3: the rest of the take, from where it stopped: one listen confirms it (the marks set by hand are kept)
-  F.OpenAudio();if(!Check(F.AudioAction(TEXT("play")),TEXT("PLAY resumes the take at the deck")))return;Go(81);return;
- }
- if(Stage==81)
- {
-  if(F.AudioPlaying()||F.AudioPreparing())return;
-  const auto* Take=F.CurrentJob();
-  if(!Check(Take->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&Take->ControlCovered==0&&FMath::IsNearlyEqual(Take->MarkStart,9.,.05)&&FMath::IsNearlyEqual(Take->MarkEnd,13.,.05),TEXT("one listen confirms the anomaly and keeps the hand marks")))return;
-  if(!Check(F.JobNextAction(*Take).StartsWith(TEXT("OPS")),TEXT("then OPS: ")+F.JobNextAction(*Take)))return;
-  // 4: confirm at OPS, one button
-  M->UI->Close(true);
+  // 9: confirm at OPS, one button
   if(!Check(!F.RegisterComparison(TEXT("sky"))&&F.CurrentJob()->Stage==J::Recorded,TEXT("OPS takes no origin it cannot show")))return;
   if(!Check(F.RegisterComparison(TEXT("unresolved"))&&F.CurrentJob()->Stage==J::Registered,TEXT("Confirm anomaly registers it")))return;
-  Go(82);return;
+  Go(84);return;
  }
- if(Stage==82)
+ if(Stage==84)
  {
-  // 5: the packet at the printer, then 6: the binder
+  // 10: the packet at the printer, then the binder
   if(F.PrinterProgress()<1)return;
   if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Packet&&F.JobNextAction(*F.CurrentJob()).Contains(TEXT("BINDER")),TEXT("the printer gives the packet and the binder is next")))return;
   M->UI->Close(true);
-  Finish(true,TEXT("Unusual take: ANOMALY DETECTED, recorded, one listen at the reel deck, confirmed at OPS, packet printed; the binder is next."));return;
+  Finish(true,TEXT("Unusual take: ANOMALY DETECTED, RECORD tab due, recorded and retained there with its 8-second reference, reel deck by the pointer (play, MARK IN / OUT, reference, marks by clicks, RETAIN), confirmed at OPS, packet printed; the binder is next."));return;
  }
 }
