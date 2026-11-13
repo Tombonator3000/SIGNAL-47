@@ -914,8 +914,8 @@ FString FS47FreeformSession::PrinterHint()const
   const FResultSheet& Sh=CaseSheets[0];
   if(IsBearingSlip(Sh))return Sh.Feed>=PrinterSeconds?FString(TEXT("PRINTER: Collect the bearing slip."))
    :FString::Printf(TEXT("PRINTER: bearing slip %s. %s"),HasPower()?TEXT("feeding paper"):TEXT("feed paused"),HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained.")); // D45-20261110: no ticking figure on the task card
-  if(Sh.Feed>=PrinterSeconds)return FString::Printf(TEXT("PRINTER: Collect the case %d result sheet, %s."),Sh.Line+1,FS47FreeformCases::Def(Sh.Line).Title);
-  return FString::Printf(TEXT("PRINTER: case %d result sheet %s. %s"),Sh.Line+1,HasPower()?TEXT("feeding paper"):TEXT("feed paused"),HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained."));
+  if(Sh.Feed>=PrinterSeconds)return FString::Printf(TEXT("PRINTER: Collect the result sheet for %s."),FS47FreeformCases::Def(Sh.Line).Title); // Tom 13 Nov: cases carry no number
+  return FString::Printf(TEXT("PRINTER: case result sheet %s. %s"),HasPower()?TEXT("feeding paper"):TEXT("feed paused"),HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained."));
  }
  if(I==INDEX_NONE)return TEXT("PRINTER: No paper waiting.");
  const auto& J=Work[I];const int32 Kind=PendingPrint(J);const double Progress=PrintFeed(J,Kind);
@@ -2939,10 +2939,10 @@ void FS47FreeformSession::OpenArchive(bool bBinderOffGlass)
  {
   const auto& D=FS47FreeformCases::Def(Line);
   const FString Tag=D.Mystery?(C->bReplied?FString::Printf(TEXT("FILED D%02d / REPLY IN"),C->ConcludeDay):FString::Printf(TEXT("FILED D%02d / REPLY 08:00"),C->ConcludeDay)):FString(TEXT("CONCLUDED"));
-  FString Detail=FString::Printf(TEXT("CASE %02d / %s / %s\n%s\n%s"),Line+1,D.Title,*CaseKind(Line),*CaseNextLine(Line),*CaseSheetHead(Line));
+  FString Detail=FString::Printf(TEXT("CASE / %s / %s\n%s\n%s"),D.Title,*CaseKind(Line),*CaseNextLine(Line),*CaseSheetHead(Line));
   for(int32 T=0;T<FS47FreeformCases::TestCount;++T)if(C->Results[T].bDone)Detail+=FString::Printf(TEXT("\nTEST %d / %s / D%02d / %s"),T+1,*FString(D.Tests[T].Name).ToUpper(),C->Results[T].Day,*FS47FreeformCases::TestResultText(Line,T,C->Results[T].bPresent));
   if(const FString Reply=FindingText(FString::Printf(TEXT("case%d-reply"),Line+1));!Reply.IsEmpty())Detail+=TEXT("\n\n")+Reply;
-  Tabs[3].Add({FString::Printf(TEXT("case-%d"),Line),FString::Printf(TEXT("CASE %02d %s"),Line+1,D.Title),Tag,Detail});
+  Tabs[3].Add({FString::Printf(TEXT("case-%d"),Line),FString(D.Title),Tag,Detail});
  }
  const bool bNoneRetained=Tabs[0].IsEmpty()&&Tabs[1].IsEmpty()&&Tabs[2].IsEmpty()&&Tabs[3].IsEmpty();
  const FString NoneYet=TEXT("NO RETAINED RECORDS YET. ORIGINALS, FIELD FINDINGS, SERVICE AND CLOSED CASES ARE INDEXED HERE AS THEY ARE RETAINED. PROCEDURE: THE SOP CARD AT THE TERMINAL.");
@@ -3200,7 +3200,7 @@ FString FS47FreeformSession::CaseRecordLine(const FString& Key)const
  if(!FS47FreeformCases::IsCaseRecord(Key))return FString();
  FString Rest;const int32 Case=FCString::Atoi(*Key.Mid(4));const int32 Line=Case-1;
  const auto* C=Cases.Get(Line);if(!C||!Key.Split(TEXT("-"),nullptr,&Rest))return FString();
- const auto& D=FS47FreeformCases::Def(Line);const FString Head=FString::Printf(TEXT("Case %d, %s: "),Case,D.Title);
+ const auto& D=FS47FreeformCases::Def(Line);const FString Head=FString(D.Title)+TEXT(": "); // Tom 13 Nov: the title only, no case number (FS47NightLog::CaseLine knows both)
  if(Rest.StartsWith(TEXT("test")))
  {
   const int32 Test=FCString::Atoi(*Rest.Mid(4))-1;if(Test<0||Test>=FS47FreeformCases::TestCount||!C->Results[Test].bDone)return FString();
@@ -3323,8 +3323,8 @@ void FS47FreeformSession::QueueResultSheet(int32 Line,int32 Test,const FString& 
  FResultSheet Sh;Sh.Line=Line;Sh.Test=Test;Sh.Day=FMath::Max(1,DayNumber);Sh.Job=Job;
  Sh.Stamp=Fell>0?FString::Printf(TEXT("RULED OUT / D%02d"),Sh.Day):FString(TEXT("STILL POSSIBLE"));
  // The sheet as the case stands the moment the result is in; printed later, it does not change.
- Sh.Page=FString::Printf(TEXT("SARO OPS V4.2  CASE TEST RESULT  %s %s\nCASE %02d / %s\nTEST %d / %s%s\nRESULT / %s\nPREDICTION / %s\n\n%s\n\n%s\n\n%s"),
-  *TerminalDate(WorldClock),*FS47FreeformCases::Clock(FMath::Fmod(WorldClock,86400.)),Line+1,D.Title,Test+1,*FString(D.Tests[Test].Name).ToUpper(),Job.IsEmpty()?TEXT(""):*(TEXT(" / ")+Job),
+ Sh.Page=FString::Printf(TEXT("SARO OPS V4.2  CASE TEST RESULT  %s %s\nCASE / %s\nTEST %d / %s%s\nRESULT / %s\nPREDICTION / %s\n\n%s\n\n%s\n\n%s"),
+  *TerminalDate(WorldClock),*FS47FreeformCases::Clock(FMath::Fmod(WorldClock,86400.)),D.Title,Test+1,*FString(D.Tests[Test].Name).ToUpper(),Job.IsEmpty()?TEXT(""):*(TEXT(" / ")+Job),
   *FS47FreeformCases::TestResultText(Line,Test,bPresent),*FS47FreeformCases::Prediction(Line,Test),*CaseSheetHead(Line,Test),*CaseNextLine(Line),*Sh.Stamp);
  CaseSheets.Add(Sh);
 }
@@ -4123,7 +4123,7 @@ bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
    Feedback=Focused?TEXT("Field test planned. ")+FieldNextAction(Line):TEXT("Field plan retained. Finish the active recording or control, then choose Follow this field test on CASE BOARD.");Changed(Feedback);return true;
   }
  }
- FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-CASE%d-T%d-%d"),DayNumber,Line+1,Test+1,Work.Num());J.Day=DayNumber;J.Slot=1;J.Source=1;
+ FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-CT%d-%d"),DayNumber,Test+1,Work.Num());J.Day=DayNumber;J.Slot=1;J.Source=1; // Tom 13 Nov: no case number in the job id shown at DAILY WORK; the job keeps CaseLine
  J.Card=FS47FreeformJobs::Make(JobSeed,DayNumber,1,1);J.bGenerated=true;J.CaseLine=Line;J.CaseTest=Test;
  const auto& T=FS47FreeformCases::Def(Line).Tests[Test];
  J.Card.Receiver.Card=TEXT("CASE TEST / ")+FString(T.Name).ToUpper()+TEXT("\n")+T.Instruction+TEXT("\n\n")+J.Card.Receiver.Card;
@@ -4464,7 +4464,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line,bool bNotes)
   else bCaseDetails=false;
  }
  // ---- Right: NEXT, the explanations, the tests, the selected test, the key. ----
- Right.Add(T::Small(FString::Printf(TEXT("CASE %02d / %s / %s"),Line+1,D.Title,*CaseKind(Line))));
+ Right.Add(T::Small(FString::Printf(TEXT("CASE / %s / %s"),D.Title,*CaseKind(Line))));
  Right.Add(T::Heading(CaseNextLine(Line),22));
  {
   TArray<T::FRow> Ex;
@@ -5421,7 +5421,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    auto& QJ=Q.Work.Last();QJ.Stage=EJobStage::Recorded;QJ.bPrinted=true;Q.Selected=Q.Work.Num()-1;
    Check(Q.RegisterComparison(TEXT("normal"))&&!Q.CaseFile().Get(0)->Results[1].bDone&&Q.CaseFile().Get(0)->bConcluded,TEXT("Conclusion: the freed job registers as routine and records nothing for the closed case"));
   }
-  Check(Q.CaseRecordLine(TEXT("case1-test1")).Contains(TEXT("registered"))&&Q.CaseRecordLine(TEXT("case1-conclusion")).StartsWith(TEXT("Case 1, "))&&Q.CaseRecordLine(TEXT("carrier_saro")).IsEmpty(),TEXT("Case records: one WORK line each for the night log"));
+  Check(Q.CaseRecordLine(TEXT("case1-test1")).Contains(TEXT("registered"))&&Q.CaseRecordLine(TEXT("case1-conclusion")).StartsWith(TEXT("THE REPEATED INTERVAL: "))&&FS47NightLog::CaseLine(Q.CaseRecordLine(TEXT("case1-conclusion")))&&FS47NightLog::CaseLine(TEXT("Case 1, THE REPEATED INTERVAL: old sheet"))&&!Q.CaseRecordLine(TEXT("case1-test1")).Contains(TEXT("Case 1"))&&Q.CaseRecordLine(TEXT("carrier_saro")).IsEmpty(),TEXT("Case records: one WORK line each for the night log"));
   FS47FreeformSession Wait(nullptr);Wait.Begin(nullptr);Wait.Tutorial=0;Wait.RecordEvidence(TEXT("pulse-review"),TEXT("reviewed"));
   Check(Wait.PlanCaseTest(0,2)&&Wait.CaseTestWaits(Wait.Work.Last())&&Wait.CaseStep(0).Step==ECaseStep::WaitWindow&&Wait.CaseAwaitingChoice()<0&&Wait.HudCaseLine(TEXT("OPS // 2 OBSERVATIONS WAITING.")).Contains(TEXT("WINDOW")),TEXT("CaseStep: a repeat test planned on the day itself waits for its window and is not a waiting card"));
   Wait.RecordEvidence(TEXT("case1-test3"),TEXT("CASE / test"));

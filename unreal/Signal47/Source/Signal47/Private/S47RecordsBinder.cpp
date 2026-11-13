@@ -187,7 +187,7 @@ FModel Build(const FSource& In)
  const auto WithCase=[&ByLine,&Kids](FEntry& E,int32 CaseNo)
  {
   if(!ByLine.Contains(CaseNo))return false;
-  E.Link=CaseKey(CaseNo);E.LinkLabel=FString::Printf(TEXT("TURN TO CASE %02d"),CaseNo+1);Kids.FindOrAdd(CaseNo).Add(E.Key);return true;
+  E.Link=CaseKey(CaseNo);E.LinkLabel=TEXT("TURN TO ")+ByLine[CaseNo]->Title.ToUpper();Kids.FindOrAdd(CaseNo).Add(E.Key);return true; // Tom 13 Nov: cases by title, never a number
  };
  int32 Seq=0,Filed=0,NotFiled=0,FieldCount=0,BenchCount=0,Unread=0,OpenCases=0,Packets=0;
  // DAILY WORK: every original, by day.
@@ -239,14 +239,14 @@ FModel Build(const FSource& In)
   FString Body=F.Text;if(OpenQuestionKey(F.Key))Body+=FString(TEXT("\n\n"))+QuestionWords;
   E.Pages=Paginate(Body,SheetWide,SheetLines);
   const int32 CaseNo=FS47FreeformCases::LineForFinding(F.Key);
-  if(CaseNo>=0&&WithCase(E,CaseNo)&&ByLine[CaseNo]->Leads.Contains(F.Key))E.Status=FString::Printf(TEXT("LEAD / CASE %02d"),CaseNo+1);
+  if(CaseNo>=0&&WithCase(E,CaseNo)&&ByLine[CaseNo]->Leads.Contains(F.Key))E.Status=TEXT("CASE LEAD");
   Out.Entries.Add(MoveTemp(E));
  }
  // CASES: one sheet each, open ones first.
  for(const FCaseIn& K:In.Cases)
  {
   FEntry E;E.Key=CaseKey(K.Line);E.Home=SecCases;E.Day=K.bConcluded&&K.ConcludeDay>0?K.ConcludeDay:K.OpenDay;E.Rank=K.bConcluded?0:1;E.Seq=K.Line;
-  E.Kind=TEXT("CASE FILE");E.Ref=FString::Printf(TEXT("CASE %02d"),K.Line+1);E.What=K.Title;E.Showed=K.Question;E.DayLine=DateOf(In,K.OpenDay);
+  E.Kind=TEXT("CASE FILE");E.Ref.Empty();E.What=K.Title;E.Showed=K.Question;E.DayLine=DateOf(In,K.OpenDay);
   E.When=FString::Printf(TEXT("OPENED %s %s"),*E.DayLine,*Clock(K.OpenClock));
   if(K.bConcluded&&K.ConcludeDay>0)E.When+=FString(TEXT(" / CLOSED "))+DateOf(In,K.ConcludeDay);
   if(!K.bConcluded){E.Status=TEXT("OPEN");++OpenCases;}
@@ -318,7 +318,7 @@ FString Lint()
  for(const TCHAR* W:{FiledWords,PacketWords,HeldWords,OpenCaseWords,QuestionWords,FrontHead,FrontRules,FrontCopy})Words.Add(W);
  // What Build prints around the session's own text, with stand-in numbers.
  Words.Add(TEXT("NO PAGE IS KEPT WITH THIS CASE. 2 PAGES ARE KEPT WITH THIS CASE, LISTED UNDER IT. 3 EARLIER LEADS ARE COUNTED ON CASE BOARD AND KEPT BEHIND FIELD + BENCH."));
- Words.Add(TEXT("2 OPEN / 1 CLOSED. 3 FILED / 2 NOT IN THE BINDER. 4 FIELD / 1 BENCH. 9 RELEASED / 2 NOT READ. NOTHING YET TODAY. 3 PAGES TODAY / PACKET TO FILE. LEAD / CASE 02. TURN TO CASE 02. PACKET IN HAND."));
+ Words.Add(TEXT("2 OPEN / 1 CLOSED. 3 FILED / 2 NOT IN THE BINDER. 4 FIELD / 1 BENCH. 9 RELEASED / 2 NOT READ. NOTHING YET TODAY. 3 PAGES TODAY / PACKET TO FILE. CASE LEAD. TURN TO THE REPEATED INTERVAL. PACKET IN HAND."));
  static const TCHAR* const Not[]={TEXT("taken"),TEXT("cable"),TEXT("tomas"),TEXT("silhouette"),TEXT("8.15"),TEXT("1947"),TEXT("47 s"),TEXT("alien"),TEXT("ufo"),TEXT("abduct")};
  FString Bad;
  for(const FString& W:Words)
@@ -390,7 +390,7 @@ bool SelfTest(TArray<FString>& Lines)
  }
  { // cross-references: a case lists its pages, and each of them turns to the case
   const FEntry& Case=M.Entries[M.Find(CaseKey(0))];const FEntry& Original=M.Entries[M.Find(JobKey(TEXT("FF-D0002-J2")))];const FEntry& Lead=M.Entries[M.Find(RecordKey(TEXT("roof_steps")))];
-  Check(Case.Children.Num()==2&&Case.Children.Contains(Original.Key)&&Original.Link==Case.Key&&Original.LinkLabel==TEXT("TURN TO CASE 01")&&Lead.Link==CaseKey(2)&&Lead.Status==TEXT("LEAD / CASE 03"),
+  Check(Case.Children.Num()==2&&Case.Children.Contains(Original.Key)&&Original.Link==Case.Key&&Original.LinkLabel==TEXT("TURN TO ")+Case.What.ToUpper()&&!Original.LinkLabel.Contains(TEXT("01"))&&Case.Ref.IsEmpty()&&Lead.Link==CaseKey(2)&&Lead.Status==TEXT("CASE LEAD"),
    TEXT("a page that belongs to a case says so, and the case lists it"));
   const TArray<FRow> Shut=M.Rows(SecCases,FString()),Open=M.Rows(SecCases,Case.Key),Inside=M.Rows(SecCases,Case.Key+TEXT(">")+Original.Key);
   Check(Shut.Num()==2&&Shut[0].Entry==M.Find(CaseKey(0))&&Open.Num()==4&&Open[1].Indent==1&&Open[1].Jump==Original.Key&&Open[1].Act==TEXT("TURN TO DAILY WORK ARCHIVE")&&Inside.Num()==4,

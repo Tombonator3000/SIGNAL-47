@@ -390,7 +390,7 @@ public:
  int32 UrgentCase(bool bActionOnly=false) const;
  // The HUD card's second line while a case is open: the most pressing case not already on the card's first line. Empty: none.
  FString HudCaseLine(const FString& FirstLine) const;
- // A case record kept (FS47FreeformCases::IsCaseRecord) as one line under the night log's WORK: "Case 1, THE REPEATED INTERVAL:
+ // A case record kept (FS47FreeformCases::IsCaseRecord) as one line under the night log's WORK: "THE REPEATED INTERVAL:
  // off-source pointing registered; rules out Follows the sky source." Empty for any other finding.
  FString CaseRecordLine(const FString& Key) const;
  // A planned case test that cannot run before its dated window (the repeat): waiting, not open work. It is not counted with the
