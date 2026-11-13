@@ -41,6 +41,9 @@ namespace S47TonightNote
  {
   TArray<FItem> Tasks;          // the task list, in its order
   FString Next;                 // the objective as the HUD's card has it ("PLACE // WHAT"), or the chapter's objective
+  // TASKS-TEN-20261113 (change 2, one arbiter): Freeform: which row the HUD's ladder chose (FS47FreeformSession::ObjectiveRow): the
+  // note marks that one Next, whatever its own order would say. Empty: the row the HUD's card names, or a line of its own.
+  FString NextRow;
   double Clock = -1;            // Freeform: the world clock; Story: seconds after midnight; negative: none
   bool bFreeform = false;
   TArray<FWindow> Windows;      // Freeform: the planned case tests' windows
@@ -48,7 +51,7 @@ namespace S47TonightNote
   double EveningUp = -1;        // Freeform: when the next evening card's source is up (world clock); negative: none waiting
   bool bNightWatch = false;     // LOOP-NIGHT-WATCH-20261113: that card is the night watch (after midnight); the hours till then are his own
   bool bSlip = false;           // a live bearing slip whose circle on the map is still to be stood in
-  bool bAntennasWait = false;   // Freeform: the station goal waits for daylight (FS47FreeformSession::GoalWaits)
+  bool bAntennasWait = false;   // Freeform: the station goal waits for daylight (FS47FreeformSession::GoalWaits); TASKS-TEN-20261113: no clock line of its own
   struct FDone* Done = nullptr; // Freeform: what is remembered done tonight (Tonight()); none: only what the list says now
   uint64 Game = 0;              // which game it is (the case and its seed): another one forgets what was remembered
  };
@@ -84,6 +87,8 @@ namespace S47TonightNote
  // One line as the card types it: "01:30-04:30  CONTROL ROOM: Return to listen under the fastened roof."
  SIGNAL47_API FString LineText(const FLine& Line);
  SIGNAL47_API FString HourMinute(double Clock);
+ // TASKS-TEN-20261113: the key a task's words have on the note (and on NOW), as the HUD's card would write it: what the tests compare.
+ SIGNAL47_API FString KeyOf(const FString& Text);
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }
 

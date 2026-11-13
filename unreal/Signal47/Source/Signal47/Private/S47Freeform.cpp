@@ -66,6 +66,7 @@
 #include "S47FreeformWorld.h"
 #include "S47FieldRadio.h"
 #include "S47HudGauges.h"
+#include "S47TonightNote.h"
 #include "S47CaseFieldTests.h"
 #include "S47Main.h"
 #include "S47Night.h"
@@ -4207,11 +4208,44 @@ FString FS47FreeformSession::AvailableActivities(FString* Card)const
   const FString Letter=Predecessor->TaskLine();
   if(LetterWaits(Letter)&&!(Letter.StartsWith(TEXT("MAILBOX"))&&GoalWaits(WorldClock)))
   {
+   const FString Then=WorkActivities(nullptr);
    if(Card)*Card=S47HudGauges::CardLine(Letter);
-   return Letter+TEXT(" THEN: ")+WorkActivities(nullptr);
+   PickRow=Letter; // TASKS-TEN-20261113: the letter's own row
+   return Letter+TEXT(" THEN: ")+Then;
   }
  }
  return WorkActivities(Card);
+}
+FString FS47FreeformSession::ObjectiveRow()const
+{
+ PickRow.Reset();
+ Objective();
+ return PickRow;
+}
+bool FS47FreeformSession::FieldWindowWaits(int32 Line)const
+{
+ double Start=0,End=0;
+ if(PlannedFieldTest(Line)<0||!CaseTestWindow(Line,Start,End))return false;
+ return Line==2&&CaseField&&CaseField->Prepared()&&WorldClock<Start;
+}
+bool FS47FreeformSession::WindowOpenStep(FString& Next)const
+{
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
+ {
+  double Start=0,End=0;
+  if(PlannedFieldTest(Line)<0||!CaseTestWindow(Line,Start,End))continue;
+  if(Line==2&&(!CaseField||!CaseField->Prepared()))continue;
+  if(WorldClock>=Start&&WorldClock<End){Next=FieldNextAction(Line);return !Next.IsEmpty();}
+ }
+ return false;
+}
+FString FS47FreeformSession::DeadlineLine()const
+{
+ // (in the list's own words, so that the note marks that row: FS47FreeformSession::Tasks)
+ if(Places)for(const TPair<FString,bool>& Slip:Places->SlipRows(WorldClock))if(!Slip.Value)return Slip.Key;
+ if(Director){const FString Reported=Director->ReportedLine();if(!Reported.IsEmpty()&&!Director->ReportDone())return Reported;}
+ if(Director)for(const TPair<FString,bool>& Trail:Director->MysteryTrailRows())if(!Trail.Value)return Trail.Key;
+ return FString();
 }
 FString FS47FreeformSession::WorkActivities(FString* Card)const
 {
@@ -4232,45 +4266,57 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // The card: the task in a line it has room for, then the walkie while there is room.
  const FString RadioCard=bOnDesk?FString(bHall?TEXT(" WALKIE: ON THE HALL DRESSER."):TEXT(" WALKIE: ON THE DESK.")):FString();
  const bool bDark=GoalWaits(WorldClock);
- auto Say=[Card,&Radio,&RadioCard](const FString& Full,const FString& Short=FString())
+ // TASKS-TEN-20261113 (change 2): each answer says which of the night's rows it is (PickRow, ObjectiveRow): by default its own words
+ auto Say=[this,Card,&Radio,&RadioCard](const FString& Full,const FString& Short=FString(),const FString& Row=FString())
  {
   if(Card)*Card=S47HudGauges::CardWith(Short.IsEmpty()?Full:Short,{RadioCard});
+  PickRow=Row.IsEmpty()?Full:Row;
   return Full+Radio;
  };
  auto SayGoal=[&]()
  {
   const FString Missing=Field->BranchNeeds(*Next);
-  const FString Short=bDark?FString::Printf(TEXT("ANTENNA %s // THE %s WAITS FOR DAYLIGHT."),Next->Junction,Next->Title)
-   :Missing.IsEmpty()?FString::Printf(TEXT("ANTENNA %s // REPAIR THE %s: PARTS IN HAND."),Next->Junction,Next->Title)
+  const FString Short=Missing.IsEmpty()?FString::Printf(TEXT("ANTENNA %s // REPAIR THE %s: PARTS IN HAND."),Next->Junction,Next->Title)
    :FString::Printf(TEXT("ANTENNA %s // THE %s NEEDS %s."),Next->Junction,Next->Title,*Missing.ToUpper());
   return Say(Goal,Short);
  };
- // CASES-OPS-20261109 (CaseStep): a case with one explanation left, or its planned test ready to run, before the cards; any other
- // case step after the station goal, the most pressing first.
- // CASES-OPS-20261109: a case's result sheet on the printer comes first of the case steps: it says what the test showed.
- // LOOP-1-20261109: a bearing slip once it is the printer's turn (a job's paper first); a case's own sheet as before.
+ // 1. BLOCKING NOW. CASES-OPS-20261109: a case's result sheet on the printer: it says what the test showed. LOOP-1-20261109: a bearing
+ // slip once it is the printer's turn (a job's paper first). (The power, a take under way and RETAIN are the Objective's and the
+ // receiver's own steps, before this ladder: Objective, NextAction.)
  if(!CaseSheets.IsEmpty()&&IsBearingSlip(CaseSheets[0])){if(SheetIndex()==0)return Say(FString(TEXT("PRINTER: COLLECT THE BEARING SLIP.")),TEXT("PRINTER // BEARING SLIP."));}
  else if(!CaseSheets.IsEmpty())return Say(FString::Printf(TEXT("PRINTER: COLLECT THE RESULT SHEET FOR %s."),FS47FreeformCases::Def(CaseSheets[0].Line).Title),TEXT("PRINTER // CASE RESULT SHEET."));
+ // 2. A WINDOW OPEN NOW (TASKS-TEN-20261113): be there for it.
+ {FString Open;if(WindowOpenStep(Open))return Say(Open);}
  const int32 Urgent=UrgentCase(true);const FCaseStep Step=Urgent>=0?CaseStep(Urgent):FCaseStep();
- if(Step.Step==ECaseStep::Conclude||(Step.Step==ECaseStep::RunPlan&&PlannedFieldTest(Urgent)<0))return Say(Step.Next,Step.Card);
+ // 3. A PAID CARD THAT IS UP: a planned case test's job, then the cards at OPS.
+ if(Step.Step==ECaseStep::RunPlan&&PlannedFieldTest(Urgent)<0)return Say(Step.Next,Step.Card,Step.Task);
  if(Pending>0)return Say(FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending),
-  FString::Printf(TEXT("OPS // %d OBSERVATION%s WAITING."),Pending,Pending==1?TEXT(""):TEXT("S")));
- // With the parts in hand the station's own goal is the next thing to do, whatever the budget or a case says; in daylight.
- // LOOP-NIGHT-WATCH-20261113 (Tom 13 November: «nattevakta gå foran»): not in the night (NightBeforeGoal): from 19:00 the night's
- // cards and the night watch's notice lead, and the goal is said after them (the lines below append it).
+  FString::Printf(TEXT("OPS // %d OBSERVATION%s WAITING."),Pending,Pending==1?TEXT(""):TEXT("S")),TEXT("cards"));
+ // 4. THE NIGHT WATCH OR THE EVENING'S CARD WITH ITS TIME. LOOP-NIGHT-WATCH-20261113 (Tom 13 November: «nattevakta gå foran»): from
+ // 19:00 the night's cards and the night watch's notice lead (NightBeforeGoal), and the goal is said after them.
  const bool bNightFirst=NightBeforeGoal();
+ const FString CardRow=Evening?TEXT("card:")+Evening->Id:FString();
+ auto SayEvening=[&]()
+ {
+  if(NightWatch(*Evening))return Say(Goal.IsEmpty()?EveningLine(*Evening):EveningLine(*Evening)+TEXT(" ")+Goal,
+   FString::Printf(TEXT("NIGHT WATCH // %s AT %s. TILL THEN%s"),*FString(FS47Observing::Runs()[Evening->Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(*Evening)),
+    SlipToFollow()?TEXT(": THE SLIP ON THE MAP."):TEXT(", YOUR OWN TIME.")),CardRow);
+  return Say(Goal.IsEmpty()?EveningLine(*Evening):EveningLine(*Evening)+TEXT(" ")+Goal,
+   FString::Printf(TEXT("TRACKING PC // %s IN VIEW FROM %s. TILL THEN, DAY WORK."),*FString(FS47Observing::Runs()[Evening->Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(*Evening))),CardRow);
+ };
+ if(Evening&&bNightFirst)return SayEvening();
+ // 5. A DEADLINE BEFORE NOON: the slip's circle, a report, worth a look, what Dale asked.
+ if(const FString Due=DeadlineLine();!Due.IsEmpty())return Say(Due);
+ // 6. FREE TIME. With the parts in hand the station's own goal comes first of it, in daylight (today's rule).
  if(Next&&Field->BranchNeeds(*Next).IsEmpty()&&!bDark&&!bNightFirst)return SayGoal();
- if(Urgent>=0)return Say(Step.Next,Step.Card);
+ // a case's step (a field test made ready waits for its window: it is named with its time on the note, and is no next step before)
+ if(Urgent>=0&&!FieldWindowWaits(Urgent))return Say(Step.Next,Step.Card,Step.Task.IsEmpty()?Step.Next:Step.Task);
  if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return Say(FString(TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH.")),TEXT("PHOTO LAB // DEVELOP YOUR EXPOSED FILM AT THE WET BENCH."));
  if(ServiceGuide==1)return Say(ServiceObjective());
  if(Gear&&Gear->AnyLeft())return Say(Gear->TaskLine(),Gear->TaskLine());
  // An idle loan logger is an option, not the next thing to do: it never again stands in front of the goal (T16-17, 10).
  if(Field&&Field->LoggerAccess()&&(Field->FieldLogger().Pressing()||(Goal.IsEmpty()&&!Evening)))return Say(Field->FieldLogger().NextAction());
- if(Evening&&NightWatch(*Evening))return Say(Goal.IsEmpty()?EveningLine(*Evening):EveningLine(*Evening)+TEXT(" ")+Goal,
-  FString::Printf(TEXT("NIGHT WATCH // %s AT %s. TILL THEN%s"),*FString(FS47Observing::Runs()[Evening->Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(*Evening)),
-   SlipToFollow()?TEXT(": THE SLIP ON THE MAP."):TEXT(", YOUR OWN TIME.")));
- if(Evening)return Say(Goal.IsEmpty()?EveningLine(*Evening):EveningLine(*Evening)+TEXT(" ")+Goal,
-  FString::Printf(TEXT("TRACKING PC // %s IN VIEW FROM %s. TILL THEN, DAY WORK."),*FString(FS47Observing::Runs()[Evening->Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(*Evening))));
+ if(Evening)return SayEvening();
  // Said only when it is true: what stops a rest says so itself. LOOP-NIGHT-WATCH-20261113: and not from 19:00 until 02:30 of a shift
  // from day 2 (RestSuggestedAt), unless he is worn out: the small hours are the night's, and the night watch keeps him in them.
  const bool bWorn=Fatigue&&Fatigue->Level()>=S47Thoughts::ExhaustedFrom;
@@ -4278,14 +4324,13 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // The reference check pays nothing: a player short of money needs to hear where paid work comes from.
  if(Cash<5||Loan>0)return Say(bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR NEW PAID OBSERVATIONS; THEIR PAY GOES FIRST TO WHAT YOU OWE STORES (REQ ON OPS)."):TEXT("OPS: TODAY'S PAID WORK IS DONE. NEW PAID OBSERVATIONS COME WITH THE MORNING; THEIR PAY GOES FIRST TO WHAT YOU OWE STORES (REQ ON OPS)."),
   bCanRest?TEXT("OPS // TODAY'S PAID WORK IS DONE. REST UNTIL MORNING FOR MORE."):TEXT("OPS // TODAY'S PAID WORK IS DONE. MORE COMES WITH THE MORNING."));
- // LOOP-NIGHT-WATCH-20261113: on the night watch's nights (from day 2) a goal that only waits for daylight does not stand in front of
- // the night's last line, once the watch is done: that line, or rest, and the goal after it.
- const bool bGoalWaitsBehind=bDark&&RulesLive()&&DayNumber>=2;
- if(!Goal.IsEmpty()&&!bGoalWaitsBehind)return SayGoal();
+ // TASKS-TEN-20261113 (change 3): a goal that only waits for daylight is no task: never the line itself, only the half-line said after
+ // the night's last line (as LOOP-NIGHT-WATCH-20261113 had it from day 2; now always).
+ if(!Goal.IsEmpty()&&!bDark)return SayGoal();
  // FIX10-3 (M3): the loop from here is out and back: the camera, then the photo lab's wet bench.
  const FString DoneLine=bCanRest?TEXT("OPS: TODAY'S PAID WORK IS DONE. GO OUT WITH THE CAMERA: PHOTOGRAPHS AND SAMPLES ARE YOUR EVIDENCE. DEVELOP FILM AT THE WET BENCH IN THE PHOTO LAB. ARRAY REPAIRS: ARRAY STATUS (left-hand PC). OPTIONAL: A REFERENCE CHECK AT DAILY WORK, NO PAY. OR REST."):TEXT("OPS: TODAY'S PAID WORK IS DONE. GO OUT WITH THE CAMERA: PHOTOGRAPHS AND SAMPLES ARE YOUR EVIDENCE. DEVELOP FILM AT THE WET BENCH IN THE PHOTO LAB. ARRAY REPAIRS: ARRAY STATUS (left-hand PC). OPTIONAL: A REFERENCE CHECK AT DAILY WORK, NO PAY.");
  return Say(Goal.IsEmpty()?DoneLine:DoneLine+TEXT(" ")+Goal,
-  bCanRest?TEXT("OPS // PAID WORK DONE. GO OUT WITH THE CAMERA, OR REST."):TEXT("OPS // PAID WORK DONE. GO OUT WITH THE CAMERA."));
+  bCanRest?TEXT("OPS // PAID WORK DONE. GO OUT WITH THE CAMERA, OR REST."):TEXT("OPS // PAID WORK DONE. GO OUT WITH THE CAMERA."),DoneLine);
 }
 bool FS47FreeformSession::StartReferenceCheck()
 {
@@ -5026,12 +5071,14 @@ FString FS47FreeformSession::TutorialObjective()const
 
 FString FS47FreeformSession::Objective()const
 {
+ PickRow.Reset(); // TASKS-TEN-20261113: set again by the ladder, when the step is one of the night's rows
  if(bDead)return TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT");
  // Stranded away from SARO: the only thing that matters is the way back. An empty tank at SARO stays a task below.
  if(Field&&!Field->HasVehicleFuel()&&M&&M->World&&M->World->Area!=TEXT("saro"))return TEXT("SERVICE TRUCK: TANK EMPTY. GET OUT AND USE THE TRUCK TO CALL ROADSIDE RETURN; IT COSTS MONEY AND A LONG WAIT");
  // STORY-ON-FREEFORM-01 (step 4): a Story night's objective goes on top; empty, and so nothing, in any other night.
  {const FString Story=FS47StoryDirector::ObjectiveOf(M);if(!Story.IsEmpty())return Story;}
- if(FieldFocus>=0)return FieldNextAction(FieldFocus);
+ // TASKS-TEN-20261113 (change 2): a field test followed is the step, except while it only waits for its window (FieldWindowWaits)
+ if(FieldFocus>=0&&!FieldWindowWaits(FieldFocus)){PickRow=CaseStep(FieldFocus).Task;return FieldNextAction(FieldFocus);}
  if(!HasPower()&&PrinterProgress()>=1)return PrinterHint();
  if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))
  {
@@ -5063,8 +5110,12 @@ FString FS47FreeformSession::NextAction()const
 {
  if(ServiceGuide==1&&bGuideFocus)return ServiceObjective();
  if(Tutorial>0)return TutorialObjective();
- if(FieldFocus>=0)return FieldNextAction(FieldFocus);
+ if(FieldFocus>=0&&!FieldWindowWaits(FieldFocus)){PickRow=CaseStep(FieldFocus).Task;return FieldNextAction(FieldFocus);}
  if(!CurrentJob()||CurrentJob()->Stage==EJobStage::Filed)return AvailableActivities();
+ // TASKS-TEN-20261113 (change 2): a window open now comes before a card only selected (not begun, or still waiting for its source);
+ // work under way keeps its place (blocking now)
+ {const FJob* J=CurrentJob();FString Open;if((J->Stage==EJobStage::New||EveningGated(*J))&&WindowOpenStep(Open))return AvailableActivities();}
+ if(const FJob* J=CurrentJob())PickRow=J->CaseTest>=0?CaseStep(J->CaseLine).Task:EveningGated(*J)?TEXT("card:")+J->Id:TEXT("cards");
  return ReceiverNextAction();
 }
 // RX-ANOMALY-FLOW-20261113 (Tom 13 November): after the take, RECORD on the receiver (retain it with its reference), the reel deck
@@ -6112,10 +6163,23 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    for(FJob& J:Walk.Work)J.Stage=EJobStage::Filed;
    Walk.TestAdvance(86400);
    FJob* Watch=nullptr;for(FJob& J:Walk.Work)if(J.Day==2){if(J.Slot<2)J.Stage=EJobStage::Filed;else Watch=&J;}
-   bool bGap=Watch!=nullptr,bNoRest=true,bGoalAfter=true;
+   bool bGap=Watch!=nullptr,bNoRest=true,bGoalAfter=true,bOneArbiter=true;
+   // TASKS-TEN-20261113 (change 2): one arbiter: at every hour the note's Next is the HUD's own row, and the workstations read the same
+   // Objective the HUD's card is made from
+   const auto Agree=[&Walk]()
+   {
+    S47TonightNote::FIn NoteIn;NoteIn.bFreeform=true;NoteIn.Clock=Walk.Clock();NoteIn.Next=Walk.HudObjective();NoteIn.NextRow=Walk.ObjectiveRow();
+    for(const FS47Task& T:Walk.Tasks())NoteIn.Tasks.Add({T.Text,T.bDone});
+    const S47TonightNote::FNote Plan=S47TonightNote::Build(NoteIn);
+    const S47TonightNote::FLine* NextLine=Plan.Lines.FindByPredicate([](const S47TonightNote::FLine& L){return L.Mark==S47TonightNote::EMark::Next;});
+    const bool bRow=NextLine&&(NextLine->Key==S47TonightNote::KeyOf(NoteIn.Next)||NextLine->Key==NoteIn.NextRow||NextLine->Key==S47TonightNote::KeyOf(NoteIn.NextRow));
+    const FString Obj=Walk.Objective();
+    return bRow&&!TerminalNextLine(Obj,0).IsEmpty()&&(Walk.HudObjective()==S47HudGauges::CardLine(Obj)||Walk.AvailableActivities(nullptr)==Obj||Walk.NextAction()==Obj);
+   };
    for(const double H:{20.5,22.,23.5,24.5,25.1})
    {
     Walk.TestAdvance(FMath::Max(0.,86400.+H*3600.-Walk.Clock()));
+    bOneArbiter&=Agree();
     FString WalkCard;const FString Line=Walk.WorkActivities(&WalkCard);
     bGap&=Line.StartsWith(TEXT("NIGHT WATCH / "))&&Line.Contains(TEXT("TONIGHT'S TWO CARDS ARE IN."))&&Line.Contains(TEXT("TILL THEN THE TIME IS YOURS"))&&TerminalNextLine(Line,2).Contains(TEXT("IN VIEW FROM 01:"))
      &&WalkCard.StartsWith(TEXT("NIGHT WATCH // "))&&WalkCard.Contains(TEXT("YOUR OWN TIME"));
@@ -6133,11 +6197,15 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    }
    Walk.TestAdvance(FMath::Max(0.,86400.+25.8*3600.-Walk.Clock()));
    const bool bUp=Walk.WorkActivities(nullptr).StartsWith(TEXT("OPS (corner PC), DAILY WORK"));
+   bOneArbiter&=Agree();
    if(Watch)Watch->Stage=EJobStage::Filed;
    Walk.TestAdvance(FMath::Max(0.,86400.+26.2*3600.-Walk.Clock()));
    const FString Done=Walk.WorkActivities(nullptr);
+   bOneArbiter&=Agree();
    Walk.TestAdvance(FMath::Max(0.,86400.+26.7*3600.-Walk.Clock()));
    FString LaterCard;const FString Later=Walk.WorkActivities(&LaterCard);
+   bOneArbiter&=Agree();
+   Check(bOneArbiter,TEXT("TASKS-TEN (change 2): one arbiter across night 2 (20:30 to 02:42): the note's Next is the HUD's own row at every hour, and the workstations read the Objective the HUD's card is made from"));
    if(bPartsWalk)bGoalAfter&=Done.StartsWith(TEXT("OPS: TODAY'S PAID WORK IS DONE."))&&Later.StartsWith(TEXT("OPS: TODAY'S PAID WORK IS DONE."))&&LaterCard.Contains(TEXT("OR REST"))
      &&Done.Contains(TEXT("WAITS FOR DAYLIGHT"))&&Later.Find(TEXT("STATION GOAL / "))>Later.Find(TEXT("OR REST."));
    Check(bGap&&bNoRest&&bUp&&Done.Contains(TEXT("PAID WORK IS DONE"))&&!Done.Contains(TEXT("REST"))&&Later.Contains(TEXT("OR REST")),
@@ -6383,8 +6451,9 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    G.WorldClock=Base+10*3600.;Card.Reset();G.AvailableActivities(&Card);
    Check(Card.StartsWith(FString(TEXT("ANTENNA "))+Next->Junction+TEXT(" // "))&&Card.Contains(bParts?TEXT("PARTS IN HAND"):TEXT("NEEDS"))&&Card.Len()<=S47HudGauges::CardMost,TEXT("HUD card: with the day's work done, the antenna and the repair"));
    G.WorldClock=Base+2.5*3600.;Card.Reset();const FString Night=G.AvailableActivities(&Card);
-   Check(Night.Contains(TEXT("WAITS FOR DAYLIGHT"))&&Card.Contains(TEXT("WAITS FOR DAYLIGHT"))&&!Card.Contains(TEXT("REPAIR"))&&Card.Len()<=S47HudGauges::CardMost
-    &&G.HudObjective()==Card,TEXT("HUD card: at 02:30 the station goal waits for daylight, and that is what the card says"));
+   // TASKS-TEN-20261113 (change 3): waiting for daylight is no task: the card says the night's own line, the wait is the half-line after it
+   Check(Night.Contains(TEXT("WAITS FOR DAYLIGHT"))&&Night.Find(TEXT("STATION GOAL / "))>0&&!Card.Contains(TEXT("WAITS FOR DAYLIGHT"))&&Card.StartsWith(TEXT("OPS // "))&&Card.Len()<=S47HudGauges::CardMost
+    &&G.HudObjective()==Card,TEXT("HUD card: at 02:30 the station goal's wait for daylight is only the half-line after the night's own line, never the card (TASKS-TEN change 3)"));
   }
   // every task the jobs and the first shift can give fits the card
   bool bFits=true;FString Longest;

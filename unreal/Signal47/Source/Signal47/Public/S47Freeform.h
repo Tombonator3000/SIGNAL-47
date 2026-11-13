@@ -229,6 +229,20 @@ public:
  bool NightBeforeGoal() const;
  // A live bearing slip whose circle on the map has not been stood in yet (FS47Places::SlipRows).
  bool SlipToFollow() const;
+ // TASKS-TEN-20261113 (Tom 13 November, «Godtar ti endringene»; change 2, one arbiter): the HUD's ladder (Objective, NextAction,
+ // AvailableActivities, WorkActivities) is the one ordering every surface reads: the HUD card, the pause menu's TONIGHT Next, the
+ // notebook's arrow and the workstations' NEXT line. Blocking now (paper on the printer, the power, a take under way, RETAIN) > a
+ // window open now > a paid card that is up > the night watch or the evening's card with its time > a deadline before noon (the
+ // bearing slip, a report, worth a look, what Dale asked) > free time. ObjectiveRow: which of the night's rows the step is (the
+ // note marks that one), as the ladder chose it: "cards" (the cards up), "card:<id>" (a card not up yet), a task line's own words,
+ // or empty (the step is no row of the list: the note writes it as the HUD has it).
+ FString ObjectiveRow() const;
+ // The field test whose dated window is open now, its step in Next. False: none.
+ bool WindowOpenStep(FString& Next) const;
+ // A field test made ready whose window has not opened: it waits, named with its time; it is no next step before then.
+ bool FieldWindowWaits(int32 Line) const;
+ // The first deadline before noon still open: a bearing slip's circle, a report, a worth-a-look, what Dale asked. Empty: none.
+ FString DeadlineLine() const;
  // The soonest of the cards waiting for the evening, and the next time it comes up; null if none is.
  const FJob* NextEveningCard(double& Up) const;
  // The rules a real game plays by. Developer fixtures keep the fixed ones unless a test asks (TestLiveRules).
@@ -907,6 +921,7 @@ private:
  // CRIT9: the list's chores that simply stop when done (the post, the truck, the feeder, the tank, the relay): by kind, the line last
  // open tonight, and the one gone from it since (shown ticked off until 08:00, as the note's header promises). In memory only.
  mutable TMap<FString,FString> ChoresOpen,ChoresDone;mutable int32 ChoresNight=0;mutable double ChoresClock=-1;
+ mutable FString PickRow; // TASKS-TEN-20261113: the row the ladder's last answer is (ObjectiveRow)
  void NoteChore(TArray<FS47Task>& Result,const TCHAR* Kind,const FString& OpenLine,const FString& DoneLine) const;
  double PrimeBefore=-1; // an older save: what came back before this clock is not asked again (-1: nothing to prime)
  int32 AskLook=-1;

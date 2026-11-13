@@ -219,11 +219,21 @@ FNote BuildNote(const FIn& In, bool bAll)
   }
  }
 
- // The next step. A window open now comes first: be there for it. Otherwise the objective's own line; in Story, whose list says it
- // in other words, the first thing not done, with the objective's place.
+ // The next step. TASKS-TEN-20261113 (change 2, one arbiter): in Freeform the HUD's ladder has chosen it (FS47FreeformSession::
+ // ObjectiveRow: blocking now, a window open now, a paid card up, the night watch, a deadline before noon, free time), and the note
+ // marks that row, so that the HUD, this note, NOW's arrow and the workstations' NEXT never disagree. In Story a window open now
+ // comes first; otherwise the objective's own line, or, as Story's list says it in other words, the first thing not done.
  const double Clock = In.Clock;
  auto IsOpen = [](const FWork& W) { return W.L.Mark != EMark::Done; };
- int32 Next = All.IndexOfByPredicate([&](const FWork& W) { return IsOpen(W) && W.Windowed() && Clock >= W.Start && Clock < W.End; });
+ int32 Next = INDEX_NONE;
+ if (In.bFreeform && !In.NextRow.IsEmpty())
+ {
+  const FString RowKey = In.NextRow.StartsWith(TEXT("card")) && !In.NextRow.Contains(TEXT(" ")) ? In.NextRow : Key(S47HudGauges::CardLine(In.NextRow));
+  Next = All.IndexOfByPredicate([&](const FWork& W) { return IsOpen(W) && W.Key == RowKey; });
+  // a card's row is said in the HUD's words, so that the two read the same
+  if (Next != INDEX_NONE && All[Next].Key.StartsWith(TEXT("card")) && !In.Next.IsEmpty()) { All[Next].L.Where.Reset(); Split(In.Next, All[Next].L.Where, All[Next].L.What, bAll ? 2 * MostChars : MostChars); }
+ }
+ if (Next == INDEX_NONE && !In.bFreeform) Next = All.IndexOfByPredicate([&](const FWork& W) { return IsOpen(W) && W.Windowed() && Clock >= W.Start && Clock < W.End; });
  if (Next == INDEX_NONE && !NextKey.IsEmpty()) Next = All.IndexOfByPredicate([&](const FWork& W) { return IsOpen(W) && IsNextKey(W.Key); });
  if (Next == INDEX_NONE && !In.bFreeform) Next = All.IndexOfByPredicate(IsOpen);
  if (Next != INDEX_NONE && !In.bFreeform && All[Next].L.Where.IsEmpty() && !In.Next.IsEmpty())
@@ -237,8 +247,8 @@ FNote BuildNote(const FIn& In, bool bAll)
   Split(In.Next, W.L.Where, W.L.What);
   if (!W.L.What.IsEmpty() && Clean(In, LineText(W.L))) { All.Add(W); Next = All.Num() - 1; }
  }
- // a window that has not opened is no next step while there is something to do before it
- if (Next != INDEX_NONE && All[Next].Windowed() && Clock < All[Next].Start)
+ // a window that has not opened is no next step while there is something to do before it (in Freeform the ladder knows: FieldWindowWaits)
+ if (!In.bFreeform && Next != INDEX_NONE && All[Next].Windowed() && Clock < All[Next].Start)
  {
   const int32 Before = All.IndexOfByPredicate([&](const FWork& W) { return IsOpen(W) && !W.Windowed(); });
   if (Before != INDEX_NONE) Next = Before;
@@ -314,7 +324,8 @@ FNote BuildNote(const FIn& In, bool bAll)
   else if (In.EveningUp > Clock && NightOf(In.EveningUp) == NightOf(Clock))
    Say = In.bNightWatch ? TEXT("The night watch opens at ") + HourMinute(In.EveningUp) + (In.bSlip ? TEXT(". Until then the time is yours: the slip on the map, the camera, the town.") : TEXT(". Until then the time is yours: the camera, the town."))
     : TEXT("The evening's source is up at ") + HourMinute(In.EveningUp) + TEXT(". Day work until then.");
-  else if (In.bAntennasWait) Say = TEXT("The antennas wait for daylight. Stay in the building until morning.");
+  // TASKS-TEN-20261113 (change 2 and 3): no "stay in the building until morning" of its own while the next step sends him out with
+  // the camera; that the antennas wait for daylight is the half-line after the night's last line, nothing more.
   else if (Hour >= 4 && Hour < 8) Say = TEXT("Late in the shift: finish what is under way. New paid work comes with the morning.");
   if (!Say.IsEmpty() && Clean(In, Say)) N.Clock = Say;
  }
@@ -323,6 +334,7 @@ FNote BuildNote(const FIn& In, bool bAll)
 }
 
 S47TonightNote::FNote S47TonightNote::Gather(const FIn& In, bool bAll) { return S47TonightNoteLocal::BuildNote(In, bAll); }
+FString S47TonightNote::KeyOf(const FString& Text) { return S47TonightNoteLocal::Key(S47HudGauges::CardLine(Text)); }
 S47TonightNote::FNote S47TonightNote::Build(const FIn& In) { return Gather(In, false); }
 S47TonightNote::FDone& S47TonightNote::Tonight() { static FDone Mem; return Mem; }
 S47TonightNote::FSeen& S47TonightNote::Seen() { static FSeen Mem; return Mem; }
@@ -350,9 +362,13 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
  FIn In;
  In.bFreeform = true;
  In.Clock = Day2 + 22 * 3600. + 39 * 60.;
- In.Next = S47HudGauges::CardLine(Roof);
+ // TASKS-TEN-20261113 (change 2): the HUD's ladder chooses the next step; the roof made ready waits for its window
+ // (FS47FreeformSession::FieldWindowWaits), so the ladder's step is the film, and the note marks that row
+ const FString LabTask = TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH.");
+ In.Next = S47HudGauges::CardLine(LabTask);
+ In.NextRow = LabTask;
  In.Tasks = {
-  { TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH."), false },
+  { LabTask, false },
   { TEXT("MAILBOX / One paper you took out of the box is not read yet."), false },
   { TEXT("SARO under review / Dr. Ward assesses the station on Friday, April 25."), false },
   { Roof, false },
@@ -374,8 +390,9 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
   TEXT("also open: the job cards with the evening's hour, the case waiting on evidence, the paper not read"));
  Check(Find(N, TEXT("review")) == INDEX_NONE && Find(N, TEXT("FF-D0002")) == INDEX_NONE, TEXT("the station's standing and the single cards stay off the plan"));
  Check(Plain(N).Contains(TEXT("[>] PHOTO LAB:")) && Plain(N).Contains(TEXT("[x] OPS:")) && S47Script::LintText(Plain(N)).IsEmpty(), TEXT("the note as text marks done and next, and keeps to the spoiler limits"));
- // In the window: the roof is the next step, and the clock says to be there.
+ // In the window: the roof is the next step (the ladder's window open now), and the clock says to be there.
  In.Clock = Day2 + 86400. + 2 * 3600.;
+ In.Next = S47HudGauges::CardLine(Roof); In.NextRow = Roof;
  N = Build(In);
  const int32 Roofed = Find(N, TEXT("CONTROL ROOM"));
  Check(Roofed != INDEX_NONE && N.Lines[Roofed].Mark == EMark::Next && N.Clock.StartsWith(TEXT("The window is open until 04:30.")) && N.Clock.Contains(TEXT("control room")) && !N.Clock.Contains(TEXT("20 minutes")), TEXT("in the window the roof is the next step, and the clock says until when, and that a minute in the room is what counts (LEAD-FIX-20261110)"));

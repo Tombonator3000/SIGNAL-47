@@ -1536,6 +1536,7 @@ namespace S47FlowNotebook
 			In.bFreeform = true;
 			In.Clock = F.Clock();
 			In.Next = F.HudObjective();
+			In.NextRow = F.ObjectiveRow(); // TASKS-TEN-20261113 (change 2): the row the ladder chose is the note's Next
 			// what there is to do besides the objective's step: the film waiting in the lab (AvailableActivities says it only when
 			// nothing comes before it), and with a case's field test in focus the day's work as the HUD would have it unfocused (not
 			// "follow the plan": the plan's own step is on the note with its window)
