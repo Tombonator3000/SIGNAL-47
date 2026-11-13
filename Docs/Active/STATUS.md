@@ -4,7 +4,17 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 13. november kl. 13:26 (d67): versjon 0.9.67, `b2db7eb4` på `claude/freeform-20261112`
+## Installert 13. november kl. 16:43 (d68): versjon 0.9.68, `2d9eca0e` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5296 kontroller), regresjon PASS 252, mottakerprøven (hele avviksflyten) PASS, pakket, røyktestet og installert. Tilbakerulling: d67 (`b2db7eb4`). Ledig disk etterpå: 121 GB. Ikke spilt av Tom.
+
+- **Avviksflyten (→ M3, Tom etter d67):** ANOMALY DETECTED → RECORD-fanen: START RECORDING, RETAIN TAKE / RECORD REFERENCE 8 s → spolebåndet: MARK IN/OUT eller to klikk på båndet, REFERENCE, RETAIN → OPS → pakke → perm. Avslag sier hvorfor.
+- **Spilløkka etter kritikerrunden (Tom: «gjør som du anbefaler»):** peilingen er siste side i avvikspakken; nattevakt (kort 3 rundt 01:30) og tett kveld; bevismappene gir kartmerke, ekstra peiling og timer; rent-opptak-bonus bare for egen himmelfiks, og nøyaktig arbeid gir trangere sirkel; avviket kan komme på pulsaren eller nattevakta fra dag 15; Ward varsler etter første og andre natt med timer uten forklaring (regelen uendret).
+- **Lyd:** Toms søkelyd følger nærheten på ACQUIRE og TUNE; byens siste jazzspor ute; vindmøllas knirk bærer 240 m og er halvert tett på; ARRAY pulserer ikke før peking.
+- **Verden:** San Isidro er misjonskirke av Colonial Convent-delene (gåbar, bakdør mot kirkegården; den hvite kirka er reserve uten pakken); gjemmestedets grå boks under pultene er skjult.
+- **Kjent:** RECORD-panelets kolonner flyter sammen, en etikett på spolebåndet er kuttet; pakkesiden med peilingen er ikke sett i motoren; gjerdet Tom møtte ved Baca-vindmølla er ikke funnet i dagens kode (ingen tegnet der); med deler i hånda går reparasjonsmålet foran nattevaktbeskjeden 20:30–01:00.
+
+## Tidligere: installert 13. november kl. 13:26 (d67): versjon 0.9.67, `b2db7eb4` på `claude/freeform-20261112`
 
 Editor BUILD 0, selvtest OK (5246 kontroller), regresjon PASS 251, pakket, røyktestet og installert. Tilbakerulling: d66 (`a756625b`). Ledig disk etterpå: 125 GB. Ikke spilt av Tom.
 
