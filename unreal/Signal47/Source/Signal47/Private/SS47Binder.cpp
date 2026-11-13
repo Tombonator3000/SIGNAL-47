@@ -34,10 +34,10 @@ namespace S47BinderUi
  FLinearColor RuleRed(){return C(0x8a3b2c);}
  FLinearColor FiledGreen(){return C(0x2f5d3a);}
  FLinearColor ToneInk(int32 Tone){return Tone>0?FiledGreen():Tone<0?S47Game::StampRed():InkDim();}
- // Each divider's card stock, faded: white for the index, then yellow, salmon, blue, green and buff.
+ // Each divider's card stock, faded: white for the index, then yellow, salmon, blue, green, lilac (UNKNOWNS) and buff.
  FLinearColor Stock(int32 Section)
  {
-  static const uint32 Tints[S47Binder::SecCount]={0xe9e3d2,0xe3d28a,0xdba892,0xa9bbc8,0xa8c09f,0xd6be8c};
+  static const uint32 Tints[S47Binder::SecCount]={0xe9e3d2,0xe3d28a,0xdba892,0xa9bbc8,0xa8c09f,0xc0b2cc,0xd6be8c};
   return C(Tints[FMath::Clamp(Section,0,int32(S47Binder::SecCount)-1)]);
  }
  const FButtonStyle* Bare(){return &FCoreStyle::Get().GetWidgetStyle<FButtonStyle>("NoBorder");}

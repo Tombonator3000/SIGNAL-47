@@ -8,14 +8,15 @@ namespace S47BinderLocal
 {
  using namespace S47Binder;
  // The binder's own words. Everything else on its pages is the session's (the originals, the records, the cases, the files).
- const TCHAR* const Tabs[SecCount]={TEXT("INDEX"),TEXT("TODAY"),TEXT("CASES"),TEXT("DAILY WORK"),TEXT("FIELD + BENCH"),TEXT("STATION FILES")};
- const TCHAR* const Titles[SecCount]={TEXT("INDEX"),TEXT("TODAY'S FILING"),TEXT("CASES"),TEXT("DAILY WORK ARCHIVE"),TEXT("FIELD AND BENCH RECORDS"),TEXT("STATION FILES")};
+ const TCHAR* const Tabs[SecCount]={TEXT("INDEX"),TEXT("TODAY"),TEXT("CASES"),TEXT("DAILY WORK"),TEXT("FIELD + BENCH"),TEXT("UNKNOWNS"),TEXT("STATION FILES")};
+ const TCHAR* const Titles[SecCount]={TEXT("INDEX"),TEXT("TODAY'S FILING"),TEXT("CASES"),TEXT("DAILY WORK ARCHIVE"),TEXT("FIELD AND BENCH RECORDS"),TEXT("UNKNOWNS"),TEXT("STATION FILES")};
  const TCHAR* const Empties[SecCount]={
   TEXT(""),
   TEXT("Nothing filed or retained today.\n\nA packet from the printer is filed here, by hand. What is retained in the field or at the bench is listed here the same day."),
   TEXT("No case opened.\n\nA case is opened at OPS. Its sheet is kept here, with every page that belongs to it listed under it."),
   TEXT("No original retained.\n\nEach observation's original is listed here by day once it is printed. It is marked FILED when its packet is in this binder."),
   TEXT("No record retained.\n\nWhat is kept from the field, the station round and the workshop bench is listed here by day."),
+  TEXT("No file opened.\n\nWhat the operator logs in the field about something not yet known is kept here, one file for each, as the notebook has it. Read only."),
   TEXT("No file released.\n\nThe duty officer releases the station's files at 08:00.")};
  const TCHAR* const TodayGroups[4]={TEXT("TO FILE"),TEXT("FILED TODAY"),TEXT("RETAINED TODAY"),TEXT("STILL AT OPS")};
  const TCHAR* const FiledWords=TEXT("This original is in the binder under its reference.");
@@ -23,6 +24,7 @@ namespace S47BinderLocal
  const TCHAR* const HeldWords=TEXT("This original is held at OPS. No packet of it has been filed here.");
  const TCHAR* const OpenCaseWords=TEXT("OPEN. WORKED AT OPS, ON CASE BOARD. THIS SHEET KEEPS ITS PAPER TOGETHER.");
  const TCHAR* const QuestionWords=TEXT("STILL UNKNOWN / Whether this repeats under independent conditions.\nPOSSIBLE NEXT CHECK / Retain a later observation and its independent control; compare with this original.");
+ const TCHAR* const UnknownKind=TEXT("OPERATOR'S FILE"); // EVIDENCE-DOSSIER-20261113
  const TCHAR* const FrontHead=TEXT("SARO / RECORDS\nRECORDS ROOM BINDER\nKEPT BY THE OPERATOR ON SHIFT");
  const TCHAR* const FrontRules=TEXT("HOW IT IS KEPT\n\n1. A packet from the printer is filed here, by hand. It goes behind DAILY WORK the day it is filed.\n\n2. A page that belongs to a case is listed again under that case.\n\n3. Field and bench records are listed by the day they were retained.\n\n4. Station files are read only. The duty officer releases them at 08:00.\n\nNothing is removed from this binder.");
  const TCHAR* const FrontCopy=TEXT("READING COPY. Filing is done at the binder in the records room.");
@@ -51,6 +53,7 @@ FString JobKey(const FString& Id){return TEXT("job:")+Id;}
 FString RecordKey(const FString& FindingKey){return TEXT("rec:")+FindingKey;}
 FString CaseKey(int32 Line){return FString::Printf(TEXT("case:%d"),Line);}
 FString FileKey(const FString& Key){return TEXT("file:")+Key;}
+FString UnknownKey(int32 Number){return FString::Printf(TEXT("unk:%d"),Number);}
 FString DateOf(const FSource& In,int32 Day)
 {
  return Day<=0?FString(TEXT("UNDATED")):S47Game::DateLine(In.Day1+FTimespan::FromDays(FMath::Min(Day,36500)-1));
@@ -169,7 +172,7 @@ TArray<FRow> FModel::Rows(int32 Section,const FString& PickId) const
  for(const int32 At:Dividers[Section].Entries)
  {
   const FEntry& E=Entries[At];
-  if(Section!=SecStation&&E.Day!=LastDay){Heading(E.DayLine);LastDay=E.Day;}
+  if(Section!=SecStation&&Section!=SecUnknowns&&E.Day!=LastDay){Heading(E.DayLine);LastDay=E.Day;}
   FRow R=LineOf(At);if(!E.Link.IsEmpty()){R.Jump=E.Link;R.Act=E.LinkLabel;}
   Out.Add(R);
  }
@@ -277,6 +280,16 @@ FModel Build(const FSource& In)
   E.Pages=Paginate(F.Text,SheetWide,SheetLines);
   Out.Entries.Add(MoveTemp(E));
  }
+ // UNKNOWNS (EVIDENCE-DOSSIER-20261113): the operator's own files, in the order of their numbers. Read only: nothing is filed here.
+ for(const FUnknownIn& U:In.Unknowns)
+ {
+  FEntry E;E.Key=UnknownKey(U.Number);E.Home=SecUnknowns;E.Day=U.Latest;E.Rank=0;E.Seq=U.Number;
+  E.Kind=UnknownKind;E.What=U.Title;E.Showed=U.Title;E.DayLine=DateOf(In,U.Opened);
+  E.When=FString(TEXT("OPENED "))+E.DayLine+(U.Latest>U.Opened?FString(TEXT(" / LAST ENTRY "))+DateOf(In,U.Latest):FString());
+  E.Status=U.Stage;E.StatusLine=U.Stage+TEXT(" / READ ONLY");E.Tone=U.bAtMarks?1:0;E.TodayGroup=U.Latest>0&&U.Latest==In.Today?2:-1;
+  E.Pages=Paginate(U.Body,SheetWide,SheetLines);
+  Out.Entries.Add(MoveTemp(E));
+ }
  // Behind each divider: higher Rank first (the later day, the open case), then the order it came in.
  const TArray<FEntry>& All=Out.Entries;
  const auto Before=[&All](int32 A,int32 B){return All[A].Rank!=All[B].Rank?All[A].Rank>All[B].Rank:All[A].Seq<All[B].Seq;};
@@ -302,6 +315,7 @@ FModel Build(const FSource& In)
  Out.Dividers[SecCases].Summary=FString::Printf(TEXT("%d OPEN / %d CLOSED"),OpenCases,In.Cases.Num()-OpenCases);
  Out.Dividers[SecDaily].Summary=FString::Printf(TEXT("%d FILED / %d NOT IN THE BINDER"),Filed,NotFiled);
  Out.Dividers[SecField].Summary=FString::Printf(TEXT("%d FIELD / %d BENCH"),FieldCount,BenchCount);
+ Out.Dividers[SecUnknowns].Summary=In.Unknowns.IsEmpty()?FString(TEXT("NO FILE OPENED")):FString::Printf(TEXT("%d %s KEPT APART"),In.Unknowns.Num(),In.Unknowns.Num()==1?TEXT("FILE"):TEXT("FILES"));
  Out.Dividers[SecStation].Summary=FString::Printf(TEXT("%d RELEASED / %d NOT READ"),In.Files.Num(),Unread);
  Out.Dividers[SecStation].New=Unread;
  Out.Held=In.FilesHeld>0?FString::Printf(TEXT("%d MORE WITH THE DUTY OFFICER / RELEASED AT 08:00, NOT EVERY MORNING"),In.FilesHeld):FString(TEXT("ALL FILES RELEASED / READ ONLY"));
@@ -315,7 +329,8 @@ FString Lint()
  for(int32 S=0;S<SecCount;++S){Words.Add(Tabs[S]);Words.Add(Titles[S]);Words.Add(Empties[S]);}
  for(const TCHAR* W:TodayGroups)Words.Add(W);
  for(const TCHAR* W:RowWords)Words.Add(W);
- for(const TCHAR* W:{FiledWords,PacketWords,HeldWords,OpenCaseWords,QuestionWords,FrontHead,FrontRules,FrontCopy})Words.Add(W);
+ for(const TCHAR* W:{FiledWords,PacketWords,HeldWords,OpenCaseWords,QuestionWords,FrontHead,FrontRules,FrontCopy,UnknownKind})Words.Add(W);
+ Words.Add(TEXT("NO FILE OPENED. 1 FILE KEPT APART. 3 FILES KEPT APART. OPENED MON APR 28 / LAST ENTRY TUE APR 29. OUTLINE / READ ONLY."));
  // What Build prints around the session's own text, with stand-in numbers.
  Words.Add(TEXT("NO PAGE IS KEPT WITH THIS CASE. 2 PAGES ARE KEPT WITH THIS CASE, LISTED UNDER IT. 3 EARLIER LEADS ARE COUNTED ON CASE BOARD AND KEPT BEHIND FIELD + BENCH."));
  Words.Add(TEXT("2 OPEN / 1 CLOSED. 3 FILED / 2 NOT IN THE BINDER. 4 FIELD / 1 BENCH. 9 RELEASED / 2 NOT READ. NOTHING YET TODAY. 3 PAGES TODAY / PACKET TO FILE. CASE LEAD. TURN TO THE REPEATED INTERVAL. PACKET IN HAND."));
@@ -407,6 +422,18 @@ bool SelfTest(TArray<FString>& Lines)
   TArray<FString> Was,Now;In.Files[0].Text.ParseIntoArray(Was,TEXT(" "),true);Joined.ParseIntoArray(Now,TEXT(" "),true);
   Check(Long.Pages.Num()>1&&bFits&&Was==Now&&Paginate(FString(),SheetWide,SheetLines).Num()==1&&Paginate(TEXT("a\n\nb"),SheetWide,SheetLines)[0]==TEXT("a\n\nb"),
    TEXT("a long file is read a page at a time: every page fits the sheet, no word is lost or split, and an empty text is one empty page"));
+ }
+ { // EVIDENCE-DOSSIER-20261113: the operator's files of the unknown, read only, in the order of their numbers
+  FSource With=In;
+  With.Unknowns.Add({2,TEXT("UNKNOWN 2"),TEXT("OUTLINE"),TEXT("STAGE     OUTLINE"),2,2,false});
+  With.Unknowns.Add({1,TEXT("UNKNOWN 1"),TEXT("MARKS"),TEXT("STAGE     MARKS"),1,2,true});
+  const FModel Kept=Build(With);const TArray<FRow> Rows=Kept.Rows(SecUnknowns,FString());
+  const bool bRows=Rows.Num()==2&&!Rows[0].bHead&&Rows[0].Mid==TEXT("UNKNOWN 1")&&Rows[0].Right==TEXT("MARKS")&&Rows[1].Mid==TEXT("UNKNOWN 2")&&Rows[0].Jump.IsEmpty()&&!Rows[0].bFile&&Rows[0].Act.IsEmpty();
+  const FEntry* First=bRows?&Kept.Entries[Rows[0].Entry]:nullptr;
+  Check(Kept.Entries.Num()==M.Entries.Num()+2&&First&&First->Key==UnknownKey(1)&&First->StatusLine==TEXT("MARKS / READ ONLY")&&First->Stamp.IsEmpty()&&First->When==TEXT("OPENED MON APR 28 / LAST ENTRY TUE APR 29")
+   &&First->Pages.Num()==1&&First->Pages[0]==TEXT("STAGE     MARKS")&&Kept.Dividers[SecUnknowns].Summary==TEXT("2 FILES KEPT APART")&&Kept.ToFile==M.ToFile&&Kept.Land()==M.Land()
+   &&M.Dividers[SecUnknowns].Entries.IsEmpty()&&M.Dividers[SecUnknowns].Summary==TEXT("NO FILE OPENED")&&Kept.Rows(SecToday,FString()).ContainsByPredicate([](const FRow& R){return R.Id==TEXT("today:unk:1");}),
+   TEXT("UNKNOWNS keeps the operator's own files in the order of their numbers, read only, under no date; one that grew today is listed under TODAY'S FILING"));
  }
  Check(Lint().IsEmpty(),TEXT("the binder's own words keep to Freeform's spoiler limits"));
  if(const FString Why=Lint();!Why.IsEmpty())Lines.Add(TEXT("     ")+Why);
