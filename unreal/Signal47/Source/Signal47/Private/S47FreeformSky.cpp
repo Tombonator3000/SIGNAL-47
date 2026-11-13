@@ -185,18 +185,24 @@ void FS47FreeformSession::SkyChartStep(double Dt)
 void FS47FreeformSession::SkyHeld(FJob& HeldJob, bool bByHand)
 {
 	HeldJob.bSky = true;
+	// LOOP-CAREFUL-PAYS-20261113 (-> M3, M2): a fix the assist pulled in (it had begun before the lock) earns no clean bonus on this card;
+	// the hint's chevrons cost nothing. The programmatic way through (AcquireSky: bots, tests, scripts) counts as a hand fix, so that the
+	// economy and the card player pay as before, and a discrepancy it registers narrows its bearing as a hand fix would.
+	const bool bAssisted = bByHand && SkyFix.IsValid() && SkyFix->AssistLevel() > 0;
+	HeldJob.SkyBy = bAssisted ? 2 : 1;
 	// What the chart showed is what the take will be: decided here if the tuned receiver has not said so yet (DecideTake).
 	if (HeldJob.TakeDecided < 0 && HeldJob.CaseTest < 0 && Tutorial != 1) DecideTake(HeldJob);
 	// By hand the page stays a moment on the held fix, then goes over to TUNE; a script goes at once.
 	SkyHandAt = FPlatformTime::Seconds() + (bByHand ? 1.6 : 0.);
-	Feedback = TEXT("RECEIVER (centre PC): Source acquired. Now tune the work card on the TUNE page.");
+	Feedback = bAssisted ? TEXT("RECEIVER (centre PC): Source acquired by the assist. FIX BY ASSIST / NO CLEAN BONUS on this card. Now tune the work card on the TUNE page.")
+		: TEXT("RECEIVER (centre PC): Source acquired. Now tune the work card on the TUNE page.");
 	Changed(Feedback);
 }
 
 void FS47FreeformSession::StepSkyFix()
 {
 	// A job back at the start has lost its fix with its pointing.
-	for (FJob& Each : Work) if (Each.Stage == EJobStage::New && Each.bSky) Each.bSky = false;
+	for (FJob& Each : Work) if (Each.Stage == EJobStage::New && (Each.bSky || Each.SkyBy != 0)) { Each.bSky = false; Each.SkyBy = 0; }
 	FJob* SkyJob = Job();
 	if (SkyJob && SkyJob->Stage == EJobStage::Pointed && !SkyJob->bSky && SkyFix.IsValid() && SkyFixJob == SkyJob->Id && SkyFix->Locked()) SkyHeld(*SkyJob, true);
 	if (SkyHandAt >= 0 && FPlatformTime::Seconds() >= SkyHandAt)
@@ -225,6 +231,8 @@ FString FS47FreeformSession::SkyPrompt() const
 	if (!SkyJob || !SkyFix.IsValid()) return ReceiverNextAction().ToUpper();
 	using EP = FS47SkyAcquire::EPhase;
 	const EP Now = SkyFix->State();
+	// LOOP-CAREFUL-PAYS-20261113: an assisted fix says so, once, plainly, for as long as the chart shows it
+	if (Now == EP::Locked && SkyJob->SkyBy == 2 && SkyJob->Stage == EJobStage::Pointed) return TEXT("FIX BY ASSIST / NO CLEAN BONUS ON THIS CARD. NEXT: THE TUNE PAGE.");
 	if (Now == EP::Locked) return SkyJob->Stage == EJobStage::Pointed ? FString(TEXT("FIX HELD. NEXT: THE TUNE PAGE, AND THE FREQUENCY ON THE WORK CARD.")) : ReceiverNextAction().ToUpper();
 	if (Now == EP::Locking) return TEXT("ON THE CROSSING. HOLD: THE RECEIVER IS TAKING THE FIX.");
 	// Not pointed, no power, too few antennas: the receiver's own line says where to go.

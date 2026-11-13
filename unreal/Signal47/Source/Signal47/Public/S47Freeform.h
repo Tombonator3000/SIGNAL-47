@@ -55,6 +55,12 @@ public:
   // RX-ACQUIRE-SKY-20261113: the source found on the receiver's sky chart (ACQUIRE) for this pointing. Saved while Pointed ("sky");
   // a save from before has none, and a job back at the start loses it.
   bool bSky=false;
+  // LOOP-CAREFUL-PAYS-20261113 (→ M3, M2): how the fix was made: 0 not known (no chart rule, an older save), 1 by hand (or the
+  // programmatic way through, AcquireSky, which counts as a hand fix), 2 the assist pulled the reticle in (no clean bonus). Saved
+  // ("skyBy") at every stage from the lock on; a job back at the start loses it with its fix.
+  int32 SkyBy=0;
+  // LOOP-CAREFUL-PAYS-20261113: both reel-deck marks were the operator's own when the take was confirmed (none filled in). Saved ("ownMarks").
+  bool bOwnMarks=false;
  };
  explicit FS47FreeformSession(US47Main* Main);
  ~FS47FreeformSession();
@@ -248,6 +254,18 @@ public:
  static int32 PayAfterDays(int32 Days){return Days<=1?14:Days==2?10:Days==3?7:4;}
  static constexpr int32 OnTimeBonus=2,CleanBonus=3,ControlBonus=1;
  static constexpr double CleanRecordQuality=.6;
+ // LOOP-CAREFUL-PAYS-20261113 (→ M3, M2): the clean bonus only for a sky fix the operator made himself (FJob::SkyBy 2: none). Hints cost nothing.
+ static bool CleanBonusFor(const FJob& Job){return Job.SkyBy!=2;}
+ // LOOP-CAREFUL-PAYS-20261113: marks tight round the extra ticks (9.30 to 12.60 s): covering them (MarkCoversTicks) with at most
+ // TightSlack seconds to spare in all, against the 2.7 s the RETAIN check allows. 9.0 to 13.0 is tight; 8.0 to 13.5 is not.
+ static constexpr double TightSlack=1.;
+ static bool MarksTight(double In,double Out);
+ // LOOP-ANOMALY-ANY-CARD-20261113 (→ M7): from day AnyCardFrom the take that is odd because of what is out tonight may fall on the
+ // pulsar (card 2) or the third card (hydrogen drift or Virgo A, the night watch), never the pointing cross (card 1: its 12 s take can
+ // end before the last extra tick, and it carries the five-point cross). The day's own carrier by the seed (OddCarrier: 1 or 2); the
+ // other only once the carrier's card is past without it. At most one a night. Pure.
+ static constexpr int32 AnyCardFrom=15;
+ static int32 OddCarrier(int32 Seed,int32 Day);
  int32 JobPay(const FJob& Job) const;
  // What of JobPay is the bonus for good work (0 to 6), and the words for it ("on time, clean recording").
  int32 JobBonus(const FJob& Job,FString* Why=nullptr) const;
@@ -960,6 +978,10 @@ private:
  void PrintJob(bool bPacket,bool bShow=true);
  // GAMEPLAY-LOOP-01: what StartAcquisition decides, without deciding it (Phen: the phenomenon it would carry; bOutThere: from the land).
  bool TakeAnomalous(const FJob& J,FString& Phen,bool& bOutThere) const;
+ // LOOP-ANOMALY-ANY-CARD-20261113: whether J may carry tonight's out-there take (card 2 only before AnyCardFrom), and whether another
+ // take tonight already does (decided while pointed, or recorded tonight with no instrument cause).
+ bool OddCarries(const FJob& J) const;
+ bool OutTakeTonight(const FJob& Except) const;
  // The take's decision kept on the job (FJob::TakeDecided): TakeAnomalous once, then what it said.
  void DecideTake(FJob& J);
  bool DecidedTake(const FJob& J,FString& Phen,bool& bOutThere) const;
