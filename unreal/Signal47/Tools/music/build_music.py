@@ -385,7 +385,7 @@ def mixes(media, bundle, previews):
     # pedal 0-8 / sub 8-16 / first pad 16-32 / second pad over it 32-48 / thin and high 48-56 / darker pair 56-72 / down 72-88
     pad = os.path.join(abyss, 'Pad Loops', 'FL_ABB_Pad_100_D#_Obsidian_')
     p = Piece(100, 88)
-    p.add(pad + '21_8bars.wav', -27, [(0, 88, 8, 8)])
+    p.add(pad + '21_8bars.wav', -23, [(0, 88, 4, 8)])
     p.add(os.path.join(abyss, 'Bass Loops', 'FL_ABB_Bass_100_D#_Void_08_4bars.wav'), -25, [(8, 48, 4, 4), (56, 80, 4, 6)], lp=140)
     p.add(pad + '01_8bars.wav', -23, [(16, 48, 4, 3), (56, 82, 3, 8)])
     p.add(pad + '18_8bars.wav', -26, [(32, 48, 4, 3)])
@@ -413,13 +413,13 @@ def mixes(media, bundle, previews):
     used['s47_carrier_lock'] = p.used
 
     # (d) "County Road": the drive. Neon Highway kit 4, 124 BPM, A-C-D, 96 bars = 3:06.
-    # pad 0-8 / arp 8-16 / bass 16-24 / kick and hat 24-40 (mid bass, pluck from 32) / lead and snare 40-56 /
+    # pad 0-4 / arp 4-16 / bass 16-24 / kick and hat 24-40 (mid bass, pluck from 32) / lead and snare 40-56 /
     # break 56-64 / all 64-88 (lead and snare from 72) / out 88-96
     k4 = os.path.join(retro, 'Function Loops - Neon Highway', 'FL_NHW_KIT04_124BPM_A-C-D', 'FL_NHW_KIT04_124BPM_LOOPS', 'FL_NHW_KIT04_124_')
     p = Piece(124, 96)
-    p.add(k4 + 'A-C-D_PAD.wav', -25, [(0, 96, 4, 7)])
-    p.add(k4 + 'ATMO SFX.wav', -34, [(0, 16, 2, 2), (56, 64, 1, 1)])
-    p.add(k4 + 'A_ARP.wav', -26, [(8, 96, 4, 7)], open_from=(800, 8))
+    p.add(k4 + 'A-C-D_PAD.wav', -21, [(0, 96, 2, 7)])
+    p.add(k4 + 'ATMO SFX.wav', -30, [(0, 16, 1, 2), (56, 64, 1, 1)])
+    p.add(k4 + 'A_ARP.wav', -26, [(4, 96, 4, 7)], open_from=(800, 8))
     p.add(k4 + 'A-C-D_BASS.wav', -20, [(16, 56, 0.1, 0.25), (64, 88, 0.1, 1)], open_from=(260, 6))
     p.add(k4 + 'KICK.wav', -23, [(24, 56, 0.02, 0.1), (64, 88, 0.02, 0.5)], lp=320, perc=True)
     p.add(k4 + 'CLSHAT.wav', -37, [(24, 56, 1, 0.25), (64, 88, 0.5, 1)], perc=True)

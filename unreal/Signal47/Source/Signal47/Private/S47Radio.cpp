@@ -155,7 +155,7 @@ TArray<TSharedPtr<FS47RadioSeg>> FAR()
 			if (Station != TEXT("caliche")) return { { TEXT("cattails"), 159.0 } };
 			return { { TEXT("cattails"), 159.0 }, { TEXT("hawaiian_hotel"), 175.9 }, { TEXT("till_the_sands"), 234.2 } };
 		}
-		return { { TEXT("anamalie"), 208.2 }, { TEXT("hawaiian_hotel"), 175.9 }, { TEXT("roll_on_silver_moon"), 163.5 }, { TEXT("till_the_sands"), 234.2 }, { TEXT("s47_night_freight"), 210.0 } };
+		return { { TEXT("anamalie"), 208.2 }, { TEXT("hawaiian_hotel"), 175.9 }, { TEXT("roll_on_silver_moon"), 163.4 }, { TEXT("till_the_sands"), 234.2 }, { TEXT("s47_night_freight"), 213.5 } };
 	}
 	bool RecordStaged(const FTrack& Tr)
 	{
