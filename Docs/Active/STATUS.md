@@ -4,7 +4,16 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 13. november kl. 16:43 (d68): versjon 0.9.68, `2d9eca0e` på `claude/freeform-20261112`
+## Installert 13. november kl. 19:51 (d69): versjon 0.9.69, `8fd3a2fb` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5421 kontroller), regresjon PASS 252, mottakerprøven PASS 310, oppgavebildeprøven PASS 7, pakket, røyktestet og installert. Tilbakerulling: d68 (`2d9eca0e`). Ledig disk etterpå: 120 GB. Ikke spilt av Tom.
+
+- **Oppgavelista (→ M3, ti endringer, Tom):** HUD-kortet blir stående dempet (55 %/80 %); én rekkefølge for HUD, pausekort, notatbok og arbeidsstasjon; status ut av lista; én telling av jobbkort; pausekortet har høyst fire linjer under WORK / FOLLOW-UP / YOUR OWN TIME; det Dale ber om lagres; hver rad har giver (STATION, WARD, THE LAND), vindu og verdi; ÅPNE SAKER i notatboka; én rad kan festes (F2). Nattevakta går foran reparasjonsmålet om natta.
+- **SIDEBAND (→ M2, M5):** fargebussen på musikken (WORN, BROKEN, WIDE, FAR) styrt av spillets tilstand, FLARES (skrekkseng og stingere etter tidstrinn; tar over for det gamle møtelaget når filene finnes), kanaler (lag) for de ni egne stykkene på 22 kHz (518 MB). Innstillinger «Music reacts» og «Stingers». Målt mot prøven i motoren; ikke hørt i spill av noen.
+- **Kjent:** dukkingen etter stingeren er grunnere enn i prøven; kanalene er ikke hørt i opptak; kartstempelet «NOT TO LEAVE THE BUILDING» står ved en peiling som sier kjør ut; Ward-brevet går foran et ufestet jobbkort; merkene på radene er små.
+- **Underveis:** Codex lager referansebilder for vindmølla, linjehytta, gruva og varden (`~/scratch-bm/refs/land-places-20261113/`); oversikten over steder og modeller ligger i [Design/World](../Design/World/STEDER_MODELLER_20261113.md).
+
+## Tidligere: installert 13. november kl. 16:43 (d68): versjon 0.9.68, `2d9eca0e` på `claude/freeform-20261112`
 
 Editor BUILD 0, selvtest OK (5296 kontroller), regresjon PASS 252, mottakerprøven (hele avviksflyten) PASS, pakket, røyktestet og installert. Tilbakerulling: d67 (`b2db7eb4`). Ledig disk etterpå: 121 GB. Ikke spilt av Tom.
 
