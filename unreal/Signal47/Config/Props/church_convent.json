@@ -2,7 +2,7 @@
  "_doc": "CHURCH-COLONIAL-20261113 (Tom, 13 November: \"bytt til kolonikirka\"): San Isidro in Caliche as a small mission church of bought Cosmos pieces (pack Colonial Convent; the meshes by Tools/cosmosconvent, git-ignored under /Game/Licensed/CosmosConvent, used only when every one of them is there: the white board church stands otherwise, never both). Read by S47Convent. The church's own metres: x east from the front wall's middle plane, up from the floor, z south of the axis; the room is CalicheAccess's \"Church\". pieces: mesh, at (the pivot), yaw (Unreal degrees), scale; land: on the land there instead of at the floor's height. boxes: plain boxes of the game's own (the roof slab, the walls' feet): middle, size, colour. walls and blocks: what stops a walker [x0, x1, z0, z1, id]. lights: the game's own point lights (lumens, reach in metres; night: only when the town's lamps are lit). words: pale paint on a board (| is a new line; yaw: the way they face). doors: the clear width and height of the two arches (front: CalicheAccess's own door; back: the sacristy's, toward the cemetery). pad: the level ground it asks of S47GroundEdits (local metres; cut into the ground mesh by Tools/freeformterrain/site_ground.py). Written by Tools/cosmosconvent/layout.py; hand edits are lost on the next run.",
  "room": "Church",
  "meshes": "/Game/Licensed/CosmosConvent/Convent/Meshes",
- "doors": {"width": 1.8, "height": 3.1, "front": [0, 0], "back": [15.0, 0]},
+ "doors": {"width": 1.8, "height": 3.2, "front": [0, 0], "back": [15.0, 0]},
  "pad": {"x0": -9.8, "x1": 16.0, "z0": -7.6, "z1": 7.6, "under": 0.02, "bank": 3.0},
  "pieces": [
   {"id": "south0", "mesh": "SM_FlatWallTall_01", "at": [2.9, 0, 4.5], "yaw": 0, "scale": [1.0333, 2, 1]},

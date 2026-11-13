@@ -209,7 +209,7 @@ doc = ("CHURCH-COLONIAL-20261113 (Tom, 13 November: \"bytt til kolonikirka\"): S
        "(local metres; cut into the ground mesh by Tools/freeformterrain/site_ground.py). Written by Tools/cosmosconvent/layout.py; hand "
        "edits are lost on the next run.")
 out = {'_doc': doc, 'room': 'Church',
-       'doors': {'width': DOOR, 'height': 3.1, 'front': [0, 0], 'back': [SAC_X, 0]},
+       'doors': {'width': DOOR, 'height': 3.2, 'front': [0, 0], 'back': [SAC_X, 0]},
        'pad': {'x0': -9.8, 'x1': 16.0, 'z0': -7.6, 'z1': 7.6, 'under': .02, 'bank': 3.0},
        'meshes': '/Game/Licensed/CosmosConvent/Convent/Meshes',
        'pieces': pieces, 'boxes': boxes, 'walls': walls, 'blocks': blocks, 'lights': lights, 'words': words}

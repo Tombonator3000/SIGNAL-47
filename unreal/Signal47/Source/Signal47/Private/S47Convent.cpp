@@ -220,7 +220,7 @@ namespace
 	{
 		// (the room's root is fixed by the town's assembly: world x 8021, z 2095.5; the road's metres are the world's less 8000)
 		const FPlan& P = Plan();
-		return FVector2D(21.0 + P.Back.X + HalfWall, 2095.5 + P.Back.Y);
+		return FVector2D(21.0 + P.Back.X + .3, 2095.5 + P.Back.Y);   // (the arch piece's outer face stands 0.3 m out from the wall's middle plane)
 	}
 
 	void Build(US47Main* M, const FVector& Root, USceneComponent* Parent, int32 ParentNode, UStaticMesh* DoorLeaf)
