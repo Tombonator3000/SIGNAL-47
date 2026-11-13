@@ -359,6 +359,22 @@ float S47Weather::MoonLight(const FMoon& Mo)
  const double Up=FMath::SmoothStep(-2.,12.,Mo.El);
  return float(FMath::Lerp(.4,ByPhase,Up));
 }
+double S47Weather::SightScale(double MoonLightK,double Dust,double Daylight,bool bLamp)
+{
+ const double Ml=FMath::IsFinite(MoonLightK)?MoonLightK:1.;
+ const double ByMoon=FMath::Clamp(1.+.18*(Ml-1.),SightMoonLeast,SightMoonMost);
+ const double Night=1.-FMath::Clamp(FMath::IsFinite(Daylight)?Daylight:0.,0.,1.);
+ const double Sand=FMath::Clamp(FMath::IsFinite(Dust)?Dust:0.,0.,1.);
+ double K=FMath::Lerp(1.,ByMoon,Night)*(1.-SightDustLoss*Sand);
+ if(bLamp)K=FMath::Max(K,1.);
+ return FMath::Clamp(K,.5,SightMoonMost);
+}
+const TCHAR* S47Weather::NightThoughtKey(double MoonLightK,double Dust)
+{
+ if(FMath::IsFinite(Dust)&&Dust>=SandThought)return TEXT("sandnight");
+ if(!FMath::IsFinite(MoonLightK))return TEXT("");
+ return MoonLightK>=1.9?TEXT("moonbright"):MoonLightK<=.5?TEXT("moondark"):TEXT("");
+}
 void S47Weather::MoonTimes(const FDateTime& Date,double& OutRise,double& OutSet)
 {
  OutRise=OutSet=-1;
@@ -510,6 +526,18 @@ bool S47Weather::SelfTest(TArray<FString>& Lines)
   Check(Full.Lit>.97&&Full.El>15&&Full.Az>140&&Full.Az<220&&New.Lit<.03&&New.El<0,TEXT("the full moon of 23 May stands south at midnight; the new moon of 8 May is down at 23:00"));
   Check(First.Lit>.35&&First.Lit<.75&&First.Az>150&&First.Az<260&&First.El>20,TEXT("the first quarter stands south-west in the evening"));
   Check(FMath::IsNearlyEqual(MoonLight(FMoon{14.8,.5,180,50}),1.f,.02f)&&MoonLight(FMoon{14.8,1,180,60})>2.2f&&MoonLight(FMoon{0,0,0,-30})<.5f&&MoonLight(FMoon{14.8,1,90,-10})<.5f,TEXT("moonlight: a half moon is the night as tuned, a full one brighter, none down"));
+  {
+   // M5 (13 November): the moon and the sand in how far the small ones see the player; the lamp shows you whatever the sky
+   const double Half=SightScale(1,0,0,false),FullHigh=SightScale(MoonLight(FMoon{14.8,1,180,60}),0,0,false),None=SightScale(MoonLight(FMoon{0,0,0,-30}),0,0,false);
+   Check(FMath::IsNearlyEqual(Half,1.,1e-6)&&FullHigh>1.2&&FullHigh<=SightMoonMost&&None<.9&&None>=SightMoonLeast,
+    FString::Printf(TEXT("M5 sight: a half moon as tuned (x%.2f), a full moon high further (x%.2f), no moon less far (x%.2f)"),Half,FullHigh,None));
+   Check(FMath::IsNearlyEqual(SightScale(2.4,0,1,false),1.,1e-6)&&SightScale(1,1,0,false)<.65&&SightScale(2.4,1,0,false)<1.&&SightScale(.4,0,0,true)>=1.&&SightScale(.4,1,0,true)>=1.
+    &&FMath::IsNearlyEqual(SightScale(NAN,NAN,NAN,false),1.,1e-6),
+    TEXT("M5 sight: by day the moon is nothing, blowing sand closes it in, a lit lamp is never hidden by the dark or the sand, nonsense is the night as tuned"));
+   Check(FString(NightThoughtKey(2.3,0))==TEXT("moonbright")&&FString(NightThoughtKey(.4,0))==TEXT("moondark")&&FString(NightThoughtKey(1.,0)).IsEmpty()&&FString(NightThoughtKey(NAN,NAN)).IsEmpty()
+    &&FString(NightThoughtKey(2.3,.6))==TEXT("sandnight")&&FString(NightThoughtKey(1.,.2)).IsEmpty(),
+    TEXT("M5 sight: blowing sand, a bright moon and a moonless night each have the player's own thought, an ordinary night none"));
+  }
   double MoonUp=0,MoonDown=0;MoonTimes(FDateTime(1986,5,23),MoonUp,MoonDown);
   Check(MoonUp>17*3600.&&MoonUp<21.5*3600.,TEXT("a full moon rises about sunset"));
   const FString Printed=Almanac(FDateTime(1986,5,16));

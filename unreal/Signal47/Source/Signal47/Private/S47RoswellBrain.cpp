@@ -69,8 +69,10 @@ bool FS47RoswellBrain::Seen(const FInput& In,const FWorld& World) const
 {
  if (!In.bPlayerValid || !Finite(In.PlayerFeet) || !Finite(In.PlayerEye) || !World.Sight) return false;
  const FVector D=In.PlayerEye-Eye();
- // 24 m, less for a player keeping low (SNEAK-20261108); the lower eye is also more often behind something.
- const double SeesFar=S47Sneak::SightReach(In.PlayerQuiet);
+ // 24 m, less for a player keeping low (SNEAK-20261108); the lower eye is also more often behind something. M5: the moon and the
+ // sand move it (In.SightScale, 1 the night as tuned).
+ const double Sight=FMath::IsFinite(In.SightScale)?FMath::Clamp(In.SightScale,.5,1.35):1.;
+ const double SeesFar=S47Sneak::SightReach(In.PlayerQuiet)*Sight;
  if (D.SizeSquared()>SeesFar*SeesFar) return false;
  if (D.SizeSquared()<1e-6) return World.Sight(Eye(),In.PlayerEye);
  // The eyes follow the same limited head turn as the skin, not a 360 degree sensor.
@@ -473,6 +475,16 @@ bool FS47RoswellBrain::SelfTest(TArray<FString>& Lines)
   FInput Gale=In; Gale.HearScale=.5;
   Windy.Tick(.1,Gale,World);
   Check(!Windy.bHasPlayerMemory,TEXT("a strong wind covers the same steps through cover (WEATHER-20261108)"));
+ }
+ {
+  // M5 (13 November): standing in the open, facing it: 22 m off is seen on an ordinary night and not on a moonless one; 28 m off only
+  // under a full moon high; blowing sand hides 22 m too, and nonsense is the night as tuned.
+  FS47RoswellBrain Eyes; Eyes.Start(EMode::Curious,FVector::ZeroVector,0,47);
+  FWorld Clear=World; Clear.Sight=[](const FVector&,const FVector&) { return true; };
+  FInput Open; Open.PlayerForward=FVector(0,0,-1);
+  const auto At=[&](double Metres,double Scale){FInput I=Open;I.PlayerFeet=FVector(0,0,Metres);I.PlayerEye=FVector(0,1.62,Metres);I.SightScale=Scale;return Eyes.Seen(I,Clear);};
+  Check(At(22,1.) && !At(22,.85) && !At(28,1.) && At(28,1.25) && !At(22,.6) && At(22,NAN) && At(10,.85),
+   TEXT("M5: a full moon shows the player further off, a moonless night or blowing sand less far (S47Weather::SightScale)"));
  }
  In.PlayerSpeed=0; In.Noise=FNoise{FVector(0,0,40),1.}; Listener.Tick(.1,In,World);
  Check(Listener.LastKnownPlayer.Equals(FVector(0,0,3)),TEXT("inaudible distant source cannot retarget an individual"));

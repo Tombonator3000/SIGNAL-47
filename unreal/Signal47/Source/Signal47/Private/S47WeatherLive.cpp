@@ -9,6 +9,7 @@
 #include "S47FreeformTerrain.h"
 #include "S47Main.h"
 #include "S47Sky.h"
+#include "S47Thoughts.h"
 #include "S47UI.h"
 #include "S47Web.h"
 #include "S47WebAudio.h"
@@ -100,6 +101,7 @@ void FS47WeatherLive::Stop()
 	if (M && M->Life && M->Life->Sky.IsValid()) M->Life->Sky->DayThunder = 0;
 	if (FogApplied > 0 && M && M->Web) M->Web->RefreshFog();
 	FogApplied = -1; TintApplied = -1;
+	OutFor = 0; // (ThoughtNight stays: a panel opened does not give the night its thought again)
 }
 
 void FS47WeatherLive::Step(double Dt)
@@ -142,11 +144,32 @@ void FS47WeatherLive::Step(double Dt)
 	}
 	StepWet();
 	ApplyGroundWet(GroundWet(L));
+	StepNightThought(Dt);
 	if (LoggedDay != CalDay)
 	{
 		LoggedDay = CalDay;
 		UE_LOG(LogS47WeatherLive, Display, TEXT("S47: weather day %d: %s"), CalDay, *S47Weather::Words(S47Weather::Day(F->Seed(), CalDay)));
 	}
+}
+
+void FS47WeatherLive::StepNightThought(double Dt)
+{
+	// M5 (13 November): the moon and the blowing sand change how far the small ones see the player (S47Weather::SightScale, through
+	// FS47RoswellGroup); so that it is noticed, once a night, half a minute out on foot in the dark, the player's own thought says what
+	// kind of night it is for being seen. Nothing on an ordinary night, nothing in a developer run.
+	FS47FreeformSession* F = M ? M->Freeform.Get() : nullptr;
+	const bool bOnFoot = F && F->RulesLive() && M->Web && M->Space == TEXT("yard") && !(M->World && M->World->bDriving);
+	const double Daylight = M && M->Life && M->Life->Sky.IsValid() ? M->Life->Sky->Daylight() : 1.0;
+	if (!bOnFoot || Daylight > .05) { OutFor = 0; return; }
+	OutFor += FMath::Max(0.0, Dt);
+	if (OutFor < 25) return;
+	const int32 Night = int32(FMath::FloorToDouble((F->Clock() - 12 * 3600.0) / 86400.0));
+	if (Night == ThoughtNight) return;
+	const S47Weather::FLive& L = S47Weather::Live();
+	const TCHAR* Key = S47Weather::NightThoughtKey(M->Web->MoonLightNow(), L.bOn ? L.Dust : 0.0);
+	if (!*Key) return;
+	ThoughtNight = Night;
+	S47Thoughts::Later(Key, 1.5);
 }
 
 void FS47WeatherLive::StepWet()

@@ -44,6 +44,10 @@ namespace
    R.Add(TEXT("two"),{TEXT("Two o'clock. Should be in bed."),TEXT("Past two. The long hours now."),TEXT("Two already. Where did the night go?"),TEXT("Two in the morning. Nobody up but me.")});
    R.Add(TEXT("anomaly"),{TEXT("That's not supposed to be there."),TEXT("Count them again. Same number."),TEXT("The gear checks out. So what is it?"),TEXT("That's not on any chart I know."),TEXT("Okay. That one's not routine.")});
    R.Add(TEXT("tired"),{TEXT("Read that line again. It did not go in."),TEXT("Coffee. There has to be a pot somewhere."),TEXT("Long night. Longer than most."),TEXT("Should have slept this afternoon.")});
+   // M5 (13 November): once a night out on foot, what the moon or the sand does to being seen (S47Weather::NightThoughtKey)
+   R.Add(TEXT("moonbright"),{TEXT("Moon's bright. My shadow's on the dirt."),TEXT("Bright out. Anyone could see me here."),TEXT("Full moon. Stay off the open ground."),TEXT("Light enough to read by. Too light.")});
+   R.Add(TEXT("moondark"),{TEXT("No moon. Can't see my own feet."),TEXT("Dark as a pocket out here."),TEXT("Black night. Nobody sees far in this."),TEXT("Nights like this, things move.")});
+   R.Add(TEXT("sandnight"),{TEXT("Sand in the air. Can't see ten yards."),TEXT("Wind's got the sand up. Nobody sees far."),TEXT("Can't see past the fence posts.")});
    R.Add(TEXT("exhausted"),{TEXT("Eyes keep closing on their own."),TEXT("Just rest them a second. No."),TEXT("A cot would do. Anything flat."),TEXT("Can't think straight anymore."),TEXT("Dead on my feet.")});
    return R;
   }();

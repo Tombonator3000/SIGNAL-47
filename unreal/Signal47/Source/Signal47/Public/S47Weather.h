@@ -109,5 +109,16 @@ namespace S47Weather
  SIGNAL47_API float MoonLight(const FMoon& Mo);
  // When it is up over the horizon, from a clock (seconds after midnight) on that date, searched minute by minute: rise and set; -1 none.
  SIGNAL47_API void MoonTimes(const FDateTime& Date,double& OutRise,double& OutSet);
+ // M5 (felt, not fired, 13 November): how far the small ones see the player against the night as tuned (1: S47Sneak's reach as it
+ // is, 24 m standing, at a half moon). A full moon high shows you further off across the open (up to SightMoonMost), a moonless
+ // night less far (down to SightMoonLeast), blowing sand closes it in (up to SightDustLoss of it); by day the moon is nothing. A lit
+ // lamp shows where you are whatever the sky: never under 1 with it on. MoonLightK is MoonLight's (AS47Web::MoonLightNow), Dust
+ // FLive's. FS47RoswellGroup hands it to the brain (FS47RoswellBrain::FInput::SightScale); the sky itself is not touched.
+ SIGNAL47_API double SightScale(double MoonLightK,double Dust,double Daylight,bool bLamp);
+ constexpr double SightMoonLeast=.85,SightMoonMost=1.25,SightDustLoss=.4;
+ // What a night out on foot does to being seen, as the player's own thought (S47Thoughts' pools): "sandnight" in blowing sand (from
+ // SandThought), else "moonbright" under a bright moon or "moondark" with none up; empty on an ordinary night (FS47WeatherLive, once a night).
+ SIGNAL47_API const TCHAR* NightThoughtKey(double MoonLightK,double Dust);
+ constexpr double SandThought=.45;
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }

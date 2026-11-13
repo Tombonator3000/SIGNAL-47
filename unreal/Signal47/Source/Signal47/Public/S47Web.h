@@ -84,6 +84,8 @@ public:
 	TSharedPtr<FJsonObject> GraphicsReadback() const;
 	float ExteriorDaylightMask(int32 Set, int32 Slot) const;
 	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f, float Twilight = 0.f); void SetMoonLight(float K) { SkyMoon = FMath::Clamp(K, .2f, 2.5f); }
+	/** MOON-20261108: the moon's light on the land now, as SetMoonLight was last given it (1 a half moon; the night as tuned off Freeform). */
+	float MoonLightNow() const { return SkyMoon; }
 	/** Rendering only: where the sun is under the horizon at dusk (west) or dawn (east), in degrees, for the colour and direction of the twilight. */
 	void SetTwilightSun(bool bWest, float DepthDeg) { bTwilightWest = bWest; TwilightDepth = DepthDeg; }
 	// View-based finale negative fill, not a physical cloud-shadow footprint. Native ground lights only.
