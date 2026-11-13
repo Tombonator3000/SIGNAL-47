@@ -399,6 +399,12 @@ FString Apart(int32 Files)
  static const TCHAR* const Many[]={TEXT("Two"),TEXT("Three"),TEXT("Four"),TEXT("Five")};
  return FString::Printf(TEXT(" Keep them apart. %s separate things, by your own notes."),Many[FMath::Clamp(Files,2,5)-2]);
 }
+FString Archived(int32 Kinds)
+{
+ if(Kinds<2)return FString();
+ if(Kinds==2)return TEXT(" Two of your files are filed complete, each kept to itself. That is archive work, and it counts.");
+ return TEXT(" Your files are filed complete, each kept to itself. The county can read an archive like that, and it counts for the station.");
+}
 FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString& FiscalEnd,int32 Taken,const FString& Levers)
 {
  const FString Hours=Taken>0?FString(TEXT("\n\nThe hours in your log nobody can account for are still in it. Stay in the building after dark if you can.")):FString();

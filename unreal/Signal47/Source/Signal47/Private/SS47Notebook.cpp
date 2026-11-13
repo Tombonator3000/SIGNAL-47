@@ -530,6 +530,140 @@ namespace
 	private:
 		bool bShaded = false;
 	};
+	// EVIDENCE-DOSSIER slice 3: one small pencil sketch for each stage a file has reached, in the lead of the evidence boxes: OUTLINE a
+	// rough build from the SHAPE box (S47Dossier::ESketch: small with a big head, low on four limbs, tall; the far two a point of light
+	// and a bright outline; a dashed ring while nothing was seen), MARKS the prints from the GROUND box, HABITS a clock face with the
+	// hours it was logged at shaded. Schematic: no detail, nothing that explains. Each point a hair off true, the same every frame.
+	class SS47NbSketch : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SS47NbSketch) : _Kind(0), _Shape(0), _Prints(0) {}
+			SLATE_ARGUMENT(int32, Kind)   // 0 the build, 1 the prints, 2 the clock
+			SLATE_ARGUMENT(int32, Shape)  // S47Dossier::ESketch
+			SLATE_ARGUMENT(int32, Prints) // S47Dossier::PrintsOf
+			SLATE_ARGUMENT(TArray<int32>, Hours)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A) { Kind = A._Kind; Shape = A._Shape; Prints = A._Prints; Hours = A._Hours; }
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(P(66), P(66)); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+		{
+			const FVector2f Sz = FVector2f(G.GetLocalSize());
+			const float Wd = FMath::Max(1.f, P(1.3f)), Off = P(0.7f);
+			const FLinearColor Lead = C(0x3a3a40, 0.85f), Soft = C(0x3a3a40, 0.42f);
+			const auto Draw = [&](const TArray<FVector2f>& Unit, const FLinearColor& Ink)
+			{
+				TArray<FVector2f> Pts;
+				for (int32 I = 0; I < Unit.Num(); ++I)
+				{
+					const float H = FMath::Frac(FMath::Sin(Unit[I].X * 91.7f + Unit[I].Y * 37.3f + I * 3.1f) * 4375.85f) - 0.5f;
+					Pts.Add(FVector2f(Unit[I].X * Sz.X + H * Off, Unit[I].Y * Sz.Y - H * Off));
+				}
+				FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), Pts, ESlateDrawEffect::None, Ink, true, Wd);
+			};
+			const auto Ring = [&](float Cx, float Cy, float Rx, float Ry, const FLinearColor& Ink, bool bDashed)
+			{
+				constexpr int32 Steps = 16;
+				for (int32 S = 0; S < Steps; ++S)
+				{
+					if (bDashed && (S % 2) == 1) continue;
+					const float A0 = 2.f * PI * S / Steps, A1 = 2.f * PI * (S + 1) / Steps;
+					Draw({ FVector2f(Cx + Rx * FMath::Cos(A0), Cy + Ry * FMath::Sin(A0)), FVector2f(Cx + Rx * FMath::Cos(A1), Cy + Ry * FMath::Sin(A1)) }, Ink);
+				}
+			};
+			const auto Ground = [&] { Draw({ FVector2f(.12f, .92f), FVector2f(.88f, .91f) }, Soft); };
+			if (Kind == 0)
+			{
+				switch (Shape)
+				{
+				case 1: // small, the head too big for it
+					Ring(.5f, .3f, .17f, .19f, Lead, false);
+					Draw({ FVector2f(.5f, .49f), FVector2f(.5f, .7f) }, Lead);
+					Draw({ FVector2f(.37f, .6f), FVector2f(.5f, .56f), FVector2f(.63f, .6f) }, Lead);
+					Draw({ FVector2f(.42f, .9f), FVector2f(.5f, .7f), FVector2f(.58f, .9f) }, Lead);
+					Ground();
+					break;
+				case 2: // low, on four limbs
+					Draw({ FVector2f(.12f, .74f), FVector2f(.3f, .6f), FVector2f(.55f, .58f), FVector2f(.78f, .63f), FVector2f(.9f, .71f) }, Lead);
+					Draw({ FVector2f(.2f, .76f), FVector2f(.8f, .74f) }, Lead);
+					for (const float X : { .22f, .36f, .62f, .76f }) Draw({ FVector2f(X, .75f), FVector2f(X - .04f, .83f), FVector2f(X, .91f) }, Lead);
+					Ground();
+					break;
+				case 3: // tall and long
+					Ring(.5f, .1f, .05f, .06f, Lead, false);
+					Draw({ FVector2f(.5f, .16f), FVector2f(.49f, .6f) }, Lead);
+					Draw({ FVector2f(.5f, .22f), FVector2f(.41f, .45f), FVector2f(.39f, .7f) }, Lead);
+					Draw({ FVector2f(.5f, .22f), FVector2f(.59f, .45f), FVector2f(.61f, .7f) }, Lead);
+					Draw({ FVector2f(.49f, .6f), FVector2f(.44f, .91f) }, Lead);
+					Draw({ FVector2f(.49f, .6f), FVector2f(.55f, .91f) }, Lead);
+					Ground();
+					break;
+				case 4: // a point of light, far off
+					Ring(.5f, .38f, .045f, .045f, Lead, false);
+					for (int32 R = 0; R < 8; ++R)
+					{
+						const float A = 2.f * PI * R / 8.f;
+						Draw({ FVector2f(.5f + .09f * FMath::Cos(A), .38f + .09f * FMath::Sin(A)), FVector2f(.5f + .16f * FMath::Cos(A), .38f + .16f * FMath::Sin(A)) }, Soft);
+					}
+					Ground();
+					break;
+				case 5: // a bright outline: the shape gone over twice
+					for (const float D : { 0.f, .025f })
+					{
+						const FLinearColor Ink = D == 0.f ? Lead : Soft;
+						Ring(.5f, .2f + D, .08f + D, .09f + D, Ink, false);
+						Draw({ FVector2f(.38f - D, .33f), FVector2f(.62f + D, .33f), FVector2f(.6f + D, .6f), FVector2f(.56f + D, .9f), FVector2f(.44f - D, .9f), FVector2f(.4f - D, .6f), FVector2f(.38f - D, .33f) }, Ink);
+					}
+					break;
+				default: // nothing seen yet
+					Ring(.5f, .5f, .2f, .26f, Soft, true);
+					break;
+				}
+			}
+			else if (Kind == 1)
+			{
+				switch (Prints)
+				{
+				case 1: // small and bare, one foot then the other
+					for (int32 I = 0; I < 4; ++I) Ring(.2f + .2f * I + ((I % 2) ? .05f : -.05f), .78f - .17f * I, .035f, .055f, Lead, false);
+					break;
+				case 2: // in fours, close together
+					for (int32 I = 0; I < 3; ++I)
+						for (const FVector2f D : { FVector2f(-.04f, -.04f), FVector2f(.04f, -.04f), FVector2f(-.04f, .04f), FVector2f(.04f, .04f) })
+							Ring(.22f + .28f * I + D.X, .74f - .2f * I + D.Y, .018f, .018f, Lead, false);
+					break;
+				case 3: // long and narrow, a long stride apart
+					Ring(.28f, .72f, .03f, .1f, Lead, false);
+					Ring(.72f, .3f, .03f, .1f, Lead, false);
+					break;
+				default: break;
+				}
+			}
+			else
+			{
+				// the clock face, the hours it was logged at shaded with the side of the lead
+				Ring(.5f, .5f, .42f, .42f, Lead, false);
+				for (int32 T = 0; T < 12; ++T)
+				{
+					const float A = 2.f * PI * T / 12.f;
+					Draw({ FVector2f(.5f + .35f * FMath::Cos(A), .5f + .35f * FMath::Sin(A)), FVector2f(.5f + .41f * FMath::Cos(A), .5f + .41f * FMath::Sin(A)) }, Soft);
+				}
+				for (const int32 Hour : Hours)
+				{
+					const float From = 2.f * PI * (Hour % 12) / 12.f - .5f * PI;
+					for (int32 K = 0; K <= 4; ++K)
+					{
+						const float A = From + (PI / 6.f) * K / 4.f;
+						Draw({ FVector2f(.5f + .06f * FMath::Cos(A), .5f + .06f * FMath::Sin(A)), FVector2f(.5f + .34f * FMath::Cos(A), .5f + .34f * FMath::Sin(A)) }, Lead);
+					}
+				}
+				Ring(.5f, .5f, .02f, .02f, Lead, false);
+			}
+			return Layer + 1;
+		}
+	private:
+		int32 Kind = 0, Shape = 0, Prints = 0;
+		TArray<int32> Hours;
+	};
 	// One file of the unknown on THEM: its number in the pen and its stage typed, the six boxes in a row with what each is and how it
 	// was got, the pencil for what is in the filled ones, and how the file is kept from here. Said: what is read aloud of it.
 	TSharedRef<SWidget> UnknownFileBox(const FS47NbUnknown& File, TArray<FString>& Said)
@@ -553,12 +687,23 @@ namespace
 			+ SVerticalBox::Slot().AutoHeight()
 			[
 				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Bottom)[SNew(STextBlock).Text(FText::FromString(File.Title)).Font(Hand(30)).ColorAndOpacity(InkBlue())]
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom).Padding(P(8), 0, 0, P(4))[SNew(STextBlock).Text(FText::FromString(File.Stage)).Font(Term(19, 1)).ColorAndOpacity(Ph2Red())]
+				// slice 3: the player's own name in the pen, its number small beside it; the number alone while it has none
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom)[SNew(STextBlock).Text(FText::FromString(File.Name.IsEmpty() ? File.Title : File.Name)).Font(Hand(30)).ColorAndOpacity(InkBlue())]
+				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Bottom).Padding(P(8), 0, 0, P(5))[SNew(STextBlock).Text(FText::FromString(File.Name.IsEmpty() ? FString() : File.Title)).Font(Term(15, 1)).ColorAndOpacity(C(0x3a3a40, 0.7f))]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom).Padding(P(8), 0, 0, P(4))[SNew(STextBlock).Text(FText::FromString(File.bFiled ? File.Stage + TEXT(" / FILED") : File.Stage)).Font(Term(19, 1)).ColorAndOpacity(Ph2Red())]
 			];
 		// LOOP-DOSSIER-GIVES-20261113: what reaching the stage gave, one line under it, in the stage's red
 		if (!File.Gave.IsEmpty())
 			Sheet->AddSlot().AutoHeight().HAlign(HAlign_Right).Padding(0, P(1), 0, 0)[SNew(STextBlock).Text(FText::FromString(File.Gave)).Font(Hand(20)).ColorAndOpacity(Ph2Red()).AutoWrapText(true)];
+		// slice 3: a pencil sketch for each stage reached
+		if (File.StageN >= 1)
+		{
+			TSharedRef<SHorizontalBox> Sketches = SNew(SHorizontalBox);
+			Sketches->AddSlot().AutoWidth().Padding(0, 0, P(10), 0)[SNew(SS47NbSketch).Kind(0).Shape(File.Build)];
+			if (File.StageN >= 2 && File.Prints > 0) Sketches->AddSlot().AutoWidth().Padding(0, 0, P(10), 0)[SNew(SS47NbSketch).Kind(1).Prints(File.Prints)];
+			if (File.StageN >= 3) Sketches->AddSlot().AutoWidth()[SNew(SS47NbSketch).Kind(2).Hours(File.Hours)];
+			Sheet->AddSlot().AutoHeight().Padding(0, P(4), 0, 0)[Sketches];
+		}
 		Sheet->AddSlot().AutoHeight().Padding(0, P(4), 0, P(2))[BoxRow];
 		for (const FS47NbUnknown::FBox& One : File.Boxes)
 			if (One.bFilled && !One.Note.IsEmpty())
@@ -574,7 +719,10 @@ namespace
 			}
 		if (!File.Next.IsEmpty())
 			Sheet->AddSlot().AutoHeight().Padding(0, P(5), 0, 0)[SNew(STextBlock).Text(FText::FromString(File.Next)).Font(Hand(20)).ColorAndOpacity(C(0x3a3a40, 0.6f)).AutoWrapText(true)];
-		Said.Add(File.Title + TEXT(". ") + File.Stage + TEXT(".") + (File.Gave.IsEmpty() ? FString() : TEXT(" ") + File.Gave) + (Held.IsEmpty() ? FString() : TEXT(" Kept: ") + Held + TEXT(".")));
+		if (!File.Merged.IsEmpty()) // slice 3: what was filed in it as one
+			Sheet->AddSlot().AutoHeight().Padding(0, P(3), 0, 0)[SNew(STextBlock).Text(FText::FromString(File.Merged)).Font(Hand(20)).ColorAndOpacity(C(0x3a3a40, 0.6f)).AutoWrapText(true)];
+		const FString Called = File.Name.IsEmpty() ? File.Title : File.Name + TEXT(", ") + File.Title;
+		Said.Add(Called + TEXT(". ") + File.Stage + TEXT(".") + (File.Gave.IsEmpty() ? FString() : TEXT(" ") + File.Gave) + (Held.IsEmpty() ? FString() : TEXT(" Kept: ") + Held + TEXT(".")) + (File.Merged.IsEmpty() ? FString() : TEXT(" ") + File.Merged));
 		return SNew(SBorder).BorderImage(Box(C(0xf7f3e6, 0.55f), C(0x3a3a40, 0.55f), 1.5f, 2.f)).Padding(FMargin(P(12), P(6)))[Sheet];
 	}
 	// EVIDENCE-DOSSIER slice 2: two files a find showed to be one thing, side by side and never merged: the six boxes of the one over the
@@ -2324,6 +2472,14 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 					DrawnStruck != SNullWidget::NullWidget && DrawnPair != SNullWidget::NullWidget && SpokenTwo.Num() == 2 && SpokenTwo[0].Contains(TEXT("Struck: long narrow prints, a long stride apart")) && SpokenTwo[1] == Two.Said
 					&& S47Script::LintText(SpokenTwo[0] + TEXT(" ") + SpokenTwo[1]).IsEmpty() && !S47Marginalia::NamesKind(SpokenTwo[0] + TEXT(" ") + SpokenTwo[1]), SpokenTwo.Num() ? SpokenTwo[0] : FString());
 				Mx.UnknownPairs.Add(Two);
+				// EVIDENCE-DOSSIER slice 3: a named file at HABITS with its sketches, and what is filed in it as one, read with its name first
+				FS47NbUnknown Named = Sheet; Named.Name = TEXT("Folded one, in fours"); Named.Stage = TEXT("HABITS"); Named.bFiled = true; Named.StageN = 3; Named.Build = 2; Named.Prints = 2; Named.Hours = { 23, 2 };
+				Named.Merged = S47Dossier::MergedLine({ 3 });
+				TArray<FString> SpokenNamed;
+				const TSharedRef<SWidget> DrawnNamed = UnknownFileBox(Named, SpokenNamed);
+				Check(TEXT("Freeform THEM (slice 3): a named file shows its name with its number beside it, a sketch for each stage reached and what is filed in it as one"),
+					DrawnNamed != SNullWidget::NullWidget && SpokenNamed.Num() == 1 && SpokenNamed[0].StartsWith(TEXT("Folded one, in fours, UNKNOWN 1. HABITS.")) && SpokenNamed[0].EndsWith(TEXT("Filed in it as one: UNKNOWN 3."))
+					&& S47Script::LintText(SpokenNamed[0]).IsEmpty() && !S47Marginalia::NamesKind(SpokenNamed[0]), SpokenNamed.Num() ? SpokenNamed[0] : FString());
 			}
 			const auto Pencilled = SNew(SS47Notebook).Docs(All).Extras(Mx);
 			Pencilled->Show(TEXT("findings")); Pencilled->Section(1);

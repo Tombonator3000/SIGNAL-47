@@ -113,6 +113,16 @@ namespace S47Thoughts
   UE_LOG(LogTemp,Display,TEXT("S47: thought (%s): %s"),*Key,*P[I]);
   return true;
  }
+ bool ThinkLine(US47Main* M,const FString& Line,const TCHAR* Tag)
+ {
+  if(!IsValid(M)||!M->UI||M->ModalOpen()||Line.IsEmpty()||M->Mode!=US47Main::EMode::Play)return false;
+  const double Now=FPlatformTime::Seconds();
+  if(!May(Now,LastAt))return false;
+  LastAt=Now;
+  M->UI->Thought(Line,4.f);
+  UE_LOG(LogTemp,Display,TEXT("S47: thought (%s): %s"),Tag?Tag:TEXT("line"),*Line);
+  return true;
+ }
  const TCHAR* TiredKey(double Tired){return !FMath::IsFinite(Tired)||Tired<=TiredFrom?TEXT(""):Tired<ExhaustedFrom?TEXT("tired"):TEXT("exhausted");}
  const TCHAR* FindKey(const FString& Id)
  {
@@ -145,6 +155,7 @@ namespace S47Thoughts
     if(Night!=TwoNight){TwoNight=Night;Later(TEXT("two"),2.);}
    }
    PrevClock=Clock;
+   M->Freeform->DossierHabitStep(); // EVIDENCE-DOSSIER slice 3: a file's dark hour coming up, on a night out
   }
   else if(ClockOf){ClockOf=nullptr;Due.Reset();}
   if(Due.Num()==0||M->Mode!=US47Main::EMode::Play||M->ModalOpen()||(bFree&&M->Freeform->Held()))return;

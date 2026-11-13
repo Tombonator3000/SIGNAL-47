@@ -56,6 +56,9 @@ namespace S47PredecessorText
  // EVIDENCE-DOSSIER-20261113: her one line on the operator's files of the unknown, from the first that reaches MARKS (Files: how many
  // have; 0: nothing said). What she reads is that they are kept apart, never what any of them is. It follows Levers (a leading space).
  FString Apart(int32 Files);
+ // EVIDENCE-DOSSIER slice 3: her line on the files filed, each to itself (Kinds: FS47Dossier::KindsFiled), when they count for a point
+ // (two and more); empty below. That the archive work counts, never what any of it is. A leading space.
+ FString Archived(int32 Kinds);
  // The Monday sheet after KEPT OPEN: shorter, and nothing to win.
  FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString& FiscalEnd,int32 Taken,const FString& Levers);
  // What the Stays letter says of what was found (M7): wagon 23, the deputy's file, the routed pay, Ortiz's thermos sent on. Only the

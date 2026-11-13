@@ -2398,14 +2398,21 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		{
 			FS47NbUnknown Sheet; Sheet.Title = UnknownFile.Title; Sheet.Stage = UnknownFile.Stage; Sheet.Next = UnknownFile.Next; Sheet.Gave = UnknownFile.Gave; // LOOP-DOSSIER-GIVES-20261113
 			for (const S47Dossier::FBox& Slot : UnknownFile.Boxes) { Sheet.Boxes.Add({ Slot.Label, Slot.How, Slot.Note, Slot.bFilled }); Sheet.Boxes.Last().Struck = Slot.Struck; } // (slice 2: the struck pencil)
+			// slice 3: the player's name, FILED, what is filed in it as one, the sketches per stage reached
+			Sheet.Name = UnknownFile.Name; Sheet.bFiled = UnknownFile.bFiled; Sheet.StageN = int32(M->Freeform->Unknowns.StageOfFile(UnknownFile.Number));
+			Sheet.Build = int32(S47Dossier::SketchOf(UnknownFile)); Sheet.Prints = S47Dossier::PrintsOf(UnknownFile); Sheet.Hours = UnknownFile.Hours;
+			Sheet.Merged = S47Dossier::MergedLine(UnknownFile.Merged);
 			X.Unknowns.Add(Sheet);
 		}
 		// EVIDENCE-DOSSIER slice 2: the pairs a find showed to be one thing, side by side, never merged: where their boxes agree
 		for (const FIntPoint& Pair : M->Freeform->Unknowns.Beside())
 		{
-			if (!UnknownFiles.IsValidIndex(Pair.X - 1) || !UnknownFiles.IsValidIndex(Pair.Y - 1)) continue;
-			const S47Dossier::FFile& LeftFile = UnknownFiles[Pair.X - 1]; const S47Dossier::FFile& RightFile = UnknownFiles[Pair.Y - 1];
-			FS47NbUnknownPair Two; Two.Left = LeftFile.Title; Two.Right = RightFile.Title; Two.Said = S47Dossier::BesideWords(LeftFile, RightFile); Two.Marks = S47Dossier::Agreement(LeftFile, RightFile);
+			// slice 3: by number (a number filed in another as one is not in the list)
+			const S47Dossier::FFile* LeftAt = UnknownFiles.FindByPredicate([&Pair](const S47Dossier::FFile& Each) { return Each.Number == Pair.X; });
+			const S47Dossier::FFile* RightAt = UnknownFiles.FindByPredicate([&Pair](const S47Dossier::FFile& Each) { return Each.Number == Pair.Y; });
+			if (!LeftAt || !RightAt) continue;
+			const S47Dossier::FFile& LeftFile = *LeftAt; const S47Dossier::FFile& RightFile = *RightAt;
+			FS47NbUnknownPair Two; Two.Left = LeftFile.Named; Two.Right = RightFile.Named; Two.Said = S47Dossier::BesideWords(LeftFile, RightFile); Two.Marks = S47Dossier::Agreement(LeftFile, RightFile);
 			for (int32 BoxAt = 0; BoxAt < LeftFile.Boxes.Num() && BoxAt < RightFile.Boxes.Num(); ++BoxAt) { Two.Labels.Add(LeftFile.Boxes[BoxAt].Label); Two.LeftFilled.Add(LeftFile.Boxes[BoxAt].bFilled); Two.RightFilled.Add(RightFile.Boxes[BoxAt].bFilled); }
 			X.UnknownPairs.Add(Two);
 		}

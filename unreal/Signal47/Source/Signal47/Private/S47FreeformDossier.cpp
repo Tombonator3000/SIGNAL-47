@@ -13,7 +13,9 @@
 #include "S47RecordsBinder.h"
 #include "S47Rhythm.h"
 #include "S47RoadGlimpse.h"
+#include "S47SaroSave.h"
 #include "S47Script.h"
+#include "S47Thoughts.h"
 #include "S47Story.h"
 #include "S47UI.h"
 #include "SS47FieldMap.h"
@@ -55,9 +57,11 @@ bool FS47FreeformSession::TagEvidenceAt(const FString& Key,S47Dossier::EKind Kin
   UE_LOG(LogTemp,Display,TEXT("S47: dossier: file %d at MARKS: one more bearing from night %d"),Number,S47Dossier::ExtraNightFor(Clock()));
  }
  // The stamp: the file's number and the kind of evidence. Never which one it is, and never what was found.
- const FString Said=S47Dossier::Stamp(Number,Type,S47Dossier::PhotoKey(Key),bNewFile,After!=Before?After:S47Dossier::EStage::NoFile);
+ // Slice 3: by the player's name beside the number, once the file has one
+ const FString Said=S47Dossier::StampOf(Unknowns.TitleOf(Number),Type,S47Dossier::PhotoKey(Key),bNewFile,After!=Before?After:S47Dossier::EStage::NoFile);
  UE_LOG(LogTemp,Display,TEXT("S47: dossier: %s is %s in file %d (%s, opened by %s): %s"),*Key,S47Dossier::TypeId(Type),Number,S47Dossier::KindId(Kind),S47Dossier::KindId(Opener),*Said);
  if(M&&M->UI)M->UI->Toast(Said,5.f);
+ DossierPayFiled(); // slice 3: a named file brought to HABITS out there is FILED now
  return true;
 }
 int32 FS47FreeformSession::DossierHabitsFrom(const FS47RhythmData& Rules)
@@ -89,7 +93,7 @@ void FS47FreeformSession::DossierMap(FS47MapView& View) const
  {
   double X=0,Z=0;
   if(!Unknowns.FirstWhereOfFile(Number,X,Z))continue;
-  S47FieldMap::FFirstLogged Logged;Logged.X=X;Logged.Z=Z;Logged.Label=FString::Printf(TEXT("UNKNOWN %d"),Number);
+  S47FieldMap::FFirstLogged Logged;Logged.X=X;Logged.Z=Z;Logged.Label=Unknowns.TitleOf(Number); // slice 3: the player's name beside it
   S47FieldMap::AddFirstLogged(View,Logged);
  }
 }
@@ -112,13 +116,13 @@ void FS47FreeformSession::DossierTasks(TArray<FS47Task>& Out) const
  for(int32 Number=1;Number<=Unknowns.Order().Num();++Number)
  {
   if(Unknowns.StageOfFile(Number)!=S47Dossier::EStage::Habits)continue;
-  const FString Line=S47Dossier::HoursLine(Number,Unknowns.HoursOfFile(Number));
+  const FString Line=S47Dossier::HoursLineOf(Unknowns.TitleOf(Number),Unknowns.HoursOfFile(Number)); // slice 3: by its name too
   if(!Line.IsEmpty())Out.Add({Line,false});
  }
 }
 void FS47FreeformSession::LoadDossier(const S47J::FObj& Saved)
 {
- Unknowns.Reset();
+ Unknowns.Reset();HabitThought.Reset();HabitLastCheck=-1e9; // slice 3: the habits come to mind afresh after a Continue
  Unknowns.SetHabitsFrom(M&&M->Rhythm?DossierHabitsFrom(M->Rhythm->Data()):1); // slice 2: not saved; the rhythm's curve
  if(!Saved.IsValid())return;
  // LOOP-DOSSIER-GIVES-20261113: a file at MARKS from before the extra bearing was kept gets its one now, from the save's own night
@@ -139,7 +143,10 @@ void FS47FreeformSession::SaveDossier(const S47J::FObj& Record) const
 }
 void FS47FreeformSession::BinderUnknowns(S47Binder::FSource& Src) const
 {
- for(const S47Dossier::FFile& File:Unknowns.Files())
+ const TArray<S47Dossier::FFile> All=Unknowns.Files();
+ const TArray<FIntPoint> Pairs=Unknowns.Beside();
+ const int32 Tonight=NightOf(Clock());
+ for(const S47Dossier::FFile& File:All)
  {
   // The photographs in the file, by the print each claim stands on now (the album's own id, as the OPS receipt names it).
   TArray<FString> PhotoLines;
@@ -153,8 +160,122 @@ void FS47FreeformSession::BinderUnknowns(S47Binder::FSource& Src) const
   }
   S47Binder::FUnknownIn Sheet;Sheet.Number=File.Number;Sheet.Title=File.Title;Sheet.Stage=File.Stage;Sheet.Opened=File.Opened;Sheet.Latest=File.Latest;Sheet.bAtMarks=File.bAtMarks;
   Sheet.Body=S47Dossier::Sheet(File,PhotoLines);
+  // slice 3: its name and the suggestion; the files it could be filed as one with (those kept beside it first); what can come out again
+  Sheet.Name=File.Name;Sheet.Suggest=S47Dossier::Suggest(File);Sheet.bFiled=File.bFiled;
+  for(const bool bBeside:{true,false})for(const S47Dossier::FFile& Other:All)
+  {
+   if(Other.Number==File.Number)continue;
+   const bool bPair=Pairs.Contains(FIntPoint(FMath::Min(File.Number,Other.Number),FMath::Max(File.Number,Other.Number)));
+   if(bPair!=bBeside)continue;
+   Sheet.Others.Add(Other.Number);Sheet.OthersBeside.Add(bPair);
+  }
+  for(const int32 From:File.Merged)if(Unknowns.CanTakeOut(File.Number,From,Tonight))Sheet.TakeOut.Add(From);
   Src.Unknowns.Add(MoveTemp(Sheet));
  }
+}
+// ---------- EVIDENCE-DOSSIER slice 3 (14 November): names, files filed as one, the allowance, the habits as thoughts ----------
+bool FS47FreeformSession::DossierName(int32 Number,const FString& Typed,FString& Words,bool bAt)
+{
+ if(!bAt){Words=S47Dossier::AwayWords();return false;}
+ if(!Unknowns.IsFile(Number)){Words.Reset();return false;}
+ FString Clean,Why;
+ if(!S47Dossier::CleanName(Typed,Clean,Why)){Words=Why;return false;}
+ Unknowns.SetName(Number,Clean,DayNumber);
+ Words=S47Dossier::NameSlip(Unknowns.TitleOf(Number));
+ const int32 Paid=DossierPayFiled();
+ if(Paid>0)Words+=FString::Printf(TEXT(" FILED UNDER ITS NAME. $%d CREDITED."),Paid);
+ else if(Unknowns.Filed(Number))Words+=TEXT(" FILED UNDER ITS NAME.");
+ UE_LOG(LogTemp,Display,TEXT("S47: dossier: file %d named '%s' (filed %d, paid %d)"),Number,*Clean,Unknowns.Filed(Number)?1:0,Paid);
+ return true;
+}
+bool FS47FreeformSession::DossierFileAsOne(int32 A,int32 B,FString& Words,bool bAt)
+{
+ if(!bAt){Words=S47Dossier::AwayWords();return false;}
+ const int32 Night=NightOf(Clock());
+ if(!Unknowns.Merge(A,B,Night)){Words.Reset();return false;}
+ const int32 Into=FMath::Min(A,B),From=FMath::Max(A,B);
+ // Nothing says whether they are one thing: the file says what it holds, and its pencil is struck where they disagree.
+ UE_LOG(LogTemp,Display,TEXT("S47: dossier: file %d filed in file %d as one, night %d (%s; stage %s)"),From,Into,Night,Unknowns.WrongMerge(Into)?TEXT("not one kind"):TEXT("one kind"),S47Dossier::StageWord(Unknowns.StageOfFile(Into)));
+ Words=S47Dossier::MergeSlip(Into,From);
+ const int32 Paid=DossierPayFiled();
+ if(Paid>0)Words+=FString::Printf(TEXT(" FILED UNDER ITS NAME. $%d CREDITED."),Paid);
+ return true;
+}
+bool FS47FreeformSession::DossierTakeOut(int32 Into,int32 From,FString& Words,bool bAt)
+{
+ if(!bAt){Words=S47Dossier::AwayWords();return false;}
+ if(!Unknowns.TakeOut(Into,From,NightOf(Clock()))){Words.Reset();return false;}
+ UE_LOG(LogTemp,Display,TEXT("S47: dossier: file %d taken out of file %d again"),From,Into);
+ Words=S47Dossier::TakeOutSlip(Into,From);
+ return true;
+}
+bool FS47FreeformSession::DossierAct(const FString& Do,const FString& Typed,FString& Words)
+{
+ TArray<FString> Parts;Do.ParseIntoArray(Parts,TEXT(":"),true);
+ const bool bAt=NearBinder();
+ if(Parts.Num()==2&&Parts[0]==TEXT("name"))return DossierName(FCString::Atoi(*Parts[1]),Typed,Words,bAt);
+ if(Parts.Num()==3&&Parts[0]==TEXT("merge"))return DossierFileAsOne(FCString::Atoi(*Parts[1]),FCString::Atoi(*Parts[2]),Words,bAt);
+ if(Parts.Num()==3&&Parts[0]==TEXT("out"))return DossierTakeOut(FCString::Atoi(*Parts[1]),FCString::Atoi(*Parts[2]),Words,bAt);
+ return false;
+}
+int32 FS47FreeformSession::DossierPayFiled()
+{
+ // The design (part 3, "Penger"): a file FILED gives the field allowance once, under the week's cap like all field money.
+ int32 Paid=0;
+ for(int32 Number=1;Number<=Unknowns.Order().Num();++Number)
+ {
+  if(!Unknowns.Filed(Number)||Unknowns.Paid(Number))continue;
+  Unknowns.MarkPaid(Number);
+  Paid+=EarnSide(FiledAllowance,TEXT("dossier filed"));
+ }
+ return Paid;
+}
+void FS47FreeformSession::DossierHabitStep()
+{
+ // Once a game minute at most: out of the building, a file at HABITS whose dark hour is coming up comes to mind, once a night.
+ if(!M||!RulesLive()||Unknowns.IsEmpty()||FMath::Abs(Clock()-HabitLastCheck)<60.)return;
+ HabitLastCheck=Clock();
+ if(S47SaroSave::InStation(M))return;
+ const int32 Night=NightOf(Clock());int32 Hour=-1;
+ const int32 Number=Unknowns.HabitHourFile(Clock(),HabitThought,Night,Hour);
+ if(Number>0&&S47Thoughts::ThinkLine(M,S47Dossier::HabitHourThought(Hour),TEXT("habit-hour")))HabitThought.Add(Number,Night);
+}
+bool FS47FreeformSession::DossierHabitLamp(S47Dossier::EKind Near)
+{
+ // The lamp raised near one whose answer to the lamp a file at HABITS holds: the habit in the player's own words, once a night.
+ if(!M||Unknowns.IsEmpty())return false;
+ const int32 Night=NightOf(Clock());
+ const int32 Number=Unknowns.HabitLampFile(Near,HabitThought,Night);
+ if(Number<1||!S47Thoughts::ThinkLine(M,S47Dossier::HabitLampThought(S47Dossier::Signature(Near,S47Dossier::EType::Lamp)),TEXT("habit-lamp")))return false;
+ HabitThought.Add(Number,Night);
+ return true;
+}
+FString FS47FreeformSession::TestNameDossier()
+{
+ // F10: each file named by the suggestion it is filled with at the binder, as if written there
+ FString Said;
+ for(const S47Dossier::FFile& File:Unknowns.Files())
+ {
+  FString Words;
+  const FString Suggested=S47Dossier::Suggest(File);
+  DossierName(File.Number,Suggested.IsEmpty()?FString(TEXT("Nothing yet")):Suggested,Words,true);
+  Said+=Words+TEXT(" ");
+ }
+ if(Said.IsEmpty())Said=TEXT("No file to name. ");
+ return Said+FString::Printf(TEXT("Dr. Ward's count: %d of the near three filed (%d points)."),Unknowns.KindsFiled(),S47Dossier::WardPoints(Unknowns.KindsFiled()));
+}
+FString FS47FreeformSession::TestMergeDossier()
+{
+ // F10: what was filed as one tonight is taken out again; else the first pair kept side by side (or the first two files) filed as one
+ FString Words;
+ const int32 Tonight=NightOf(Clock());
+ for(const S47Dossier::FFile& File:Unknowns.Files())for(const int32 From:File.Merged)
+  if(Unknowns.CanTakeOut(File.Number,From,Tonight)){DossierTakeOut(File.Number,From,Words,true);return Words;}
+ const TArray<FIntPoint> Pairs=Unknowns.Beside();
+ const TArray<S47Dossier::FFile> All=Unknowns.Files();
+ const FIntPoint Two=Pairs.IsEmpty()?(All.Num()>=2?FIntPoint(All[0].Number,All[1].Number):FIntPoint(0,0)):Pairs[0];
+ if(Two.X<1||!DossierFileAsOne(Two.X,Two.Y,Words,true))return TEXT("Nothing to file as one: fewer than two files.");
+ return Words+FString::Printf(TEXT(" (%s; stage %s.)"),Unknowns.WrongMerge(Two.X)?TEXT("not one kind: a wrong one"):TEXT("one kind"),S47Dossier::StageWord(Unknowns.StageOfFile(Two.X)));
 }
 FString FS47FreeformSession::TestFillDossier()
 {
@@ -326,6 +447,34 @@ bool FS47FreeformSession::DossierSelfTest(TArray<FString>& Lines)
   TArray<FS47Dossier::FOld> Learned;Learned.Add({TEXT("rule-tall-froze"),TEXT("Something tall."),5});Learned.Add({TEXT("rule-still-held"),TEXT("A small one."),4});
   Check(D.Rebuild(Learned,TArray<FString>{TEXT("strange.shade.n2"),TEXT("strange.tallfigure.n6")})==3&&D.NumberOf(S47Dossier::EKind::Small)==1&&D.NumberOf(S47Dossier::EKind::Tall)==2&&D.FilesOf(S47Dossier::EKind::Tall)==1
    &&D.Has(S47Dossier::EKind::Tall,S47Dossier::EType::Lamp)&&D.Order().Num()==2,TEXT("slice 2: an older save keeps one file a kind on rebuild, the tall one's rule in it; the shade has none"));
+ }
+ { // EVIDENCE-DOSSIER slice 3: the name and filing as one at the binder only, the allowance once, the binder's lines, and a Continue
+  FS47FreeformSession At(nullptr);At.Begin(nullptr);
+  const S47Dossier::EType Tape=S47Dossier::EType::Tape;
+  for(int32 Night=2;Night<=4;++Night)for(const S47Dossier::EType T:{Shape,Night==2?Ground:Night==3?Tape:Lamp})At.Unknowns.Tag(FString::Printf(TEXT("s3-%d-%d"),Night,int32(T)),Small,T,Night,2);
+  At.Unknowns.Tag(TEXT("s3-low"),Low,Shape,4,1);At.Unknowns.Tag(TEXT("s3-low2"),Low,Ground,4,1);
+  FString Words;
+  const bool bAway=!At.DossierName(1,TEXT("Big head"),Words,false)&&Words==S47Dossier::AwayWords()&&At.Unknowns.NameOf(1).IsEmpty()&&!At.DossierAct(TEXT("name:1"),TEXT("Big head"),Words)
+   &&!At.DossierAct(TEXT("merge:1:2"),FString(),Words)&&At.Unknowns.IsFile(2);
+  const bool bRefused=!At.DossierName(1,TEXT("Grey one"),Words,true)&&At.Unknowns.NameOf(1).IsEmpty()&&!Words.IsEmpty();
+  const bool bNamed=At.DossierName(1,TEXT(" Big   head "),Words,true)&&At.Unknowns.NameOf(1)==TEXT("Big head")&&Words.StartsWith(TEXT("WRITTEN ON THE FILE: UNKNOWN 1 (BIG HEAD)."))
+   &&Words.Contains(FString::Printf(TEXT("$%d CREDITED"),int32(FiledAllowance)))&&At.Unknowns.Paid(1)&&At.Unknowns.Filed(1);
+  const bool bOnce=At.DossierName(1,TEXT("Big head again"),Words,true)&&!Words.Contains(TEXT("CREDITED"))&&At.DossierPayFiled()==0;
+  const S47Binder::FSource Src=At.BinderSource();
+  TArray<FS47Task> NoteLines;At.DossierTasks(NoteLines);
+  const bool bShown=Src.Unknowns.Num()==2&&Src.Unknowns[0].Name==TEXT("Big head again")&&Src.Unknowns[0].bFiled&&Src.Unknowns[0].Suggest==TEXT("Big head, bare feet")&&Src.Unknowns[0].Others==TArray<int32>{2}
+   &&Src.Unknowns[1].Suggest==TEXT("Folded one, in fours")&&Src.Unknowns[0].Body.StartsWith(TEXT("WORKING NAME  BIG HEAD AGAIN"))
+   &&NoteLines.ContainsByPredicate([](const FS47Task& T){return T.Text.StartsWith(TEXT("UNKNOWN 1 (Big head again) / Logged so far at 02:00"));});
+  Check(bAway&&bRefused&&bNamed&&bOnce&&bShown,TEXT("slice 3: a name is written on a file at the binder only, by the player's own words; a FILED file is paid once; the name is on the binder's sheet and tonight's hours line"));
+  // a wrong one filed as one: nothing says so; it counts for nothing with Dr. Ward until it is taken out again that night, also after a Continue
+  const bool bMerged=At.DossierFileAsOne(2,1,Words,true)&&Words==S47Dossier::MergeSlip(1,2)&&At.Unknowns.WrongMerge(1)&&At.BinderSource().Unknowns.Num()==1&&At.BinderSource().Unknowns[0].TakeOut==TArray<int32>{2};
+  const S47J::FObj Kept=S47J::Read(S47J::Write(At.Save()));
+  At.Stop();
+  FS47FreeformSession Back(nullptr);Back.Begin(Kept);
+  const bool bBack=!Back.Unknowns.IsFile(2)&&Back.Unknowns.KindsFiled()==0&&Back.Unknowns.NameOf(1)==TEXT("Big head again");
+  const bool bOut=Back.DossierTakeOut(1,2,Words,true)&&Words==S47Dossier::TakeOutSlip(1,2)&&Back.Unknowns.IsFile(2)&&Back.Unknowns.KindsFiled()==1&&!Back.DossierTakeOut(1,2,Words,true);
+  Check(bMerged&&bBack&&bOut,TEXT("slice 3: two filed as one at the binder (a wrong one too, never said), kept through a Continue, out again that night; Dr. Ward's count follows"));
+  Back.Stop();
  }
  { // EVIDENCE-DOSSIER slice 2 (M7): the pacing against the week gates and the tiers, from director.json itself
   FS47Rhythm Rules(nullptr);Rules.LoadRules();

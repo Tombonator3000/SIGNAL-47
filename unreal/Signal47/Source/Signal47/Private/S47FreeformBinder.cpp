@@ -99,6 +99,7 @@ void FS47FreeformSession::ShowBinder()
   .OnFile([this,Mine](FString& Words){return Mine()&&FileAtBinder(Words);})
   .OnShown([this,Mine](const FString& EntryKey){if(Mine())BinderRead(EntryKey);})
   .OnOlder([this,Mine]{if(Mine()&&Predecessor)Predecessor->OpenGap();})
+  .OnDo([this,Mine](const FString& Do,const FString& Typed,FString& Words){return Mine()&&DossierAct(Do,Typed,Words);}) // EVIDENCE-DOSSIER slice 3
   .OnLeave([this,Mine]{if(Mine()&&M&&M->UI)M->UI->Close();}));
 }
 bool FS47FreeformSession::FileAtBinder(FString& Words)

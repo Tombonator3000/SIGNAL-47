@@ -1,4 +1,5 @@
 #include "S47RecordsBinder.h"
+#include "S47Dossier.h"
 #include "S47FreeformCases.h"
 #include "S47GameStyle.h"
 #include "S47Script.h"
@@ -16,7 +17,7 @@ namespace S47BinderLocal
   TEXT("No case opened.\n\nA case is opened at OPS. Its sheet is kept here, with every page that belongs to it listed under it."),
   TEXT("No original retained.\n\nEach observation's original is listed here by day once it is printed. It is marked FILED when its packet is in this binder."),
   TEXT("No record retained.\n\nWhat is kept from the field, the station round and the workshop bench is listed here by day."),
-  TEXT("No file opened.\n\nWhat the operator logs in the field about something not yet known is kept here, one file for each, as the notebook has it. Read only."),
+  TEXT("No file opened.\n\nWhat the operator logs in the field about something not yet known is kept here, one file for each, as the notebook has it. At this binder a file is given a working name, and two files can be filed as one."),
   TEXT("No file released.\n\nThe duty officer releases the station's files at 08:00.")};
  const TCHAR* const TodayGroups[4]={TEXT("TO FILE"),TEXT("FILED TODAY"),TEXT("RETAINED TODAY"),TEXT("STILL AT OPS")};
  const TCHAR* const FiledWords=TEXT("This original is in the binder under its reference.");
@@ -153,6 +154,23 @@ TArray<FRow> FModel::Rows(int32 Section,const FString& PickId) const
   }
   return Out;
  }
+ if(Section==SecUnknowns)
+ {
+  // EVIDENCE-DOSSIER slice 3: at the binder itself the chosen file shows what can be done with it, as a case shows its pages
+  for(const int32 At:Dividers[SecUnknowns].Entries)
+  {
+   const FEntry& E=Entries[At];Out.Add(LineOf(At));
+   if(!bAtBinder||E.Unknown<1||(PickId!=E.Key&&!PickId.StartsWith(E.Key+TEXT(">"))))continue;
+   const auto Child=[&Out,&E,At](const FString& Do,const FString& Words)
+   {
+    FRow R;R.Entry=At;R.Id=E.Key+TEXT(">")+Do;R.Indent=1;R.Mid=Words;R.Do=Do;R.Act=Words;Out.Add(R);
+   };
+   Child(FString::Printf(TEXT("name:%d"),E.Unknown),S47Dossier::NameRow());
+   for(int32 N=0;N<E.Others.Num();++N)Child(FString::Printf(TEXT("merge:%d:%d"),E.Unknown,E.Others[N]),S47Dossier::MergeRow(E.Others[N],E.OthersBeside.IsValidIndex(N)&&E.OthersBeside[N]));
+   for(const int32 From:E.TakeOut)Child(FString::Printf(TEXT("out:%d:%d"),E.Unknown,From),S47Dossier::TakeOutRow(From));
+  }
+  return Out;
+ }
  if(Section==SecCases)
  {
   for(const int32 At:Dividers[SecCases].Entries)
@@ -284,9 +302,12 @@ FModel Build(const FSource& In)
  for(const FUnknownIn& U:In.Unknowns)
  {
   FEntry E;E.Key=UnknownKey(U.Number);E.Home=SecUnknowns;E.Day=U.Latest;E.Rank=0;E.Seq=U.Number;
-  E.Kind=UnknownKind;E.What=U.Title;E.Showed=U.Title;E.DayLine=DateOf(In,U.Opened);
+  // slice 3: by the player's name beside its number, once it has one
+  E.Kind=UnknownKind;E.What=U.Name.IsEmpty()?U.Title:S47Dossier::Titled(U.Number,U.Name);E.Showed=E.What;E.DayLine=DateOf(In,U.Opened);
   E.When=FString(TEXT("OPENED "))+E.DayLine+(U.Latest>U.Opened?FString(TEXT(" / LAST ENTRY "))+DateOf(In,U.Latest):FString());
-  E.Status=U.Stage;E.StatusLine=U.Stage+TEXT(" / READ ONLY");E.Tone=U.bAtMarks?1:0;E.TodayGroup=U.Latest>0&&U.Latest==In.Today?2:-1;
+  E.Status=U.Stage;E.StatusLine=U.Stage+(U.bFiled?TEXT(" / FILED UNDER ITS NAME"):TEXT(""))+(In.bAtBinder?TEXT(""):TEXT(" / READ ONLY"));
+  E.Tone=U.bAtMarks||U.bFiled?1:0;E.TodayGroup=U.Latest>0&&U.Latest==In.Today?2:-1;
+  E.Unknown=U.Number;E.NameNow=U.Name;E.NameSuggest=U.Suggest;E.Others=U.Others;E.OthersBeside=U.OthersBeside;E.TakeOut=U.TakeOut;
   E.Pages=Paginate(U.Body,SheetWide,SheetLines);
   Out.Entries.Add(MoveTemp(E));
  }
@@ -330,7 +351,7 @@ FString Lint()
  for(const TCHAR* W:TodayGroups)Words.Add(W);
  for(const TCHAR* W:RowWords)Words.Add(W);
  for(const TCHAR* W:{FiledWords,PacketWords,HeldWords,OpenCaseWords,QuestionWords,FrontHead,FrontRules,FrontCopy,UnknownKind})Words.Add(W);
- Words.Add(TEXT("NO FILE OPENED. 1 FILE KEPT APART. 3 FILES KEPT APART. OPENED MON APR 28 / LAST ENTRY TUE APR 29. OUTLINE / READ ONLY."));
+ Words.Add(TEXT("NO FILE OPENED. 1 FILE KEPT APART. 3 FILES KEPT APART. OPENED MON APR 28 / LAST ENTRY TUE APR 29. OUTLINE / READ ONLY. HABITS / FILED UNDER ITS NAME."));
  // What Build prints around the session's own text, with stand-in numbers.
  Words.Add(TEXT("NO PAGE IS KEPT WITH THIS CASE. 2 PAGES ARE KEPT WITH THIS CASE, LISTED UNDER IT. 3 EARLIER LEADS ARE COUNTED ON CASE BOARD AND KEPT BEHIND FIELD + BENCH."));
  Words.Add(TEXT("2 OPEN / 1 CLOSED. 3 FILED / 2 NOT IN THE BINDER. 4 FIELD / 1 BENCH. 9 RELEASED / 2 NOT READ. NOTHING YET TODAY. 3 PAGES TODAY / PACKET TO FILE. CASE LEAD. TURN TO THE REPEATED INTERVAL. PACKET IN HAND."));
@@ -430,10 +451,21 @@ bool SelfTest(TArray<FString>& Lines)
   const FModel Kept=Build(With);const TArray<FRow> Rows=Kept.Rows(SecUnknowns,FString());
   const bool bRows=Rows.Num()==2&&!Rows[0].bHead&&Rows[0].Mid==TEXT("UNKNOWN 1")&&Rows[0].Right==TEXT("MARKS")&&Rows[1].Mid==TEXT("UNKNOWN 2")&&Rows[0].Jump.IsEmpty()&&!Rows[0].bFile&&Rows[0].Act.IsEmpty();
   const FEntry* First=bRows?&Kept.Entries[Rows[0].Entry]:nullptr;
-  Check(Kept.Entries.Num()==M.Entries.Num()+2&&First&&First->Key==UnknownKey(1)&&First->StatusLine==TEXT("MARKS / READ ONLY")&&First->Stamp.IsEmpty()&&First->When==TEXT("OPENED MON APR 28 / LAST ENTRY TUE APR 29")
+  Check(Kept.Entries.Num()==M.Entries.Num()+2&&First&&First->Key==UnknownKey(1)&&First->StatusLine==TEXT("MARKS")&&Build([&With]{FSource Away=With;Away.bAtBinder=false;return Away;}()).Entries.Last().StatusLine==TEXT("MARKS / READ ONLY")
+   &&First->Stamp.IsEmpty()&&First->When==TEXT("OPENED MON APR 28 / LAST ENTRY TUE APR 29")
    &&First->Pages.Num()==1&&First->Pages[0]==TEXT("STAGE     MARKS")&&Kept.Dividers[SecUnknowns].Summary==TEXT("2 FILES KEPT APART")&&Kept.ToFile==M.ToFile&&Kept.Land()==M.Land()
    &&M.Dividers[SecUnknowns].Entries.IsEmpty()&&M.Dividers[SecUnknowns].Summary==TEXT("NO FILE OPENED")&&Kept.Rows(SecToday,FString()).ContainsByPredicate([](const FRow& R){return R.Id==TEXT("today:unk:1");}),
    TEXT("UNKNOWNS keeps the operator's own files in the order of their numbers, read only, under no date; one that grew today is listed under TODAY'S FILING"));
+  // EVIDENCE-DOSSIER slice 3: at the binder the chosen file offers its name and filing as one; a reading copy offers nothing
+  FSource Named=With;
+  Named.Unknowns[1].Name=TEXT("Bare feet");Named.Unknowns[1].Suggest=TEXT("Big head, bare feet");Named.Unknowns[1].Others={2};Named.Unknowns[1].OthersBeside={true};Named.Unknowns[0].TakeOut={3};
+  const FModel At=Build(Named);
+  const TArray<FRow> Shut=At.Rows(SecUnknowns,FString()),Open=At.Rows(SecUnknowns,UnknownKey(1)),Inside=At.Rows(SecUnknowns,UnknownKey(1)+TEXT(">name:1")),Second=At.Rows(SecUnknowns,UnknownKey(2));
+  FSource Copy=Named;Copy.bAtBinder=false;
+  const TArray<FRow> Far=Build(Copy).Rows(SecUnknowns,UnknownKey(1));
+  Check(Shut.Num()==2&&Shut[0].Mid==TEXT("UNKNOWN 1 (Bare feet)")&&Open.Num()==4&&Open[1].Do==TEXT("name:1")&&Open[1].Indent==1&&Open[2].Do==TEXT("merge:1:2")&&Open[2].Mid.Contains(TEXT("KEPT BESIDE"))
+   &&Open[3].Mid==TEXT("UNKNOWN 2")&&Inside.Num()==4&&Second.Num()==4&&Second[2].Do==TEXT("name:2")&&Second[3].Do==TEXT("out:2:3")&&Far.Num()==2&&Far[0].Do.IsEmpty()&&At.Entries[Open[1].Entry].NameSuggest==TEXT("Big head, bare feet"),
+   TEXT("slice 3: at the binder a file chosen shows its name and what it can be filed as one with, and what can come out again; away from it nothing can be done"));
  }
  Check(Lint().IsEmpty(),TEXT("the binder's own words keep to Freeform's spoiler limits"));
  if(const FString Why=Lint();!Why.IsEmpty())Lines.Add(TEXT("     ")+Why);

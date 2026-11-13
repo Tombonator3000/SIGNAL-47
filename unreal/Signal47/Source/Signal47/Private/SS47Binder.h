@@ -12,6 +12,8 @@
 // A and D (D-pad left and right) turn the sheets of a long page, Page Up and Page Down move a sheet that runs past the page,
 // Enter, Space or the pad's A does the one thing the line offers (file the packet in hand, turn to the page's own divider, turn to
 // the case it belongs to, the next sheet), and Escape, Tab or the pad's B closes it. Every line, tab and turn is a button as well.
+// EVIDENCE-DOSSIER slice 3: what a line's Do asks of the session: the Do, the name field's text, the slip's words; true when it was done.
+using FS47BinderDo=TFunction<bool(const FString&,const FString&,FString&)>;
 class SS47Binder : public SCompoundWidget
 {
 public:
@@ -22,6 +24,8 @@ public:
   SLATE_ARGUMENT(TFunction<void(const FString&)>,OnShown)   // this entry's page is on the right (a station file is then read)
   SLATE_ARGUMENT(TFunction<void()>,OnOlder)                 // the older binder on the same shelf
   SLATE_ARGUMENT(TFunction<void()>,OnLeave)
+  // EVIDENCE-DOSSIER slice 3: a line's Do ("name:2", "merge:1:3", "out:1:3"), with what is in the name field; the slip's words either way
+  SLATE_ARGUMENT(FS47BinderDo,OnDo)
  SLATE_END_ARGS()
  void Construct(const FArguments& Args);
  virtual bool SupportsKeyboardFocus() const override{return true;}
@@ -41,6 +45,11 @@ private:
  TFunction<bool(FString&)> OnFile;
  TFunction<void(const FString&)> OnShown;
  TFunction<void()> OnOlder,OnLeave;
+ FS47BinderDo OnDo;
+ // EVIDENCE-DOSSIER slice 3: the name field on a file of the unknown at the binder (the notebook's search field's rules: the keys
+ // are its own while it has them, Enter writes the name, Escape gives the keys back to the binder)
+ TSharedPtr<class SEditableTextBox> NameBox;
+ void Perform(const FString& Do);
  S47Binder::FModel Model;
  TArray<S47Binder::FRow> List;
  int32 Chosen=INDEX_NONE,BuiltTab=-1;

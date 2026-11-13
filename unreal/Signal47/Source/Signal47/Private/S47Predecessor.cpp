@@ -129,6 +129,7 @@ int32 FS47Predecessor::Points(const FTally& C)
  // Tapes with something on them nobody heard: a recording is a record she can send on.
  P+=C.Tapes>=2?1:0;
  P+=FS47WardReport::PointsFor(C.Trust);
+ P+=S47Dossier::WardPoints(C.Archived); // EVIDENCE-DOSSIER slice 3: the operator's files, filed each to itself
  return P;
 }
 FS47Predecessor::EOutcome FS47Predecessor::Decide(const FTally& C)
@@ -175,6 +176,7 @@ FS47Predecessor::FTally FS47Predecessor::Count() const
  if(F.Tape)C.Tapes=F.Tape->OddHeardCount();
  // The last week's report counts if it went whole, read or not (M7: it is due the day before she assesses).
  if(F.WardReport)C.Trust=F.WardReport->TrustAtReview();
+ C.Archived=F.Unknowns.KindsFiled(); // EVIDENCE-DOSSIER slice 3
  // Prints made in the camera: an enlargement is the same frame again, and is not counted twice (M7).
  if(M->Night&&M->Night->Album)for(const FS47AlbumShot& P:M->Night->Album->Shots())if(!P.bUnavailable&&!P.Url.IsEmpty()&&P.IsDeveloped()&&P.Enlarged.IsEmpty())++C.Photos;
  return C;
@@ -725,7 +727,7 @@ FString FS47Predecessor::LeverWords(const FTally& C) const
 {
  // EVIDENCE-DOSSIER-20261113: and one line once a file of the unknown has reached MARKS (X::Apart; it changes no point of hers in slice 1).
  return X::Levers(C.Logs>=LogsForPoint,C.Tapes>=2,FS47WardReport::PointsFor(C.Trust),C.Photos>=3,C.Guessed,C.Arrears,FS47FreeformSession::ArrearsCap)
-  +X::Apart(M&&M->Freeform?M->Freeform->Unknowns.AtMarks():0);
+  +X::Apart(M&&M->Freeform?M->Freeform->Unknowns.AtMarks():0)+X::Archived(C.Archived); // slice 3: and the files filed, when they count
 }
 void FS47Predecessor::Close()
 {
@@ -1688,6 +1690,7 @@ TArray<FString> FS47Predecessor::AllText()
  const FString AllLevers=X::Levers(false,false,0,false,1,60,80)+X::Levers(true,true,2,true,0,0,80)+X::Levers(false,false,-1,false,0,0,80);
  Out.Add(AllLevers);Out.Add(X::WeekNote(4,20,1,25,18,45,2,D,6,PointsToStay,3,2,false,AllLevers));Out.Add(X::WeekNote(4,20,1,25,18,0,2,D,7,PointsToStay,0,0,true,AllLevers));
  Out.Add(X::Apart(1));Out.Add(X::Apart(2));Out.Add(X::Apart(5)); // EVIDENCE-DOSSIER-20261113
+ Out.Add(X::Archived(2));Out.Add(X::Archived(3)); // EVIDENCE-DOSSIER slice 3
  Out.Add(X::KeptNote(5,30,26,0,D,1,AllLevers));Out.Add(X::Stays(D,30,2,25,0,true,X::Followed(true,true,true,true,true)));
  // T16-17: what the places and the binder say of Reyes's notebook, and the locker's cover.
  for(const X::FBookStep& S:X::Book()){if(S.Find)Out.Add(S.Find);if(S.Take)Out.Add(S.Take);}
@@ -1717,6 +1720,12 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   Check(Points(Cards)==Points(Usual)&&Points(Guess)==Points(Usual),TEXT("a pile of cards past the floor earns nothing, nor does a filing with nothing behind it"));
   FTally OneTape=Usual;OneTape.Tapes=1;FTally TwoTapes=Usual;TwoTapes.Tapes=2;
   Check(Points(OneTape)==Points(Usual)&&Points(TwoTapes)==Points(Usual)+1,TEXT("two tapes with something on them nobody heard count one point"));
+  // EVIDENCE-DOSSIER slice 3 (Tom, 13 November): one point for two of the near three filed, two for all three; nothing for none or
+  // one; the threshold stands, so a player with no files is assessed as before. Her line says so only when they count.
+  FTally Files0=Usual,Files1=Usual,Files2=Usual,Files3=Usual;Files1.Archived=1;Files2.Archived=2;Files3.Archived=3;
+  Check(Points(Files0)==Points(Usual)&&Points(Files1)==Points(Usual)&&Points(Files2)==Points(Usual)+1&&Points(Files3)==Points(Usual)+2&&PointsToStay==6&&Decide(Files0)==Decide(Usual)
+   &&X::Archived(0).IsEmpty()&&X::Archived(1).IsEmpty()&&!X::Archived(2).IsEmpty()&&X::Archived(3)!=X::Archived(2)&&X::Archived(9)==X::Archived(3)&&!X::Archived(3).Contains(TEXT("three")),
+   TEXT("EVIDENCE-DOSSIER slice 3: Dr. Ward's review gives one point for two files filed each to itself and two for three; the threshold of six is unchanged"));
  }
  if(!bClean)Lines.Add(FString(TEXT("FAIL predecessor: "))+Offender);
  // Reyes is only ever Reyes.

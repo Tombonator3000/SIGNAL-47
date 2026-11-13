@@ -793,6 +793,9 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
  // The body out now: the small one's own, or the moved one's.
  TOptional<FVector> Eye=VisitBodyEye();
  if(VisitWho==0){const auto V=G->Individuals();if(V.IsEmpty())Eye.Reset();else Eye=V[0].Eye;}
+ // EVIDENCE-DOSSIER slice 3: the lamp raised near one: a file at HABITS that holds its answer to the lamp comes to mind (once a night)
+ const bool bRaised=bLampOn&&!bHabitLampWas;bHabitLampWas=bLampOn;
+ if(bRaised&&Eye.IsSet()&&FVector::Dist(*Eye,Feet)<=S47Dossier::HabitLampNearM&&M->Freeform)M->Freeform->DossierHabitLamp(S47Dossier::KindOfVisit(VisitWho));
  // No body now, nothing to hold: the lamp is not left flickering for it.
  if(!Eye.IsSet()){LetAttentionGo();return;}
  const bool bCalm=M->Flow&&M->Flow->bCalmFlash;

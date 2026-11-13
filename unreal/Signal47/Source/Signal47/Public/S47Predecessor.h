@@ -36,7 +36,9 @@ public:
  // M7 (9 November): Concluded counts only a line with something behind it (FS47FreeformCases::Supported); a mystery filed on
  // nothing is Guessed, and counts for nothing. Photos: prints made in the camera, not enlargements of them. Reprieved: the times
  // taken when "Not yet" gave the nights back; only a taking after that sends somebody else.
- struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0,Guessed=0,Reprieved=0,Field=0;bool bWagon=false,bGap=false;};
+ // EVIDENCE-DOSSIER-20261113 slice 3: Archived, of the near three, how many are FILED each in a file of its own (FS47Dossier::KindsFiled):
+ // one point for two, two for all three (Tom, 13 November; S47Dossier::WardPoints). The threshold of PointsToStay is unchanged.
+ struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0,Guessed=0,Reprieved=0,Field=0,Archived=0;bool bWagon=false,bGap=false;};
  // CHAIN-2-20261109: Field, of the cases carried through, those with something brought in from out there (FS47FreeformSession::
  // CaseFromField); FieldToStay of them, or the station is not kept, however good the rest. The Monday note has the line every week.
  static constexpr int32 FieldToStay=1;

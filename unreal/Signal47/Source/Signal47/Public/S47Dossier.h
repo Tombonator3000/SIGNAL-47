@@ -33,6 +33,17 @@
 // pairs kept side by side, flat ([1,3, 2,5]). A save from slice 1 has none of them and reads as it was.
 // REVIEW (14 November): by place and night alone a find ties only to a file opened by one of the same reach (the far two, or the
 // near three); a file's stage never drops once reached ("reached": by file, saved only where its tags alone would say less).
+//
+// EVIDENCE-DOSSIER-20261113 slice 3 (14 November). The player's own working name for a file (prefilled with a plain suggestion from
+// what it holds; written at the binder in the records room), shown beside "UNKNOWN n" wherever the file is named. Two files filed as
+// one at the binder (any two; he can be wrong): the lower number survives with the boxes of both, the other number is gone from the
+// lists; it can be taken out again until the next 08:00 (the night it was filed, FS47FreeformSession::NightOf). A file filed as one
+// takes its stage from what in it is consistent: a box where the two held different things counts for nothing, and the pencil there
+// is struck as any contradiction is. Only here can a stage drop. A file is FILED once it has a name and stands at HABITS; Dr. Ward
+// counts the near three filed each in a file of its own (correctly kept apart or correctly filed as one): one point for two, two for
+// all three (Tom, 13 November); a wrong one filed as one gives none for the kinds in it until it is taken out again. Saved, all
+// optional: "names": { "<number>": { "n": "...", "d": day } }; "merged": [ { "into": n, "from": n, "night": k, "was": stage,
+// "name": "...", "nameDay": d, "had": b } ]; "paid": [numbers]. A save from slices 1 and 2 has neither and reads as it was.
 namespace S47Dossier
 {
  enum class EKind : int32 { Small=0, Low, Tall, Silver, Shining, Count, None=-1 };
@@ -138,6 +149,11 @@ namespace S47Dossier
   TArray<FBox> Boxes;                        // six, in the table's order
   TArray<FString> Photos;                    // the photograph claims in it (their ids, for the session to name the prints by)
   TArray<int32> Beside;                      // slice 2: the files a find showed to be kept beside this one (their numbers)
+  // slice 3: the player's name (empty: none) and the title with it ("UNKNOWN 2 (Bare feet)"); FILED (named, at HABITS); the numbers
+  // filed in it as one, with the night each was; the hours it was logged at (the HABITS sketch)
+  FString Name,Named;
+  bool bFiled=false;
+  TArray<int32> Merged,MergedNight,Hours;
  };
  // Slice 2: two files side by side, box by box: 0 one of them has nothing there, 1 they agree, 2 they differ.
  SIGNAL47_API TArray<int32> Agreement(const FFile& A,const FFile& B);
@@ -152,6 +168,44 @@ namespace S47Dossier
  SIGNAL47_API FString Lint();
  SIGNAL47_API FString LintWords(const TArray<FString>& Said); // the same checks on any words (slice 2: the sources' new text)
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
+
+ // ---------- slice 3 (14 November): names, files filed as one, Dr. Ward's count, the habits as thoughts, the sketches ----------
+ inline constexpr int32 NameMost=24;
+ // The player's working name as typed: trimmed, the spaces inside made single; letters, spaces and , . - ' only (no digits: nothing
+ // can print a year or a clock); 1 to NameMost characters; and the design's word check (LintWords: Freeform's limits, no word for
+ // what they are). False with Why, in the binder's own words, when it is not taken.
+ SIGNAL47_API bool CleanName(const FString& Typed,FString& Out,FString& Why);
+ // The suggestion the name field is filled with: plain working words from what the file holds now (its SHAPE, and its GROUND with it;
+ // else its first filled box), never a name the game has for what it is. Empty for a file with nothing in it.
+ SIGNAL47_API FString Suggest(const FFile& File);
+ SIGNAL47_API TArray<FString> SuggestWords(); // every word a suggestion is made of (the lint)
+ SIGNAL47_API FString Titled(int32 Number,const FString& Name); // "UNKNOWN 2", or "UNKNOWN 2 (Bare feet)"
+ SIGNAL47_API FString StampOf(const FString& Title,EType Type,bool bPhoto,bool bNewFile,EStage Reached); // Stamp, by the file's title
+ SIGNAL47_API FString HoursLineOf(const FString& Title,const TArray<int32>& Hours);                    // HoursLine, by the title
+ // Dr. Ward's review: one point for two of the near three filed, two for all three.
+ SIGNAL47_API int32 WardPoints(int32 KindsFiled);
+ // The pencil sketch per stage on THEM: OUTLINE a rough build from the SHAPE box (three generic ones for the near three; the far two a
+ // point of light and a bright outline; None while nothing has been seen), MARKS the prints from the GROUND box (0 none, 1 small
+ // and bare, 2 in fours, 3 long and a stride apart), HABITS a clock face with File.Hours shaded.
+ enum class ESketch : int32 { None=0, Small, Low, Tall, Point, Outline };
+ SIGNAL47_API ESketch SketchOf(const FFile& File);
+ SIGNAL47_API int32 PrintsOf(const FFile& File);
+ // HABITS as the player's own thoughts (S47Thoughts, once a night a file): the hour coming up on a night out (HabitHourAhead seconds
+ // before a dark hour the file was logged at), and the lamp raised within HabitLampNearM of one whose answer to the lamp the file holds.
+ inline constexpr double HabitHourAhead=1200,HabitLampNearM=40;
+ SIGNAL47_API bool HourNear(double Clock,int32 Hour);
+ SIGNAL47_API FString HabitHourThought(int32 Hour);
+ SIGNAL47_API FString HabitLampThought(const FString& LampSign); // empty: no habit line for that answer (the far two)
+ // The binder's words for it (the UNKNOWNS rows, the sheet's lines, the slip a filing leaves; all in Lint).
+ SIGNAL47_API FString NameRow();                         // the line that writes the name in the field on the file
+ SIGNAL47_API FString MergeRow(int32 With,bool bBeside); // "FILE AS ONE WITH UNKNOWN 3"
+ SIGNAL47_API FString TakeOutRow(int32 From);            // "TAKE UNKNOWN 3 OUT AGAIN"
+ SIGNAL47_API FString NameSlip(const FString& Title);
+ SIGNAL47_API FString MergeSlip(int32 Into,int32 From);
+ SIGNAL47_API FString TakeOutSlip(int32 Into,int32 From);
+ SIGNAL47_API FString AwayWords();                       // the reading copy: where naming and filing as one are done
+ SIGNAL47_API FString NameHint();                        // the empty field's hint
+ SIGNAL47_API FString MergedLine(const TArray<int32>& Numbers); // THEM: "Filed in it as one: UNKNOWN 3."; empty for none
 }
 
 class SIGNAL47_API FS47Dossier
@@ -164,7 +218,7 @@ public:
  // What an older save kept, for Rebuild: a finding's key, its text and its day.
  struct FOld { FString Key,Text; int32 Day=0; };
 
- void Reset(){Sequence.Reset();Kept.Reset();Given.Reset();Spent.Reset();Same.Reset();Reached.Reset();}
+ void Reset(){Sequence.Reset();Kept.Reset();Given.Reset();Spent.Reset();Same.Reset();Reached.Reset();Merges.Reset();Names.Reset();PaidFiles.Reset();}
  bool IsEmpty() const{return Kept.IsEmpty();}
  // A tag on a find. False when the key has one already, when the kind has no file (the shade), or when that box gives nothing for
  // this one. Slice 2: it goes into the file it ties to (see the head of this file), else it opens the next.
@@ -184,7 +238,8 @@ public:
  S47Dossier::EStage StageOf(S47Dossier::EKind Kind) const;
  int32 AtMarks() const; // the files at MARKS or further: Dr. Ward's line
  // Slice 2: the pairs kept side by side (their numbers, the lower first), and the first night HABITS may be had (not saved).
- const TArray<FIntPoint>& Beside() const{return Same;}
+ // Slice 3: as the files stand (a pair one of which is filed in the other is no pair any more).
+ TArray<FIntPoint> Beside() const;
  void SetHabitsFrom(int32 Night){HabitsFrom=FMath::Max(1,Night);}
  int32 HabitsFromNight() const{return HabitsFrom;}
  // A find of FindKind's held against File's box of that type, from the player's own tags only: a box the player has not filled
@@ -216,6 +271,35 @@ public:
  // Slice 2: each kind's finds go into one file, as slice 1 had them (nothing in an older save says what the player could tie).
  int32 Rebuild(const TArray<FOld>& Findings,const TArray<FString>& Claims);
 
+ // ---------- slice 3 (14 November) ----------
+ // A file as it stands: a number that is not filed in another. Every per-number call above answers for files as they stand only
+ // (StageOfFile NoFile, FirstWhereOfFile false, HoursOfFile empty for a number filed in another), and FileOf gives the survivor.
+ bool IsFile(int32 Number) const;
+ int32 SurvivorOf(int32 Number) const; // the file it is in now (itself if it stands); 0: no such number
+ // The player's name, already clean (S47Dossier::CleanName); Day: the night it was written. False for no file as it stands.
+ bool SetName(int32 Number,const FString& Name,int32 Day);
+ FString NameOf(int32 Number) const;
+ FString TitleOf(int32 Number) const;
+ // File two as one (Night: the night it is done). The lower number survives with what both held; it keeps its name, or takes the
+ // other's when it had none. False when either is not a file as it stands, or they are the same one.
+ bool Merge(int32 A,int32 B,int32 Night);
+ // Taken out again, as it was, only on the night it was filed as one (until the next 08:00).
+ bool CanTakeOut(int32 Into,int32 From,int32 Night) const;
+ bool TakeOut(int32 Into,int32 From,int32 Night);
+ // What the game knows and never shows: the one kind everything in a file is of (None when it holds more than one, or nothing);
+ // a file filed as one that holds more than one (WrongMerge).
+ S47Dossier::EKind KindOfFile(int32 Number) const;
+ bool WrongMerge(int32 Number) const;
+ bool Filed(int32 Number) const; // named, and at HABITS
+ // Dr. Ward's count: of the near three, each with a file FILED that holds it alone, and none of it in a wrong one filed as one.
+ int32 KindsFiled() const;
+ bool Paid(int32 Number) const; // the field allowance for a file FILED, once (FS47FreeformSession::DossierPayFiled)
+ void MarkPaid(int32 Number);
+ // The habits as thoughts, once a night a file (Came: by number, the night its thought came). The file at HABITS whose hour is
+ // coming up (OutHour), or whose lamp box holds what Near does in the lamp; 0: none.
+ int32 HabitHourFile(double Clock,const TMap<int32,int32>& Came,int32 Night,int32& OutHour) const;
+ int32 HabitLampFile(S47Dossier::EKind Near,const TMap<int32,int32>& Came,int32 Night) const;
+
 private:
  TArray<S47Dossier::EKind> Sequence;
  TArray<FTag> Kept;
@@ -230,4 +314,15 @@ private:
  TArray<int32> Reached; // REVIEW (14 Nov): by file, the highest stage it has had (saved as "reached" only where its tags alone say less)
  TMap<int32,int32> Given; // by the kind's number: the night each file's extra bearing is for
  TSet<int32> Spent;       // and the ones printed
+ // slice 3: by file (0-based); a merge, Into and From 0-based, with what the survivor was before it (for taking it out again)
+ struct FNamed { FString Text; int32 Day=0; };
+ struct FMerge { int32 Into=0,From=0,Night=0,ReachedWas=0; FNamed NameWas; bool bHadName=false; };
+ TMap<int32,FNamed> Names;
+ TArray<FMerge> Merges;
+ TSet<int32> PaidFiles;           // the files whose allowance for being FILED is paid (saved as "paid", their numbers)
+ int32 Root(int32 File) const;    // the file it is in now, 0-based
+ bool IsIn(const FTag& One,int32 File) const{return Root(One.File)==File;}
+ bool HasMembers(int32 File) const{return Merges.ContainsByPredicate([File](const FMerge& One){return One.Into==File;});}
+ bool Apply(const FMerge& One);   // the merge itself (Merge, and Load as saved)
+ S47Dossier::EStage StageConsistent(int32 File) const; // a file filed as one: from the boxes where all in it agree
 };

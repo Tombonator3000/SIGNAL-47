@@ -14,7 +14,7 @@
 //   DAILY WORK     every original by day; FILED once its packet is in the binder, HELD AT OPS until then
 //   FIELD + BENCH  what was retained in the field, on the station round and at the workshop bench, by day
 //   UNKNOWNS       EVIDENCE-DOSSIER-20261113: the operator's own files of what is out there and not yet known, one sheet each, as the
-//                  notebook has them (S47Dossier.h); read only
+//                  notebook has them (S47Dossier.h); at the binder itself a file is named and two are filed as one (slice 3)
 //   STATION FILES  the station's own papers as the duty officer releases them; read only
 //
 // One page belongs to one divider (its home). TODAY and a case's list point at pages that live behind other dividers; ENTER on such
@@ -42,7 +42,15 @@ namespace S47Binder
  struct FFileIn { FString Key,Title,Text; int32 Day=1; bool bSeen=false; };
  // EVIDENCE-DOSSIER-20261113: one file of the unknown, typed by the session (S47Dossier::Sheet): its number, its title ("UNKNOWN 2"),
  // its stage, the sheet, and the first and the last day something went in.
- struct FUnknownIn { int32 Number=0; FString Title,Stage,Body; int32 Opened=0,Latest=0; bool bAtMarks=false; };
+ // Slice 3 (14 November): the player's name and the suggestion the name field is filled with; FILED (named, at HABITS); the other
+ // files as they stand, that it could be filed as one with (those kept beside it first, and marked); the ones filed in it tonight,
+ // that can be taken out again until 08:00. Naming and filing as one are done only at the binder itself (FSource::bAtBinder).
+ struct FUnknownIn
+ {
+  int32 Number=0; FString Title,Stage,Body; int32 Opened=0,Latest=0; bool bAtMarks=false;
+  FString Name,Suggest; bool bFiled=false;
+  TArray<int32> Others,TakeOut; TArray<bool> OthersBeside;
+ };
  struct FSource
  {
   int32 Today=1;FDateTime Day1=FDateTime(1986,4,28);
@@ -68,12 +76,18 @@ namespace S47Binder
   FString Link,LinkLabel;      // the page it belongs with (a case), and the words for turning to it
   TArray<FString> Children;    // a case's pages: keys of entries behind other dividers
   FString Stamp;               // the rubber stamp on a filed page; empty when it is not in the binder
+  // EVIDENCE-DOSSIER slice 3: a file of the unknown (its number, 0 for any other page), its name, the suggestion, and what can be
+  // done with it at the binder: filed as one with another (Others, OthersBeside), one filed in it taken out again (TakeOut)
+  int32 Unknown=0;
+  FString NameNow,NameSuggest;
+  TArray<int32> Others,TakeOut; TArray<bool> OthersBeside;
  };
  // A line of a divider's list. A heading (bHead) is not chosen. Id is unique within the list.
  struct FRow
  {
   FString Id,Left,Mid,Right; // Left and Right on the first line, Mid under them
   FString Jump,Act;          // ENTER: turn to this entry (Jump), with the words for it (Act); "FILE THE PACKET" on the packet in hand
+  FString Do;                // EVIDENCE-DOSSIER slice 3: ENTER asks the session to do this ("name:2", "merge:1:3", "out:1:3"), at the binder only
   int32 Entry=-1,Indent=0,Goto=-1,Tone=0; // Goto: ENTER turns to this divider
   bool bHead=false,bFile=false,bOlder=false,bNew=false;
  };

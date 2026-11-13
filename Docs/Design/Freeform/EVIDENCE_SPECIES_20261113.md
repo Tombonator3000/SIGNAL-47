@@ -1,6 +1,6 @@
 # Feltbevis som skiller de ukjente (Freeform)
 
-**Status:** Under arbeid. Besluttet av Tom 13. november 2026. Trinn 1 og 2 er kodet, ikke bygget og ikke spilt av Tom; trinn 3 er ikke startet. **Gjelder:** Freeform, feltarbeid, notatboka, arkivpermen og Wards vurdering. **Sist kontrollert:** 14. november 2026 mot kilden på `claude/freeform-20261112` (lest og skrevet, ikke bygget eller spilt).
+**Status:** Under arbeid. Besluttet av Tom 13. november 2026. Trinn 1 er installert i d66; trinn 2 og 3 er kodet, ikke bygget og ikke spilt av Tom. **Gjelder:** Freeform, feltarbeid, notatboka, arkivpermen og Wards vurdering. **Sist kontrollert:** 14. november 2026 mot kilden på `claude/freeform-20261112` (lest og skrevet, ikke bygget eller spilt).
 
 Toms idé 13. november: bevis av ulike slag fra feltet (bilder, geiger, målinger, prøver) logges og legges i arkivet med bilder og tegninger, slik at spilleren gradvis forstår hva slags vesener han har med å gjøre. Inspirasjon er løkka i UFOPHILIA (måle → utelukke → fotografere). Vi tar bare den generelle ideen om å utelukke ut fra bevis. Arter, navn, bevistabell, grensesnitt og ordlyd lages fra det spillet vårt allerede har.
 
@@ -13,8 +13,8 @@ Tom godkjente forslaget 13. november 2026 med disse svarene på de fem spørsmå
 1. **Veiglimtets «crawler» er den lave, og «tallfigure» er den høye.** De deler mappe med den lave og den høye fra stedsbesøkene.
 2. **Sølvmannen og den som lyser får egne mapper som stopper på MARKS.** De kan aldri arkiveres som ferdige.
 3. **Skyggen får aldri en mappe.** Den blir stående uløst under SHADOWS.
-4. **Navnet er spillerens egen tekst,** med et forslag fylt inn på forhånd. Det kommer i trinn 3.
-5. **Ward gir ett poeng for to arkiverte mapper og to poeng for alle tre som kommer nær.** Det kommer i trinn 3.
+4. **Navnet er spillerens egen tekst,** med et forslag fylt inn på forhånd. Kodet i trinn 3.
+5. **Ward gir ett poeng for to arkiverte mapper og to poeng for alle tre som kommer nær.** Kodet i trinn 3.
 
 ### Trinn 1 slik det er kodet (13. november, ikke bygget, ikke spilt av Tom)
 
@@ -95,6 +95,32 @@ Avvik fra planen, og hvorfor:
 - **Lyden er ikke sendt som WAV.** Signaturene er de samme som mottakeren alt spiller (`S47AlienKinds::Render`), og ingen bygg er kjørt.
 
 Kode: `S47Dossier` (`Tag`, `Together`, `Agreement`, `BesideWords`, `Earliest`, `FGates`, `GeigerFactor`, `KindOfOmen`, `AlienKindOf`, `GeigerReads`, `TakeHeard`, `LintWords`), `S47FreeformDossier.cpp` (`TagEvidenceAt`, `DossierHeardTake`, `DossierHabitsFrom`), `S47Tape`, `S47FarmSite`, `S47Happenings` (`DoseAt`, `StepGeiger`, `StepFigure`), `S47AnimalWarn::ForVisit`, THEM i `SS47Notebook.cpp` (`UnknownPairBox`, strøket blyant) og `S47Flow.cpp`. Selvtest: linjene `EVIDENCE-DOSSIER: slice 2`, `tape: EVIDENCE-DOSSIER slice 2`, `animal warning: EVIDENCE-DOSSIER slice 2` og `Freeform THEM (slice 2)`. F10: «Evidence dossier (M3)» fyller alle kanaler, viser arbeidsnavnene og tempoet fra portene.
+
+### Trinn 3 slik det er kodet (14. november, ikke bygget, ikke spilt av Tom)
+
+Hva spilleren får:
+
+| Del | Hva han ser og gjør | Hva det fører til | Hvor |
+| --- | --- | --- | --- |
+| Navn | Ved permen i arkivrommet har hver mappe et navnefelt, fylt inn med et forslag fra det mappa holder (SHAPE og GROUND, ellers første fylte boks: «Big head, bare feet», «Folded one, in fours», «Far-off one, long stride», «Lit inside»). Han skriver sitt eget og trykker Enter, eller velger linja «WRITE THE NAME ON THE FILE» (også med håndkontroll). | Navnet står ved siden av «UNKNOWN n» på THEM, i permen, på kartmerket, i stempelet der beviset tas og i timelinja på kveldens plan. En mappe med navn på HABITS er FILED: én gang $5 i feltgodtgjørelse under ukas tak, og den teller hos Ward. | `S47Dossier::CleanName`, `Suggest`, `Titled`, `FS47Dossier::SetName`; `FS47FreeformSession::DossierName`; navnefeltet i `SS47Binder::SheetPage` |
+| Arkiver som én | Når en mappe er valgt ved permen, står linjene «FILE AS ONE WITH UNKNOWN n» under den, de som står side om side først (merket «KEPT BESIDE»). Han kan også legge sammen to som spillet vet er ulike. | Laveste nummer blir stående med boksene fra begge; det andre nummeret forsvinner fra listene. Navnet beholdes, eller arves når den overlevende ikke hadde noe. Der de to hadde ulikt i samme boks, strekes blyanten over, og boksen teller ikke for trinnet. Ingenting sier om det var riktig. «TAKE UNKNOWN n OUT AGAIN / UNTIL 08:00» angrer til neste 08:00. | `FS47Dossier::Merge`, `TakeOut`, `StageConsistent`; `DossierFileAsOne`, `DossierTakeOut`; radene i `S47Binder::FModel::Rows` |
+| Ward | Ett poeng i vurderingen for to av de tre nære som er FILED hver i sin egen mappe (riktig holdt fra hverandre eller riktig lagt sammen), to poeng for alle tre. Én linje i ukenotatet når de teller: «Two of your files are filed complete, each kept to itself. That is archive work, and it counts.» | En feil sammenlegging gir ingen poeng for vesenene i den før den tas ut igjen. Terskelen på 6 står. | `FS47Dossier::KindsFiled`, `S47Dossier::WardPoints`, `FS47Predecessor::Points` (`FTally::Archived`), `S47PredecessorText::Archived` i `LeverWords` |
+| Vaner som tanker | En mappe på HABITS kommer som spillerens egen tanke, én gang per natt per mappe: «Near 03:00. I logged it about this hour.» når en mørk time mappa er logget på nærmer seg (20 minutter før) og han er ute av bygget, og lykt-regelen den har fått når han slår på lykta innen 40 m fra et vesen med samme svar på lykta («Lamp off. Keep still. It looks past you.», «Standing still won't do. Get indoors.», «Lamp on it first. It stops. Then back off.»). | Kunnskapen merkes i spillet, ikke bare på papiret. Samme nedkjøling som de andre tankene. | `FS47Dossier::HabitHourFile`, `HabitLampFile`; `DossierHabitStep` (fra `S47Thoughts::Step`), `DossierHabitLamp` (fra `FS47FarmSite::StepAttention`); `S47Thoughts::ThinkLine` |
+| Tegninger | THEM har én liten blyanttegning per trinn mappa har nådd: OUTLINE en grov kropp fra SHAPE-boksen (liten med stort hode, lav på fire, høy og lang; for de to fjerne et lyspunkt og et lyst omriss; en stiplet ring når ingenting er sett), MARKS sporene fra GROUND-boksen, HABITS en urskive med timene skravert. | Spilleren ser mappa vokse. Ingen detaljer og ingen forklaring. | `S47Dossier::SketchOf`, `PrintsOf`; `SS47NbSketch` i `SS47Notebook.cpp` |
+
+Lagring, alt valgfritt: `dossier.names` (etter nummer: `n` navnet, `d` natta), `dossier.merged` (i den rekkefølgen det ble gjort: `into`, `from`, `night`, `was` trinnet den overlevende hadde, og navnet den hadde, så angringen blir eksakt) og `dossier.paid` (numrene som har fått godtgjørelsen). En lagring fra trinn 1 eller 2 har ingen av dem og leses som før. Et navn eller en sammenlegging som ikke holder i lagringen, utelates. Tankenes «én gang per natt» lagres ikke.
+
+Avvik fra listen og planen, og hvorfor:
+
+- **Ordsjekk på spillerens navn.** Oppdraget sa bare lengde og tegn for spillerens tekst. Dokumentet sier «egen tekst, maks 24 tegn, ordsjekk» og prøven «navnet går gjennom ordsjekk». Dokumentet vant: navnet tar bokstaver, mellomrom og `, . - '` (ingen sifre, så verken årstall eller klokke), 1 til 24 tegn, og må bestå `LintWords`. Et navn som ikke tas, gir en nøytral lapp («NOT WRITTEN: THE BINDER KEEPS PLAIN WORKING NAMES. TRY OTHER WORDS.»).
+- **FILED krever navn.** Dokumentet sier at spilleren gir mappa et navn og arkiverer den. Derfor teller en mappe hos Ward først når den både står på HABITS og har navn fra spilleren. Forslaget alene teller ikke før det er skrevet.
+- **Alle to mapper kan legges sammen, ikke bare parene.** Parene står først og er merket. Ellers kunne spilleren nesten aldri ta feil, fordi et par stort sett gjelder samme vesen.
+- **Angring bare til neste 08:00.** «Tas ut igjen» i Wards regel er den samme angringen. Etter 08:00 står sammenleggingen.
+- **Trinnet kan synke ved sammenlegging.** Gjennomgangen av trinn 2 sa at et trinn aldri synker. Her er det eneste unntaket: en sammenlagt mappe får trinnet fra det som faktisk stemmer. Det som alt er gitt (kartmerket, peilingen), tas ikke tilbake.
+- **$5 er med** etter dokumentets «En arkivert mappe gir $5 én gang», gjennom `EarnSide` under ukas tak.
+- **Tankene sier ikke mappas navn.** En tanke er høyst 48 tegn, og navnet kunne bli for langt.
+
+Prøver: linjene `EVIDENCE-DOSSIER: slice 3` i `S47Dossier::SelfTest` (navnets regler, forslagene, navn og tilbakefall over lagring, sammenlegging og angring over lagring, feil sammenlegging med strøket blyant og trinn, Wards poeng for 0, 1, 2 og 3 og for feil sammenlegging, tankene én gang per natt og bare på HABITS, tegningenes byggemåte, lagringer fra trinn 1 og 2), `DossierSelfTest` (navn og sammenlegging bare ved permen, godtgjørelsen én gang, permens linjer, gjennom en Continue), `RECORDS-BINDER: slice 3`, `Freeform THEM (slice 3)` og Wards poeng i forgjengerens selvtest. F10, «Evidence dossier (M3)»: navngi alle med forslaget, legg sammen første par eller ta det ut igjen, hent en vane fram nå; «what is in the files now» viser navn, FILED, sammenlegginger og Wards tall.
 
 ## 1. Mål og løkke
 

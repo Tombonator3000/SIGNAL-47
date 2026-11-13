@@ -243,6 +243,7 @@ private:
  double VisitHunt=0,VisitPatience=120,RadioIn=-1;
  FVector AttentionFeet=FVector::ZeroVector;
  bool bAttentionFeet=false,bWasDriving=false,bWasRunning=false,bTestHoldHunt=false,bTestNoticed=false,bSawTurn=false,bSawSetTurn=false;
+ bool bHabitLampWas=false; // EVIDENCE-DOSSIER slice 3: the lamp as it was, so that raising it near one is seen once
  int32 RadioSeen=0;
  bool PutBody(const FVector& Near);
  void StepBody(double Dt,double Speed);
