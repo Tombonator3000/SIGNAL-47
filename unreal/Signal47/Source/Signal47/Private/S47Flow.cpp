@@ -1,6 +1,7 @@
 #include "S47Flow.h"
 #include "S47FieldLife.h"
 #include "S47DirectorCam.h"
+#include "S47DevWaves.h"
 #include "S47StoryDirector.h"
 #include "S47NightLog.h"
 #include "S47RoomDecor.h"
@@ -1922,6 +1923,7 @@ bool US47Flow::FileDeparture(bool bLastChance)
 FString US47Flow::SaveBlock() const
 {
 	if (bDevRun) return TEXT("This is a developer run. Nothing is saved.");
+	if (FS47DevWaves::On(M)) return TEXT("The developer wave shooter is running. Stop it from F10 first; nothing is saved while it runs.");
 	if (M->Mode != EMode::Play || !CaseId) return TEXT("There is no night running to save.");
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Dead()) return TEXT("Load the last save to resume this assignment.");
 	if (M->IsFreeform()) return FreeformSaveBlock();
