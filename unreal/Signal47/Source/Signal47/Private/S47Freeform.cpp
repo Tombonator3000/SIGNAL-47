@@ -593,9 +593,12 @@ int32 FS47FreeformSession::LapseUntakenCards()
  // CHAIN-5-20261109: a card nobody began (still New, nothing recorded) does not wait for ever: at the turn of the day it falls away.
  // Kept: case tests (a planned test stays until recorded), the training card, cards begun, paid or already worked, and today's cards.
  // It leaves no mark on Ward's count: she counts filed work and its quality, and a card that lapses was never filed (not taken, not wrong).
+ // REVIEW-20261113 (the HUD and OPS said a card missed at 23:30 or 04:00 "waits for the next night", and it was gone at 08:00):
+ // DECISIONS, the night watch, «det venter fra 04:00 til neste natt». So an evening's card (from day 2) gets that one more night: it
+ // lapses at the second turn of the day after its own, once its next window has shut too. The first day's cards lapse as before.
  if(!RulesLive()||Tutorial>0)return 0;
  const FString Was=Work.IsValidIndex(Selected)?Work[Selected].Id:FString();
- const int32 Gone=Work.RemoveAll([this](const FJob& J){return J.bGenerated&&J.CaseTest<0&&!J.bCaseRecorded&&!TrainingCard(J)&&J.Day<DayNumber&&J.Stage==EJobStage::New&&J.Elapsed<=0&&!J.bPaid&&!J.bPrinted&&J.OriginalPage.IsEmpty();});
+ const int32 Gone=Work.RemoveAll([this](const FJob& J){return J.bGenerated&&J.CaseTest<0&&!J.bCaseRecorded&&!TrainingCard(J)&&J.Day<DayNumber-(J.Day>=2?1:0)&&J.Stage==EJobStage::New&&J.Elapsed<=0&&!J.bPaid&&!J.bPrinted&&J.OriginalPage.IsEmpty();});
  if(Gone<=0)return 0;
  const int32 Now=Work.IndexOfByPredicate([&Was](const FJob& J){return J.Id==Was;});
  Selected=Now>=0?Now:FMath::Max(0,Work.IndexOfByPredicate([](const FJob& J){return J.Stage!=EJobStage::Filed;}));
@@ -5638,6 +5641,12 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Lp.TestAdvance(86400);Check(Lp.Jobs().Num()==7,TEXT("Lapse: TestAdvance alone drops nothing"));
   Lp.LapseUntakenCards();bool bBegun=true;for(const FJob& J:Lp.Work)if(J.Day==1&&J.CaseTest<0)bBegun&=J.Stage!=EJobStage::New;
   Check(Lp.Jobs().Num()==5&&bBegun&&Lp.Work.ContainsByPredicate([](const FJob& J){return J.CaseTest==0;}),TEXT("Lapse: cards nobody began fall away at the new day; the begun card and the planned case test stay"));
+  // REVIEW-20261113: an evening's card missed (day 2) waits for the next night, as OPS and the HUD say; it lapses a day later
+  Lp.TestAdvance(86400);Lp.LapseUntakenCards();
+  const bool bWaits=Lp.Work.ContainsByPredicate([](const FJob& J){return J.Day==2&&J.CaseTest<0&&J.Stage==EJobStage::New;});
+  Lp.TestAdvance(86400);Lp.LapseUntakenCards();
+  const bool bGoneLater=!Lp.Work.ContainsByPredicate([](const FJob& J){return J.Day==2&&J.CaseTest<0&&J.Stage==EJobStage::New;})&&Lp.Work.ContainsByPredicate([](const FJob& J){return J.Day==3&&J.Stage==EJobStage::New;});
+  Check(bWaits&&bGoneLater,TEXT("Lapse (REVIEW): a day-2 card nobody began waits for the next night (kept at the day-3 turn), then lapses at the day-4 turn"));
   Lp.Stop();
  }
  auto Saved=S.Save();FS47FreeformSession R(nullptr);R.Begin(S47J::Read(S47J::Write(Saved)));Check(R.Day()==2&&R.Budget()==15&&R.HasFinding(TEXT("extra_pulse"))&&R.Jobs().Num()==6&&!R.AudioPlaying(),TEXT("Freeform disk JSON restore retains economy, days, evidence and paused audio"));
