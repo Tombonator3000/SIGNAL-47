@@ -235,7 +235,7 @@ FS47Doc FS47FreeformSession::SopCard()
  FS47Doc D;D.Id=TEXT("freeform-ops-sop");D.Title=TEXT("SOP card: the OPS terminal");D.Kind=TEXT("typed");D.Stamp=TEXT("SARO / SOP 4");
  D.Page=TEXT("SARO / STANDING OPERATING PROCEDURE\nOPS TERMINAL (TERM 1)\n\n")
   TEXT("1. 08:00 each morning the system issues three observing jobs for that evening. The third is a choice of two sources.\n")
-  TEXT("2. DAILY WORK: select the job. TRACKING (right-hand PC) points the array, RECEIVER (centre PC) tunes and records, the PRINTER gives the original. Register the result here.\n")
+  TEXT("2. DAILY WORK: select the job. TRACKING (right-hand PC) points the array, RECEIVER (centre PC) finds the source on its sky chart (ACQUIRE), tunes (TUNE) and records, the PRINTER gives the original. Register the result here.\n") // RX-ACQUIRE-SKY-20261113
   TEXT("3. Finish a recording or a control before you switch jobs. Unfinished jobs keep. They pay in full on their day and the next, then less.\n")
   TEXT("4. EARLIER WORK shows what is done and what is carried over. RECORDS keeps originals, field findings, service and closed cases. Read only.\n")
   TEXT("5. An unusual original is never registered on its own. It needs its control first and a comparison at the reel deck (wall table); the NEXT line gives each step. Registered, it opens a case on CASE BOARD. Payment follows the filing in the records-room binder.\n") // D45-20261110

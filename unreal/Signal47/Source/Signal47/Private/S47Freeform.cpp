@@ -1143,7 +1143,7 @@ bool FS47FreeformSession::PointSelected()
  FieldFocus=-1;bGuideFocus=false;
  J->Stage=EJobStage::Pointed;Settle=0;bCrossRunning=false;ArrayJob=J->Id; // D48-20261110: this job now holds the array
  M->Story->Rx.Azimuth=TargetAz(); // The physical pointing command is the receiver bearing too.
- M->Web->PointDishes(TargetAz(),TargetEl(),9);CommandFeedback();Changed(TEXT("TRACKING (right-hand PC): Command sent. Wait for encoder agreement, then tune and start recording at RECEIVER (centre PC)."));return true;
+ M->Web->PointDishes(TargetAz(),TargetEl(),9);CommandFeedback();Changed(SkyAcquired()?TEXT("TRACKING (right-hand PC): Command sent. Wait for encoder agreement, then tune and start recording at RECEIVER (centre PC)."):TEXT("TRACKING (right-hand PC): Command sent. Wait for encoder agreement, then find the source on the sky chart, tune and record at RECEIVER (centre PC)."));return true; // RX-ACQUIRE-SKY-20261113
 }
 bool FS47FreeformSession::ReceiverReady() const
 {
