@@ -252,7 +252,8 @@ private:
 	void LetGo();
 	void Room(bool bOn);
 	void Push(TArray<FAim>& Aims, double V, double At);
-	void StopBed();
+	// REVIEW-20261113: bFade: an audible bed (another event's bed takes its place) goes down over 50 ms first and is stopped after
+	void StopBed(bool bFade = false);
 	void EndStinger();
 };
 

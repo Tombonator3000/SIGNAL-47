@@ -884,7 +884,7 @@ void FS47SidebandBus::Bed(int32 Index, double Near, bool bOn)
 		}
 		return;
 	}
-	if (BedSrc && BedIndex != Index) StopBed();
+	if (BedSrc && BedIndex != Index) StopBed(true); // REVIEW-20261113: the old bed fades out, no click
 	if (!bEngaged || LetGoAt >= 0) Engage();
 	double LevelDb = 0, Cut = 0; S47Sideband::BedFor(Near, LevelDb, Cut);
 	FS47AudioContext::FBatch B(*Ctx);
@@ -927,10 +927,20 @@ void FS47SidebandBus::BedMoment(double When)
 	P.SetValueCurveAtTime(S47SbImpl::SbGlide(.55, 0., false), T0 + 6., 7.);
 }
 
-void FS47SidebandBus::StopBed()
+void FS47SidebandBus::StopBed(bool bFade)
 {
 	if (!BedSrc) return;
 	FS47AudioContext::FBatch B(*Ctx);
+	if (bFade && BedDuck)
+	{
+		const double At = Ctx->CurrentTime();
+		FS47AudioParam& P = BedDuck->Gain;
+		P.CancelScheduledValues(At); P.SetValueAtTime(P.ValueAt(At), At); P.LinearRampToValueAtTime(0., At + .05);
+		Ctx->SetTimeout(.07, [Src = BedSrc, Duck = BedDuck] { Src->Stop(); Src->Disconnect(); if (Duck) Duck->Disconnect(); });
+		BedSrc.Reset(); BedGain.Reset(); BedDuck.Reset(); BedLp.Reset();
+		BedIndex = -1; bBedOn = false; BedNow = 0;
+		return;
+	}
 	BedSrc->Stop(); BedSrc->Disconnect();
 	if (BedDuck) BedDuck->Disconnect();
 	BedSrc.Reset(); BedGain.Reset(); BedDuck.Reset(); BedLp.Reset();

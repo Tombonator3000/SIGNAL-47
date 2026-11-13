@@ -389,6 +389,15 @@ bool FS47Sideband::SelfTest(TArray<FString>& Lines)
 		Bed.Bus->Bed(1, 1., true); Bed.Go(6.);
 		const double Up = Bed.Rms(5, 6);
 		Check(Bed.Bus->BedSounding() && Near(Bed.Bus->BedNear(), 1) && Up > .005 && Bed.Sound(), TEXT("the bed comes up inside its event"));
+		{
+			// REVIEW-20261113: another event's bed in its place: the old one fades over 50 ms (no stop mid-waveform), the new one comes in
+			FRig Swap(nullptr); Swap.Bus->TestFlares(Tone, Tone);
+			Swap.Bus->Bed(1, 1., true); Swap.Go(6.);
+			const double Was = Swap.Rms(5.8, 6.);
+			Swap.Bus->Bed(0, 1., true); Swap.Go(1.);
+			Check(Swap.Rms(6., 6.02) > Was * .3 && Swap.Rms(6.1, 6.3) < Was * .5 && Swap.Bus->BedSounding() && Swap.Sound(),
+				TEXT("a bed that gives way to another fades out over 50 ms (still sounding at first, gone after a tenth), and the new one comes in"));
+		}
 		Bed.Bus->Bed(1, .2, true); Bed.Go(4.);
 		Check(Bed.Rms(9, 10) < Up * .5, TEXT("and sinks and darkens as the thing goes off"));
 		Bed.Bus->Bed(-1, 0, false); Bed.Go(14.);
