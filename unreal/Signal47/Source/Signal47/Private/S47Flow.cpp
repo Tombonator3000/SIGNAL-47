@@ -2319,7 +2319,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		// EVIDENCE-DOSSIER-20261113: THEM's files of the unknown as they stand now (S47Dossier): always in the pocket, never a trip to a PC
 		for (const S47Dossier::FFile& UnknownFile : M->Freeform->Unknowns.Files())
 		{
-			FS47NbUnknown Sheet; Sheet.Title = UnknownFile.Title; Sheet.Stage = UnknownFile.Stage; Sheet.Next = UnknownFile.Next;
+			FS47NbUnknown Sheet; Sheet.Title = UnknownFile.Title; Sheet.Stage = UnknownFile.Stage; Sheet.Next = UnknownFile.Next; Sheet.Gave = UnknownFile.Gave; // LOOP-DOSSIER-GIVES-20261113
 			for (const S47Dossier::FBox& Slot : UnknownFile.Boxes) Sheet.Boxes.Add({ Slot.Label, Slot.How, Slot.Note, Slot.bFilled });
 			X.Unknowns.Add(Sheet);
 		}
@@ -2650,6 +2650,7 @@ FS47MapView US47Flow::MapView() const
 	if (M->IsFreeform() && M->Freeform && M->Freeform->TownUse) M->Freeform->TownUse->FillMap(V); // the saucer map's sites, lures set out
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Townsfolk) M->Freeform->Townsfolk->FillMap(V); // where one of the town was last seen
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Visitors) M->Freeform->Visitors->FillMap(V); // where Baca says to look
+	if (M->IsFreeform() && M->Freeform) M->Freeform->DossierMap(V); // LOOP-DOSSIER-GIVES-20261113: where each file of the unknown was first logged
 	if (M->IsFreeform())
 	{
 		// Freeform has no Story chapter clues. It has the survey sheet (MAP-20261108): where the player and the truck are, exactly,

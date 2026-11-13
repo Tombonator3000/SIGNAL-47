@@ -70,8 +70,11 @@ namespace S47PredecessorText
  FString WhatYouKnow();
  FString ClosedOriginals(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,int32 Originals,int32 Photos,const FString& CloseOn);
  FString ClosedNothing(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,const FString& CloseOn);
- // After the second stretch of lost time: one more, and somebody else has the nights.
+ // After the second stretch of lost time: one more, and somebody else has the nights. LOOP-GONE-LEGIBLE-20261113 (→ M7): and after the
+ // first (Taken 1, the letter "ward-hours"): once, and what three times would do. HoursSaid: the same in one line of hers, for the phone
+ // and the notebook's DR. WARD box (Taken 1 or 2; empty otherwise, so nothing is said after the third).
  FString TakenWarning(const FString& Dated,int32 Taken);
+ FString HoursSaid(int32 Taken);
  // The morning the closing order takes effect.
  FString ClosedNow(const FString& Dated);
  FString NextOperator(const FString& Dated,const FString& YourLast,int32 Originals,int32 Photos,int32 Filed);

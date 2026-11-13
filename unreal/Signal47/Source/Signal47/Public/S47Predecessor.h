@@ -59,6 +59,9 @@ public:
  // M7: the third stretch of lost time is answered the morning after it is noticed (TakenWarning said so), not on the assessment day;
  // after "Not yet" only a further one does it. NoticedDay: the day it was first seen (0: not yet).
  static bool GoneDue(int32 Taken,int32 Reprieved,int32 NoticedDay,int32 Today){return Taken>=TakenTooOften&&Taken>Reprieved&&NoticedDay>0&&Today>NoticedDay;}
+ // LOOP-GONE-LEGIBLE-20261113 (→ M7): the letter of hers that says the rule (StepWarnings): "ward-hours" after the first stretch of lost
+ // time, "ward-taken" after the second; none once the third is in, and none after "Not yet". The rule and its rates are as they were.
+ static FString WarnLetter(int32 Taken,int32 Reprieved){return Taken>Reprieved&&Taken>=1&&Taken<TakenTooOften?FString(Taken<TakenTooOften-1?TEXT("ward-hours"):TEXT("ward-taken")):FString();}
  static const TCHAR* NameOf(EOutcome O);
  static EOutcome OutcomeOf(const FString& Name);
  FTally Count() const;

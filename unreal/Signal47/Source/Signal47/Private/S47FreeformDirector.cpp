@@ -2111,7 +2111,7 @@ void FS47FreeformDirector::ClaimEnlargement(const FString& ClaimId,const FString
  Existing->PhotoId=EnlargedId;Existing->Quality=Quality;Existing->Reward=PhotoReward(ClaimId,Quality);
  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: enlargement %s is the photograph of %s now ($%d)"),*EnlargedId,*ClaimId,Existing->Reward);
  Changed();
- if(M&&M->Freeform)M->Freeform->TagPhotoClaim(ClaimId); // EVIDENCE-DOSSIER-20261113: an enlargement that makes it out is its photograph
+ if(M&&M->Freeform)M->Freeform->TagPhotoClaim(ClaimId,false); // EVIDENCE-DOSSIER-20261113: an enlargement that makes it out is its photograph (LOOP-DOSSIER-GIVES: made at the bench, so no hour or place of its own)
 }
 // Public declaration: bool PlanPhotoControl(const FString& Id);
 bool FS47FreeformDirector::PlanPhotoControl(const FString& Id)

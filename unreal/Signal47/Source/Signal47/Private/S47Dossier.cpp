@@ -64,7 +64,19 @@ namespace Tables
  const TCHAR* const StampNew=TEXT(" New file in the notebook.");
  const TCHAR* const SheetWords[]={TEXT("STAGE"),TEXT("NIGHTS"),TEXT("FIRST DAY"),TEXT("LAST DAY"),TEXT("NOTHING KEPT"),TEXT("PHOTOGRAPHS"),TEXT("NONE IN THE ALBUM."),TEXT("IN PENCIL"),
   TEXT("READ ONLY. KEPT AS THE NOTEBOOK HAS IT.")};
+ // LOOP-DOSSIER-GIVES-20261113: what reaching a stage gave, under the stage; the extra bearing's words; the hours on tonight's note.
+ const TCHAR* const GaveMapped=TEXT("Where it was first logged is on the map.");
+ const TCHAR* const GaveUnmapped=TEXT("Not on the map yet: nothing of it was logged out where it was.");
+ const TCHAR* const GaveExtraOpen=TEXT("The array knows what to listen for now: one more bearing, once.");
+ const TCHAR* const GaveExtraSpent=TEXT("The array knew what to listen for: its one more bearing is printed.");
+ const TCHAR* const GaveListens=TEXT("The array knows what to listen for now.");
+ const TCHAR* const GaveHours=TEXT("The hours it was logged at are on tonight's note.");
+ const TCHAR* const GaveNoHours=TEXT("No hours were kept for it.");
+ const TCHAR* const ExtraSlip=TEXT("THE STATION KNOWS WHAT TO LISTEN FOR NOW: ONE MORE BEARING TONIGHT THAN THE NIGHT GIVES.");
+ const TCHAR* const ExtraSaid=TEXT("The station knows what to listen for now: one more bearing tonight.");
+ const TCHAR* const ExtraTask=TEXT("ARRAY / The station knows what to listen for now: one more bearing slip can come tonight.");
  const int32 MaxTags=4096,MaxKey=160,MaxDay=36500;
+ const double MaxWhere=1e6;
  bool Valid(EKind Kind){return int32(Kind)>=0&&int32(Kind)<KindN;}
  bool Valid(EType Type){return int32(Type)>=0&&int32(Type)<TypeN;}
  bool Earlier(const FS47Dossier::FTag& A,const FS47Dossier::FTag& B){return A.Day!=B.Day?A.Day<B.Day:A.Key<B.Key;}
@@ -137,9 +149,39 @@ FString Stamp(int32 Number,EType Type,bool bPhoto,bool bNewFile,EStage Reached)
  else if(Reached==EStage::Marks||Reached==EStage::Habits)Out+=FString::Printf(TEXT(" The file is at %s now."),StageWord(Reached));
  return Out;
 }
+FString Gave(EKind Kind,EStage Stage,bool bMapped,int32 Extra,bool bHours)
+{
+ using namespace Tables;
+ if(!Valid(Kind))return FString();
+ if(Stage==EStage::Outline)return bMapped?GaveMapped:GaveUnmapped;
+ if(Stage==EStage::Marks)return Extra==1?GaveExtraOpen:Extra==2?GaveExtraSpent:GaveListens;
+ if(Stage==EStage::Habits)return bHours?GaveHours:GaveNoHours;
+ return FString();
+}
+FString ExtraSlipWords(){return Tables::ExtraSlip;}
+FString ExtraToast(){return Tables::ExtraSaid;}
+FString ExtraTaskLine(){return Tables::ExtraTask;}
+FString HoursLine(int32 Number,const TArray<int32>& Hours)
+{
+ TArray<int32> In;
+ for(const int32 H:Hours)if(H>=0&&H<24)In.AddUnique(H);
+ if(In.IsEmpty()||Number<1)return FString();
+ In.Sort([](int32 A,int32 B){return (A+16)%24<(B+16)%24;}); // the night's order: from 08:00
+ TArray<FString> Said;
+ for(const int32 H:In)Said.Add(FString::Printf(TEXT("%02d:00"),H));
+ return FString::Printf(TEXT("UNKNOWN %d / Logged so far at %s."),Number,*FString::Join(Said,TEXT(", ")));
+}
+int32 ExtraNightFor(double Clock)
+{
+ // FS47FreeformSession::NightOf (08:00 to 08:00), three hours on: from 05:00 the stage gives to the coming night.
+ const double At=FMath::IsFinite(Clock)?FMath::Max(0.,Clock):0.;
+ return FMath::Max(1,int32(FMath::FloorToDouble((At+3*3600.-8*3600.)/86400.))+1);
+}
 FString Sheet(const FFile& File,const TArray<FString>& PhotoLines)
 {
- FString Out=FString::Printf(TEXT("STAGE     %s\nNIGHTS    %d / FIRST DAY %02d / LAST DAY %02d\n"),*File.Stage,File.Nights,File.Opened,File.Latest);
+ FString Out=FString::Printf(TEXT("STAGE     %s\n"),*File.Stage);
+ if(!File.Gave.IsEmpty())Out+=TEXT("          ")+File.Gave+TEXT("\n"); // LOOP-DOSSIER-GIVES-20261113: what the stage gave, under it
+ Out+=FString::Printf(TEXT("NIGHTS    %d / FIRST DAY %02d / LAST DAY %02d\n"),File.Nights,File.Opened,File.Latest);
  for(const FBox& One:File.Boxes)
  {
   const FString Label=One.Label+FString::ChrN(FMath::Max(1,10-One.Label.Len()),TEXT(' '));
@@ -167,6 +209,8 @@ TArray<FString> Words()
  for(int32 S=1;S<4;++S)Out.Add(StageWords[S]);
  for(int32 K=0;K<KindN;++K)for(int32 T=0;T<TypeN;++T)if(*Cells[K][T].Pencil)Out.Add(Cells[K][T].Pencil);
  for(const TCHAR* W:{HowFilm,HowSeen,HowNoted,NextOutline,NextMarks,NextStops,NextHabits,StampNew})Out.Add(W);
+ for(const TCHAR* W:{GaveMapped,GaveUnmapped,GaveExtraOpen,GaveExtraSpent,GaveListens,GaveHours,GaveNoHours,ExtraSlip,ExtraSaid,ExtraTask})Out.Add(W);
+ {TArray<int32> Every;for(int32 H=0;H<24;++H)Every.Add(H);Out.Add(HoursLine(5,Every));} // every hour there is, as tonight's note has them
  for(const TCHAR* W:SheetWords)Out.Add(W);
  // every stamp there can be, and a file's title
  for(int32 N=1;N<=KindN;++N)
@@ -202,11 +246,13 @@ FString Lint()
 
 // The class is at global scope: everything of the namespace is named in full here, so that nothing is looked up among whatever
 // else a unity build has put in the same file.
-bool FS47Dossier::Tag(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Day)
+bool FS47Dossier::Tag(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Day,int32 Hour,const FVector2D* Where)
 {
  namespace Tb=S47Dossier::Tables;
  if(Key.IsEmpty()||Key.Len()>Tb::MaxKey||!Tb::Valid(Kind)||!Tb::Valid(Type)||!*S47Dossier::Signature(Kind,Type)||Kept.Num()>=Tb::MaxTags||HasTag(Key))return false;
  FTag One;One.Key=Key;One.Kind=Kind;One.Type=Type;One.Day=FMath::Clamp(Day,1,Tb::MaxDay);
+ One.Hour=Hour>=0&&Hour<24?Hour:-1; // LOOP-DOSSIER-GIVES-20261113
+ if(Where&&FMath::IsFinite(Where->X)&&FMath::IsFinite(Where->Y)&&FMath::Abs(Where->X)<Tb::MaxWhere&&FMath::Abs(Where->Y)<Tb::MaxWhere){One.bWhere=true;One.X=Where->X;One.Z=Where->Y;}
  Kept.Add(MoveTemp(One));
  Sequence.AddUnique(Kind); // the first tag of a kind opens its file: the next number
  return true;
@@ -258,6 +304,7 @@ TArray<S47Dossier::FFile> FS47Dossier::Files() const
   S47Dossier::FFile File;File.Number=At+1;File.Title=FString::Printf(TEXT("UNKNOWN %d"),At+1);
   File.Stage=S47Dossier::StageWord(Stage);File.Next=S47Dossier::NextWords(Kind,Stage);
   File.bAtMarks=int32(Stage)>=int32(S47Dossier::EStage::Marks);File.Nights=NightsOf(Kind);
+  {double WhereX=0,WhereZ=0;File.Gave=S47Dossier::Gave(Kind,Stage,FirstWhere(Kind,WhereX,WhereZ),ExtraState(Kind),!HoursOf(Kind).IsEmpty());}
   File.Boxes.SetNum(Tb::TypeN);
   for(int32 T=0;T<Tb::TypeN;++T)File.Boxes[T].Label=Tb::TypeLabels[T];
   for(const FTag& One:Kept)
@@ -274,6 +321,53 @@ TArray<S47Dossier::FFile> FS47Dossier::Files() const
  }
  return Out;
 }
+bool FS47Dossier::FirstWhere(S47Dossier::EKind Kind,double& OutX,double& OutZ) const
+{
+ const FTag* Best=nullptr;
+ for(const FTag& One:Kept)if(One.Kind==Kind&&One.bWhere&&(!Best||One.Day<Best->Day))Best=&One; // by day, then as logged
+ if(!Best)return false;
+ OutX=Best->X;OutZ=Best->Z;
+ return true;
+}
+TArray<int32> FS47Dossier::HoursOf(S47Dossier::EKind Kind) const
+{
+ TArray<int32> Out;
+ for(const FTag& One:Kept)if(One.Kind==Kind&&One.Hour>=0)Out.AddUnique(One.Hour);
+ Out.Sort([](int32 A,int32 B){return (A+16)%24<(B+16)%24;});
+ return Out;
+}
+bool FS47Dossier::Grant(S47Dossier::EKind Kind,int32 Night)
+{
+ if(!S47Dossier::Tables::Valid(Kind)||Given.Contains(int32(Kind)))return false;
+ Given.Add(int32(Kind),FMath::Clamp(Night,1,S47Dossier::Tables::MaxDay));
+ return true;
+}
+bool FS47Dossier::ExtraOpen(int32 Night) const
+{
+ for(const TPair<int32,int32>& One:Given)if(One.Value<=Night&&!Spent.Contains(One.Key))return true;
+ return false;
+}
+bool FS47Dossier::Spend(int32 Night)
+{
+ // The open one of the file with the lowest number, so that it comes out the same every time.
+ for(const S47Dossier::EKind Kind:Sequence)
+ {
+  const int32* For=Given.Find(int32(Kind));
+  if(For&&*For<=Night&&!Spent.Contains(int32(Kind))){Spent.Add(int32(Kind));return true;}
+ }
+ return false;
+}
+int32 FS47Dossier::ExtraState(S47Dossier::EKind Kind) const
+{
+ if(!Given.Contains(int32(Kind)))return 0;
+ return Spent.Contains(int32(Kind))?2:1;
+}
+int32 FS47Dossier::GrantMissing(int32 Night)
+{
+ int32 Made=0;
+ for(const S47Dossier::EKind Kind:Sequence)if(int32(StageOf(Kind))>=int32(S47Dossier::EStage::Marks)&&Grant(Kind,Night))++Made;
+ return Made;
+}
 S47J::FObj FS47Dossier::Save() const
 {
  const S47J::FObj Out=S47J::New(),TagsOut=S47J::New();
@@ -284,9 +378,22 @@ S47J::FObj FS47Dossier::Save() const
  {
   const S47J::FObj Row=S47J::New();
   S47J::Set(Row,TEXT("k"),S47Dossier::KindId(One.Kind));S47J::Set(Row,TEXT("t"),S47Dossier::TypeId(One.Type));S47J::Set(Row,TEXT("d"),One.Day);
+  if(One.Hour>=0)S47J::Set(Row,TEXT("h"),One.Hour); // LOOP-DOSSIER-GIVES-20261113: optional, as the day is
+  if(One.bWhere){S47J::Set(Row,TEXT("x"),FMath::RoundToDouble(One.X*10)/10);S47J::Set(Row,TEXT("z"),FMath::RoundToDouble(One.Z*10)/10);}
   S47J::Set(TagsOut,*One.Key,Row);
  }
  S47J::Set(Out,TEXT("tags"),TagsOut);
+ if(!Given.IsEmpty())
+ {
+  const S47J::FObj ExtraOut=S47J::New();TArray<FString> SpentIds;
+  for(const S47Dossier::EKind Kind:Sequence)
+  {
+   if(const int32* For=Given.Find(int32(Kind)))S47J::Set(ExtraOut,S47Dossier::KindId(Kind),*For);
+   if(Spent.Contains(int32(Kind)))SpentIds.Add(S47Dossier::KindId(Kind));
+  }
+  S47J::Set(Out,TEXT("extra"),ExtraOut);
+  if(!SpentIds.IsEmpty())S47J::Set(Out,TEXT("spent"),SpentIds);
+ }
  return Out;
 }
 void FS47Dossier::Load(const S47J::FObj& Saved)
@@ -307,11 +414,26 @@ void FS47Dossier::Load(const S47J::FObj& Saved)
   const double OnDay=S47J::Num(*Row,TEXT("d"));
   if(!FMath::IsFinite(OnDay)||OnDay<1||OnDay>Tb::MaxDay)continue;
   FTag One;One.Key=FString(*Pair.Key);One.Kind=S47Dossier::KindOfId(S47J::Str(*Row,TEXT("k")));One.Type=S47Dossier::TypeOfId(S47J::Str(*Row,TEXT("t")));One.Day=int32(OnDay);
+  // LOOP-DOSSIER-GIVES-20261113: the hour and the place, when the tag has them (a save from before has neither)
+  const double OnHour=S47J::Num(*Row,TEXT("h"),-1);
+  One.Hour=FMath::IsFinite(OnHour)&&OnHour>=0&&OnHour<24?int32(OnHour):-1;
+  if(S47J::Has(*Row,TEXT("x"))&&S47J::Has(*Row,TEXT("z"))){One.X=S47J::Num(*Row,TEXT("x"),1e99);One.Z=S47J::Num(*Row,TEXT("z"),1e99);One.bWhere=true;}
   Read.Add(MoveTemp(One));
  }
  // By day, then key: the same every time, whatever order the record's fields come in. Tag refuses what is not sound.
  Read.Sort([](const FTag& A,const FTag& B){return S47Dossier::Tables::Earlier(A,B);});
- for(const FTag& One:Read)Tag(One.Key,One.Kind,One.Type,One.Day);
+ for(const FTag& One:Read){const FVector2D Where(One.X,One.Z);Tag(One.Key,One.Kind,One.Type,One.Day,One.Hour,One.bWhere?&Where:nullptr);}
+ // MARKS's extra bearing, for a file there is: the night it is for, and whether it is printed
+ if(const S47J::FObj ExtraIn=S47J::Obj(Saved,TEXT("extra"));ExtraIn.IsValid())for(const auto& Pair:ExtraIn->Values)
+ {
+  const S47Dossier::EKind Kind=S47Dossier::KindOfId(FString(*Pair.Key));double For=0;
+  if(Tb::Valid(Kind)&&Sequence.Contains(Kind)&&Pair.Value.IsValid()&&Pair.Value->TryGetNumber(For)&&FMath::IsFinite(For)&&For>=1&&For<=Tb::MaxDay)Grant(Kind,int32(For));
+ }
+ for(const FString& Id:S47J::Strs(Saved,TEXT("spent")))
+ {
+  const S47Dossier::EKind Kind=S47Dossier::KindOfId(Id);
+  if(Tb::Valid(Kind)&&Given.Contains(int32(Kind)))Spent.Add(int32(Kind));
+ }
 }
 int32 FS47Dossier::Rebuild(const TArray<FOld>& Findings,const TArray<FString>& Claims)
 {
@@ -462,6 +584,51 @@ bool SelfTest(TArray<FString>& Lines)
   bool bNone=true;
   for(int32 K=0;K<KindN;++K)bNone&=One.StageOf(EKind(K))!=EStage::Habits&&One.StageOf(EKind(K))!=EStage::NoFile;
   Check(bNone&&One.StageOf(Low)==EStage::Marks&&One.StageOf(Silver)==EStage::Outline&&One.AtMarks()==3,TEXT("with slice 1's three kinds of evidence nothing reaches HABITS"));
+ }
+ { // LOOP-DOSSIER-GIVES-20261113: every stage gives something the player can see, and it is kept
+  FS47Dossier D;
+  const FVector2D Here(120,-340),There(900,40);
+  D.Tag(TEXT("g1"),Low,Shape,2,23,nullptr); // at a bench: no place kept
+  const bool bUnmapped=D.Files()[0].Gave==GaveUnmapped&&D.StageOf(Low)==EStage::Outline;
+  double WX=0,WZ=0;
+  D.Tag(TEXT("g2"),Low,Shape,2,1,&There);
+  D.Tag(TEXT("g3"),Low,Ground,3,2,&Here); // a later night: the first place stays the first
+  const bool bMapped=D.StageOf(Low)==EStage::Outline&&D.Files()[0].Gave==GaveMapped&&D.FirstWhere(Low,WX,WZ)&&WX==There.X&&WZ==There.Y&&!D.FirstWhere(Small,WX,WZ);
+  Check(bUnmapped&&bMapped,TEXT("LOOP-DOSSIER-GIVES: OUTLINE puts where the file was first logged out there on the map; one logged only at a bench says it is not on it yet"));
+  D.Tag(TEXT("g4"),Low,Tape,3,3,&Here);
+  const bool bReached=D.StageOf(Low)==EStage::Marks&&D.ExtraState(Low)==0&&D.Files()[0].Gave==GaveListens;
+  const bool bGrant=D.Grant(Low,3)&&!D.Grant(Low,5)&&!D.ExtraOpen(2)&&D.ExtraOpen(3)&&D.ExtraOpen(4)&&D.Files()[0].Gave==GaveExtraOpen;
+  const bool bOnce=!D.Spend(2)&&D.Spend(4)&&!D.Spend(4)&&!D.Spend(9)&&!D.ExtraOpen(4)&&!D.ExtraOpen(30)&&D.ExtraState(Low)==2&&D.Files()[0].Gave==GaveExtraSpent;
+  Check(bReached&&bGrant&&bOnce,TEXT("LOOP-DOSSIER-GIVES: MARKS gives one more bearing, once, from its night on until it is printed, and never again"));
+  const S47J::FObj Record=S47J::Read(S47J::Write(D.Save()));
+  FS47Dossier Back;Back.Load(Record);
+  const S47J::FObj Row=S47J::Obj(S47J::Obj(Record,TEXT("tags")),TEXT("g2"));
+  double BX=0,BZ=0;
+  Check(Back.HoursOf(Low)==TArray<int32>{23,1,2,3}&&Back.FirstWhere(Low,BX,BZ)&&BX==There.X&&BZ==There.Y&&Back.ExtraState(Low)==2&&!Back.ExtraOpen(30)&&S47J::Int(Row,TEXT("h"))==1&&S47J::Num(Row,TEXT("x"))==900
+   &&!S47J::Obj(S47J::Obj(Record,TEXT("tags")),TEXT("g1"))->HasField(TEXT("x"))&&S47J::Int(S47J::Obj(Record,TEXT("extra")),TEXT("pale"))==3&&S47J::Strs(Record,TEXT("spent"))==TArray<FString>{TEXT("pale")}
+   &&S47J::Write(Back.Save())==S47J::Write(D.Save()),
+   TEXT("LOOP-DOSSIER-GIVES: the hour and the place on each tag, and the extra bearing given and printed, survive a Continue"));
+  D.Tag(TEXT("g5"),Low,Lamp,4,4,&Here);
+  const TArray<int32> Hours=D.HoursOf(Low);
+  Check(D.StageOf(Low)==EStage::Habits&&D.Files()[0].Gave==GaveHours&&HoursLine(1,Hours)==TEXT("UNKNOWN 1 / Logged so far at 23:00, 01:00, 02:00, 03:00, 04:00.")&&HoursLine(1,TArray<int32>()).IsEmpty()
+   &&HoursLine(2,TArray<int32>{7,8,7,30,-1})==TEXT("UNKNOWN 2 / Logged so far at 08:00, 07:00.")&&!S47Marginalia::NamesKind(HoursLine(1,Hours))&&S47Script::LintText(HoursLine(1,Hours)).IsEmpty(),
+   TEXT("LOOP-DOSSIER-GIVES: HABITS puts the hours the file was logged at on tonight's note, in the night's order, and nothing else"));
+  // a dossier from before: no hours, no place, no extra; it reads and writes as it was, and a file at MARKS gets its extra once
+  FS47Dossier Old;
+  const FString Was=TEXT("{\"order\":[\"pale\"],\"tags\":{\"a\":{\"k\":\"pale\",\"t\":\"ground\",\"d\":2},\"b\":{\"k\":\"pale\",\"t\":\"shape\",\"d\":3},\"c\":{\"k\":\"pale\",\"t\":\"tape\",\"d\":3},\"d\":{\"k\":\"pale\",\"t\":\"lamp\",\"d\":5,\"h\":99,\"x\":\"far\",\"z\":2}}}");
+  Old.Load(S47J::Read(Was));
+  const S47J::FObj OldOut=S47J::Read(S47J::Write(Old.Save()));
+  const bool bAsWas=Old.Tags().Num()==4&&Old.HoursOf(Low).IsEmpty()&&!Old.FirstWhere(Low,BX,BZ)&&Old.ExtraState(Low)==0&&!OldOut->HasField(TEXT("extra"))&&!S47J::Obj(S47J::Obj(OldOut,TEXT("tags")),TEXT("a"))->HasField(TEXT("h"))
+   &&Old.StageOf(Low)==EStage::Habits&&Old.Files()[0].Gave==GaveNoHours;
+  FS47Dossier Marks;Marks.Load(S47J::Read(Was.Replace(TEXT("\"lamp\",\"d\":5"),TEXT("\"lamp\",\"d\":3"))));
+  const bool bMissing=Marks.StageOf(Low)==EStage::Marks&&Marks.GrantMissing(6)==1&&Marks.GrantMissing(6)==0&&!Marks.ExtraOpen(5)&&Marks.ExtraOpen(6);
+  Check(bAsWas&&bMissing,TEXT("LOOP-DOSSIER-GIVES: an older dossier with no hours or places loads as it was; a file it has at MARKS gets its one extra bearing once"));
+  // the two that stop at MARKS give it too; no file, nothing
+  Check(Gave(Silver,EStage::Marks,true,1,false)==GaveExtraOpen&&Gave(Shining,EStage::Marks,false,2,true)==GaveExtraSpent&&Gave(EKind::None,EStage::Marks,true,1,true).IsEmpty()&&Gave(Small,EStage::NoFile,true,1,true).IsEmpty(),
+   TEXT("LOOP-DOSSIER-GIVES: the silver one's and the shining one's files give their extra bearing at MARKS too; no file gives nothing"));
+  const double Hr=3600.,Dy=86400.;
+  Check(ExtraNightFor(23*Hr)==1&&ExtraNightFor(Dy+3*Hr)==1&&ExtraNightFor(Dy+5*Hr)==2&&ExtraNightFor(10*Hr)==1&&ExtraNightFor(Dy+18*Hr)==2&&ExtraNightFor(-5)==1,
+   TEXT("LOOP-DOSSIER-GIVES: a file brought to MARKS in the night gives that night its bearing; from five in the morning, and in daylight, the coming night"));
  }
  { // a save from before the dossier
   FS47Dossier None;None.Load(nullptr);

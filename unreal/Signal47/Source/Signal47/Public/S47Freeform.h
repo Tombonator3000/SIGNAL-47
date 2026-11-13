@@ -14,6 +14,7 @@ class FS47FreeformWorld;
 class FS47CaseFieldTests;
 struct FS47Task;
 struct FS47Doc;
+struct FS47MapView;
 
 // Separate, persistent SARO working life. Story progression never grants its jobs or facts.
 class FS47FreeformSession
@@ -153,8 +154,15 @@ public:
  // Night 0: today. TagPhotoClaim: a photograph claim ("strange.<group>.n<night>"), when its group is one of the five. Saved as
  // "dossier" once there is a tag; a save from before is rebuilt from what it kept (FS47Dossier::Rebuild).
  FS47Dossier Unknowns;
- bool TagEvidence(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Night=0);
- bool TagPhotoClaim(const FString& ClaimId);
+ // LOOP-DOSSIER-GIVES-20261113: bHere, the find was got where the player stands (its hour and place go in the tag); false for a bench's
+ // (an enlargement in the darkroom). What each stage gives: the map's mark (DossierMap), the extra bearing (FS47Places::AfterRegistered
+ // asks DossierExtraOpen and DossierSpendExtra), the hours on tonight's note (DossierTasks).
+ bool TagEvidence(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Night=0,bool bHere=true);
+ bool TagPhotoClaim(const FString& ClaimId,bool bHere=true);
+ void DossierMap(FS47MapView& View) const;
+ void DossierTasks(TArray<FS47Task>& Out) const;
+ bool DossierExtraOpen(int32 Night) const;
+ bool DossierSpendExtra(int32 Night);
  void BinderUnknowns(S47Binder::FSource& Src) const; // the files as the binder's UNKNOWNS divider has them
  void LoadDossier(const S47J::FObj& Saved);
  void SaveDossier(const S47J::FObj& Record) const;
@@ -444,7 +452,7 @@ public:
  // its document's id. Printed after any job's paper and collected at the printer the same way; saved while waiting. False: the
  // printer already holds as many papers as it takes, and the bearing is on the map without it.
  static bool IsBearingSlip(const FResultSheet& Sh){return Sh.Line<0&&Sh.Test<0&&Sh.Job.StartsWith(TEXT("freeform-bearing-"));}
- bool QueueBearingSlip(int32 Day,const FString& Line,const FString& Note);
+ bool QueueBearingSlip(int32 Day,const FString& Line,const FString& Note,bool bAgain=false); // bAgain: a second slip that night (LOOP-DOSSIER-GIVES-20261113, MARKS), a paper of its own
  // -1: no result sheet waiting; otherwise its paper fraction 0..1 (it feeds only while no job's paper is waiting).
  double SheetProgress() const;
  // TELEX-20261109 (Tom, 9 November, DECISIONS "Saker og OPS"): the telex in the control room is paper. What comes back to SARO, a

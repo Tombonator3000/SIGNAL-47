@@ -65,6 +65,12 @@ const TArray<FRow>& Table()
     TEXT("Door open at the Baca place. Nobody home. Nobody asks."), TEXT(""), NoFollow, TEXT("") },
   { TEXT("ward"), People, TEXT("DR. WARD"), TEXT("The district office. Office hours only"), TEXT("ward"), TEXT("ward:talk"), Hint,
     TEXT("Signs for the paper. Not for what's on it."), TEXT(""), NoFollow, TEXT("") },
+  // LOOP-GONE-LEGIBLE-20261113 (→ M7): where the player reads where he stands with her, her own words from her letters about the hours in
+  // the log (FS47Predecessor::StepWarnings), copied in pencil: once, then twice (the first struck through when the second comes).
+  { TEXT("ward_hours"), People, TEXT("DR. WARD"), TEXT("The district office. Office hours only"), TEXT("ward"), TEXT("ward-hours"), Hint,
+    TEXT("Her letter: \"It has happened once.\" Three times, and she gives the post to somebody else."), TEXT("ward-taken"), NoFollow, TEXT("") },
+  { TEXT("ward_twice"), People, TEXT("DR. WARD"), TEXT("The district office. Office hours only"), TEXT("ward"), TEXT("ward-taken"), Hint,
+    TEXT("Her letter: \"It has happened twice.\" Once more, and she gives the post to somebody else."), TEXT(""), NoFollow, TEXT("") },
   // ---------- THEM: only what the player would call them ----------
   { TEXT("lights"), Them, TEXT("THE LIGHTS"), TEXT(""), TEXT(""), TEXT("landing_seen_d"), Hint,
     TEXT("Lights came down out on the flat and went OUT on the ground. Planes don't land out there in the dark."), TEXT(""), ToMap, TEXT("Where did they come down? Take a bearing next time.") },

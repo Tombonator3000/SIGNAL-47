@@ -47,6 +47,22 @@ Avvik fra forslaget, og hvorfor:
 - **Ikke med i trinn 1:** betaling per bevistype under ukas tak, boksen satt til «gir ikke noe», UNPLACED og tilordning. Sammenligningen passer, strider eller ukjent finnes i modellen og er prøvd, men vises først i trinn 2.
 - **Med trinn 1 alene kan bare den lave nå MARKS** (form, veispor og regelbruddet). De små har to bevistyper, og den høye, sølvmannen og den som lyser har én eller to. Trinn 2 gir resten.
 
+### Følger av trinnene (13. november)
+
+Tom godkjente 13. november kritikernes funn: et trinn som bare gir et stempel, er ikke ferdig. Hvert trinn får nå én følge med det spillet har fra før, og én linje under trinnet på THEM og på permens UNKNOWNS-ark sier hva det ga. Kodet 13. november, ikke bygget, ikke spilt av Tom.
+
+| Trinn | Hva spilleren får | Hvor han ser det |
+| --- | --- | --- |
+| OUTLINE | Stedet der mappa først ble logget ute, blyantført med «UNKNOWN n» ved siden av. Over måneden viser kartet hvor hver av dem har vært. | Feltkartet i notatboka; linjen «Where it was first logged is on the map.» |
+| MARKS | Én peiling mer enn nattens ene, én gang per mappe, med den vanlige rekkefølgen av mål (forbi det kveldens lapper alt har pekt på). Aldri på den store natta, aldri for første dags gratis lapp; tidsnivåene og alle andre avslag gjelder. Gitt for natta trinnet nås, fra kl. 05 for kommende natt, og står åpen til den er skrevet ut. | Lappen og toasten («The station knows what to listen for now: one more bearing tonight.»), kveldens plan til den er brukt, og linjen under trinnet. |
+| HABITS | Timene mappa er logget på så langt, i nattens rekkefølge, uten forklaring. | Én linje i kveldens plan: «UNKNOWN 2 / Logged so far at 23:00, 01:00, 03:00.» |
+
+Regler som holder: spillet sier aldri hva noe er; ingen ord fra Freeforms forbudsliste; sølvmannen og den som lyser stopper på MARKS (de gir også peilingen); skyggen har ingen mappe. Trinn 1 når ikke HABITS ennå, men regelen og selvtesten finnes.
+
+Lagring: hvert merke kan ha `h` (timen) og `x`, `z` (der spilleren sto, kartets egne meter), og `dossier` kan ha `extra` (natta peilingen gjelder fra) og `spent`. Alt er valgfritt. En eldre lagring leses som før: uten timer og kartmerke, og en mappe som alt står på MARKS får sin ene peiling ved lasting. En forstørring i mørkerommet gir verken time eller sted.
+
+Kode: `S47Dossier` (`Gave`, `HoursLine`, `ExtraNightFor`, `FirstWhere`, `HoursOf`, `Grant`, `Spend`), `S47FreeformDossier.cpp` (`TagEvidence`, `DossierMap`, `DossierTasks`, `DossierExtraOpen`), `FS47Places::SlipAllowed` og `AfterRegistered`, `S47FieldMap::AddFirstLogged`, THEM i `SS47Notebook.cpp`.
+
 ## 1. Mål og løkke
 
 **Mål.** Det spilleren finner om natta, skal samle seg til egne mapper for hvert ukjent vesen, slik at han over 30 dager selv ser at det er flere slag og hvordan de skiller seg fra hverandre. Spillet gir aldri et navn, en opprinnelse eller en forklaring. Spilleren setter sammen bildet, gir hver mappe sitt eget navn, og kunnskapen gjør nettene tryggere og teller hos Ward.

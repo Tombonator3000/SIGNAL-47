@@ -30,6 +30,7 @@
 #include "S47Relief.h"
 #include "S47RoadTerrain.h"
 #include "S47SaroSave.h"
+#include "S47Script.h"
 #include "S47Story.h"
 #include "S47Taken.h"
 #include "S47Three.h"
@@ -625,13 +626,17 @@ void FS47Predecessor::StepWarnings()
 {
  // Two stretches of lost time: Ward says in writing what a third does, before it can (TakenTooOften). Dale says it over the walkie
  // (the "twice" bark).
+ // LOOP-GONE-LEGIBLE-20261113 (→ M7; Tom 13 November, after the critics: the rule was never told before it ended a game): after the
+ // first stretch too ("ward-hours", WarnLetter), by the same channel, so that her rule is in the box by the next morning's round, long
+ // before a third can come. Neither once the third is in (never a warning after the end), nor after "Not yet" (TakenAtReprieve).
  auto& F=*M->Freeform;
- if(F.TimesTaken()>=TakenTooOften-1&&!Seen.Contains(TEXT("ward-taken"))&&Outcome==EOutcome::None)
+ const FString Warn=WarnLetter(F.TimesTaken(),TakenAtReprieve);
+ if(!Warn.IsEmpty()&&!Seen.Contains(Warn)&&!Seen.Contains(TEXT("ward-taken"))&&Outcome==EOutcome::None)
  {
-  Seen.Add(TEXT("ward-taken"));
-  F.RecordEvidence(TEXT("ward-taken"),X::TakenWarning(DateText(F.Day()),F.TimesTaken()));
+  Seen.Add(Warn);
+  F.RecordEvidence(Warn,X::TakenWarning(DateText(F.Day()),F.TimesTaken()));
   const bool bByPost=F.Mail&&F.Mail->Live();
-  Send(TEXT("ward-taken"));
+  Send(Warn);
   if(M->UI)M->UI->Toast(bByPost?TEXT("Dr. Ward has written about the hours in your log. The letter is in the mail."):TEXT("Dr. Ward has written about the hours in your log. It is in the OPS tray."),6);
   UE_LOG(LogTemp,Display,TEXT("S47: predecessor: warned after %d takings"),F.TimesTaken());
   M->RequestAutosave();
@@ -802,6 +807,7 @@ FS47Doc FS47Predecessor::MakeDoc(const FString& Id) const
  else if(Id.StartsWith(TEXT("week-"))&&M&&M->Freeform){D.Title=FString::Printf(TEXT("Dr. Ward, %s"),*Id.Replace(TEXT("week-"),TEXT("week ")));D.Page=M->Freeform->FindingText(TEXT("ward-")+Id);}
  else if(Id==TEXT("assessment")&&M&&M->Freeform){D.Title=TEXT("Dr. Ward's assessment");D.Page=M->Freeform->FindingText(AssessKey());}
  else if(Id==TEXT("ward-taken")&&M&&M->Freeform){D.Title=TEXT("Dr. Ward, about the lost hours");D.Page=M->Freeform->FindingText(TEXT("ward-taken"));}
+ else if(Id==TEXT("ward-hours")&&M&&M->Freeform){D.Title=TEXT("Dr. Ward, about the hours in the log");D.Page=M->Freeform->FindingText(TEXT("ward-hours"));} // LOOP-GONE-LEGIBLE-20261113
  else if(Id==TEXT("inspector")&&M&&M->Freeform){D.Title=TEXT("The county inspector, about the assessment");D.Stamp=TEXT("SOCORRO COUNTY");D.Page=M->Freeform->FindingText(TEXT("ward-inspector"));}
  else if(Id==TEXT("closed")&&M&&M->Freeform){D.Title=TEXT("Closing order in effect");D.Stamp=TEXT("SARO / COUNTY");D.Page=M->Freeform->FindingText(TEXT("saro-closed"));}
  else if(const X::FDocDef* Def=X::Doc(Id)){D.Title=Def->Title;D.Kind=Def->Kind;D.Stamp=Def->Stamp;D.Page=Def->Page;}
@@ -924,7 +930,7 @@ FString FS47Predecessor::TaskLine() const
  if(Outcome==EOutcome::None)
  {
   const FString Monday=FString::Printf(TEXT("week-%d"),WeekNoted);
-  for(const FString& Id:{FString(TEXT("ward-taken")),Monday})
+  for(const FString& Id:{FString(TEXT("ward-hours")),FString(TEXT("ward-taken")),Monday}) // LOOP-GONE-LEGIBLE-20261113: her first letter on the hours too
   {
    const bool bNote=Id==Monday;
    if(InMailbox(Id))return bNote?TEXT("MAILBOX / Dr. Ward's Monday note is in the box at the road."):TEXT("MAILBOX / A letter from Dr. Ward's office is in the box at the road.");
@@ -1032,6 +1038,8 @@ void FS47Predecessor::ShowTalk(const FString& Who,const FString& TopicId)
    Line(FString::Printf(TEXT("DR. WARD: %d filed, %d of them clean, %d cases carried through, the array at %d of 27, $%d carried. I assess on %s. I need something I can put in front of the county, and it has to be true."),C.Filed,C.Clean,C.Concluded,C.Dishes,C.Arrears,*DateText(AssessDay)));
    // What else she reads, in her words (M7): the same as on the Monday sheet.
    Line(TEXT("DR. WARD: ")+LeverWords(C));
+   // LOOP-GONE-LEGIBLE-20261113 (→ M7): and the hours in the log, how many times, and what a third would do (nothing after "Not yet")
+   if(const FString HoursWords=X::HoursSaid(C.Taken>C.Reprieved?C.Taken:0);!HoursWords.IsEmpty())Line(TEXT("DR. WARD: ")+HoursWords);
   }
   else Line(TEXT("DR. WARD: You've had my letter."));
  }
@@ -1675,6 +1683,7 @@ TArray<FString> FS47Predecessor::AllText()
  Out.Add(X::Letter(false,D,D));Out.Add(X::Letter(true,D,D));Out.Add(X::WeekNote(1,3,0,20,3,5,20,D,1,PointsToStay,0));Out.Add(X::WeekNote(2,9,2,21,9,0,13,D,7,PointsToStay,1));Out.Add(X::WeekNote(3,9,2,21,9,0,6,D,4,PointsToStay,2));
  Out.Add(X::Stays(D,30,2,25,0,true));Out.Add(X::KnowsEnough(D,3,0,20,5,D));Out.Add(X::WhatYouKnow());Out.Add(X::ClosedOriginals(D,3,0,20,5,6,2,D));Out.Add(X::ClosedNothing(D,0,0,20,5,D));Out.Add(X::NextOperator(D,D,6,2,3));
  Out.Add(X::TakenWarning(D,2));Out.Add(X::ClosedNow(D));
+ Out.Add(X::TakenWarning(D,1));Out.Add(X::HoursSaid(1));Out.Add(X::HoursSaid(2));Out.Add(X::WeekNote(2,9,2,21,9,0,13,D,7,PointsToStay,1)); // LOOP-GONE-LEGIBLE-20261113
  // M7: the levers in her words, the notes after KEPT OPEN, what the Stays letter says of what was found, and the inspector.
  const FString AllLevers=X::Levers(false,false,0,false,1,60,80)+X::Levers(true,true,2,true,0,0,80)+X::Levers(false,false,-1,false,0,0,80);
  Out.Add(AllLevers);Out.Add(X::WeekNote(4,20,1,25,18,45,2,D,6,PointsToStay,3,2,false,AllLevers));Out.Add(X::WeekNote(4,20,1,25,18,0,2,D,7,PointsToStay,0,0,true,AllLevers));
@@ -1842,6 +1851,15 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
   }
   Check(bTrue,TEXT("Ward praises the week only when it would pass the assessment"));
   Check(X::WeekNote(2,5,0,14,5,0,10,TEXT("MONDAY"),0,PointsToStay,2).Contains(TEXT("somebody else on nights")),TEXT("the Monday sheet names the lost hours, and what a third would do"));
+  // LOOP-GONE-LEGIBLE-20261113 (→ M7): her rule is said after the first stretch as well as after the second, by letter (the next round's
+  // post), on the phone and on the Monday sheet; never after the third, never after "Not yet"; and the rule itself is as it was.
+  Check(WarnLetter(0,0).IsEmpty()&&WarnLetter(1,0)==TEXT("ward-hours")&&WarnLetter(2,0)==TEXT("ward-taken")&&WarnLetter(3,0).IsEmpty()&&WarnLetter(4,0).IsEmpty()&&WarnLetter(3,3).IsEmpty()&&WarnLetter(4,3).IsEmpty(),
+   TEXT("LOOP-GONE-LEGIBLE: Ward writes after the first and after the second stretch of lost time, and never once the third is in"));
+  const FString Once=X::TakenWarning(TEXT("MONDAY"),1),Twice=X::TakenWarning(TEXT("MONDAY"),2);
+  bool bSaid=Once.Contains(TEXT("It has happened once."))&&Once.Contains(TEXT("three times"))&&Once.Contains(TEXT("give the post to somebody else"))&&Twice.Contains(TEXT("It has happened twice."))&&Twice.Contains(TEXT("give the post to somebody else"))
+   &&X::HoursSaid(1).Contains(TEXT("once"))&&X::HoursSaid(2).Contains(TEXT("twice"))&&X::HoursSaid(0).IsEmpty()&&X::HoursSaid(3).IsEmpty()&&X::WeekNote(1,3,0,20,3,0,20,TEXT("MONDAY"),1,PointsToStay,1).Contains(TEXT("If it comes to three times"));
+  for(const FString& Said:{Once,Twice,X::HoursSaid(1),X::HoursSaid(2)})bSaid&=S47Script::LintText(Said).IsEmpty()&&!Said.ToLower().Contains(TEXT("taken"))&&!Said.ToLower().Contains(TEXT("abduct"))&&!Said.Contains(TEXT("47"));
+  Check(bSaid&&TakenTooOften==3&&GoneDue(3,0,9,10)&&!GoneDue(2,0,9,10),TEXT("LOOP-GONE-LEGIBLE: her words say the hours, once or twice, and what three times does, never how; the rule and its count are unchanged"));
  }
  FTally Owing=Good;Owing.Arrears=FS47FreeformSession::ArrearsCap;Check(Decide(Owing)!=EOutcome::Stays,TEXT("not with the sheet at its limit"));
  Check(FS47FreeformSession::ArrearsCap==80&&X::Letter(false,FString(),FString()).Contains(TEXT("less than $80")),TEXT("the first letter names the same limit as the code (CHAIN-5-20261109)"));

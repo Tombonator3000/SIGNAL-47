@@ -372,7 +372,8 @@ FString WeekNote(int32 Week,int32 Filed,int32 Concluded,int32 Dishes,int32 Clean
   :Points*2>=PointsNeeded?TEXT("That is enough to argue with. It is not enough to win. The county will not count cards: it wants cases carried through, the array mended and records it can read.")
   :TEXT("I can't defend that. Filing cards is not what I am asked about. Carry a case through, mend the array, keep your records readable.");
  FString Hours;
- if(Taken==1)Hours=TEXT("\n\nYour log has a stretch of hours in it that nobody can account for. Write down what you can check. I would rather have that than a story.");
+ // LOOP-GONE-LEGIBLE-20261113 (→ M7): after the first she says the rule too, in the same words as her letter (HoursSaid)
+ if(Taken==1)Hours=TEXT("\n\nYour log has a stretch of hours in it that nobody can account for. Write down what you can check. I would rather have that than a story. If it comes to three times, I will give the post to somebody else.");
  // What she has done only once "Not yet" has answered this very count; before that (noticed, not yet acted on) only that she meant it.
  else if(Taken>=3&&Reprieved>0&&Taken==Reprieved)Hours=FString::Printf(TEXT("\n\nYour log has %d stretches of hours in it that nobody can account for. I said what I would do after another, and I did it. You asked for the nights back, and you have them, on my word and not on the numbers. There will not be a second time."),Taken);
  else if(Taken>=3)Hours=FString::Printf(TEXT("\n\nYour log has %d stretches of hours in it that nobody can account for. I said what I would do after another. I meant it."),Taken);
@@ -413,9 +414,18 @@ FString Followed(bool bWagon,bool bDeputy,bool bPayReturned,bool bThermos,bool b
  if(bPayReturned)L.Add(TEXT("Reyes's final pay has gone from my office to the family, with a note from me saying who routed it back. If they write, it will come to the station."));
  return FString::Join(L,TEXT(" "));
 }
+FString HoursSaid(int32 Taken)
+{
+ // LOOP-GONE-LEGIBLE-20261113 (→ M7): the rule in her words: hours not accounted for, how many times, and what a third does. Never how.
+ if(Taken==1)return TEXT("Your log shows hours nobody can account for. It has happened once. If it comes to three times, I will give the post to somebody else.");
+ if(Taken==2)return TEXT("Your log shows hours nobody can account for. It has happened twice. If it happens again, I will give the post to somebody else.");
+ return FString();
+}
 FString TakenWarning(const FString& Dated,int32 Taken)
 {
- return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nThe log has %d stretches in it now where the station has no operator and the operator has no account. I am not asking what happened. I am telling you what I will do.\n\nIf there is another, I will take you off nights and put somebody else on the station, whatever the numbers say. That is not a punishment. It is the only thing I can still do about it.\n\nStay in the building after dark if you can. Keep your originals.\n\nWard"),*Dated,Taken);
+ // LOOP-GONE-LEGIBLE-20261113: a letter after the first stretch as well as after the second, each with the count and the rule
+ if(Taken==1)return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nThe log has a stretch in it where the station had no operator and the operator has no account. It has happened once. I am not asking what happened. I am telling you what I will do.\n\nIf it comes to three times, I will take you off nights and give the post to somebody else, whatever the numbers say. I would rather tell you now than after.\n\nStay in the building after dark if you can. Keep your originals.\n\nWard"),*Dated);
+ return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\n%s\n\nTo the night operator, SARO.\n\nThe log has %d stretches in it now where the station has no operator and the operator has no account. It has happened twice. I am not asking what happened. I am telling you what I will do.\n\nIf there is another, I will take you off nights and give the post to somebody else, whatever the numbers say. That is not a punishment. It is the only thing I can still do about it.\n\nStay in the building after dark if you can. Keep your originals.\n\nWard"),*Dated,Taken);
 }
 FString ClosedNow(const FString& Dated)
 {
