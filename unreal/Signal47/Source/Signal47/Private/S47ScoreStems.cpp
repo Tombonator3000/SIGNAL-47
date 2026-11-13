@@ -63,9 +63,10 @@ namespace S47Stems
 		return FString::Printf(TEXT("music/stems/%s__%s.mp3"), Piece.File, Row.Name);
 	}
 
-	double StagedLevel(const FString& BaseName)
+	struct FStaged { double Level = 0, Lowpass = 0; };
+	const FStaged* StagedRow(const FString& BaseName)
 	{
-		static TMap<FString, double> Levels;
+		static TMap<FString, FStaged> Levels;
 		static bool bRead = false;
 		if (!bRead)
 		{
@@ -77,13 +78,24 @@ namespace S47Stems
 				if (All.IsValid()) for (const auto& Row : All->Values)
 				{
 					const TSharedPtr<FJsonObject>* O = nullptr;
-					if (Row.Value.IsValid() && Row.Value->TryGetObject(O) && O) Levels.Add(FString(Row.Key.ToView()), S47J::Num(*O, TEXT("level"), 0.));
+					if (Row.Value.IsValid() && Row.Value->TryGetObject(O) && O) Levels.Add(FString(Row.Key.ToView()), { S47J::Num(*O, TEXT("level"), 0.), S47J::Num(*O, TEXT("lowpass_hz"), 0.) });
 				}
 			}
 			UE_LOG(LogS47Stems, Display, TEXT("S47: stems staged for %d of the own mixes (Content/Audio/Raw/media/music/stems)"), Levels.Num());
 		}
-		const double* Found = Levels.Find(BaseName);
-		return Found && FMath::IsFinite(*Found) && *Found > 0 ? *Found : 0.;
+		return Levels.Find(BaseName);
+	}
+
+	double StagedLevel(const FString& BaseName)
+	{
+		const FStaged* Found = StagedRow(BaseName);
+		return Found && FMath::IsFinite(Found->Level) && Found->Level > 0 ? Found->Level : 0.;
+	}
+
+	double StagedLowpass(const FString& BaseName)
+	{
+		const FStaged* Found = StagedRow(BaseName);
+		return Found && FMath::IsFinite(Found->Lowpass) && Found->Lowpass >= 1000. && Found->Lowpass <= 20000. ? Found->Lowpass : 0.;
 	}
 
 	bool Enabled()
@@ -107,10 +119,10 @@ TSharedPtr<FS47ScoreStems> FS47ScoreStems::Open(const TSharedRef<FS47AudioContex
 		if (!D.IsValid()) { for (const TSharedPtr<FS47MediaSource>& O : Opened) O->Stop(); return nullptr; }
 		Opened.Add(D);
 	}
-	return Make(InCtx, *P, Opened, Level, Tension);
+	return Make(InCtx, *P, Opened, Level, Tension, S47Stems::StagedLowpass(P->File));
 }
 
-TSharedPtr<FS47ScoreStems> FS47ScoreStems::Make(const TSharedRef<FS47AudioContext>& InCtx, const S47Stems::FPiece& InPiece, const TArray<TSharedPtr<FS47MediaSource>>& InDecks, double Level, double Tension)
+TSharedPtr<FS47ScoreStems> FS47ScoreStems::Make(const TSharedRef<FS47AudioContext>& InCtx, const S47Stems::FPiece& InPiece, const TArray<TSharedPtr<FS47MediaSource>>& InDecks, double Level, double Tension, double Lowpass)
 {
 	if (InDecks.Num() != InPiece.Stems.Num() || !(Level > 0) || !FS47MediaSource::Group(InDecks))
 	{
@@ -126,7 +138,16 @@ TSharedPtr<FS47ScoreStems> FS47ScoreStems::Make(const TSharedRef<FS47AudioContex
 	S->Tape->Curve.SetNumUninitialized(4097);
 	for (int32 I = 0; I < 4097; ++I) S->Tape->Curve[I] = float(FMath::Tanh(1.6 * 2. * (-1. + 2. * I / 4096.)) / 1.6);
 	S->Post = InCtx->CreateGain(); S->Post->Gain.SetValue(Level);
-	S->Sum->Connect(S->Tape); S->Tape->Connect(S->Post);
+	// stems staged at half the rate: a fourth-order low-pass over their sum, against the images the interpolation leaves above
+	// 12 kHz (what it takes below that, and its phase, the recipe has given back in the stems themselves)
+	TSharedPtr<FS47AudioNode> Last = S->Sum;
+	if (Lowpass > 0) for (int32 I = 0; I < 2; ++I)
+	{
+		S->Lp[I] = InCtx->CreateBiquadFilter(); S->Lp[I]->SetType(TEXT("lowpass"));
+		S->Lp[I]->Frequency.SetValue(Lowpass); S->Lp[I]->Q.SetValue(S47Stems::LowpassQ[I]);
+		Last->Connect(S->Lp[I]); Last = S->Lp[I];
+	}
+	Last->Connect(S->Tape); S->Tape->Connect(S->Post);
 	for (int32 I = 0; I < InDecks.Num(); ++I)
 	{
 		const S47Stems::FRow& Row = InPiece.Stems[I];
@@ -148,6 +169,7 @@ void FS47ScoreStems::Close()
 	for (const TSharedPtr<FS47MediaSource>& D : Decks) if (D.IsValid()) { D->OnEnded = nullptr; D->OnError = nullptr; D->Disconnect(); }
 	for (const TSharedPtr<FS47GainNode>& G : Gains) if (G.IsValid()) G->Disconnect();
 	if (Sum.IsValid()) Sum->Disconnect();
+	for (TSharedPtr<FS47BiquadFilterNode>& F : Lp) if (F.IsValid()) { F->Disconnect(); F.Reset(); }
 	if (Tape.IsValid()) Tape->Disconnect();
 	if (Post.IsValid()) Post->Disconnect();
 	Decks.Reset(); Gains.Reset(); Sum.Reset(); Tape.Reset(); Post.Reset(); Ctx.Reset();
@@ -216,7 +238,19 @@ bool S47Stems::SelfTest(TArray<FString>& Lines)
 	// the bar grid
 	Check(FMath::IsNearlyEqual(ToBarLine(100., 0.25), 2.15, 1e-6) && FMath::IsNearlyEqual(ToBarLine(100., 2.4), 2.4, 1e-4) && FMath::IsNearlyEqual(ToBarLine(80., 2.9), .1, 1e-6)
 		&& ToBarLine(0., 12.) == 0 && ToBarLine(100., NAN) == 0, TEXT("the next bar line: 2.4 s bars at 100 BPM, 3 s at 80; at once in free time"));
-	Check(StagedLevel(TEXT("s47_no_such")) == 0, TEXT("a piece that is not staged as stems has no level, and plays as its mix"));
+	Check(StagedLevel(TEXT("s47_no_such")) == 0 && StagedLowpass(TEXT("s47_no_such")) == 0, TEXT("a piece that is not staged as stems has no level and no low-pass, and plays as its mix"));
+	{
+		// stems.json as staged on this machine, if it is: every piece's stems at one rate with the low-pass that rate needs
+		bool bStagedOk = true; int32 Staged = 0;
+		for (const FPiece& P : Pieces())
+		{
+			if (StagedLevel(P.File) <= 0) continue;
+			++Staged;
+			bStagedOk &= StagedLevel(P.File) > .3 && StagedLevel(P.File) < 1.5 && (StagedLowpass(P.File) == 0 || (StagedLowpass(P.File) >= 9000 && StagedLowpass(P.File) <= 12000));
+		}
+		Lines.Add(FString::Printf(TEXT("INFO stems: %d of the nine pieces are staged as stems here"), Staged));
+		Check(bStagedOk, TEXT("every staged piece has a working level, and a low-pass between 9 and 12 kHz or none"));
+	}
 	// decks as stems: the group, the tape curve over the sum, a change waiting for its bar line
 	const FString Path = FPaths::ProjectSavedDir() / TEXT("S47StemsSelfTest.wav");
 	{
@@ -233,8 +267,9 @@ bool S47Stems::SelfTest(TArray<FString>& Lines)
 	const FString Full = FPaths::ConvertRelativePathToFull(Path);
 	const FPiece Test = { TEXT("test"), 100., { Always, Rise } };
 	TArray<TSharedPtr<FS47MediaSource>> Two = { FS47MediaSource::Open(C, Full), FS47MediaSource::Open(C, Full) };
-	const TSharedPtr<FS47ScoreStems> S = Two[0].IsValid() && Two[1].IsValid() ? FS47ScoreStems::Make(C, Test, Two, .5, 0.) : nullptr;
-	Check(S.IsValid() && S->Num() == 2 && S->Leader() == Two[0] && S->In(0) && !S->In(1) && S->Wanted() == 1, TEXT("decks of one length open as the stems of a piece; at no tension only the ground is in"));
+	// (with the low-pass that half-rate stems get: a steady level passes it as it is)
+	const TSharedPtr<FS47ScoreStems> S = Two[0].IsValid() && Two[1].IsValid() ? FS47ScoreStems::Make(C, Test, Two, .5, 0., 11000.) : nullptr;
+	Check(S.IsValid() && S->Num() == 2 && S->Leader() == Two[0] && S->In(0) && !S->In(1) && S->Wanted() == 1 && S->Filtered(), TEXT("decks of one length open as the stems of a piece; at no tension only the ground is in"));
 	if (S.IsValid())
 	{
 		S->Out()->Connect(C->Destination);
@@ -268,6 +303,51 @@ bool S47Stems::SelfTest(TArray<FString>& Lines)
 		Check(!S->In(1) && S->ChangeAt(1) > C->CurrentTime(), TEXT("and it is set to leave when the tension has gone"));
 		S->Close();
 		Check(S->Num() == 0 && Two[0]->Paused(), TEXT("closing stops every deck"));
+	}
+	{
+		// a one-channel stem beside a two-channel one (the staged form may fold a stem whose sides are far under its middle), and
+		// a file at another rate
+		const FString WidePath = FPaths::ProjectSavedDir() / TEXT("S47StemsSelfTestWide.wav"), SlowPath = FPaths::ProjectSavedDir() / TEXT("S47StemsSelfTestSlow.wav");
+		const auto Tone = [](const FString& To, int32 Channels, int32 Rate)
+		{
+			constexpr int32 Frames = 48000 * 4; // (the same count of frames in each, whatever the rate)
+			TArray<uint8> Bytes; Bytes.SetNumZeroed(44 + Frames * 2 * Channels);
+			FMemory::Memcpy(Bytes.GetData(), "RIFF", 4); FMemory::Memcpy(Bytes.GetData() + 8, "WAVEfmt ", 8); FMemory::Memcpy(Bytes.GetData() + 36, "data", 4);
+			const auto Set16 = [&Bytes](int32 At, uint16 V) { Bytes[At] = uint8(V); Bytes[At + 1] = uint8(V >> 8); };
+			const auto Set32 = [&Set16](int32 At, uint32 V) { Set16(At, uint16(V)); Set16(At + 2, uint16(V >> 16)); };
+			Set32(4, Bytes.Num() - 8); Set32(16, 16); Set16(20, 1); Set16(22, uint16(Channels)); Set32(24, Rate); Set32(28, Rate * 2 * Channels); Set16(32, uint16(2 * Channels)); Set16(34, 16);
+			Set32(40, Frames * 2 * Channels);
+			for (int32 I = 0; I < Frames * Channels; ++I) Set16(44 + I * 2, uint16(int16(3277))); // a steady 0.1 in every channel
+			FFileHelper::SaveArrayToFile(Bytes, *To);
+		};
+		Tone(WidePath, 2, 48000); Tone(SlowPath, 1, 24000);
+		const FPiece Flat = { TEXT("test"), 0., { Always, { TEXT("wide"), 0., 1., 1., 1. } } };
+		TArray<TSharedPtr<FS47MediaSource>> Mixed = { FS47MediaSource::Open(C, Full), FS47MediaSource::Open(C, FPaths::ConvertRelativePathToFull(WidePath)) };
+		const TSharedPtr<FS47ScoreStems> Fold = Mixed[0].IsValid() && Mixed[1].IsValid() ? FS47ScoreStems::Make(C, Flat, Mixed, .5, 0., 11000.) : nullptr;
+		Check(Fold.IsValid() && Fold->Wanted() == 2 && Mixed[0]->Grouped() && Mixed[1]->Grouped(), TEXT("a one-channel stem and a two-channel one of the same length make one group"));
+		if (Fold.IsValid())
+		{
+			Fold->Out()->Connect(C->Destination);
+			Fold->Leader()->Play();
+			TArray<float> Pcm; Pcm.SetNumZeroed(S47Quantum * 2);
+			for (int32 K = 0; K < 40; ++K) { C->Render(Pcm.GetData(), S47Quantum, 2); if (K % 8 == 7) FPlatformProcess::Sleep(0.001f); }
+			// 0.1 from the one-channel deck and 0.1 from the two-channel one in each speaker: both pass the curve as 0.2. (Under a
+			// pan law the one-channel deck would come 3 dB short.)
+			const double Sum2 = FMath::Tanh(1.6 * .2 / .5) / 1.6 * .5;
+			const double Left = Pcm[(S47Quantum - 1) * 2], Right = Pcm[(S47Quantum - 1) * 2 + 1];
+			Check(FMath::Abs(Left - Sum2) < 3e-4 && FMath::Abs(Right - Sum2) < 3e-4 && Mixed[0]->CurrentTime() == Mixed[1]->CurrentTime() && Mixed[0]->CurrentTime() > 0,
+				TEXT("a one-channel stem sits in the middle at the level of its two-channel form (no pan law), on the same position as the others"));
+			Fold->Close();
+		}
+		TArray<TSharedPtr<FS47MediaSource>> Rates = { FS47MediaSource::Open(C, Full), FS47MediaSource::Open(C, FPaths::ConvertRelativePathToFull(SlowPath)) };
+		Check(Rates[0].IsValid() && Rates[1].IsValid() && !FS47MediaSource::Group(Rates) && !Rates[0]->Grouped() && !Rates[1]->Grouped(),
+			TEXT("decks of two rates are not grouped (one position in frames holds for one rate): such a piece plays as its mix"));
+		if (Rates[1].IsValid() && Rates[0].IsValid())
+		{
+			// a deck at half the context's rate is as long in seconds as its frames say: the bar grid is in seconds
+			Check(FMath::IsNearlyEqual(Rates[1]->Duration(), 8., 1e-9) && FMath::IsNearlyEqual(Rates[0]->Duration(), 4., 1e-9), TEXT("a deck's length and position are in seconds of its own rate"));
+		}
+		IFileManager::Get().Delete(*WidePath); IFileManager::Get().Delete(*SlowPath);
 	}
 	C->Close();
 	IFileManager::Get().Delete(*Path);
