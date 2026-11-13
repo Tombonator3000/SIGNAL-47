@@ -89,6 +89,9 @@
 #include "S47Observing.h"
 #include "S47Inter.h"
 #include "S47Keys.h"
+#include "S47RxLook.h"
+#include "S47SkyAcquire.h"
+#include "SS47RxLook.h"
 #include "S47Three.h"
 #include "S47Thoughts.h"
 #include "Widgets/Layout/SScrollBox.h"
@@ -2794,24 +2797,23 @@ void FS47FreeformSession::OpenReceiver()
  // RX-TABS-DUE-20261113: the tab that holds the next step breathes amber with a marker until it is opened (ReceiverDueTab).
  if(ReceiverTab==RxData)RxDataSeenJob=CurrentJob()->Id;
  TArray<T::FNav> TabItems;for(int32 I=0;I<5;++I){T::FNav Tab{TabNames[I],ReceiverTab==I,[this,I]{ReceiverTab=I;OpenReceiver();}};Tab.Due=[this,I]{return ReceiverDueTab()==I;};TabItems.Add(Tab);}
- TArray<S47Kit::FW> Rows;Rows.Add(T::Tabs(TabItems));
- // D45-20261110 (Tom: the target showed only once the array had locked): what the array is doing stands beside the measurement
- // line on every tab, from the job's selection on. Recording keeps its strict rule (ReceiverReady).
- auto ArrayState=[this]{const FJob* J=CurrentJob();if(!J)return FString();
-  if(PointReady())return Settle>=1?FString(TEXT("LOCKED")):FString(TEXT("SETTLING"));
-  return J->Stage==EJobStage::New?FString(TEXT("NOT POINTED")):FString::Printf(TEXT("SLEWING / %.1f\u00b0 TO GO"),ArrayErrorDeg());};
- Rows.Add(T::Columns({{1.55f,T::Text(TAttribute<FString>::CreateLambda([this]{return ArrayMeasurementStatus();}),TAttribute<int32>(0))},{1.f,T::Value(TEXT("ARRAY"),TAttribute<FString>::CreateLambda(ArrayState),true)}}));
- if(ReceiverTab>1)Rows.Add(T::Small(TEXT("Carrier lock = tuning. Measurement rate = observing seconds."))); // ACQUIRE has the chart, TUNE the tape strip instead
+ // RX-LOOK-20261113 (-> M3, M6; Tom 13 November: «Få receiver til grafisk å se mer ut som bilde nr. to. Masse FX.»): the receiver has
+ // its own frame on every tab (T::RxFrame): the header, the tab row, the state banner (what the array and the receiver are doing, in
+ // words, with the antennas on remote, the measurement rate and the card's frequency: D45-20261110's line beside the tabs, now the
+ // banner), the page, the next step in words and the keys that work here. One reading a frame for all of it (RxLive); the page
+ // fills the height the frame tells it.
+ const TSharedRef<FS47RxFeed> Feed=RxFeed();
+ const TSharedRef<float> BodyHigh=MakeShared<float>(T::RxBodyRoom(SS47ScreenView::ContentHigh(true)));
+ TArray<S47Kit::FW> Rows;
  auto Quality=[this]{const auto* J=CurrentJob();return J?M->Story->Rx.Quality(EffectiveProfile(*J)):0.;};
  auto Controls=[this]{return T::Columns({
   {1.f,T::Control(TEXT("FREQUENCY"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f MHz"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;})},
   {1.f,T::Control(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;})},
   {1.f,T::Control(TEXT("BANDWIDTH"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f kHz"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})}},10);};
- auto Banner=[this]{return T::Banner(TAttribute<FString>::CreateLambda([this]{return ReceiverNextAction().ToUpper();}),TAttribute<bool>::CreateLambda([this]{return !ReceiverReady();}));};
  if(ReceiverTab==0)
  {
   // RX-ACQUIRE-SKY-20261113: the sky chart (S47FreeformSky.cpp). It has the keys first while there is a search to steer.
-  Rows.Add(SkyPage(SkyKeys));
+  Rows.Add(SkyPage(SkyKeys,Feed,BodyHigh));
  }
  else if(ReceiverTab==1)
  {
@@ -2819,9 +2821,13 @@ void FS47FreeformSession::OpenReceiver()
   // height, so the page with the tape strip still fits the glass), the dials, the recording key and the tape.
   // D48-20261110 (D46-14, Tom: every receiver tab needs something to do): the target zoomed so one dial step shows, and a carrier-lock
   // meter that moves while the dials turn; the work card's windows stand in one line under it.
-  Rows.Add(T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("FINE TUNING / SPECTRUM ZOOM (MHz)"),FString::Printf(TEXT("TARGET %.3f +/- %.3f  |  GAIN %.0f-%.0f  |  BW %.0f-%.0f kHz"),P.F,P.FTol,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1])),
-   T::TuneZoom([this]{return M->Story->Rx;},[this]{return EffectiveProfile(*CurrentJob());},Quality,170)})));
-  Rows.Add(Banner());
+  // RX-LOOK-20261113: the zoomed spectrum stays the main thing here; the waterfall stands beside it (the same window, centred on the
+  // dial, so the line slides to the middle as the dial comes onto the card), and the next step is the frame's own line.
+  Rows.Add(SNew(SBox).HeightOverride(232)[SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().FillWidth(1).Padding(0,0,8,0)[T::RxPanel(TEXT("FINE TUNING / SPECTRUM ZOOM (MHz)"),T::TuneZoom([this]{return M->Story->Rx;},[this]{return EffectiveProfile(*CurrentJob());},Quality,206),
+    FString::Printf(TEXT("TARGET %.3f +/- %.3f  |  GAIN %.0f-%.0f  |  BW %.0f-%.0f kHz"),P.F,P.FTol,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1]))]
+   +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(300)[T::RxPanel(TEXT("SIGNAL WATERFALL"),SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxFall).Feed(Feed)],
+    TAttribute<FString>::CreateLambda([Feed]{return FString::Printf(TEXT("DIAL +/- %.0f kHz"),1000.*S47RxLook::HalfSpan(Feed->Now().Scope.FTol));}))]]]);
   Rows.Add(Controls());
   // D45-20261110 (Tom: record the control at the receiver right after the take): the same key records an unusual take's control.
   auto Start=T::Big(TAttribute<FString>::CreateLambda([this]
@@ -2855,6 +2861,13 @@ void FS47FreeformSession::OpenReceiver()
   Rows.Add(SNew(SBox).Visibility(StripShown).HeightOverride(78)[T::Columns({ // D45: 120 ran 37 over the glass (InternalControlEarly)
    {1.f,SNew(SS47TapeReels).Phosphor(true).Recording_Lambda(Writing).Playing_Lambda(Rolling).Control_Lambda(OnControl).Cursor_Lambda(TapeAt).Length_Lambda(TapeSpan).Ticks_Lambda(TapeTicks).Seed_Lambda(TapeKey).Period_Lambda(TapePulse)},
    {1.35f,SNew(SS47TapeScope).Phosphor(true).Recording(true).Playing_Lambda(Rolling).Control_Lambda(OnControl).Cursor_Lambda(TapeAt).Length_Lambda(TapeSpan).Ticks_Lambda(TapeTicks).Seed_Lambda(TapeKey).Period_Lambda(TapePulse).Caption_Lambda(TapeName)}},10)]);
+  // RX-LOOK-20261113: in the tape strip's place while nothing is being written: the in-phase and quadrature traces (noise until the
+  // carrier locks, two clean sines a quarter turn apart once it has). The same height, so the page stands still either way.
+  const TAttribute<EVisibility> TracesShown=TAttribute<EVisibility>::CreateLambda([StripShown]{return StripShown.Get()==EVisibility::Visible?EVisibility::Collapsed:EVisibility::Visible;});
+  Rows.Add(SNew(SBox).Visibility(TracesShown).HeightOverride(78)[SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().FillWidth(1).Padding(0,0,8,0)[T::RxPanel(TEXT("I (IN-PHASE)"),SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxIq).Feed(Feed)],
+    TAttribute<FString>::CreateLambda([Feed]{return FString::Printf(TEXT("LOCK %.0f %%"),100.*FMath::Clamp(Feed->Now().Scope.Strength,0.,1.));}))]
+   +SHorizontalBox::Slot().FillWidth(1)[T::RxPanel(TEXT("Q (QUADRATURE)"),SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxIq).Feed(Feed).bQuadrature(true)])]]);
  }
  else if(ReceiverTab==2)
  {
@@ -2870,7 +2883,6 @@ void FS47FreeformSession::OpenReceiver()
    {1.3f,T::Meter(TEXT("SLEW PROGRESS"),TAttribute<FString>::CreateLambda([this]{return PointReady()?FString(Settle>=1?TEXT("ON TARGET / STEADY"):TEXT("ON TARGET / SETTLING")):FString::Printf(TEXT("%.1f\u00b0 TO GO"),ArrayErrorDeg());}),TAttribute<float>::CreateLambda(Slew))},
    {1.f,T::Value(TEXT("POINTING / OFF"),TAttribute<FString>::CreateLambda([this,Dishes,DishState]{int32 On=0,Off=0;for(int32 I=0;I<Dishes;++I){const int32 St=DishState(I);On+=St==0;Off+=St==2;}return FString::Printf(TEXT("%d / %d"),On,Off);}),true)}},10));
   Rows.Add(T::Small(TEXT("Steady = on remote and on target. Pulsing = still moving. Red = off remote. Antennas are commanded from the right-hand tracking PC; this receiver records only while pointing, tuning and power are all valid.")));
-  Rows.Add(Banner());
  }
  else if(ReceiverTab==3)
  {
@@ -2954,7 +2966,6 @@ void FS47FreeformSession::OpenReceiver()
     T::Small(After)})));
    if(!Beam&&!J->bControl)Rows.Add(T::DueRing(T::Big(FString(TEXT("RECORD INTERNAL CONTROL / 8 SECONDS")),[this]{if(StartControl())OpenReceiver();else Changed(NextAction());},1,true),[this]{return CanRecordControl();})); // RX-TABS-DUE-20261113
   }
-  if(!ControlPanel||J->bControl||J->Phenomenon==TEXT("wrong_source"))Rows.Add(Banner());
  }
  else
  {
@@ -2987,8 +2998,8 @@ void FS47FreeformSession::OpenReceiver()
   Rows.Add(T::Columns({
    {.8f,T::Panel(TEXT("WORK CARD"),S47Kit::Col(Left))},
    {1.2f,T::Panel(FString(),S47Kit::Col({
-    T::TitleRow(TEXT("LAST TAKE / FREQUENCY OVER TIME"),FString::Printf(TEXT("%.0f s"),SourceSeconds())),T::Spectrogram(TakeLook,HasTake,150),
-    T::TitleRow(TEXT("KNOWN SOURCE FOR COMPARISON"),TAttribute<FString>::CreateLambda(RefShown)),T::Spectrogram(RefLook,[]{return true;},110)}))}},10));
+    T::TitleRow(TEXT("LAST TAKE / FREQUENCY OVER TIME"),FString::Printf(TEXT("%.0f s"),SourceSeconds())),T::Spectrogram(TakeLook,HasTake,132), // RX-LOOK-20261113: 150 and 110, lower for the frame's body
+    T::TitleRow(TEXT("KNOWN SOURCE FOR COMPARISON"),TAttribute<FString>::CreateLambda(RefShown)),T::Spectrogram(RefLook,[]{return true;},96)}))}},10));
   Rows.Add(T::Note(TAttribute<FString>::CreateLambda([this]{return FString(FS47ReceiverSound::BlurbOf(DataRef));}),20,TAttribute<FLinearColor>(S47Kit::Css(0x8cffa4))));
   Rows.Add(T::Columns({
    {1.f,T::Button(TEXT("< PREVIOUS"),[this,Refs]{DataRef=(DataRef+Refs-1)%Refs;OpenReceiver();})},
@@ -2996,7 +3007,28 @@ void FS47FreeformSession::OpenReceiver()
    {1.6f,T::Big(TAttribute<FString>::CreateLambda([this,Odd]{const auto* C=Cases.Get(0);return Odd()?FString::Printf(TEXT("THE TAKE SOUNDS LIKE THIS / %d LEFT"),C?Cases.RefTriesLeft(0):0):FString(TEXT("MATCH: AN UNUSUAL TAKE IS NEEDED"));}),[this]{MarkReference(DataRef);OpenReceiver();},1,TAttribute<bool>::CreateLambda(Odd))}},10));
   Rows.Add(T::Small(TEXT("Listen to each source at the reel deck on the wall table (NEXT REFERENCE, PLAY REFERENCE). A match that is right rules an explanation out on the OPS case board; a take of something new matches none.")));
  }
- OpenTerminal(1,TEXT("RECEIVER / ACQUISITION"),S47Kit::Col(Rows),true,SkyKeys);
+ // RX-LOOK-20261113: the frame round the page. The next step in words is the frame's line on every tab (the chart's own on ACQUIRE);
+ // F1 to F5 open the tabs where the player has not given those keys to something else, and the key row names only keys that work.
+ static const TCHAR* const PageTitle=TEXT("RECEIVER / ACQUISITION");
+ if(!TerminalBegin(1,PageTitle))return;
+ static const FKey TabKeys[5]={EKeys::F1,EKeys::F2,EKeys::F3,EKeys::F4,EKeys::F5};
+ auto KeyFree=[](const FKey& K){for(const S47Keys::FAction& A:S47Keys::Actions())if(S47Keys::Is(A.Id,K))return false;return true;};
+ T::FRxFrame Fr;Fr.Title=PageTitle;Fr.Tabs=TabItems;Fr.Body=S47Kit::Col(Rows,6);Fr.BodyHeight=BodyHigh;
+ Fr.Header=SNew(SS47RxHeader).Feed(Feed);Fr.Banner=SNew(SS47RxBanner).Feed(Feed);
+ Fr.Prompt=TAttribute<FString>::CreateLambda([this]{return ReceiverTab==RxAcquire?SkyPrompt():ReceiverNextAction().ToUpper();});
+ Fr.Urgent=TAttribute<bool>::CreateLambda([this]{return ReceiverTab==RxAcquire?SkyFix.IsValid()&&SkyFix->State()==FS47SkyAcquire::EPhase::Search:!ReceiverReady();});
+ for(int32 I=0;I<5;++I)if(KeyFree(TabKeys[I]))Fr.Keys.Add(FString::Printf(TEXT("F%d %s"),I+1,TabNames[I]));
+ if(ReceiverTab==RxAcquire&&SkyKeys.IsValid())Fr.Keys.Add(TEXT("ARROWS STEER"));
+ Fr.Keys.Add(TEXT("CLICK SELECT"));Fr.Keys.Add(TEXT("ESC RETURN TO ROOM"));
+ Fr.OnKey=[this,KeyFree](const FKey& K)
+ {
+  for(int32 I=0;I<5;++I)if(K==TabKeys[I]&&KeyFree(K)){if(ReceiverTab!=I){ReceiverTab=I;OpenReceiver();}return true;}
+  return false;
+ };
+ T::SetHumScreen(1);
+ const S47Kit::FW Framed=T::RxFrame(Fr);
+ T::SetHumScreen(-1);
+ TerminalShow(1,Framed,true,SkyKeys,true);
 }
 // D48-20261110 (D46-16): the take against a known source. Only an unusual pulsar take with its case open can be compared; the case logic
 // (FS47FreeformCases::MarkReference) decides, so a wrong or a natural sound, or a take of the sky, answers the same.

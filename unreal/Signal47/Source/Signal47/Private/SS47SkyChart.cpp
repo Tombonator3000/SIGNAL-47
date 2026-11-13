@@ -1,32 +1,58 @@
 #include "SS47SkyChart.h"
 #include "S47SkyAcquire.h"
+#include "S47RxLook.h"
 #include "S47Keys.h"
 #include "S47Kit.h"
 #include "SS47Widgets.h"
 #include "Brushes/SlateColorBrush.h"
 #include "Rendering/DrawElements.h"
 
-// RX-ACQUIRE-SKY-20261113 (-> M3): see SS47SkyChart.h.
+// RX-ACQUIRE-SKY-20261113 (-> M3) and RX-LOOK-20261113 (-> M3, M6): see SS47SkyChart.h.
 namespace
 {
 	// The workstation's phosphor (S47FreeformTerminal's palette, which keeps its own copies).
 	const FLinearColor S47SkyGreen = S47Kit::Css(0x8cffa4), S47SkyAmber = S47Kit::Css(0xffb84a), S47SkyLine = S47Kit::Css(0x3f9a5a), S47SkyDim = S47Kit::Css(0x1d4a2b);
 	const FSlateBrush* S47SkyFill() { static const FSlateColorBrush B(FLinearColor::White); return &B; }
-	FLinearColor S47SkyFade(FLinearColor C, float A) { C.A = A; return C; }
+	FLinearColor S47SkyFade(FLinearColor C, float A) { C.A = FMath::Clamp(A, 0.f, 1.f); return C; }
 	void S47SkyText(FSlateWindowElementList& Out, int32 L, const FGeometry& G, const FString& S, float X, float Y, int32 Size, const FLinearColor& C)
 	{
 		FSlateDrawElement::MakeText(Out, L, G.ToPaintGeometry(FVector2f(420.f, float(Size) + 6), FSlateLayoutTransform(FVector2f(X, Y))), S, S47Style::Mono(Size), ESlateDrawEffect::None, C);
 	}
 	void S47SkyLines(FSlateWindowElementList& Out, int32 L, const FGeometry& G, const TArray<FVector2f>& P, const FLinearColor& C, float W = 1.5f)
 	{
-		FSlateDrawElement::MakeLines(Out, L, G.ToPaintGeometry(), P, ESlateDrawEffect::None, C, true, W);
+		if (P.Num() >= 2) FSlateDrawElement::MakeLines(Out, L, G.ToPaintGeometry(), P, ESlateDrawEffect::None, C, true, W);
 	}
-	void S47SkyDash(FSlateWindowElementList& Out, int32 L, const FGeometry& G, FVector2f A, FVector2f B, const FLinearColor& C, float Dash = 9, float W = 1.5f)
+	// RX-LOOK-20261113: a bright stroke as the beam leaves it: a wide faint pass, a middle one and the thin bright core (a little
+	// wider where it is brighter).
+	void S47SkyGlow(FSlateWindowElementList& Out, int32 L, const FGeometry& G, const TArray<FVector2f>& P, const FLinearColor& C, float W = 1.6f)
 	{
-		const float Len = FVector2f::Distance(A, B);
-		if (Len < 1) return;
-		const FVector2f D = (B - A) / Len;
-		for (float T = 0; T < Len; T += Dash * 2) S47SkyLines(Out, L, G, { A + D * T, A + D * FMath::Min(Len, T + Dash) }, C, W);
+		const float Wide = S47RxLook::Beam(W, C.A);
+		S47SkyLines(Out, L, G, P, S47SkyFade(C, C.A * .10f), Wide * 4.2f);
+		S47SkyLines(Out, L, G, P, S47SkyFade(C, C.A * .26f), Wide * 2.1f);
+		S47SkyLines(Out, L, G, P, C, Wide);
+	}
+	// A dashed path: every other stretch of Dash units left out, the dashes carried round the path's corners.
+	void S47SkyDashPath(FSlateWindowElementList& Out, int32 L, const FGeometry& G, const TArray<FVector2f>& P, const FLinearColor& C, float Dash = 7, float W = 1.5f)
+	{
+		float Phase = 0; // how far into the current dash-and-gap the path is
+		TArray<FVector2f> Piece;
+		for (int32 I = 0; I + 1 < P.Num(); ++I)
+		{
+			const float Len = FVector2f::Distance(P[I], P[I + 1]);
+			if (Len < 1e-3f) continue;
+			const FVector2f D = (P[I + 1] - P[I]) / Len;
+			float At = 0;
+			while (At < Len)
+			{
+				const bool bInk = Phase < Dash;
+				const float Step = FMath::Min(Len - At, (bInk ? Dash : Dash * 2) - Phase);
+				if (bInk) { if (Piece.IsEmpty()) Piece.Add(P[I] + D * At); Piece.Add(P[I] + D * (At + Step)); }
+				At += Step; Phase += Step;
+				if (Phase >= Dash && !Piece.IsEmpty()) { S47SkyLines(Out, L, G, Piece, C, W); Piece.Reset(); }
+				if (Phase >= Dash * 2 - 1e-4f) Phase = 0;
+			}
+		}
+		S47SkyLines(Out, L, G, Piece, C, W);
 	}
 	void S47SkyBox(FSlateWindowElementList& Out, int32 L, const FGeometry& G, FVector2f At, FVector2f Size, const FLinearColor& C, bool bSolid)
 	{
@@ -50,42 +76,95 @@ namespace
 			S47SkyLines(Out, L, G, { At + FVector2f(FMath::Cos(A), FMath::Sin(A)) * Radius, At + FVector2f(FMath::Cos(B), FMath::Sin(B)) * Radius }, C, W);
 		}
 	}
+	// RX-LOOK-20261113: the table's stars and the galactic plane's specks as places of date (the sky of the game's spring), worked
+	// out once.
+	struct FS47ChartPlace { double Ra = 0, Dec = 0; float Bright = 1.f; };
+	const TArray<FS47ChartPlace>& S47SkyStarPlaces()
+	{
+		static const TArray<FS47ChartPlace> List = []
+		{
+			TArray<FS47ChartPlace> Made;
+			for (const S47SkySphere::FStar& St : S47SkySphere::Stars)
+			{
+				FS47ChartPlace P; P.Ra = St.RaHours * 15.; P.Dec = St.Dec; P.Bright = St.Mag; // (for a star: its magnitude)
+				S47SkySphere::FromJ2000(P.Ra, P.Dec);
+				Made.Add(P);
+			}
+			return Made;
+		}();
+		return List;
+	}
+	const TArray<FS47ChartPlace>& S47SkyDustPlaces()
+	{
+		static const TArray<FS47ChartPlace> List = []
+		{
+			TArray<FS47ChartPlace> Made;
+			for (int32 I = 0; I < S47SkySphere::DustCount; ++I)
+			{
+				const S47SkySphere::FDust D = S47SkySphere::Dust(I);
+				FS47ChartPlace P; P.Bright = D.Bright;
+				S47SkySphere::GalToEq(D.Lon, D.Lat, P.Ra, P.Dec);
+				S47SkySphere::FromJ2000(P.Ra, P.Dec);
+				Made.Add(P);
+			}
+			return Made;
+		}();
+		return List;
+	}
 }
 
 void SS47SkyChart::Construct(const FArguments& Args)
 {
-	Sky = Args._Model; StepFn = Args._OnStep; CalmFn = Args._Calm; KeyFn = Args._OnKey;
+	Sky = Args._Model; StepFn = Args._OnStep; CalmFn = Args._Calm; KeyFn = Args._OnKey; SiderealFn = Args._Sidereal; SourceName = Args._Source;
 	ForceVolatile(true);
 }
 
 SS47SkyChart::FPlot SS47SkyChart::PlotFor(const FVector2f& Size)
 {
-	// Elevation labels to the left, azimuth labels under it, the readouts in a column to the right.
-	constexpr float Left = 44, Top = 8, Bottom = 26, Gap = 14;
-	const double AzSpan = FS47SkyAcquire::AzMax - FS47SkyAcquire::AzMin, ElSpan = FS47SkyAcquire::ElMax - FS47SkyAcquire::ElMin;
-	const float RoomX = FMath::Max(40.f, Size.X - Left - Gap - ReadoutWide), RoomY = FMath::Max(40.f, Size.Y - Top - Bottom);
+	// The declinations stand beside the rim, the hours of right ascension under it.
+	const FVector2D Semi(FMath::Max(40., double(Size.X) * .5 - SideRoom), FMath::Max(30., (double(Size.Y) - FootRoom - TopRoom) * .5));
 	FPlot P;
-	P.Scale = FMath::Min(RoomX / float(AzSpan), RoomY / float(ElSpan));
-	P.Extent = FVector2f(float(AzSpan) * P.Scale, float(ElSpan) * P.Scale);
-	P.Origin = FVector2f(Left, Top + (RoomY - P.Extent.Y) * .5f);
-	P.ReadoutX = Left + P.Extent.X + Gap;
+	P.View = S47SkySphere::FitView(FVector2D(double(Size.X) * .5, TopRoom + Semi.Y), Semi);
+	P.Focus = FVector2f(P.View.Rim);
 	return P;
+}
+
+SS47SkyChart::FPlot SS47SkyChart::PlotNow(const FVector2f& Size) const
+{
+	return ShownSize.X > 0 && Size.Equals(ShownSize, .5f) ? Shown : PlotFor(Size);
+}
+
+bool SS47SkyChart::Place(const FPlot& P, const FVector2D& AzEl, FVector2f& Out)
+{
+	FVector2D Open;
+	if (!S47SkySphere::ProjectAzEl(P.View, AzEl, Open)) { Out = FVector2f(P.View.Rim) + FVector2f(1e5f, 1e5f); return false; }
+	Out = P.Focus + (FVector2f(Open) - P.Focus) * P.Zoom;
+	return true;
 }
 
 FVector2f SS47SkyChart::ToLocal(const FPlot& P, const FVector2D& AzEl)
 {
-	return P.Origin + FVector2f(float(AzEl.X - FS47SkyAcquire::AzMin) * P.Scale, float(FS47SkyAcquire::ElMax - AzEl.Y) * P.Scale);
+	FVector2f Out;
+	Place(P, AzEl, Out);
+	return Out;
 }
 
 FVector2D SS47SkyChart::ToSky(const FPlot& P, const FVector2f& Local)
 {
-	const float S = FMath::Max(P.Scale, 1e-3f);
-	return FVector2D(FS47SkyAcquire::AzMin + (Local.X - P.Origin.X) / S, FS47SkyAcquire::ElMax - (Local.Y - P.Origin.Y) / S);
+	const FVector2f Open = P.Focus + (Local - P.Focus) / FMath::Max(P.Zoom, .1f);
+	return S47SkySphere::UnprojectAzEl(P.View, FVector2D(Open));
 }
 
 bool SS47SkyChart::Contains(const FPlot& P, const FVector2f& Local)
 {
-	return Local.X >= P.Origin.X && Local.Y >= P.Origin.Y && Local.X <= P.Origin.X + P.Extent.X && Local.Y <= P.Origin.Y + P.Extent.Y;
+	return S47SkySphere::Inside(P.View, FVector2D(Local));
+}
+
+float SS47SkyChart::ZoomFor(double DegreesOff)
+{
+	if (!FMath::IsFinite(DegreesOff)) return 1.f;
+	const double X = FMath::Clamp((DegreesOff - ZoomNear) / (ZoomFar - ZoomNear), 0., 1.);
+	return 1.f + (ZoomMost - 1.f) * float(1. - X * X * (3. - 2. * X));
 }
 
 FVector2D SS47SkyChart::SteerOf(const FKey& Key)
@@ -102,6 +181,13 @@ FVector2D SS47SkyChart::SteerNow() const
 	FVector2D V = FVector2D::ZeroVector;
 	for (const FKey& Key : HeldKeys) V += SteerOf(Key);
 	return FVector2D(FMath::Clamp(V.X, -1., 1.), FMath::Clamp(V.Y, -1., 1.));
+}
+
+FVector2D SS47SkyChart::SkyStep(const FVector2D& GlassDir) const
+{
+	if (!Sky.IsValid()) return FVector2D::ZeroVector;
+	const FPlot P = ShownSize.X > 0 ? Shown : PlotFor(FVector2f(716, 440));
+	return S47SkySphere::SteerOnGlass(P.View, Sky->ReticleAt(), GlassDir);
 }
 
 bool SS47SkyChart::Steerable() const
@@ -133,7 +219,7 @@ FReply SS47SkyChart::OnMouseButtonDown(const FGeometry& G, const FPointerEvent& 
 {
 	if (E.GetEffectingButton() != EKeys::LeftMouseButton || !Steerable()) return FReply::Unhandled();
 	const FVector2f Local(G.AbsoluteToLocal(E.GetScreenSpacePosition()));
-	const FPlot P = PlotFor(FVector2f(G.GetLocalSize()));
+	const FPlot P = PlotNow(FVector2f(G.GetLocalSize()));
 	if (!Contains(P, Local)) return FReply::Unhandled();
 	HoverLocal = Local; bHover = true;
 	if (KeyFn) KeyFn(Sky->HasBearings() ? 0 : 1);
@@ -146,7 +232,7 @@ FReply SS47SkyChart::OnMouseMove(const FGeometry& G, const FPointerEvent& E)
 {
 	if (!Sky.IsValid()) return FReply::Unhandled();
 	const FVector2f Local(G.AbsoluteToLocal(E.GetScreenSpacePosition()));
-	const FPlot P = PlotFor(FVector2f(G.GetLocalSize()));
+	const FPlot P = PlotNow(FVector2f(G.GetLocalSize()));
 	bHover = Contains(P, Local);
 	HoverLocal = Local;
 	if (bHover && Steerable()) Sky->PointAt(ToSky(P, Local));
@@ -163,106 +249,326 @@ void SS47SkyChart::OnMouseLeave(const FPointerEvent& E)
 
 FCursorReply SS47SkyChart::OnCursorQuery(const FGeometry&, const FPointerEvent&) const
 {
-	// over the plot the tube draws its own pointer mark while the search is on
+	// inside the rim the tube draws its own pointer mark while the search is on
 	return bHover && Steerable() ? FCursorReply::Cursor(EMouseCursor::None) : FCursorReply::Unhandled();
 }
 
 int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 L, const FWidgetStyle&, bool) const
 {
 	using FSky = FS47SkyAcquire;
+	namespace Sph = S47SkySphere;
 	const FVector2f Sz(G.GetLocalSize());
-	const FPlot Pl = PlotFor(Sz);
 	const double Now = FPlatformTime::Seconds();
 	const double Dt = LastPaint > 0 ? FMath::Clamp(Now - LastPaint, 0., .1) : 0.;
 	LastPaint = Now;
-	const FVector2f P0 = Pl.Origin, P1 = Pl.Origin + Pl.Extent;
+	if (ShownSize.X <= 0 || !Sz.Equals(ShownSize, .5f)) { Shown = PlotFor(Sz); ShownSize = Sz; ZoomNow = 1.f; Trail.Reset(); TrailAt.Reset(); }
+	FPlot Pl = Shown;
+	Pl.Zoom = 1.f;
+	const FVector2f Rim(Pl.View.Rim), Semi(Pl.View.Semi);
+	// the rim itself
+	TArray<FVector2f> RimPath; RimPath.Reserve(73);
+	for (int32 I = 0; I <= 72; ++I) { const float A = 2 * PI * I / 72; RimPath.Add(Rim + FVector2f(FMath::Cos(A) * Semi.X, FMath::Sin(A) * Semi.Y)); }
 	if (!Sky.IsValid())
 	{
-		S47SkyBox(Out, L, G, P0, Pl.Extent, S47SkyLine, false);
+		S47SkyLines(Out, L, G, RimPath, S47SkyLine, 1.5f);
 		return L + 1;
 	}
 	FSky& K = *Sky;
-	K.Steer(Steerable() ? SteerNow() : FVector2D::ZeroVector);
+	const bool bCalm = CalmFn && CalmFn();
+	const double Lst = SiderealFn ? SiderealFn() : 0.;
+	// the keys steer the way they point on the glass, at the rule's own rate
+	K.Steer(Steerable() ? Sph::SteerOnGlass(Pl.View, K.ReticleAt(), SteerNow()) : FVector2D::ZeroVector);
+	// the picture closes in about the crossing as the pointer nears it (with the keys: as the reticle does), all the way while the
+	// fix is taken, and opens again once it is held. The pointer is then read through the picture as it stands.
+	{
+		double Off = -1.;
+		if (K.HasBearings() && K.State() == FSky::EPhase::Search)
+		{
+			Off = bHover && K.HasPointer() ? FVector2D::Distance(FSky::ClampToChart(Sph::UnprojectAzEl(Pl.View, FVector2D(HoverLocal))), K.Cross()) : K.Distance();
+		}
+		const float Want = K.State() == FSky::EPhase::Locking ? ZoomMost : Off >= 0 ? ZoomFor(Off) : 1.f;
+		ZoomNow = FMath::Clamp(ZoomNow + (Want - ZoomNow) * float(FMath::Min(1., Dt * (Want > ZoomNow ? 5. : 1.6))), 1.f, ZoomMost);
+		FVector2D Crossing;
+		Pl.Focus = Sph::ProjectAzEl(Pl.View, K.Cross(), Crossing) ? FVector2f(Crossing) : Rim;
+		Pl.Zoom = ZoomNow;
+	}
+	if (bHover && Steerable() && K.HasPointer()) K.PointAt(ToSky(Pl, HoverLocal));
 	if (StepFn) StepFn(Dt);
 	else K.Step(Dt);
-	const bool bCalm = CalmFn && CalmFn();
-	// A slow breath for small marks (never the picture): standing still with Calm flashes chosen.
-	auto Breath = [&](double Hz, double Phase = 0.) { return bCalm ? 1.f : .72f + .28f * float(FMath::Sin((Now * Hz + Phase) * 2 * PI)); };
-	auto At = [&](const FVector2D& AzEl) { return ToLocal(Pl, AzEl); };
+	Shown.Focus = Pl.Focus; Shown.Zoom = Pl.Zoom;
+
 	const FSky::EPhase State = K.State();
 	const bool bLocked = State == FSky::EPhase::Locked, bLocking = State == FSky::EPhase::Locking, bSearch = State == FSky::EPhase::Search;
 	const bool bBearings = K.HasBearings();
+	// the lock moment, seen here: the rings go out from it and the picture swells once (not for a fix that was already held)
+	if (PhaseSeen == int32(FSky::EPhase::Locking) && bLocked) LockedAt = Now;
+	PhaseSeen = int32(State);
+	const double SinceLock = Now - LockedAt;
+	// A slow breath for small marks (never the picture): standing still with Calm flashes chosen.
+	auto Breath = [&](double Hz, double Phase = 0.) { return bCalm ? 1.f : .72f + .28f * float(FMath::Sin((Now * Hz + Phase) * 2 * PI)); };
+	// every stroke a little brighter through the one soft swell at the lock
+	const float Gain = 1.f + .4f * S47RxLook::Bloom(SinceLock, bCalm);
+	// a band of the picture slips a unit sideways now and then, as a tube's does
+	auto Slip = [&](FVector2f P) { P.X += S47RxLook::Jitter(Now, P.Y, bCalm); return P; };
+	auto At = [&](const FVector2D& AzEl, FVector2f& OutP) { if (!Place(Pl, AzEl, OutP)) return false; OutP = Slip(OutP); return true; };
+	auto AtHour = [&](double Ha, double Dec, FVector2f& OutP)
+	{
+		FVector2D Open;
+		if (!Sph::ProjectHaDec(Pl.View, Ha, Dec, Open)) return false;
+		OutP = Slip(Pl.Focus + (FVector2f(Open) - Pl.Focus) * Pl.Zoom);
+		return true;
+	};
+	auto InRim = [&](const FVector2f& P, double Shrink) { return Sph::Inside(Pl.View, FVector2D(P), Shrink); };
+	// A path of the picture cut to the rim. Style: 0 plain, 1 bright (the beam's glow), 2 dashed. Hits: where it meets the rim.
+	auto Path = [&](const TArray<FVector2f>& Pts, const FLinearColor& C, float W, int32 Layer, int32 Style, TArray<FVector2f>* Hits)
+	{
+		TArray<FVector2f> Run;
+		auto Flush = [&]
+		{
+			if (Run.Num() >= 2)
+			{
+				if (Style == 1) S47SkyGlow(Out, Layer, G, Run, C, W);
+				else if (Style == 2) S47SkyDashPath(Out, Layer, G, Run, C, 7, W);
+				else S47SkyLines(Out, Layer, G, Run, C, W);
+			}
+			Run.Reset();
+		};
+		for (int32 I = 0; I + 1 < Pts.Num(); ++I)
+		{
+			FVector2D A(Pts[I]), B(Pts[I + 1]);
+			bool bCutA = false, bCutB = false;
+			if (!Sph::CutToRim(Pl.View, A, B, bCutA, bCutB)) { Flush(); continue; }
+			if (Run.IsEmpty() || bCutA) { Flush(); Run.Add(FVector2f(A)); }
+			Run.Add(FVector2f(B));
+			if (Hits && bCutA) Hits->Add(FVector2f(A));
+			if (Hits && bCutB) Hits->Add(FVector2f(B));
+			if (bCutB) Flush();
+		}
+		Flush();
+	};
+	// A curve of the sphere: Count points, each from PointAt (false: that point is behind the picture, and the curve breaks there).
+	auto Curve = [&](int32 Count, TFunctionRef<bool(int32, FVector2f&)> PointAt, const FLinearColor& C, float W, int32 Layer, int32 Style, TArray<FVector2f>* Hits)
+	{
+		TArray<FVector2f> Pts; Pts.Reserve(Count);
+		for (int32 I = 0; I < Count; ++I)
+		{
+			FVector2f P;
+			if (PointAt(I, P)) { Pts.Add(P); continue; }
+			Path(Pts, C, W, Layer, Style, Hits);
+			Pts.Reset();
+		}
+		Path(Pts, C, W, Layer, Style, Hits);
+	};
 
-	// ---- the grid: azimuth across, elevation up, a tick every ten degrees ----
-	for (int32 Az = 60; Az <= 160; Az += 10)
+	// ---- the sphere's grid: circles of declination, which stand, and the hours of right ascension, which turn with the sky ----
+	double MidHa = 0, MidDec = 0;
+	Sph::LonLat(Pl.View.Centre, MidHa, MidDec);
+	const FLinearColor GridTone = S47SkyFade(S47SkyLine, .5f * Gain), LabelTone = S47SkyGreen * .85f;
+	TArray<FVector2f> RimHits;
+	// (closed in, the grid is drawn finer: every five degrees and every twenty minutes, the whole ones as before)
+	const bool bFine = Pl.Zoom > 1.6f;
+	const FLinearColor FineTone = S47SkyFade(S47SkyLine, .3f * Gain);
+	for (int32 Circle = -75; Circle <= 75; Circle += bFine ? 5 : 15)
 	{
-		const float X = At(FVector2D(Az, FSky::ElMin)).X;
-		S47SkyLines(Out, L, G, { { X, P0.Y }, { X, P1.Y } }, S47SkyDim, 1);
-		if (Az % 20 == 0) S47SkyText(Out, L, G, FString::Printf(TEXT("%03d"), Az), X - 11, P1.Y + 4, 16, S47SkyGreen * .85f);
+		RimHits.Reset();
+		Curve(81, [&](int32 I, FVector2f& P) { return AtHour(MidHa - 120. + 3. * I, double(Circle), P); }, Circle == 0 ? S47SkyFade(S47SkyLine, .9f * Gain) : Circle % 15 ? FineTone : GridTone, 1.f, L, 0, &RimHits);
+		// its declination beside the rim, where the circle leaves the picture on the right
+		const FVector2f* Best = nullptr;
+		for (const FVector2f& Hit : RimHits) if (Hit.X > Rim.X && FMath::Abs(Hit.Y - Rim.Y) < Semi.Y * .66f && (!Best || Hit.X > Best->X)) Best = &Hit;
+		if (Best) S47SkyText(Out, L, G, Circle == 0 ? FString(TEXT("0\u00b0")) : FString::Printf(TEXT("%+d\u00b0"), Circle), Best->X + 6, Best->Y - 8, 15, LabelTone);
 	}
-	for (int32 El = 20; El <= 70; El += 10)
+	TArray<float, TInlineAllocator<24>> HourMarks;
+	for (int32 Third = 0; Third < 72; ++Third)
 	{
-		const float Y = At(FVector2D(FSky::AzMin, El)).Y;
-		S47SkyLines(Out, L, G, { { P0.X, Y }, { P1.X, Y } }, S47SkyDim, 1);
-		S47SkyText(Out, L, G, FString::Printf(TEXT("%02d"), El), P0.X - 24, Y - 9, 16, S47SkyGreen * .85f);
+		// (every twenty minutes of right ascension; the whole hours always, the thirds only closed in)
+		const int32 Hour = Third / 3;
+		const bool bWhole = Third % 3 == 0;
+		if (!bWhole && !bFine) continue;
+		const double FromMid = Sph::Wrap180(Lst - Third * 5. - MidHa);
+		if (FMath::Abs(FromMid) > 112.) continue;
+		RimHits.Reset();
+		Curve(41, [&](int32 I, FVector2f& P) { return AtHour(MidHa + FromMid, -80. + 4. * I, P); }, !bWhole ? FineTone : Hour % 6 == 0 ? S47SkyFade(S47SkyLine, .8f * Gain) : GridTone, 1.f, L, 0, &RimHits);
+		if (!bWhole) continue;
+		// its hour under the rim, where it leaves the picture at the foot
+		const FVector2f* Best = nullptr;
+		for (const FVector2f& Hit : RimHits) if (Hit.Y > Rim.Y + Semi.Y * .5f && FMath::Abs(Hit.X - Rim.X) < Semi.X * .7f) Best = &Hit;
+		if (!Best) continue;
+		bool bFree = true;
+		for (const float Mark : HourMarks) bFree &= FMath::Abs(Mark - Best->X) > 30.f;
+		if (!bFree) continue;
+		HourMarks.Add(Best->X);
+		// (set outward of where it meets the rim, so the hour never lies over the picture)
+		S47SkyText(Out, L, G, FString::Printf(TEXT("%02dh"), Hour), Best->X < Rim.X ? Best->X - 22 : Best->X - 4, Best->Y + 4, 15, LabelTone);
 	}
-	S47SkyBox(Out, L, G, P0, Pl.Extent, S47SkyLine, false);
-	S47SkyText(Out, L, G, TEXT("EL"), 2, P0.Y - 6, 16, S47SkyGreen * .85f);
-	S47SkyText(Out, L, G, TEXT("AZ"), P1.X - 46, P1.Y + 4, 16, S47SkyGreen * .85f);
+	// ---- the galactic plane: a stippled band ----
+	for (const FS47ChartPlace& Speck : S47SkyDustPlaces())
+	{
+		FVector2f P;
+		if (!AtHour(Lst - Speck.Ra, Speck.Dec, P) || !InRim(P, .985)) continue;
+		const float Side = 1.4f + 1.2f * Speck.Bright;
+		S47SkyBox(Out, L, G, P - FVector2f(Side * .5f, Side * .5f), FVector2f(Side, Side), S47SkyFade(S47SkyGreen, (.10f + .24f * Speck.Bright) * Gain), true);
+	}
+	// ---- the array's window: where the reticle can go, as a dashed outline on the sky ----
+	{
+		TArray<FVector2f> Edge; Edge.Reserve(96);
+		auto Corner = [&](double Az, double El) { FVector2f P; if (At(FVector2D(Az, El), P)) Edge.Add(P); };
+		for (double Az = FSky::AzMin; Az <= FSky::AzMax + 1e-6; Az += 4.) Corner(Az, FSky::ElMin);
+		for (double El = FSky::ElMin; El <= FSky::ElMax + 1e-6; El += 4.) Corner(FSky::AzMax, El);
+		for (double Az = FSky::AzMax; Az >= FSky::AzMin - 1e-6; Az -= 4.) Corner(Az, FSky::ElMax);
+		for (double El = FSky::ElMax; El >= FSky::ElMin - 1e-6; El -= 4.) Corner(FSky::AzMin, El);
+		Path(Edge, S47SkyFade(S47SkyLine, .75f), 1.f, L, 2, nullptr);
+	}
+	// ---- the stars, by magnitude, with a soft shimmer, and the stick figures between them ----
+	{
+		const TArray<FS47ChartPlace>& StarList = S47SkyStarPlaces();
+		TArray<FVector2f, TInlineAllocator<256>> StarAt;
+		TArray<uint8, TInlineAllocator<256>> StarSeen;
+		StarAt.SetNumZeroed(StarList.Num()); StarSeen.SetNumZeroed(StarList.Num());
+		for (int32 I = 0; I < StarList.Num(); ++I)
+		{
+			FVector2f P;
+			if (!AtHour(Lst - StarList[I].Ra, StarList[I].Dec, P)) continue;
+			StarAt[I] = P; StarSeen[I] = 1;
+			if (!InRim(P, .985)) continue;
+			const float Mag = StarList[I].Bright, Side = FMath::Clamp(4.f - .7f * Mag, 1.5f, 5.f);
+			const float Lit = FMath::Clamp(1.05f - .14f * Mag, .5f, 1.f) * S47RxLook::Twinkle(I, Now, bCalm) * Gain;
+			S47SkyBox(Out, L + 1, G, P - FVector2f(Side * .5f, Side * .5f), FVector2f(Side, Side), S47SkyFade(S47SkyGreen, Lit), true);
+			if (Mag < 1.6f)
+			{
+				// the brightest: the beam's glint
+				S47SkyLines(Out, L + 1, G, { P - FVector2f(Side + 2, 0), P + FVector2f(Side + 2, 0) }, S47SkyFade(S47SkyGreen, .34f * Lit), 1.f);
+				S47SkyLines(Out, L + 1, G, { P - FVector2f(0, Side + 2), P + FVector2f(0, Side + 2) }, S47SkyFade(S47SkyGreen, .34f * Lit), 1.f);
+			}
+		}
+		const FLinearColor FigureTone = S47SkyFade(S47SkyLine, .62f * Gain);
+		TArray<FVector2f> Pair; Pair.SetNumZeroed(2);
+		for (const Sph::FLink& Link : Sph::Links)
+		{
+			if (!StarSeen.IsValidIndex(Link.A) || !StarSeen.IsValidIndex(Link.B) || !StarSeen[Link.A] || !StarSeen[Link.B]) continue;
+			Pair[0] = StarAt[Link.A]; Pair[1] = StarAt[Link.B];
+			if (!InRim(Pair[0], 1.) && !InRim(Pair[1], 1.)) continue;
+			Path(Pair, FigureTone, 1.f, L + 1, 0, nullptr);
+		}
+	}
+	S47SkyGlow(Out, L + 1, G, RimPath, S47SkyFade(S47SkyGreen, .78f), 1.6f);
 
 	// ---- the catalogue: the card sources as squares in their boxes, the minor field as small crosses, each with its name ----
+	// A name stands beside its mark where it is free of the names already placed and inside the rim (above right first, then the
+	// other corners); it is written after the bearings, so that the lines do not lie over the words.
+	struct FNameAt { FString Name; FVector2f Spot; int32 Size; FLinearColor Tone; };
+	TArray<FNameAt> Names;
+	TArray<FSlateRect> NamesTaken;
+	auto PlaceName = [&](const FString& Name, const FVector2f& Mark, int32 Size, const FLinearColor& Tone, float Clear)
+	{
+		const float Wide = Name.Len() * Size * .4f + 2, High = Size + 1.f;
+		const FVector2f Tries[4] = { FVector2f(Clear, -High - 5), FVector2f(-Clear - Wide, -High - 5), FVector2f(Clear, 6), FVector2f(-Clear - Wide, 6) };
+		for (const FVector2f& Try : Tries)
+		{
+			const FVector2f P = Mark + Try;
+			if (!InRim(P + FVector2f(0, High * .5f), .96) || !InRim(P + FVector2f(Wide, High * .5f), .96)) continue;
+			const FSlateRect Area(P.X, P.Y, P.X + Wide, P.Y + High);
+			bool bFree = true;
+			for (const FSlateRect& Other : NamesTaken) bFree &= !FSlateRect::DoRectanglesIntersect(Other, Area);
+			if (!bFree) continue;
+			NamesTaken.Add(Area);
+			Names.Add({ Name, P, Size, Tone });
+			return;
+		}
+	};
 	for (const FSky::FSource& Src : FSky::Catalogue())
 	{
-		const FVector2f C = At(Src.At);
+		FVector2f C;
+		if (!At(Src.At, C) || !InRim(C, .97)) continue;
 		if (Src.bMajor)
 		{
 			const bool bCard = Src.Run == K.CardRun();
-			S47SkyRing(Out, L + 1, G, C, float(FSky::BoxRadius) * Pl.Scale, bCard ? S47SkyGreen * .8f : S47SkyLine, 1.f, !bCard);
+			// its box: the rule's own circle of BoxRadius round it, as it lies on the sphere
+			TArray<FVector2f> BoxPath; BoxPath.Reserve(25);
+			for (int32 I = 0; I <= 24; ++I)
+			{
+				const double A = 2 * PI * I / 24;
+				FVector2f P;
+				if (At(Src.At + FVector2D(FMath::Cos(A), FMath::Sin(A)) * FSky::BoxRadius, P)) BoxPath.Add(P);
+			}
+			Path(BoxPath, bCard ? S47SkyGreen * .8f : S47SkyLine, 1.f, L + 1, bCard ? 0 : 2, nullptr);
 			S47SkyBox(Out, L + 1, G, C - FVector2f(4, 4), FVector2f(8, 8), S47SkyGreen, false);
-			const FString Name = bCard ? Src.Name + TEXT(" / CARD") : Src.Name;
-			const float Wide = Name.Len() * 7.4f;
-			const float X = C.X + 24 + Wide > P1.X ? C.X - 24 - Wide : C.X + 24;
-			S47SkyText(Out, L + 1, G, Name, X, C.Y - 24, 18, S47SkyGreen);
+			PlaceName(bCard ? Src.Name + TEXT(" / CARD") : Src.Name, C, 18, S47SkyGreen, 12.f);
 		}
 		else
 		{
 			S47SkyLines(Out, L + 1, G, { C - FVector2f(4, 0), C + FVector2f(4, 0) }, S47SkyLine, 1.5f);
 			S47SkyLines(Out, L + 1, G, { C - FVector2f(0, 4), C + FVector2f(0, 4) }, S47SkyLine, 1.5f);
-			const float Wide = Src.Name.Len() * 6.6f;
-			S47SkyText(Out, L + 1, G, Src.Name, C.X + 8 + Wide > P1.X ? C.X - 8 - Wide : C.X + 8, C.Y - 8, 16, S47SkyGreen * .62f);
+			PlaceName(Src.Name, C, 16, S47SkyGreen * .62f, 7.f);
 		}
 	}
 
-	// ---- the bearings: one line an antenna, a solid band where an arm has locked, a faint sweeping one where it has not ----
-	const FVector2f Xc = At(K.Cross());
+	// ---- the bearings: one line an antenna, each arm's a fan from the rim that closes on the fix: solid where the arm has locked,
+	// a faint sweeping one with a dashed middle where it has not ----
+	FVector2f Xc = Rim;
+	At(K.Cross(), Xc);
 	if (bBearings)
 	{
+		// which way each arm's fan comes in from: three ways a third of a turn apart on the rule's chart (headings 205, 85 and
+		// 325 degrees there), which on the glass are the upper left, the right and the foot
+		static const double FanFrom[FSky::ArmCount] = { -1., 1., -1. };
 		const int32 PerArm = FSky::DishCount / FSky::ArmCount;
+		TArray<FVector2f> Ray;
 		for (int32 I = 0; I < FSky::DishCount; ++I)
 		{
 			const FSky::FLine Ln = K.Line(I);
 			if (!Ln.bOn) continue;
-			FVector2D A = Ln.Through - Ln.Dir * 400., B = Ln.Through + Ln.Dir * 400.;
-			if (!FSky::ClipSegment(A, B)) continue;
-			const FVector2f LA = At(A), LB = At(B);
-			const bool bMiddle = I % PerArm == PerArm / 2;
-			if (Ln.bSolid)
+			const FVector2D Along = Ln.Dir * FanFrom[FMath::Clamp(Ln.Arm, 0, FSky::ArmCount - 1)];
+			// past its nearest point to the crossing it runs on a little: far out the three fans cross and make the triangle,
+			// on the lock they all end on the fix
+			const double Over = FMath::Clamp(1.6 * FMath::Abs(Ln.Off) + .8, .8, 14.);
+			// Inside the array's window the line is the rule's own (straight on the rule's chart, so an arc on the sphere); from
+			// the window's edge it is carried straight on across the glass to the rim, so that each arm's fan comes in from the rim.
+			FVector2D From = Ln.Through - Along * Over, Until = Ln.Through + Along * 400.;
+			if (!FSky::ClipSegment(From, Until)) continue;
+			const int32 Pieces = FMath::Clamp(int32(FVector2D::Distance(From, Until) / 3.) + 1, 2, 60);
+			Ray.Reset();
+			for (int32 Piece = 0; Piece <= Pieces; ++Piece)
 			{
-				if (bMiddle) S47SkyLines(Out, L + 2, G, { LA, LB }, S47SkyFade(S47SkyGreen, .16f), 5.f);
-				S47SkyLines(Out, L + 2, G, { LA, LB }, S47SkyFade(S47SkyGreen, bMiddle ? 1.f : .7f), bMiddle ? 2.f : 1.2f);
+				FVector2f P;
+				if (At(FMath::Lerp(From, Until, double(Piece) / Pieces), P)) Ray.Add(P);
 			}
-			else if (bMiddle) S47SkyDash(Out, L + 2, G, LA, LB, S47SkyFade(S47SkyGreen, .8f), 9, 1.6f);
-			else S47SkyLines(Out, L + 2, G, { LA, LB }, S47SkyFade(S47SkyGreen, .26f), 1.f);
+			if (Ray.Num() >= 2)
+			{
+				const FVector2f Onward = (Ray.Last() - Ray[Ray.Num() - 2]).GetSafeNormal();
+				Ray.Add(Ray.Last() + Onward * ((Semi.X + Semi.Y) * 2.f)); // (the path is cut at the rim)
+			}
+			const bool bMiddle = I % PerArm == PerArm / 2;
+			if (Ln.bSolid) Path(Ray, S47SkyFade(S47SkyGreen, (bMiddle ? 1.f : .66f) * Gain), bMiddle ? 1.8f : 1.1f, L + 2, bMiddle ? 1 : 0, nullptr);
+			else Path(Ray, S47SkyFade(S47SkyGreen, bMiddle ? .8f : .26f), bMiddle ? 1.6f : 1.f, L + 2, bMiddle ? 2 : 0, nullptr);
 		}
 		// the triangle the three bands make: what has to close
 		FVector2D Corner[FSky::ArmCount];
 		if (K.Triangle(Corner) && K.MeanOff() > .12)
 		{
+			TArray<FVector2f> SidePath;
 			for (int32 I = 0; I < FSky::ArmCount; ++I)
 			{
-				FVector2D A = Corner[I], B = Corner[(I + 1) % FSky::ArmCount];
-				if (FSky::ClipSegment(A, B)) S47SkyLines(Out, L + 3, G, { At(A), At(B) }, S47SkyAmber, 2.2f);
+				SidePath.Reset();
+				for (int32 Part = 0; Part <= 5; ++Part)
+				{
+					FVector2f P;
+					if (At(FMath::Lerp(Corner[I], Corner[(I + 1) % FSky::ArmCount], Part / 5.), P)) SidePath.Add(P);
+				}
+				Path(SidePath, S47SkyAmber, 1.8f, L + 3, 1, nullptr);
 			}
+		}
+	}
+
+	for (const FNameAt& Each : Names) S47SkyText(Out, L + 2, G, Each.Name, Each.Spot.X, Each.Spot.Y, Each.Size, Each.Tone);
+
+	// ---- the search sweep: a slow hand round the sphere with its fading trail, while the search is on ----
+	if (bSearch)
+	{
+		const double Turn = S47RxLook::Sweep(Now, bCalm);
+		for (int32 Tail = 0; Turn >= 0 && Tail < 14; ++Tail)
+		{
+			const float A = float(2 * PI * Turn) - Tail * .026f;
+			S47SkyLines(Out, L + 3, G, { Rim, Rim + FVector2f(FMath::Cos(A) * Semi.X, FMath::Sin(A) * Semi.Y) }, S47SkyFade(S47SkyGreen, Tail == 0 ? .32f : .13f * (1.f - Tail / 14.f)), Tail == 0 ? 1.5f : 2.6f);
 		}
 	}
 
@@ -290,23 +596,48 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			}
 			else
 			{
-				S47SkyLines(Out, L + 4, G, { Xc - FVector2f(5, 0), Xc + FVector2f(5, 0) }, S47SkyAmber, 2.f);
-				S47SkyLines(Out, L + 4, G, { Xc - FVector2f(0, 5), Xc + FVector2f(0, 5) }, S47SkyAmber, 2.f);
+				S47SkyGlow(Out, L + 4, G, { Xc - FVector2f(5, 0), Xc + FVector2f(5, 0) }, S47SkyAmber, 1.8f);
+				S47SkyGlow(Out, L + 4, G, { Xc - FVector2f(0, 5), Xc + FVector2f(0, 5) }, S47SkyAmber, 1.8f);
+			}
+			// the lock moment: rings go out from the fix, one after the other, and fade
+			for (int32 Ring = 0; Ring < 3; ++Ring)
+			{
+				float Grow = 0, Alpha = 0;
+				if (S47RxLook::Pulse(SinceLock, Ring, bCalm, Grow, Alpha)) S47SkyRing(Out, L + 3, G, Xc, 24.f + 120.f * Grow, S47SkyFade(S47SkyAmber, .55f * Alpha), 1.4f);
 			}
 		}
 	}
 
-	// ---- the reticle: four corners that close as it nears the crossing, a filled centre on it ----
+	// ---- the reticle: rings and ticks, four corners that close as it nears the crossing, a filled centre on it ----
 	{
-		const FVector2f R = At(K.ReticleAt());
+		FVector2f R = Rim;
+		At(K.ReticleAt(), R);
 		const float Near = bBearings ? float(K.Closeness()) : 0.f;
 		const bool bOn = bLocking || bLocked || (bBearings && K.Steady() && K.Distance() <= FSky::LockRadius);
 		const FLinearColor Col = bOn ? S47SkyAmber : S47SkyGreen;
 		const float Gap = bLocked ? 28.f : FMath::Lerp(30.f, 11.f, Near * Near), Leg = 9.f, W = bOn ? 2.6f : 2.f;
+		// where it has just been: the phosphor's short memory
+		if (Trail.IsEmpty() || FVector2f::Distance(Trail.Last(), R) > 2.f) { Trail.Add(R); TrailAt.Add(Now); }
+		while (Trail.Num() > 0 && (Now - TrailAt[0] > .45 || Trail.Num() > 24)) { Trail.RemoveAt(0); TrailAt.RemoveAt(0); }
+		for (int32 I = 0; I + 1 < Trail.Num(); ++I)
+		{
+			const float Left = float(FMath::Exp(-(Now - TrailAt[I]) / .16));
+			if (InRim(Trail[I], 1.)) S47SkyRing(Out, L + 3, G, Trail[I], 5.f, S47SkyFade(Col, .3f * Left), 1.f);
+		}
 		for (const FVector2f Q : { FVector2f(-1, -1), FVector2f(1, -1), FVector2f(1, 1), FVector2f(-1, 1) })
 		{
 			const FVector2f Kn = R + Q * Gap;
-			S47SkyLines(Out, L + 4, G, { Kn - FVector2f(Q.X * Leg, 0), Kn, Kn - FVector2f(0, Q.Y * Leg) }, Col, W);
+			S47SkyGlow(Out, L + 4, G, { Kn - FVector2f(Q.X * Leg, 0), Kn, Kn - FVector2f(0, Q.Y * Leg) }, Col, W);
+		}
+		// two rings inside the corners, the outer one with a tick every thirty degrees, and the hairs toward the centre
+		S47SkyRing(Out, L + 4, G, R, Gap * .62f, S47SkyFade(Col, .85f), 1.3f);
+		S47SkyRing(Out, L + 4, G, R, Gap * .98f, S47SkyFade(Col, .45f), 1.f);
+		for (int32 Tick = 0; Tick < 12; ++Tick)
+		{
+			const float A = 2 * PI * Tick / 12;
+			const FVector2f D(FMath::Cos(A), FMath::Sin(A));
+			const float Inner = Tick % 3 == 0 ? Gap * .3f : Gap * .86f;
+			S47SkyLines(Out, L + 4, G, { R + D * Inner, R + D * (Gap * .98f) }, S47SkyFade(Col, Tick % 3 == 0 ? .8f : .5f), 1.f);
 		}
 		if (!bLocked) S47SkyBox(Out, L + 4, G, R - FVector2f(bOn ? 3.f : 1.5f, bOn ? 3.f : 1.5f), bOn ? FVector2f(6, 6) : FVector2f(3, 3), Col, true);
 		// held on the crossing: a short bar under the reticle fills before the lock starts
@@ -329,7 +660,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 				}
 			}
 		}
-		// the operator's own pointer, while it is on the chart
+		// the operator's own pointer, while it is inside the rim
 		if (bHover && K.HasPointer() && !bLocking && !bLocked)
 		{
 			S47SkyLines(Out, L + 4, G, { HoverLocal - FVector2f(6, 0), HoverLocal + FVector2f(6, 0) }, S47SkyGreen * .7f, 1.5f);
@@ -337,64 +668,123 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 		}
 	}
 
-	// ---- the readouts, to the right of the chart ----
+	// ---- the corners: what the picture is, how the bearings stand, and where the reticle is in the sky ----
 	{
-		const float X = Pl.ReadoutX; float Y = P0.Y - 4;
-		auto Row = [&](const FString& S, const FLinearColor& C, int32 Size = 18) { S47SkyText(Out, L + 5, G, S, X, Y, Size, C); Y += Size + 2; };
+		const FLinearColor Quiet = S47SkyGreen * .8f;
 		const TCHAR* Word = State == FSky::EPhase::NoBearings ? TEXT("NO BEARINGS") : bLocked ? TEXT("FIX HELD") : bLocking ? TEXT("LOCKING") : !K.Steady() ? TEXT("ARRAY TURNING")
 			: K.HoldProgress() > 0 ? TEXT("ON THE CROSSING") : TEXT("SEARCHING");
-		Row(bLocking ? FString::Printf(TEXT("LOCKING %2d %%"), int32(K.LockProgress() * 100)) : FString(Word), S47SkyAmber, 22);
-		const FVector2D R = K.ReticleAt(); double Ha = 0, Dec = 0;
-		FSky::HourAngleDec(R, Ha, Dec);
-		const int32 HaMin = FMath::RoundToInt32(FMath::Abs(Ha) * 60);
-		Row(TEXT("PHASE CENTRE"), S47SkyLine * 1.5f);
-		Row(FString::Printf(TEXT("AZ %05.1f   EL %04.1f"), R.X, R.Y), S47SkyGreen);
-		Row(FString::Printf(TEXT("HA %s%02dH%02dM DEC %+05.1f"), Ha < 0 ? TEXT("-") : TEXT("+"), HaMin / 60, HaMin % 60, Dec), S47SkyGreen);
-		Y += 6;
+		constexpr int32 Size = 16;
+		float Y = 2;
+		auto Left = [&](const FString& S, const FLinearColor& C) { S47SkyText(Out, L + 5, G, S, 4, Y, Size, C); Y += Size; };
+		auto Right = [&](const FString& S, const FLinearColor& C) { S47SkyText(Out, L + 5, G, S, Sz.X - S.Len() * Size * .4f - 5, Y, Size, C); Y += Size; };
+		Left(TEXT("REF. EPOCH: B1950.0"), Quiet);
+		Left(TEXT("PROJ: PERSPECTIVE"), Quiet);
+		Left(FString(TEXT("MODE: ")) + (bLocking ? FString::Printf(TEXT("LOCKING %2d %%"), int32(K.LockProgress() * 100)) : FString(Word)), S47SkyAmber);
+		Left(FString(TEXT("SRC: ")) + SourceName, Quiet);
+		// top right: the bearings, each arm in words
+		Y = 2;
 		static const TCHAR* const ArmName[FSky::ArmCount] = { TEXT("A"), TEXT("B"), TEXT("C") };
-		Row(bBearings ? FString::Printf(TEXT("BEARINGS %02d/%02d IN"), K.InCount(), K.OnCount()) : FString(TEXT("BEARINGS --/--")), S47SkyGreen);
+		Right(bBearings ? FString::Printf(TEXT("BEARINGS %02d/%02d IN"), K.InCount(), K.OnCount()) : FString(TEXT("BEARINGS --/--")), S47SkyGreen);
 		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm)
 		{
 			const bool bSolid = K.ArmSolid(Arm);
-			Row(FString::Printf(TEXT("ARM %s  %s"), ArmName[Arm], !bBearings ? TEXT("--") : bSolid ? TEXT("LOCKED") : TEXT("SWEEPING")), bSolid ? S47SkyGreen : S47SkyGreen * .75f);
+			Right(FString::Printf(TEXT("ARM %s %s"), ArmName[Arm], !bBearings ? TEXT("--") : bSolid ? TEXT("LOCKED") : TEXT("SWEEPING")), bSolid ? S47SkyGreen : S47SkyGreen * .75f);
 		}
-		Row(bBearings ? FString::Printf(TEXT("SPREAD %4.1f DEG"), K.MeanOff()) : FString(TEXT("SPREAD --")), S47SkyGreen);
-		if (bLocking || bLocked)
+		Right(bBearings ? FString::Printf(TEXT("SPREAD %4.1f\u00b0"), K.MeanOff()) : FString(TEXT("SPREAD --")), S47SkyGreen);
+		// bottom left: the reticle's place, on the ground and in the sky (for the catalogues' epoch), and in the galaxy
+		const FVector2D Aim = K.ReticleAt();
+		double Ra = 0, Dec = 0;
+		Sph::AzElToRaDec(Aim, Lst, Ra, Dec);
+		double OldRa = Ra, OldDec = Dec, NewRa = Ra, NewDec = Dec, Lon = 0, Lat = 0;
+		Sph::ToB1950(OldRa, OldDec);
+		Sph::ToJ2000(NewRa, NewDec);
+		Sph::EqToGal(NewRa, NewDec, Lon, Lat);
+		Y = Sz.Y - FootRoom - 4 * Size - 2;
+		Left(FString::Printf(TEXT("AZ %05.1f  EL %04.1f"), Aim.X, Aim.Y), S47SkyGreen);
+		Left(FString(TEXT("RA  ")) + Sph::RaText(OldRa), S47SkyGreen);
+		Left(FString(TEXT("DEC ")) + Sph::DecText(OldDec), S47SkyGreen);
+		Left(FString::Printf(TEXT("L %06.2f  B %+06.2f"), Lon, Lat), Quiet);
+		// bottom right: which way the pole and the east are on the picture
+		FVector2D Here, Poleward, Eastward;
+		if (Sph::ProjectHaDec(Pl.View, MidHa, MidDec, Here) && Sph::ProjectHaDec(Pl.View, MidHa, MidDec + 1., Poleward) && Sph::ProjectHaDec(Pl.View, MidHa - 1., MidDec, Eastward))
 		{
-			Y += 6;
-			const double Part = K.LockProgress();
-			for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm)
-				Row(FString::Printf(TEXT("DELAY %s %+07.1f NS"), ArmName[Arm], K.ArmDelayNs(Arm) * Part), S47SkyGreen);
-			Row(FString::Printf(TEXT("S/N %4.1f DB"), K.SignalToNoise() * Part), S47SkyGreen);
-			Row(FString::Printf(TEXT("RESIDUAL %.2f DEG"), K.MeanOff()), S47SkyGreen);
-			if (Part > .75)
-			{
-				const FSky::FSource* Listed = K.NearestCatalogued(K.Cross(), true);
-				Row(FString(TEXT("CAT ")) + (Listed ? Listed->Name : FString(TEXT("--"))), S47SkyGreen);
-				Row(FString::Printf(TEXT("OFFSET %.1f DEG"), K.CatalogueOffset()), S47SkyGreen);
-			}
-			else { Row(TEXT("CAT ........"), S47SkyGreen * .75f); Row(TEXT("OFFSET ...."), S47SkyGreen * .75f); }
+			const FVector2f Hub(Sz.X - 34, Sz.Y - FootRoom - 34);
+			const FVector2f Up = FVector2f(Poleward - Here).GetSafeNormal(), East = FVector2f(Eastward - Here).GetSafeNormal();
+			S47SkyLines(Out, L + 5, G, { Hub - Up * 16, Hub + Up * 18 }, Quiet, 1.5f);
+			S47SkyLines(Out, L + 5, G, { Hub + Up * 18 - Up * 6 + East * 4, Hub + Up * 18, Hub + Up * 18 - Up * 6 - East * 4 }, Quiet, 1.5f);
+			S47SkyLines(Out, L + 5, G, { Hub - East * 14, Hub + East * 14 }, Quiet, 1.f);
+			S47SkyText(Out, L + 5, G, TEXT("NCP"), Hub.X + Up.X * 26 - 9, Hub.Y + Up.Y * 26 - 9, 14, Quiet);
+			S47SkyText(Out, L + 5, G, TEXT("E"), Hub.X + East.X * 21 - 3, Hub.Y + East.Y * 21 - 8, 14, Quiet);
+			S47SkyText(Out, L + 5, G, TEXT("W"), Hub.X - East.X * 21 - 3, Hub.Y - East.Y * 21 - 8, 14, Quiet);
 		}
 	}
-	return L + 6;
+
+	// ---- the lock moment: the whole picture swells once, softly (a veil of the phosphor inside the rim) ----
+	if (const float Swell = S47RxLook::Bloom(SinceLock, bCalm); Swell > 0)
+	{
+		constexpr int32 Strips = 26;
+		for (int32 I = 0; I < Strips; ++I)
+		{
+			const float V = (I + .5f) / Strips * 2 - 1, Half = Semi.X * FMath::Sqrt(FMath::Max(0.f, 1 - V * V));
+			S47SkyBox(Out, L + 6, G, FVector2f(Rim.X - Half, Rim.Y + (V - 1.f / Strips) * Semi.Y), FVector2f(Half * 2, Semi.Y * 2 / Strips + .5f), S47SkyFade(S47SkyGreen, .05f * Swell), true);
+		}
+	}
+	return L + 7;
 }
 
 bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 {
+	using FSky = FS47SkyAcquire;
 	bool bOk = true;
 	auto Check = [&](bool bPass, const FString& What) { bOk &= bPass; Lines.Add(FString(bPass ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("sky chart: ") + What); };
-	for (const FVector2f Size : { FVector2f(1040, 376), FVector2f(1047, 376), FVector2f(900, 300), FVector2f(1200, 600) })
+	for (const FVector2f Size : { FVector2f(716, 480), FVector2f(716, 440), FVector2f(640, 360), FVector2f(900, 600) })
 	{
 		const FPlot P = PlotFor(Size);
-		const FVector2f A = ToLocal(P, FVector2D(FS47SkyAcquire::AzMin, FS47SkyAcquire::ElMax)), B = ToLocal(P, FVector2D(FS47SkyAcquire::AzMax, FS47SkyAcquire::ElMin));
-		const FVector2D Back = ToSky(P, ToLocal(P, FVector2D(112, 54)));
-		const bool bFits = A.Equals(P.Origin, .01f) && B.Equals(P.Origin + P.Extent, .01f) && P.Origin.X >= 40 && P.Origin.Y >= 8 && B.Y <= Size.Y - 25.9f && P.ReadoutX + ReadoutWide <= Size.X + .01f && P.ReadoutX > B.X;
-		// the lock radius is a comfortable target under a pointer: at least nine units across on the glass
-		Check(bFits && Back.Equals(FVector2D(112, 54), 1e-3) && Contains(P, ToLocal(P, FVector2D(112, 54))) && !Contains(P, P.Origin - FVector2f(2, 2)) && FS47SkyAcquire::LockRadius * P.Scale >= 4.5f,
-			FString::Printf(TEXT("%.0f x %.0f: the chart's window at one scale (%.2f units a degree), elevation up, with the readouts beside it"), Size.X, Size.Y, P.Scale));
+		const FVector2D Rim = P.View.Rim, Semi = P.View.Semi;
+		// the rim inside the widget, with room for the declinations beside it and the hours under it
+		const bool bRoom = Rim.X - Semi.X >= SideRoom - .01 && Rim.X + Semi.X <= Size.X - SideRoom + .01 && Rim.Y - Semi.Y >= TopRoom - .01 && Rim.Y + Semi.Y <= Size.Y - FootRoom + .01;
+		bool bRound = true, bInside = true;
+		double Open = 1e9;
+		for (const float Zoom : { 1.f, 1.7f, ZoomMost })
+		{
+			FPlot Z = P;
+			Z.Zoom = Zoom; Z.Focus = ToLocal(P, FVector2D(112, 54));
+			for (double Az = FSky::AzMin; Az <= FSky::AzMax + 1e-9; Az += 6.) for (double El = FSky::ElMin; El <= FSky::ElMax + 1e-9; El += 4.)
+			{
+				FVector2f At;
+				if (!Place(Z, FVector2D(Az, El), At)) { bRound = false; continue; }
+				// (the glass is counted in single precision: a thousandth of a degree is far finer than a unit of it)
+				bRound &= ToSky(Z, At).Equals(FVector2D(Az, El), 2e-3);
+				if (Zoom != 1.f) continue;
+				bInside &= Contains(Z, At);
+				for (double Turn = 0; Turn < 180; Turn += 15) Open = FMath::Min(Open, S47SkySphere::UnitsPerDegree(P.View, FVector2D(Az, El), FVector2D(FMath::Cos(FMath::DegreesToRadians(Turn)), FMath::Sin(FMath::DegreesToRadians(Turn)))) * FSky::LockRadius);
+			}
+		}
+		// the open picture is fixed to the ground: the crossing's place does not move when the picture closes in about it
+		FPlot Closed = P;
+		Closed.Zoom = ZoomMost; Closed.Focus = ToLocal(P, FVector2D(112, 54));
+		const bool bHeld = ToLocal(Closed, FVector2D(112, 54)).Equals(Closed.Focus, .01f) && FVector2f::Distance(ToLocal(Closed, FVector2D(118, 54)), Closed.Focus) > FVector2f::Distance(ToLocal(P, FVector2D(118, 54)), Closed.Focus) * (ZoomMost - .01f);
+		Check(bRoom && bRound && bInside && bHeld && !Contains(P, FVector2f(2, 2)) && Contains(P, FVector2f(Rim)),
+			FString::Printf(TEXT("%.0f x %.0f: the array's whole window inside the rim, to the glass and back open and closed in, the crossing standing still as the picture closes in (%.2f units a degree up, %.2f across)"), Size.X, Size.Y, FMath::DegreesToRadians(P.View.Radius), FMath::DegreesToRadians(P.View.Radius * P.View.Stretch)));
+		// closed in, the rule's lock circle is a comfortable target under a pointer: at least nine units across, as on the flat chart
+		if (Size.Y == 440.f) Check(Open * ZoomMost >= 4.5, FString::Printf(TEXT("the lock circle is at least %.1f units across on the open picture and %.1f closed in (the flat chart's promise: nine)"), Open * 2, Open * 2 * ZoomMost));
 	}
+	// closing in: all the way near the crossing, not at all far from it, and a pointer nearer the crossing on the glass is always
+	// nearer it in the sky (the picture never folds under the hand)
+	bool bZoom = ZoomFor(0.) == ZoomMost && ZoomFor(ZoomNear) == ZoomMost && ZoomFor(ZoomFar) == 1.f && ZoomFor(90.) == 1.f, bOrder = true;
+	double Was = -1.;
+	for (double Off = 0; Off <= 60; Off += .1)
+	{
+		const double InSky = Off / ZoomFor(Off);
+		bZoom &= ZoomFor(Off) >= 1.f && ZoomFor(Off) <= ZoomMost && (Off < .05 || ZoomFor(Off) <= ZoomFor(Off - .1) + 1e-6f);
+		bOrder &= InSky >= Was;
+		Was = InSky;
+	}
+	Check(bZoom && bOrder && 5. / ZoomFor(5.) < 2.3, FString::Printf(TEXT("the picture closes in %.1f times near the crossing: a pointer five degrees off on the open picture stands %.1f off once it has, and a nearer pointer is always nearer"), ZoomMost, 5. / ZoomFor(5.)));
 	Check(SteerOf(EKeys::Up) == FVector2D(0, 1) && SteerOf(EKeys::Down) == FVector2D(0, -1) && SteerOf(EKeys::Left) == FVector2D(-1, 0) && SteerOf(EKeys::Right) == FVector2D(1, 0)
 		&& SteerOf(EKeys::Gamepad_DPad_Up) == FVector2D(0, 1) && SteerOf(EKeys::Gamepad_DPad_Left) == FVector2D(-1, 0) && SteerOf(EKeys::Escape).IsZero(),
 		TEXT("the arrow keys and the d-pad steer; Escape stays the way out"));
+	// the tables as the picture uses them
+	Check(S47SkyStarPlaces().Num() == int32(S47SkySphere::Star::Count) && S47SkyDustPlaces().Num() == S47SkySphere::DustCount, TEXT("every star of the table and every speck of the galactic plane has its place of date"));
 	return bOk;
 }

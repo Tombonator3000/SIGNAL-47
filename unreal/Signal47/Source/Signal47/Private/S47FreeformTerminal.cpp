@@ -13,6 +13,8 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
 #include "Widgets/SLeafWidget.h"
+#include "Widgets/SCompoundWidget.h"
+#include "Widgets/SNullWidget.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
@@ -377,6 +379,145 @@ namespace S47FreeformTerminal
   }
   return SNew(SVerticalBox)+SVerticalBox::Slot().AutoHeight()[Box]+SVerticalBox::Slot().AutoHeight().Padding(0,3,0,6)[Rule()];
  }
+ // ---- RX-LOOK-20261113 (-> M3, M6): the receiver PC's own frame (see the header) ----
+ namespace
+ {
+  FButtonStyle RxStyle(FLinearColor Normal,FLinearColor Hover,FLinearColor Pressed,FLinearColor Edge,float EdgeWidth,float PadX,float PadY)
+  {FButtonStyle B=MakeStyle(Normal,Hover,Pressed,Edge,EdgeWidth);B.SetNormalPadding(FMargin(PadX,PadY)).SetPressedPadding(FMargin(PadX,PadY+1,PadX,PadY-1));return B;}
+  const FButtonStyle& RxTabPlain(){static const FButtonStyle S=RxStyle(FLinearColor::Transparent,S47Kit::Css(0x0e3519),S47Kit::Css(0x1b5a2c),FLinearColor::Transparent,0.f,8,3);return S;}
+  const FButtonStyle& RxTabFilled(){static const FButtonStyle S=RxStyle(S47Kit::Css(0x8cffa4),S47Kit::Css(0xb4ffc4),S47Kit::Css(0x6fdc88),S47Kit::Css(0x8cffa4),2.f,8,3);return S;}
+  const FButtonStyle& RxKeyOutline(){static const FButtonStyle S=RxStyle(S47Kit::Css(0x020a05),S47Kit::Css(0x0e3519),S47Kit::Css(0x1b5a2c),S47Kit::Css(0x8cffa4),2.f,6,3);return S;}
+  const FButtonStyle& RxKeyPrimary(){static const FButtonStyle S=RxStyle(S47Kit::Css(0x020a05),S47Kit::Css(0x2a1c05),S47Kit::Css(0x4a3008),S47Kit::Css(0xffb84a),3.f,6,3);return S;}
+ }
+ // The panel's thin double line; the title's own black box lies over it.
+ class SRxPanelFrame:public SLeafWidget
+ {
+ public:
+  SLATE_BEGIN_ARGS(SRxPanelFrame){} SLATE_END_ARGS()
+  float Top=9;FLinearColor LineNow,DimNow;
+  void Construct(const FArguments&){LineNow=Line;DimNow=Dim;SetVisibility(EVisibility::HitTestInvisible);}
+  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(1,1);}
+  virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
+  {
+   const FVector2f S(G.GetLocalSize());
+   Lines(Out,L,G,{{1.f,Top},{S.X-1,Top},{S.X-1,S.Y-1},{1.f,S.Y-1},{1.f,Top}},LineNow,1.5f);
+   Lines(Out,L,G,{{4.f,Top+3},{S.X-4,Top+3},{S.X-4,S.Y-4},{4.f,S.Y-4},{4.f,Top+3}},DimNow,1.f);
+   return L+1;
+  }
+ };
+ FW RxPanel(const FString& Title,FW Body,TAttribute<FString> Right)
+ {
+  const TSharedRef<SRxPanelFrame> Edge=SNew(SRxPanelFrame);Edge->Top=Title.IsEmpty()?1.f:9.f;
+  const TSharedRef<SOverlay> O=SNew(SOverlay)
+   +SOverlay::Slot()[Edge]
+   +SOverlay::Slot().Padding(FMargin(8,Title.IsEmpty()?8:17,8,8))[Body];
+  auto Set=[](FW Inner){return SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(Black).Padding(FMargin(6,0))[Inner];};
+  if(!Title.IsEmpty())O->AddSlot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(FMargin(14,0,0,0))[Set(SNew(STextBlock).Text(FText::FromString(Title)).Font(S47Style::Mono(18)).ColorAndOpacity(Green))];
+  if(Right.IsBound()||!Right.Get().IsEmpty())O->AddSlot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(FMargin(0,1,14,0))
+   [Set(SNew(STextBlock).Text_Lambda([Right]{return FText::FromString(Right.Get());}).Font(S47Style::Mono(16)).ColorAndOpacity(Green*.85f))];
+  return O;
+ }
+ FW RxKey(const FString& Text,TFunction<void()> Action,bool Primary,TAttribute<bool> Enabled,int32 Size)
+ {
+  return SNew(SButton).ButtonStyle(Primary?&RxKeyPrimary():&RxKeyOutline()).ContentPadding(FMargin(2,0)).HAlign(HAlign_Center).VAlign(VAlign_Center).IsEnabled(Enabled).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Action,Primary]{Key(Primary?1:0);if(Action)Action();return FReply::Handled();})
+   [SNew(STextBlock).Text(FText::FromString(Text)).Font(S47Style::Mono(Size)).ColorAndOpacity_Lambda([Primary,Enabled,AmberNow=Amber,GreenNow=Green,DimNow=Dim]{return FSlateColor(!Enabled.Get()?DimNow*1.6f:Primary?AmberNow:GreenNow);})];
+ }
+ class SRxFrame:public SCompoundWidget
+ {
+ public:
+  SLATE_BEGIN_ARGS(SRxFrame){} SLATE_END_ARGS()
+  // What the frame's own rows take of the glass's height (units); the body has the rest.
+  static constexpr float HeadTall=64,TabsTall=36,BannerTall=50,PromptTall=52,KeysTall=22;
+  static constexpr float Chrome=4+HeadTall+4+TabsTall+4+BannerTall+6+4+PromptTall+4+KeysTall+4;
+  void Construct(const FArguments&,const FRxFrame& In)
+  {
+   KeyFn=In.OnKey;Height=In.BodyHeight;
+   const FLinearColor GreenNow=Green,AmberNow=Amber,LineNow=Line;
+   // The tab row: the page's title in an amber box, then the tabs. A tab is Tabs' own: the same label (the tests find tabs by it),
+   // filled green when selected, and the due cue (RX-TABS-DUE-20261113): an amber "*" beside the label while label and frame breathe.
+   const TSharedRef<SHorizontalBox> Row=SNew(SHorizontalBox)
+    +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,12,0)
+     [SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(AmberNow).Padding(FMargin(10,1))[Label(In.Title,24,AmberNow)]];
+   for(int32 I=0;I<In.Tabs.Num();++I)
+   {
+    const FNav& Item=In.Tabs[I];
+    const bool Sel=Item.bSelected;const TFunction<void()> Act=Item.Action;
+    const TFunction<bool()> Due=Sel?TFunction<bool()>():Item.Due;
+    auto Level=[Due]{return Due&&Due()?DueLevel(Now(),CalmNow()):-1.f;};
+    const TSharedRef<SWidget> TabKey=SNew(SButton).ButtonStyle(Sel?&RxTabFilled():&RxTabPlain()).ContentPadding(FMargin(0,0,6,0)).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Act]{Key(2);if(Act)Act();return FReply::Handled();})
+      [SNew(SHorizontalBox)
+       +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SBox).WidthOverride(14)[SNew(STextBlock).Text_Lambda([Level]{return FText::FromString(Level()<0?TEXT(""):TEXT("*"));}).Font(S47Style::Mono(26)).ColorAndOpacity(AmberNow)]]
+       +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(Item.Label)).Font(S47Style::Mono(26))
+        .ColorAndOpacity_Lambda([Sel,Level,GreenNow,AmberNow]{if(Sel)return FSlateColor(Ink);const float Lv=Level();return FSlateColor(Lv<0?GreenNow:FMath::Lerp(GreenNow,AmberNow,.35f+.65f*Lv));})]];
+    if(I)Row->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(3,0)[Label(FString(TEXT("|")),22,LineNow)];
+    Row->AddSlot().AutoWidth().VAlign(VAlign_Center)
+     [SNew(SOverlay)
+      +SOverlay::Slot()[TabKey]
+      +SOverlay::Slot()[SNew(SBorder).Visibility(EVisibility::HitTestInvisible).BorderImage(DueOutline()).BorderBackgroundColor_Lambda([Level,AmberNow]{const float Lv=Level();FLinearColor C=AmberNow;C.A=Lv<0?0.f:.25f+.75f*Lv;return FSlateColor(C);})]];
+   }
+   const FW Page=In.Body.IsValid()?In.Body.ToSharedRef():FW(SNullWidget::NullWidget);
+   // The glass is 1200 wide; the picture's margin and the frame's padding take about 120 of it (FS47WrapMark).
+   S47Kit::FirstFrameWrap(Page,1075.f);
+   Scroll=SNew(SScrollBox);Scroll->AddSlot()[Page];
+   // The next step in words, one or two lines, in an amber frame that breathes while it is urgent (never with Calm flashes). The
+   // body's height is read here too, once a frame, for whoever sizes a page to it.
+   const TAttribute<FString> Prompt=In.Prompt;const TAttribute<bool> Urgent=In.Urgent;
+   const TWeakPtr<SScrollBox> Area=Scroll;const TSharedPtr<float> Tall=Height;
+   const FW Say=SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor_Lambda([Urgent,AmberNow]{return FSlateColor(AmberNow*(Urgent.Get()&&!CalmNow()?Pulse(4):1.f));}).Padding(FMargin(12,0)).VAlign(VAlign_Center)
+    [SNew(STextBlock).Text_Lambda([Prompt,Area,Tall]
+     {
+      if(const TSharedPtr<SScrollBox> Box=Area.Pin();Box.IsValid()&&Tall.IsValid()){const float H=float(Box->GetTickSpaceGeometry().GetLocalSize().Y);if(H>50.f)*Tall=H;}
+      return FText::FromString(Prompt.Get());
+     }).Font(S47Style::Mono(22)).ColorAndOpacity(AmberNow).Justification(ETextJustify::Center).WrapTextAt(1040.f)];
+   // The key row: the keys that work on this terminal, and nothing else.
+   const TSharedRef<SHorizontalBox> KeyRow=SNew(SHorizontalBox);
+   for(int32 I=0;I<In.Keys.Num();++I)
+   {
+    if(I)KeyRow->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(9,0)[Label(FString(TEXT("|")),16,LineNow)];
+    KeyRow->AddSlot().AutoWidth().VAlign(VAlign_Center)[Label(In.Keys[I],17,GreenNow*.85f)];
+   }
+   const auto Fx=SNew(SGlassFx);Fx->Seed=HumScreen>=0?HumScreen:7;Fx->Jam=JamSource;
+   const TFunction<float()> Jam=JamSource;
+   // On a bad beat the whole picture loses its hold and jumps sideways a few lines' worth (as Frame).
+   const auto Tear=TAttribute<TOptional<FSlateRenderTransform>>::CreateLambda([Jam]
+   {
+    const float J=Jam?FMath::Clamp(Jam(),0.f,1.f):0.f;if(J<.15f)return TOptional<FSlateRenderTransform>();
+    const double Beat=FMath::FloorToDouble(Now()*13);const float H=SGlassFx::Hash(Beat*3.3);
+    return H<J*.4f?TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2f((SGlassFx::Hash(Beat)-.5f)*36*J,0))):TOptional<FSlateRenderTransform>();
+   });
+   const FW Head=In.Header.IsValid()?In.Header.ToSharedRef():FW(SNullWidget::NullWidget),State=In.Banner.IsValid()?In.Banner.ToSharedRef():FW(SNullWidget::NullWidget);
+   ChildSlot
+   [SNew(SOverlay)
+    +SOverlay::Slot()
+    [SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(Black).Padding(FMargin(10,4)).RenderTransform(Tear)
+    [SNew(SVerticalBox)
+     +SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride(HeadTall)[Head]]
+     +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SNew(SBox).HeightOverride(TabsTall).VAlign(VAlign_Center)[Row]]
+     +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SNew(SBox).HeightOverride(BannerTall)[State]]
+     +SVerticalBox::Slot().FillHeight(1).Padding(0,6,0,0)[Scroll.ToSharedRef()]
+     +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SNew(SBox).HeightOverride(PromptTall)[Say]]
+     +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SNew(SBox).HeightOverride(KeysTall).Clipping(EWidgetClipping::ClipToBounds)
+      [SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(LineNow).Padding(FMargin(10,0)).VAlign(VAlign_Center)[KeyRow]]]]]
+    +SOverlay::Slot()[Fx]];
+  }
+  virtual bool SupportsKeyboardFocus()const override{return true;}
+  virtual FReply OnKeyDown(const FGeometry&,const FKeyEvent& E)override
+  {
+   // (the handler may build the screen again; nothing of this widget is touched after it)
+   const TFunction<bool(const FKey&)> Fn=KeyFn;
+   if(Fn&&Fn(E.GetKey())){Key(2);return FReply::Handled();}
+   return FReply::Unhandled();
+  }
+  virtual void Tick(const FGeometry& G,const double InNow,const float InDt)override
+  {
+   SCompoundWidget::Tick(G,InNow,InDt);
+   if(Height.IsValid()&&Scroll.IsValid()){const float H=float(Scroll->GetTickSpaceGeometry().GetLocalSize().Y);if(H>50.f)*Height=H;}
+  }
+ private:
+  TSharedPtr<SScrollBox> Scroll;TSharedPtr<float> Height;TFunction<bool(const FKey&)> KeyFn;
+ };
+ FW RxFrame(const FRxFrame& In){return SNew(SRxFrame,In);}
+ float RxBodyRoom(float High){return High-SRxFrame::Chrome;}
  FW Panel(const FString& Title,FW Body,bool bFilledHeader)
  {
   TSharedRef<SVerticalBox> Box=SNew(SVerticalBox);

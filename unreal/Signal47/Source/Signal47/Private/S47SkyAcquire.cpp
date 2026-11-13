@@ -82,6 +82,16 @@ double FS47SkyAcquire::DelayNs(FVector2D Ground, FVector2D AzEl)
 	return (Ground.X * FMath::Sin(A) + Ground.Y * FMath::Cos(A)) * FMath::Cos(E) / S47SkyLight * 1e9;
 }
 
+double FS47SkyAcquire::DelayRate(FVector2D Ground, FVector2D AzEl)
+{
+	// RX-LOOK-20261113: the sky turns about the pole once a sidereal day, east to west, so a direction s (east, north, up) moves
+	// by -omega (pole x s); the delay follows the baseline's share of that.
+	const double A = FMath::DegreesToRadians(AzEl.X), E = FMath::DegreesToRadians(AzEl.Y), Phi = FMath::DegreesToRadians(Latitude);
+	const FVector Toward(FMath::Sin(A) * FMath::Cos(E), FMath::Cos(A) * FMath::Cos(E), FMath::Sin(E)), Pole(0., FMath::Cos(Phi), FMath::Sin(Phi));
+	const FVector Turning = FVector::CrossProduct(Pole, Toward) * (-2. * UE_DOUBLE_PI / 86164.09);
+	return (Ground.X * Turning.X + Ground.Y * Turning.Y) / S47SkyLight * 1e9;
+}
+
 double FS47SkyAcquire::Hash(int32 I, int32 Salt) const
 {
 	return S47SkyUnit(Seed ^ S47SkyMix(uint32(I) + 0x4a4f4253u) ^ S47SkyMix(uint32(Salt) + 0x5341524fu));
@@ -334,7 +344,7 @@ double FS47SkyAcquire::SignalToNoise() const
 	return bOdd ? Base - 2.2 + 1.4 * FMath::Sin(Time * 2.1) : Base;
 }
 
-double FS47SkyAcquire::ArmDelayNs(int32 Arm) const
+FVector2D FS47SkyAcquire::ArmFarthest(int32 Arm) const
 {
 	FVector2D Centre = FVector2D::ZeroVector; int32 N = 0;
 	for (const FDish& D : Array) { Centre += D.Ground; ++N; }
@@ -346,7 +356,17 @@ double FS47SkyAcquire::ArmDelayNs(int32 Arm) const
 		const FVector2D G = Array[I].Ground - Centre;
 		if (G.SizeSquared() > Most) { Most = G.SizeSquared(); Far = G; }
 	}
-	return DelayNs(Far, Cross());
+	return Far;
+}
+
+double FS47SkyAcquire::ArmDelayNs(int32 Arm) const
+{
+	return DelayNs(ArmFarthest(Arm), Cross());
+}
+
+double FS47SkyAcquire::ArmDelayRate(int32 Arm) const
+{
+	return DelayRate(ArmFarthest(Arm), Cross());
 }
 
 const FS47SkyAcquire::FSource* FS47SkyAcquire::NearestCatalogued(FVector2D At, bool bMajorOnly) const
@@ -602,6 +622,12 @@ bool FS47SkyAcquire::SelfTest(TArray<FString>& Lines)
 		bool bDelays = true;
 		for (int32 Arm = 0; Arm < ArmCount; ++Arm) bDelays &= FMath::IsFinite(A.ArmDelayNs(Arm)) && FMath::Abs(A.ArmDelayNs(Arm)) < 400. / .299792458 + 1;
 		Check(FMath::Abs(Along - 1000.69) < .1 && FMath::Abs(Up) < 1e-6 && FMath::Abs(Across) < 1e-6 && bDelays, TEXT("baseline delay: 300 m along the line of sight is 1000.7 ns, none across it or straight up"));
+		// RX-LOOK-20261113: the rate that delay changes at as the sky turns: an east baseline toward the equator on the meridian
+		// loses 300 m of path a sidereal day over two pi; a north one there, or any baseline toward the pole, loses none
+		const double East = DelayRate(FVector2D(300, 0), FVector2D(180, 90. - Latitude)), North = DelayRate(FVector2D(0, 300), FVector2D(180, 90. - Latitude)), AtPole = DelayRate(FVector2D(300, 200), FVector2D(0, Latitude));
+		bool bRates = true;
+		for (int32 Arm = 0; Arm < ArmCount; ++Arm) bRates &= FMath::IsFinite(A.ArmDelayRate(Arm)) && FMath::Abs(A.ArmDelayRate(Arm)) < .11;
+		Check(FMath::Abs(East + .07297) < 2e-4 && FMath::Abs(North) < 1e-9 && FMath::Abs(AtPole) < 1e-9 && bRates, FString::Printf(TEXT("delay rate as the sky turns: %.4f ns a second on 300 m east toward the equator on the meridian, none on a north baseline there or toward the pole"), East));
 	}
 	return bOk;
 }

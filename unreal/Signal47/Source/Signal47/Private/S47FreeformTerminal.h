@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "InputCoreTypes.h"
 #include "Widgets/SWidget.h"
 #include "S47Rx.h"
 // SARO 1986 workstation kit, drawn on the physical CRT glass (1200 x 900 Slate units).
@@ -72,6 +73,32 @@ namespace S47FreeformTerminal
  bool CalmNow();
  float DueLevel(double Seconds,bool bCalm);
  FW DueRing(FW Inner,TFunction<bool()> Due);
+ // RX-LOOK-20261113 (-> M3, M6; Tom 13 November: «Få receiver til grafisk å se mer ut som bilde nr. to. Masse FX.»): the receiver PC's
+ // own frame, on every one of its tabs, after Tom's reference picture: the header (a dish emblem, SARO OPS, the station's name, the
+ // date and clock, the array's pointing), the tab row behind the page's title in an amber box (the same labels, selected look and due
+ // cue as Tabs), the state banner, the page in a body that must not need scrolling, the next step in words, and a row of the keys
+ // that work here. Header and Banner are painted widgets the owner makes (SS47RxLook); the frame only places them. The frame takes
+ // the keys OnKey answers true to (F1 to F5 for the tabs), tells BodyHeight every frame how high the body may be (units), and keeps
+ // the tube's own life as Frame has it (the hum bar, what is on the air, the set coming on).
+ struct FRxFrame
+ {
+  FString Title;
+  TArray<FNav> Tabs;
+  TSharedPtr<SWidget> Header,Banner,Body;
+  TAttribute<FString> Prompt;TAttribute<bool> Urgent=false;
+  TArray<FString> Keys;
+  TSharedPtr<float> BodyHeight;
+  TFunction<bool(const FKey&)> OnKey;
+ };
+ FW RxFrame(const FRxFrame& In);
+ // The body that frame leaves on a glass so high (units, the picture's own margin already taken off): for a page that has to know
+ // before the first frame, and for the self-test.
+ float RxBodyRoom(float High);
+ // A panel of the receiver's frame: a thin double line round the body, the title set into the line at the top left, and a live
+ // note set into it at the top right.
+ FW RxPanel(const FString& Title,FW Body,TAttribute<FString> Right=FString());
+ // A small key for the receiver's frame (as Button, lower: the frame has no room for the tall ones).
+ FW RxKey(const FString& Label,TFunction<void()> Action,bool Primary=false,TAttribute<bool> Enabled=true,int32 Size=20);
  FW Panel(const FString& Title,FW Body,bool bFilledHeader=false);
  FW Heading(const FString& Value,int32 Size=30);    // amber section title
  FW Banner(TAttribute<FString> Value,TAttribute<bool> Urgent=true); // amber framed status line, pulses when urgent
