@@ -312,6 +312,21 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal,bool bOneNi
   }
  }
  Cases.Load(S47J::Obj(Saved,TEXT("cases")),JobSeed);
+ // Tom, 13 November: the repeat test is withdrawn. An older save's repeat job not yet recording goes, as a cancelled plan does
+ // (CancelCaseJob) but without a word; one already recorded is ordinary work now, paid as routine. A registered one stays as it was.
+ for(int32 I=Work.Num()-1;I>=0;--I)
+ {
+  FJob& J=Work[I];if(J.CaseTest<0||J.bCaseRecorded||FS47FreeformCases::Offered(J.CaseLine,J.CaseTest))continue;
+  if(J.Stage<=EJobStage::Pointed)
+  {
+   if(Selected==I){Settle=0;bCrossRunning=false;}
+   Work.RemoveAt(I);if(Selected>I)--Selected;else if(Selected==I)Selected=Work.IsEmpty()?-1:FMath::Max(0,Work.IndexOfByPredicate([](const FJob& X){return X.Stage!=EJobStage::Filed;}));
+   continue;
+  }
+  J.CaseLine=J.CaseTest=-1;
+  FString& Card=J.Card.Receiver.Card;const int32 Body=Card.StartsWith(TEXT("CASE TEST / "))?Card.Find(TEXT("\n\n")):INDEX_NONE;
+  if(Body!=INDEX_NONE)Card=Card.Mid(Body+2);
+ }
  // CASES-OPS-20261109: result sheets still on the printer (QueueResultSheet); an older save has none and prints none.
  CaseSheets.Reset();BoardLine=FreshLine=FreshTest=-1;bCaseDetails=false;BoardPick=BoardPickLine=-1;
  for(const auto& V:S47J::Arr(Saved,TEXT("caseSheets")))
@@ -1258,7 +1273,7 @@ bool FS47FreeformSession::ConfirmOnTape(FJob& J)
  if(!bFirstTime)return true;
  RecordEvidence(TEXT("pulse-review"),TEXT("Original heard at the reel deck. Extra ticks outside the reference period; source unresolved."));
  // Tom, 9 November: the check says the next step, nothing more. The case opens when the job is confirmed at OPS (FirstCaseHeld,
- // OpenFirstCase), and its repeat window still goes from this original's own clock. The reel stands in for the old control here.
+ // OpenFirstCase), and its SOURCE line keeps this original's own clock. The reel stands in for the old control here.
  if(Director){Director->Use(TEXT("ff:control"));Director->Use(TEXT("ff:compare"));}
  Changed(Feedback);return true;
 }
@@ -1863,7 +1878,7 @@ void FS47FreeformSession::OpenOperations()
    for(int32 I=0;I<Work.Num();++I)
    {
     const auto& J=Work[I];const bool Active=J.Stage>EJobStage::New&&J.Stage<EJobStage::Filed;
-    const int32 InGroup=J.Stage==EJobStage::Filed?2:Active||I==Selected?0:J.Day==DayNumber||(J.CaseTest>=0&&!J.bCaseRecorded)?1:2;if(InGroup!=Group)continue; // a planned case test stays listed on later days (the repeat test always runs on one)
+    const int32 InGroup=J.Stage==EJobStage::Filed?2:Active||I==Selected?0:J.Day==DayNumber||(J.CaseTest>=0&&!J.bCaseRecorded)?1:2;if(InGroup!=Group)continue; // a planned case test stays listed on later days
     const int32 Index=I;T::FRow R;R.Cells={J.Id,FS47Observing::Runs()[J.Source].Source,StatusWord(J,I==Selected)};R.bSelected=I==Selected&&FieldFocus<0;
     R.Badge=J.CaseTest>=0?TEXT("CASE"):J.bAnomaly?TEXT("ANOM"):FString::Printf(TEXT("P%d"),J.Slot+1);
     R.Action=[this,Index]{SelectJob(Index);OpenOperations();};Out.Add(R);
@@ -1976,7 +1991,7 @@ void FS47FreeformSession::OpenOperations()
    Rows.Add(T::Panel(TEXT("CONTINUE TODAY"),S47Kit::Col(Continue)));
   }
   Rows.Add(T::Small(QueueExplanation));
-  if(!Work.ContainsByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X)&&!CaseTestWaits(X);}))Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpsSection=1;OpenOperations();},true));
+  if(!Work.ContainsByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X);}))Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpsSection=1;OpenOperations();},true));
   if(!Work.ContainsByPredicate([](const FJob& X){return X.Source==0&&X.Stage==EJobStage::Filed;}))
    Rows.Add(T::Small(TEXT("OPTIONAL / 3C 286 CALIBRATION CROSS / A NORMAL REFERENCE FOR LATER COMPARISONS")));
   auto Today=T::Panel(TEXT("TODAY'S WORK"),S47Kit::Col({T::Table({TEXT("JOB"),TEXT("SOURCE"),TEXT("STATUS")},{1.25f,1.35f,1.f},Rows4(false)),
@@ -2002,7 +2017,7 @@ void FS47FreeformSession::OpenOperations()
  if(Section==1)
  {
   Rows.Add(T::Small(QueueExplanation));
-  if(!Work.ContainsByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X)&&!CaseTestWaits(X);}))Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpenOperations();},true));
+  if(!Work.ContainsByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X);}))Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpenOperations();},true));
   if(FieldFocus>=0)Rows.Add(T::Panel(TEXT("ACTIVE FIELD TEST"),T::Banner(TAttribute<FString>::CreateLambda([this]{return FieldNextAction(FieldFocus).ToUpper();}),true)));
   auto Queue=T::Panel(FString::Printf(TEXT("WORK QUEUE (DAY %02d)"),DayNumber),S47Kit::Col({T::Table({TEXT("ID"),TEXT("SOURCE"),TEXT("STATE")},{1.4f,1.3f,1.f},Rows4(true)),
    T::Big(FString(bShowEarlierJobs?TEXT("HIDE EARLIER WORK"):TEXT("SHOW EARLIER WORK")),[this]{bShowEarlierJobs=!bShowEarlierJobs;OpenOperations();})}));
@@ -3018,7 +3033,6 @@ FString FS47FreeformSession::CasePrecondition(const FJob& J)const
  switch(CaseCondition(J.CaseLine,J.CaseTest))
  {
   case ECaseCondition::Generator:return Field&&Field->GeneratorRunning()?FString():FString(TEXT("BEHIND THE CONTROL ROOM: START THE FUELLED STANDBY GENERATOR; KEEP THE WHOLE CASE TEST RECORDING ON GENERATOR POWER, OFF THE MAINS"));
-  case ECaseCondition::Repeat:return Cases.InRepeatWindow(J.CaseLine,DayNumber,FMath::Fmod(WorldClock,86400.))?FString():TEXT("OPS (corner PC): CHECK THE CASE BOARD; WAIT FOR THE DATED REPEAT WINDOW. ")+CaseWindowText(J.CaseLine);
   case ECaseCondition::DoorsSealed:return StationSealed()?FString():FString(TEXT("SARO CONTROL ROOM: CLOSE THE SOUTH AND EAST OUTSIDE DOORS AND STAY INSIDE THROUGH THE WHOLE CASE TEST RECORDING"));
   case ECaseCondition::RelaySwap:return InventoryCount(TEXT("relay"))>0||J.Stage>EJobStage::Pointed?FString():FString(TEXT("CALICHE GAS STATION: BUY A RELAY FOR THE TIMING SWAP; PARTS STORAGE AT SARO HAS NONE"));
   default:return FString();
@@ -3048,12 +3062,12 @@ int32 FS47FreeformSession::ContinueJob()const
   {
    const auto* C=Cases.Get(X.CaseLine);
    return X.CaseTest>=0&&!X.bCaseRecorded&&X.Stage<=EJobStage::Pointed&&C&&C->bOpen&&!C->bConcluded&&C->Planned==X.CaseTest&&C->PlannedJob==X.Id
-    &&!EveningGated(X)&&!CaseTestWaits(X)&&CasePrecondition(X).IsEmpty();
+    &&!EveningGated(X)&&CasePrecondition(X).IsEmpty();
   });
   if(Case!=INDEX_NONE)return Case;
  }
- if(J&&J->Stage!=EJobStage::Filed&&!J->bDuplicateRejected&&!EveningGated(*J)&&!CaseTestWaits(*J))return Selected;
- return Work.IndexOfByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X)&&!CaseTestWaits(X);});
+ if(J&&J->Stage!=EJobStage::Filed&&!J->bDuplicateRejected&&!EveningGated(*J))return Selected;
+ return Work.IndexOfByPredicate([this](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected&&!EveningGated(X);});
 }
 namespace
 {
@@ -3061,7 +3075,7 @@ namespace
  int32 CaseStepRank(FS47FreeformSession::ECaseStep S)
  {
   using E=FS47FreeformSession::ECaseStep;
-  switch(S){case E::Conclude:return 6;case E::RunPlan:return 5;case E::File:return 4;case E::ChooseTest:return 3;case E::WaitWindow:return 2;case E::AwaitReply:return 1;default:return 0;}
+  switch(S){case E::Conclude:return 6;case E::RunPlan:return 5;case E::File:return 4;case E::ChooseTest:return 3;case E::AwaitReply:return 1;default:return 0;}
  }
 }
 int32 FS47FreeformSession::CaseAwaitingChoice()const
@@ -3075,12 +3089,6 @@ int32 FS47FreeformSession::CaseAwaitingChoice()const
   if(const int32 R=CaseStepRank(S);R>BestRank){Best=Line;BestRank=R;}
  }
  return Best;
-}
-bool FS47FreeformSession::CaseTestWaits(const FJob& J)const
-{
- if(J.CaseTest<0||J.Stage>EJobStage::Pointed||J.bCaseRecorded||CaseCondition(J.CaseLine,J.CaseTest)!=ECaseCondition::Repeat)return false;
- const auto* C=Cases.Get(J.CaseLine);
- return C&&C->bOpen&&!C->bConcluded&&C->Planned==J.CaseTest&&!Cases.InRepeatWindow(J.CaseLine,DayNumber,FMath::Fmod(WorldClock,86400.));
 }
 FS47FreeformSession::FCaseStep FS47FreeformSession::CaseStep(int32 Line)const
 {
@@ -3109,18 +3117,8 @@ FS47FreeformSession::FCaseStep FS47FreeformSession::CaseStep(int32 Line)const
   const FString Test=CaseTestName(Line,C->Planned);
   S.Card=TEXT("CASE BOARD // FOLLOW THE PLAN FOR ")+Title+TEXT(".");
   if(PlannedFieldTest(Line)>=0){S.Step=ECaseStep::RunPlan;S.Next=FieldNextAction(Line);S.Task=S.Next;S.Short=Title+TEXT(": FIELD TEST, ")+Test.ToUpper()+TEXT(".");return S;}
-  // the same words as before, so that the pause menu's note puts the test's window on this line
   S.Task=TEXT("CASE / ")+Test+TEXT(": run job ")+C->PlannedJob;
   const FJob* J=Work.FindByPredicate([&](const FJob& X){return X.Id==C->PlannedJob&&X.CaseLine==Line&&X.CaseTest==C->Planned;});
-  if(J&&CaseTestWaits(*J))
-  {
-   double Start=0,End=0;const bool bWindow=CaseTestWindow(Line,Start,End);
-   const FString From=bWindow?FS47FreeformCases::Clock(Start):FString();
-   S.Step=ECaseStep::WaitWindow;
-   S.Next=TEXT("OPS / CASE BOARD: ")+Title+TEXT(": THE CASE TEST, JOB ")+C->PlannedJob+TEXT(", WAITS FOR ITS WINDOW")+(bWindow?TEXT(", ")+From+TEXT(" TO ")+FS47FreeformCases::Clock(End):FString())+TEXT(".");
-   const FString When=bWindow?TEXT(": TEST WINDOW FROM ")+From+TEXT("."):FString(TEXT(": TEST WAITS FOR ITS WINDOW."));
-   S.Card=TEXT("CASE // ")+Title+When;S.Short=Title+When;return S;
-  }
   S.Step=ECaseStep::RunPlan;S.Short=Title+TEXT(": RUN THE PLANNED TEST.");
   S.Next=TEXT("OPS / DAILY WORK: RUN CASE TEST JOB ")+C->PlannedJob+TEXT(" (")+Test.ToUpper()+TEXT(") FOR ")+Title+TEXT(".");
   // CASETEST-20261109: a spoiled run says so, and that the same job is simply recorded again
@@ -3285,12 +3283,6 @@ FString FS47FreeformSession::CaseNextLine(int32 Line)const
    if(Work.ContainsByPredicate([&](const FJob& X){return X.Id==C->PlannedJob&&X.CaseLine==Line&&!X.bCaseValid&&X.Stage<=EJobStage::Pointed;})) // CASETEST-20261109
     return FString::Printf(TEXT("NEXT > TEST SPOILED: RECORD JOB %s (%s) AGAIN AT DAILY WORK, NO NEW PLAN"),*C->PlannedJob,*CaseTestName(Line,C->Planned).ToUpper());
    return FString::Printf(TEXT("NEXT > RUN JOB %s (%s) AT DAILY WORK"),*C->PlannedJob,*CaseTestName(Line,C->Planned).ToUpper());
-  case ECaseStep::WaitWindow:
-  {
-   double Start=0,End=0;
-   if(CaseTestWindow(Line,Start,End))return FString::Printf(TEXT("NEXT > JOB %s WAITS FOR ITS WINDOW, %s TO %s"),*C->PlannedJob,*FS47FreeformCases::Clock(Start),*FS47FreeformCases::Clock(End));
-   return FString::Printf(TEXT("NEXT > JOB %s WAITS FOR ITS WINDOW"),*C->PlannedJob);
-  }
   case ECaseStep::AwaitReply:return C->bReplied?FString(TEXT("NEXT > THE REPLY IS IN: TEAR IT OFF AT THE TELEX")):FString(TEXT("NEXT > THE REPLY COMES BY TELEX AT 08:00"));
   default:break;
  }
@@ -3386,20 +3378,8 @@ bool FS47FreeformSession::CaseTestWindow(int32 Line,double& Start,double& End) c
 {
  const auto* C=Cases.Get(Line);if(!C||!C->bOpen||C->bConcluded||C->Planned<0)return false;
  const auto Kind=CaseCondition(Line,C->Planned);
- if(Kind==ECaseCondition::FieldWork)return Line==2&&CaseField&&CaseField->Window(Start,End);
- if(Kind!=ECaseCondition::Repeat)return false;
- // Case days, like OPS, begin at 08:00. Clamp a midnight-crossing interval to
- // the first eligible shift; this is the same condition as InRepeatWindow.
- // From the first original's day and clock (FS47FreeformCases::SetReference; the opening for any other case), CASES-OPS-20261109.
- const double Earliest=C->RefDay*SecondsPerDay+8*3600.;
- const double Base=FMath::FloorToDouble(WorldClock/SecondsPerDay)*SecondsPerDay;
- for(int32 Offset=-1;Offset<=3;++Offset)
- {
-  const double Centre=Base+Offset*SecondsPerDay+C->RefClock;
-  const double A=FMath::Max(Earliest,Centre-FS47FreeformCases::RepeatWindow),B=Centre+FS47FreeformCases::RepeatWindow;
-  if(A<=B&&B>WorldClock){Start=A;End=B;return true;}
- }
- return false;
+ // Only the visitors' field controls have a dated window now: the repeat that had the other one is withdrawn (Tom, 13 November).
+ return Kind==ECaseCondition::FieldWork&&Line==2&&CaseField&&CaseField->Window(Start,End);
 }
 FString FS47FreeformSession::CaseWindowText(int32 Line) const
 {
@@ -3949,7 +3929,7 @@ FString FS47FreeformSession::AvailableActivities(FString* Card)const
 FString FS47FreeformSession::WorkActivities(FString* Card)const
 {
  int32 Pending=0;const FJob* Evening=nullptr;
- for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected&&!CaseTestWaits(J)){if(!EveningGated(J))++Pending;else if(!Evening)Evening=&J;}
+ for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected){if(!EveningGated(J))++Pending;else if(!Evening)Evening=&J;}
  // The array is what the whole station is working toward: whatever else is on the line, it stays in sight.
  const FString Goal=StationGoalLine();
  const auto* Next=Field&&Field->ArrayWear().bActive?Field->ArrayWear().NextBranch():nullptr;
@@ -4008,7 +3988,7 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
 }
 bool FS47FreeformSession::StartReferenceCheck()
 {
- if(!bActive||Tutorial>0||!RequirePower()||Work.ContainsByPredicate([this](const FJob& J){return J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected&&!EveningGated(J)&&!CaseTestWaits(J);}))return false;
+ if(!bActive||Tutorial>0||!RequirePower()||Work.ContainsByPredicate([this](const FJob& J){return J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected&&!EveningGated(J);}))return false;
  FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-REFERENCE-%04d"),DayNumber,Work.Num());J.Day=DayNumber;J.Slot=0;J.Source=0;
  J.Card=FS47FreeformJobs::Make(JobSeed,DayNumber,0,0);J.bGenerated=true;J.bPaid=true;
  J.Card.Receiver.Card=TEXT("OPTIONAL REFERENCE CHECK / NO PAYMENT\nRetain a fresh instrument baseline using the usual tracking cross and receiver. This check creates no incident or cause by itself.\n\n")+J.Card.Receiver.Card;
@@ -4092,7 +4072,7 @@ bool FS47FreeformSession::FirstCaseHeld()const
 }
 bool FS47FreeformSession::OpenFirstCase(const FJob& J)
 {
- // Opened now, the day and clock of the registration; the repeat window from the original's own clock (SetReference).
+ // Opened now, the day and clock of the registration; the SOURCE line keeps the original's own clock (SetReference).
  if(!Cases.Open(0,DayNumber,FMath::Fmod(WorldClock,86400.)))return false;
  if(J.ReferenceClock>0)Cases.SetReference(0,NightOf(J.ReferenceClock),FMath::Fmod(J.ReferenceClock,86400.));
  UpdateMysteries();return true;
@@ -4307,8 +4287,6 @@ FString FS47FreeformSession::TonightPlan()const
     Plan+=FString::Printf(TEXT("\nREADINESS / generator %s / tank %.1f h / fuel cans in depot %d"),Running?TEXT("RUNNING"):TEXT("STOPPED"),Tank,Cans);
     if(!Running&&Tank<=0&&Cans<=0)Plan+=TEXT("\nMISSING / one fuel can. Buy it at Caliche and carry it back.");break;
    }
-   case ECaseCondition::Repeat:
-    Plan+=TEXT("\nREADINESS / TRACKING AND RECEIVER: repeat the retained source during the dated window below, on a later shift.");break;
    case ECaseCondition::RelaySwap:
     Plan+=FString::Printf(TEXT("\nREADINESS / spare relays in depot %d"),InventoryCount(TEXT("relay")));if(InventoryCount(TEXT("relay"))<=0)Plan+=TEXT("\nMISSING / one relay. Buy it at Caliche.");break;
    case ECaseCondition::DoorsSealed:Plan+=TEXT("\nREADINESS / shut the south and east doors before you start; do not open them until the original prints.");break;
@@ -4535,7 +4513,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line,bool bNotes)
   if(const FCard* K=Cards.FindByPredicate([Pick](const FCard& X){return X.Test==Pick;}))
   {
    const auto& Res=C->Results[K->Test];const auto& TD=D.Tests[K->Test];
-   FString Words=FString::Printf(TEXT("TEST %d / %s: %s"),K->Test+1,*FString(TD.Name).ToUpper(),TD.Instruction);
+   FString Words=FString::Printf(TEXT("TEST %d / %s%s%s"),K->Test+1,*FString(TD.Name).ToUpper(),TD.Instruction[0]?TEXT(": "):TEXT(""),TD.Instruction);
    if(Res.bDone)Words+=FString::Printf(TEXT("\nRESULT DAY %d / %s%s"),Res.Day,*FS47FreeformCases::TestResultText(Line,K->Test,Res.bPresent),K->Test==Mark?TEXT("  << THIS SHEET"):TEXT(""));
    else if(!K->Unavailable.IsEmpty())Words+=TEXT("\nUNAVAILABLE / ")+K->Unavailable+(C->Planned==K->Test?TEXT(" Cancel this retained plan to choose another control."):TEXT(""));
    else if(!K->bAccess)Words+=TEXT("\nNEEDS / the loan field logger (conclude THE REPEATED INTERVAL) / NOT YET");
@@ -4831,7 +4809,6 @@ FString FS47FreeformSession::JobLocation(const FJob& J)const
   switch(CaseCondition(J.CaseLine,J.CaseTest))
   {
    case ECaseCondition::Generator:return TEXT("Behind the control room / standby generator");
-   case ECaseCondition::Repeat:return TEXT("OPS / CASE BOARD / dated repeat window");
    case ECaseCondition::RelaySwap:return TEXT("Caliche gas station / replacement relay counter");
    case ECaseCondition::DoorsSealed:return TEXT("SARO / south and east outside doors");
    default:break;
@@ -5402,7 +5379,8 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  Case.Stop();
  {
   // CASES-OPS-20261109: CaseStep through the session; a trial case concluded with a test still planned frees its job, which then
-  // registers as routine work and records nothing for the closed case; a repeat test waiting for its window is no waiting card.
+  // registers as routine work and records nothing for the closed case. Tom, 13 November: the repeat is withdrawn, never planned, and
+  // an older save's repeat job goes on Continue without a word (or, already recorded, is routine work).
   FS47FreeformSession P(nullptr);P.Begin(nullptr);P.Tutorial=0;
   Check(P.CaseStep(0).Step==ECaseStep::Closed&&P.UrgentCase()<0&&P.HudCaseLine(FString()).IsEmpty(),TEXT("CaseStep: no case, no step and no second HUD line"));
   P.RecordEvidence(TEXT("pulse-review"),TEXT("reviewed"));
@@ -5411,6 +5389,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Check(P.PlanCaseTest(0,1)&&P.CaseStep(0).Step==ECaseStep::RunPlan&&P.CaseAwaitingChoice()<0&&P.Tasks().ContainsByPredicate([](const FS47Task& T){return T.Text.Contains(TEXT(": run job "));}),TEXT("CaseStep: a planned test is run, and the case board's star is off"));
   auto St=P.Save();const auto List=S47J::Arr(S47J::Obj(St,TEXT("cases")),TEXT("cases"));
   TArray<TSharedPtr<FJsonValue>> Kept;
+  // (tests 1 and 3 kept: the third is the withdrawn repeat, an older save's result, still evidence)
   for(int32 T=0;T<FS47FreeformCases::TestCount;++T){auto Y=S47J::New();if(T!=1){S47J::Set(Y,TEXT("done"),true);S47J::Set(Y,TEXT("present"),FS47FreeformCases::PresentFor(0,Truth,T));S47J::Set(Y,TEXT("day"),1);}Kept.Add(MakeShared<FJsonValueObject>(Y));}
   List[0]->AsObject()->SetArrayField(TEXT("results"),Kept);
   FS47FreeformSession Q(nullptr);Q.Begin(S47J::Read(S47J::Write(St)));Q.Tutorial=0;
@@ -5423,7 +5402,32 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   }
   Check(Q.CaseRecordLine(TEXT("case1-test1")).Contains(TEXT("registered"))&&Q.CaseRecordLine(TEXT("case1-conclusion")).StartsWith(TEXT("THE REPEATED INTERVAL: "))&&FS47NightLog::CaseLine(Q.CaseRecordLine(TEXT("case1-conclusion")))&&FS47NightLog::CaseLine(TEXT("Case 1, THE REPEATED INTERVAL: old sheet"))&&!Q.CaseRecordLine(TEXT("case1-test1")).Contains(TEXT("Case 1"))&&Q.CaseRecordLine(TEXT("carrier_saro")).IsEmpty(),TEXT("Case records: one WORK line each for the night log"));
   FS47FreeformSession Wait(nullptr);Wait.Begin(nullptr);Wait.Tutorial=0;Wait.RecordEvidence(TEXT("pulse-review"),TEXT("reviewed"));
-  Check(Wait.PlanCaseTest(0,2)&&Wait.CaseTestWaits(Wait.Work.Last())&&Wait.CaseStep(0).Step==ECaseStep::WaitWindow&&Wait.CaseAwaitingChoice()<0&&Wait.HudCaseLine(TEXT("OPS // 2 OBSERVATIONS WAITING.")).Contains(TEXT("WINDOW")),TEXT("CaseStep: a repeat test planned on the day itself waits for its window and is not a waiting card"));
+  {
+   const int32 Before=Wait.Work.Num();
+   Check(!Wait.PlanCaseTest(0,2)&&Wait.Work.Num()==Before&&Wait.CaseFile().Get(0)->Planned<0&&Wait.CaseStep(0).Step==ECaseStep::ChooseTest,TEXT("Repeat withdrawn: the repeat test cannot be planned, and the case still asks for a test"));
+   // An older save: a repeat planned on a receiver job (as off-source is here, then rewritten to the third test), and a second one
+   // already recorded. On Continue the first job and the plan go, the second is routine work; nothing says so.
+   Check(Wait.PlanCaseTest(0,1),TEXT("Repeat withdrawn fixture: a receiver test planned"));
+   auto RepeatSave=S47J::Read(S47J::Write(Wait.Save()));const FString PlannedId=Wait.CaseFile().Get(0)->PlannedJob;
+   {
+    const auto CaseList=S47J::Arr(S47J::Obj(RepeatSave,TEXT("cases")),TEXT("cases"));if(CaseList.Num()>0)S47J::Set(CaseList[0]->AsObject(),TEXT("planned"),2);
+    TArray<TSharedPtr<FJsonValue>> SavedJobs=S47J::Arr(RepeatSave,TEXT("jobs"));
+    for(const auto& V:SavedJobs)if(V&&V->Type==EJson::Object&&S47J::Str(V->AsObject(),TEXT("id"))==PlannedId)
+    {
+     const auto O=V->AsObject();S47J::Set(O,TEXT("caseTest"),2);
+     const auto Copy=S47J::Clone(O);S47J::Set(Copy,TEXT("id"),PlannedId+TEXT("-B"));S47J::Set(Copy,TEXT("stage"),int32(EJobStage::Recorded));S47J::Set(Copy,TEXT("printed"),true);
+     if(const auto Card=S47J::Obj(Copy,TEXT("card")))S47J::Set(Card,TEXT("text"),FString(TEXT("CASE TEST / REPEAT IN THE SAME WINDOW\nRecord the pulsar again.\n\nPULSAR ROUTINE")));
+     SavedJobs.Add(MakeShared<FJsonValueObject>(Copy));break;
+    }
+    RepeatSave->SetArrayField(TEXT("jobs"),SavedJobs);
+   }
+   FS47FreeformSession Gone(nullptr);Gone.Begin(RepeatSave);Gone.Tutorial=0;
+   const FJob* Freed=Gone.Jobs().FindByPredicate([&](const FJob& X){return X.Id==PlannedId+TEXT("-B");});
+   Check(!Gone.Jobs().ContainsByPredicate([&](const FJob& X){return X.Id==PlannedId;})&&Gone.CaseFile().Get(0)->Planned<0&&Gone.CaseStep(0).Step==ECaseStep::ChooseTest
+    &&Freed&&Freed->CaseTest<0&&Freed->CaseLine<0&&Freed->Card.Receiver.Card==TEXT("PULSAR ROUTINE")&&!Gone.FeedbackText().Contains(TEXT("SAME WINDOW"))&&!Gone.FeedbackText().Contains(TEXT("REPEAT TEST"))
+    &&!Gone.TonightPlan().Contains(TEXT("SAME WINDOW"))&&!Gone.TonightPlan().Contains(TEXT("REPEAT WINDOW"))&&!Gone.CaseNextLine(0).Contains(TEXT("WINDOW")),TEXT("Repeat withdrawn: an older save's repeat job goes on Continue, a recorded one is routine work, and nothing mentions it"));
+   Gone.Stop();
+  }
   Wait.RecordEvidence(TEXT("case1-test3"),TEXT("CASE / test"));
   Check(Wait.HasFinding(TEXT("case1-test3"))&&FS47FreeformCases::IsCaseRecord(TEXT("case1-test3")),TEXT("Case records stay findings (for the night log) without a field record"));
   P.Stop();Q.Stop();Wait.Stop();
@@ -5531,7 +5535,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  }
  {
   // Tom, 9 November: RETAIN at the reel deck keeps the comparison and opens no case, even with the event's own record after it; a
-  // Continue in between keeps it so; registering it at OPS opens THE REPEATED INTERVAL and says CASE OPENED, its repeat window from
+  // Continue in between keeps it so; registering it at OPS opens THE REPEATED INTERVAL and says CASE OPENED, its SOURCE line from
   // the original's own clock. An older save whose case is already open goes on as before.
   FS47FreeformSession Fc(nullptr);Fc.Begin(nullptr);Fc.Tutorial=0;Fc.WorldClock=22*3600.;
   const int32 FcI=Fc.Work.IndexOfByPredicate([](const FJob& X){return X.Source==1&&X.CaseTest<0;});
@@ -5553,7 +5557,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    Check(!Fc2.CaseFile().Get(0)->bOpen&&Fc2.Work[FcI].bAudioReviewed&&Fc2.Work[FcI].Stage==EJobStage::Recorded,TEXT("First case: a Continue between RETAIN and the registration opens no case either"));
    Fc2.Selected=FcI;
    Check(Fc2.RegisterComparison(TEXT("unresolved"))&&Fc2.Work[FcI].Stage==EJobStage::Registered&&Fc2.CaseFile().Get(0)->bOpen&&Fc2.CaseStep(0).Step==ECaseStep::ChooseTest
-    &&Fc2.FeedbackText().StartsWith(TEXT("CASE OPENED: THE REPEATED INTERVAL"))&&Fc2.CaseFile().Get(0)->RefDay==1&&FMath::IsNearlyEqual(Fc2.CaseFile().Get(0)->RefClock,21.5*3600.),TEXT("First case: registering the comparison at OPS opens it, says CASE OPENED, and keeps the original's clock for the repeat"));
+    &&Fc2.FeedbackText().StartsWith(TEXT("CASE OPENED: THE REPEATED INTERVAL"))&&Fc2.CaseFile().Get(0)->RefDay==1&&FMath::IsNearlyEqual(Fc2.CaseFile().Get(0)->RefClock,21.5*3600.),TEXT("First case: registering the comparison at OPS opens it, says CASE OPENED, and keeps the original's clock for its SOURCE line"));
    // An older save: the case was opened at RETAIN, the comparison not registered yet.
    auto Older=S47J::Read(S47J::Write(Fc.Save()));
    {const auto List=S47J::Arr(S47J::Obj(Older,TEXT("cases")),TEXT("cases"));if(List.Num()>0){auto O0=List[0]->AsObject();S47J::Set(O0,TEXT("open"),true);S47J::Set(O0,TEXT("openDay"),1);S47J::Set(O0,TEXT("openClock"),21.75*3600.);}}

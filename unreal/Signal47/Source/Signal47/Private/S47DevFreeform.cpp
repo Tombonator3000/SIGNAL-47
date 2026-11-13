@@ -932,7 +932,7 @@ void FS47DevFreeform::StepCards()
     for(int32 K=0;K<3;++K)
     {
      const int32 T=Order[Line][K];
-     if(C->Results[T].bDone||CardsRefused.Contains(Line*10+T))continue;
+     if(C->Results[T].bDone||CardsRefused.Contains(Line*10+T)||!FS47FreeformCases::Offered(Line,T))continue; // (the repeat: withdrawn, Tom 13 November)
      const EC Cond=FS47FreeformCases::Def(Line).Tests[T].Condition;
      if(Cond==EC::Generator&&F->InventoryCount(TEXT("fuel"))<=0&&(!F->Field||F->Field->GeneratorHours()<=0))continue;
      if(Cond==EC::RelaySwap&&F->InventoryCount(TEXT("relay"))<=0)continue;
@@ -945,14 +945,14 @@ void FS47DevFreeform::StepCards()
     if(!CardsRefused.Contains(Line*10+9)){CardsRefused.Add(Line*10+9);Say(FString::Printf(TEXT("case %d: no test the station can meet tonight (%s)"),Line+1,*Step.Next));}
     continue;
    }
-   if(Step.Step==ES::RunPlan||Step.Step==ES::WaitWindow)
+   if(Step.Step==ES::RunPlan)
    {
     const int32 Index=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==C->PlannedJob&&X.CaseLine==Line&&!X.bCaseRecorded;});
     if(Index<0||CardsDone.Contains(C->PlannedJob))continue;
     const auto& Test=Jobs[Index];
-    if(F->EveningGated(Test)||F->CaseTestWaits(Test))
+    if(F->EveningGated(Test))
     {
-     if(!CardsRefused.Contains(Line*10+8)){CardsRefused.Add(Line*10+8);Say(FString::Printf(TEXT("case %d: test job %s waits: gated %d, window %d, %s"),Line+1,*Test.Id,F->EveningGated(Test)?1:0,F->CaseTestWaits(Test)?1:0,*Step.Next));}
+     if(!CardsRefused.Contains(Line*10+8)){CardsRefused.Add(Line*10+8);Say(FString::Printf(TEXT("case %d: test job %s waits: gated %d, %s"),Line+1,*Test.Id,F->EveningGated(Test)?1:0,*Step.Next));}
      continue;
     }
     // The condition, met by hand as the plan says.

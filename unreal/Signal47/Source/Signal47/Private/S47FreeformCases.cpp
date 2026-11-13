@@ -5,7 +5,6 @@ namespace
 {
  using EC=FS47FreeformCases::ECondition;
  uint32 Mix(uint32 V){V^=V>>16;V*=0x7feb352du;V^=V>>15;V*=0x846ca68bu;return V^(V>>16);}
- double DayDelta(double A,double B){const double D=FMath::Abs(FMath::Fmod(A-B,86400.));return FMath::Min(D,86400.-D);}
  bool DatedKey(const FString& Id,const TCHAR* Base)
  {
   if(Id==Base)return true;const FString Prefix=FString(Base)+TEXT(".day");if(!Id.StartsWith(Prefix))return false;
@@ -173,14 +172,15 @@ namespace
   {TEXT("Feeder"),TEXT("Transmitter"),TEXT("Sky")},
   {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole pulsar observation on generator power. One can of fuel runs it for six hours.")},
    {TEXT("Off-source pointing"),EC::OffSource,TEXT("On TRACKING (right-hand PC), point the array as usual; for this test it aims 0.6 degrees beside the pulsar by itself. Record the full observation there.")},
-   {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time of the first original.")}},
-  // Generator, OffSource, Repeat
+   // Withdrawn (Tom, 13 November; Offered): kept only so that an older save's result reads as it did. Never offered or named.
+   {TEXT("Repeat in the same window"),EC::Repeat,TEXT("")}},
+  // Generator, OffSource (the withdrawn third column is read only for an older save's result). The two left tell all three apart.
   {{false,true,true},   // feeder-borne ticks vanish on generator power
-   {true,true,false},   // the intermittent local carrier does not recur
+   {true,true,false},   // the local carrier is neither on the mains nor in the beam
    {true,false,true}},  // a sky-fixed source vanishes off the beam
   {TEXT("CALICHE VALLEY ELECTRIC CO-OP / LINE RECORDS\nRE: SARO RECEIVER INTERFERENCE\n\nMarch 1979: an arcing insulator on the SARO feeder, pole 31-B, produced periodic interference on station receivers until replaced. The pole was noted for recurrent tracking in wet weather.\n\nYour generator comparison has been forwarded to the line crew. A spare control fuse is in your depot."),
-   TEXT("SOUTHWEST RADIO MONITORING OFFICE / ALBUQUERQUE\nRE: UNLICENSED INTERMITTENT CARRIER\n\nTwo ranchers near US-60 reported an intermittent carrier in 1984. The source was never located.\n\nYour repeat and generator records exclude the station itself. A portable field logger is approved on loan so the carrier can be recorded from a second site."),
-   TEXT("SOUTHWEST RADIO OBSERVATORIES / TIMING DESK\nRE: SARO TIMING SHEET\n\nYour extra pulse group matches no catalogued companion and survives both power and repeat controls while vanishing off the beam.\n\nA source fixed on the sky keeps star time; anything on the ground keeps clock time, and your off-beam control is the first check of which this is. A field logger is approved on loan for an independent second site.")},
+   TEXT("SOUTHWEST RADIO MONITORING OFFICE / ALBUQUERQUE\nRE: UNLICENSED INTERMITTENT CARRIER\n\nTwo ranchers near US-60 reported an intermittent carrier in 1984. The source was never located.\n\nYour generator and off-beam records exclude the station's own power and the sky. A portable field logger is approved on loan so the carrier can be recorded from a second site."),
+   TEXT("SOUTHWEST RADIO OBSERVATORIES / TIMING DESK\nRE: SARO TIMING SHEET\n\nYour extra pulse group matches no catalogued companion and survives the generator control while vanishing off the beam.\n\nA source fixed on the sky keeps star time; anything on the ground keeps clock time, and your off-beam control is the first check of which this is. A field logger is approved on loan for an independent second site.")},
   TEXT("Records reply: the repeated interval"),TEXT("access.fieldlogger")
  },
  {
@@ -227,9 +227,9 @@ namespace
   {TEXT("Someone"),TEXT("Insulator"),TEXT("Unaccounted")},
   {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole pulsar observation on generator power, off the feeder. One can of fuel runs it for six hours.")},
    {TEXT("Off-source pointing"),EC::OffSource,TEXT("On TRACKING (right-hand PC), point the array as usual; for this test it aims 0.6 degrees beside the pulsar by itself. Record the full observation there.")},
-   {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time the case was opened.")}},
-  // Generator, OffSource, Repeat
-  {{true,true,false},   // whoever it was has gone by the next night
+   {TEXT("Repeat in the same window"),EC::Repeat,TEXT("")}}, // withdrawn (Tom, 13 November), as on the first case
+  // Generator, OffSource (the third column: an older save's result only)
+  {{true,true,false},   // a set keyed at the feeder is on the air, not on the mains or in the beam
    {false,true,true},   // what is on the line stays on the line, and off the generator
    {true,false,true}},  // what arrives through the beam goes when the beam moves
   {TEXT(""),TEXT(""),TEXT("")},
@@ -275,9 +275,9 @@ namespace
   {TEXT("Somebody"),TEXT("Timer"),TEXT("Unaccounted")},
   {{TEXT("Generator power"),EC::Generator,TEXT("Fuel and start the standby generator outside, behind the control room, then record the whole pulsar observation on generator power, off the feeder. One can of fuel runs it for six hours.")},
    {TEXT("Off-source pointing"),EC::OffSource,TEXT("On TRACKING (right-hand PC), point the array as usual; for this test it aims 0.6 degrees beside the pulsar by itself. Record the full observation there.")},
-   {TEXT("Repeat in the same window"),EC::Repeat,TEXT("Record the pulsar again on a later day, within 90 minutes of the clock time the case was opened.")}},
-  // Generator, OffSource, Repeat
-  {{true,true,false},   // a hand on a key keeps one appointment, not the next night's
+   {TEXT("Repeat in the same window"),EC::Repeat,TEXT("")}}, // withdrawn (Tom, 13 November), as on the first case
+  // Generator, OffSource (the third column: an older save's result only)
+  {{true,true,false},   // a hand on a key is on the air, not on the mains or in the beam
    {false,true,true},   // what switches on the line stays on the line, and off the generator
    {true,false,true}},  // what arrives through the beam goes when the beam moves
   {TEXT(""),TEXT(""),TEXT("")},
@@ -382,8 +382,14 @@ bool FS47FreeformCases::PresentFor(int32 Line,int32 Cause,int32 Test)
 {
  if(Line<0||Line>=CaseCount||Cause<0||Cause>=CauseCount||Test<0||Test>=TestCount)return true;return Defs[Line].Present[Cause][Test];
 }
+bool FS47FreeformCases::Offered(int32 Line,int32 Test)
+{
+ return Test>=0&&Test<TestCount&&Def(Line).Tests[Test].Condition!=ECondition::Repeat;
+}
 FString FS47FreeformCases::UnavailableReason(int32 Line,int32 Test,bool bSecondLogger)
 {
+ // Tom, 13 November: a withdrawn test is refused everywhere; the board never shows it (nor this), so the words are only a guard.
+ if(!Offered(Line,Test))return TEXT("Choose another control on CASE BOARD.");
  // M7: what has gone from a post in town, or what was raked over out on the land, is not on any recording the station can make.
  if(Line==PostLine||Line==RakedLine)return TEXT("No station recording tests this. The control is the other place: look at both, then file.");
  return Line==2&&Test==2&&!bSecondLogger?TEXT("Two-site contact recording is unavailable: the loan field logger measures local RF interference, not roof sounds. A paired contact recorder is not available. Choose the roof or gate control on CASE BOARD."):FString();
@@ -410,6 +416,8 @@ void FS47FreeformCases::Load(const S47J::FObj& Saved,int32 Seed)
   if(Ref>0&&FMath::IsFinite(RefAt)){C.RefDay=FMath::Clamp(Ref,1,36500);C.RefClock=FMath::Clamp(RefAt,0.,86399.);}else{C.RefDay=C.OpenDay;C.RefClock=C.OpenClock;}
   C.Planned=FMath::Clamp(S47J::Int(O,TEXT("planned"),-1),-1,TestCount-1);C.PlannedJob=C.Planned>=0?S47J::Str(O,TEXT("plannedJob")):FString();
   if(C.PlannedJob.IsEmpty())C.Planned=-1;
+  // Tom, 13 November: a plan for the withdrawn repeat goes, without a word; its job goes with it (FS47FreeformSession::Begin).
+  if(C.Planned>=0&&!Offered(I,C.Planned)){C.Planned=-1;C.PlannedJob.Empty();}
   C.Conclusion=C.bConcluded?FMath::Clamp(S47J::Int(O,TEXT("conclusion"),-1),-1,CauseCount-1):-1;
   C.ValidTests=FMath::Clamp(S47J::Int(O,TEXT("validTests")),0,1000);
   // Older saves have neither: no assessment could have been filed in them.
@@ -522,7 +530,7 @@ bool FS47FreeformCases::SetHunch(int32 Line,int32 Cause)
 }
 bool FS47FreeformCases::Plan(int32 Line,int32 Test,const FString& JobId)
 {
- if(!Cases.IsValidIndex(Line)||JobId.IsEmpty()||Test<0||Test>=TestCount)return false;FCase& C=Cases[Line];
+ if(!Cases.IsValidIndex(Line)||JobId.IsEmpty()||!Offered(Line,Test))return false;FCase& C=Cases[Line];
  if(!C.bOpen||C.bConcluded||C.Planned>=0||C.Results[Test].bDone||Remaining(Line)<=1)return false;
  C.Planned=Test;C.PlannedJob=JobId;return true;
 }
@@ -623,7 +631,7 @@ int32 FS47FreeformCases::ClueReading(int32 Line,int32 Clue) const
  const int32 Straight=int32(Draw%uint32(ClueCount));
  const int32 Stray=(C->Truth+1+int32((Draw>>8)%uint32(CauseCount-1)))%CauseCount;
  // CHAIN-3-20261109: the other place agrees on half the seeds, and always where the station has no control (the other place is the
- // control). Where the two disagree, a control the station can run separates them: any two causes differ in at least two tests.
+ // control). Where the two disagree, a control the station can run separates them: any two causes differ in at least one offered test.
  bool bControl=false;for(int32 Ctl=0;Ctl<TestCount;++Ctl)bControl|=UnavailableReason(Line,Ctl,true).IsEmpty();
  return Clue==Straight||!bControl||((Draw>>16)&1u)?C->Truth:Stray;
 }
@@ -658,7 +666,7 @@ FString FS47FreeformCases::ConclusionText(int32 Line) const
  {
   const FResult& R=C->Results[T];
   if(R.bDone)Text+=FString::Printf(TEXT("DAY %d / %s: %s\n"),R.Day,D.Tests[T].Name,*TestResultText(Line,T,R.bPresent));
-  else Text+=FString::Printf(TEXT("%s: NOT ESTABLISHED BY A RETAINED VALID TEST\n"),D.Tests[T].Name);
+  else if(Offered(Line,T))Text+=FString::Printf(TEXT("%s: NOT ESTABLISHED BY A RETAINED VALID TEST\n"),D.Tests[T].Name);
  }
  Text+=TEXT("\nINTERPRETATION\n");
  if(D.Mystery)
@@ -670,11 +678,6 @@ FString FS47FreeformCases::ConclusionText(int32 Line) const
  Text+=TEXT("\n\nKeep the original observations and test records. Tests without a retained valid result establish neither presence nor absence.");
  if(Line==0)Text+=TEXT(" A field logger is approved on loan for an independent comparison; collect it at EQUIPMENT CHECKOUT in the parts store.");
  return Text;
-}
-bool FS47FreeformCases::InRepeatWindow(int32 Line,int32 Day,double DayClock) const
-{
- // From the first original's own clock and day (SetReference), not from when the case was opened (CASES-OPS-20261109).
- const FCase* C=Get(Line);return C&&C->bOpen&&Day>C->RefDay&&FMath::IsFinite(DayClock)&&DayDelta(DayClock,C->RefClock)<=RepeatWindow;
 }
 FString FS47FreeformCases::PredictionFor(int32 Line,int32 Test,int32 Cause)
 {
@@ -749,21 +752,39 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
   Good&=P.Plan(0,0,TEXT("P1"))&&P.Record(0,0,2,true,PresentFor(0,0,0),bFirst)&&P.Remaining(0)==1&&!P.Plan(0,1,TEXT("P2"));
   // (off the beam they remain: only the sky is out, and the next test can still be planned)
   FS47FreeformCases Q;Q.Reset(Seed);Q.Open(0,1,0);
-  Good&=Q.Plan(0,1,TEXT("Q1"))&&Q.Record(0,1,2,true,PresentFor(0,0,1),bFirst)&&Q.Remaining(0)==2&&Q.Plan(0,2,TEXT("Q2"));
+  // (the repeat is withdrawn, Tom 13 November: generator power is the one test left, and it is never the repeat)
+  Good&=Q.Plan(0,1,TEXT("Q1"))&&Q.Record(0,1,2,true,PresentFor(0,0,1),bFirst)&&Q.Remaining(0)==2&&!Q.Plan(0,2,TEXT("Q2"))&&Q.Plan(0,0,TEXT("Q3"));
   // A plan made before the deciding result (an older save, or a field plan) is cleared by the conclusion.
-  FS47FreeformCases Y;Y.Reset(Seed);Y.Open(0,1,0);Y.Plan(0,1,TEXT("Y1"));Y.Record(0,1,2,true,true,bFirst);Y.Plan(0,2,TEXT("Y2"));
+  FS47FreeformCases Y;Y.Reset(Seed);Y.Open(0,1,0);Y.Plan(0,1,TEXT("Y1"));Y.Record(0,1,2,true,true,bFirst);Y.Plan(0,0,TEXT("Y2"));
   Y.Cases[0].Results[0].bDone=true;Y.Cases[0].Results[0].bPresent=false;Y.Cases[0].Results[0].Day=3; // the deciding result kept meanwhile
-  Good&=Y.Get(0)->Planned==2&&Y.Remaining(0)==1&&Y.Conclude(0,0,Why)&&Y.Get(0)->Planned<0&&Y.Get(0)->PlannedJob.IsEmpty();
-  Good&=!Y.Record(0,2,4,true,true,bFirst)&&!Y.Get(0)->Results[2].bDone;
-  // The repeat window goes from the first original's clock, not from the reel deck's: kept 23:50 on day 3, reviewed 03:00 day 4.
+  Good&=Y.Get(0)->Planned==0&&Y.Remaining(0)==1&&Y.Conclude(0,0,Why)&&Y.Get(0)->Planned<0&&Y.Get(0)->PlannedJob.IsEmpty();
+  Good&=!Y.Record(0,0,4,true,true,bFirst)&&!Y.Get(0)->Results[0].bPresent&&Y.Get(0)->Results[0].Day==3;
+  // The first original's clock (the SOURCE line), not the reel deck's: kept 23:50 on day 3, reviewed 03:00 day 4.
   FS47FreeformCases W;W.Reset(1);W.Open(0,4,3*3600.);W.SetReference(0,3,23*3600.+50*60);
-  Good&=W.InRepeatWindow(0,4,23.5*3600)&&!W.InRepeatWindow(0,4,3*3600.)&&W.Get(0)->RefDay==3;
-  FS47FreeformCases WR;WR.Load(S47J::Read(S47J::Write(W.Save())),1);Good&=WR.Get(0)->RefDay==3&&FMath::IsNearlyEqual(WR.Get(0)->RefClock,23*3600.+50*60)&&WR.InRepeatWindow(0,4,23.5*3600);
+  Good&=W.Get(0)->RefDay==3&&FMath::IsNearlyEqual(W.Get(0)->RefClock,23*3600.+50*60);
+  FS47FreeformCases WR;WR.Load(S47J::Read(S47J::Write(W.Save())),1);Good&=WR.Get(0)->RefDay==3&&FMath::IsNearlyEqual(WR.Get(0)->RefClock,23*3600.+50*60);
   // No later reference once a result is kept.
   FS47FreeformCases WT;WT.Reset(1);WT.Open(0,4,3*3600.);WT.Plan(0,1,TEXT("W"));WT.Record(0,1,4,true,true,bFirst);WT.SetReference(0,3,12*3600.);Good&=WT.Get(0)->RefDay==4;
   // A save locked by the old rule (wind's roof result, then a two-site result under the unexplained) loses its latest result.
   FS47FreeformCases Locked;Locked.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{},{},{\"open\":true,\"openDay\":1,\"results\":[{\"done\":true,\"present\":false,\"day\":2},{},{\"done\":true,\"present\":true,\"day\":4}]}]}")),Seed);
   Good&=Locked.Remaining(2)>=1&&Locked.Get(2)->Results[0].bDone&&!Locked.Get(2)->Results[2].bDone;
+  // Tom, 13 November: the repeat is withdrawn. Never offered on the three lines that had it, refused by Plan and in every gate; an older
+  // save's plan for it goes on Continue, its job with it (the session), and a result it kept is still evidence and still listed.
+  {
+   bool bGone=true;
+   for(int32 Line=0;Line<CaseCount;++Line)for(int32 T=0;T<TestCount;++T)
+    bGone&=Offered(Line,T)==(Def(Line).Tests[T].Condition!=EC::Repeat)&&(Offered(Line,T)||!UnavailableReason(Line,T,true).IsEmpty());
+   bGone&=!Offered(0,2)&&!Offered(MysteryLine,2)&&!Offered(MinuteLine,2)&&Offered(0,0)&&Offered(0,1)&&Offered(2,2)&&Offered(LandLine,2);
+   FS47FreeformCases G;G.Reset(Seed);G.Open(0,1,0);bGone&=!G.Plan(0,2,TEXT("G"))&&G.Get(0)->Planned<0;
+   FS47FreeformCases Old;Old.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{\"open\":true,\"openDay\":1,\"planned\":2,\"plannedJob\":\"FF-D0002-CT3-4\"},{},{},{\"open\":true,\"openDay\":2,\"planned\":2,\"plannedJob\":\"FF-D0003-CT3-5\"}]}")),Seed);
+   bGone&=Old.Get(0)->Planned<0&&Old.Get(0)->PlannedJob.IsEmpty()&&Old.Get(MysteryLine)->Planned<0&&Old.Get(0)->bOpen&&Old.Remaining(0)==3;
+   // (the feeder's seed: a kept repeat result, ticks present, still strikes the transmitter, and the record lists it)
+   FS47FreeformCases Kept;Kept.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{\"open\":true,\"openDay\":1,\"validTests\":1,\"results\":[{},{},{\"done\":true,\"present\":true,\"day\":3}]}]}")),Seed);
+   bGone&=Kept.Get(0)->Results[2].bDone&&Kept.Excluded(0,1)&&!Kept.Excluded(0,0)&&Kept.Remaining(0)==2&&Kept.Plan(0,0,TEXT("K"));
+   bGone&=Kept.Record(0,0,4,true,false,bFirst)&&Kept.Remaining(0)==1&&Kept.Conclude(0,0,Why)&&Kept.ConclusionText(0).Contains(FString(TEXT("DAY 3 / "))+Def(0).Tests[2].Name);
+   Good&=bGone;
+   if(!bGone)Lines.Add(TEXT("FAIL Freeform cases: the withdrawn repeat test is offered, planned, or an older save's plan or result for it is mishandled"));
+  }
   // Case records are the case file's own.
   Good&=IsCaseRecord(TEXT("case1-test2"))&&IsCaseRecord(TEXT("case4-reply"))&&!IsCaseRecord(TEXT("casefield"))&&!IsCaseRecord(TEXT("carrier_saro"));
  }
@@ -776,8 +797,8 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
  }
  for(int32 Line=0;Line<CaseCount;++Line)
  {
-  // Every pair of different tests separates all three causes.
-  for(int32 A=0;A<TestCount;++A)for(int32 B=A+1;B<TestCount;++B)
+  // Every pair of different tests on offer separates all three causes (the repeat withdrawn, Tom 13 November: two left there).
+  for(int32 A=0;A<TestCount;++A)for(int32 B=A+1;B<TestCount;++B)if(Offered(Line,A)&&Offered(Line,B))
   {TSet<int32> Sig;for(int32 C=0;C<CauseCount;++C)Sig.Add((PresentFor(Line,C,A)?1:0)|(PresentFor(Line,C,B)?2:0));Good&=Sig.Num()==CauseCount;}
   TSet<int32> Seen;for(int32 Seed=0;Seed<64;++Seed)Seen.Add(Seeded(Seed,Line));Good&=Seen.Num()==CauseCount;
   for(int32 Truth=0;Truth<CauseCount;++Truth)
@@ -804,7 +825,8 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
    Good&=R.Conclude(Line,Truth,Why)&&R.HasAccess(Def(Line).Access)&&!R.Conclude(Line,Truth,Why);
    FS47FreeformCases Again;Again.Load(S47J::Read(S47J::Write(R.Save())),Seed);Good&=Again.Get(Line)->bConcluded&&Again.Get(Line)->Conclusion==Truth&&Again.HasAccess(Def(Line).Access);
    const FString Report=Again.ConclusionText(Line);
-   Good&=Report.Contains(TEXT("DAY 2 / "))&&Report.Contains(TEXT("DAY 3 / "))!=bOneLeft&&Report.Contains(FString(Def(Line).Tests[2].Name)+TEXT(": NOT ESTABLISHED"));
+   Good&=Report.Contains(TEXT("DAY 2 / "))&&Report.Contains(TEXT("DAY 3 / "))!=bOneLeft&&Report.Contains(FString(Def(Line).Tests[2].Name)+TEXT(": NOT ESTABLISHED"))==Offered(Line,2);
+   Good&=Offered(Line,2)||!Report.Contains(Def(Line).Tests[2].Name); // a withdrawn test not run is named nowhere
    Good&=Report==R.ConclusionText(Line)&&!Report.Contains(TEXT("two separate sites recorded"));
    if(Line==2&&Truth==2)Good&=Report.Contains(TEXT("cause remains unexplained"));
   }
@@ -829,8 +851,7 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
  FS47FreeformCases Both;Both.Reset(3);bool First=false;Both.Open(0,1,0);Both.Open(1,1,0);
  Both.Plan(0,1,TEXT("A"));Both.Record(0,1,1,true,true,First);Good&=First;Both.Plan(1,1,TEXT("B"));Both.Record(1,1,1,true,true,First);Good&=!First;
  Good&=LineForFinding(TEXT("pulse-review"))==0&&LineForFinding(TEXT("extra_pulse.day4"))==0&&LineForFinding(TEXT("extra_pulse.daylight"))==-1&&LineForFinding(TEXT("duplicate_print"))==1&&LineForFinding(TEXT("unsigned_telex.day3"))==1&&LineForFinding(TEXT("observer"))==2&&LineForFinding(TEXT("close_pass"))==-1&&LineForFinding(TEXT("peek-4"))==2&&LineForFinding(TEXT("flood-room-5-2"))==2&&LineForFinding(TEXT("door-visit-5"))==2&&LineForFinding(TEXT("door-marks-5"))==2;
- FS47FreeformCases W;W.Reset(1);W.Open(0,3,23.5*3600);
- Good&=!W.InRepeatWindow(0,3,23.5*3600)&&W.InRepeatWindow(0,4,.5*3600)&&!W.InRepeatWindow(0,4,2*3600)&&W.InRepeatWindow(0,5,22.1*3600)&&Clock(-1800)==TEXT("23:30");
+ Good&=Clock(-1800)==TEXT("23:30")&&Clock(86400.+60)==TEXT("00:01");
  FS47FreeformCases Bad;Bad.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{\"open\":true,\"planned\":99,\"openClock\":1e99,\"concluded\":true,\"conclusion\":7}]}")),5);
  Good&=Bad.Get(0)->Planned==-1&&Bad.Get(0)->OpenClock<=86399&&!Bad.Get(0)->bConcluded&&Bad.Get(0)->Conclusion==-1;
  // M7: a filing on the same minute with only the trace that opened it has nothing behind it; the other place looked at, or a
@@ -928,7 +949,7 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
     if(Sent!=Was)bLate&=Answer.Effect!=EReply::Spare;else bLate&=Answer.Effect!=EReply::FeederFault&&Answer.Effect!=EReply::CallOut;
    }
    const bool bRecorded=Line==MinuteLine;
-   for(int32 T=0;T<TestCount;++T)bLate&=UnavailableReason(Line,T).IsEmpty()==bRecorded;
+   for(int32 T=0;T<TestCount;++T)bLate&=UnavailableReason(Line,T).IsEmpty()==(bRecorded&&Offered(Line,T)); // (the printed minute's repeat: withdrawn)
    // Filed on the one trace that opened it: nothing behind it. The other place looked at too: something.
    FS47FreeformCases K;K.Reset(11);FString Said;const bool One[ClueCount]={true,false},Two[ClueCount]={true,true};
    K.Open(Line,13,.83*3600);K.Conclude(Line,2,Said,14);
@@ -1025,6 +1046,6 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
   FS47FreeformCases N;N.Reset(0);Ref&=N.MarkReference(0,0)==EMatch::Closed&&N.MarkReference(2,0)==EMatch::Closed;
   Good&=Ref;Lines.Add(FString::Printf(TEXT("%s / Freeform cases: a matched reference sound strikes the sky explanation only when the take has that known source, never an unusual take, two matches at most, saved"),Ref?TEXT("PASS"):TEXT("FAIL")));
  }
- Lines.Add(FString::Printf(TEXT("%s / Freeform cases: nine data-driven cases (three of them M7's late ones: the empty post, the printed minute, the raked ground; and OUT ON THE LAND, split from the visitors: the night's records out there go to it, an older save's move over, records that disagree rule nothing out, no lead dropped at the cap), observation leads, seeded hidden cause, any two tests separate three explanations, guesses refused until supported, invalid tests release the plan, one first-test reward, repeat window across midnight, Save/Continue keeps progress; a mystery takes an assessment that can be wrong, traces that lean different ways, its reply one day later and once, older saves unchanged; the visitors' case never locks (three tests with the wind ruled out in between), no test once one explanation is left, a conclusion clears its plan and its test is refused after, the repeat window from the first original's clock, made-up senders"),Good?TEXT("PASS"):TEXT("FAIL")));
+ Lines.Add(FString::Printf(TEXT("%s / Freeform cases: nine data-driven cases (three of them M7's late ones: the empty post, the printed minute, the raked ground; and OUT ON THE LAND, split from the visitors: the night's records out there go to it, an older save's move over, records that disagree rule nothing out, no lead dropped at the cap), observation leads, seeded hidden cause, any two tests separate three explanations, guesses refused until supported, invalid tests release the plan, one first-test reward, the repeat test withdrawn (never offered or planned, an older save's plan cancelled and its result kept), Save/Continue keeps progress; a mystery takes an assessment that can be wrong, traces that lean different ways, its reply one day later and once, older saves unchanged; the visitors' case never locks (three tests with the wind ruled out in between), no test once one explanation is left, a conclusion clears its plan and its test is refused after, the first original's own clock kept, made-up senders"),Good?TEXT("PASS"):TEXT("FAIL")));
  return Good;
 }

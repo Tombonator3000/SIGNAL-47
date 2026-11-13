@@ -1555,7 +1555,7 @@ namespace S47FlowNotebook
 				using EStep = FS47FreeformSession::ECaseStep;
 				const FS47FreeformSession::FCaseStep Step = F.CaseStep(Line);
 				if (Step.Step == EStep::ChooseTest) { In.WaitingCases.Add(FS47FreeformCases::Def(Line).Title); continue; }
-				if (Step.Step != EStep::RunPlan && Step.Step != EStep::WaitWindow) continue;
+				if (Step.Step != EStep::RunPlan) continue;
 				double Start = 0, End = 0;
 				// (a field test not yet prepared has only a preview of its window: the step is to prepare it now)
 				if (!F.CaseTestWindow(Line, Start, End) || F.CaseWindowText(Line).Contains(TEXT("PREVIEW ONLY"))) continue;
@@ -2390,10 +2390,10 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			{
 				const FS47FreeformSession::FCaseStep Step = F->CaseStep(Line);
 				if (Step.Step == FS47FreeformSession::ECaseStep::Closed) continue;
-				static const TCHAR* StepNames[] = { TEXT("Closed"), TEXT("Choose a test"), TEXT("Test planned"), TEXT("Test waits for its window"), TEXT("Conclude"), TEXT("File an assessment"), TEXT("Reply due") };
+				static const TCHAR* StepNames[] = { TEXT("Closed"), TEXT("Choose a test"), TEXT("Test planned"), TEXT("Conclude"), TEXT("File an assessment"), TEXT("Reply due") };
 				FS47NbWorkItem W; W.Id = FString::Printf(TEXT("case/%d/%d"), Line, int32(Step.Step));
 				W.Title = FString(TEXT("Case / ")) + FS47FreeformCases::Def(Line).Title;
-				W.Status = FString::Printf(TEXT("%s / %d of 3 explanations left"), StepNames[FMath::Clamp(int32(Step.Step), 0, 6)], F->CaseFile().Remaining(Line));
+				W.Status = FString::Printf(TEXT("%s / %d of 3 explanations left"), StepNames[FMath::Clamp(int32(Step.Step), 0, int32(UE_ARRAY_COUNT(StepNames)) - 1)], F->CaseFile().Remaining(Line));
 				// TELEX-20261109: a reply, due or in, is the telex's in the control room
 				W.NextAction = Step.Next; W.Location = Step.Step == FS47FreeformSession::ECaseStep::RunPlan ? TEXT("OPS / DAILY WORK") : Step.Next.StartsWith(TEXT("TELEX")) ? TEXT("CONTROL ROOM / TELEX") : TEXT("OPS / CASE BOARD");
 				W.Hints = { TEXT("A case is closed by your own retained tests or by an assessment you file. The case board shows what each test predicts."), W.NextAction };

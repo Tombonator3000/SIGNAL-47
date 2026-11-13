@@ -14,6 +14,9 @@ class FS47FreeformCases
 public:
  // Physical precondition the session checks for a case test recording.
  // FieldWork is carried out and reported by the Freeform world (S47FreeformWorld/Director).
+ // Repeat: Tom, 13 November: the repeat-in-the-same-window test is gone ("too poor for gameplay"). Its slot stays in the data so that
+ // older saves keep their columns; it is never offered, never planned and never named (Offered), and a result kept in an older save
+ // still counts as the evidence it was.
  enum class ECondition : uint8 { Generator, OffSource, Repeat, DoorsSealed, RelaySwap, FieldWork };
  // What the recording shows: the extra pulse group, or the receiver clock offset.
  enum class EObservable : uint8 { ExtraTicks, ClockDelta, FieldTrace };
@@ -28,7 +31,7 @@ public:
  // LandLeads: the land gathers a record most nights, so it keeps more; past any line's cap the oldest fold into a count that the
  // case board shows (FoldedLeads), never dropped without a word.
  static constexpr int32 LandLine=8, LandLeads=96, LandCamera=0, LandNeedle=1, LandLogger=2;
- static constexpr double OffSourceDegrees=.6, RepeatWindow=90*60., ClockOffset=3.2;
+ static constexpr double OffSourceDegrees=.6, ClockOffset=3.2;
  // CASETEST-20261109: a field control's window (the visitors' gate and field post, the land's logger tape) still counts with up to
  // twenty minutes of it unwatched in all: a call, a drive, a short wait. More than that and it records nothing.
  static constexpr double UnwatchedAllowance=20*60.;
@@ -72,8 +75,8 @@ public:
   double OpenClock=0; // seconds into the day the case opened
   // D48-20261110 (D46-16): the explanations a matched reference sound ruled out (bit per cause) and the matches tried so far.
   int32 RefRuled=0,RefTries=0;
- // CASES-OPS-20261109: what the repeat window is measured from: the first original's own day and clock (SetReference), or, for a
- // case opened on a trace or an observation, the day and clock it opened. Saved only when it differs from the opening.
+ // CASES-OPS-20261109: the first original's own day and clock (SetReference), or, for a case opened on a trace or an observation,
+ // the day and clock it opened; the case board's SOURCE line. Saved only when it differs from the opening.
  int32 RefDay=0;double RefClock=0;
   FString PlannedJob;
   FResult Results[TestCount];
@@ -94,7 +97,7 @@ public:
  // CASES-OPS-20261109: a finding the case file keeps for itself ("case1-test2", "case4-conclusion", "case4-reply"): a record of the
  // station's own business, not of anything seen. It goes in no field record, on no pin board card and under no SEEN AND HEARD.
  static bool IsCaseRecord(const FString& Key);
- // The first original's own clock (the reel deck's case): the repeat window is reckoned from it. Only while no test has a result.
+ // The first original's own clock (the reel deck's case), for the SOURCE line. Only while no test has a result.
  void SetReference(int32 Line,int32 Day,double DayClock);
  const FCase* Get(int32 Line) const { return Cases.IsValidIndex(Line)?&Cases[Line]:nullptr; }
  bool HasAccess(const FString& Id) const { return Access.Contains(Id); }
@@ -133,10 +136,12 @@ public:
  const FReplyDef* Reply(int32 Line) const; // null until an assessment is filed
  void MarkReplied(int32 Line);
  FString ConclusionText(int32 Line) const;
- bool InRepeatWindow(int32 Line,int32 Day,double DayClock) const;
  static bool PresentFor(int32 Line,int32 Cause,int32 Test);
  // Empty when the current world implements this test; saved legacy results remain valid.
  static FString UnavailableReason(int32 Line,int32 Test,bool bSecondLogger=false);
+ // False for a test withdrawn from the game (the repeat, Tom 13 November): not on the board, in no plan, sheet or note. A result
+ // an older save kept for it is still listed where results are.
+ static bool Offered(int32 Line,int32 Test);
  static FString Prediction(int32 Line,int32 Test);
  static FString PredictionFor(int32 Line,int32 Test,int32 Cause); // D48-20261110: one explanation's word for one test, as Prediction joins them
  static FString ResultText(int32 Line,bool bPresent);
