@@ -888,6 +888,7 @@ void FS47FreeformSession::Step(double Dt)
  StepEquipmentFeedback();
  StepTutorial();
  StepDaleAsks(); // TASKS-TEN-20261113 (change 7)
+ StepPin(); // TASKS-TEN-20261113 (change 10)
  // Unlike the original Story console, the physical Freeform receiver owns its monitor here.
  if(M->Audio)
  {
@@ -902,7 +903,8 @@ void FS47FreeformSession::Step(double Dt)
  StepRxSearch(D); // RX-SEARCH-SOUND-20261113: Tom's search layer, heard where the monitor is (S47FreeformSky.cpp)
  // M7-HUD-20261109: the card gets the short line; the pause menu and the notebook keep the whole of it
  // TASKS-TEN-20261113 (change 5): one line only: the second line for a case (HudCaseLine) is gone; the cases are on NOW's open matters
- if(M->UI&&M->Mode==US47Main::EMode::Play)M->UI->Objective(HudObjective());
+ // TASKS-TEN-20261113 (change 10): with a pin, one line beside it when something else closes within 30 minutes
+ if(M->UI&&M->Mode==US47Main::EMode::Play){const FString Card=HudObjective();const FString Soon=bPinLive?CloseSoonLine():FString();M->UI->Objective(Soon.IsEmpty()?Card:Card+TEXT("\n")+Soon);}
 }
 int32 FS47FreeformSession::PendingPrint(const FJob& J)
 {
@@ -4291,10 +4293,83 @@ void FS47FreeformSession::StepDaleAsks()
   if(A.bDone)Changed();
  }
 }
+void FS47FreeformSession::PinRow(const FString& Key,const FString& Row)
+{
+ if(Key.IsEmpty()||Key.Len()>200||Row.Len()>600)return;
+ if(PinKey==Key){PinKey.Reset();PinText.Reset();bPinLive=false;}
+ else{PinKey=Key;PinText=Row;PinNight=NightOf(WorldClock);bPinLive=true;}
+ PinCheckAt=-1;
+ UE_LOG(LogTemp,Display,TEXT("S47: pinned row: %s"),PinKey.IsEmpty()?TEXT("(none)"):*PinKey);
+ Changed();
+ if(M&&M->Flow)M->Flow->RequestAutosave(false);
+}
+void FS47FreeformSession::StepPin()
+{
+ if(PinKey.IsEmpty())return;
+ // a new night (08:00) clears it, whatever became of it
+ if(PinNight!=NightOf(WorldClock)){PinKey.Reset();PinText.Reset();bPinLive=false;Changed();return;}
+ if(PinCheckAt>=0&&WorldClock>=PinCheckAt&&WorldClock<PinCheckAt+60)return; // once a game minute is enough
+ PinCheckAt=WorldClock;
+ bool bLive=false;
+ if(PinKey==TEXT("cards"))bLive=CardsUp()>0;
+ else if(PinKey.StartsWith(TEXT("card:"))){const FString Id=PinKey.Mid(5);bLive=Work.ContainsByPredicate([&Id](const FJob& J){return J.Id==Id&&J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected;});}
+ else if(PinKey==TEXT("matter:station"))bLive=!StationGoalLine().IsEmpty()||ServiceGuide==1;
+ else if(PinKey.StartsWith(TEXT("matter:")))bLive=true; // Ward's: until 08:00
+ else{const TArray<FS47Task> Now=Tasks();bLive=Now.ContainsByPredicate([this](const FS47Task& T){return T.Text==PinText&&!T.bDone;});}
+ if(bLive!=bPinLive){bPinLive=bLive;Changed();}
+}
+bool FS47FreeformSession::PinnedStep(FString& Full,FString& Short)const
+{
+ Full.Reset();Short.Reset();
+ if(!bPinLive||PinKey.IsEmpty())return false;
+ if(PinKey==TEXT("cards"))
+ {
+  const int32 Up=CardsUp();if(Up<=0)return false;
+  Full=FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Up);
+  Short=FString::Printf(TEXT("OPS // %d JOB CARD%s UP."),Up,Up==1?TEXT(""):TEXT("S"));return true;
+ }
+ if(PinKey.StartsWith(TEXT("card:")))
+ {
+  const FString Id=PinKey.Mid(5);const FJob* J=Work.FindByPredicate([&Id](const FJob& X){return X.Id==Id;});
+  if(!J||J->Stage==EJobStage::Filed)return false;
+  Full=EveningGated(*J)?EveningLine(*J):JobNextAction(*J);
+  if(EveningGated(*J))Short=FString::Printf(TEXT("TRACKING PC // %s AT %s."),*FString(FS47Observing::Runs()[J->Source].Source).ToUpper(),*FS47FreeformCases::Clock(EveningUp(*J)));
+  return true;
+ }
+ if(PinKey==TEXT("matter:station")){Full=ServiceGuide==1?ServiceObjective():StationGoalLine();return !Full.IsEmpty();}
+ // a case's row: its step as the case board says it
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line){const FCaseStep S=CaseStep(Line);if(!S.Task.IsEmpty()&&S.Task==PinText){Full=S.Next;Short=S.Card;return !Full.IsEmpty();}}
+ Full=PinText;
+ return !Full.IsEmpty();
+}
+FString FS47FreeformSession::CloseSoonLine()const
+{
+ // the one line beside a pinned step: something else that shuts within 30 minutes
+ const double Now=WorldClock,Base=FMath::FloorToDouble((Now-8*3600.)/SecondsPerDay)*SecondsPerDay;
+ const auto Within=[Now](double At){return At>Now&&At-Now<=30*60.;};
+ if(PinKey!=TEXT("cards"))for(const FJob& J:Work)
+ {
+  if(J.Stage!=EJobStage::New||J.bDuplicateRejected||J.CaseTest>=0||J.Day<2||EveningGated(J))continue;
+  if(const double Shut=Base+EveningShut(J);Within(Shut))return FString::Printf(TEXT("CLOSES %s // A JOB CARD AT OPS."),*FS47FreeformCases::Clock(Shut));
+ }
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
+ {
+  double Start=0,End=0;
+  if(PlannedFieldTest(Line)<0||!CaseTestWindow(Line,Start,End)||Now<Start||(Line==2&&(!CaseField||!CaseField->Prepared())))continue;
+  if(Within(End)&&CaseStep(Line).Task!=PinText)return FString::Printf(TEXT("CLOSES %s // THE CASE WINDOW."),*FS47FreeformCases::Clock(End));
+ }
+ if(SlipToFollow()&&!PinText.StartsWith(TEXT("BEARING SLIP /")))
+ {
+  double Noon=FMath::FloorToDouble(Now/SecondsPerDay)*SecondsPerDay+12*3600.;if(Noon<=Now)Noon+=SecondsPerDay;
+  if(Within(Noon))return TEXT("CLOSES 12:00 // THE BEARING SLIP.");
+ }
+ return FString();
+}
 void FS47FreeformSession::LoadNotePlan(const S47J::FObj& Saved)
 {
- DaleAskList.Reset();
+ DaleAskList.Reset();PinKey.Reset();PinText.Reset();PinNight=0;bPinLive=false;PinCheckAt=-1;
  const S47J::FObj Plan=S47J::Obj(Saved,TEXT("notePlan"));if(!Plan.IsValid())return;
+ {const FString K=S47J::Str(Plan,TEXT("pin")),T=S47J::Str(Plan,TEXT("pinRow"));if(!K.IsEmpty()&&K.Len()<=200&&T.Len()<=600){PinKey=K;PinText=T;PinNight=S47J::Int(Plan,TEXT("pinNight"));bPinLive=true;}}
  for(const TSharedPtr<FJsonValue>& V:S47J::Arr(Plan,TEXT("daleAsked")))
  {
   const TSharedPtr<FJsonObject>* O=nullptr;if(!V||!V->TryGetObject(O)||!O)continue;
@@ -4305,8 +4380,9 @@ void FS47FreeformSession::LoadNotePlan(const S47J::FObj& Saved)
 void FS47FreeformSession::SaveNotePlan(const S47J::FObj& Out)const
 {
  // nothing kept writes nothing: an older save reads the same
- if(DaleAskList.IsEmpty())return;
+ if(DaleAskList.IsEmpty()&&PinKey.IsEmpty())return;
  const S47J::FObj Plan=S47J::New();
+ if(!PinKey.IsEmpty()){S47J::Set(Plan,TEXT("pin"),PinKey);S47J::Set(Plan,TEXT("pinRow"),PinText);S47J::Set(Plan,TEXT("pinNight"),PinNight);}
  TArray<TSharedPtr<FJsonValue>> Asks;
  for(const FDaleAsk& A:DaleAskList){const S47J::FObj O=S47J::New();S47J::Set(O,TEXT("kind"),A.Kind);S47J::Set(O,TEXT("row"),A.Row);S47J::Set(O,TEXT("night"),A.Night);S47J::Set(O,TEXT("base"),A.Base);S47J::Set(O,TEXT("done"),A.bDone);Asks.Add(MakeShared<FJsonValueObject>(O));}
  Plan->SetArrayField(TEXT("daleAsked"),Asks);
@@ -4363,6 +4439,8 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // TELEX-20261109 (Tom's words on the HUD, "TELEX: A reply is waiting"): once the HUD's second line, now (TASKS-TEN-20261113, change 5)
  // a paper waiting like the printer's
  if(const FString Telex=TelexLine();!Telex.IsEmpty())return Say(TEXT("TELEX (control room): ")+Telex+TEXT(". TEAR IT OFF AT THE TELEX."),TEXT("TELEX // ")+Telex.Mid(7).ToUpper()+TEXT("."));
+ // TASKS-TEN-20261113 (change 10): the pinned matter's next step, once nothing blocks
+ {FString PinFull,PinShort;if(PinnedStep(PinFull,PinShort))return Say(PinFull,PinShort,PinKey.StartsWith(TEXT("card"))||PinKey.StartsWith(TEXT("matter:"))?PinKey:PinText);}
  // 2. A WINDOW OPEN NOW (TASKS-TEN-20261113): be there for it.
  {FString Open;if(WindowOpenStep(Open))return Say(Open);}
  const int32 Urgent=UrgentCase(true);const FCaseStep Step=Urgent>=0?CaseStep(Urgent):FCaseStep();
@@ -5192,7 +5270,7 @@ FString FS47FreeformSession::NextAction()const
  if(!CurrentJob()||CurrentJob()->Stage==EJobStage::Filed)return AvailableActivities();
  // TASKS-TEN-20261113 (change 2): a window open now comes before a card only selected (not begun, or still waiting for its source);
  // work under way keeps its place (blocking now)
- {const FJob* J=CurrentJob();FString Open;if((J->Stage==EJobStage::New||EveningGated(*J))&&(WindowOpenStep(Open)||!TelexLine().IsEmpty()))return AvailableActivities();}
+ {const FJob* J=CurrentJob();FString Open;if((J->Stage==EJobStage::New||EveningGated(*J))&&(WindowOpenStep(Open)||!TelexLine().IsEmpty()||(bPinLive&&!PinKey.IsEmpty())))return AvailableActivities();}
  if(const FJob* J=CurrentJob())PickRow=J->CaseTest>=0?CaseStep(J->CaseLine).Task:EveningGated(*J)?TEXT("card:")+J->Id:TEXT("cards");
  return ReceiverNextAction();
 }
@@ -6339,6 +6417,30 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    Check(bRows&&bFollow&&bDue&&bKept&&bTicked&&bGone,
     TEXT("TASKS-TEN (change 7): Dale's asks (outside, the map, the night log) are kept as DALE ASKED rows under FOLLOW-UP in his own words, the ladder's deadline, kept over a Continue, ticked off when done, gone at 08:00"));
    Ask.Stop();Back.Stop();
+  }
+  // TASKS-TEN-20261113 (change 10): a pinned row is the HUD's step (and the note's Next); a sheet waiting on the printer breaks through;
+  // the pin is kept over a Continue, marked on the note, and clears at 08:00
+  {
+   FS47FreeformSession Pn(nullptr);Pn.Begin(nullptr);Pn.Tutorial=0;Pn.TestAdvance(FMath::Max(0.,86400.+21*3600.-Pn.Clock()));
+   Pn.DaleSaid(TEXT("And write it in the night log while you still have it: the hour, the bearing, what you saw with your own eyes."));
+   const FString Row=Pn.DaleAskRows().Num()?Pn.DaleAskRows()[0]:FString();
+   Pn.WorkActivities(nullptr);const FString Before=Pn.PickRow;
+   Pn.PinRow(S47TonightNote::KeyOf(Row),Row);Pn.StepPin();
+   FString PinCard;Pn.WorkActivities(&PinCard);
+   const bool bShows=!Row.IsEmpty()&&Before!=Row&&Pn.PickRow==Row&&Pn.PinnedKey()==S47TonightNote::KeyOf(Row)&&PinCard.Contains(TEXT("NIGHT LOG"));
+   S47TonightNote::FIn PinIn;PinIn.bFreeform=true;PinIn.Clock=Pn.Clock();PinIn.Next=Pn.HudObjective();PinIn.NextRow=Pn.ObjectiveRow();PinIn.Pinned=Pn.PinnedKey();
+   for(const FS47Task& T:Pn.Tasks())PinIn.Tasks.Add({T.Text,T.bDone});
+   const S47TonightNote::FNote PinNote=S47TonightNote::Build(PinIn);
+   const bool bMarked=PinNote.Lines.ContainsByPredicate([&Row](const S47TonightNote::FLine& L){return L.Source==Row&&L.bPinned&&L.Mark==S47TonightNote::EMark::Next;});
+   FResultSheet Sheet;Sheet.Line=0;Sheet.Test=0;Sheet.Job=TEXT("pin-selftest");Pn.CaseSheets.Add(Sheet);
+   const bool bBreaks=Pn.WorkActivities(nullptr).StartsWith(TEXT("PRINTER: COLLECT THE RESULT SHEET"));
+   Pn.CaseSheets.Reset();
+   FS47FreeformSession PinBack(nullptr);PinBack.Begin(S47J::Read(S47J::Write(Pn.Save())));PinBack.TestAdvance(FMath::Max(0.,Pn.Clock()-PinBack.Clock()));
+   const bool bKept=PinBack.PinnedKey()==Pn.PinnedKey();
+   PinBack.TestAdvance(FMath::Max(0.,2*86400.+8.25*3600.-PinBack.Clock()));PinBack.StepPin();
+   Check(bShows&&bMarked&&bBreaks&&bKept&&PinBack.PinnedKey().IsEmpty(),
+    TEXT("TASKS-TEN (change 10): a pinned row is the HUD's step and the note's starred Next; paper on the printer breaks through; kept over a Continue; cleared at 08:00"));
+   Pn.Stop();PinBack.Stop();
   }
   // The next-step line across an ordinary night: no rest before the night watch (19:00 to 02:30), unless worn out; from 02:30 it may.
   {

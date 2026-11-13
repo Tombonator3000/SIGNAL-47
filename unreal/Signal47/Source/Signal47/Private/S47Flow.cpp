@@ -1624,6 +1624,7 @@ namespace S47FlowNotebook
 			}
 			In.bAntennasWait = FS47FreeformSession::GoalWaits(F.Clock()) && !F.StationGoalLine().IsEmpty();
 			In.Done = &S47TonightNote::Tonight();
+			In.Pinned = F.PinnedKey(); // TASKS-TEN-20261113 (change 10)
 			In.Game = (uint64(uint32(M->Flow ? M->Flow->CaseId : 0)) << 32) | uint32(F.Seed());
 		}
 		return In;
@@ -2623,6 +2624,8 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			}
 			// TASKS-TEN-20261113 (change 5): the field guide no longer opens on a third copy of tonight's list ("Tonight's list"): NOW is the list
 		}
+		// TASKS-TEN-20261113 (change 10): a NOW row pinned or unpinned
+		X.OnPin = [Self](const FString& Key, const FString& Row) { if (Self->M && Self->M->Freeform) Self->M->Freeform->PinRow(Key, Row); };
 		X.OnFollow = [Self](const FString& Id)
 		{
 			if (!Self->M || !Self->M->Freeform) return;

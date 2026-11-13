@@ -1544,6 +1544,8 @@ void SS47Notebook::BuildRight()
 			if (OnBoard && (W->Id.StartsWith(TEXT("case/")) || W->Id.StartsWith(TEXT("field-plan/")))) Acts.Add(MakeTuple(S47Keys::Label(TEXT("board")), FString(TEXT("BOARD")), TFunction<void()>([this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); })));
 		}
 		if (N && !N->Fold.IsEmpty()) Acts.Add(MakeTuple(FString(TEXT("ENTER")), FString(OpenFolds.Contains(N->Fold) ? TEXT("FOLD AWAY") : TEXT("OPEN")), TFunction<void()>([this] { Activate(); })));
+		// TASKS-TEN-20261113 (change 10): "this is what I am doing": the HUD then shows its next step
+		if (N && X.OnPin && !N->bDone && !N->Key.IsEmpty() && N->Group != TEXT("done")) Acts.Add(MakeTuple(FString(TEXT("F2 / RS")), FString(N->bPinned ? TEXT("UNPIN") : TEXT("PIN")), TFunction<void()>([this] { PinChosen(); })));
 		if (!X.NowClock.IsEmpty())
 		{
 			Pg->AddSlot().AutoHeight().Padding(0, P(26), 0, 0)[Turned(Inked(X.NowClock, bLarge ? 30.f : 27.f, StampRed()), -1.2f)];
@@ -1747,7 +1749,9 @@ void SS47Notebook::Activate()
 			FilterNow(); Sel.FindOrAdd(TEXT("tasks")) = I; Build(); return;
 		}
 		const FS47NbWorkItem* W = ChosenWork();
-		if (W && X.OnFollow && W->bCanFollow && !W->bDone) { auto Fn = X.OnFollow; const FString Id = W->Id; Close(); Fn(Id); }
+		if (W && X.OnFollow && W->bCanFollow && !W->bDone) { auto Fn = X.OnFollow; const FString Id = W->Id; Close(); Fn(Id); return; }
+		// TASKS-TEN-20261113 (change 10): a row with nothing to follow or fold is pinned with Enter too
+		PinChosen();
 		return;
 	}
 	if (Tab == TEXT("events") && X.bEvents)
@@ -1860,6 +1864,21 @@ void SS47Notebook::Section(int32 Dir)
 	if (!Tabs.IsEmpty()) Show(Tabs[(FMath::Max(0, Tabs.IndexOfByKey(Tab)) + Dir + Tabs.Num()) % Tabs.Num()]);
 }
 
+bool SS47Notebook::PinChosen()
+{
+	if (!IsNow() || !X.OnPin) return false;
+	const int32 I = Chosen();
+	if (!NowRows.IsValidIndex(I) || !X.Now.IsValidIndex(NowRows[I].Line)) return false;
+	FS47NbNowLine& N = X.Now[NowRows[I].Line];
+	if (N.bDone || N.Key.IsEmpty() || N.Group == TEXT("done")) return false;
+	X.OnPin(N.Key, N.Why);
+	const bool bWas = N.bPinned;
+	for (FS47NbNowLine& Each : X.Now) Each.bPinned = false;
+	N.bPinned = !bWas;
+	Build();
+	return true;
+}
+
 void SS47Notebook::RevealHint()
 {
 	if (Tab != TEXT("tasks") || !X.RevealHint) return;
@@ -1953,6 +1972,7 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 	if (K == EKeys::Escape || K == EKeys::Gamepad_FaceButton_Right || K == EKeys::Gamepad_Special_Left || K == EKeys::Gamepad_Special_Right || (bKeyboard && (S47Keys::Is(TEXT("notebook"), K) || S47Keys::Is(TEXT("map"), K) || S47Keys::Is(TEXT("kit"), K) || S47Keys::Is(TEXT("controls"), K) || S47Keys::Is(TEXT("pause"), K)))) { Close(); return FReply::Handled(); }
 	if (((bKeyboard && S47Keys::Is(TEXT("board"), K)) || K == EKeys::Gamepad_FaceButton_Top) && OnBoard) { TFunction<void()> Fn = OnBoard; Close(); Fn(); return FReply::Handled(); }
 	if (K == EKeys::F1 || K == EKeys::Gamepad_RightTrigger) { RevealHint(); return FReply::Handled(); }
+	if ((K == EKeys::F2 || K == EKeys::Gamepad_RightThumbstick) && PinChosen()) return FReply::Handled(); // TASKS-TEN-20261113 (change 10)
 	if (K == EKeys::Comma || K == EKeys::Gamepad_LeftTrigger) { Section(1); return FReply::Handled(); }
 	// Q and E turn the tabs; the arrows (or W A S D) choose on a page of entries, else scroll it
 	if (K == EKeys::Q || K == EKeys::Gamepad_LeftShoulder) { Turn(-1); return FReply::Handled(); }

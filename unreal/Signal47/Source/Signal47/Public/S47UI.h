@@ -133,6 +133,7 @@ struct FS47NbExtras
 	TFunction<int32(const FString&)> HintLevel, RevealHint;
 	TFunction<bool(const FString&)> EntryRead;
 	TFunction<void(const FString&)> MarkRead, OnFollow;
+	TFunction<void(const FString&, const FString&)> OnPin; // TASKS-TEN-20261113 (change 10): NOW's row pinned (its key, its words)
 	TOptional<FS47MapView> Map;          // drawn by the notebook (areaMap)
 	// Freeform's sheet: a pencil mark put down or rubbed out at road-local x and z, or rubbed out within so many metres of one there; the marks after.
 	TFunction<TArray<FS47MapNote>(double, double, double)> OnMapNote;

@@ -106,6 +106,7 @@ private:
 	FString MainTab() const;
 	void Section(int32 Dir);
 	void RevealHint();
+	bool PinChosen();            // TASKS-TEN-20261113 (change 10): F2 / RS on a NOW row: pin it ("this is what I am doing"), again to take it off
 	void Turn(int32 Dir);        // Q and E: the tab before or after
 	void Press(const FKey& Key); // the notebook closed, the game's own key (C raises the camera, F the light)
 	void Scroll(float By);

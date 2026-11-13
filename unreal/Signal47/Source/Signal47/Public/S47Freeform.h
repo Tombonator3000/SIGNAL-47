@@ -254,6 +254,14 @@ public:
  void DaleSaid(const FString& Words);
  TArray<FString> DaleAskRows() const; // the open ones, oldest first
  const TArray<FDaleAsk>& DaleAsks() const { return DaleAskList; }
+ // TASKS-TEN-20261113 (change 10): the row the player pinned on NOW ("this is what I am doing"; the notebook's PIN, the due tabs'
+ // star). With a pin the ladder's step is the pinned matter's next step, after what blocks now (paper waiting, the power, a take
+ // under way); CloseSoonLine is the one line beside it when something else closes within 30 minutes. A pin whose row is done or
+ // shut stays inert and clears at 08:00. Saved with the notebook's state ("notePlan"). Pin again (the same key) to take it off.
+ void PinRow(const FString& Key,const FString& Row);
+ FString PinnedKey() const { return bPinLive?PinKey:FString(); }
+ bool PinnedStep(FString& Full,FString& Short) const;
+ FString CloseSoonLine() const;
  // The soonest of the cards waiting for the evening, and the next time it comes up; null if none is.
  const FJob* NextEveningCard(double& Up) const;
  // The rules a real game plays by. Developer fixtures keep the fixed ones unless a test asks (TestLiveRules).
@@ -937,6 +945,8 @@ private:
  mutable TMap<FString,FString> ChoresOpen,ChoresDone;mutable int32 ChoresNight=0;mutable double ChoresClock=-1;
  mutable FString PickRow; // TASKS-TEN-20261113: the row the ladder's last answer is (ObjectiveRow)
  TArray<FDaleAsk> DaleAskList; // TASKS-TEN-20261113 (change 7)
+ FString PinKey,PinText;int32 PinNight=0;bool bPinLive=false;double PinCheckAt=-1; // TASKS-TEN-20261113 (change 10)
+ void StepPin();
  void StepDaleAsks();
  void LoadNotePlan(const S47J::FObj& Saved);
  void SaveNotePlan(const S47J::FObj& Out) const;
