@@ -5439,8 +5439,9 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   // GAMEPLAY-LOOP-01 (Tom, 12 November): an unusual take goes ANOMALY DETECTED, record, reel deck, OPS, printer, binder. After the take
   // the reel deck is next (no control, no chart to fetch), one listen confirms it, OPS's one button registers it and the packet prints;
   // a save from the old chart step lands on the reel deck, and the instrument discrepancies keep their printer-first order.
-  const bool D45Anomaly=WJ->bAnomaly;const EJobStage D45Stage=WJ->Stage;bool D45Order=true;
-  WJ->bAnomaly=true;WJ->Stage=EJobStage::Chart;WJ->ChartFeed=PrinterSeconds;WJ->bControl=WJ->bAudioReviewed=false;WJ->ControlAt=0;
+  // (the old chart step is a take whose original is not collected yet: the routine check above left this card collected, bPrinted)
+  const bool D45Anomaly=WJ->bAnomaly,D45Printed=WJ->bPrinted;const EJobStage D45Stage=WJ->Stage;bool D45Order=true;
+  WJ->bAnomaly=true;WJ->Stage=EJobStage::Chart;WJ->ChartFeed=PrinterSeconds;WJ->bPrinted=false;WJ->bControl=WJ->bAudioReviewed=false;WJ->ControlAt=0;
   {
    // the old chart step, saved: on Continue it waits on the receiver's RECORD tab to be retained (RX-ANOMALY-FLOW-20261113), then the deck
    FS47FreeformSession D45Again(nullptr);D45Again.Begin(Workflow.Save());const FJob* D45J=D45Again.CurrentJob();
@@ -5449,7 +5450,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   }
   WJ->Phenomenon=TEXT("time_disagreement");
   D45Order&=!Workflow.CanRecordControl()&&!Workflow.StartControl()&&Workflow.JobNextAction(*WJ).StartsWith(TEXT("PRINTER"))&&StatusWord(*WJ,true)==TEXT("AT PRINTER");
-  WJ->Phenomenon.Empty();WJ->bAnomaly=D45Anomaly;WJ->Stage=D45Stage;WJ->ChartFeed=0;Workflow.Feedback.Empty();
+  WJ->Phenomenon.Empty();WJ->bAnomaly=D45Anomaly;WJ->bPrinted=D45Printed;WJ->Stage=D45Stage;WJ->ChartFeed=0;Workflow.Feedback.Empty();
   Check(D45Order,TEXT("GAMEPLAY-LOOP-01: an old save's extra-tick take at the printer waits on the receiver's RECORD tab on Continue; the instrument discrepancies keep their chart"));
   FS47FreeformSession Loop(nullptr);Loop.Begin(nullptr);Loop.Tutorial=0;
   const int32 LoopI=Loop.Work.IndexOfByPredicate([](const FJob& X){return X.Source==1&&X.CaseTest<0;});
@@ -6082,7 +6083,13 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Eve.Stop();
   // LOOP-NIGHT-WATCH-20261113: OPS's next step through an ordinary second night, the two early cards in by 20:30.
   {
-   FS47FreeformSession Walk(nullptr);Walk.Begin(nullptr);Walk.Tutorial=0;Walk.TestLiveRules();
+   // (the walk is the cards' and the rest's: a working array, as an older save has it, so no station goal stands in front of them (with
+   // the parts in hand it comes first until one in the morning, and after it the goal's line is said before the rest), and money enough
+   // that the line is not the one about stores)
+   auto WalkSave=[]{FS47FreeformSession W0(nullptr);W0.Begin(nullptr);auto Sv=S47J::Read(S47J::Write(W0.Save()));W0.Stop();return Sv;}();
+   if(const auto Fd=S47J::Obj(WalkSave,TEXT("field")))S47J::Set(Fd,TEXT("arrayWear"),FS47ArrayWear().Save());
+   FS47FreeformSession Walk(nullptr);Walk.Begin(WalkSave);Walk.Tutorial=0;Walk.ServiceGuide=0;Walk.Cash=50;Walk.Loan=0;Walk.TestLiveRules();
+   Check(!Walk.Field||Walk.StationGoalLine().IsEmpty(),TEXT("Next step on night 2: the walk's fixture has a working array (no station goal)"));
    for(FJob& J:Walk.Work)J.Stage=EJobStage::Filed;
    Walk.TestAdvance(86400);
    FJob* Watch=nullptr;for(FJob& J:Walk.Work)if(J.Day==2){if(J.Slot<2)J.Stage=EJobStage::Filed;else Watch=&J;}

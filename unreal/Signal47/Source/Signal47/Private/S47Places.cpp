@@ -994,7 +994,9 @@ FString FS47Places::TieLine(const FHeld& H)
  if(H.bSame&&H.bOwnMarks)
  {
   const FString In=FString::Printf(TEXT("%.1f"),H.MarkIn),Out=FString::Printf(TEXT("%.1f"),H.MarkOut);
-  if(!In.Contains(TEXT("47"))&&!Out.Contains(TEXT("47"))&&In!=TEXT("8.15")&&Out!=TEXT("8.15"))
+  // (read as digits: 14.7 or 4.7 says a 47 as well as 47.0 does)
+  const FString Digits=(In+TEXT(" ")+Out).Replace(TEXT("."),TEXT(""));
+  if(!Digits.Contains(TEXT("47"))&&In!=TEXT("8.15")&&Out!=TEXT("8.15"))
    return FString::Printf(TEXT("THE EXTRA TICKS BETWEEN YOUR MARK IN AT %s S AND YOUR MARK OUT AT %s S CAME IN ON THIS BEARING."),*In,*Out);
   return TEXT("THE EXTRA TICKS BETWEEN YOUR MARK IN AND YOUR MARK OUT CAME IN ON THIS BEARING.");
  }
