@@ -63,6 +63,7 @@ bool FS47AnimalWarn::Hold(const FString& Id, const FString& Variant, bool bOnFoo
 		FS47EventCtx Ctx;
 		S47EventScript::Play(M, ScriptOf(Kind), Ctx);
 		UE_LOG(LogS47AnimalWarn, Display, TEXT("S47: animals warn before %s: %s, %.0f s ahead"), *Id, Kind == EKind::Birds ? TEXT("a covey goes up") : TEXT("a coyote stands and stares"), Lead);
+		FS47Happenings::TellOther(M, TEXT("animal warning"), Id); // M1-MEASURE-20261113: out on foot, put near the player, and its script's thought says so
 		Why = TEXT("the animals first");
 		return false;
 	}
@@ -118,6 +119,7 @@ void FS47AnimalWarn::Stray()
 		FS47EventCtx Ctx;
 		S47EventScript::Play(M, ScriptOf(Kind), Ctx);
 		UE_LOG(LogS47AnimalWarn, Display, TEXT("S47: animals warn: a false alarm on its own, no event follows (%s)"), Kind == EKind::Birds ? TEXT("a covey goes up") : TEXT("a coyote stands and stares"));
+		FS47Happenings::TellOther(M, TEXT("animal warning"), TEXT("stray")); // M1-MEASURE-20261113
 		return;
 	}
 }

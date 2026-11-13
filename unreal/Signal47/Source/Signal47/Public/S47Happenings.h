@@ -138,6 +138,11 @@ public:
  bool UneaseLive() const{return Uneasy.I>=0;}
  int32 UneaseDoneTonight() const{return UneaseDone.Num();}
  static bool SelfTest(TArray<FString>& Lines);
+ // M1-MEASURE-20261113: another system's encounter, perceived by the player (its own seen/heard/told), into tonight's summary line
+ // ("other noticed"). Kind is the summary's word for it; Key makes it once a night (a place, a serial). Measurement only.
+ void OtherNoticed(const TCHAR* Kind,const FString& Key);
+ // The same from anywhere with a game: Freeform with happenings only, nothing otherwise.
+ static void TellOther(US47Main* M,const TCHAR* Kind,const FString& Key);
 
  // LOOP-4-20261109 (HELHETLIG_LOKKE step 4). The night's one pointing-out at the land (FS47FreeformDirector::MayPointOut) is taken by
  // the array's own burst and by a landing the array logs with nobody watching, as by the bearing slip: true when this one may point
@@ -353,8 +358,11 @@ private:
  double NearK=1,DangerAt=-1;
  static constexpr double DangerUntil=29.;
  // Measured for the log (Tom's critics: the run must say what the player met, how far off, and whether they noticed it).
- struct FTally{int32 Night=0,NStarted=0,NNoticed=0,NNear=0,NMet=0,NRefused=0;double Nearest=1e9;};
+ // M1-MEASURE-20261113: what the player met tonight from the other systems (a visit, a taking, the director's events, the highway's
+ // light, the animals, the idle lure, the visitors), each told once a night by its own key. Only for the log; never saved.
+ struct FTally{int32 Night=0,NStarted=0,NNoticed=0,NNear=0,NMet=0,NRefused=0;double Nearest=1e9;TArray<TPair<FString,int32>> Other;TSet<FString> OtherKeys;int32 NOther=0;};
  FTally Tally;
+ FString SummaryText() const;
  TSet<int32> NoticedSerials;
  TMap<FString,FString> RefusedSaid;
  mutable TSet<FString> LateDrawSaid;

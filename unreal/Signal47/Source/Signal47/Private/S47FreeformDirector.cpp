@@ -1623,6 +1623,9 @@ void FS47FreeformDirector::ObserveVisitor(const FVector& At,bool Heard)
 void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
 {
  if(Event.IsEmpty())return;const auto* D=Definition(Event);const bool Threat=D&&D->Family==TEXT("threat");
+ // M1-MEASURE-20261113: the director's own events in the night's summary, when the player saw it (its bSeen: in view, heard near
+ // for the steps, or photographed); an F10 one is not counted, as the happenings' own are not.
+ if(bSeen&&!bForcedEvent)FS47Happenings::TellOther(M,*Event,FString::Printf(TEXT("day %d"),M&&M->Freeform?M->Freeform->Day():0));
  if((Event==TEXT("farm_lights")||Event==TEXT("town_lights"))&&M&&M->Freeform&&M->Freeform->FarmSite)
  {
   // Their marks where they were, at whichever place that was: the farm's pasture as any other.

@@ -6,6 +6,7 @@
 #include "S47GameStyle.h"
 #include "S47FreeformDirector.h"
 #include "S47Geo.h"
+#include "S47Happenings.h"
 #include "S47Inter.h"
 #include "S47Kit.h"
 #include "S47Main.h"
@@ -719,6 +720,7 @@ void FS47Visitors::StepMilitary(double Dt)
 				M->Audio->Play(TEXT("engineIdle"), .6f, Three, .85f);
 			}
 			UE_LOG(LogS47Visitors, Display, TEXT("S47: visitors: the sedans at %s drive off as the player comes up (%.0f m)"), *V.Place, Away);
+			FS47Happenings::TellOther(M, TEXT("visitors"), V.Place); // M1-MEASURE-20261113: met at the place
 		}
 		if (V.Leave >= 0)
 		{
@@ -743,6 +745,7 @@ void FS47Visitors::StepMilitary(double Dt)
 		F.RegisterFinding(Id, Text);
 		if (M->UI) M->UI->Open(S47Kit::Shell(M->UI, TEXT("SOMEBODY GOT HERE FIRST"), S47Kit::Col({ S47Kit::Text(Text), S47Kit::Small(TEXT("Kept as a field record.")) }), 760));
 		UE_LOG(LogS47Visitors, Display, TEXT("S47: visitors: the raked ground at %s read, night %d"), *V.Place, V.Night);
+		FS47Happenings::TellOther(M, TEXT("visitors"), V.Place); // M1-MEASURE-20261113: what they left, read (same key: one meeting a place a night)
 		break;
 	}
 	if (Live)

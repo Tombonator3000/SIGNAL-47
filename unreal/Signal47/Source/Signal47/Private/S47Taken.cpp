@@ -100,9 +100,12 @@ bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
  if(!bOutdoors||bOnlyDread)
  {
   Now=EStage::Dread;StepIn=.6;TalkIn=3.5;StepAt=Feet()+FVector(-3,3.4,1);
+  FS47Happenings::TellOther(M,TEXT("taken"),Title); // M1-MEASURE-20261113: a taking is always at the player
   return true;
  }
- return StartFlood();
+ const bool bFlood=StartFlood();
+ if(bFlood)FS47Happenings::TellOther(M,TEXT("taken"),Title); // M1-MEASURE-20261113
+ return bFlood;
 }
 
 bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over)
@@ -122,6 +125,7 @@ bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over
   M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.Rate=.7f,.At=Over});
  }
  UE_LOG(LogTemp,Display,TEXT("S47: taken: a light stands over %s"),*Title);
+ FS47Happenings::TellOther(M,TEXT("taken"),Title); // M1-MEASURE-20261113
  return true;
 }
 
@@ -133,6 +137,7 @@ bool FS47Taken::TakeNow(ES47Taker Who,const FString& Title)
  Taker=Who;Place=Title;
  // Reached by a body: the end of a meeting the rules already let begin (a site or field visit), so it is not asked again.
  if(Now==EStage::None){SafeClock=M->Freeform->Clock();if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));StopScript(M);}
+ FS47Happenings::TellOther(M,TEXT("taken"),Title); // M1-MEASURE-20261113: once a night by the place, however it was begun
  bOutdoors=!Indoors();
  if(!Terms(Who).bLift){Now=EStage::Away;Age=0;HideLight();White(TOptional<double>());if(M->UI)M->UI->Fade(true);M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.9f});return true;}
  // In a shut room, where no light can reach: it comes straight down on them all the same, once they are held.

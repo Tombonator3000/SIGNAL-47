@@ -585,7 +585,7 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
  VisitBody->Act=ShhLeft>0?ES47Clip::Shh:FreezeLeft>0?ES47Clip::Freeze:ES47Clip::Num;
  if(VisitWho==1)VisitBody->ApplyCrab(true,BodyAt,BodyYaw,Face,BodyClock,BodyClock/1.6,Speed>2.);
  else VisitBody->Apply(true,BodyAt,BodyYaw,Face,Speed>0?.85:0.,BodyClock*3,BodyClock,FS47PaleBody::EPose::Walk);
- bVisitSeen|=VisitBody->Rendered();
+ {const bool bSeenBefore=bVisitSeen;bVisitSeen|=VisitBody->Rendered();if(!bSeenBefore&&bVisitSeen&&!bTestNoticed)FS47Happenings::TellOther(M,TEXT("visit"),Place);} // M1-MEASURE-20261113
 }
 
 void FS47FarmSite::HideBody()
@@ -704,7 +704,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   }
   for(const auto& I:G->Individuals())
   {
-   bVisitSeen|=I.bRendered;
+   {const bool bSeenBefore=bVisitSeen;bVisitSeen|=I.bRendered;if(!bSeenBefore&&bVisitSeen&&!bTestNoticed)FS47Happenings::TellOther(M,TEXT("visit"),Place);} // M1-MEASURE-20261113
    if(I.State==FS47RoswellBrain::EState::Contact&&!bDriving){G->DevClear();Tk->TakeNow(Who,Title);bVisitTaken=true;return;}
   }
  }
@@ -1082,6 +1082,7 @@ void FS47FarmSite::StepLure(double Dt)
   if(M->Audio)M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.3f,.Rate=.6f,.At=LureHood+FVector(0,1,0)});
   if(M->Freeform->Attention)M->Freeform->Attention->Add(3,TEXT("a visit's body at the idling truck"));
   if(M->UI&&Flat(Feet,Mid)<90)M->UI->Thought(TEXT("Something is at the truck. The lights just stuttered."),4.f);
+  if(Flat(Feet,Mid)<90&&!bTestNoticed)FS47Happenings::TellOther(M,TEXT("idle lure"),Place); // M1-MEASURE-20261113: told by the same thought
   UE_LOG(LogTemp,Display,TEXT("S47: idle lure: a hand on the hood, frost hand, the lamps falter"));
  }
  if(LureCoughIn>0)
@@ -1112,6 +1113,7 @@ void FS47FarmSite::StepLure(double Dt)
   M->World->EndIdle(true);
   if(M->Freeform->Attention)M->Freeform->Attention->Add(6,TEXT("a visit's body struck the idling truck"));
   if(M->UI&&Flat(Feet,Mid)<90)M->UI->Thought(TEXT("A bang from the truck. The engine has stopped, and the lights with it."),5.f);
+  if(Flat(Feet,Mid)<90&&!bTestNoticed)FS47Happenings::TellOther(M,TEXT("idle lure"),Place); // M1-MEASURE-20261113
   M->Freeform->RecordEvidence(FindingId()+TEXT("_dent"),FString::Printf(TEXT("%s, %s. I had left the truck running with the lights on. Something came to it, went round it and stood in the lights, then struck the hood. The engine died. There is a dent in the hood the size of a hand, and a handprint in the frost on the glass."),*S47Text::ClockText(Clock,false),*Title));
   UE_LOG(LogTemp,Display,TEXT("S47: idle lure: it struck the hood, the engine stalled (the key wants turning)"));
  }

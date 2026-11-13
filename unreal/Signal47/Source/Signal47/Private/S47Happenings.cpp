@@ -2172,9 +2172,39 @@ void FS47Happenings::CloseTally(int32 NewNight)
 {
  if(Tally.Night>0&&Tally.Night!=NewNight)
  {
-  UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d summary: %d started, %d noticed, %d of them near (under %.0f m), %d dangers met, nearest %s, %d refusals"),Tally.Night,Tally.NStarted,Tally.NNoticed,Tally.NNear,S47Hap::NearByM,Tally.NMet,Tally.Nearest<1e8?*FString::Printf(TEXT("%.0f m"),Tally.Nearest):TEXT("none"),Tally.NRefused);
+  UE_LOG(LogS47Happen,Display,TEXT("%s"),*SummaryText());
  }
  if(Tally.Night!=NewNight){Tally=FTally();Tally.Night=NewNight;NoticedSerials.Reset();}
+}
+// The tour greps "summary: N started, N noticed": those first fields keep their meaning (happenings alone); what the other
+// systems met follows them (M1-MEASURE-20261113), then the two together.
+FString FS47Happenings::SummaryText() const
+{
+ FString Line=FString::Printf(TEXT("S47: happenings night %d summary: %d started, %d noticed, %d of them near (under %.0f m), %d dangers met, nearest %s, %d refusals"),Tally.Night,Tally.NStarted,Tally.NNoticed,Tally.NNear,S47Hap::NearByM,Tally.NMet,Tally.Nearest<1e8?*FString::Printf(TEXT("%.0f m"),Tally.Nearest):TEXT("none"),Tally.NRefused);
+ Line+=FString::Printf(TEXT(", other noticed: %d"),Tally.NOther);
+ if(Tally.Other.Num())
+ {
+  TArray<FString> Parts;for(const TPair<FString,int32>& O:Tally.Other)Parts.Add(FString::Printf(TEXT("%s %d"),*O.Key,O.Value));
+  Line+=TEXT(" (")+FString::Join(Parts,TEXT(", "))+TEXT(")");
+ }
+ Line+=FString::Printf(TEXT(", all noticed: %d"),Tally.NNoticed+Tally.NOther);
+ return Line;
+}
+void FS47Happenings::OtherNoticed(const TCHAR* Kind,const FString& Key)
+{
+ if(!Kind||!*Kind)return;
+ const FString Once=FString(Kind)+TEXT("|")+Key;
+ if(Tally.OtherKeys.Contains(Once))return;
+ Tally.OtherKeys.Add(Once);++Tally.NOther;
+ const FString KindText(Kind);
+ TPair<FString,int32>* Row=Tally.Other.FindByPredicate([&KindText](const TPair<FString,int32>& O){return O.Key==KindText;});
+ if(Row)++Row->Value;
+ else Tally.Other.Emplace(KindText,1);
+ UE_LOG(LogS47Happen,Display,TEXT("S47: happenings night %d: other noticed, %s (%s)"),Tally.Night,Kind,Key.IsEmpty()?TEXT("-"):*Key);
+}
+void FS47Happenings::TellOther(US47Main* Main,const TCHAR* Kind,const FString& Key)
+{
+ if(Main&&Main->IsFreeform()&&Main->Freeform&&Main->Freeform->Happenings)Main->Freeform->Happenings->OtherNoticed(Kind,Key);
 }
 void FS47Happenings::Refused(const FString& Id,const FString& Why)
 {
@@ -5879,5 +5909,20 @@ bool FS47Happenings::SelfTest(TArray<FString>& Lines)
  OK&=FirstDaySelfTest(Lines);
  // M1-FLOOR-20261112: the night's floor.
  OK&=FloorSelfTest(Lines);
+ // M1-MEASURE-20261113: the other systems' encounters in the summary, behind the fields the tour reads.
+ {
+  FS47Happenings H(nullptr);H.Tally.Night=4;H.Tally.NStarted=2;H.Tally.NNoticed=1;
+  const FString Bare=H.SummaryText();
+  Check(Bare.StartsWith(TEXT("S47: happenings night 4 summary: 2 started, 1 noticed, "))&&Bare.EndsWith(TEXT(", other noticed: 0, all noticed: 1")),TEXT("M1 measure: the summary keeps its first fields as they were; nothing from the others says 0, and the whole is the happenings' own"));
+  H.OtherNoticed(TEXT("visit"),TEXT("farm"));H.OtherNoticed(TEXT("visit"),TEXT("farm"));H.OtherNoticed(TEXT("taken"),TEXT("the yard"));H.OtherNoticed(TEXT("visit"),TEXT("field"));H.OtherNoticed(TEXT(""),TEXT("x"));
+  const FString Met=H.SummaryText();
+  Check(Met.StartsWith(TEXT("S47: happenings night 4 summary: 2 started, 1 noticed, "))&&Met.EndsWith(TEXT(", other noticed: 3 (visit 2, taken 1), all noticed: 4"))&&H.Tally.NNoticed==1,
+   FString::Printf(TEXT("M1 measure: each other encounter counts once a night by its key, by kind in the order met, and the happenings' own count is untouched (%s)"),*Met.Mid(Met.Find(TEXT("other noticed")))));
+  H.CloseTally(5);
+  Check(H.Tally.Night==5&&H.Tally.NOther==0&&H.Tally.Other.IsEmpty()&&H.Tally.OtherKeys.IsEmpty(),TEXT("M1 measure: a new night starts the others' count afresh"));
+  H.OtherNoticed(TEXT("visit"),TEXT("farm"));
+  FS47Happenings::TellOther(nullptr,TEXT("visit"),TEXT("farm"));
+  Check(H.Tally.NOther==1,TEXT("M1 measure: the same place counts again on another night; told without a game, nothing is counted"));
+ }
  return OK;
 }
