@@ -653,13 +653,16 @@ void FS47Dossier::Load(const S47J::FObj& Saved)
   LoggedAt.Add(One.Key,FMath::IsFinite(Logged)&&Logged>=0&&Logged<Tb::MaxTags?int32(Logged):-1);
   Read.Add(MoveTemp(One));
  }
- // By day, then as logged where the record kept it (slice 2), then key: the same every time, whatever order the record's fields
- // come in. What is not sound is left out.
- Read.Sort([&LoggedAt](const FTag& A,const FTag& B)
+ // REVIEW (dossier slice 2, 14 Nov): as logged, where the record kept it ("n", which every slice 2 save writes for every tag): a tape
+ // taped on night 3 and played back on night 5 is logged after night 5's finds, and what it struck, the pencil that stands and so
+ // the file a later find joins depend on that order. A save without it (slice 1): by day, then key. Either way the same every time,
+ // whatever order the record's fields come in. What is not sound is left out.
+ bool bLogged=!Read.IsEmpty();
+ for(const FTag& One:Read)bLogged&=LoggedAt.FindRef(One.Key)>=0;
+ Read.Sort([&LoggedAt,bLogged](const FTag& A,const FTag& B)
  {
-  if(A.Day!=B.Day)return A.Day<B.Day;
-  const int32 NA=LoggedAt.FindRef(A.Key),NB=LoggedAt.FindRef(B.Key);
-  if(NA>=0&&NB>=0&&NA!=NB)return NA<NB;
+  if(bLogged){const int32 NA=LoggedAt.FindRef(A.Key),NB=LoggedAt.FindRef(B.Key);if(NA!=NB)return NA<NB;}
+  else if(A.Day!=B.Day)return A.Day<B.Day;
   return A.Key<B.Key;
  });
  for(FTag& One:Read)
@@ -959,6 +962,25 @@ bool SelfTest(TArray<FString>& Lines)
    &&S47J::Int(S47J::Obj(S47J::Obj(Record,TEXT("tags")),TEXT("tape_3")),TEXT("f"))==1&&!S47J::Obj(S47J::Obj(Record,TEXT("tags")),TEXT("tape_1"))->HasField(TEXT("f"))
    &&Back.Beside()==D.Beside()&&Again.Num()==3&&Again[0].Boxes[int32(Tape)].Struck==TapeBox.Struck&&Back.FileOf(TEXT("farm_visit"))==2&&S47J::Write(Back.Save())==S47J::Write(D.Save()),
    TEXT("slice 2: the files, the pair kept side by side and the struck pencil survive a Continue"));
+  {
+   // REVIEW (14 Nov): logged out of night order. A tape taped on night 3 and played back on night 5 goes in after night 5's finds:
+   // what it struck, the pencil that stands and the file a later find joins come back the same after a Continue, and again after another
+   FS47Dossier L;
+   L.Tag(TEXT("l3"),Small,Shape,3,2,&Farm);L.Tag(TEXT("l5"),Small,Shape,5,2,&Farm);L.Tag(TEXT("l5t"),Small,Tape,5,2,&Farm);
+   L.Tag(TEXT("tape_9"),Tall,Tape,3,2,&Farm); // got with l3 on night 3, logged last: it strikes the night-5 notes
+   FS47Dossier LBack;LBack.Load(S47J::Read(S47J::Write(L.Save())));
+   FS47Dossier LAgain;LAgain.Load(S47J::Read(S47J::Write(LBack.Save())));
+   bool bLate=L.FileOf(TEXT("tape_9"))==1&&L.Files()[0].Boxes[int32(Tape)].Note==Note(Tall,Tape)&&L.Files()[0].Boxes[int32(Tape)].Struck==TArray<FString>{Note(Small,Tape)}
+    &&S47J::Write(LBack.Save())==S47J::Write(L.Save())&&S47J::Write(LAgain.Save())==S47J::Write(L.Save());
+   for(FS47Dossier* Each:{&L,&LBack,&LAgain})
+   {
+    const FBox Was=Each->Files()[0].Boxes[int32(Tape)];
+    bLate&=Was.Note==Note(Tall,Tape)&&Was.Struck==TArray<FString>{Note(Small,Tape)}&&Each->Files().Num()==1;
+    // the same notes again, far off on another night: they join the file whose tape box holds them now
+    bLate&=Each->Tag(TEXT("l6"),Tall,Tape,6,1,&Road)&&Each->FileOf(TEXT("l6"))==1;
+   }
+   Check(bLate,TEXT("REVIEW: tags logged out of night order (late playback) load in the order they were logged: files, struck pencil and joins the same over two Continues"));
+  }
   // the two far ones: anything of theirs in a file holds it at MARKS, whichever opened it
   FS47Dossier E;
   for(int32 Night=2;Night<=4;++Night)for(const EType T:{Shape,Ground,Tape,Lamp})E.Tag(FString::Printf(TEXT("e%d%d"),Night,int32(T)),Small,T,Night,2,&Farm);
