@@ -2907,13 +2907,16 @@ void FS47FreeformSession::OpenReceiver()
   auto AnomalyHere=[this]{return RecordTabHoldsAnomaly();};
   if(!ControlPanel)
   {
-   auto Key=T::Big(TAttribute<FString>::CreateLambda([this]
+   // D69-20261113: the key and the REFERENCE status read the same tenths, cut down (never rounded up), so «8.0 / 8 s» is not shown
+   // while the reference is still recording and the key is dim
+   auto RefTenths=[](const FJob& X){return FMath::FloorToDouble(FMath::Clamp(X.ControlAt,0.,8.)*10.)/10.;};
+   auto Key=T::Big(TAttribute<FString>::CreateLambda([this,RefTenths]
    {
     const auto* X=CurrentJob();if(!X)return FString();
     if(X->Stage==EJobStage::Pointed)return FString(TEXT("START RECORDING"));
     if(X->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECORDING %.0f / %.0f s"),X->Elapsed,SourceSeconds());
     if(RetainWaits(*X))return FString(TEXT("RETAIN TAKE / RECORD REFERENCE 8 s"));
-    if(X->bControl&&X->ControlAt<8)return FString::Printf(TEXT("REFERENCE %.1f / 8 s"),X->ControlAt);
+    if(X->bControl&&X->ControlAt<8)return FString::Printf(TEXT("REFERENCE %.1f / 8 s"),RefTenths(*X));
     return FString(TEXT("RETAINED / REEL DECK NEXT"));
    }),[this]{const auto* X=CurrentJob();if(X&&X->Stage==EJobStage::Pointed){if(!StartAcquisition())Changed(Feedback);}else if(!RetainTake())Changed(Feedback);},1,
    TAttribute<bool>::CreateLambda([this]{const auto* X=CurrentJob();return X&&((X->Stage==EJobStage::Pointed&&ReceiverReady())||RetainWaits(*X));}));
@@ -2922,10 +2925,13 @@ void FS47FreeformSession::OpenReceiver()
     if(X->Stage<=EJobStage::Pointed)return FString(TEXT("NOT RECORDED"));
     if(X->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECORDING %.0f / %.0f s"),X->Elapsed,SourceSeconds());
     return FString(X->bPrinted?TEXT("RETAINED / IN NOTEBOOK"):TEXT("ON TAPE / NOT RETAINED"));};
-   auto RefState=[this]{const auto* X=CurrentJob();if(!X||!X->bControl)return FString(TEXT("NOT RECORDED"));return X->ControlAt<8?FString::Printf(TEXT("RECORDING %.1f / 8 s"),X->ControlAt):FString(TEXT("ON TAPE"));};
+   auto RefState=[this,RefTenths]{const auto* X=CurrentJob();if(!X||!X->bControl)return FString(TEXT("NOT RECORDED"));return X->ControlAt<8?FString::Printf(TEXT("RECORDING %.1f / 8 s"),RefTenths(*X)):FString(TEXT("ON TAPE"));};
+   // D69-20261113: TAKE and REFERENCE read as one phrase side by side; each column has its title above its status, a rule between
+   auto Cell=[](const TCHAR* Title,TFunction<FString()> State){return S47Kit::Col({T::Note(FString(Title),20,TAttribute<FLinearColor>(S47Kit::Css(0x8cffa4)),false),
+    T::Note(TAttribute<FString>::CreateLambda(State),26,TAttribute<FLinearColor>(S47Kit::Css(0xffb84a)),false)},2);};
    Rows.Add(SNew(SBox).Visibility_Lambda([AnomalyHere]{return AnomalyHere()?EVisibility::Visible:EVisibility::Collapsed;})[T::Panel(TEXT("ANOMALY / RECORD IT, THEN RETAIN IT"),S47Kit::Col({
     T::Small(TEXT("Record the take here. RETAIN TAKE keeps its page in your notebook and records 8 s of the station's own reference, antennas out. The reel deck plays both.")),
-    T::Columns({{1.f,T::Value(TEXT("TAKE"),TAttribute<FString>::CreateLambda(TakeState),true)},{1.f,T::Value(TEXT("REFERENCE"),TAttribute<FString>::CreateLambda(RefState),true)}},10),
+    T::Split({{1.f,Cell(TEXT("TAKE"),TakeState)},{1.f,Cell(TEXT("REFERENCE"),RefState)}}),
     Key}))]);
   }
   if(!ControlPanel)
