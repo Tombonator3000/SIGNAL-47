@@ -985,7 +985,7 @@ bool SelfTest(TArray<FString>& Lines)
    TEXT("slice 2: tagged only when perceived: the counter out and near for a while, the take heard through"));
  }
  { // slice 2: the pacing, from the gates (M7)
-  const FGates G;
+  const FGates G{};
   bool bWeek1=true,bFar=true;int32 FirstMarks=99;
   for(int32 K=0;K<KindN;++K)
   {
