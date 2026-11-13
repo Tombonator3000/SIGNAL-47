@@ -954,7 +954,7 @@ FString FS47FreeformSession::PrinterHint()const
  }
  if(I==INDEX_NONE)return TEXT("PRINTER: No paper waiting.");
  const auto& J=Work[I];const int32 Kind=PendingPrint(J);const double Progress=PrintFeed(J,Kind);
- if(Progress>=PrinterSeconds)return TEXT("PRINTER: Collect ")+J.Id+(Kind==0?TEXT(" original chart."):Kind==1?TEXT(" registered packet."):TEXT(" separate duplicate; retain the original."));
+ if(Progress>=PrinterSeconds)return TEXT("PRINTER: Collect ")+J.Id+(Kind==0?TEXT(" original chart."):Kind==1?(Places&&Places->HeldFor(J.Id)?TEXT(" registered packet; its last page is tonight's bearing."):TEXT(" registered packet.")):TEXT(" separate duplicate; retain the original.")); // REVIEW-20261113
  return FString::Printf(TEXT("PRINTER: %s %s. %s"),*J.Id,HasPower()?TEXT("feeding paper"):TEXT("feed paused"),HasPower()?TEXT("Wait for the printer to finish before collecting."):TEXT("Restore power to finish; progress is retained."));
 }
 void FS47FreeformSession::StopPrinterFeedback()
@@ -5383,7 +5383,8 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
    if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return J->DuplicateFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL; THEN COMPARE AT OPS (corner PC), DAILY WORK"));
    if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPS (corner PC): DAILY WORK / SELECT THIS JOB AND PRESS COMPARE AND REGISTER");
    return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE COMPARISON: SOURCE UNRESOLVED"):TEXT("REEL DECK (wall table): PLAY THE TAKE ONCE TO CONFIRM IT");
-  case EJobStage::Registered:return J->PacketFeed<PrinterSeconds?PrinterHint():FString(PlainAnomaly(*J)?TEXT("PRINTER: COLLECT THE ANOMALY PACKET"):TEXT("PRINTER: COLLECT THE LABELLED REGISTERED PACKET"));
+  // REVIEW-20261113: a packet that holds tonight's bearing says so (it is off the map until it is fetched)
+  case EJobStage::Registered:return J->PacketFeed<PrinterSeconds?PrinterHint():FString(PlainAnomaly(*J)?TEXT("PRINTER: COLLECT THE ANOMALY PACKET"):TEXT("PRINTER: COLLECT THE LABELLED REGISTERED PACKET"))+(Places&&Places->HeldFor(J->Id)?TEXT(": ITS LAST PAGE IS TONIGHT'S BEARING"):TEXT(""));
   case EJobStage::Packet:return TEXT("RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER");
   default:return TEXT("OPS (corner PC): SELECT DAILY WORK OR RECORDS");
  }
