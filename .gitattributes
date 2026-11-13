@@ -53,3 +53,5 @@ unreal/ArtSource/StreetLamps/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/StreetLamps/Export/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/StreetLamps/textures/*.png filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/StreetLamps/Preview/*.png filter=lfs diff=lfs merge=lfs -text
+# DEV-WAVES (F10-bølgeskytteren, bare utvikler): egne syntetiske lyder fra Tools/devwaves/make_sounds.py.
+unreal/Signal47/Content/DevWaves/Audio/*.wav filter=lfs diff=lfs merge=lfs -text
