@@ -181,6 +181,23 @@ public:
  void BinderUnknowns(S47Binder::FSource& Src) const; // the files as the binder's UNKNOWNS divider has them
  void LoadDossier(const S47J::FObj& Saved);
  void SaveDossier(const S47J::FObj& Record) const;
+ // EVIDENCE-DOSSIER slice 3 (14 November). At the binder in the records room (bAt: NearBinder; a test passes it): the player's own
+ // name written on a file, two filed as one, one taken out again (until 08:00); the slip's words either way. DossierAct: a binder
+ // line's Do ("name:2", "merge:1:3", "out:1:3"). A file FILED (named, at HABITS) is paid FiledAllowance once, under the week's cap
+ // (DossierPayFiled). The habits as the player's own thoughts, once a night a file (HabitThought, by number; not saved): the hour
+ // coming up on a night out (DossierHabitStep, every frame from S47Thoughts::Step) and the lamp raised near one (DossierHabitLamp,
+ // FS47FarmSite). Dr. Ward's count is Unknowns.KindsFiled (FS47Predecessor::Count).
+ bool DossierName(int32 Number,const FString& Typed,FString& Words,bool bAt);
+ bool DossierFileAsOne(int32 A,int32 B,FString& Words,bool bAt);
+ bool DossierTakeOut(int32 Into,int32 From,FString& Words,bool bAt);
+ bool DossierAct(const FString& Do,const FString& Typed,FString& Words);
+ int32 DossierPayFiled();
+ void DossierHabitStep();
+ bool DossierHabitLamp(S47Dossier::EKind Near);
+ TMap<int32,int32> HabitThought;double HabitLastCheck=-1e9;
+ static constexpr int32 FiledAllowance=5;
+ FString TestNameDossier();   // F10: every file named by its suggestion, as at the binder
+ FString TestMergeDossier();  // F10: the first pair kept side by side filed as one, or taken out again tonight
  FString TestFillDossier(); // F10: sample evidence for three files; what it says
  static bool DossierSelfTest(TArray<FString>& Lines);
  // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS. FIX10-10 (12 Nov): the files opened are saved
