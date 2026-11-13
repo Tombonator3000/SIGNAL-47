@@ -327,7 +327,7 @@ FS47RxLive FS47FreeformSession::RxLive() const
 	}
 	Look.State = S47RxLook::StateOf(In);
 	// (D45-20261110: while the array comes round the receiver says how far it has to go, as its old line beside the tabs did)
-	if (Look.State.Id == S47RxLook::EState::Slewing) Look.State.Text = FString::Printf(TEXT("SLEWING %.1f\u00b0 TO GO"), ArrayErrorDeg());
+	if (Look.State.Id == S47RxLook::EState::Slewing) Look.State.Text = FString::Printf(TEXT("SLEWING %s\u00b0 TO GO"), *S47RxLook::Num(ArrayErrorDeg(), 1));
 	return Look;
 }
 
@@ -351,13 +351,14 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 	// RX-LOOK-20261113 (Tom's reference): the sphere as the main panel, the waterfall, the spectrum and the tracking readouts in a
 	// column to its right, the I and Q strips under them with the step keys and the way on. The main row takes what the frame's
 	// body has left over the strip, so the page fills the glass and never asks to be scrolled.
-	constexpr float StripHigh = 60.f, RightWide = 338.f;
+	// (round 2: the strip is four units higher and the step keys a little wider, for letters of the next step's size)
+	constexpr float StripHigh = 64.f, RightWide = 338.f;
 	const TAttribute<FOptionalSize> MainHigh = TAttribute<FOptionalSize>::CreateLambda([BodyHigh] { return FOptionalSize(FMath::Max(240.f, (BodyHigh.IsValid() ? *BodyHigh : 520.f) - StripHigh - 8.f)); });
 	const TSharedRef<SWidget> SkyMain = SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 8, 0)
 		[
 			SkyT::RxPanel(TEXT("EQUATORIAL CELESTIAL SPHERE"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[Chart],
-				TAttribute<FString>::CreateLambda([this] { return FString::Printf(TEXT("CARD AZ %.1f  EL %.1f"), TargetAz(), TargetEl()); }))
+				TAttribute<FString>::CreateLambda([this] { return FString::Printf(TEXT("CARD AZ %s  EL %s"), *S47RxLook::Num(TargetAz(), 1), *S47RxLook::Num(TargetEl(), 1)); }))
 		]
 		+ SHorizontalBox::Slot().AutoWidth()
 		[
@@ -366,10 +367,10 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().FillHeight(.27f).Padding(0, 0, 0, 6)
 				[SkyT::RxPanel(TEXT("SIGNAL WATERFALL"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxFall).Feed(Feed)],
-					TAttribute<FString>::CreateLambda([Feed] { return FString::Printf(TEXT("DIAL +/- %.0f kHz"), 1000. * S47RxLook::HalfSpan(Feed->Now().Scope.FTol)); }))]
+					TAttribute<FString>::CreateLambda([Feed] { return FString::Printf(TEXT("+/- %s kHz"), *S47RxLook::Num(1000. * S47RxLook::HalfSpan(Feed->Now().Scope.FTol))); }))]
 				+ SVerticalBox::Slot().FillHeight(.30f).Padding(0, 0, 0, 6)
 				[SkyT::RxPanel(TEXT("FFT SPECTRUM"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxFft).Feed(Feed)],
-					TAttribute<FString>::CreateLambda([Feed] { return FString::Printf(TEXT("BW %.0f kHz"), Feed->Now().Scope.Bandwidth); }))]
+					TAttribute<FString>::CreateLambda([Feed] { return FString::Printf(TEXT("BW %s kHz"), *S47RxLook::Num(Feed->Now().Scope.Bandwidth)); }))]
 				+ SVerticalBox::Slot().FillHeight(.43f)
 				[SkyT::RxPanel(TEXT("ACQUISITION / TRACKING"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxTrack).Feed(Feed).Model(SkyFix)])]
 			]
@@ -377,27 +378,27 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 	const TSharedRef<SWidget> SkyStrip = SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 8, 0)
 		[SkyT::RxPanel(TEXT("I (IN-PHASE)"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxIq).Feed(Feed)],
-			TAttribute<FString>::CreateLambda([Feed] { return FString::Printf(TEXT("LOCK %.0f %%"), 100. * FMath::Clamp(Feed->Now().Scope.Strength, 0., 1.)); }))]
+			TAttribute<FString>::CreateLambda([Feed] { return FString::Printf(TEXT("LOCK %s %%"), *S47RxLook::Num(100. * FMath::Clamp(Feed->Now().Scope.Strength, 0., 1.))); }))]
 		+ SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 8, 0)
 		[SkyT::RxPanel(TEXT("Q (QUADRATURE)"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxIq).Feed(Feed).bQuadrature(true)])]
 		+ SHorizontalBox::Slot().AutoWidth()
 		[
-			SNew(SBox).WidthOverride(246)
+			SNew(SBox).WidthOverride(270)
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().FillHeight(1).Padding(0, 0, 0, 4)
 				[
 					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot().FillWidth(1)
-					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("UP 5\u00b0"), Nudge(0, 1), false, CanSteer, 19)]
+					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("UP 5\u00b0"), Nudge(0, 1), false, CanSteer)]
 					+ SHorizontalBox::Slot().FillWidth(1)
 				]
 				+ SVerticalBox::Slot().FillHeight(1)
 				[
 					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("LEFT 5\u00b0"), Nudge(-1, 0), false, CanSteer, 19)]
-					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("DOWN 5\u00b0"), Nudge(0, -1), false, CanSteer, 19)]
-					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("RIGHT 5\u00b0"), Nudge(1, 0), false, CanSteer, 19)]
+					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("LEFT 5\u00b0"), Nudge(-1, 0), false, CanSteer)]
+					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("DOWN 5\u00b0"), Nudge(0, -1), false, CanSteer)]
+					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("RIGHT 5\u00b0"), Nudge(1, 0), false, CanSteer)]
 				]
 			]
 		]
@@ -425,12 +426,53 @@ bool FS47FreeformSession::SkySelfTest(TArray<FString>& Lines)
 	Check(S.SkyRuleLive() && !S.SkyAcquired() && !S.AcquireSky(), TEXT("where the rule is live a job that is not pointed has no fix, and the programmatic path gives none"));
 	S.Work[0].Stage = EJobStage::Pointed;
 	Check(!S.SkyAcquired() && !S.AcquireSky() && !S.Work[0].bSky, TEXT("a pointed job with no settled array: still no fix by the programmatic path"));
-	S.Work[0].bSky = true;
-	Check(S.SkyAcquired() && S.AcquireSky(), TEXT("a held fix is asked for once: acquired, and the programmatic path agrees"));
+	// Review, 13 November: this check used to set the job's flag itself and then ask for it, which could not fail. Now the fix is
+	// made the way the chart makes it: the session's own model for this job (SyncSkyFix), an array standing on the card and
+	// steady (the self-test has no station to ask, so the model is told so directly), the model's way through (Solve), and the
+	// session's step (StepSkyFix), which is what turns the model's lock into the job's fix and says how it was made.
+	const double Tick = 1. / 60.;
+	auto Standing = [](FVector2D Toward)
+	{
+		TArray<FS47SkyAcquire::FDish> Dishes;
+		for (int32 I = 0; I < FS47SkyAcquire::DishCount; ++I)
+		{
+			FS47SkyAcquire::FDish D; D.bOn = true; D.Point = Toward;
+			const double Arm = FMath::DegreesToRadians(120. * FS47SkyAcquire::ArmOf(I)), Reach = 40. * (1 + I % (FS47SkyAcquire::DishCount / FS47SkyAcquire::ArmCount));
+			D.Ground = FVector2D(FMath::Sin(Arm) * Reach, FMath::Cos(Arm) * Reach);
+			Dishes.Add(D);
+		}
+		return Dishes;
+	};
+	const FVector2D OnCard(S.TargetAz(), S.TargetEl());
+	S.SyncSkyFix();
+	const bool bModel = S.Job() == &S.Work[0] && S.SkyFix.IsValid() && S.SkyFixJob == S.Work[0].Id && !S.SkyFix->HasBearings() && !S.SkyFix->Locked() && !S.SkyFix->Solve();
+	S.StepSkyFix();
+	const bool bNoneYet = !S.Work[0].bSky && S.Work[0].SkyBy == 0 && !S.SkyAcquired();
+	if (S.SkyFix.IsValid()) S.SkyFix->SetArray(Standing(OnCard), true, true);
+	const bool bSolved = S.SkyFix.IsValid() && S.SkyFix->Solve() && S.SkyFix->Locked();
+	const bool bNotByItself = !S.Work[0].bSky && !S.SkyAcquired(); // the model's lock alone is not yet the job's fix
+	S.StepSkyFix();
+	Check(bModel && bNoneYet && bSolved && bNotByItself && S.Work[0].bSky && S.Work[0].SkyBy == 1 && S.SkyAcquired() && S.AcquireSky(),
+		*FString::Printf(TEXT("a fix made on the chart: no bearings, no fix; the model locked and the session's step taken, the job's fix is held and counted as made by hand (how it was made: %d)"), S.Work[0].SkyBy));
+	S.SkyHandAt = -1; // (by hand the page would go over to TUNE a moment later: there is no page here)
 	S.Work[1].Stage = EJobStage::New; S.Work[1].bSky = true; // (cannot happen in play: a fix needs a pointed array; the save must not keep it)
 	const auto Kept = S47J::Read(S47J::Write(S.Save()));
 	FS47FreeformSession Again(nullptr); Again.Begin(Kept);
-	Check(Again.Work.Num() == S.Work.Num() && Again.Work[0].Stage == EJobStage::Pointed && Again.Work[0].bSky && !Again.Work[1].bSky, TEXT("a pointed job's fix survives a Continue; a job that is not pointed has none to keep"));
+	Check(Again.Work.Num() == S.Work.Num() && Again.Work[0].Stage == EJobStage::Pointed && Again.Work[0].bSky && Again.Work[0].SkyBy == 1 && !Again.Work[1].bSky, TEXT("a pointed job's fix and how it was made survive a Continue; a job that is not pointed has none to keep"));
+	{
+		// the same job back at the start and pointed again, and this time nobody touches the chart: the fix is dropped with the
+		// pointing, the search begins again, the assist brings the reticle in, and the fix is counted as assisted
+		S.Work[0].Stage = EJobStage::New; S.StepSkyFix(); S.SyncSkyFix();
+		const bool bDropped = !S.Work[0].bSky && S.Work[0].SkyBy == 0 && S.SkyFix.IsValid() && !S.SkyFix->Locked();
+		S.Work[0].Stage = EJobStage::Pointed;
+		double Waited = 0;
+		for (; S.SkyFix.IsValid() && Waited < 60. && !S.SkyFix->Locked(); Waited += Tick) { S.SkyFix->SetArray(Standing(OnCard), true, true); S.SkyFix->Step(Tick); }
+		const bool bLockedAlone = S.SkyFix.IsValid() && S.SkyFix->Locked() && !S.Work[0].bSky;
+		S.StepSkyFix();
+		Check(bDropped && bLockedAlone && Waited > FS47SkyAcquire::AssistAfter && S.Work[0].bSky && S.Work[0].SkyBy == 2,
+			*FString::Printf(TEXT("back at the start the fix is dropped; pointed again and left alone, the assist takes the fix after %.1f s and it is counted as assisted (how it was made: %d)"), Waited, S.Work[0].SkyBy));
+		S.SkyHandAt = -1; // (by hand the page would go over to TUNE a moment later: there is no page here)
+	}
 	// a save from before the sky chart: no field, no fix, and none written back for it
 	auto Old = S.Save();
 	for (const auto& V : S47J::Arr(Old, TEXT("jobs"))) if (V && V->Type == EJson::Object) V->AsObject()->RemoveField(TEXT("sky"));

@@ -1,5 +1,6 @@
 #include "S47FreeformTerminal.h"
 #include "S47Kit.h"
+#include "S47RxLook.h"
 #include "SS47Widgets.h"
 #include "Brushes/SlateColorBrush.h"
 #include "Brushes/SlateRoundedBoxBrush.h"
@@ -382,6 +383,8 @@ namespace S47FreeformTerminal
  // ---- RX-LOOK-20261113 (-> M3, M6): the receiver PC's own frame (see the header) ----
  namespace
  {
+  // Round 2: the smallest letters of the receiver's frame are the next step's (S47RxLook::TextFloor).
+  constexpr int32 RxSmall=S47RxLook::TextFloor;
   FButtonStyle RxStyle(FLinearColor Normal,FLinearColor Hover,FLinearColor Pressed,FLinearColor Edge,float EdgeWidth,float PadX,float PadY)
   {FButtonStyle B=MakeStyle(Normal,Hover,Pressed,Edge,EdgeWidth);B.SetNormalPadding(FMargin(PadX,PadY)).SetPressedPadding(FMargin(PadX,PadY+1,PadX,PadY-1));return B;}
   const FButtonStyle& RxTabPlain(){static const FButtonStyle S=RxStyle(FLinearColor::Transparent,S47Kit::Css(0x0e3519),S47Kit::Css(0x1b5a2c),FLinearColor::Transparent,0.f,8,3);return S;}
@@ -394,7 +397,7 @@ namespace S47FreeformTerminal
  {
  public:
   SLATE_BEGIN_ARGS(SRxPanelFrame){} SLATE_END_ARGS()
-  float Top=9;FLinearColor LineNow,DimNow;
+  float Top=11;FLinearColor LineNow,DimNow;
   void Construct(const FArguments&){LineNow=Line;DimNow=Dim;SetVisibility(EVisibility::HitTestInvisible);}
   virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(1,1);}
   virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
@@ -407,14 +410,16 @@ namespace S47FreeformTerminal
  };
  FW RxPanel(const FString& Title,FW Body,TAttribute<FString> Right)
  {
-  const TSharedRef<SRxPanelFrame> Edge=SNew(SRxPanelFrame);Edge->Top=Title.IsEmpty()?1.f:9.f;
+  // Round 2 (13 November, the first look in the engine: the titles' notes did not read): the title and its note are the next
+  // step's size, and the frame's top line stands half a letter down for them.
+  const TSharedRef<SRxPanelFrame> Edge=SNew(SRxPanelFrame);Edge->Top=Title.IsEmpty()?1.f:11.f;
   const TSharedRef<SOverlay> O=SNew(SOverlay)
    +SOverlay::Slot()[Edge]
-   +SOverlay::Slot().Padding(FMargin(8,Title.IsEmpty()?8:17,8,8))[Body];
+   +SOverlay::Slot().Padding(FMargin(8,Title.IsEmpty()?8:21,8,8))[Body];
   auto Set=[](FW Inner){return SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(Black).Padding(FMargin(6,0))[Inner];};
-  if(!Title.IsEmpty())O->AddSlot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(FMargin(14,0,0,0))[Set(SNew(STextBlock).Text(FText::FromString(Title)).Font(S47Style::Mono(18)).ColorAndOpacity(Green))];
-  if(Right.IsBound()||!Right.Get().IsEmpty())O->AddSlot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(FMargin(0,1,14,0))
-   [Set(SNew(STextBlock).Text_Lambda([Right]{return FText::FromString(Right.Get());}).Font(S47Style::Mono(16)).ColorAndOpacity(Green*.85f))];
+  if(!Title.IsEmpty())O->AddSlot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(FMargin(14,0,0,0))[Set(SNew(STextBlock).Text(FText::FromString(Title)).Font(S47Style::Mono(RxSmall)).ColorAndOpacity(Green))];
+  if(Right.IsBound()||!Right.Get().IsEmpty())O->AddSlot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(FMargin(0,0,14,0))
+   [Set(SNew(STextBlock).Text_Lambda([Right]{return FText::FromString(Right.Get());}).Font(S47Style::Mono(RxSmall)).ColorAndOpacity(Green*.85f))];
   return O;
  }
  FW RxKey(const FString& Text,TFunction<void()> Action,bool Primary,TAttribute<bool> Enabled,int32 Size)
@@ -427,7 +432,8 @@ namespace S47FreeformTerminal
  public:
   SLATE_BEGIN_ARGS(SRxFrame){} SLATE_END_ARGS()
   // What the frame's own rows take of the glass's height (units); the body has the rest.
-  static constexpr float HeadTall=64,TabsTall=36,BannerTall=50,PromptTall=52,KeysTall=22;
+  // (round 2: the header has three lines of the next step's size, and the key row is written in it)
+  static constexpr float HeadTall=68,TabsTall=36,BannerTall=50,PromptTall=52,KeysTall=26;
   static constexpr float Chrome=4+HeadTall+4+TabsTall+4+BannerTall+6+4+PromptTall+4+KeysTall+4;
   void Construct(const FArguments&,const FRxFrame& In)
   {
@@ -468,13 +474,13 @@ namespace S47FreeformTerminal
      {
       if(const TSharedPtr<SScrollBox> Box=Area.Pin();Box.IsValid()&&Tall.IsValid()){const float H=float(Box->GetTickSpaceGeometry().GetLocalSize().Y);if(H>50.f)*Tall=H;}
       return FText::FromString(Prompt.Get());
-     }).Font(S47Style::Mono(22)).ColorAndOpacity(AmberNow).Justification(ETextJustify::Center).WrapTextAt(1040.f)];
+     }).Font(S47Style::Mono(RxSmall)).ColorAndOpacity(AmberNow).Justification(ETextJustify::Center).WrapTextAt(1040.f)];
    // The key row: the keys that work on this terminal, and nothing else.
    const TSharedRef<SHorizontalBox> KeyRow=SNew(SHorizontalBox);
    for(int32 I=0;I<In.Keys.Num();++I)
    {
-    if(I)KeyRow->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(9,0)[Label(FString(TEXT("|")),16,LineNow)];
-    KeyRow->AddSlot().AutoWidth().VAlign(VAlign_Center)[Label(In.Keys[I],17,GreenNow*.85f)];
+    if(I)KeyRow->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(8,0)[Label(FString(TEXT("|")),RxSmall,LineNow)];
+    KeyRow->AddSlot().AutoWidth().VAlign(VAlign_Center)[Label(In.Keys[I],RxSmall,GreenNow*.85f)];
    }
    const auto Fx=SNew(SGlassFx);Fx->Seed=HumScreen>=0?HumScreen:7;Fx->Jam=JamSource;
    const TFunction<float()> Jam=JamSource;
@@ -722,10 +728,11 @@ namespace S47FreeformTerminal
    for(int32 I=0;I<=8;++I)
    {
     const float X=X0+W*I/8;Lines(Out,L,G,{{X,Y0},{X,Y0+H}},I==4?Line:Dim,1);
-    if(I%2==0)Text2(Out,L,G,FString::Printf(TEXT("%.3f"),Lo+2*Half*I/8),X-(I==8?62:I==0?0:30),Y0+H+5,16,Green*.85f);
+    // (round 2, 13 November: the receiver's small words did not read on the glass; these are the next step's size now)
+    if(I%2==0){const float Wide=S47RxLook::TextWide(8,RxSmall);Text2(Out,L,G,FString::Printf(TEXT("%.3f"),Lo+2*Half*I/8),X-(I==8?Wide:I==0?0.f:Wide*.5f),Y0+H+3,RxSmall,Green*.85f);}
    }
    Lines(Out,L,G,{{X0,Y0},{X0,Y0+H},{X0+W,Y0+H}},Line,1.5f);
-   Text2(Out,L,G,TEXT("ZOOM"),6,Y0-6,18,Green*.85f);
+   Text2(Out,L,G,TEXT("ZOOM"),6,Y0-9,RxSmall,Green*.85f);
    if(!R.bPowered){Text2(Out,L+2,G,TEXT("NO POWER / RECEIVER OFF"),X0+W*.36f,Y0+H*.4f,28,Amber);return L+3;}
    const double T=FPlatformTime::Seconds();const float Peak=Fx(P.F),Tune=Fx(R.Frequency);
    const float Sigma=FMath::Max(3.f,float(P.FTol/(2*Half)*W*.8));
@@ -742,14 +749,14 @@ namespace S47FreeformTerminal
     Trace.Add(FVector2f(float(X),FMath::Clamp(float(Y),Y0+2,Y0+H-2)));
    }
    Lines(Out,L+1,G,Trace,FLinearColor(.25f,.8f,.35f,.18f),4);Lines(Out,L+2,G,Trace,Green,1.6f);
-   Dashed(Out,L+2,G,{Peak,Y0},{Peak,Y0+H},Green,6,2);Text2(Out,L+2,G,TEXT("TARGET"),FMath::Min(Peak+8,X0+W-90),Y0-24,18,Green);
+   Dashed(Out,L+2,G,{Peak,Y0},{Peak,Y0+H},Green,6,2);Text2(Out,L+2,G,TEXT("TARGET"),FMath::Min(Peak+8,X0+W-90),Y0-25,RxSmall,Green);
    const bool In=Tune>=X0&&Tune<=X0+W;
    if(In)
    {
     Lines(Out,L+3,G,{{Tune,Y0},{Tune,Y0+H}},Amber,2.5f);
-    Text2(Out,L+3,G,FString::Printf(TEXT("TUNED %.3f"),R.Frequency),FMath::Clamp(Tune+8,X0,X0+W-140),Y0+H-22,18,Amber);
+    Text2(Out,L+3,G,FString::Printf(TEXT("TUNED %.3f"),R.Frequency),FMath::Clamp(Tune+8,X0,X0+W-140),Y0+H-26,RxSmall,Amber);
    }
-   else Text2(Out,L+3,G,R.Frequency<Lo?TEXT("<< TUNED BELOW THIS WINDOW"):TEXT("TUNED ABOVE THIS WINDOW >>"),R.Frequency<Lo?X0+8:X0+W-330,Y0+8,20,Amber);
+   else Text2(Out,L+3,G,R.Frequency<Lo?TEXT("<< TUNED BELOW THIS WINDOW"):TEXT("TUNED ABOVE THIS WINDOW >>"),R.Frequency<Lo?X0+8:X0+W-8-S47RxLook::TextWide(26,RxSmall),Y0+8,RxSmall,Amber);
    return L+4;
   }
  };

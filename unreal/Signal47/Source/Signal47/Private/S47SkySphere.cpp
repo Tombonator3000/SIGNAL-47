@@ -73,6 +73,10 @@ bool S47SkySphere::SelfTest(TArray<FString>& Lines)
 		const FVector2D Before = RaDecToAzEl(Vega.RaHours * 15., Vega.Dec, Vega.RaHours * 15. - 30.), After = RaDecToAzEl(Vega.RaHours * 15., Vega.Dec, Vega.RaHours * 15. + 30.);
 		Check(FMath::Abs(Transit.Y - (90. - (Vega.Dec - FSky::Latitude))) < 1e-6 && bPole && Before.X < 180 && After.X > 180,
 			TEXT("Vega is highest when the sidereal time is its right ascension, east of the meridian before and west after; Polaris stays at the pole"));
+		// (round 2) a place turned with the sidereal time is the place at its hour angle
+		bool bTurned = true;
+		for (double Lst = 0; Lst < 360; Lst += 37.) for (const FStar& Each : { Vega, Polaris, Stars[Star::AlpCMa] }) bTurned &= Turned(Dir(Each.RaHours * 15., Each.Dec), Lst).Equals(Dir(Lst - Each.RaHours * 15., Each.Dec), 1e-12);
+		Check(bTurned, TEXT("a star's place turned by the sidereal time is the star at its hour angle"));
 	}
 	{ // epochs and the galaxy
 		double Ra = 279.23, Dec = 38.78;
@@ -96,11 +100,30 @@ bool S47SkySphere::SelfTest(TArray<FString>& Lines)
 			bDust &= A.Lon == B.Lon && A.Lat == B.Lat && A.Bright == B.Bright && A.Lon >= 0 && A.Lon < 360 && FMath::Abs(A.Lat) <= 12.5f && A.Bright > 0 && A.Bright <= 1;
 			Toward += A.Lon < 60 || A.Lon > 300 ? 1 : 0;
 		}
-		Check(bDust && Toward * 3 > DustCount, FString::Printf(TEXT("the galactic plane's %d specks are the same every time, within twelve degrees of the plane, most of them toward the centre (%d)"), DustCount, Toward));
+		Check(bDust && Toward * 3 > DustCount && Toward * 3 < DustCount * 2, FString::Printf(TEXT("the galactic plane's %d specks are the same every time, within twelve degrees of the plane, more of them toward the centre (%d within sixty degrees of it) but a band all the way round"), DustCount, Toward));
+		// round 2: the faint field under the table's stars: the same every time, all over the sphere, most of it faint, and more of
+		// it shown the further the picture has closed in
+		bool bField = true; int32 North = 0, Bright = 0, Quarter[4] = { 0, 0, 0, 0 };
+		for (int32 I = 0; I < FieldCount; ++I)
+		{
+			const FFaint A = Field(I), B = Field(I);
+			bField &= A.Ra == B.Ra && A.Dec == B.Dec && A.Bright == B.Bright && A.Ra >= 0 && A.Ra < 360 && A.Dec >= -90 && A.Dec <= 90 && A.Bright >= 0 && A.Bright <= 1;
+			North += A.Dec > 0 ? 1 : 0; Bright += A.Bright > .5f ? 1 : 0; ++Quarter[FMath::Clamp(int32(A.Ra / 90.f), 0, 3)];
+		}
+		bool bMore = FieldShown(1.) == FieldOpen && FieldShown(.5) == FieldOpen && FieldShown(9.) == FieldCount;
+		for (double Zoom = 1.; Zoom < 5.; Zoom += .1) bMore &= FieldShown(Zoom + .1) >= FieldShown(Zoom);
+		Check(bField && bMore && FMath::Abs(North * 2 - FieldCount) < FieldCount / 8 && Bright * 3 < FieldCount && Quarter[0] > FieldCount / 5 && Quarter[1] > FieldCount / 5 && Quarter[2] > FieldCount / 5 && Quarter[3] > FieldCount / 5,
+			FString::Printf(TEXT("the faint field: %d stars the same every time, all over the sphere (%d north), few of them bright (%d); %d on the open picture and the rest as it closes in"), FieldCount, North, Bright, FieldOpen));
+		// (the readouts, as every number on the glass: no 47)
+		bool bClean = true;
+		for (double Deg = 0; Deg < 360.; Deg += .0371) bClean &= !S47RxLook::Shows47(RaText(Deg));
+		for (double Deg = -90.; Deg <= 90.; Deg += .0093) bClean &= !S47RxLook::Shows47(DecText(Deg));
+		Check(bClean && RaText(221.75) == TEXT("14h46m59s") && RaText(221.9) == TEXT("14h48m00s") && DecText(47.2) == TEXT("+46\u00b059'") && DecText(-12.8) == TEXT("-12\u00b048'"),
+			TEXT("a right ascension or a declination that would show a 47 stands at the nearest second or minute that does not"));
 		Check(RaText(152.1).StartsWith(TEXT("10h08m")) && DecText(-0.5) == TEXT("-00\u00b030'") && DecText(19.55) == TEXT("+19\u00b033'"), TEXT("the readouts' words for a right ascension and a declination"));
 	}
-	{ // the picture
-		bool bAll = true; double LockLeast = 1e9, LockMost = 0, Slack = 1e9;
+	{ // the picture (round 2: upright, the whole hemisphere about a point of the equator)
+		bool bAll = true; double LockLeast = 1e9, LockMost = 0, Slack = 1e9, MidHa = 0, MidDec = 0;
 		FString Sizes;
 		for (const FVector2D Semi : { FVector2D(314, 203), FVector2D(300, 150), FVector2D(220, 200), FVector2D(480, 300) })
 		{
@@ -122,33 +145,51 @@ bool S47SkySphere::SelfTest(TArray<FString>& Lines)
 					Least = FMath::Min(Least, Units); Most = FMath::Max(Most, Units);
 				}
 			}
-			FVector2D AtCentre;
-			const bool bCentre = ProjectAzEl(V, FVector2D((FSky::AzMin + FSky::AzMax) * .5, (FSky::ElMin + FSky::ElMax) * .5), AtCentre) && AtCentre.Equals(V.Mid, 1e-6);
-			bAll &= bRound && bIn && bCentre && Margin > 1. - RimMargin - 1e-6 && Margin < .12;
+			// upright: the middle of the picture is the middle of the rim and stands on the equator, the pole on the rim's top,
+			// the south pole on its foot, and every circle of declination ends on the rim at its own angle round it
+			LonLat(V.Centre, MidHa, MidDec);
+			MidHa = Wrap180(MidHa);
+			FVector2D Pole, Foot, OnRim;
+			bool bUpright = V.Mid.Equals(V.Rim, 1e-9) && FMath::Abs(MidDec) < 1e-9 && MidHa > -60. && MidHa < -40.
+				&& Project(V, FVector(0, 0, 1), Pole) && Pole.Equals(FVector2D(V.Rim.X, V.Rim.Y - V.Semi.Y), 1e-6) && Project(V, FVector(0, 0, -1), Foot) && Foot.Equals(FVector2D(V.Rim.X, V.Rim.Y + V.Semi.Y), 1e-6);
+			for (int32 Dec = -75; Dec <= 75; Dec += 15) for (const double Side : { -1., 1. })
+			{
+				const double Turn = FMath::DegreesToRadians(double(Dec));
+				bUpright &= ProjectHaDec(V, MidHa + 90. * Side, double(Dec), OnRim) && OnRim.Equals(FVector2D(V.Rim.X + Side * V.Semi.X * FMath::Cos(Turn), V.Rim.Y - V.Semi.Y * FMath::Sin(Turn)), 1e-6);
+			}
+			// the window in the middle across: its east end as far left of the middle as its west end is right of it (in hour angle)
+			double EastEnd = 1e9, WestEnd = -1e9;
+			for (double Az = FSky::AzMin; Az <= FSky::AzMax + 1e-9; Az += 2.) for (double El = FSky::ElMin; El <= FSky::ElMax + 1e-9; El += 2.)
+			{
+				double Ha = 0, Dec = 0;
+				AzElToHaDec(FVector2D(Az, El), Ha, Dec);
+				EastEnd = FMath::Min(EastEnd, Wrap180(Ha)); WestEnd = FMath::Max(WestEnd, Wrap180(Ha));
+			}
+			bUpright &= FMath::Abs((EastEnd + WestEnd) * .5 - MidHa) < 1e-6;
+			bAll &= bRound && bIn && bUpright && Margin > 1. - RimMargin && Margin > .2 && Margin < .35;
 			Slack = FMath::Min(Slack, Margin);
 			if (Semi.X == 314) { LockLeast = Least; LockMost = Most; }
 			Sizes += FString::Printf(TEXT(" %.0fx%.0f: %.2f u/deg"), Semi.X * 2, Semi.Y * 2, FMath::DegreesToRadians(V.Radius));
 		}
-		Check(bAll, FString::Printf(TEXT("the array's whole window lies inside the rim at every size, to the glass and back to a millionth of a degree (nearest the rim %.3f of it;%s)"), Slack, *Sizes));
+		Check(bAll, FString::Printf(TEXT("upright at every size: the pole on the rim's top, the declinations round the rim, the array's whole window inside it in the middle across (hour angle %.1f; nearest the rim %.3f of it), to the glass and back to a millionth of a degree (%s)"), MidHa, Slack, *Sizes));
 		const FView V = FitView(FVector2D(354, 215), FVector2D(314, 203));
 		// (The old flat chart gave the lock radius 9.9 units every way. On a sphere a degree of azimuth is cos(elevation) degrees of
-		// arc, so it is narrower across high up. SS47SkyChart closes the picture in on the crossing as the pointer or the reticle
-		// nears it, which makes up for it; the keys steer in the rule's degrees either way.)
+		// arc, so it is narrower across high up; and the upright picture shows the whole hemisphere, so a degree is about two thirds
+		// of what it was when the window filled the rim. SS47SkyChart closes the picture in on the crossing as the pointer or the
+		// reticle nears it, which makes up for both; the keys steer in the rule's degrees either way.)
 		double AtCards = 1e9;
 		for (const FSky::FSource& Src : FSky::Catalogue())
 		{
 			if (!Src.bMajor) continue;
 			for (double Turn = 0; Turn < 180; Turn += 15) AtCards = FMath::Min(AtCards, UnitsPerDegree(V, Src.At, FVector2D(FMath::Cos(FMath::DegreesToRadians(Turn)), FMath::Sin(FMath::DegreesToRadians(Turn)))) * FSky::LockRadius);
 		}
-		Check(LockLeast >= 1.8 && LockMost <= 11. && AtCards >= 3.2, FString::Printf(TEXT("the rule's lock radius is %.1f to %.1f units on the open picture across the window, %.1f at the narrowest card source (the flat chart: 9.9 every way)"), LockLeast, LockMost, AtCards));
+		Check(LockLeast >= 1.2 && LockMost <= 8. && AtCards >= 2.3, FString::Printf(TEXT("the rule's lock radius is %.1f to %.1f units on the open picture across the window, %.1f at the narrowest card source (the flat chart: 9.9 every way)"), LockLeast, LockMost, AtCards));
 		// north up, east to the left: the sky as seen, not a globe from outside
 		const FVector2D Centre((FSky::AzMin + FSky::AzMax) * .5, (FSky::ElMin + FSky::ElMax) * .5);
-		double Ha0 = 0, Dec0 = 0;
-		AzElToHaDec(Centre, Ha0, Dec0);
 		FVector2D Here, North, East;
-		const bool bSeen = ProjectHaDec(V, Ha0, Dec0, Here) && ProjectHaDec(V, Ha0, Dec0 + 1., North) && ProjectHaDec(V, Ha0 - 1., Dec0, East);
-		Check(bSeen && (bZenithUp || (North.Y < Here.Y - 1. && FMath::Abs(North.X - Here.X) < .05 && East.X < Here.X - 1. && FMath::Abs(East.Y - Here.Y) < .2)),
-			TEXT("celestial north is up and east to the left at the middle: the sky as it is seen"));
+		const bool bSeen = ProjectHaDec(V, MidHa, 0., Here) && ProjectHaDec(V, MidHa, 1., North) && ProjectHaDec(V, MidHa - 1., 0., East);
+		Check(bSeen && Here.Equals(V.Mid, 1e-6) && North.Y < Here.Y - 1. && FMath::Abs(North.X - Here.X) < 1e-6 && East.X < Here.X - 1. && FMath::Abs(East.Y - Here.Y) < 1e-6,
+			TEXT("celestial north is straight up and east to the left at the middle: the sky as it is seen"));
 		// the picture agrees with the sphere: a short step anywhere in the window is as long on the glass as its arc, within the
 		// perspective's stretch
 		const double PerDegree = FMath::DegreesToRadians(V.Radius);
@@ -162,7 +203,7 @@ bool S47SkySphere::SelfTest(TArray<FString>& Lines)
 			const double Arc = Apart(HaA, DecA, HaB, DecB), Ratio = FVector2D::Distance(A, B) / FMath::Max(Arc, 1e-9) / PerDegree;
 			Low = FMath::Min(Low, Ratio); High = FMath::Max(High, Ratio);
 		}
-		Check(Low > .8 && High < 1.08 * V.Stretch, FString::Printf(TEXT("a step on the glass is %.2f to %.2f of its arc on the sphere (the picture is %.2f wider than high)"), Low, High, V.Stretch));
+		Check(Low > .85 && High < 1.2 * V.Stretch, FString::Printf(TEXT("a step on the glass is %.2f to %.2f of its arc on the sphere (the picture is %.2f wider than high)"), Low, High, V.Stretch));
 		// the keys: up on the glass is up, wherever the reticle stands, at the rule's own rate
 		bool bSteer = true;
 		for (double Az = FSky::AzMin + 4; Az <= FSky::AzMax - 4; Az += 9.) for (double El = FSky::ElMin + 4; El <= FSky::ElMax - 4; El += 8.) for (const FVector2D Want : { FVector2D(0, 1), FVector2D(1, 0), FVector2D(-1, 0), FVector2D(0, -1) })

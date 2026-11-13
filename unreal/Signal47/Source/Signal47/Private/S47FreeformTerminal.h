@@ -98,7 +98,7 @@ namespace S47FreeformTerminal
  // note set into it at the top right.
  FW RxPanel(const FString& Title,FW Body,TAttribute<FString> Right=FString());
  // A small key for the receiver's frame (as Button, lower: the frame has no room for the tall ones).
- FW RxKey(const FString& Label,TFunction<void()> Action,bool Primary=false,TAttribute<bool> Enabled=true,int32 Size=20);
+ FW RxKey(const FString& Label,TFunction<void()> Action,bool Primary=false,TAttribute<bool> Enabled=true,int32 Size=22);
  FW Panel(const FString& Title,FW Body,bool bFilledHeader=false);
  FW Heading(const FString& Value,int32 Size=30);    // amber section title
  FW Banner(TAttribute<FString> Value,TAttribute<bool> Urgent=true); // amber framed status line, pulses when urgent
