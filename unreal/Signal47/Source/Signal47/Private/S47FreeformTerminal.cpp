@@ -57,6 +57,9 @@ namespace S47FreeformTerminal
   float Pulse(double Speed=3.){return .55f+.45f*float(FMath::Sin(Now()*Speed));}
   const FSlateBrush* Fill(){static const FSlateColorBrush B(FLinearColor::White);return &B;}
   const FSlateBrush* Outline(){static const FSlateRoundedBoxBrush B(FLinearColor::Transparent,2.f,FLinearColor::White,2.f);return &B;}
+  // RX-TABS-DUE-20261113: the due cue's own frame. A rounded box draws its outline in the brush's own colour whatever the tint, so the
+  // shared white Outline() showed on every tab; here the outline takes the tint's alpha, and with alpha 0 nothing is drawn.
+  const FSlateBrush* DueOutline(){static FSlateRoundedBoxBrush B(FLinearColor::Transparent,2.f,S47Kit::Css(0xffb84a),2.f);B.OutlineSettings.bUseBrushTransparency=true;return &B;}
   const FSlateBrush* Solid(){static const FSlateRoundedBoxBrush B(FLinearColor::White,2.f,FLinearColor::White,2.f);return &B;}
   FButtonStyle MakeStyle(FLinearColor Normal,FLinearColor Hover,FLinearColor Pressed,FLinearColor Edge,float EdgeWidth)
   {
@@ -219,7 +222,7 @@ namespace S47FreeformTerminal
   return SNew(SOverlay)
    +SOverlay::Slot()[Inner]
    +SOverlay::Slot()[SNew(SBorder).Visibility(EVisibility::HitTestInvisible).BorderImage(Fill()).BorderBackgroundColor_Lambda([Level,AmberNow]{const float L=Level();FLinearColor C=AmberNow;C.A=L<0?0.f:.16f*L;return FSlateColor(C);})]
-   +SOverlay::Slot()[SNew(SBorder).Visibility(EVisibility::HitTestInvisible).BorderImage(Outline()).BorderBackgroundColor_Lambda([Level,AmberNow]{const float L=Level();FLinearColor C=FMath::Lerp(AmberNow,S47Kit::Css(0xffe2b0),L<0?0.f:L);C.A=L<0?0.f:.35f+.65f*L;return FSlateColor(C);})];
+   +SOverlay::Slot()[SNew(SBorder).Visibility(EVisibility::HitTestInvisible).BorderImage(DueOutline()).BorderBackgroundColor_Lambda([Level,AmberNow]{const float L=Level();FLinearColor C=FMath::Lerp(AmberNow,S47Kit::Css(0xffe2b0),L<0?0.f:L);C.A=L<0?0.f:.35f+.65f*L;return FSlateColor(C);})];
  }
  bool SelfTest(TArray<FString>& Report)
  {
@@ -370,7 +373,7 @@ namespace S47FreeformTerminal
    Box->AddSlot().AutoWidth().Padding(0,0,10,0)
     [SNew(SOverlay)
      +SOverlay::Slot()[TabKey]
-     +SOverlay::Slot()[SNew(SBorder).Visibility(EVisibility::HitTestInvisible).BorderImage(Outline()).BorderBackgroundColor_Lambda([Level,AmberNow]{const float L=Level();FLinearColor C=AmberNow;C.A=L<0?0.f:.25f+.75f*L;return FSlateColor(C);})]];
+     +SOverlay::Slot()[SNew(SBorder).Visibility(EVisibility::HitTestInvisible).BorderImage(DueOutline()).BorderBackgroundColor_Lambda([Level,AmberNow]{const float L=Level();FLinearColor C=AmberNow;C.A=L<0?0.f:.25f+.75f*L;return FSlateColor(C);})]];
   }
   return SNew(SVerticalBox)+SVerticalBox::Slot().AutoHeight()[Box]+SVerticalBox::Slot().AutoHeight().Padding(0,3,0,6)[Rule()];
  }
