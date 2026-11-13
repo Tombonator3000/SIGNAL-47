@@ -49,6 +49,7 @@ private:
  void StepStationFiles(double Dt); // -S47StationFilesTest (S47StationFilesTest.cpp)
  void StepTvChannel(double Dt); // -S47TvChannelTest (S47TvChannelTest.cpp)
  void StepDevMenu(double Dt); // -S47DevMenuTest (S47DevMenuTest.cpp)
+ void StepTasksShots(double Dt); // -S47TasksShotTest (S47TasksShotTest.cpp): TASKS-TEN-20261113's surfaces shot for a look
  double BoxX=0,BoxZ=0,BoxYaw=0;
  void StepInternalControl(double Dt);
  TSharedPtr<struct FS47WorkshopJourneyState> WorkshopJourney;
