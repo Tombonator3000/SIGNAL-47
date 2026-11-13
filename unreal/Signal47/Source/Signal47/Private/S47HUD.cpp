@@ -364,6 +364,8 @@ void AS47HUD::Start()
 		for (const FString& L : Lines)
 			if (L.StartsWith(TEXT("FAIL")) || L.Contains(TEXT(": FAIL")) || L.EndsWith(TEXT(" FAIL")))
 				UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
+			else if (L.StartsWith(TEXT("INFO ")))
+				UE_LOG(LogS47HUD, Display, TEXT("S47: %s"), *L); // (measured figures beside the checks, e.g. SIDEBAND's against its prototype)
 		// D45-20261110: a failure whose line has none of the markers above is still findable: every line goes to Saved
 		if (!bOk) FFileHelper::SaveStringArrayToFile(Lines, *(FPaths::ProjectSavedDir() / TEXT("S47SelfTest-lines.txt")));
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
