@@ -53,6 +53,9 @@
 #include "S47RoadTerrain.h"
 #include "S47Story.h"
 #include "S47Three.h"
+#include "S47HighwayLandscape.h"
+#include "Engine/StaticMesh.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -191,6 +194,8 @@ namespace
 	/** What the open land keeps from a building, a raised slab or a fence line besides the player's
 	 *  width: more than any step, so the way in is only by the zones and their gates. */
 	constexpr double LAND_KEEP = 0.4;
+	// HWY-WALL-20261113: a roadside rock whose top stands less than this over the ground is driven over in Freeform (US47World::ReconcileFarm).
+	constexpr double LowRockM = .45;
 	/** The area a place is in (the motel's lot is SARO's). */
 	FString AreaOf(const FString& L) { return L == TEXT("motel") ? FString(TEXT("saro")) : L; }
 	bool InBox(const TOptional<FS47Box2>& B, const FVector& P) { return B && P.X >= B->MinX && P.X <= B->MaxX && P.Z >= B->MinZ && P.Z <= B->MaxZ; }
@@ -2699,6 +2704,53 @@ void US47World::ReconcileFarm(bool bEnabled)
    }
   }
   bFarmObstaclesReady=true;
+ }
+  // Measured in the area whose leg it is, once each (what is drawn is that area's): SARO's in SARO, the road's on the road.
+ {
+ const FString Id=Area==TEXT("diner")?FString(TEXT("road")):Area;
+ if(bEnabled&&bFarmObstaclesReady&&!S47OpenLand::Off()&&M&&M->Web&&M->Web->HighwayLandscapeReady()&&M->Web->Area()==Area&&(Id==TEXT("road")||Id==TEXT("saro"))&&!LowRocksMeasured.Contains(Id))
+ {
+  LowRocksMeasured.Add(Id);
+  // HWY-WALL-20261113 (Tom, d68: off the highway toward the Baca windmill, the truck stopped dead against nothing at road 28 859): the
+  // export's roadside rocks hold the truck with a circle each (roadPlaces.ts plants: "the big rocks the truck can hit"), but Freeform's
+  // ground has risen round many of them, and that one stands 0.31 m over it, under the bonnet and unseen from the cab, at night not at
+  // all. A rock that low is driven over: in Freeform its circle goes (Story keeps it). Measured here, once: each rock that is drawn,
+  // its top over the ground the leg drives on. Rocks in road-world terms (the shared highway's canonical frame, S47HighwayLandscape).
+  TArray<FVector> RockTops; // x, top y, z: road-world
+   for(int32 N=0;N<M->Web->PartCount();++N)
+   {
+    const FS47WebNode* Node=M->Web->Node(N);
+    // (any instanced thing small enough to be a rock: the export's rocks are one merged instance list per stretch, not named as such)
+    auto* C=Node?Cast<UInstancedStaticMeshComponent>(Node->Comp.Get()):nullptr;UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;if(!Mesh||!C->IsVisible())continue;
+    const FBox Local=Mesh->GetBoundingBox();if(Local.GetSize().GetMax()>300||C->GetInstanceCount()>5000)continue; // (not the grass)
+    for(int32 K=0;K<C->GetInstanceCount();++K)
+    {
+     FTransform T;if(!C->GetInstanceTransform(K,T,true)||T.GetScale3D().GetMin()<=.01)continue;
+     const FBox U=Local.TransformBy(T);
+     const FVector Mid=S47HighwayLandscape::ToCanonical(M->Web->Area(),S47Three::ToThree(T.GetLocation()));
+     const FVector Top=S47HighwayLandscape::ToCanonical(M->Web->Area(),S47Three::ToThree(FVector(U.GetCenter().X,U.GetCenter().Y,U.Max.Z)));
+     RockTops.Add(FVector(Mid.X,Top.Y,Mid.Z));
+    }
+   }
+  int32 LowRocks=0;
+  if(auto* L=Legs.Find(Id))
+  {
+   {
+    // (saro's world is the road-world less 8000 + SARO_IN_ROAD in x and less SARO_IN_ROAD in z: S47OpenLand::RoadOf)
+    auto& Obs=L->Area->Obstacles;auto& Controlled=FarmControlledObstacles.FindOrAdd(Id);
+    for(int32 I=0;I<Obs.Num();++I)
+    {
+     const FS47Obstacle& O=Obs[I];if(!O.bCircle||O.R<.25||O.R>.6)continue;
+     double Rx=0,Rz=0;if(!S47OpenLand::RoadOf(Id,O.X,O.Z,Rx,Rz))continue;
+     // the highest thing drawn on its middle: a pole or a post there keeps it
+     double Top=-1e9;for(const FVector& P:RockTops)if(FMath::Square(P.X-8000-Rx)+FMath::Square(P.Z-Rz)<.15*.15)Top=FMath::Max(Top,P.Y);
+     if(Top<-1e8||Top-L->Area->Height(O.X,O.Z)>=LowRockM)continue;
+     Controlled.Add({I,O});++LowRocks;
+    }
+   }
+  }
+  UE_LOG(LogS47World,Display,TEXT("S47: Freeform: %d roadside rocks in the %s leg lower than %.2f m over the ground no longer hold the truck (%d small instances measured; HWY-WALL-20261113)"),LowRocks,*Id,LowRockM,RockTops.Num());
+ }
  }
  const bool Changed=bFarmMode!=bEnabled;bFarmMode=bEnabled;
  // The road's walk has the same long fences as colliders of its own. Story needs them back.

@@ -242,6 +242,8 @@ void FS47FreeformTest::Step(double Dt)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TvChannelTest"))){StepTvChannel(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47DevMenuTest"))){StepDevMenu(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TasksShotTest"))){StepTasksShots(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47RecordsShotTest"))){StepRecordsShots(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47HighwayWallTest"))){StepHighwayWall(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47StationFilesTest"))){StepStationFiles(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){StepInternalControl(Dt);return;}
  // D45-20261110 (-S47FreeformTest -S47SpineLeakTest): a Story night, then Freeform in the same run, as Tom played d45. The spine's

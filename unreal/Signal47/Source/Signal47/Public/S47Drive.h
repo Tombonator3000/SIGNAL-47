@@ -171,6 +171,8 @@ private:
 	struct FGround { double Y = 0, Pitch = 0, Roll = 0; double At[4] = { 0, 0, 0, 0 }; };
 	FGround Ground() const;
 	bool Hit() const;
+	/** HWY-WALL-20261113: what Hit() meets, in words (Blocked, or the obstacle's index and shape), for the log when a head-on knock stops the truck. */
+	FString HitWhy() const;
 	void Pose(double Dt, double WheelAngle, bool bSettle = true);
 };
 

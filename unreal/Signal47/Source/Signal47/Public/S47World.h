@@ -270,6 +270,7 @@ private:
 	TMap<FString, FLegRec> Legs;
  bool bFarmMode=false,bFarmObstaclesReady=false;
  TMap<FString,TArray<TPair<int32,FS47Obstacle>>> FarmControlledObstacles;
+ TSet<FString> LowRocksMeasured; // HWY-WALL-20261113: the legs whose low roadside rocks have been measured (ReconcileFarm)
 	TUniquePtr<FS47Truck> SaroTruckP, TruckP, ParkedP, OldTruckP;
 	FS47RoadArea* Road = nullptr;
 	TUniquePtr<FS47EngineSound> Engine;
