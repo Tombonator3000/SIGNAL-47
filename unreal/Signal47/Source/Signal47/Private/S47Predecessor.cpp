@@ -183,7 +183,9 @@ int32 FS47Predecessor::Known() const
  int32 N=0;
  for(const X::FTagDef& D:X::Tags())if(Seen.Contains(D.Doc))++N;
  // M7: wagon 23's trip meter and the thermos it led to count as well.
- for(const TCHAR* Id:{TEXT("locker"),WagonId,TEXT("gap"),TEXT("talk_deputy_ortiz"),TEXT("talk_ward_reyes"),TEXT("trip"),TEXT("talk_attendant_thermos")})if(Seen.Contains(Id))++N;
+ for(const TCHAR* Id:{TEXT("locker"),WagonId,TEXT("gap"),TEXT("talk_deputy_ortiz"),TEXT("talk_ward_reyes"),TEXT("trip"),TEXT("talk_attendant_thermos"),
+  // T16-17: the end of Reyes's notebook, and the deputy who took it.
+  TEXT("book_cairn"),TEXT("talk_deputy_book")})if(Seen.Contains(Id))++N;
  return N;
 }
 
@@ -324,7 +326,7 @@ void FS47Predecessor::Step(double Dt)
  if(!BackTo.IsEmpty()&&!M->ModalOpen())
  {
   const FString Where=BackTo;BackTo.Empty();
-  if(Where==TEXT("locker"))OpenLocker();else if(Where==TEXT("wagon"))OpenWagon();
+  if(Where==TEXT("locker"))OpenLocker();else if(Where==TEXT("wagon"))OpenWagon();else if(Where==TEXT("binder"))OpenGap();
  }
  if(bLeft)
  {
@@ -407,6 +409,8 @@ void FS47Predecessor::StepNews(double Dt)
     M->RequestAutosave();
    }
  }
+ // T16-17: Reyes's folder, back by post from the sheriff's office (S47PredecessorBook.cpp).
+ StepBook();
  // What the air has said.
  // The CB lines about the carrier off the old grade and the white wagon on the flat (S47RadioTips.cpp, cb35 and cb36).
  if(F.Tips&&(F.Tips->Said().Contains(TEXT("cb35"))||F.Tips->Said().Contains(TEXT("cb36"))))Hear(WagonId);
@@ -781,7 +785,7 @@ FString FS47Predecessor::OutcomeLetter(EOutcome O) const
  const FString CloseOn=DateText(CloseDay>0?CloseDay:(M&&M->Freeform?M->Freeform->Day():AssessDay)+NoticeDays);
  switch(O)
  {
-  case EOutcome::Stays:return X::Stays(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Known>=KnownEnough,X::Followed(Found(WagonId),Found(TEXT("talk_deputy_ortiz")),bPayReturned,LateThermosDay>0));
+  case EOutcome::Stays:return X::Stays(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Known>=KnownEnough,X::Followed(Found(WagonId),Found(TEXT("talk_deputy_ortiz")),bPayReturned,LateThermosDay>0,Found(TEXT("talk_deputy_book"))));
   case EOutcome::KnowsEnough:return X::KnowsEnough(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,CloseOn);
   case EOutcome::ClosedOriginals:return X::ClosedOriginals(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,C.Originals,C.Photos,CloseOn);
   case EOutcome::ClosedNothing:return X::ClosedNothing(Dated,C.Filed,C.Concluded,C.Dishes,C.Arrears,CloseOn);
@@ -836,7 +840,21 @@ void FS47Predecessor::ReadDoc(const FString& Id,const FString& Back)
  if(Def&&Def->Next)Hear(Def->Next);
  ShowDoc(MakeDoc(Id),Back);
 }
-void FS47Predecessor::OpenGap(){ReadDoc(TEXT("gap"));}
+void FS47Predecessor::OpenGap()
+{
+ // T16-17: once Reyes's page at the line shack has named the folder behind April's binder, the slot behind it has its sign-out card.
+ const X::FBookStep* Card=X::BookStep(TEXT("book_signout"));
+ if(!M||!M->UI||!Card||!(Seen.Contains(Card->Doc)||BookDue(Card->Doc))){ReadDoc(TEXT("gap"));return;}
+ TArray<S47Kit::FW> Rows;
+ const TWeakPtr<uint8> Guard=Life;
+ Rows.Add(Para(TEXT("April's shift binder, in its place on the shelf."),860.f));
+ Rows.Add(S47Kit::Button(FString(TEXT("The night of the 13th"))+(Seen.Contains(TEXT("gap"))?TEXT(" (read)"):TEXT("")),[this,Guard]{if(Guard.IsValid())ReadDoc(TEXT("gap"),TEXT("binder"));}));
+ const FString Doc=Card->Doc;
+ if(!Seen.Contains(Doc))Rows.Add(Para(Card->Find,860.f,true));
+ Rows.Add(S47Kit::Button(FString(Card->Take)+(Seen.Contains(Doc)?TEXT(" (read)"):TEXT("")),[this,Guard,Doc]{if(Guard.IsValid())ReadDoc(Doc,TEXT("binder"));},!Seen.Contains(Doc)));
+ Rows.Add(S47Kit::Button(TEXT("Put the binder back"),[this]{if(M&&M->UI)M->UI->Close();}));
+ M->UI->Open(S47Kit::Shell(M->UI,TEXT("RECORDS / APRIL 1986"),S47Kit::Col(Rows),860));
+}
 void FS47Predecessor::Send(const FString& Id,bool bNow)
 {
  if(M&&M->Freeform&&M->Freeform->Mail&&M->Freeform->Mail->PostWard(Id,bNow))return;
@@ -1059,6 +1077,9 @@ void FS47Predecessor::OpenLocker()
  const TWeakPtr<uint8> Guard=Life;
  Rows.Add(Para(TEXT("A strip of label tape on the door: REYES. It isn't locked. It smells of old coffee and machine oil, and of nothing else."),860.f));
  Rows.Add(Para(TEXT("A white mug with a chip in the rim and a ring of coffee gone to varnish. Half a soft pack of cigarettes, gone square from a jacket pocket, and matches from the Mesa Diner. A spare work shirt on the hook. No jacket."),860.f,true));
+ // T16-17 (→ M3/M7): where Reyes's own notebook starts (S47PredecessorBook.cpp).
+ Rows.Add(Para(TEXT("In the shirt's breast pocket, the card cover of a pocket notebook, the pages torn out along the wire. Pencilled inside the cover: OLD HOUSE. BACK ROOM. CHAIR."),860.f,true));
+ Mark(TEXT("book_cover"),FString());
  const auto Read=[&](const TCHAR* Id,const TCHAR* Label)
  {
   const FString Doc=Id;
@@ -1277,6 +1298,10 @@ void FS47Predecessor::Account(TArray<TSharedRef<SWidget>>& Rows,const FTally& C,
   About+=bPayReturned?TEXT(" The final pay has gone back to Ward, with your initials on the slip."):Seen.Contains(TEXT("pay"))?TEXT(" The final pay is where you found it, not called for."):TEXT("");
  }
  if(Tags>0)About+=FString::Printf(TEXT(" You read %d of Reyes's survey tags%s."),Tags,Tags<X::Tags().Num()?TEXT(", and the rest are still wired where they were left"):TEXT(""));
+ // T16-17: Reyes's notebook, as far as it went.
+ if(Seen.Contains(TEXT("talk_deputy_book")))About+=TEXT(" Reyes's notebook is in the deputy's file, every page you found, with where you found it.");
+ else if(Seen.Contains(TEXT("book_cairn")))About+=TEXT(" Reyes's notebook is with you, the last of it from under the cairn's top stone.");
+ else if(const int32 Pages=BookPages();Pages>0)About+=FString::Printf(TEXT(" You found %d %s of Reyes's notebook. The rest are where Reyes left them."),Pages,Pages==1?TEXT("page"):TEXT("pages"));
  if(Seen.Contains(WagonId))About+=RadioOn()?TEXT(" Wagon 23 is still on the flat, with its radio on."):TEXT(" Wagon 23 is still on the flat. You switched its radio off. You know how much that's worth.");
  Rows.Add(Para(About,Width));
 }
@@ -1651,7 +1676,9 @@ TArray<FString> FS47Predecessor::AllText()
  // M7: the levers in her words, the notes after KEPT OPEN, what the Stays letter says of what was found, and the inspector.
  const FString AllLevers=X::Levers(false,false,0,false,1,60,80)+X::Levers(true,true,2,true,0,0,80)+X::Levers(false,false,-1,false,0,0,80);
  Out.Add(AllLevers);Out.Add(X::WeekNote(4,20,1,25,18,45,2,D,6,PointsToStay,3,2,false,AllLevers));Out.Add(X::WeekNote(4,20,1,25,18,0,2,D,7,PointsToStay,0,0,true,AllLevers));
- Out.Add(X::KeptNote(5,30,26,0,D,1,AllLevers));Out.Add(X::Stays(D,30,2,25,0,true,X::Followed(true,true,true,true)));
+ Out.Add(X::KeptNote(5,30,26,0,D,1,AllLevers));Out.Add(X::Stays(D,30,2,25,0,true,X::Followed(true,true,true,true,true)));
+ // T16-17: what the places and the binder say of Reyes's notebook, and the locker's cover.
+ for(const X::FBookStep& S:X::Book()){if(S.Find)Out.Add(S.Find);if(S.Take)Out.Add(S.Take);}
  for(int32 W=0;W<6;++W)Out.Add(X::Inspector(D,D,W));
  Out.Add(TEXT("Return to the title. Continue goes back to the log filed when you left SARO"));
  return Out;
@@ -1703,6 +1730,52 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
  Check(bAllDocs,TEXT("each paper has its text, its note for the records, and a real place if it points to one"));
  bool bCases=true;for(const X::FCaseNote& N:X::CaseNotes()){bool bFound=false;for(int32 L=0;L<FS47FreeformCases::CaseCount;++L)bFound|=FString(FS47FreeformCases::Def(L).Title)==N.CaseTitle;bCases&=bFound&&X::Doc(N.Doc);}
  Check(bCases,TEXT("the notes among a case's sheets are tied to cases that exist"));
+ {
+  // T16-17 (→ M3/M7): Reyes's notebook through the month. Every step has its paper and a real place (or the binder, or the post);
+  // each step after the first waits for one read before it; the days never go back; each page that names a place on the map names
+  // one whose page is due by then, so no pointer sends the player to nothing.
+  const TArray<X::FBookStep>& Steps=X::Book();
+  bool bReal=Steps.Num()>=5,bOrder=true,bPointed=true;int32 Last=0,Firsts=0;TSet<FString> Before;
+  for(const X::FBookStep& S:Steps)
+  {
+   const FString Where=S.Where;const X::FDocDef* Doc=X::Doc(S.Doc);
+   bReal&=Doc&&(Where==TEXT("binder")||Where==TEXT("post")||FS47Places::Def(Where)!=nullptr)&&((Where==TEXT("post"))==(S.Find==nullptr))&&(S.Find==nullptr)==(S.Take==nullptr);
+   Firsts+=S.After?0:1;bOrder&=S.FromDay>=Last&&(!S.After||Before.Contains(S.After));Last=S.FromDay;Before.Add(S.Doc);
+   if(Doc&&Doc->Next)
+   {
+    const X::FBookStep* There=Steps.FindByPredicate([&](const X::FBookStep& Q){return FString(Q.Where)==Doc->Next&&Q.After&&FString(Q.After)==S.Doc;});
+    bPointed&=There&&There->FromDay<=S.FromDay&&!FS47Places::AtSaro(Doc->Next);
+   }
+  }
+  Check(bReal&&bOrder&&Firsts==1,TEXT("T16-17: Reyes's notebook, page by page: each at a real place, each after the one before, and the days never go back"));
+  Check(bPointed,TEXT("T16-17: a page that puts a place on the map points at one on the land whose page is already there"));
+  // Paced through the month: weeks one, two and three each open a step; the deputy takes the book after the last, and Dale has
+  // a word for the first page and the last.
+  bool bWeek[3]={false,false,false};for(const X::FBookStep& S:Steps)if(S.FromDay>=1&&S.FromDay<=21)bWeek[(S.FromDay-1)/7]=true;
+  const X::FBookStep& End=Steps.Last();
+  const X::FPerson* Dep=X::Person(TEXT("deputy"));
+  const X::FTopic* Gives=Dep?Dep->Topics.FindByPredicate([](const X::FTopic& Q){return FString(Q.Id)==TEXT("book");}):nullptr;
+  const X::FBark* First=X::Barks().FindByPredicate([](const X::FBark& Q){return FCString::Strcmp(Q.Id,TEXT("oldhouse"))==0;});
+  const X::FBark* Final=X::Barks().FindByPredicate([](const X::FBark& Q){return FCString::Strcmp(Q.Id,TEXT("notebook"))==0;});
+  Check(bWeek[0]&&bWeek[1]&&bWeek[2]&&Gives&&Gives->Needs&&FString(Gives->Needs)==End.Doc&&X::Doc(End.Doc)&&!X::Doc(End.Doc)->Next&&First&&First->Needs&&Final&&Final->Needs&&Final->FromDay>=End.FromDay
+   &&FString(First->Needs)==Steps[0].Doc&&FString(Final->Needs)==TEXT("talk_deputy_book"),TEXT("T16-17: weeks one to three each open a step of it, and it ends with the deputy, never with a place that explains"));
+  // Pure: open on its day, after the page before; the post sends once.
+  const X::FBookStep* Card=X::BookStep(TEXT("book_signout"));const X::FBookStep* Shack=X::BookStep(TEXT("book_shack"));
+  TSet<FString> Have;const bool bNotYet=Card&&!BookOpen(*Card,Have,30);Have.Add(TEXT("book_shack"));
+  Check(Card&&Shack&&bNotYet&&!BookOpen(*Card,Have,Card->FromDay-1)&&BookOpen(*Card,Have,Card->FromDay)&&BookOpen(*Shack,TSet<FString>{TEXT("book_backroom")},Shack->FromDay),TEXT("T16-17: a step opens on its day and only after the page before it"));
+  // Without a game: nothing in a place's panel, nothing new to say there, nothing due.
+  FS47Predecessor NoBook(nullptr);NoBook.Begin(nullptr,false,1);TArray<TSharedRef<SWidget>> NoRows;NoBook.PlaceRows(TEXT("backroom"),NoRows);
+  Check(NoRows.IsEmpty()&&!NoBook.PlaceNews(TEXT("backroom"))&&!NoBook.BookDue(TEXT("book_backroom"))&&NoBook.BookPages()==0,TEXT("T16-17: without a Freeform game no place shows a page of it"));
+  // Saved as what was read: the pages, the folder posted, the deputy's talk, through a Continue; and its end counts in what is known.
+  auto Bk=S47J::New();S47J::Set(Bk,TEXT("opens"),1);S47J::Set(Bk,TEXT("seen"),TArray<FString>{TEXT("book_backroom"),TEXT("book_shack"),TEXT("book_signout"),TEXT("book_file_sent"),TEXT("book_cairn"),TEXT("talk_deputy_book")});
+  FS47Predecessor Kept(nullptr);Kept.Begin(S47J::Read(S47J::Write(Bk)),false,24);
+  const TArray<FString> Again2=S47J::Strs(Kept.Save(),TEXT("seen"));
+  Check(Again2.Contains(TEXT("book_file_sent"))&&Again2.Contains(TEXT("book_cairn"))&&Kept.BookPages()==3&&Kept.Known()==2,TEXT("T16-17: the pages read and the folder posted survive a Continue, and the end of the book counts in what is known"));
+  // The windmill's page is a lead out on the land; the others are Reyes's April, not tonight's.
+  Check(FS47FreeformCases::LineForFinding(TEXT("reyes_book_windmill"))==FS47FreeformCases::LandLine&&FS47FreeformCases::LineForFinding(TEXT("reyes_book_cairn"))==-1&&FS47FreeformCases::LineForFinding(TEXT("reyes_book_backroom"))==-1,
+   TEXT("T16-17: the windmill's page is a lead in OUT ON THE LAND, and only that page"));
+  Check(X::Followed(false,false,false,false,true).Contains(TEXT("notebook"))&&!X::Followed(true,true,true,true,false).Contains(TEXT("notebook")),TEXT("T16-17: the Stays letter names the notebook only when the deputy has it"));
+ }
  // Dale.
  FS47Predecessor Quiet(nullptr);Quiet.Begin(nullptr,false,1);
  TSet<FString> BarkIds;bool bBarks=true;for(const X::FBark& B:X::Barks()){BarkIds.Add(B.Id);bBarks&=FCString::Strlen(B.Line)>10&&FCString::Strlen(B.Line)<190;}

@@ -18,6 +18,14 @@ namespace S47PredecessorText
  const FDocDef* Doc(const FString& Id);
  const TArray<FTagDef>& Tags();
  const TArray<FCaseNote>& CaseNotes();
+ // T16-17 (→ M3/M7, "the Reyes trail ends in a letter"): Reyes's own pocket notebook, the pages left at places Reyes kept going back
+ // to, one leading to the next through the month (S47PredecessorBook.cpp). Doc: its paper in Docs(). Where: the place (FS47Places) whose
+ // panel has it, "binder" (April's binder in the records room) or "post" (by post, through Ward's office). After: the paper that has
+ // to be read first (null: none). FromDay: the first day of the game it can be found, counted from the day the trail opens. Find:
+ // what the place shows while it is there; Take: the button. The trail ends with the deputy (his talk "book"), never with what happened.
+ struct FBookStep{const TCHAR* Doc;const TCHAR* Where;const TCHAR* After;int32 FromDay;const TCHAR* Find;const TCHAR* Take;};
+ const TArray<FBookStep>& Book();
+ const FBookStep* BookStep(const FString& Doc);
  const TArray<FPerson>& People();
  // What Dale says over the walkie, unasked. Each once, at most one a day. Needs as for a topic; empty: from the day given.
  struct FBark{const TCHAR* Id;const TCHAR* Needs;int32 FromDay;const TCHAR* Line;};
@@ -49,7 +57,8 @@ namespace S47PredecessorText
  FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString& FiscalEnd,int32 Taken,const FString& Levers);
  // What the Stays letter says of what was found (M7): wagon 23, the deputy's file, the routed pay, Ortiz's thermos sent on. Only the
  // outside; empty if none.
- FString Followed(bool bWagon,bool bDeputy,bool bPayReturned,bool bThermos=false);
+ // bBook: Reyes's notebook given to the deputy (T16-17).
+ FString Followed(bool bWagon,bool bDeputy,bool bPayReturned,bool bThermos=false,bool bBook=false);
  FString Stays(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,bool bKnowsMuch,const FString& FoundOut=FString());
  // Day 22: the county's inspector writes ahead of the assessment, about the one thing he will look at first.
  // Weakest: 0 cases, 1 the array, 2 the work, 3 the carried line, 4 readable records, 5 nothing he can find.

@@ -16,7 +16,7 @@ class FS47DaleVoice;
 // the flat; and a board by the lockers where you can hang your keys and go. Everything is the outside of what happened: text in
 // S47PredecessorText.cpp, and its self-test refuses the far side. Saved under "predecessor"; a save from before it picks it up
 // on load, its own calendar untouched, with a letter that says so. Nothing here takes away an original or a photograph.
-namespace S47PredecessorText{struct FBark;}
+namespace S47PredecessorText{struct FBark;struct FBookStep;}
 class FS47Predecessor;
 // -S47Freeform -S47AssessMonthTest=routine|investigator|taken|taken-again|cases, with -UserDir=/tmp/...: thirty days through the real StepNews, the
 // post, the letter and the closing (S47AssessMonthTest.cpp). Does nothing without the flag.
@@ -125,6 +125,16 @@ public:
  // The paper's word of something out on the land (the Ledger's search story: wagon 23).
  void HearOf(const FString& Id){Hear(Id);}
  void FillMap(FS47MapView& View) const;
+ // T16-17 (→ M3/M7, "the Reyes trail ends in a letter"): Reyes's own notebook through the month (S47PredecessorBook.cpp,
+ // S47PredecessorText::Book). PlaceRows: what a place's panel (FS47Places::Panel) shows of it there, a page due or one read before;
+ // PlaceNews: a page lies there unread now, so the panel does not say "nothing new". BookDue: that step can be had today.
+ void PlaceRows(const FString& Place,TArray<TSharedRef<SWidget>>& Rows);
+ bool PlaceNews(const FString& Place) const;
+ bool BookDue(const FString& Doc) const;
+ // Pure: whether a step is open, with what has been read (Have) on the trail's day (1 the day it opens).
+ static bool BookOpen(const S47PredecessorText::FBookStep& S,const TSet<FString>& Have,int32 TrailDay);
+ // How many of the notebook's pages have been read (the folder and the sign-out card are not pages).
+ int32 BookPages() const;
  // World position (x,z) of a thing out on the land or at the station, for the developer's menu and the tests.
  bool WorldSpot(const FString& Id,FString& OutArea,double& OutX,double& OutZ) const;
 
@@ -216,6 +226,11 @@ private:
  // the tests: Today, how long somebody has been gone (GoneDay, 0: nobody), the military's last three nights and their ground read.
  static bool LateRackDue(int32 Line,int32 Today,int32 GoneDay,bool bMilitaryGone,bool bGroundRead);
  void StepLateThermos(int32 Today);
+ // T16-17: what of the notebook comes by post (Reyes's folder, back from the sheriff's office), once its step is open; sent once
+ // ("<doc>_sent" among Seen, so a Continue does not post it again).
+ void StepBook();
+ // The day of the trail: 1 the day it opens (an older save's OpensDay), so a game under way gets its weeks too.
+ int32 TrailDay() const;
  // Keeps a late line's trace (its text from the case's seeded reading) with what the player saw or heard. False: kept already.
  bool LateKeep(int32 Line,int32 Clue,const FString& Toast);
  void LateSound(const FString& Name,const FVector& At,float Gain);

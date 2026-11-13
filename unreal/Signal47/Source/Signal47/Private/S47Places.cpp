@@ -17,6 +17,7 @@
 #include "S47Legs.h"
 #include "S47Main.h"
 #include "S47NightRhythm.h"
+#include "S47Predecessor.h"
 #include "S47OpenLand.h"
 #include "S47Relief.h"
 #include "S47Script.h"
@@ -536,6 +537,8 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
  if(!Extra.IsEmpty())Rows.Add(S47Kit::Text(Extra));
  Rows.Add(S47Kit::Small(bFirst?TEXT("Kept as a field record: what you found here, and when."):TEXT("Already in your field records."))); // D45-20261110: plain words
  auto* F=M->Freeform.Get();
+ // T16-17 (→ M3/M7): a page of Reyes's notebook left here, when its turn has come (S47PredecessorBook.cpp).
+ if(F->Predecessor)F->Predecessor->PlaceRows(D.Id,Rows);
  const double Next=(FMath::FloorToDouble((F->Clock()-8*3600)/86400.)+1)*86400.+8*3600;
  if(FString(D.Id)==Motel)
  {
@@ -648,6 +651,8 @@ bool FS47Places::Use(const FString& Id)
  }
  // T16-17 (→ M1, "the places are reading stations"): a second look with nothing new says so, and what can change that (Saucer Rock
  // always has its hour to tell)
+ // T16-17 (→ M3/M7): a page of Reyes's notebook lying here now is something new (FS47Predecessor::PlaceRows shows it).
+ bNews|=F.Predecessor&&F.Predecessor->PlaceNews(Id);
  if(!bFirst&&!bNews&&Id!=Motel&&Id!=TEXT("saucer_rock"))Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+NothingNew(InOldHouse(Id));
  Panel(*D,bFirst,Extra);return true;
 }

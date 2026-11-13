@@ -352,6 +352,9 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
  // Critics, 10 Nov: the line recorder's strip from a night the generator carried (S47FreeformDirector) was filed under no question at
  // all, so starting the generator paid nothing. A light over the valley that takes the mains is a lead on the land.
  if(DatedKey(Id,TEXT("mains-ride")))return LandLine;
+ // T16-17 (→ M3/M7): Reyes's page in the windmill's pump housing (FS47Predecessor, S47PredecessorBook.cpp): the vane turned again in
+ // April and wired new, by somebody who leaves no ladder marks. A lead on the land like a thing moved at a place; never a result.
+ if(Id==TEXT("reyes_book_windmill"))return LandLine;
  return -1;
 }
 bool FS47FreeformCases::IsCaseRecord(const FString& Key)

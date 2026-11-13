@@ -92,6 +92,25 @@ const TArray<FDocDef>& Docs()
   {TEXT("pay_reply"),TEXT("A letter to the night operator, by post"),TEXT("hand"),TEXT("BY POST"),
    TEXT("To the night operator at SARO,\n\nSomebody from Dr. Ward's office sent on the pay, with a note that said it was you who routed it back. Thank you. Nobody had to do that.\n\nWe don't know anything more than we did. Nobody calls. If you ever learn something, I would rather hear it from you than from the county.\n\nThe station is staying open, the note said. Then somebody is still there at night. That helps more than I can say in a letter.\n\nReyes's mother"),
    TEXT("Reyes's mother wrote to the station after the final pay was routed back to the family. She thanks you, and asks to hear it from you, if you ever learn something."),nullptr},
+  // ---- T16-17 (→ M3/M7): Reyes's own pocket notebook, page by page through the month (Book() below, S47PredecessorBook.cpp)
+  {TEXT("book_backroom"),TEXT("A page from a pocket notebook, in the back room of the old house"),TEXT("hand"),TEXT("REYES"),
+   TEXT("MARCH 30\n\n~ This book is mine. Dale gets the tags. This is for what doesn't go on a tag.\n~ Came over to the old house on my break, to see what the back window sees. The pasture. The last branch of the array. The rise past it, if you know where to look.\n~ Somebody sits in this chair. Nobody has lived in the house for years, and the dust on the seat says one person, a few nights a week. Not me. Not till tonight.\n~ Copied the times off the sill into the back of this book. They aren't mine and they aren't the station's.\n~ Leaving a page at the line shack too, behind the calendar. In case this one walks off."),
+   TEXT("A page of Reyes's own notebook, March 30, under the coffee can in the back room of the old house. Somebody else sat in that chair. Reyes left another page at the line shack."),TEXT("shack")},
+  {TEXT("book_shack"),TEXT("A page from the same notebook, behind the calendar at the line shack"),TEXT("hand"),TEXT("REYES"),
+   TEXT("APRIL 2\n\n~ The count on the door frame. Yesterday the last group stopped at two. Today it stops at three.\n~ Nobody lives out here. I sat in the truck an hour with the doors locked to be sure, and felt stupid, and stayed the hour.\n~ I don't put this on the sheet. Ward reads the sheet. I keep carbons of all of it in a folder at the station: R / OWN TIME, behind April's binder, where nobody files anything.\n~ Dale asked on the line why I sound tired. I said the coffee. He said buy better coffee."),
+   TEXT("Reyes's page at the line shack, April 2: the count on the door went up by one overnight. Reyes kept carbons in a folder behind April's binder at the station."),nullptr},
+  {TEXT("book_signout"),TEXT("A sign-out card behind April's binder"),TEXT("typed"),TEXT("SARO / RECORDS"),
+   TEXT("SIGN-OUT CARD\n\nFOLDER:     R / OWN TIME\nOUT:        4-16-86\nTO:         SOCORRO CO. S.O., FOR THE REYES FILE\nSIGNED:     a deputy's initials, pressed hard\nRETURN TO:  SARO / RECORDS\n\n~ The slot behind April's binder is empty but for this card. The folder went to the sheriff's office three days after the last night in the binder."),
+   TEXT("Reyes's own folder was signed out of the records room on April 16, to the sheriff's office for the Reyes file. It is to come back to the station."),nullptr},
+  {TEXT("book_file"),TEXT("Reyes's folder, R / OWN TIME, returned by post"),TEXT("typed"),TEXT("BY POST / RETURNED"),
+   TEXT("SOCORRO COUNTY SHERIFF / SUBSTATION\nRETURNED TO SARO. COPIED FOR THE FILE. NOTHING IN IT THE COUNTY WANTS.\n\n----\n\nR / OWN TIME\nCarbons. Not for the binder.\n\n3-24  windmill. Vane wired. Not Dale's knot.\n3-29  old house, back room, 01:10 to 02:30. The chair. Somebody else uses it.\n3-30  the times on the sill, copied into the book.\n4-1   line shack. Count on the door, two in the last group.\n4-2   line shack. Three.\n4-5   station clock and reference disagree. Both written down.\n4-6   windmill. The vane is turned again, the wire new again. Took a bearing along it from the tower foot.\n4-8   windmill, with the book. A page in the pump housing.\n\n~ Ward asked if I was keeping up with the sheet. I am. This is on top of the sheet."),
+   TEXT("The deputy sent Reyes's folder back to the station. Carbons of March and April: the windmill's vane turned twice, and a page of the notebook left in its pump housing."),TEXT("windmill")},
+  {TEXT("book_windmill"),TEXT("A page from Reyes's notebook, in the windmill's pump housing"),TEXT("hand"),TEXT("REYES"),
+   TEXT("APRIL 8\n\n~ The bearing along the vane from the tower foot runs to the cairn on the rise. I walked it as far as the fence to be sure.\n~ Somebody climbs this tower to turn the vane. There are no ladder marks. I am not going to think about that up here.\n~ The rest of the book goes up to the cairn, under the top stone, where it stays dry. The cairn is just a good dry place. That's all it is.\n~ Mom says call Sunday. I will."),
+   TEXT("Reyes's page in the windmill's pump housing, April 8: the vane points at the cairn on the rise, and the rest of the notebook went under its top stone."),TEXT("cairn")},
+  {TEXT("book_cairn"),TEXT("The rest of Reyes's notebook, under the cairn's top stone"),TEXT("hand"),TEXT("REYES"),
+   TEXT("APRIL 12\n\n~ Saturday. Did the mine this morning. Didn't go in.\n~ Up here at six with the book. The station on one side, the old house on the other, and the back room's window looks straight at this rise. I hadn't seen that till I stood here.\n~ Laid it all side by side: the sill, the shack door, my two clocks, the vane. It doesn't line up into anything. Good. I'd rather it didn't.\n~ Shift tomorrow at six. Coffee filters. Danny's twenty.\n~ Bring the book down Monday and start a clean one.\n\n(The rest of the pages are blank.)"),
+   TEXT("The rest of Reyes's notebook, under the cairn's top stone. The last page is Saturday, April 12, at six: a shift tomorrow, coffee filters, and the book to be brought down on Monday."),nullptr},
  };
  return Table;
 }
@@ -111,6 +130,22 @@ const TArray<FCaseNote>& CaseNotes()
   {TEXT("THE EMPTY POST"),TEXT("case_post")},{TEXT("THE PRINTED MINUTE"),TEXT("case_minute")},{TEXT("THE RAKED GROUND"),TEXT("case_raked")}};
  return Table;
 }
+const TArray<FBookStep>& Book()
+{
+ // T16-17 (→ M3/M7): week one at the old house and the line shack, week two in the records room (and the deputy, who has the
+ // folder), week three the folder back by post and the windmill and the cairn it leads to, then the deputy, who takes the book.
+ // Each page that points to a place puts it on the map, and the page there is already due when it does (the self-test holds it).
+ static const TArray<FBookStep> Table={
+  {TEXT("book_backroom"),TEXT("backroom"),nullptr,2,TEXT("Under the coffee can of cigarette ends: a page torn from a pocket notebook, folded in four. Pencil, a careful hand."),TEXT("Unfold the page")},
+  {TEXT("book_shack"),TEXT("shack"),TEXT("book_backroom"),2,TEXT("Behind the calendar for 1971, folded small: another page from the same pocket notebook."),TEXT("Take it down from behind the calendar")},
+  {TEXT("book_signout"),TEXT("binder"),TEXT("book_shack"),8,TEXT("Behind April's binder, in the slot where a folder stood: a sign-out card."),TEXT("Behind the binder: a sign-out card")},
+  {TEXT("book_file"),TEXT("post"),TEXT("book_shack"),18,nullptr,nullptr},
+  {TEXT("book_windmill"),TEXT("windmill"),TEXT("book_file"),18,TEXT("In the pump-rod housing, wired shut with the same bright wire as the vane: a page in a sandwich bag."),TEXT("Undo the wire")},
+  {TEXT("book_cairn"),TEXT("cairn"),TEXT("book_windmill"),18,TEXT("Under the top stone, in a coffee can with its lid taped down: what is left of a pocket notebook. The stones over it are dry."),TEXT("Open the can")},
+ };
+ return Table;
+}
+const FBookStep* BookStep(const FString& Doc){return Book().FindByPredicate([&](const FBookStep& S){return Doc==S.Doc;});}
 const TArray<FPerson>& People()
 {
  static const TCHAR* const You=TEXT("YOU");
@@ -149,6 +184,12 @@ const TArray<FPerson>& People()
      {{You,TEXT("The records for that night aren't in the binder.")},{Dep,TEXT("I know they're not. I asked for the receiver log and the strip chart that night, for the Ortiz file.")},{You,TEXT("Did you get them?")},{Dep,TEXT("You tell me. You work there.")}}},
     {TEXT("advice"),TEXT("Ask what you should do if you see something"),nullptr,nullptr,TEXT("The deputy's advice: write the time down, then call."),
      {{You,TEXT("And if I see something out there?")},{Dep,TEXT("Write the time down. Then call me. In that order.")}}},
+    // T16-17 (→ M3/M7): Reyes's own folder, signed out of the station; and the notebook, which ends with him.
+    {TEXT("folder"),TEXT("Ask about the folder signed out of the station"),TEXT("book_signout"),nullptr,TEXT("The deputy signed Reyes's own folder out of the station on April 16. It goes back to the station by post when the county attorney is through with it."),
+     {{You,TEXT("Your office signed a folder out of the station in April. R, own time.")},{Dep,TEXT("I did. The county attorney has it now, which means it's on a pile. When he's through, it goes back to the station by post.")},{Dep,TEXT("He's through when he's through. Give it a week. Then give it another.")}}},
+    {TEXT("book"),TEXT("Give him Reyes's notebook"),TEXT("book_cairn"),nullptr,TEXT("The deputy put Reyes's notebook in his file, with where each page was found. The last page is Saturday, April 12, at the cairn on the rise."),
+     {{You,TEXT("This was Reyes's. A notebook. I found it a page at a time. The last of it was under the top stone of the cairn.")},{TEXT(""),TEXT("He reads it standing up, all of it, and turns the blank pages too.")},
+      {Dep,TEXT("Times and places, and not one idea in it. Reyes would have made a decent deputy.")},{Dep,TEXT("It goes in the file. I'll write down where you found each page, and that's all I'll write. The twelfth is the last day anybody has in Reyes's own hand.")}}},
    }},
   {TEXT("host"),TEXT("1420 AM / EARL"),
    {{TEXT(""),TEXT("A record is going. Earl leans in the door of the booth with one eye on the turntable.")},{Earl,TEXT("New voice. You'd be from the dishes. I've got you on my list already. Somebody driving around the back roads at night.")}},
@@ -262,6 +303,9 @@ const TArray<FBark>& Barks()
   {TEXT("skywatch"),TEXT("visit:let_in"),5,TEXT("You let the people with the van into my station? They read my logbooks. I know, because the logbooks are in order now, and they never are.")},
   {TEXT("filed"),TEXT("filed:case"),8,TEXT("You filed an assessment. Now the county reads it and rings my bench to ask what it means, and I say ask the operator. Do not make me a liar.")},
   {TEXT("halfway"),TEXT("array_low"),14,TEXT("Two weeks, and half my array is still lying on its back. Ward reads that line first, the county second, and I read it every morning. Mend something.")},
+  // T16-17 (→ M3/M7): Reyes's notebook, the first page and the last.
+  {TEXT("oldhouse"),TEXT("book_backroom"),2,TEXT("You were over in the old house on your break? Reyes did that. Every break. I said it was a waste of a break. That is all I said. Dale out.")},
+  {TEXT("notebook"),TEXT("talk_deputy_book"),18,TEXT("The deputy says you brought him a notebook. Good. That is where it goes. Not on my bench, not in your locker. Now do the card. Dale out.")},
  };
  return Table;
 }
@@ -352,9 +396,10 @@ FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString
  const FString Hours=Taken>0?FString(TEXT("\n\nThe hours in your log nobody can account for are still in it. Stay in the building after dark if you can.")):FString();
  return FString::Printf(TEXT("SARO / OFFICE OF THE DUTY OFFICER\nWEEK %d\n\nThe station is open. Filed: %d. Array: %d of 27. Carried on the sheet: $%d.\n\nThere is nothing to win this time. SARO stays open through the end of the fiscal year, %s, and after that it goes into next year's budget with the rest of the district. Keep the work going, and keep your originals.%s%s%s\n\nWard"),Week,Filed,Dishes,Arrears,*FiscalEnd,Levers.IsEmpty()?TEXT(""):TEXT("\n\n"),*Levers,*Hours);
 }
-FString Followed(bool bWagon,bool bDeputy,bool bPayReturned,bool bThermos)
+FString Followed(bool bWagon,bool bDeputy,bool bPayReturned,bool bThermos,bool bBook)
 {
  TArray<FString> L;
+ if(bBook)L.Add(TEXT("The deputy writes that Reyes's notebook is in his file now, with where each page of it was found. He says it is the first thing in that file in Reyes's own hand."));
  if(bThermos)L.Add(TEXT("The district sent Mara Ortiz's thermos on to her family. Her sister has written to my office to ask that I thank whoever found it."));
  if(bWagon)L.Add(TEXT("The district has sent its flatbed for wagon 23 at last, and the search for Mara Ortiz is back on the sheriff's desk, with your notes in the file."));
  if(bDeputy)L.Add(TEXT("The deputy asked for a copy of your log for the Ortiz file. I sent it. He said it was the first one that gave him times and not ideas."));
