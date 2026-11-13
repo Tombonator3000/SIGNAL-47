@@ -187,8 +187,42 @@ void FS47StoryDrive::Stop()
 	bRadioOn = true; bIntroDone = false; bNoIntro = false; IntroAt = BedAt = 0;
 }
 
-void FS47StoryDrive::StopBeds()
+void FS47StoryDrive::Gate(const TSharedPtr<FS47MediaSource>& Src, const TSharedPtr<FS47GainNode>& Level, bool bOn, double Want)
 {
+	if (!Src || !Level || !M || !M->Audio || !M->Audio->Ctx) return;
+	FS47AudioParam& P = Level->Gain;
+	const double Now = M->Audio->Ctx->CurrentTime(), V = P.ValueAt(Now);
+	if (bOn)
+	{
+		if (Src->Paused()) { P.CancelScheduledValues(Now); P.SetValueAtTime(0., Now); Src->Pause(false); }
+		else { P.CancelScheduledValues(Now); P.SetValueAtTime(V, Now); }
+		P.SetTargetAtTime(Want, Now, .015);
+		return;
+	}
+	if (Src->Paused()) return;
+	if (V < 1e-3) { Src->Pause(true); return; }
+	P.CancelScheduledValues(Now); P.SetValueAtTime(V, Now); P.SetTargetAtTime(0., Now, .012);
+}
+
+void FS47StoryDrive::StopBeds(bool bFade)
+{
+	if (bFade && M && M->Audio && M->Audio->Ctx && (Intro || Bed))
+	{
+		// REVIEW-20261113: the arrival stopped the bed mid-waveform: down over 40 ms, then stopped and let go
+		const TSharedRef<FS47AudioContext> Ctx = M->Audio->Ctx.ToSharedRef();
+		const double Now = Ctx->CurrentTime();
+		for (const TSharedPtr<FS47GainNode>& G : { IntroLevel, BedLevel })
+			if (G) { G->Gain.CancelScheduledValues(Now); G->Gain.SetValueAtTime(G->Gain.ValueAt(Now), Now); G->Gain.LinearRampToValueAtTime(0., Now + .04); }
+		Ctx->SetTimeout(.06, [I = Intro, IL = IntroLevel, B = Bed, BL = BedLevel]
+		{
+			if (I) { I->Stop(); I->Disconnect(); }
+			if (IL) IL->Disconnect();
+			if (B) { B->Stop(); B->Disconnect(); }
+			if (BL) BL->Disconnect();
+		});
+		Intro.Reset(); IntroLevel.Reset(); Bed.Reset(); BedLevel.Reset();
+		return;
+	}
 	if (Intro) { Intro->Stop(); Intro->Disconnect(); Intro.Reset(); }
 	if (IntroLevel) { IntroLevel->Disconnect(); IntroLevel.Reset(); }
 	if (Bed) { Bed->Stop(); Bed->Disconnect(); Bed.Reset(); }
@@ -205,7 +239,7 @@ void FS47StoryDrive::Arrive()
 	W->FinishCommute();
 	if (V) V->SetParked(true);
 	Phase = EPhase::Parked;
-	StopBeds();
+	StopBeds(true);
 	UE_LOG(LogS47StoryDrive, Display, TEXT("S47: story drive: the wagon is parked at SARO (%.1f %.1f); SARO 07 on its pad"), V ? V->ParkedPosition().X : 0., V ? V->ParkedPosition().Z : 0.);
 	M->RequestAutosave(false);
 }
@@ -305,8 +339,8 @@ void FS47StoryDrive::StepRadio(bool bHostOn)
 	}
 	if (Intro)
 	{
-		Intro->Pause(!bAudible);
-		IntroLevel->Gain.SetValue(bHostOn ? IntroGain * IntroDuck : IntroGain);
+		// REVIEW-20261113: in and out, and the duck under the host, glide (no hard pause, no stepped gain)
+		Gate(Intro, IntroLevel, bAudible, bHostOn ? IntroGain * IntroDuck : IntroGain);
 		IntroAt = Intro->CurrentTime();
 		if (Intro->Duration() > 0 && IntroAt >= Intro->Duration() - 0.2)
 		{
@@ -325,7 +359,7 @@ void FS47StoryDrive::StepRadio(bool bHostOn)
 	}
 	// As the old drive: the bed waits while the host speaks, and goes round again at its end.
 	const bool bQuiet = !bAudible || bHostOn;
-	Bed->Pause(bQuiet);
+	Gate(Bed, BedLevel, !bQuiet, LoopGain); // REVIEW-20261113: out over ~50 ms before it waits, back in over ~45 ms
 	if (!bQuiet && Bed->CurrentTime() >= Bed->Duration() - 0.2) Bed->Seek(0);
 	BedAt = Bed->CurrentTime();
 }
