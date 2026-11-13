@@ -46,17 +46,28 @@ namespace S47Score
 		{ TEXT("coldDish"), { TEXT("s47_cold_dish.mp3"), TEXT("Cold Dish"), TEXT("SIGNAL / 47"), 0.45, true } },
 		{ TEXT("carrierLock"), { TEXT("s47_carrier_lock.mp3"), TEXT("Carrier Lock"), TEXT("SIGNAL / 47"), 0.42, true } },
 		{ TEXT("countyRoad"), { TEXT("s47_county_road.mp3"), TEXT("County Road"), TEXT("SIGNAL / 47"), 0.36, true } },
+		// (Tom, 13 Nov, after hearing those four: "Prøv å mikse sammen de andre musikk-loopene med 1980s-loopene, noe ambient,
+		// skummelt men rolig.") Five beds without drums: the 1984 bundle's synth loops far inside the dark ones (ABYSS, Ambience
+		// SciFi). All at -21.5 LUFS; the gains put each at its pool's median level (file loudness plus gain, measured 13 Nov:
+		// eerie and the motel -28.4 LUFS, the night -28.7, the dawn -28.8), the still one a little under.
+		{ TEXT("thirdShift"), { TEXT("s47_third_shift.mp3"), TEXT("Third Shift"), TEXT("SIGNAL / 47"), 0.45, true } },
+		{ TEXT("dryLake"), { TEXT("s47_dry_lake.mp3"), TEXT("Dry Lake"), TEXT("SIGNAL / 47"), 0.43, true } },
+		{ TEXT("vacancy"), { TEXT("s47_vacancy.mp3"), TEXT("Vacancy"), TEXT("SIGNAL / 47"), 0.45, true } },
+		{ TEXT("greyHour"), { TEXT("s47_grey_hour.mp3"), TEXT("Grey Hour"), TEXT("SIGNAL / 47"), 0.43, true } },
+		{ TEXT("standingWave"), { TEXT("s47_standing_wave.mp3"), TEXT("Standing Wave"), TEXT("SIGNAL / 47"), 0.42, true } },
 	};
 	const TMap<FString, TArray<FString>> CUES = {
 		// (every pool starts with the pieces whose files are in Git; the optional ones follow)
-		{ TEXT("night"), { TEXT("cylEight"), TEXT("floating"), TEXT("ossuary1"), TEXT("longNote"), TEXT("lightless"), TEXT("shadows"), TEXT("phantom"), TEXT("cylTwo"), TEXT("standby"), TEXT("coldDish") } },
-		{ TEXT("eerie"), { TEXT("ossuary5"), TEXT("decoherence"), TEXT("longNote"), TEXT("standby"), TEXT("routine"), TEXT("coldDish") } },
+		{ TEXT("night"), { TEXT("cylEight"), TEXT("floating"), TEXT("ossuary1"), TEXT("longNote"), TEXT("lightless"), TEXT("shadows"), TEXT("phantom"), TEXT("cylTwo"), TEXT("standby"), TEXT("coldDish"), TEXT("dryLake") } },
+		// ("Standing Wave" is the still one, made for the archive and for waiting: SARO indoors is this pool, the archive with it.
+		// The title screen keeps Tom's own piece, and a pause freezes the score where it is.)
+		{ TEXT("eerie"), { TEXT("ossuary5"), TEXT("decoherence"), TEXT("longNote"), TEXT("standby"), TEXT("routine"), TEXT("coldDish"), TEXT("thirdShift"), TEXT("standingWave") } },
 		{ TEXT("tension"), { TEXT("oldOnes"), TEXT("longNote"), TEXT("lightless"), TEXT("phantom"), TEXT("routine"), TEXT("carrierLock") } },
-		{ TEXT("motel"), { TEXT("solitude"), TEXT("ossuary5"), TEXT("cylTwo") } },
+		{ TEXT("motel"), { TEXT("solitude"), TEXT("ossuary5"), TEXT("cylTwo"), TEXT("vacancy") } },
 		{ TEXT("drive"), { TEXT("neon"), TEXT("cylTwo"), TEXT("floating"), TEXT("cylEight"), TEXT("lookBack"), TEXT("stumping"), S47Score::IntroDriveId, TEXT("countyRoad"), TEXT("nightFreight") } },
 		// (without the staged steel guitar the town has "Signs To Nowhere" alone, with the score's own quiet between its turns)
 		{ TEXT("town"), { TEXT("nowhere"), TEXT("lookBack"), TEXT("stumping") } },
-		{ TEXT("dawn"), { TEXT("hymn"), TEXT("cylEight"), TEXT("floating") } },
+		{ TEXT("dawn"), { TEXT("hymn"), TEXT("cylEight"), TEXT("floating"), TEXT("greyHour") } },
 	};
 	bool MediaPresent(const FString& WebName)
 	{
@@ -463,7 +474,7 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 	auto Check = [&Lines, &bOk](bool bPass, const TCHAR* What) { Lines.Add(FString::Printf(TEXT("%s score: %s"), bPass ? TEXT("PASS") : TEXT("FAIL"), What)); bOk &= bPass; };
 	const TSharedRef<FS47AudioContext> C = FS47AudioContext::Make();
 	FS47Score S(nullptr, C, C->Destination);
-	Check(S47Score::TRACKS.Num() == 24 && S47Score::CUES.Num() == 7, TEXT("24 tracks and seven cues"));
+	Check(S47Score::TRACKS.Num() == 29 && S47Score::CUES.Num() == 7, TEXT("29 tracks and seven cues"));
 	Check(S47Score::CUES.FindChecked(TEXT("night"))[0] == TEXT("cylEight") && S47Score::CUES.FindChecked(TEXT("town"))[0] == TEXT("nowhere") && S47Score::CUES.FindChecked(TEXT("town"))[1] == TEXT("lookBack"), TEXT("cue order"));
 	// MUSIC-20261113: the jazz and the night's solo keyboard are gone from the table and every pool; the pools stand without the optional files
 	{
@@ -495,6 +506,26 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 		Check(Own && Own->bOptional && FString(S47Score::IntroDriveId) == TEXT("signal47_intro_drive") && FString(S47Score::IntroDriveFile) == TEXT("music/") + Own->File
 			&& S47Score::CUES.FindChecked(TEXT("drive")).Contains(S47Score::IntroDriveId), TEXT("Tom's Intro Drive is signal47_intro_drive, optional, in the drive's pool, and its media name is its file"));
 		Check(S47Score::MediaOr(TEXT("music/s47_no_such_piece.mp3"), TEXT("radio/bama_country.mp3")) == TEXT("radio/bama_country.mp3"), TEXT("a staged piece that is not there gives its fallback"));
+		// The five quiet mixes of 13 Nov: each optional, a file of its own in the s47_ scheme, and only in the pools of the places it was made for
+		{
+			const TMap<FString, TArray<FString>> Quiet = {
+				{ TEXT("thirdShift"), { TEXT("eerie") } }, { TEXT("dryLake"), { TEXT("night") } }, { TEXT("vacancy"), { TEXT("motel") } },
+				{ TEXT("greyHour"), { TEXT("dawn") } }, { TEXT("standingWave"), { TEXT("eerie") } },
+			};
+			bool bQuiet = true;
+			for (const auto& Q : Quiet)
+			{
+				const FS47ScoreTrack* Tr = S47Score::TRACKS.Find(Q.Key);
+				bQuiet &= Tr && Tr->bOptional && Tr->File.StartsWith(TEXT("s47_")) && Tr->File.EndsWith(TEXT(".mp3")) && Tr->By == TEXT("SIGNAL / 47") && Tr->Gain >= 0.4 && Tr->Gain <= 0.45;
+				for (const auto& Cue : S47Score::CUES) bQuiet &= Cue.Value.Contains(Q.Key) == Q.Value.Contains(Cue.Key);
+			}
+			Check(bQuiet, TEXT("the five quiet mixes are optional, s47_ files, and each only in the pool of its place: SARO indoors, the land, the motel, the dawn"));
+			FS47Score Room(nullptr, C, C->Destination);
+			Room.HasFile = [](const FS47ScoreTrack& Tr) { return Tr.File == TEXT("s47_vacancy.mp3"); };
+			Room.Last.Add(TEXT("solitude"), 0); Room.Last.Add(TEXT("ossuary5"), 0); Room.Last.Add(TEXT("cylTwo"), 0); Room.Last.Add(TEXT("vacancy"), -1000);
+			Check(Room.Pick(TEXT("motel")) == TEXT("vacancy") && !Room.Present(TEXT("greyHour")) && Room.Pick(TEXT("recovery")) == TEXT("vacancy"),
+				TEXT("a staged quiet mix is picked in its pool (the motel's, and recovery with it), and the unstaged ones are not there"));
+		}
 	}
 	Check(S.Rest >= 6 && S.Rest <= 14, TEXT("initial quiet 6 to 14 seconds"));
 	{

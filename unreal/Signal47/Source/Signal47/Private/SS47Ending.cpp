@@ -78,7 +78,8 @@ TArray<TPair<FString, FString>> SS47Ending::CreditsRows(bool bBoughtSfx)
 		// of the bought loops, and the old records on the AM dial. "Night on the Docks" and "Cylinder One" are no longer played.
 		{ TEXT(""), TEXT("Lobo Loco, CC BY 4.0 (freemusicarchive.org): \"Look Back Steelguitar Organ (F 35)\" and \"Stumping Slow Deltablues - Guitar Steelguitar (F 30)\" from Completely FREE 2") },
 		{ TEXT(""), TEXT("Uuriter, CC BY 4.0 (freemusicarchive.org): \"Standby Mode\" and \"Routine Drone\" from Analog Fields") },
-		{ TEXT(""), TEXT("Tom: \"Intro Drive\". \"Night Freight\", \"Cold Dish\", \"Carrier Lock\" and \"County Road\": arranged for SIGNAL / 47 from licensed loops (Function Loops)") },
+		// (13 Nov: the five quiet ones are in the same row, so the row count and the bought credit's place in the self-test stand)
+		{ TEXT(""), TEXT("Tom: \"Intro Drive\". \"Night Freight\", \"Cold Dish\", \"Carrier Lock\", \"County Road\", \"Third Shift\", \"Dry Lake\", \"Vacancy\", \"Grey Hour\" and \"Standing Wave\": arranged for SIGNAL / 47 from licensed loops (Function Loops)") },
 		{ TEXT("Old records on the radio"), TEXT("Library of Congress National Jukebox, public domain: \"Hawaiian Hotel\", Frank Ferera and Anthony Franchini (1920); \"Roll On, Silver Moon\" (1906); \"Till the Sands of the Desert Grow Cold\", Victor Orchestra (1912)") },
 		{ TEXT("National anthem on the radio"), TEXT("The United States Air Force Band, \"The Star Spangled Banner\" (choral), public domain") },
 		{ TEXT("Radio observatory sounds"), TEXT("PSR B0329+54 data: Joseph W. Kania (WVU), Greenburst / Green Bank Telescope, doi:10.5281/zenodo.5570222 (CC BY 4.0), made audible for SIGNAL / 47. Felix Blume, satellite dish motor, New Mexico (CC0). awg, natural VLF radio reception (CC BY 4.0). Priwo, Star LC-10 printer (public domain)") },
@@ -438,6 +439,10 @@ bool SS47Ending::SelfTest(TArray<FString>& Lines)
 			&& Music.Contains(TEXT("Uuriter, CC BY 4.0")) && Music.Contains(TEXT("Standby Mode")) && Music.Contains(TEXT("Routine Drone"))
 			&& Music.Contains(TEXT("Hawaiian Hotel")) && Music.Contains(TEXT("Roll On, Silver Moon")) && Music.Contains(TEXT("Till the Sands of the Desert Grow Cold")) && Music.Contains(TEXT("Intro Drive")),
 			TEXT("the new pieces are credited: Lobo Loco and Uuriter with titles and licence, the public-domain records, Tom's own"));
+		bool bMixes = Music.Contains(TEXT("arranged for SIGNAL / 47 from licensed loops (Function Loops)"));
+		for (const TCHAR* Title : { TEXT("Night Freight"), TEXT("Cold Dish"), TEXT("Carrier Lock"), TEXT("County Road"), TEXT("Third Shift"), TEXT("Dry Lake"), TEXT("Vacancy"), TEXT("Grey Hour"), TEXT("Standing Wave") })
+			bMixes &= Music.Contains(FString::Printf(TEXT("\"%s\""), Title));
+		Check(bMixes, TEXT("the nine mixes of the bought loops are credited by title, with where the loops are from"));
 		Check(!Music.Contains(TEXT("Night on the Docks")) && !Music.Contains(TEXT("Cylinder One")) && Music.Contains(TEXT("Cylinder Two")) && Music.Contains(TEXT("Kevin MacLeod")),
 			TEXT("the removed pieces are no longer credited; their composers' other pieces still are"));
 	}
