@@ -4,7 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 13. november kl. 12:46 (d66): versjon 0.9.66, `a756625b` på `claude/freeform-20261112`
+## Installert 13. november kl. 13:26 (d67): versjon 0.9.67, `b2db7eb4` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5246 kontroller), regresjon PASS 251, pakket, røyktestet og installert. Tilbakerulling: d66 (`a756625b`). Ledig disk etterpå: 125 GB. Ikke spilt av Tom.
+
+- **Mottakeren (→ M3):** fanen som holder neste steg, pulserer rolig og har en stjerne (ARRAY, ACQUIRE, TUNE, RECORD, DATA); START RECORDING pulserer på TUNE; DAILY WORK på OPS får stjerne når neste steg er der. Med rolige blink står fanen fast markert. Ikke sett pulsere i spill ennå.
+- **Musikk:** fem rolige ambient-miks (Third Shift, Dry Lake, Vacancy, Grey Hour, Standing Wave) i nattens, motellets og morgenens lister. Ikke hørt i spill.
+
+## Tidligere: installert 13. november kl. 12:46 (d66): versjon 0.9.66, `a756625b` på `claude/freeform-20261112`
 
 Editor BUILD 0, selvtest OK (5238 kontroller), regresjon PASS 251, pakket, røyktestet og installert. Tilbakerulling: d65 (`13430204`). Ledig disk etterpå: 121 GB. Ikke spilt av Tom.
 
