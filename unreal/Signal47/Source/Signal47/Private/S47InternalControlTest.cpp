@@ -167,6 +167,11 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  if(Stage==13)
  {
   if(F.CurrentJob()->Stage==J::Integrating)return;
+  // (a beat for the panel: Slate refreshes a key's enabled state on its next frame, not in the tick the take ends)
+  Go(131,.5);return;
+ }
+ if(Stage==131)
+ {
   // 3: the take ended waits on RECORD: nothing retained by itself, no chart, no control asked for, the deck and OPS refuse it with the reason
   const auto* Take=F.CurrentJob();
   if(!Check(Take->Stage==J::Recorded&&FS47FreeformSession::RetainWaits(*Take)&&!Take->bPrinted&&Take->OriginalPage.IsEmpty()&&!Take->bControl&&!F.CanRecordControl()&&F.PrinterJobId()!=Take->Id,TEXT("the take ends on tape, waiting to be retained; no chart, nothing kept by itself")))return;
