@@ -273,9 +273,10 @@ namespace
     if(Age-At<.4)return true;
     if(!Check(M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())==TEXT("printer")&&bool(M->Player->OnUse),TEXT("actual printer selectable by physical eye ray")))return false;
     M->Player->OnUse(TEXT("printer"));M->UI->Close(true);J=F.CurrentJob();
+    if(J&&FS47FreeformSession::RetainWaits(*J)&&!Check(F.RetainTake(),TEXT("RX-ANOMALY-FLOW-20261113: RETAIN TAKE at the receiver keeps the original and starts its reference")))return false;
     if(!Check(J->Stage==FS47FreeformSession::EJobStage::Recorded&&!J->OriginalPage.IsEmpty(),TEXT("actual printed original retained")))return false;Document=J->OriginalPage;
     const auto* P=F.ConsoleProfile();M->Story->Rx.Gain=P->Gain[0];M->Story->Rx.Bandwidth=P->Bw[0];M->Player->Place(0,-2.15,0);F.OpenReceiver();
-    if(!Check(F.StartControl(),TEXT("production eight-second internal reference begins with own settings")))return false;Go(604);return true;
+    if(!Check(J->bControl||F.StartControl(),TEXT("production eight-second internal reference begins with own settings")))return false;Go(604);return true;
    }
    if(Stage==604)
    {

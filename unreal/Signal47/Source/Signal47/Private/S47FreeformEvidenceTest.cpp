@@ -334,15 +334,22 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==13)
   {
    if(!S.Job)CrossSample(M);
-   // GAMEPLAY-LOOP-01: the unusual pulsar take is kept as it ends (no chart, no control) and goes straight to the reel deck
+   // GAMEPLAY-LOOP-01: the unusual pulsar take prints no chart. RX-ANOMALY-FLOW-20261113: it is retained on the receiver's RECORD tab,
+   // with its 8-second reference, before the reel deck
    if(J->Stage!=(S.Job?EJob::Recorded:EJob::Chart))return;
    if(!Check(M,S.Job?J->Elapsed==18:S.Cross==5,TEXT("actual timed acquisition completes; normal reference includes all five settled cross positions")))return;
    if(S.Job)
    {
-    if(!Check(M,J->bPrinted&&!J->bControl&&!F.CanRecordControl()&&F.PrinterJobId()!=J->Id&&F.JobNextAction(*J).StartsWith(TEXT("REEL DECK")),TEXT("the unusual take keeps its original at once, prints no chart and names the reel deck: ")+F.JobNextAction(*J))||!Document(M,J->Id+TEXT("-original"),true))return;
-    Close(M);const FVector A=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original"));WalkTo(M,{{0,-1.7},{3.8,-1.7},{4.4,-1.3},{3.8,1.2},{A.X,1.2},{A.X,A.Z-1.2}},20);return;
+    if(!Check(M,!J->bPrinted&&!J->bControl&&!F.CanRecordControl()&&F.PrinterJobId()!=J->Id&&F.JobNextAction(*J).Contains(TEXT("RECORD TAB, RETAIN THE TAKE")),TEXT("the unusual take prints no chart and waits on the receiver's RECORD tab: ")+F.JobNextAction(*J)))return;
+    if(!Click(M,TEXT("RECORD")))return;Go(131,.4);return;
    }
    Close(M);WalkTo(M,{{0,-1.7},{3.8,-1.7},{4.8,-.4}},14);return;
+  }
+  if(S.Stage==131)
+  {
+   if(!Click(M,TEXT("RETAIN TAKE / RECORD REFERENCE 8 s")))return;
+   if(!Check(M,J->bPrinted&&J->bControl&&F.JobNextAction(*J).StartsWith(TEXT("REEL DECK")),TEXT("RETAIN TAKE on the RECORD tab keeps the original, starts its reference and names the reel deck: ")+F.JobNextAction(*J))||!Document(M,J->Id+TEXT("-original"),true))return;
+   Close(M);const FVector A=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original"));WalkTo(M,{{0,-1.7},{3.8,-1.7},{4.4,-1.3},{3.8,1.2},{A.X,1.2},{A.X,A.Z-1.2}},20);return;
   }
   if(S.Stage==14){Aim(M,Target(M,TEXT("printer")));Go(15);return;}
   if(S.Stage==15)
@@ -370,13 +377,13 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==20){if(!Check(M,F.AudioDesk->ListeningPosition(),TEXT("actual walking reaches the powered physical tape listening position")))return;Aim(M,Target(M,TEXT("ff:audio:original")));Go(21);return;}
   if(S.Stage==21){if(!Use(M,TEXT("ff:audio:original")))return;Aim(M,Target(M,TEXT("ff:audio:play")));Go(22);return;}
   if(S.Stage==22){if(!Use(M,TEXT("ff:audio:play"))||!Check(M,F.AudioPlaying()&&!M->ModalOpen(),TEXT("physical PLAY begins the original recording while world remains active")))return;Go(23,0);return;}
-  // GAMEPLAY-LOOP-01: one listen confirms it: no marks to set, no control reel; the deck keeps it by itself past the last tick
+  // RX-ANOMALY-FLOW-20261113: the listen leaves RETAIN to the operator; RETAIN marks the ticks where no marks are set
   if(S.Stage==23)
-  {if(F.AudioPlaying()||F.AudioPreparing())return;if(!Check(M,J->OriginalCovered==18&&J->ControlCovered==0,TEXT("original is actually heard in full; no seek/coverage injection, no control")))return;
-   if(!Check(M,J->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.Budget()==S.InitialCash+20&&J->MarkStart<=9.3&&J->MarkEnd>=12.6,TEXT("one listen confirms the anomaly and marks the ticks, without payment or origin claim")))return;
+  {if(F.AudioPlaying()||F.AudioPreparing())return;if(!Check(M,J->OriginalCovered==18&&J->ControlCovered==0,TEXT("original is actually heard in full; no seek/coverage injection")))return;
+   if(!Check(M,!J->bAudioReviewed&&FS47FreeformSession::TapeHeard(*J)&&F.Budget()==S.InitialCash+20,TEXT("one listen leaves RETAIN to the operator, without payment")))return;
    Aim(M,Target(M,TEXT("ff:audio:retain")));Go(291);return;}
   if(S.Stage==291)
-  {if(!Use(M,TEXT("ff:audio:retain"))||!Check(M,J->bAudioReviewed&&F.Budget()==S.InitialCash+20,TEXT("physical RETAIN after the listen keeps it, without payment")))return;
+  {if(!Use(M,TEXT("ff:audio:retain"))||!Check(M,J->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.Budget()==S.InitialCash+20&&J->MarkStart<=9.3&&J->MarkEnd>=12.6,TEXT("physical RETAIN after the listen confirms it and marks the ticks, without payment")))return;
    // Tom, 9 November: the check opens no case; it says the next step, the confirmation at OPS.
    if(!Check(M,!(F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen)&&F.FeedbackText().Contains(TEXT("Confirm anomaly: source unresolved"))&&!F.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("the tape check opens no case and says only the next step: confirm at OPS")))return;Photo(TEXT("03-physical-original-control"));Go(292);return;}
   if(S.Stage==292){WalkTo(M,{{.42,1.2},{-4.2,1.2},{-4.2,2.49}},30);return;}

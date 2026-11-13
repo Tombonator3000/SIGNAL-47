@@ -544,6 +544,18 @@ public:
  static bool PlainAnomaly(const FJob& J);
  // One listen at the reel deck: the original heard from the start past its last extra tick.
  static bool TapeHeard(const FJob& J);
+ // RX-ANOMALY-FLOW-20261113 (-> M3, Tom 13 November: from RECORD on the receiver to the sound confirmed at the reel deck, with a
+ // reference to hear it against). The extra-tick take, once it ends, waits on the receiver's RECORD tab until the operator retains it
+ // there (RetainTake): its original page goes into the notebook and the 8-second station reference (antennas out, the internal
+ // control) records with it. Only then does the reel deck play it; RETAIN at the deck is the operator's own press (ConfirmOnTape).
+ static bool RetainWaits(const FJob& J);
+ static FString PlainAnomalyNext(const FJob& J); // the next step of an extra-tick take after its take ends
+ bool RetainTake();
+ // The receiver's RECORD tab holds the extra-tick take from ANOMALY DETECTED until it is retained there.
+ bool RecordTabHoldsAnomaly() const;
+ // The receiver tab open and the tab due (-1 none): 0 ACQUIRE, 1 TUNE, 2 ARRAY, 3 RECORD, 4 DATA (read by the native test).
+ int32 ReceiverPage() const { return ReceiverTab; }
+ int32 ReceiverDuePage() const { return ReceiverDueTab(); }
  // The selected job, tuned and ready, would be an extra-tick take if recorded now (StartAcquisition decides the same way).
  bool AnomalyAhead() const;
  // RX-ACQUIRE-SKY-20261113 (-> M3, Tom 13 November): the receiver's ACQUIRE page is a sky chart; the operator steers a reticle to where
@@ -564,6 +576,7 @@ public:
  void SeekAudio(double At);
  // Marks by a place on the tape, without moving it: first click is MARK IN, second MARK OUT, a third starts over.
  bool MarkAudioAt(double At);
+ static FString MarkSaid(const FJob& J); // RX-ANOMALY-FLOW-20261113: what the marks cover, in the deck's words
  bool CompareInstrument();
  bool RegisterComparison(const FString& Conclusion);
  bool FilePacket();
@@ -886,6 +899,7 @@ private:
  {
   bool bJob=false,bGated=false,bTutorialGate=false,bPower=true,bCaseWaits=false,bArrayBlocked=false;
   bool bPointReady=false,bSettled=false,bSky=false,bTuned=false,bCrossRunning=false,bCanControl=false,bDataAsk=false;
+  bool bAnomalyAhead=false,bPlainTake=false,bRetain=false; // RX-ANOMALY-FLOW-20261113: the extra-tick take is RECORD's
   EJobStage Stage=EJobStage::New;int32 Open=-1;
  };
  static int32 RxDueTab(const FRxDueIn& In);
