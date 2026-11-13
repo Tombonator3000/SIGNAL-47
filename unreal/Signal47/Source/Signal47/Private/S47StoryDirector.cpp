@@ -1,5 +1,6 @@
 #include "S47StoryDirector.h"
 #include "S47StoryScene.h"
+#include "S47StoryDrive.h"
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
 #include "S47Freeform.h"
@@ -40,7 +41,7 @@ namespace S47StoryDirectorLocal
  }
 }
 
-FS47StoryDirector::FS47StoryDirector(US47Main* Main):M(Main),Runner(MakeUnique<FS47EventBeats>(Main)),Scene(MakeUnique<FS47StoryScene>(Main))
+FS47StoryDirector::FS47StoryDirector(US47Main* Main):M(Main),Runner(MakeUnique<FS47EventBeats>(Main)),Scene(MakeUnique<FS47StoryScene>(Main)),Wagon(MakeUnique<FS47StoryDrive>(Main))
 {
  Scene->OnFlag=[this](const FString& F){SetFlag(F);};
 }
@@ -205,6 +206,9 @@ bool FS47StoryDirector::Load(const S47J::FObj& Saved)
  // Step 5 (absent in older saves: no scene): the scene under way, taken up again.
  const S47J::FObj* SceneSaved=nullptr;
  if(Scene&&Saved->TryGetObjectField(TEXT("scene"),SceneSaved)&&SceneSaved)Scene->Load(*SceneSaved);
+ // STORY-DRIVE-OWN-CAR-20261113 (absent in older saves: no wagon, the truck as it was saved): the wagon on the way, or parked at SARO.
+ const S47J::FObj* CarSaved=nullptr;
+ if(Wagon&&Saved->TryGetObjectField(TEXT("car"),CarSaved)&&CarSaved)Wagon->Load(*CarSaved);
  return bAt;
 }
 
@@ -220,6 +224,7 @@ void FS47StoryDirector::Stop()
  ObjectiveLine.Reset();
  ClockAt=-1;ClockWaited=0;
  if(Scene)Scene->Stop();
+ if(Wagon)Wagon->Stop(); // STORY-DRIVE-OWN-CAR-20261113
  LastEvent.Reset();LastGround.Reset();LastPatrol.Reset();HoleFrom=-1;
  LastVisit.Reset();LastTaken=-1;bEndDue=false;bEnded=false; // step 6, the morning act
  SetHold(false);
@@ -290,6 +295,8 @@ void FS47StoryDirector::Tick(double Dt)
   if(LastTaken>=0&&TakenNow>LastTaken&&!HasFlag(TakenFlag)){SetFlag(TakenFlag);UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story flag %s"),TakenFlag);}
   LastTaken=TakenNow;
  }
+ // STORY-DRIVE-OWN-CAR-20261113: the wagon (its pose, its parking at SARO) and its radio's bed, before the radio scene's line.
+ if(Wagon)Wagon->Tick(Dt,Scene&&Scene->CarRadio());
  if(Scene)Scene->Tick(Dt);
  StepClock(Dt);
  SetHold(M!=nullptr&&Busy());
@@ -330,6 +337,7 @@ S47J::FObj FS47StoryDirector::Save() const
  if(Under.Num())O->SetArrayField(TEXT("scripts"),Under);
  // Step 5: the scene under way (the pack's own save: its scene, line, pending reply and flags).
  if(Scene&&Scene->Busy())O->SetObjectField(TEXT("scene"),Scene->Save());
+ if(Wagon)if(const S47J::FObj Car=Wagon->Save();Car.IsValid())O->SetObjectField(TEXT("car"),Car); // STORY-DRIVE-OWN-CAR-20261113
  return O;
 }
 
@@ -536,12 +544,14 @@ bool FS47StoryDirector::BeginDrive(US47Main* Main)
 {
  if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryAtSaro"))){UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story night starts at SARO (-S47StoryAtSaro)"));return false;}
  if(!Main||!IsValid(Main->World)||Main->World->bBusy||Main->World->bDriving){UE_LOG(LogS47StoryDirector,Warning,TEXT("S47: story night: the drive to SARO could not start; the night starts at SARO"));return false;}
+ // STORY-DRIVE-OWN-CAR-20261113 (Tom 13 Nov): the player's own station wagon, as the old Story's drive.
+ if(Main->StoryDirector&&Main->StoryDirector->Active()&&Main->StoryDirector->Wagon&&Main->StoryDirector->Wagon->BeginNew())return true;
  const FDrive D=DriveStart();
  FS47TripOpts O;
  O.Leg=D.Leg;O.AtPos=D.At;O.AtHeading=D.Heading;
  O.Hint=TEXT("SARO: leave the truck on its pad by the station and go in to OPS.");
  Main->World->StartTrip(D.Leg,D.To,O);
- UE_LOG(LogS47StoryDirector,Display,TEXT("S47: story night starts in the truck on the %s leg at %.1f %.1f, heading for %s"),*D.Leg,D.At.X,D.At.Z,*D.To);
+ UE_LOG(LogS47StoryDirector,Warning,TEXT("S47: story night: the wagon could not start; in the truck on the %s leg at %.1f %.1f, heading for %s"),*D.Leg,D.At.X,D.At.Z,*D.To);
  return true;
 }
 
@@ -895,10 +905,17 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
    Check(!S47EventScript::ReadDirs().Contains(StoryDir)&&!S47EventScript::Find(TEXT("evening_handover")),TEXT("STORY-4: Freeform's event folders do not read the story's scripts"));
   }
  }
- { // STORY-DRIVE-20261112: a new Story night begins in the truck on the road to SARO, and the drive hands over to the handover
+ { // STORY-DRIVE-20261112: a new Story night begins on the road to SARO (STORY-DRIVE-OWN-CAR-20261113: in the player's own wagon)
   const FDrive D=DriveStart();
   Check(D.Leg==TEXT("road")&&D.To==TEXT("saro")&&FMath::IsNearlyEqual(D.At.X,8001.8)&&FMath::IsNearlyEqual(D.At.Z,S47RoadShape::TOWN().Z1+35)&&D.Heading==0,
-   TEXT("STORY-8: a new Story night starts in the truck on the road leg at the old Story's drive start, heading north for SARO"));
+   TEXT("STORY-8: a new Story night starts on the road leg at the old Story's drive start (US47World::BeginCommute's), heading north for SARO"));
+  { // STORY-DRIVE-OWN-CAR-20261113: the drive's "car" is in the director's save only while there is one; an older save reads as none.
+   FS47StoryDirector Old(nullptr);
+   Old.BeginWith(TEXT("{\"v\":1,\"acts\":[{\"id\":\"evening\",\"title\":\"Evening\",\"from\":\"17:00\"}]}"),S47J::Read(TEXT("{\"v\":1,\"act\":\"evening\",\"flags\":[\"drive_begun\"]}")));
+   const S47J::FObj Kept=Old.Save();
+   Check(Old.Active()&&Old.HasFlag(TEXT("drive_begun"))&&Old.DriveHost()&&Old.DriveHost()->GetPhase()==FS47StoryDrive::EPhase::None&&Kept.IsValid()&&!Kept->HasField(TEXT("car")),
+    TEXT("STORY-DRIVE-OWN-CAR: a Story save from before the wagon loads as before (no car in it, none written back)"));
+  }
   const FS47EventScript* Drive=FindScript(TEXT("evening_drive"));
   const FS47EventScript* Diner=FindScript(TEXT("evening_diner"));
   if(!Drive||!Diner)Lines.Add(TEXT("NOTE story director: no evening_drive.json or evening_diner.json in Content/Director/Story/beats beside this build"));
@@ -935,6 +952,7 @@ bool FS47StoryDirector::SelfTest(TArray<FString>& Lines)
   const bool bLint=S47EventScript::Lint(Bad).Num()>0&&S47EventScript::LintStory(Unknown).Num()>0;
   Check(bScenes&&bLint,TEXT("STORY-5: evening_handover plays the handover as a scene; Freeform's lint refuses a scene beat, the story's refuses an unknown scene"));
   OK&=FS47StoryScene::SelfTest(Lines);
+  OK&=FS47StoryDrive::SelfTest(Lines); // STORY-DRIVE-OWN-CAR-20261113: the wagon, its radio's beds, its save
   // Step 6: a start beat's event, and the evening's second script
   FS47EventScript Ev;Ev.Id=TEXT("story_event_probe");Ev.Name=TEXT("probe");
   FS47Beat St;St.Do=ES47Beat::Start;St.Event=TEXT("feeder_fault");Ev.Beats.Add(St);
