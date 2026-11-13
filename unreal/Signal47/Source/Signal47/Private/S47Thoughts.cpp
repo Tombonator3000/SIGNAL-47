@@ -28,6 +28,14 @@ namespace
    R.Add(TEXT("animals_flee"),{TEXT("What spooked them?"),TEXT("They felt it first."),TEXT("Whatever it was, they ran.")});
    R.Add(TEXT("car_light"),{TEXT("Headlights, but no engine."),TEXT("Is somebody following me?"),TEXT("Who's out here?")});
    R.Add(TEXT("dust_devil"),{TEXT("Wind. Just wind."),TEXT("Where did that come from?"),TEXT("Funny, there's no breeze.")});
+   // NIGHT31-PLACES-20261114 (S47NightPlaces.cpp): the nine at their places that hold the ground; the marks are found later.
+   R.Add(TEXT("windmill_knock"),{TEXT("Who's working that pump at this hour?"),TEXT("There's no wind for that."),TEXT("That's the rod. Has to be the rod.")});
+   R.Add(TEXT("school_swing"),{TEXT("Who's on the swings this late?"),TEXT("No wind. So what's moving it?"),TEXT("Kids. Has to be kids.")});
+   R.Add(TEXT("mine_knock"),{TEXT("That's coming from the shaft."),TEXT("Rocks settling. Just rocks."),TEXT("Somebody down there?")});
+   R.Add(TEXT("bay_door"),{TEXT("Who opened the bay?"),TEXT("The station's shut. Isn't it?"),TEXT("Wind caught it. Must have.")});
+   R.Add(TEXT("cemetery_lamp"),{TEXT("Who visits graves at this hour?"),TEXT("Somebody with a lantern."),TEXT("A mourner. This late?")});
+   R.Add(TEXT("shack_lamp"),{TEXT("Who's out at the line shack?"),TEXT("Somebody lit a lamp out there."),TEXT("A rider, maybe. This late?")});
+   R.Add(TEXT("road_flare"),{TEXT("Somebody broke down?"),TEXT("A flare, and no car."),TEXT("Who sets a flare and leaves?")});
    // Seen, far or near; the hours decide what comes (S47NightTiers), these only say what a tired man says.
    R.Add(TEXT("landing"),{TEXT("Those lights. What are those?"),TEXT("I swear I saw something."),TEXT("That's no plane."),TEXT("Did anybody else see that?")});
    R.Add(TEXT("horizon_figure"),{TEXT("I swear I saw something."),TEXT("Probably a post. Probably."),TEXT("Too far off to be anybody.")});
