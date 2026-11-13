@@ -83,6 +83,9 @@ struct FS47AlbumShot
 	bool IsDeveloped() const { return LabStage < 0 || LabStage == 3; }
 	/** Where the things the story looks for are on the print (u, v from the top left), by target. */
 	TArray<TPair<FString, FVector2D>> Targets;
+	// What the game saw legibly in the frame. A "freeform-small:" mark (FS47FreeformDirector::SmallPrefix) is a thing too small to make out
+	// on the print: it must not raise the print's worth or keep it from being thrown away, or the print gives the secret away.
+	bool HasSeenTarget() const { for (const TPair<FString, FVector2D>& SeenT : Targets) { if (!SeenT.Key.StartsWith(TEXT("freeform-small:"))) { return true; } } return false; }
 };
 /** The print with the face: which one, whether the game has said it has come up, and whether it
  *  has been looked at closely since. */

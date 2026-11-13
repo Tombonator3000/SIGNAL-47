@@ -2609,7 +2609,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			const FS47Album* Album = Weak->M->Night && Weak->M->Night->Album ? Weak->M->Night->Album.Get() : nullptr;
 			const FS47AlbumShot* Shot = Album ? Album->Shots().FindByPredicate([&Id](const FS47AlbumShot& S) { return S.Id == Id; }) : nullptr;
 			// Targets are what the game saw in the frame: controls and anomalies find their print by them.
-			if (!Shot || Shot->bOdd || Shot->Targets.Num() > 0 || (Album->FaceShot() && Album->FaceShot()->Id == Id)) return false;
+			if (!Shot || Shot->bOdd || Shot->HasSeenTarget() || (Album->FaceShot() && Album->FaceShot()->Id == Id)) return false;
 			const auto& Dir = Weak->M->Freeform->Director;
 			if (!Dir) return true;
 			if (Dir->HoldsPhoto(Id)) return false;

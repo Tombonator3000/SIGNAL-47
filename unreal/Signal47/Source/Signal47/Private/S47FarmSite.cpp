@@ -140,7 +140,7 @@ void FS47FarmSite::StepFieldDraw(double Dt)
   if(Near){Title=FString::Printf(TEXT("the open ground near %s"),*Near->Title);F.EventPlaces->Used(Near->Id,TEXT("field_visit"));}
   FS47EventPlaces::LogPick(TEXT("field_visit"),Near,TEXT("where the player is on foot"));
  }
- Visit=1;VisitAge=VisitDwell=0;bVisitSeen=false;bVisitTaken=false;
+ Visit=1;VisitUntil=0;VisitAge=VisitDwell=0;bVisitSeen=false;bVisitTaken=false;
  VisitWho=PickWho(GroundKind(),FMath::Fmod(Clock,86400.)/3600.,FMath::FRand());
  // D48-20261110 (D46-17): leaned toward the night's own kind (S47AlienKinds), as the take on the receiver sounded it.
  VisitWho=S47AlienKinds::LeanVisit(VisitWho,S47AlienKinds::NightLean(F.Seed(),Night),FMath::Fmod(Clock,86400.)/3600.,FS47NightRhythm::Roll(F.Seed(),Night,0x4c45414eu));
@@ -621,7 +621,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   if(M->Rhythm&&!M->Rhythm->Allow(TEXT("site_visit")))return;
   if(M->Rhythm)M->Rhythm->Began(TEXT("site_visit"));
   const bool bNaturalWho=TestRoll<0;const float Roll=TestRoll>=0?TestRoll:FMath::FRand();TestRoll=-1;
-  Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(GroundKind(),FMath::Fmod(Clock,86400.)/3600.,Roll);
+  Visit=1;VisitUntil=0;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(GroundKind(),FMath::Fmod(Clock,86400.)/3600.,Roll);
   // D48-20261110 (D46-17): the night's own kind leans on it (S47AlienKinds); a test's set roll keeps the kind it asked for.
   if(bNaturalWho){const int32 WhoNight=FS47FreeformSession::NightOf(Clock);VisitWho=S47AlienKinds::LeanVisit(VisitWho,S47AlienKinds::NightLean(M->Freeform->Seed(),WhoNight),FMath::Fmod(Clock,86400.)/3600.,FS47NightRhythm::Roll(M->Freeform->Seed(),WhoNight,0x4c45414eu));}
   UE_LOG(LogTemp,Display,TEXT("S47: site visit begins at %s, kind %d"),*Place,VisitWho);

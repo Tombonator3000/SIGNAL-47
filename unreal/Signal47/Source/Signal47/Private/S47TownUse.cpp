@@ -140,7 +140,7 @@ int32 FS47TownUse::PrintValue(const FS47AlbumShot& Shot, bool bRecord, FString& 
 	const double Hour = FMath::Fmod(FMath::Max(0., Shot.Clock), 86400.) / 3600.;
 	if (Hour >= 20 || Hour < 5) V += 1;
 	if (!Shot.Enlarged.IsEmpty()) V += 1;
-	if (Shot.Targets.Num() > 0) V += 4;
+	if (Shot.HasSeenTarget()) V += 4;
 	if (bRecord) V += 3;
 	if (Shot.bOdd) V += 10;
 	Why = Shot.bOdd ? TEXT("he goes quiet over it, and then names a price") : V >= 5 ? TEXT("he likes it") : V >= 3 ? TEXT("a fair postcard") : TEXT("a print is a print");
@@ -736,7 +736,7 @@ bool FS47TownUse::SellCopy(const FString& PhotoId)
 	SoldPrints.Add(PhotoId); ++SoldToday;
 	// M7 (Tom, 9 November): inside the week's cap on side money; past it he still takes the copy, for the window, and pays nothing
 	const int32 Paid = F.EarnSide(Pay, TEXT("souvenir copy"));
-	if (Shot->bOdd || Shot->Targets.Num() > 0) Note(TEXT("sold_odd"));
+	if (Shot->bOdd || Shot->HasSeenTarget()) Note(TEXT("sold_odd"));
 	UE_LOG(LogS47TownUse, Display, TEXT("S47: town: a copy of print %s sold for $%d (%s)"), *PhotoId, Pay, *Why);
 	if (M->UI) M->UI->Toast(Paid >= Pay ? FString::Printf(TEXT("$%d for the right to copy it. You keep your print."), Pay)
 		: Paid > 0 ? FString::Printf(TEXT("$%d for it, not $%d: with that, this week's field allowance is used up. You keep your print."), Paid, Pay)
