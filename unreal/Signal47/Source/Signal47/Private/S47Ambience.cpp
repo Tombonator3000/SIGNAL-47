@@ -824,11 +824,11 @@ void FS47Ambience::MillCreak(const FVector& Listener, const FVector& Where, doub
 	// or one made here
 	if (const TSharedPtr<FS47AudioBuffer> Clip = NightClip(TEXT("mill")))
 	{
-		PlayBufferAt(Clip, Listener, Where, 0.8 * Sk, Rnd(0.93, 1.05), 30);
+		PlayBufferAt(Clip, Listener, Where, 0.38 * Sk, Rnd(0.93, 1.05), 30); // Tom 13 November: it was very loud at the windmill itself
 		FarCounts.FindOrAdd(TEXT("windmill"))++;
 		return;
 	}
-	if (!PlayAt(FMath::FRand() < 0.5 ? TEXT("doorCreak0") : TEXT("doorCreak1"), Listener, Where, 0.55 * Sk, Rnd(0.38, 0.52), 30).IsValid())
+	if (!PlayAt(FMath::FRand() < 0.5 ? TEXT("doorCreak0") : TEXT("doorCreak1"), Listener, Where, 0.28 * Sk, Rnd(0.38, 0.52), 30).IsValid())
 	{
 		FS47AudioContext& Ac = *Ctx;
 		const double Start0 = Ac.CurrentTime() + 0.05, Len = Rnd(0.7, 1.3);
@@ -841,7 +841,7 @@ void FS47Ambience::MillCreak(const FVector& Listener, const FVector& Where, doub
 		Osc->Connect(Band); Band->Connect(Env); Env->Connect(Into); Osc->Start(Start0); Osc->Stop(Start0 + Len + 0.05);
 	}
 	// and now and then the pump rod knocking in the tower
-	if (FMath::FRand() < 0.55) PlayAt(TEXT("doorMetal"), Listener, Where + FVector(0, -6, 0), 0.24 * Sk, Rnd(0.45, 0.62), 30, Rnd(0.5, 1.4));
+	if (FMath::FRand() < 0.55) PlayAt(TEXT("doorMetal"), Listener, Where + FVector(0, -6, 0), 0.13 * Sk, Rnd(0.45, 0.62), 30, Rnd(0.5, 1.4));
 	FarCounts.FindOrAdd(TEXT("windmill"))++;
 }
 
