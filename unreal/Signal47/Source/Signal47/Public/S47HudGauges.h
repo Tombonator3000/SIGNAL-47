@@ -83,9 +83,12 @@ namespace S47HudGauges
 	SIGNAL47_API uint8 Segments(int32 Digit);
 
 	/** The task's cassette card: it comes in when the task changes, stands six seconds and fades out over one. NoteAlpha: its
-	 *  strength T seconds after the change. */
-	constexpr double NoteIn = 0.25, NoteHold = 6.0, NoteFade = 1.0;
+	 *  strength T seconds after the change. TASKS-TEN-20261113 (Tom, change 1: «the primary line stays»): after its seven seconds it
+	 *  does not go: it settles small and dim in its corner (NoteRest of its strength, NoteSmall of its size, NoteScale) and stands
+	 *  still there until the task changes, when it comes in bright again. */
+	constexpr double NoteIn = 0.25, NoteHold = 6.0, NoteFade = 1.0, NoteRest = 0.38, NoteSmall = 0.72;
 	SIGNAL47_API double NoteAlpha(double T);
+	SIGNAL47_API double NoteScale(double T);
 	/** D45-20261110: two task lines that differ only in their figures ("Recording 37%" and "Recording 38%") are the same task, and the
 	 *  card does not come in again for them. Never true for an empty line. */
 	SIGNAL47_API bool SameTask(const FString& A, const FString& B);
