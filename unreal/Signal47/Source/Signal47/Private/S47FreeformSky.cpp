@@ -250,8 +250,9 @@ bool FS47FreeformSession::SkySelfTest(TArray<FString>& Lines)
 	FS47FreeformSession Before(nullptr); Before.Begin(S47J::Read(S47J::Write(Old)));
 	bool bNone = Before.Work.Num() == S.Work.Num();
 	for (const FJob& Each : Before.Work) bNone &= !Each.bSky;
-	const FString Rewritten = S47J::Write(Before.Save());
-	Check(bNone && !Rewritten.Contains(TEXT("\"sky\"")), TEXT("a save from before the sky chart reads as it did: no fix held, none written"));
+	const auto Rewritten = Before.Save();
+	for (const auto& V : S47J::Arr(Rewritten, TEXT("jobs"))) bNone &= V && V->Type == EJson::Object && !V->AsObject()->HasField(TEXT("sky"));
+	Check(bNone, TEXT("a save from before the sky chart reads as it did: no fix held, none written"));
 	// past recording the fix is no longer asked for; back at the start it is dropped
 	S.Work[0].bSky = false; S.Work[0].Stage = EJobStage::Integrating;
 	const bool bPast = S.SkyAcquired() && S.AcquireSky();

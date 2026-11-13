@@ -1005,6 +1005,7 @@ void FS47DevFreeform::StepCards()
   // A sealed-station test: both outside doors shut and the player in the control room, through the whole take.
   if(bCase&&FS47FreeformCases::Def(Card.CaseLine).Tests[Card.CaseTest].Condition==EC::DoorsSealed)
   {M->Web->SetDoorOpen(TEXT("doorSouth"),false);M->Web->SetDoorOpen(TEXT("doorEast"),false);M->Player->Place(0,-1.2,UE_DOUBLE_PI);}
+  F->AcquireSky(); // RX-ACQUIRE-SKY-20261113: the sky fix, once the array has settled (nothing where it is not asked for)
   if(!F->StartAcquisition())
   {
    if(F->Clock()-CardsWait>=600){Say(FString::Printf(TEXT("recording would not start: %s"),*F->NextAction().Left(200)));Give(TEXT("the recording would not start"));}

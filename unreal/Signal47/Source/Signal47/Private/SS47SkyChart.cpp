@@ -54,7 +54,7 @@ namespace
 
 void SS47SkyChart::Construct(const FArguments& Args)
 {
-	Sky = Args._Model; StepFn = Args._OnStep; CalmFn = Args._Calm;
+	Sky = Args._Model; StepFn = Args._OnStep; CalmFn = Args._Calm; KeyFn = Args._OnKey;
 	ForceVolatile(true);
 }
 
@@ -113,6 +113,7 @@ FReply SS47SkyChart::OnKeyDown(const FGeometry&, const FKeyEvent& E)
 {
 	// Only the steering keys, and only while there is something to steer: every other key goes on to the screen as before.
 	if (!Steerable() || SteerOf(E.GetKey()).IsZero()) return FReply::Unhandled();
+	if (!E.IsRepeat() && !HeldKeys.Contains(E.GetKey()) && KeyFn) KeyFn(0);
 	HeldKeys.Add(E.GetKey());
 	return FReply::Handled();
 }
@@ -135,6 +136,7 @@ FReply SS47SkyChart::OnMouseButtonDown(const FGeometry& G, const FPointerEvent& 
 	const FPlot P = PlotFor(FVector2f(G.GetLocalSize()));
 	if (!Contains(P, Local)) return FReply::Unhandled();
 	HoverLocal = Local; bHover = true;
+	if (KeyFn) KeyFn(Sky->HasBearings() ? 0 : 1);
 	Sky->PointAt(ToSky(P, Local));
 	// a click on the chart gives it the keys
 	return FReply::Handled().SetUserFocus(AsShared(), EFocusCause::Mouse);
@@ -391,7 +393,7 @@ bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 			FString::Printf(TEXT("%.0f x %.0f: the chart's window at one scale (%.2f units a degree), elevation up, with the readouts beside it"), Size.X, Size.Y, P.Scale));
 	}
 	Check(SteerOf(EKeys::Up) == FVector2D(0, 1) && SteerOf(EKeys::Down) == FVector2D(0, -1) && SteerOf(EKeys::Left) == FVector2D(-1, 0) && SteerOf(EKeys::Right) == FVector2D(1, 0)
-		&& SteerOf(EKeys::Gamepad_DPad_Up) == FVector2D(0, 1) && SteerOf(EKeys::Gamepad_DPad_Left) == FVector2D(-1, 0) && SteerOf(EKeys::Escape).IsZero() && SteerOf(EKeys::Enter).IsZero() && SteerOf(EKeys::Tab).IsZero(),
-		TEXT("the arrow keys and the d-pad steer; Escape, Enter and Tab stay the screen's"));
+		&& SteerOf(EKeys::Gamepad_DPad_Up) == FVector2D(0, 1) && SteerOf(EKeys::Gamepad_DPad_Left) == FVector2D(-1, 0) && SteerOf(EKeys::Escape).IsZero(),
+		TEXT("the arrow keys and the d-pad steer; Escape stays the way out"));
 	return bOk;
 }

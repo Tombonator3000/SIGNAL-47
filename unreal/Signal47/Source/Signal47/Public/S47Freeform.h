@@ -51,6 +51,9 @@ public:
   // Critic 12 Nov (GAMEPLAY-LOOP-01): what the take will be, decided once as the tuned receiver first shows it (DecideTake), so that
   // ANOMALY DETECTED and the take agree whatever the Director says later. -1 not yet, 0 routine, 1 unusual. Saved while Pointed.
   int32 TakeDecided=-1;bool bTakeOut=false;FString TakePhen;
+  // RX-ACQUIRE-SKY-20261113: the source found on the receiver's sky chart (ACQUIRE) for this pointing. Saved while Pointed ("sky");
+  // a save from before has none, and a job back at the start loses it.
+  bool bSky=false;
  };
  explicit FS47FreeformSession(US47Main* Main);
  ~FS47FreeformSession();
@@ -543,6 +546,20 @@ public:
  static bool TapeHeard(const FJob& J);
  // The selected job, tuned and ready, would be an extra-tick take if recorded now (StartAcquisition decides the same way).
  bool AnomalyAhead() const;
+ // RX-ACQUIRE-SKY-20261113 (-> M3, Tom 13 November): the receiver's ACQUIRE page is a sky chart; the operator steers a reticle to where
+ // the antennas' bearings cross and the receiver takes the fix, then TUNE is the frequency search (S47SkyAcquire.h the rule,
+ // SS47SkyChart the picture, S47FreeformSky.cpp the session's part). Where the rule is live (a real game; a developer run only
+ // when a test asks) recording waits for the fix: ReceiverReady asks SkyAcquired.
+ // AcquireSky: the way through without a hand on the chart (bots, tests, the F10 card player): the fix at once, if the selected
+ // job's array is on target and settled. True when the job has its fix (now or already).
+ bool AcquireSky();
+ bool SkyAcquired() const;
+ bool SkyRuleLive() const;
+ void TestSkyRule(){bTestSky=true;}
+ // The selected job's source is the unusual kind on the chart (the same answer the take will give: AnomalyAhead's, without the tuning).
+ bool SkyOdd() const;
+ TSharedPtr<class FS47SkyAcquire> SkyFix;
+ static bool SkySelfTest(TArray<FString>& Lines);
  bool AudioAction(const FString& Action);
  void SeekAudio(double At);
  // Marks by a place on the tape, without moving it: first click is MARK IN, second MARK OUT, a third starts over.
@@ -793,6 +810,13 @@ private:
  void IngestObservations();
  int32 IngestedObservations=0;
  int32 OpsSection=0,ReceiverTab=0;
+ // RX-ACQUIRE-SKY-20261113: the job the chart's search is for, the job and state the receiver last chose its page for (a tab picked
+ // by hand stays), when the page goes over to TUNE after a lock (real seconds; -1 none), and the sounds read once. None of it saved.
+ bool bTestSky=false,bSkySoundsTried=false;FString SkyFixJob,SkyTabKey;double SkyHandAt=-1;
+ void SyncSkyFix();void SkyChartStep(double Dt);void SkyHeld(FJob& HeldJob,bool bByHand);void StepSkyFix();
+ void LoadSkySounds();void SkySound(uint32 Events,int32 Blip);
+ FString SkyPrompt() const;
+ TSharedRef<class SWidget> SkyPage(TSharedPtr<class SWidget>& KeysTo);
  int32 DataRef=0; // D48-20261110 (D46-16): the reference the receiver's DATA page shows beside the take; not saved
  // D45-20261110: ARRAY STATUS's tab (0 STATUS, 1 MAINTENANCE) and the fault picked on MAINTENANCE; presentation only, never saved
  int32 StatusTab=0;FString MaintPick;
@@ -893,7 +917,8 @@ private:
  void FollowTapeJob();
  FString DetectedJob; // the job whose ANOMALY DETECTED was last said aloud (once a take; not saved)
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);
- void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false);
+ // KeysTo (RX-ACQUIRE-SKY-20261113): the widget on the page that has the keys first; none: the page itself, as before.
+ void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false,TSharedPtr<SWidget> KeysTo=nullptr);
  void OpenWaitConfirmation(double Target);
  FS47Profile EffectiveProfile(const FJob& Job) const;
  FString JobLine(const FJob& J) const;

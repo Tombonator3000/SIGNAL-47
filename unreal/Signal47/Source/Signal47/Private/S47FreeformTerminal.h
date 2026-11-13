@@ -81,7 +81,7 @@ namespace S47FreeformTerminal
  FW FivePoint(TFunction<int32()> Done,TFunction<bool()> Running,TFunction<bool()> Required);
  // D48-20261110 (D46-14): the TUNE page's fine-tuning window (the spectrum zoomed on the target, the tuned marker moving as the dial turns,
  // the peak growing with the carrier lock) and the DATA page's spectrogram (Sample: time 0..1, frequency 0..1 to brightness 0..1; Has false: nothing yet).
- FW TuneZoom(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality);
+ FW TuneZoom(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality,float Height=190);
  FW Spectrogram(TFunction<float(float,float)> Sample,TFunction<bool()> Has,float Height);
  // State per element: 0 ready, 1 selected, 2 isolated/fault, 3 moving
  FW AntennaGrid(int32 Count,TFunction<FString(int32)> Label,TFunction<int32(int32)> State,TFunction<void(int32)> Pick);

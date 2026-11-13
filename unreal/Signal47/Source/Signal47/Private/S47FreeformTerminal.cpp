@@ -567,8 +567,8 @@ namespace S47FreeformTerminal
    return L+4;
   }
  };
- FW TuneZoom(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality)
- {const auto W=SNew(STuneZoom);W->Rx=Receiver;W->Card=Card;W->Q=Quality;return SNew(SBox).HeightOverride(190)[W];}
+ FW TuneZoom(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality,float Height)
+ {const auto W=SNew(STuneZoom);W->Rx=Receiver;W->Card=Card;W->Q=Quality;return SNew(SBox).HeightOverride(Height)[W];}
  // D48-20261110 (D46-14): a grid of tube-green cells, time across and low frequency at the foot. Brightest cells go amber.
  class SSpectrogram:public SLeafWidget
  {

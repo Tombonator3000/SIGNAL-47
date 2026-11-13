@@ -80,7 +80,7 @@ FS47FreeformSession::FTerminalIdle FS47FreeformSession::TerminalIdle(int32 Scree
  }
  return I;
 }
-void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool Live)
+void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool Live,TSharedPtr<SWidget> KeysTo)
 {
  if(!M||!M->UI||!M->Web||!M->Player||!RequirePower())return;
  const TWeakObjectPtr<US47Main> Main=M;
@@ -101,12 +101,12 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
  auto Content=S47FreeformTerminal::Frame(Title,Body);
  S47FreeformTerminal::SetClock(nullptr);S47FreeformTerminal::SetStation(FString());S47FreeformTerminal::SetHumScreen(-1); // the frame keeps its own copy; Story screens show no stale Freeform clock
  if(const auto Current=TerminalView.Pin();Current.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen())
- {Current->SetScreen(Content,Content);bTelemetry=Live;return;}
+ {Current->SetScreen(Content,KeysTo.IsValid()?KeysTo:TSharedPtr<SWidget>(Content));bTelemetry=Live;return;} // (RX-ACQUIRE-SKY-20261113: the sky chart has the keys first)
  const TWeakObjectPtr<US47Main> Owner=M;
  const auto View=SNew(SS47ScreenView).Screen(Screen).Web(M->Web.Get()).Walker(M->Player.Get()).bUseLeaves(true).OnLeft([Owner,this]
  {if(Owner.IsValid()&&Owner->Freeform.Get()==this&&Owner->UI)Owner->UI->Close();});
  if(!View->OnGlass()){M->UI->Toast(TEXT("The physical workstation display is unavailable."),4);return;}
- View->SetScreen(Content,Content);
+ View->SetScreen(Content,KeysTo.IsValid()?KeysTo:TSharedPtr<SWidget>(Content));
  M->UI->Open(View,[Owner,this]
  {
   if(IsEngineExitRequested()||!Owner.IsValid()||Owner->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Owner->Freeform.Get()!=this)return;

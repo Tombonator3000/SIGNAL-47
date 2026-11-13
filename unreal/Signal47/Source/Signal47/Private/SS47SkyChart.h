@@ -25,6 +25,8 @@ public:
 		// what happened. Without one the chart steps the model itself.
 		SLATE_ARGUMENT(TFunction<void(double)>, OnStep)
 		SLATE_ARGUMENT(TFunction<bool()>, Calm)
+		// The operator's hand on the chart, for its sound: 0 a steering key or a click taken, 1 a click refused (no bearings yet).
+		SLATE_ARGUMENT(TFunction<void(int32)>, OnKey)
 	SLATE_END_ARGS()
 	void Construct(const FArguments& Args);
 	virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(1040, 384); }
@@ -53,6 +55,7 @@ private:
 	TSharedPtr<FS47SkyAcquire> Sky;
 	TFunction<void(double)> StepFn;
 	TFunction<bool()> CalmFn;
+	TFunction<void(int32)> KeyFn;
 	TSet<FKey> HeldKeys;
 	FVector2f HoverLocal = FVector2f::ZeroVector;
 	bool bHover = false;

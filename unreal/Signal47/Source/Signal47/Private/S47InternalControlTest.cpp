@@ -82,19 +82,31 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(!Check(F.JobNextAction(*Take).StartsWith(TEXT("REEL DECK"))&&F.JobLocation(*Take).StartsWith(TEXT("Reel deck"))&&F.TerminalLines(1).Contains(TEXT("ANOMALY DETECTED")),TEXT("hint and location name the reel deck: ")+F.JobNextAction(*Take)))return;
   M->Player->Place(0,-2.15,0);F.OpenReceiver();Go(20,1.);return;
  }
- if(Stage==20){if(!Click(TEXT("ACQUIRE")))return;Go(21,1.);return;}
+ if(Stage==20){if(!Click(TEXT("TUNE")))return;Go(21,1.);return;} // RX-ACQUIRE-SKY-20261113: the recording key and the tape strip are TUNE's now
  if(Stage==21)
  {
   TArray<TSharedRef<SButton>> Keys;bool KeySeen=false;Scan(TEXT("ON TAPE / REEL DECK"),Keys,KeySeen);
-  if(!Check(Keys.Num()==1&&!Keys[0]->IsEnabled(),TEXT("ACQUIRE says the take is on tape and the reel deck is next; nothing to press here")))return;
+  if(!Check(Keys.Num()==1&&!Keys[0]->IsEnabled(),TEXT("TUNE says the take is on tape and the reel deck is next; nothing to press here")))return;
   TArray<TSharedRef<SButton>> Control;bool ControlSeen=false;Scan(TEXT("RECORD CONTROL / 8 s"),Control,ControlSeen);
   if(!Check(Control.Num()==0,TEXT("the receiver offers no control for the unusual take")))return;
   TSharedPtr<SWidget> Up=Keys[0];while(Up.IsValid()&&Up->GetTypeAsString()!=TEXT("SScrollBox"))Up=Up->GetParentWidget();
   const float Over=Up.IsValid()?StaticCastSharedPtr<SScrollBox>(Up)->GetScrollOffsetOfEnd():-1.f;
-  UE_LOG(LogTemp,Display,TEXT("S47 receiver ACQUIRE with the tape strip: %.1f units past the glass"),Over);
-  if(!Check(Up.IsValid()&&Over<1.f,FString::Printf(TEXT("ACQUIRE with the tape strip fits the glass without scrolling (%.1f over)"),Over)))return;
+  UE_LOG(LogTemp,Display,TEXT("S47 receiver TUNE with the tape strip: %.1f units past the glass"),Over);
+  if(!Check(Up.IsValid()&&Over<1.f,FString::Printf(TEXT("TUNE with the tape strip fits the glass without scrolling (%.1f over)"),Over)))return;
   if(!Check(Shows(TEXT("ANOMALY ON TAPE")),TEXT("the receiver's banner names the anomaly on tape")))return;
-  Shot(TEXT("acquire-after-take.png"));Go(70,1.);return;
+  Shot(TEXT("tune-after-take.png"));Go(22,1.);return;
+ }
+ // RX-ACQUIRE-SKY-20261113: ACQUIRE is the sky chart; after the take it shows the fix as held, fits the glass, and leads on to TUNE.
+ if(Stage==22){if(!Click(TEXT("ACQUIRE")))return;Go(23,1.5);return;}
+ if(Stage==23)
+ {
+  TArray<TSharedRef<SButton>> Onward;bool OnwardSeen=false;Scan(TEXT("TUNE >"),Onward,OnwardSeen);
+  if(!Check(Shows(TEXT("SKY CHART / FIND THE SOURCE"))&&Onward.Num()==1&&Onward[0]->IsEnabled()&&F.SkyFix.IsValid()&&F.SkyAcquired(),TEXT("ACQUIRE is the sky chart: after the take its fix is held and TUNE is the way on")))return;
+  TSharedPtr<SWidget> Up=Onward[0];while(Up.IsValid()&&Up->GetTypeAsString()!=TEXT("SScrollBox"))Up=Up->GetParentWidget();
+  const float Over=Up.IsValid()?StaticCastSharedPtr<SScrollBox>(Up)->GetScrollOffsetOfEnd():-1.f;
+  UE_LOG(LogTemp,Display,TEXT("S47 receiver ACQUIRE sky chart: %.1f units past the glass"),Over);
+  if(!Check(Up.IsValid()&&Over<1.f,FString::Printf(TEXT("the sky chart fits the glass without scrolling (%.1f over)"),Over)))return;
+  Shot(TEXT("acquire-sky-chart.png"));Go(70,1.);return;
  }
  if(Stage==70)
  {
