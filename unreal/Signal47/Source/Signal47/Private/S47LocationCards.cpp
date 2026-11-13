@@ -162,10 +162,11 @@ namespace S47LocationCards
   State=FState();State.Session=Session;
   const S47J::FObj Kept=S47J::Obj(Saved,TEXT("locationCards"));
   if(!Kept.IsValid())return;
-  for(const TPair<FString,TSharedPtr<FJsonValue>>& Was:Kept->Values)
+  for(const auto& Was:Kept->Values)
   {
+   const FString Key(Was.Key.ToView());
    double Day=0;
-   if(Find(Was.Key)&&Was.Value.IsValid()&&Was.Value->TryGetNumber(Day)&&FMath::IsFinite(Day)&&Day>=1&&Day<=100000)State.Shown.Add(Was.Key,int32(Day));
+   if(Find(Key)&&Was.Value.IsValid()&&Was.Value->TryGetNumber(Day)&&FMath::IsFinite(Day)&&Day>=1&&Day<=100000)State.Shown.Add(Key,int32(Day));
   }
  }
  bool SelfTest(TArray<FString>& Out)
