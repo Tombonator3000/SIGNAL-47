@@ -326,9 +326,11 @@ FNote BuildNote(const FIn& In, bool bAll)
  // What the clock allows now.
  if (Clock >= 0)
  {
-  const FWork* Now = All.FindByPredicate([&](const FWork& W) { return IsOpen(W) && W.Windowed() && Clock >= W.Start && Clock < W.End; });
+  // (a card not up yet is the evening's line below, not a case window: TASKS-TEN-20261113)
+  const auto CaseWindow = [](const FWork& W) { return W.Windowed() && !W.Key.StartsWith(TEXT("card:")); };
+  const FWork* Now = All.FindByPredicate([&](const FWork& W) { return IsOpen(W) && CaseWindow(W) && Clock >= W.Start && Clock < W.End; });
   const FWork* Soon = nullptr;
-  for (const FWork& W : All) if (IsOpen(W) && W.Windowed() && W.Start > Clock && (!Soon || W.Start < Soon->Start)) Soon = &W;
+  for (const FWork& W : All) if (IsOpen(W) && CaseWindow(W) && W.Start > Clock && (!Soon || W.Start < Soon->Start)) Soon = &W;
   const double Hour = FMath::Fmod(Clock, Day) / 3600.;
   FString Say;
   // LEAD-FIX-20261110: as the gates in FS47CaseFieldTests have it: the roof wants a minute heard in the control room; the gate and the
