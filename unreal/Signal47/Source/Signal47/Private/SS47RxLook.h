@@ -11,6 +11,11 @@ class FS47SkyAcquire;
 // (FS47FreeformSession::RxLive) or from the sky rule (FS47SkyAcquire), and the pictures themselves are S47RxLook's functions.
 // Bright strokes are drawn as a tube draws them (a wide faint pass under a thin bright one); nothing pulses or types itself in
 // with Calm flashes chosen. Buttons and everything a test clicks stay ordinary widgets beside these.
+//
+// Round 2 (13 November, the first look in the engine): no word under the next step's size (S47RxLook::TextFloor; fewer words
+// rather than smaller ones), every number written by S47RxLook::Num (none shows a 47), one more step of glow on the three
+// headline words (SARO OPS, the state, the card's frequency), the header's right block in from the glass's rounded corner,
+// the waterfall as thin rows of grain with a soft line, and a little noise riding on the locked I and Q traces.
 
 // The header: the dish emblem in strokes, SARO OPS, the station's name as the gate sign has it, the terminal, the date and clock
 // the terminal always showed, and the array's own pointing.
@@ -21,7 +26,7 @@ public:
 		SLATE_ARGUMENT(TSharedPtr<FS47RxFeed>, Feed)
 	SLATE_END_ARGS()
 	void Construct(const FArguments& Args);
-	virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(1000, 64); }
+	virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(1000, 68); }
 	virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 L, const FWidgetStyle&, bool) const override;
 private:
 	TSharedPtr<FS47RxFeed> Live;
@@ -42,7 +47,7 @@ private:
 	TSharedPtr<FS47RxFeed> Live;
 };
 
-// The waterfall: the newest row at the top, the window centred on the dial.
+// The waterfall: the newest row at the top, the window centred on the dial, the seconds down its left side.
 class SS47RxFall : public SLeafWidget
 {
 public:
@@ -87,8 +92,8 @@ private:
 };
 
 // Acquisition and tracking: the sky rule's own readouts (signal to noise, residual, each arm's delay and the rate it changes at
-// as the sky turns, the nearest catalogued source and how far off it the bearings cross) and a bull's-eye of how far the reticle
-// stands off the crossing, in the rule's own degrees of azimuth and elevation.
+// as the sky turns, the nearest catalogued source and how far off it the bearings cross), a name and its number a line, and a
+// bull's-eye of how far the reticle stands off the crossing, in the rule's own degrees of azimuth and elevation.
 class SS47RxTrack : public SLeafWidget
 {
 public:

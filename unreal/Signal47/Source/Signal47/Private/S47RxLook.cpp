@@ -21,11 +21,11 @@ S47RxLook::FState S47RxLook::StateOf(const FStateIn& In)
 	if (In.Stage == 2)
 	{
 		if (In.bBlocked || !In.bTuned || !In.bPointReady || !In.bSettled) return Say(EState::RecordingHeld, TEXT("RECORDING HELD"), false);
-		return Say(EState::Recording, FString::Printf(TEXT("RECORDING %d/%d s"), FMath::Clamp(int32(In.Elapsed), 0, 999), FMath::Clamp(FMath::RoundToInt32(In.Seconds), 0, 999)), true);
+		return Say(EState::Recording, FString::Printf(TEXT("RECORDING %s/%s s"), *Num(FMath::Clamp(int32(In.Elapsed), 0, 999)), *Num(FMath::Clamp(FMath::RoundToInt32(In.Seconds), 0, 999))), true);
 	}
 	if (In.Stage <= 4)
 	{
-		if (In.bReference) return Say(EState::Reference, FString::Printf(TEXT("REFERENCE %d/8 s"), FMath::Clamp(int32(In.ReferenceAt), 0, 8)), true);
+		if (In.bReference) return Say(EState::Reference, FString::Printf(TEXT("REFERENCE %s/8 s"), *Num(FMath::Clamp(int32(In.ReferenceAt), 0, 8))), true);
 		if (In.bPlainOnTape) return Say(EState::Anomaly, TEXT("ANOMALY DETECTED"), true);
 		return Say(EState::OnTape, TEXT("TAKE ON TAPE"), false);
 	}
@@ -118,24 +118,44 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 		FScope On; On.bPowered = true; On.Tuned = On.Card = 1419.9; On.Strength = 1.; On.Seed = 4711u;
 		FScope Off = On; Off.Strength = 0.;
 		FScope Low = On; Low.Tuned = On.Card + .05; Low.Strength = .4;
-		constexpr int32 Bins = 40;
-		bool bSame = true, bOther = false; double Mid = 0, Side = 0, MidOff = 0, SideOff = 0, LineAt = 0;
+		auto A0 = [](const FScope& In) { return FallRow(In, 0u, false); };
+		bool bSame = true, bOther = false, bWhole = true;
+		double LineAt = 0, Lit = 0, Dark = 0;
+		int32 RunCount = 0, RunsLeast = FallRunsMost, RunsMost = 0;
 		for (uint32 Row = 0; Row < 60; ++Row)
 		{
 			const FFallRow A = FallRow(On, Row, false), B = FallRow(Off, Row, false), C = FallRow(Low, Row, false);
-			for (int32 Bin = 0; Bin < Bins; ++Bin)
+			FFallRun RunsA[FallRunsMost], RunsAgain[FallRunsMost], RunsOther[FallRunsMost];
+			const int32 CountA = FallRuns(A, On.Seed, RunsA), CountAgain = FallRuns(FallRow(On, Row, false), On.Seed, RunsAgain), CountOther = FallRuns(A, On.Seed + 1u, RunsOther);
+			bSame &= CountA == CountAgain;
+			bOther |= CountA != CountOther;
+			// a row's runs stand end to end from the left edge to the right, each a little of the window long
+			bWhole &= CountA >= 10 && CountA <= FallRunsMost && RunsA[CountA - 1].End == 1.f;
+			float From = 0.f;
+			for (int32 I = 0; I < CountA; ++I)
 			{
-				bSame &= FallCell(A, On.Seed, Bin, Bins) == FallCell(FallRow(On, Row, false), On.Seed, Bin, Bins);
-				bOther |= FallCell(A, On.Seed, Bin, Bins) != FallCell(A, On.Seed + 1u, Bin, Bins);
+				bSame &= CountA == CountAgain && RunsA[I].End == RunsAgain[I].End && RunsA[I].Level == RunsAgain[I].Level;
+				bOther |= I < CountOther && RunsA[I].Level != RunsOther[I].Level;
+				bWhole &= RunsA[I].End > From && RunsA[I].End - From < .12f && RunsA[I].Level > 0.f && RunsA[I].Level < .6f;
+				From = RunsA[I].End;
 			}
-			Mid += FallCell(A, On.Seed, Bins / 2, Bins) + FallCell(A, On.Seed, Bins / 2 - 1, Bins); Side += FallCell(A, On.Seed, 4, Bins) + FallCell(A, On.Seed, Bins - 5, Bins);
-			MidOff += FallCell(B, On.Seed, Bins / 2, Bins) + FallCell(B, On.Seed, Bins / 2 - 1, Bins); SideOff += FallCell(B, On.Seed, 4, Bins) + FallCell(B, On.Seed, Bins - 5, Bins);
+			RunCount += CountA; RunsLeast = FMath::Min(RunsLeast, CountA); RunsMost = FMath::Max(RunsMost, CountA);
+			// the line: a bright core and two wider, fainter steps when the source is heard; nothing without it
+			float Half[FallLineSteps], Level[FallLineSteps], NoHalf = 0, NoLevel = 0;
+			bool bLine = true;
+			for (int32 Step = 0; Step < FallLineSteps; ++Step) bLine &= FallLine(A, On.Seed, Step, Half[Step], Level[Step]);
+			bWhole &= bLine && Half[0] < Half[1] && Half[1] < Half[2] && Half[2] < .06f && Level[0] > Level[1] && Level[1] > Level[2] && Level[0] > .75f && Level[2] > .05f;
+			Lit += Level[0];
+			Dark += FallLine(B, On.Seed, 0, NoHalf, NoLevel) ? 1. : 0.;
 			LineAt += C.Line;
 		}
 		const FFallRow Tick = FallRow(On, 9u, true), Plain = FallRow(On, 9u, false);
-		Check(bSame && bOther && Mid > Side * 2.5 && MidOff < SideOff * 1.6 && FMath::Abs(LineAt / 60. - (.5 - .05 / (2. * HalfSpan(On.FTol)))) < .02
-			&& FallCell(Tick, On.Seed, Bins / 2 + 3, Bins) > FallCell(Plain, On.Seed, Bins / 2 + 3, Bins) + .2f && FallCell(FallRow(FScope(), 3u, false), 1u, 5, Bins) == 0.f,
-			TEXT("the waterfall is the same for the same seed and row; the line stands bright in the middle when the dial is on the card, off to the side when it is off, gone with no lock; a tick is a short wide dash"));
+		float TickHalf = 0, TickLevel = 0, PlainHalf = 0, PlainLevel = 0, EdgeHalf = 0, EdgeLevel = 0;
+		const bool bTick = FallTick(Tick, TickHalf, TickLevel) && TickHalf > .08f && TickLevel > .5f && !FallTick(Plain, PlainHalf, PlainLevel);
+		FFallRun Unlit[FallRunsMost];
+		Check(bSame && bOther && bWhole && Lit > 45. && Dark == 0. && FMath::Abs(LineAt / 60. - (.5 - .05 / (2. * HalfSpan(On.FTol)))) < .02
+			&& bTick && FallRuns(FallRow(FScope(), 3u, false), 1u, Unlit) == 0 && !FallLine(FallRow(FScope(), 3u, false), 1u, 0, EdgeHalf, EdgeLevel) && !FallLine(A0(On), On.Seed, FallLineSteps, EdgeHalf, EdgeLevel),
+			FString::Printf(TEXT("the waterfall is the same for the same seed and row: a row is %d to %d runs of grain end to end (%.1f a row), the line a bright core with two fainter steps when the dial is on the card, off to the side when it is off, gone with no lock; a tick is a short wide dash"), RunsLeast, RunsMost, RunCount / 60.));
 		// the spectrum: a peak over the floor at the card's line, none without the source; the dial's mark follows the dial
 		const float PeakOn = FftLevel(On, .5f, 12.3), FloorOn = FftLevel(On, .1f, 12.3), PeakOff = FftLevel(Off, .5f, 12.3);
 		Check(PeakOn > FloorOn + .3f && PeakOff < FloorOn + .25f && FftLevel(On, .5f, 12.3) == PeakOn && FftLevel(FScope(), .5f, 1.) == 0.f && FMath::Abs(FftTuned(On) - .5f) < 1e-6f && FftTuned(Low) > .5f,
@@ -152,8 +172,52 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 		}
 		float CalmA = 0, CalmB = 0, CalmC = 0, CalmD = 0;
 		Quadrature(On, .3f, 10., true, CalmA, CalmB); Quadrature(On, .3f, 99., true, CalmC, CalmD);
-		Check(bQuad && Least > .68 && Most < .92 && Wild < .6 && Wild > .2 && CalmA == CalmC && CalmB == CalmD,
-			FString::Printf(TEXT("I and Q: a steady circle when locked (%.2f to %.2f), noise within %.2f when not, the same for the same clock, and standing with Calm flashes"), Least, Most, Wild));
+		// round 2: a locked carrier is not a drawn sine: a little noise rides on it, never much
+		double Ride = 0;
+		for (int32 I = 0; I <= 200; ++I)
+		{
+			float Ti = 0, Tq = 0;
+			Quadrature(On, I / 200.f, 33.3, false, Ti, Tq);
+			const double Turn = (7. * (I / 200.) - 33.3 * 1.1) * 2. * UE_DOUBLE_PI;
+			Ride = FMath::Max(Ride, FMath::Abs(double(Ti) - .8 * FMath::Cos(Turn)));
+		}
+		Check(bQuad && Least > .5 && Most < 1.05 && Wild < .6 && Wild > .2 && CalmA == CalmC && CalmB == CalmD && Ride > .08 && Ride < RideShare + .08,
+			FString::Printf(TEXT("I and Q: a circle when locked (%.2f to %.2f) with a little noise riding on the sines (%.2f of full scale at most), noise within %.2f when not, the same for the same clock, and standing with Calm flashes"), Least, Most, Ride, Wild));
+	}
+	{ // round 2: no number the frame draws shows a 47, and a clean number is written as it is
+		bool bNone = true, bKept = true, bNear = true;
+		int32 Swept = 0, Moved = 0;
+		double Farthest = 0;
+		for (int32 Decimals = 0; Decimals <= 3; ++Decimals)
+		{
+			const double Scale = Decimals == 0 ? 1. : Decimals == 1 ? 10. : Decimals == 2 ? 100. : 1000.;
+			for (double V = -2600.; V <= 2600.; V += .0731)
+			{
+				const FString Shown = Num(V, Decimals), Signed = Num(V, Decimals, 9, true), Padded = Num(V, Decimals, 9, false, true);
+				const double Back = FCString::Atod(*Shown);
+				++Swept;
+				bNone &= !Shows47(Shown) && !Shows47(Signed) && !Shows47(Padded) && Signed.Len() == 9 && Padded.Len() == 9;
+				const double Off = FMath::Abs(Back - V);
+				Farthest = FMath::Max(Farthest, Off);
+				// a number with no 47 in it is the number rounded, and one with a 47 is the nearest that has none
+				const int32 Whole = int32(FMath::RoundToDouble(V * Scale));
+				if (Near47(Whole) == Whole) bKept &= Off <= .5 / Scale + 1e-9;
+				else { ++Moved; bNear &= !Shows47(FString::FromInt(Near47(Whole))) && FMath::Abs(Near47(Whole) - Whole) >= 1; }
+			}
+		}
+		for (int32 I = -99999; I <= 99999; ++I) { const int32 N = Near47(I); bNone &= !Shows47(FString::FromInt(N)) && FMath::Abs(N - I) <= 500 && (Shows47(FString::FromInt(I)) || N == I); }
+		Check(bNone && bKept && bNear && Moved > 100 && Farthest <= 5.51
+			&& Num(53.04, 1) == TEXT("53.0") && Num(7.2, 1, 5, false, true) == TEXT("007.2") && Num(3.2, 1, 5, true) == TEXT(" +3.2") && Num(-0.04, 1) == TEXT("0.0") && Num(5., 0, 2, false, true) == TEXT("05")
+			&& Num(4.7, 1) == TEXT("4.8") && Num(47.) == TEXT("48") && Num(14.7, 1) == TEXT("14.8") && Num(.47, 2) == TEXT("0.48") && Num(147.) == TEXT("148") && Num(-4.7, 1, 6, true) == TEXT("  -4.8") && Num(47.5, 1) == TEXT("48.0") && Num(1419.647, 3) == TEXT("1419.648")
+			&& Shows47(TEXT("14h47m02s")) && Shows47(TEXT("+4.7")) && !Shows47(TEXT("04h07m")) && !Shows47(TEXT("74")),
+			FString::Printf(TEXT("no number the frame draws shows a 47: %d readouts swept from -2600 to 2600 at nought to three decimals, signed and padded, %d of them moved to the nearest number without one (never more than %.2f away), every other written as it is"), Swept * 3, Moved, Farthest));
+		int32 Counted = 0;
+		const FString Sixties = Clean47(47, [&Counted](int32 N) { ++Counted; return FString::Printf(TEXT("%02dm"), N); });
+		Check(Sixties == TEXT("48m") && Counted == 2 && Clean47(12, [](int32 N) { return FString::Printf(TEXT("%02dm"), N); }) == TEXT("12m"), TEXT("a readout in sixties that would show a 47 stands a step off; a clean one is written once, as it is"));
+	}
+	{ // round 2: the letters. Nothing under the next step's line, and a letter's width as the glass draws it
+		Check(TextFloor == 22 && FMath::Abs(GlyphWide(22) - 8.4375f) < 1e-4f && GlyphWide(20) == GlyphWide(22) && GlyphWide(18) > 18 * .4f && FMath::Abs(TextWide(10, 54) - 215.625f) < 1e-3f && GlyphWide(1) > 0.f,
+			FString::Printf(TEXT("the frame's smallest letters are the next step's (Mono %d, %.2f units wide on the glass: a whole number of the picture's pixels)"), TextFloor, GlyphWide(TextFloor)));
 	}
 	return bOk;
 }
