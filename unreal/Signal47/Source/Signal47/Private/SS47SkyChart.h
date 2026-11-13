@@ -29,7 +29,7 @@ public:
 		SLATE_ARGUMENT(TFunction<void(int32)>, OnKey)
 	SLATE_END_ARGS()
 	void Construct(const FArguments& Args);
-	virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(1040, 384); }
+	virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(1040, 376); }
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& G, const FKeyEvent& E) override;
 	virtual FReply OnKeyUp(const FGeometry& G, const FKeyEvent& E) override;
@@ -38,7 +38,7 @@ public:
 	virtual FReply OnMouseMove(const FGeometry& G, const FPointerEvent& E) override;
 	virtual void OnMouseLeave(const FPointerEvent& E) override;
 	virtual FCursorReply OnCursorQuery(const FGeometry& G, const FPointerEvent& E) const override;
-	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateRect& Cull, FSlateWindowElementList& Out, int32 L, const FWidgetStyle& Style, bool bEnabled) const override;
+	virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 L, const FWidgetStyle&, bool) const override;
 
 	// The plot inside the widget: where the chart's window sits, at one scale on both axes, with the readouts to its right.
 	struct FPlot { FVector2f Origin = FVector2f::ZeroVector, Extent = FVector2f::ZeroVector; float Scale = 1.f, ReadoutX = 0.f; };

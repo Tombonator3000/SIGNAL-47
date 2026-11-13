@@ -383,7 +383,7 @@ bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
 	auto Check = [&](bool bPass, const FString& What) { bOk &= bPass; Lines.Add(FString(bPass ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("sky chart: ") + What); };
-	for (const FVector2f Size : { FVector2f(1040, 384), FVector2f(1047, 384), FVector2f(900, 300), FVector2f(1200, 600) })
+	for (const FVector2f Size : { FVector2f(1040, 376), FVector2f(1047, 376), FVector2f(900, 300), FVector2f(1200, 600) })
 	{
 		const FPlot P = PlotFor(Size);
 		const FVector2f A = ToLocal(P, FVector2D(FS47SkyAcquire::AzMin, FS47SkyAcquire::ElMax)), B = ToLocal(P, FVector2D(FS47SkyAcquire::AzMax, FS47SkyAcquire::ElMin));

@@ -43,7 +43,8 @@ bool FS47FreeformSession::SkyAcquired() const
 void FS47FreeformSession::SyncSkyFix()
 {
 	const FJob* SkyJob = CurrentJob();
-	if (!SkyJob) { SkyFix.Reset(); SkyFixJob.Empty(); return; }
+	// (The model object is kept for the session's life once made: an open chart draws the same one the session steps.)
+	if (!SkyJob) { SkyFixJob.Empty(); return; }
 	if (!SkyFix.IsValid()) { SkyFix = MakeShared<FS47SkyAcquire>(); SkyFixJob.Empty(); }
 	const bool bFixHeld = SkyJob->bSky || SkyJob->Stage > EJobStage::Pointed;
 	const FVector2D CardPlace(TargetAz(), TargetEl());
@@ -215,7 +216,7 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo)
 	TArray<S47Kit::FW> Rows;
 	Rows.Add(SkyT::Panel(FString(), S47Kit::Col({
 		SkyT::TitleRow(TEXT("SKY CHART / FIND THE SOURCE"), TAttribute<FString>::CreateLambda([this, Name] { return FString::Printf(TEXT("CARD: %s  |  AZ %.1f  EL %.1f  |  %d ANTENNAS"), *Name, TargetAz(), TargetEl(), AvailableDishCount()); })),
-		SNew(SBox).HeightOverride(384)[Chart] })));
+		SNew(SBox).HeightOverride(376)[Chart] })));
 	Rows.Add(SkyT::Columns({
 		{ 1.f, SkyT::Button(TEXT("AZ -5"), Nudge(-5, 0), false, CanSteer) }, { 1.f, SkyT::Button(TEXT("AZ +5"), Nudge(5, 0), false, CanSteer) },
 		{ 1.f, SkyT::Button(TEXT("EL -5"), Nudge(0, -5), false, CanSteer) }, { 1.f, SkyT::Button(TEXT("EL +5"), Nudge(0, 5), false, CanSteer) },
