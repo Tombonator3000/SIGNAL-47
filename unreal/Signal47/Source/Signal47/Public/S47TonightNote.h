@@ -100,6 +100,8 @@ namespace S47TonightNote
  // NOW instead of the page used last; the notebook takes it back as it opens.
  struct FSeen { TSet<FString> Keys; uint64 Game = 0; bool bBegun = false, bPlain = false; };
  SIGNAL47_API FSeen& Seen();
+ // TASKS-TEN-20261113 (change 7): how many times the notebook's map has been turned to (in memory): what "put it on your map" waits for
+ SIGNAL47_API uint32& MapLooks();
  constexpr int32 MostLines = 4, MostDone = 1, MostChars = 60; // TASKS-TEN-20261113 (change 6): the card has room for four (Story's six)
  // PT-NOTEBOOK-20261109: the night's lines, one source for the pause menu's note and the notebook's NOW. bAll: no limit (NOW): every
  // line done tonight, every open line, and More 0; otherwise the note's six lines and the rest counted in More, which NOW has all of.

@@ -203,6 +203,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal,bool bOneNi
  if(!Saved&&bOneNight){Tutorial=0;WorldClock=17*3600+20*60;} // Story's one night: day 1, from the drive to SARO at 17:20 (Tom 12 Nov: like the old Story; at SARO about 18:00), nothing to teach
  JobSeed=M&&M->Flow&&!M->Flow->bDevRun?int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()):470047;
  Journal.Load(S47J::Obj(Saved,TEXT("journal")));
+ LoadNotePlan(Saved); // TASKS-TEN-20261113: what Dale asked, the pinned row ("notePlan"; an older save has none)
  Work.Reset();Findings.Reset();FindingDays.Reset();MysterySteps={0,0,0};Upgrades={false,false,false};SavedAngles.Reset();bRestoreAngles=false;Feedback.Empty();PhenomenonId.Empty();
  LoadBinder(Saved); // RECORDS-BINDER: when each packet went in ("binderFiled"); a save from before has none
  S47LocationCards::Load(this,Saved); // critic 12 Nov: today's location cards ("locationCards"; a save from before has none)
@@ -886,6 +887,7 @@ void FS47FreeformSession::Step(double Dt)
  IngestObservations();
  StepEquipmentFeedback();
  StepTutorial();
+ StepDaleAsks(); // TASKS-TEN-20261113 (change 7)
  // Unlike the original Story console, the physical Freeform receiver owns its monitor here.
  if(M->Audio)
  {
@@ -4233,13 +4235,91 @@ bool FS47FreeformSession::WindowOpenStep(FString& Next)const
  }
  return false;
 }
+void FS47FreeformSession::DaleSaid(const FString& Words)
+{
+ if(!bActive||Words.IsEmpty())return;
+ // his sentences, as he said them
+ TArray<FString> Said;FString Piece;
+ for(int32 I=0;I<Words.Len();++I)
+ {
+  Piece.AppendChar(Words[I]);
+  if((Words[I]==TEXT('.')||Words[I]==TEXT('?')||Words[I]==TEXT('!'))&&(I+1==Words.Len()||Words[I+1]==TEXT(' '))){Said.Add(Piece.TrimStartAndEnd());Piece.Reset();}
+ }
+ if(!Piece.TrimStartAndEnd().IsEmpty())Said.Add(Piece.TrimStartAndEnd());
+ const int32 Night=NightOf(WorldClock);
+ for(int32 I=0;I<Said.Num();++I)
+ {
+  const FString Low=Said[I].ToLower();
+  FString Kind,Row;
+  if(Low.Contains(TEXT("get outside"))||Low.Contains(TEXT("of the station, over "))){Kind=TEXT("look");Row=TEXT("DALE ASKED / OUTSIDE: ")+Said[I];}
+  else if(Low.Contains(TEXT("put it on your map")))
+  {
+   // with where he said it, from the sentence before: "Put it on your map: out at the salt lick, a mile and a half from the station."
+   FString Where=I>0?Said[I-1]:FString();Where.RemoveFromEnd(TEXT("."));
+   if(!Where.IsEmpty())Where=Where.Left(1).ToLower()+Where.Mid(1);
+   Kind=TEXT("map");Row=TEXT("DALE ASKED / MAP: Put it on your map")+(Where.IsEmpty()?FString(TEXT(".")):TEXT(": ")+Where+TEXT("."));
+  }
+  else if(Low.Contains(TEXT("night log"))){FString Ask=Said[I];Ask.RemoveFromStart(TEXT("And "));Ask=Ask.Left(1).ToUpper()+Ask.Mid(1);Kind=TEXT("log");Row=TEXT("DALE ASKED / NIGHT LOG: ")+Ask;}
+  if(Kind.IsEmpty()||!S47Script::LintText(Row).IsEmpty())continue;
+  if(DaleAskList.ContainsByPredicate([&](const FDaleAsk& A){return A.Night==Night&&A.Kind==Kind&&!A.bDone;}))continue;
+  FDaleAsk A;A.Kind=Kind;A.Row=Row;A.Night=Night;
+  A.Base=Kind==TEXT("log")?(NightLog?NightLog->OwnCount():0):Kind==TEXT("map")?int32(S47TonightNote::MapLooks()):0;
+  if(DaleAskList.Num()>=12)DaleAskList.RemoveAt(0);
+  DaleAskList.Add(A);
+  if(NightLog)NightLog->Note(TEXT("Dale asked on the walkie: ")+Said[I]);
+  UE_LOG(LogTemp,Display,TEXT("S47: Dale asked (%s): %s"),*Kind,*Row);
+ }
+}
+TArray<FString> FS47FreeformSession::DaleAskRows()const
+{
+ TArray<FString> Out;
+ const int32 Night=NightOf(WorldClock);
+ for(const FDaleAsk& A:DaleAskList)if(A.Night==Night&&!A.bDone)Out.Add(A.Row);
+ return Out;
+}
+void FS47FreeformSession::StepDaleAsks()
+{
+ // gone at 08:00 (the night they were asked in is over); ticked off once done
+ const int32 Night=NightOf(WorldClock);
+ DaleAskList.RemoveAll([Night](const FDaleAsk& A){return A.Night!=Night;});
+ for(FDaleAsk& A:DaleAskList)
+ {
+  if(A.bDone)continue;
+  if(A.Kind==TEXT("look"))A.bDone=M&&M->World&&M->Player&&!M->World->bDriving&&!M->World->Indoors(M->Player->Pos);
+  else if(A.Kind==TEXT("map"))A.bDone=int32(S47TonightNote::MapLooks())>A.Base;
+  else if(A.Kind==TEXT("log"))A.bDone=NightLog&&NightLog->OwnCount()>A.Base;
+  if(A.bDone)Changed();
+ }
+}
+void FS47FreeformSession::LoadNotePlan(const S47J::FObj& Saved)
+{
+ DaleAskList.Reset();
+ const S47J::FObj Plan=S47J::Obj(Saved,TEXT("notePlan"));if(!Plan.IsValid())return;
+ for(const TSharedPtr<FJsonValue>& V:S47J::Arr(Plan,TEXT("daleAsked")))
+ {
+  const TSharedPtr<FJsonObject>* O=nullptr;if(!V||!V->TryGetObject(O)||!O)continue;
+  FDaleAsk A;A.Kind=S47J::Str(*O,TEXT("kind"));A.Row=S47J::Str(*O,TEXT("row"));A.Night=S47J::Int(*O,TEXT("night"));A.Base=S47J::Int(*O,TEXT("base"));A.bDone=S47J::Bool(*O,TEXT("done"));
+  if((A.Kind==TEXT("look")||A.Kind==TEXT("map")||A.Kind==TEXT("log"))&&A.Row.StartsWith(TEXT("DALE ASKED / "))&&A.Row.Len()<=400&&DaleAskList.Num()<12)DaleAskList.Add(A);
+ }
+}
+void FS47FreeformSession::SaveNotePlan(const S47J::FObj& Out)const
+{
+ // nothing kept writes nothing: an older save reads the same
+ if(DaleAskList.IsEmpty())return;
+ const S47J::FObj Plan=S47J::New();
+ TArray<TSharedPtr<FJsonValue>> Asks;
+ for(const FDaleAsk& A:DaleAskList){const S47J::FObj O=S47J::New();S47J::Set(O,TEXT("kind"),A.Kind);S47J::Set(O,TEXT("row"),A.Row);S47J::Set(O,TEXT("night"),A.Night);S47J::Set(O,TEXT("base"),A.Base);S47J::Set(O,TEXT("done"),A.bDone);Asks.Add(MakeShared<FJsonValueObject>(O));}
+ Plan->SetArrayField(TEXT("daleAsked"),Asks);
+ S47J::Set(Out,TEXT("notePlan"),Plan);
+}
 FString FS47FreeformSession::DeadlineLine()const
 {
  // (in the list's own words, so that the note marks that row: FS47FreeformSession::Tasks)
  if(Places)for(const TPair<FString,bool>& Slip:Places->SlipRows(WorldClock))if(!Slip.Value)return Slip.Key;
  if(Director){const FString Reported=Director->ReportedLine();if(!Reported.IsEmpty()&&!Director->ReportDone())return Reported;}
  if(Director)for(const TPair<FString,bool>& Trail:Director->MysteryTrailRows())if(!Trail.Value)return Trail.Key;
- return FString();
+ const TArray<FString> Asks=DaleAskRows(); // TASKS-TEN-20261113 (change 7)
+ return Asks.IsEmpty()?FString():Asks[0];
 }
 FString FS47FreeformSession::WorkActivities(FString* Card)const
 {
@@ -5232,6 +5312,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Field&&ServiceGuide!=1)NoteChore(Result,TEXT("relay"),Field->HasArrayFault()?Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."):FString(),FString());
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const FString Step=CaseStep(Line).Task;!Step.IsEmpty())Result.Add({Step,false}); // CASES-OPS-20261109
  if(Director)for(const TPair<FString,bool>& Trail:Director->MysteryTrailRows())Result.Add({Trail.Key,Trail.Value}); // PT-NOTEBOOK-20261109: ticked off, not dropped
+ for(const FDaleAsk& Ask:DaleAskList)if(Ask.Night==NightOf(Clock()))Result.Add({Ask.Row,Ask.bDone}); // TASKS-TEN-20261113 (change 7): ticked off once done, gone at 08:00
  // LOOP-NIGHT-WATCH-20261113: in the night the night's cards first, the station goal after them (NightBeforeGoal)
  // TASKS-TEN-20261113 (change 3): a goal that only waits for daylight is no task at night (it is the half-line after the night's last line)
  const bool bNightFirst=NightBeforeGoal();const FString Goal=GoalWaits(WorldClock)?FString():StationGoalLine();
@@ -5245,7 +5326,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
 S47J::FObj FS47FreeformSession::Save()const
 {
  auto O=S47J::New();if(bStationLocked)S47J::Set(O,TEXT("stationLocked"),true);if(bMailboxStart)S47J::Set(O,TEXT("mailboxStart"),true);if(DriveCheckDay>0&&DriveCheckAt<0){auto Drive=S47J::New();S47J::Set(Drive,TEXT("day"),DriveCheckDay);S47J::Set(Drive,TEXT("tone"),DriveCheckTone);S47J::Set(Drive,TEXT("result"),DriveCheckResult);S47J::Set(O,TEXT("driveCheck"),Drive);}S47J::Set(O,TEXT("fieldFocus"),FieldFocus);S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);if(WokenNight>0)S47J::Set(O,TEXT("wokenNight"),WokenNight);if(RousedNight>0)S47J::Set(O,TEXT("rousedNight"),RousedNight);if(RulesLive()||ReviewWeek>0)S47J::Set(O,TEXT("reviewWeek"),ReviewWeek);if(Carried>0)S47J::Set(O,TEXT("carried"),Carried);if(StandbyTotal>0)S47J::Set(O,TEXT("standbyPaid"),StandbyTotal);if(SideWeek>0)S47J::Set(O,TEXT("sideWeek"),SideWeek);if(SidePaid>0)S47J::Set(O,TEXT("sidePaid"),SidePaid);if(Repairs>0)S47J::Set(O,TEXT("repairs"),Repairs);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);if(bPowerFault&&SkyFaultUntil>0)S47J::Set(O,TEXT("skyFaultUntil"),SkyFaultUntil);{TArray<FString> Seen;for(int32 I=0;I<S47StationFiles::Count()&&I<32;++I)if(StationFilesSeen&(1u<<I))Seen.Add(S47StationFiles::Get(I).Key);S47J::Set(O,TEXT("stationFilesSeen"),Seen);}S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
- S47J::Set(O,TEXT("journal"),Journal.Save());S47J::Set(O,TEXT("economyRevision"),2);
+ S47J::Set(O,TEXT("journal"),Journal.Save());SaveNotePlan(O);S47J::Set(O,TEXT("economyRevision"),2);
  SaveBinder(O); // RECORDS-BINDER: "binderFiled", only when a packet has gone in
  SaveDossier(O); // EVIDENCE-DOSSIER: "dossier", only once something is tagged
  S47LocationCards::Save(this,DayNumber,O); // critic 12 Nov: "locationCards", today's only
@@ -6230,6 +6311,34 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
      :TEXT("Next step on night 2: 20:30 to 01:15 the night watch's hour and his own time, never rest; the watch up at 01:48; done at 02:12 no rest yet; at 02:42 the old line, or rest (LOOP-NIGHT-WATCH)"));
    if(bPartsWalk)Check(bGoalAfter,TEXT("Next step on night 2, the repair parts in hand: the night watch leads from 20:30 and the repair is said after it (in the notebook too); at 02:12 and 02:42 the paid-work line, or rest, before the goal's daylight wait (Tom: nattevakta gå foran)"));
    Walk.Stop();
+  }
+  // TASKS-TEN-20261113 (change 7): what Dale asks on the walkie is kept, in his own words, under FOLLOW-UP, as the ladder's deadline;
+  // it survives a Continue, is ticked off when done and goes at 08:00
+  {
+   FS47FreeformSession Ask(nullptr);Ask.Begin(nullptr);Ask.Tutorial=0;Ask.TestAdvance(FMath::Max(0.,86400.+22*3600.-Ask.Clock()));
+   for(FJob& J:Ask.Work)J.Stage=EJobStage::Filed;
+   Ask.DaleSaid(TEXT("Get outside and look south of the station, over the salt lick. The sky there is lit like a ballpark. Go and look, before it stops."));
+   Ask.DaleSaid(TEXT("Out at the salt lick, a mile and a half from the station. Put it on your map. Not tonight: by daylight, with the walkie, and you look at the ground before you walk on it."));
+   Ask.DaleSaid(TEXT("And write it in the night log while you still have it: the hour, the bearing, what you saw with your own eyes. Ward wants a case carried through, with times in it. Not stories."));
+   Ask.DaleSaid(TEXT("Put it on your map.")); // the same ask again tonight is one row
+   const TArray<FString> Rows=Ask.DaleAskRows();
+   const bool bRows=Rows.Num()==3&&Rows[0]==TEXT("DALE ASKED / OUTSIDE: Get outside and look south of the station, over the salt lick.")
+    &&Rows[1]==TEXT("DALE ASKED / MAP: Put it on your map: out at the salt lick, a mile and a half from the station.")
+    &&Rows[2].StartsWith(TEXT("DALE ASKED / NIGHT LOG: Write it in the night log"));
+   const TArray<FS47Task> AskTasks=Ask.Tasks();
+   S47TonightNote::FIn AskIn;AskIn.bFreeform=true;AskIn.Clock=Ask.Clock();for(const FS47Task& T:AskTasks)AskIn.Tasks.Add({T.Text,T.bDone});
+   const S47TonightNote::FNote AskNote=S47TonightNote::Gather(AskIn,true);
+   const bool bFollow=AskNote.Lines.FilterByPredicate([](const S47TonightNote::FLine& L){return L.Source.StartsWith(TEXT("DALE ASKED / "))&&L.Kind==1&&S47TonightNote::TagText(L)==TEXT("THE LAND / until 08:00 / unknown");}).Num()==3;
+   const bool bDue=Ask.DeadlineLine()==Rows[0];
+   FS47FreeformSession Back(nullptr);Back.Begin(S47J::Read(S47J::Write(Ask.Save())));Back.TestAdvance(FMath::Max(0.,Ask.Clock()-Back.Clock()));
+   const bool bKept=Back.DaleAskRows()==Rows;
+   ++S47TonightNote::MapLooks();Back.StepDaleAsks();
+   const bool bTicked=Back.DaleAskRows().Num()==2&&Back.Tasks().ContainsByPredicate([&Rows](const FS47Task& T){return T.Text==Rows[1]&&T.bDone;});
+   Back.TestAdvance(FMath::Max(0.,2*86400.+8.5*3600.-Back.Clock()));Back.StepDaleAsks();
+   const bool bGone=Back.DaleAskRows().IsEmpty()&&!Back.Tasks().ContainsByPredicate([](const FS47Task& T){return T.Text.StartsWith(TEXT("DALE ASKED / "));});
+   Check(bRows&&bFollow&&bDue&&bKept&&bTicked&&bGone,
+    TEXT("TASKS-TEN (change 7): Dale's asks (outside, the map, the night log) are kept as DALE ASKED rows under FOLLOW-UP in his own words, the ladder's deadline, kept over a Continue, ticked off when done, gone at 08:00"));
+   Ask.Stop();Back.Stop();
   }
   // The next-step line across an ordinary night: no rest before the night watch (19:00 to 02:30), unless worn out; from 02:30 it may.
   {

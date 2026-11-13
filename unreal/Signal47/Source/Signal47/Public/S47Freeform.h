@@ -246,6 +246,14 @@ public:
  bool FieldWindowWaits(int32 Line) const;
  // The first deadline before noon still open: a bearing slip's circle, a report, a worth-a-look, what Dale asked. Empty: none.
  FString DeadlineLine() const;
+ // TASKS-TEN-20261113 (change 7): what Dale asks over the walkie (get outside and look, put it on your map, write it in the night log)
+ // is kept: a row "DALE ASKED / ..." under FOLLOW-UP on the note and NOW, in his own words (no new line of his), and a line in the
+ // night log as he asks; ticked off when it is done (outdoors, the map looked at, a line logged by hand), gone at 08:00. Saved with
+ // the notebook's state ("notePlan"; an older save has none). DaleSaid: a line of his heard on the set (FS47FieldRadio::Message).
+ struct FDaleAsk { FString Kind, Row; int32 Night=0; int32 Base=0; bool bDone=false; };
+ void DaleSaid(const FString& Words);
+ TArray<FString> DaleAskRows() const; // the open ones, oldest first
+ const TArray<FDaleAsk>& DaleAsks() const { return DaleAskList; }
  // The soonest of the cards waiting for the evening, and the next time it comes up; null if none is.
  const FJob* NextEveningCard(double& Up) const;
  // The rules a real game plays by. Developer fixtures keep the fixed ones unless a test asks (TestLiveRules).
@@ -928,6 +936,10 @@ private:
  // open tonight, and the one gone from it since (shown ticked off until 08:00, as the note's header promises). In memory only.
  mutable TMap<FString,FString> ChoresOpen,ChoresDone;mutable int32 ChoresNight=0;mutable double ChoresClock=-1;
  mutable FString PickRow; // TASKS-TEN-20261113: the row the ladder's last answer is (ObjectiveRow)
+ TArray<FDaleAsk> DaleAskList; // TASKS-TEN-20261113 (change 7)
+ void StepDaleAsks();
+ void LoadNotePlan(const S47J::FObj& Saved);
+ void SaveNotePlan(const S47J::FObj& Out) const;
  void NoteChore(TArray<FS47Task>& Result,const TCHAR* Kind,const FString& OpenLine,const FString& DoneLine) const;
  double PrimeBefore=-1; // an older save: what came back before this clock is not asked again (-1: nothing to prime)
  int32 AskLook=-1;

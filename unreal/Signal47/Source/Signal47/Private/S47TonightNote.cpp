@@ -506,6 +506,7 @@ FString S47TonightNote::KeyOf(const FString& Text) { return S47TonightNoteLocal:
 S47TonightNote::FNote S47TonightNote::Build(const FIn& In) { return Gather(In, false); }
 S47TonightNote::FDone& S47TonightNote::Tonight() { static FDone Mem; return Mem; }
 S47TonightNote::FSeen& S47TonightNote::Seen() { static FSeen Mem; return Mem; }
+uint32& S47TonightNote::MapLooks() { static uint32 Looks = 0; return Looks; }
 
 uint8 S47TonightNote::RankOf(const FString& Source, bool bWindowOpen)
 {

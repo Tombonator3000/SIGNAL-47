@@ -1894,6 +1894,7 @@ void SS47Notebook::Show(const FString& T)
 {
 	// show(t): a page turned stops what was being read
 	if (UI.IsValid()) UI->StopSpeech();
+	if (T == TEXT("map") && Tab != T) ++S47TonightNote::MapLooks(); // TASKS-TEN-20261113 (change 7): what Dale's "put it on your map" waits for
 	Tab = T;
 	if (UI.IsValid())
 	{

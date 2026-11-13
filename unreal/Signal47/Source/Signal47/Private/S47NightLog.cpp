@@ -1,4 +1,5 @@
 #include "S47NightLog.h"
+#include "S47Script.h"
 #include "S47Audio.h"
 #include "S47Docs.h"
 #include "S47EventPlaces.h"
@@ -283,6 +284,12 @@ int32 FS47NightLog::ReadCount() const
 }
 
 FS47NightLog::FSheet* FS47NightLog::Find(int32 Nt) { return Logs.FindByPredicate([Nt](const FSheet& Sh) { return Sh.Night == Nt; }); }
+
+void FS47NightLog::Note(const FString& Text)
+{
+	if (!M || !M->Freeform || S47Script::LintText(Text).Len() > 0) return;
+	Add(M->Freeform->Clock(), EPart::Work, Text);
+}
 
 void FS47NightLog::Add(double Clock, EPart Part, const FString& Text, const FString& At)
 {
