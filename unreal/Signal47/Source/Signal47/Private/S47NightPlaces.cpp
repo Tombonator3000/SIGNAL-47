@@ -13,6 +13,9 @@
 #include "S47NightTiers.h"
 #include "S47Rhythm.h"
 #include "S47Script.h"
+#include "S47StoryDirector.h"
+#include "S47FieldRadio.h"
+#include "S47Places.h"
 #include "S47Walker.h"
 #include "S47Weather.h"
 #include "S47Web.h"
@@ -77,16 +80,15 @@ namespace S47NightPlacesLocal
   if(Id==TEXT("cemetery_lamp"))return bWent?TEXT("You walked to the cemetery gate after a lamp."):TEXT("You watched a lamp move among the graves.");
   if(Id==TEXT("shack_lamp"))return bWent?TEXT("You walked out to the line shack when its lamp was lit."):TEXT("You saw a lamp lit in the line shack.");
   if(Id==TEXT("road_flare"))return bWent?TEXT("You stopped for a flare burning on the shoulder."):TEXT("You drove past a flare burning on the shoulder.");
-  if(Id==TEXT("cairn_stones"))return TEXT("You looked at the stones round the cairn on the rise.");
-  if(Id==TEXT("trough_birds"))return TEXT("You looked at the dead birds round the trough.");
+  if(Id==TEXT("cairn_stones"))return TEXT("You looked at the stones around the cairn on the rise.");
+  if(Id==TEXT("trough_birds"))return TEXT("You looked at the dead birds around the trough.");
   return FString();
  }
- // The rancher's word on the birds the next evening, on the CB in his own words, or as Dale passes it on (bPassed).
- FString BirdsTalk(const FString& Named,bool bPassed)
- {
-  return bPassed?FString::Printf(TEXT("A rancher found dead birds all round his trough out by %s this morning. Not a mark on them."),*Named)
-   :FString::Printf(TEXT("Anybody else find dead birds at their water this morning? Whole ring of them round my trough out by %s, and not a mark on one."),*Named);
- }
+ // The ones whose record says there was no wind: only on a still night (FS47Happenings::PlaceStill).
+ bool NeedsStill(const FString& Id){return Id==TEXT("windmill_knock")||Id==TEXT("school_swing");}
+ // How long a mark stays out there: the cairn's until eight two evenings on, the birds' a day more, so that the evenings it may be
+ // talked of (PlaceTalkNow) have it still there; the sane cap on waiting to be said or found.
+ double MarkUntil(bool bCairn,double Clock){return FS47FreeformSession::NightOf(Clock)*86400.+(bCairn?44.:68.)*3600.;}
  // The words a record may not have, as whole words, beyond S47Script::LintText and S47Hap::Clean (the brief's list for player text).
  bool Plain(const FString& Text)
  {
@@ -159,10 +161,10 @@ FString FS47Happenings::PlaceRecord(const FString& Id,const FString& Clock,int32
   return FString::Printf(TEXT("At %s a road flare was burning on the shoulder by %s. No car anywhere, and nobody near it.%s"),*Clock,*Title,
    bWent?TEXT(" It burned down to nothing as I came up."):TEXT(""));
  if(Id==TEXT("cairn_stones"))
-  return FString::Printf(TEXT("At %s at the cairn on the rise: eight stones laid on the ground in a ring round it, evenly spaced, the dirt under them still dark from the night.%s"),*Clock,
+  return FString::Printf(TEXT("At %s at the cairn on the rise: eight stones laid on the ground in a ring around it, evenly spaced, the dirt under them still dark from the night.%s"),*Clock,
    Outcome==2?TEXT(" In the night I had heard stones knock together out that way."):TEXT(""));
  if(Id==TEXT("trough_birds"))
-  return FString::Printf(TEXT("At %s at the salt lick and trough: small birds lying dead all round the trough, fourteen of them, on their backs. Not a mark on any of them. The water was still."),*Clock);
+  return FString::Printf(TEXT("At %s at the salt lick and trough: small birds lying dead all around the trough, fourteen of them, on their backs. Not a mark on any of them. The water was still."),*Clock);
  return FString();
 }
 
@@ -179,6 +181,7 @@ bool FS47Happenings::BeginPlace(const FString& Id,bool bForced,FString& Why)
  const FString Area=M->Web->Area();
  const double Hd=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;
  if(!bForced&&!(Hd>=19.5||Hd<5.5))return No(TEXT("not in the dark"));
+ if(!PlaceMayRun(bForced,FS47StoryDirector::Of(M)!=nullptr))return No(TEXT("not on a Story night"));
  double Px=0,Pz=0;const bool bWhere=PlayerRoad(Px,Pz);
  const FS47EventPlace* P=nullptr;
  if(*Def->Place)
@@ -203,7 +206,7 @@ bool FS47Happenings::BeginPlace(const FString& Id,bool bForced,FString& Why)
   const bool bTownPlace=Id==TEXT("school_swing")||Id==TEXT("bay_door");
   if(bTownPlace&&!bForced&&!(bWhere&&InTown(Area,Px,Pz)))return No(TEXT("not in Caliche"));
   if(!Band(H->MinM,H->MaxM))return No(TEXT("not within earshot of its place, or too near it"));
-  if(!bForced&&(Id==TEXT("windmill_knock")||Id==TEXT("school_swing"))&&WindMph>=(Id==TEXT("school_swing")?10.:12.))return No(TEXT("too windy tonight: it would be the wind"));
+  if(!bForced&&NeedsStill(Id)&&!PlaceStill(WindMph))return No(TEXT("too windy tonight: it would be the wind"));
   if(Id==TEXT("bay_door"))
   {
    if(!S47GasBayDoor::Built())return No(TEXT("the gas station is not in this scene"));
@@ -246,6 +249,8 @@ bool FS47Happenings::BeginPlace(const FString& Id,bool bForced,FString& Why)
   if(Id==TEXT("cemetery_lamp")&&!bForced&&!(bWhere&&InTown(Area,Px,Pz)))return No(TEXT("not in Caliche"));
   if(!Band(Id==TEXT("cemetery_lamp")?60.:150.,Id==TEXT("cemetery_lamp")?450.:1300.))return No(TEXT("not in sight of its place, or too near it"));
   FVector At;if(!WorldOf(P->X,P->Z,At))return No(TEXT("its place is not in this area"));
+  // Only with its place in front of the player (the cab's nose, or where he looks): a light behind him burns for nobody.
+  if(!bForced&&!Seen(At+FVector(0,1,0),1400,PlaceStartDeg))return No(TEXT("its place is not in front of the player"));
   if(!Prop(Kind))return No(TEXT("nothing to draw it with"));
   if(!Ask())return No(TEXT("the rhythm says not now"));
   Arm(Id==TEXT("cemetery_lamp")?240.:420.);
@@ -257,14 +262,14 @@ bool FS47Happenings::BeginPlace(const FString& Id,bool bForced,FString& Why)
  const bool bCairn=Id==TEXT("cairn_stones");
  const TCHAR* SiteKind=bCairn?TEXT("cairnring"):TEXT("deadbirds");
  if(HasSite(SiteKind))return No(TEXT("one is out there already"));
- if(!bForced&&Away>=0&&Away<(bCairn?350.:400.))return No(TEXT("the player is too near its place"));
+ if(!bForced&&Away>=0&&Away<(bCairn?250.:400.))return No(TEXT("the player is too near its place"));
  if(!Ask())return No(TEXT("the rhythm says not now"));
  FSite S;S.Kind=SiteKind;S.Place=P->Id;S.Title=P->Title;S.Night=F->Day();S.Serial=Serial+1;S.X=P->X;S.Z=P->Z;
  S.Yaw=FS47NightRhythm::Roll(F->Seed(),F->Day(),PlaceSalt(Id))*2*UE_DOUBLE_PI;
  // The cairn's until eight the evening after; the birds a day more, so that the rancher's word the next evening is about something there.
- S.Until=FS47FreeformSession::NightOf(Clock)*86400.+(bCairn?20.:44.)*3600.;
+ S.Until=MarkUntil(bCairn,Clock);
  // Within earshot on foot (not on top of it): the stones knocking together out that way, a few at a time, dry.
- if(bCairn&&bOut&&Away>=350&&Away<=900)
+ if(bCairn&&bOut&&Away>=0&&Away<=CairnHeardM)
  {
   FVector At;
   if(WorldOf(P->X,P->Z,At)&&M->Audio)
@@ -286,6 +291,8 @@ bool FS47Happenings::StepPlace(double Dt)
  static_cast<void>(Dt);
  const FPlaceDef* Def=PlaceDef(Now.Id);
  if(!Def||Def->Shape==EPlaceShape::Mark)return false;
+ // Nothing burns on into the morning: a sleep or a hold that ran past half past five, or into the next day, ends it as it stands.
+ if(M->Freeform&&PlaceOver(Now.Clock,M->Freeform->Clock())){EndPlace(Now.Stage==2?1:0);return true;}
  US47Audio* A=M->Audio.Get();
  FVector Here;
  if(!WorldOf(Now.X,Now.Z,Here)){EndPlace(0);return true;}
@@ -307,7 +314,13 @@ bool FS47Happenings::StepPlace(double Dt)
     A->Sfx(bOther?H->SoundB:H->Sound,O);
    }
    Now.Dir.X+=1;
-   if(!Now.bSeen&&Away<=H->MaxM*1.1){Now.bSeen=true;Noticed(Now.Id,Away,TEXT("sound"));}
+   if(!Now.bSeen&&PlaceHeardAt(Away,H->MaxM))
+   {
+    Now.bSeen=true;Noticed(Now.Id,Away,TEXT("sound"));
+    if(!Now.bForced&&M->Rhythm)M->Rhythm->Began(FName(*Now.Id));
+   }
+   // The bay door stays up whatever comes after (a save, a sleep): its record is kept as it goes up.
+   if(Now.Id==TEXT("bay_door")&&Now.bSeen)KeepPlace(0);
   }
   // Come up to it, or the lamp on the swings: it stops, and the crickets with it a while.
   const bool bLampOnIt=Now.Id==TEXT("school_swing")&&bLampOn&&Seen(At,60,10);
@@ -339,9 +352,10 @@ bool FS47Happenings::StepPlace(double Dt)
  float K=Flicker(Now.Id,Now.Age,M->Flow&&M->Flow->bCalmFlash);
  if(bFlare&&Now.Stage==2)K*=float(FMath::Clamp(1.-(Now.Age-Now.Dir.Y)/3.,0.,1.));
  if(Pp)PropLamps(*Pp,K);
- if(!Now.bSeen&&Now.Stage<2&&SeenLit(At+FVector(0,.1,0),bFlare?750.:bGraves?480.:1350.,bFlare?30.:bGraves?8.:6.,LitOwn,*Kind))
+ if(!Now.bSeen&&Now.Stage<2&&SeenLit(At+FVector(0,.1,0),bFlare?750.:bGraves?480.:1350.,bFlare?30.:PlaceSeenDeg,LitOwn,*Kind))
  {
   Now.bSeen=true;Noticed(Now.Id,Away,TEXT("sight"));
+  if(!Now.bForced&&M->Rhythm)M->Rhythm->Began(FName(*Now.Id));
  }
  if(Now.Stage<2)
  {
@@ -361,21 +375,52 @@ bool FS47Happenings::StepPlace(double Dt)
  if(Now.Age>=Now.Len)EndPlace(Now.Stage==2?1:0);
  return true;
 }
-void FS47Happenings::EndPlace(int32 Outcome)
+void FS47Happenings::KeepPlace(int32 Outcome)
 {
  using namespace S47NightPlacesLocal;
  auto* F=M?M->Freeform.Get():nullptr;
  const FPlaceDef* Def=PlaceDef(Now.Id);
- if(F&&Def&&Now.bSeen)
- {
-  const FString Key=FString::Printf(TEXT("%s%d"),Def->Key,F->Day());
-  F->RecordEvidence(Key,PlaceRecord(Now.Id,PlaceClock(Now.Clock),Outcome,Now.Title));
-  Deed(DeedOf(Now.Id,Outcome));
-  // LOOP-4-20261109: the needle remembers where it was (FS47Places::Use, two nights).
-  if(!Now.bForced){Past.Add({Now.X,Now.Z,F->Day()});while(Past.Num()>MostPast)Past.RemoveAt(0);}
-  UE_LOG(LogS47NightPlaces,Display,TEXT("S47: night place %s kept as %s (%s)"),*Now.Id,*Key,Outcome==1?TEXT("walked up to"):TEXT("from off"));
- }
+ if(!F||!Def||!Now.bSeen||Now.bDone)return;
+ Now.bDone=true;
+ const FString Key=FString::Printf(TEXT("%s%d"),Def->Key,F->Day());
+ F->RecordEvidence(Key,PlaceRecord(Now.Id,PlaceClock(Now.Clock),Outcome,Now.Title));
+ Deed(DeedOf(Now.Id,Outcome));
+ // LOOP-4-20261109: the needle remembers where it was (FS47Places::Use, two nights).
+ if(!Now.bForced){Past.Add({Now.X,Now.Z,F->Day()});while(Past.Num()>MostPast)Past.RemoveAt(0);}
+ UE_LOG(LogS47NightPlaces,Display,TEXT("S47: night place %s kept as %s (%s)"),*Now.Id,*Key,Outcome==1?TEXT("walked up to"):TEXT("from off"));
+ M->RequestAutosave();
+}
+void FS47Happenings::EndPlace(int32 Outcome)
+{
+ KeepPlace(Outcome);
+ // One nobody noticed did not happen for the night: its day is given back, so that it may still come while its window lasts (the
+ // rhythm was never told it began).
+ const FString Id=Now.Id;const bool bUnnoticed=!Now.bSeen&&!Now.bForced;
+ const int32* Before=LastDays.Find(Id);const int32 Prev=Before?*Before:0;
  EndEvent(Now.bSeen);
+ if(bUnnoticed)
+ {
+  if(Prev>0)LastDays.Add(Id,Prev);else LastDays.Remove(Id);
+  UE_LOG(LogS47NightPlaces,Display,TEXT("S47: night place %s ended unnoticed: neither its day nor its start is spent"),*Id);
+ }
+}
+bool FS47Happenings::PlaceOver(double StartClock,double Clock)
+{
+ return NightHour(Clock)>=29.5||FS47FreeformSession::NightOf(Clock)!=FS47FreeformSession::NightOf(StartClock);
+}
+FString FS47Happenings::PlaceWord(const FString& Id,const FString& Named,bool bPassed)
+{
+ if(Id==TEXT("windmill_knock"))return bPassed?FString(TEXT("A driver says the windmill on the Baca lease is knocking tonight, with no wind to turn it."))
+  :FString(TEXT("Who's working the Baca pump this late? I can hear that rod knocking clear from the highway, and there's no wind to turn it."));
+ if(Id==TEXT("mine_knock"))return bPassed?FString(TEXT("A driver heard knocking from the old mine on the west side, three at a time."))
+  :FString(TEXT("Anybody up by the old mine on the west side? Something's knocking down that shaft, three at a time. Carries a long way tonight."));
+ if(Id==TEXT("school_swing"))return bPassed?FString(TEXT("A driver heard the swings going at the school this late, and no wind."))
+  :FString(TEXT("Somebody ought to tell the sheriff there's kids on the swings at the school this late. Heard them from the highway."));
+ if(Id==TEXT("cairn_stones"))return bPassed?FString::Printf(TEXT("A rancher says somebody has laid stones out in a ring around %s."),*Named)
+  :FString::Printf(TEXT("Somebody's been fooling with %s. Took the rocks and laid them out in a ring around it, neat as you please."),*Named);
+ if(Id==TEXT("trough_birds"))return bPassed?FString::Printf(TEXT("A rancher found dead birds all around his trough out by %s. Not a mark on them."),*Named)
+  :FString::Printf(TEXT("Anybody else find dead birds at their water? A whole ring of them around my stock tank out by %s, and not a mark on one."),*Named);
+ return FString();
 }
 
 // ---------------------------------------------------------------- the marks
@@ -384,6 +429,8 @@ void FS47Happenings::StepPlaceMarks()
  using namespace S47NightPlacesLocal;
  auto* F=M?M->Freeform.Get():nullptr;if(!F)return;
  const double Clock=F->Clock(),Hn=HourOfNight(Clock);
+ // A word goes out only where it is heard at once (the CB in the seat, or Dale's walkie): otherwise it waits for another evening.
+ const bool bEars=CanHearCb()||(M->FieldRadio.IsValid()&&M->FieldRadio->Owned());
  for(FSite& S:Sites)
  {
   const bool bCairn=S.Kind==TEXT("cairnring"),bBirds=S.Kind==TEXT("deadbirds");
@@ -404,15 +451,47 @@ void FS47Happenings::StepPlaceMarks()
     M->RequestAutosave();
    }
   }
-  // The birds nobody found: the rancher whose trough it is says so the next evening, which points out there by day.
-  if(bBirds&&!S.bFound&&!S.bKnown&&S.Night<F->Day()&&Hn>=19.5&&Hn<22.5&&Now.Id.IsEmpty()&&Uneasy.I<0&&Paced>=RumorTry)
+  // Not found: whoever it belongs to says so on an evening after (19:30 to 01:00, any evening until it is said or the mark is gone), and
+  // the place goes on the map as heard of, which points out there by day.
+  if(!S.bFound&&!S.bKnown&&bEars&&PlaceTalkNow(Hn,S.Night,F->Day())&&Now.Id.IsEmpty()&&Paced>=RumorTry&&!FS47StoryDirector::Of(M))
   {
    RumorTry=Paced+40;S.bKnown=true;
    const FString Named=Spoken(S.Title);
-   Tip({BirdsTalk(Named,false)},TEXT("old"),BirdsTalk(Named,true));
-   UE_LOG(LogS47NightPlaces,Display,TEXT("S47: night place trough_birds at %s: talked of the next evening"),*S.Title);
+   Tip({PlaceWord(Id,Named,false)},TEXT("old"),PlaceWord(Id,Named,true));
+   if(F->Places)F->Places->Hear(S.Place);
+   UE_LOG(LogS47NightPlaces,Display,TEXT("S47: night place %s at %s: talked of on an evening after"),*Id,*S.Title);
    M->RequestAutosave();
   }
+ }
+}
+// One heard far off: tonight's draw for it has come, the player is too far off to hear it (at SARO, at the wheel, across the land), and a
+// driver on the CB or Dale on the walkie says so, once a night; its place goes on the map as heard of. The thing itself still plays if he
+// goes out there in its window (Due: its day is not spent by the word). Not the bay door (it would have to be up), never on a Story night.
+void FS47Happenings::StepPlaceWords()
+{
+ using namespace S47NightPlacesLocal;
+ auto* F=M?M->Freeform.Get():nullptr;
+ if(!F||!F->RulesLive()||F->InTutorial()||!Now.Id.IsEmpty()||Paced<RumorTry||FS47StoryDirector::Of(M))return;
+ if(!(CanHearCb()||(M->FieldRadio.IsValid()&&M->FieldRadio->Owned())))return;
+ const double Clock=F->Clock(),Hn=HourOfNight(Clock);
+ const int32 Night=FS47FreeformSession::NightOf(Clock);
+ double Px=0,Pz=0;const bool bWhere=PlayerRoad(Px,Pz);
+ for(const FPlaceDef& D:PlaceDefs())
+ {
+  if(D.Shape!=EPlaceShape::Heard||FString(D.Id)==TEXT("bay_door"))continue;
+  const FString Id=D.Id;
+  const double* From=Plan.Find(Id);
+  if(!From||Hn<*From||Hn>=*From+DrawWindow||LastDays.FindRef(Id)==F->Day()||PlaceWordNight.FindRef(Id)==Night)continue;
+  const FHear* H=HearOf(Id);const FS47EventPlace* P=F->EventPlaces?F->EventPlaces->Find(D.Place):nullptr;
+  if(!H||!P)continue;
+  const double Away=bWhere?FVector2D::Distance(FVector2D(P->X,P->Z),FVector2D(Px,Pz)):1e9;
+  if(Away<=H->MaxM)continue; // near enough to hear it for himself
+  if(NeedsStill(Id)&&!PlaceStill(S47Weather::Now(F->Seed(),int32(FMath::FloorToDouble(Clock/86400.))+1,FMath::Fmod(Clock,86400.)).Mph))continue;
+  PlaceWordNight.Add(Id,Night);RumorTry=Paced+40;
+  Tip({PlaceWord(Id,FString(),false)},TEXT("man"),PlaceWord(Id,FString(),true));
+  if(F->Places)F->Places->Hear(P->Id);
+  UE_LOG(LogS47NightPlaces,Display,TEXT("S47: night place %s told of on the air, the player %.0f m off"),*Id,Away);
+  return;
  }
 }
 
@@ -491,7 +570,12 @@ bool FS47Happenings::PlaceSelfTest(TArray<FString>& Lines)
    Said.Add(PlaceRecord(D.Id,PlaceClock(23*3600.+47*60.),Out,D.Id==FString(TEXT("windmill_knock"))?FString(TEXT("the windmill on the Baca lease")):FString(TEXT("the cattle guard on the highway"))));
    Said.Add(DeedOf(D.Id,Out));
   }
-  Said.Add(BirdsTalk(TEXT("the salt lick"),false));Said.Add(BirdsTalk(TEXT("the salt lick"),true));
+  int32 Words=0;
+  for(const TCHAR* Which:{TEXT("windmill_knock"),TEXT("mine_knock"),TEXT("school_swing"),TEXT("cairn_stones"),TEXT("trough_birds")})for(const bool bPassed:{false,true})
+  {
+   const FString W=PlaceWord(Which,FCString::Strcmp(Which,TEXT("cairn_stones"))==0?FString(TEXT("the cairn on the rise")):FString(TEXT("the salt lick")),bPassed);
+   Said.Add(W);Words+=W.IsEmpty()?0:1;
+  }
   FString Bad;bool bAll=true;
   for(const FString& T:Said)
   {
@@ -499,8 +583,40 @@ bool FS47Happenings::PlaceSelfTest(TArray<FString>& Lines)
    if(!bOk&&Bad.Len()<200)Bad+=T.Left(60)+TEXT(" | ");
    bAll&=bOk;
   }
-  Check(bAll&&Said.Num()==56,TEXT("every record, deed and word passes the lint (no Story spoilers, no clock on that minute, no kind named, no conclusion) ")+Bad);
+  Check(bAll&&Said.Num()==64&&Words==10&&PlaceWord(TEXT("bay_door"),FString(),false).IsEmpty(),TEXT("every record, deed and word passes the lint (no Story spoilers, no clock on that minute, no kind named, no conclusion) ")+Bad);
   Check(PlaceClock(23*3600.+47*60.)==TEXT("23:48")&&PlaceClock(86400.+3600.+5*60.)==TEXT("01:05")&&PlaceRecord(TEXT("bay_door"),TEXT("23:10"),0,FString()).StartsWith(TEXT("At 23:10 ")),TEXT("the record's clock never reads as Story's minute"));
+ }
+ // NIGHT31-PLACES review («felt, not fired»): each rule by itself.
+ {
+  // 1. A light starts only in front of the player, and is seen in a cone that takes in the shack from the highway (some 19 degrees
+  //    off the cab's nose at 420 m); it was 6 degrees.
+  Check(PlaceInView(19,420,1300)&&PlaceInView(PlaceStartDeg,1300,1300)&&!PlaceInView(40,420,1300)&&!PlaceInView(10,1500,1300)&&!PlaceInView(10,-1,1300)
+   &&PlaceSeenDeg>19&&PlaceSeenDeg<=25&&PlaceSeenDeg<PlaceStartDeg,TEXT("review 1: a light starts only with its place within 35 degrees of the player's view, and counts as seen within 22"));
+  // 2. Heard within half the reach: the bay door's rattle at 280 m reach is heard to 140 m, not 308; the cairn's stones to 400 m.
+  const FHear* Bay=HearOf(TEXT("bay_door"));const FHear* Mill=HearOf(TEXT("windmill_knock"));
+  Check(Bay&&Mill&&PlaceHeardAt(140,Bay->MaxM)&&!PlaceHeardAt(141,Bay->MaxM)&&!PlaceHeardAt(308,Bay->MaxM)&&PlaceHeardAt(160,Mill->MaxM)&&!PlaceHeardAt(200,Mill->MaxM)&&!PlaceHeardAt(-1,Mill->MaxM)&&CairnHeardM<=400,
+   TEXT("review 2: a sound counts as heard within half its reach, the cairn's stones within 400 m"));
+  // 3. No Story night but F10's.
+  Check(!PlaceMayRun(false,true)&&PlaceMayRun(true,true)&&PlaceMayRun(false,false),TEXT("review 3: none of them on a Story night, except from F10"));
+  // 4. Every record that says there was no wind is gated on a still night, below 5 mph.
+  bool bStill=PlaceStill(4.9)&&!PlaceStill(5.)&&!PlaceStill(11.9);
+  for(const FPlaceDef& D:PlaceDefs())for(int32 Out=0;Out<=1;++Out)if(PlaceRecord(D.Id,TEXT("22:10"),Out,TEXT("the place")).Contains(TEXT(" wind.")))bStill&=NeedsStill(D.Id);
+  Check(bStill,TEXT("review 4: the windmill and the swing (whose records say no wind) only below 5 mph"));
+  // 5 and 6. The marks are talked of from 19:30 to 01:00 on any evening after, until said or found, and are still there to be gone to.
+  const double Made=4*86400.+2.5*3600.; // night 5, 02:30
+  const int32 Nt=FS47FreeformSession::NightOf(Made);
+  const bool bTalk=!PlaceTalkNow(21,Nt,Nt)&&PlaceTalkNow(19.5,Nt,Nt+1)&&PlaceTalkNow(24.9,Nt,Nt+1)&&!PlaceTalkNow(25.1,Nt,Nt+1)&&!PlaceTalkNow(19.4,Nt,Nt+1)&&PlaceTalkNow(22,Nt,Nt+2);
+  // The last talk of the first evening after (00:59 on the night after), and of the second for the birds, comes before the mark is gone.
+  const double FirstEve=(Nt)*86400.+24.98*3600.,SecondEve=FirstEve+86400.;
+  Check(bTalk&&MarkUntil(true,Made)>FirstEve&&MarkUntil(false,Made)>SecondEve&&MarkUntil(false,Made)-Made<4*86400.,
+   TEXT("review 5, 6: the cairn and the birds are talked of on an evening after (19:30 to 01:00, again until said), and stand until then, within a cap of three days"));
+  // 7. Told of far off: a word for each heard one but the bay door, and each mark's.
+  Check(!PlaceWord(TEXT("windmill_knock"),FString(),false).IsEmpty()&&!PlaceWord(TEXT("mine_knock"),FString(),true).IsEmpty()&&!PlaceWord(TEXT("school_swing"),FString(),false).IsEmpty()&&PlaceWord(TEXT("bay_door"),FString(),true).IsEmpty(),
+   TEXT("review 7: the windmill, the mine and the swings are told of on the CB or the walkie to one too far off to hear them"));
+  // 8. Over at half past five, and when the day turns: nothing burns on after a sleep.
+  const double Start=4*86400.+23*3600.;
+  Check(!PlaceOver(Start,Start+60)&&!PlaceOver(Start,4*86400.+29.4*3600.)&&PlaceOver(Start,4*86400.+29.6*3600.)&&PlaceOver(Start,5*86400.+9*3600.)&&PlaceOver(Start,5*86400.+13*3600.)&&!PlaceOver(4*86400.+20*3600.,4*86400.+23*3600.),
+   TEXT("review 8: what holds the ground ends at 05:30 or when the day turns, never left lit into the morning"));
  }
  // The strobe rule: the lamps waver, at most three swells a second and never out; the calm-flash setting holds them steady.
  {

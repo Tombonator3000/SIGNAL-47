@@ -314,6 +314,21 @@ public:
  // The clock as a record says it, never on the minute that reads as Story's number.
  static FString PlaceClock(double Clock);
  static uint32 PlaceSalt(const FString& Id);
+ // NIGHT31-PLACES review (14 November, «felt, not fired»), the rules by themselves:
+ //  a light starts only with its place in front of the player (PlaceStartDeg, the cab's nose or the eye) and counts as seen within
+ //  PlaceSeenDeg; a sound counts as heard within half of its reach, the cairn's stones within CairnHeardM; the windmill and the swing
+ //  only below PlaceStillMph (the records say there was no wind); none on a Story night but F10's; whatever holds the ground ends at
+ //  half past five or when the day turns (after a sleep nothing burns on into the morning); the marks are talked of from 19:30 to
+ //  01:00 any evening after, until they are said or found. One never noticed spends neither the night's start nor its cooldown.
+ static constexpr double PlaceStartDeg=35.,PlaceSeenDeg=22.,PlaceStillMph=5.,CairnHeardM=400.,PlaceTalkFrom=19.5,PlaceTalkUntil=25.;
+ static bool PlaceInView(double OffDeg,double DistM,double MaxM){return OffDeg>=0&&OffDeg<=PlaceStartDeg&&DistM>=0&&DistM<=MaxM;}
+ static bool PlaceHeardAt(double DistM,double MaxM){return DistM>=0&&DistM<=MaxM*.5;}
+ static bool PlaceStill(double Mph){return Mph<PlaceStillMph;}
+ static bool PlaceMayRun(bool bForced,bool bStoryNight){return bForced||!bStoryNight;}
+ static bool PlaceOver(double StartClock,double Clock);
+ static bool PlaceTalkNow(double HourOfNight,int32 SiteNight,int32 Today){return SiteNight<Today&&HourOfNight>=PlaceTalkFrom&&HourOfNight<PlaceTalkUntil;}
+ // What a driver on the CB says of one heard far off (Id a heard one) or of a mark the next evening; bPassed: as Dale passes it on.
+ static FString PlaceWord(const FString& Id,const FString& Named,bool bPassed);
  static bool PlaceSelfTest(TArray<FString>& Lines);
 
  // A place for one of these, with what it needs: the catalogue's, or the land's own.
@@ -511,7 +526,12 @@ private:
  bool BeginPlace(const FString& Id,bool bForced,FString& Why);
  bool StepPlace(double Dt);
  void EndPlace(int32 Outcome);
+ // Its record, its deed and its place on the needle's history, once (Now.bDone marks it kept: the bay door keeps it as it goes up).
+ void KeepPlace(int32 Outcome);
  void StepPlaceMarks();
+ // The far-off word for a heard one drawn tonight, said once a night (id -> night; not saved: a Continue may say it once more).
+ void StepPlaceWords();
+ TMap<FString,int32> PlaceWordNight;
  // Every lamp of a prop at K of its strength (S47Happenings.cpp, where a prop's insides are known).
  void PropLamps(FProp& P,float K);
  // The clock the last piece of unease came (UNEASE-20261114; saved "uneaseClock", an older save has none).

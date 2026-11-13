@@ -1026,6 +1026,7 @@ void FS47Happenings::Begin(const S47J::FObj& Saved)
  Now=FActive();Sites.Reset();Past.Reset();LastDays.Reset();Deeds.Reset();Plan.Reset();Says.Reset();GeigerNoted.Reset();TryAt.Reset();LateTryClock=0;
  SitHeld.Reset();SitHeldClock=-1; // LEAD-FIX-20261110
  LeadNow=FLead();WordNight=0;WordTry=0; // CHAIN-5B-20261109
+ PlaceWordNight.Reset(); // NIGHT31-PLACES review
  FloorNight=NoticedNight=FloorNoneNight=0;FloorTryClock=0;bFloorTry=false;FloorWarned.Empty(); // M1-FLOOR-20261112
  HoodNight=0;Uneasy=FUneasy();UneaseOnce.Reset();UneaseDone.Reset();UneasePool.Reset();UneaseAt.Reset();UneaseNight=UneaseWant=DangerSeen=0;DangerClock=-1e9;UneaseTry=0;UneaseClock=-1e9;OutsideSince=TruckAwaySince=-1;bWasDriving=bWasIndoors=bChairUp=false;
  Serial=0;HumorNight=-100;EchoFrom=0;LateNight=0;PlanNight=0;AheadNight=0;AheadSeconds=0;bLate=false;bEchoArmed=false;HumorKind.Empty();LastArea.Empty();
@@ -2435,7 +2436,9 @@ bool FS47Happenings::StartEvent(const FString& Id,const FString& Variant,bool bF
  const FSite* Made=Sites.Num()>SitesBefore?&Sites.Last():nullptr;
  if(Now.Id!=Id||bForced)LastDays.Add(Id,F->Day());
  // A danger is counted when the player meets it (MeetDanger), not when it is drawn.
- if(M->Rhythm&&!IsDanger(Id))M->Rhythm->Began(FName(*Id));
+ // NIGHT31-PLACES review: one of the places' that holds the ground is counted when the player notices it (S47NightPlaces.cpp), so that
+ // one never noticed spends neither the night's start nor its cooldown.
+ if(M->Rhythm&&!IsDanger(Id)&&!(PlaceDef(Id)&&!S47Hap::Background(Id)))M->Rhythm->Began(FName(*Id));
  // Between 23 and 01 only what was noticed near counts (StepLate): these are heard or felt as they start, the others when seen.
  // A word on the radio is noticed, but far: it does not count as something near.
  const double Away=AwayNow(Id);
@@ -3013,6 +3016,7 @@ void FS47Happenings::StepSites(double Dt)
   }
  }
  StepPlaceMarks(); // NIGHT31-PLACES-20261114: the cairn's ring and the birds at the trough, found, or talked of
+ StepPlaceWords(); // and the heard ones, told of on the CB or the walkie to one too far off to hear them
 }
 
 // What a lasting thing sounds like, from near enough to hear it: the herd's lowing and its bell, the camper's generator, the
