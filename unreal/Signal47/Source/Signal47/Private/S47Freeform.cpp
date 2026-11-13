@@ -3166,7 +3166,9 @@ void FS47FreeformSession::OpenTapePanel()
   {1.3f,T::Note(TAttribute<FString>::CreateLambda([this]{const FString Status=AudioCaptureStatus();return FeedbackText().IsEmpty()?Status:FeedbackText();}),20,TAttribute<FLinearColor>(Cream))}},14)]);
  // F: the listening references. The chip says what they are for, in plain words (D45-20261110).
  Rows.Add(SNew(SBox).HeightOverride(60)[T::Columns({
-  {1.25f,SNew(SBox).HAlign(HAlign_Left).VAlign(VAlign_Center)[S47Kit::Badge(TEXT("KNOWN SOUNDS TO COMPARE BY EAR"),-1)]},
+  // D69-20261113: the chip's words were cut at the column's edge; they wrap on two lines inside its outline now
+  {1.25f,SNew(SBox).VAlign(VAlign_Center)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("Border")).BorderBackgroundColor(LampOn*FLinearColor(1,1,1,.7f)).Padding(FMargin(8,3))
+   [T::Note(TEXT("KNOWN SOUNDS TO COMPARE BY EAR"),15,TAttribute<FLinearColor>(LampOn),true)]]},
   {1.6f,SNew(SBox).VAlign(VAlign_Center)[T::Note(TAttribute<FString>::CreateLambda([this]{return AudioDesk?AudioDesk->ReferenceLabel():FString();}),18,TAttribute<FLinearColor>(Cream))]},
   {1.f,T::Button(TEXT("NEXT REFERENCE"),Press(TEXT("ref_next")),false,true)},
   {1.1f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(AudioDesk&&AudioDesk->ReferencePlaying()?TEXT("STOP REFERENCE"):TEXT("PLAY REFERENCE"));}),Press(TEXT("ref_play")),false,true)},

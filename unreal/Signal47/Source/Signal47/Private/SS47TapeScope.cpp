@@ -99,11 +99,14 @@ int32 SS47TapeScope::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
  DrawWindow(Out,Layer,G,Pc,Left-26,Top-12,W+40,TraceH+12+AxisSize+8);
  const double In=MarkIn.Get(-1.),OutMark=MarkOut.Get(-1.);
  if(In>=0)Box(Px(In),Top,FMath::Max(2.f,(OutMark>In?Px(OutMark):Px(At))-Px(In)),TraceH,FLinearColor(.45f,.27f,.05f,.45f));
- const int32 Every2=L>24?5:2;
+ const int32 Every2=L>24?5:2;bool bAxisEnd=false;
  for(int32 I=0;I<=int32(L);I+=Every2)
  {
   Line({FVector2f(Px(I),Top),FVector2f(Px(I),Top+TraceH)},Pc.Grid,1);
-  Label(FString::FromInt(I),Px(I)-5,Top+TraceH+2,Pc.Cream,AxisSize);
+  // D69-20261113: the last number sits inside the window, right-aligned with its unit, so it no longer runs over the end marker
+  const bool bEnd=FMath::IsNearlyEqual(double(I),L);
+  if(bEnd){const FString End=FString::Printf(TEXT("%d s"),I);Label(End,Right-End.Len()*AxisSize*.62f-4,Top+TraceH+2,Pc.Cream,AxisSize);bAxisEnd=true;}
+  else Label(FString::FromInt(I),Px(I)-5,Top+TraceH+2,Pc.Cream,AxisSize);
  }
  Line({FVector2f(Left,Base),FVector2f(Right,Base)},Pc.Grid,1);
  const int32 N=FMath::Max(2,int32(W/2));Heard.Reset();Ahead.Reset();Heard.Reserve(N);Ahead.Reserve(N);
@@ -123,7 +126,7 @@ int32 SS47TapeScope::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRe
  if(Heard.Num()>1)Line(Heard,Pc.Trace,1.4f);
  if(Rec&&Heard.Num()){const FVector2f Pen=Heard.Last();Box(Pen.X-6,Pen.Y-6,12,12,Fade(Pc.Rec,.22f));Box(Pen.X-1.5f,Pen.Y-1.5f,3,3,Pc.Trace);}
  Line({FVector2f(Px(At),Top-3),FVector2f(Px(At),Top+TraceH+3)},Rec?Pc.Rec:Pc.Amber,2);
- Label(TEXT("s"),Right+1,Top+TraceH+2,Pc.Cream,AxisSize);
+ if(!bAxisEnd)Label(TEXT("s"),Right+1,Top+TraceH+2,Pc.Cream,AxisSize);
  if(Hover>=0&&CanMark.Get(false))
  {
   Line({FVector2f(Px(Hover),Top),FVector2f(Px(Hover),Top+TraceH)},Pc.Amber*FLinearColor(1,1,1,.55f),1);
