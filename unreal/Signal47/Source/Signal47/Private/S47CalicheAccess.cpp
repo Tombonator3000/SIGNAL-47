@@ -276,6 +276,7 @@ void Init(US47Main* M)
    }
   }
   if(bConvent)S47Convent::Build(M,R.Root+FVector(0,R.Floor,0),ParentComp.Get(),Parent,Meshes.FindRef(TEXT("SM_Access_Church_Door")));
+  else if(R.Id==TEXT("Church"))S47Convent::LevelGround(M,R.Root+FVector(0,R.Floor,0)); // (the ground mesh is level there whichever church stands)
   // Replace the former solid building rectangle with actual perimeter walls and an opening.
   const FS47Rect Foot=Rect(R.Root.X+R.X0,R.Root.X+R.X1,R.Root.Z-R.Y1,R.Root.Z-R.Y0,TEXT("access:room:")+R.Id);
   const double FX=R.Root.X+(R.Front>0?R.X1:R.X0),DZ=R.Root.Z-R.DoorY;

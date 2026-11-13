@@ -189,7 +189,7 @@
   [-2.2, -2.0, -7.0, -6.8, "boardPost"]
  ],
  "lights": [
-  {"id": "altar", "at": [9.6, 1.75, 0], "lumens": 260, "reach": 5.5, "colour": [1.0, 0.78, 0.5], "shadows": true},
+  {"id": "altar", "at": [9.6, 1.75, 0], "lumens": 150, "reach": 5.5, "colour": [1.0, 0.78, 0.5], "shadows": true},
   {"id": "sacristy", "at": [13.5, 2.7, -0.6], "lumens": 150, "reach": 4.0, "colour": [1.0, 0.78, 0.5], "shadows": true},
   {"id": "door", "at": [-0.75, 3.3, 0], "lumens": 420, "reach": 9.0, "colour": [1.0, 0.82, 0.58], "shadows": true, "night": true},
   {"id": "back", "at": [15.65, 3.2, 0], "lumens": 160, "reach": 6.0, "colour": [1.0, 0.82, 0.58], "shadows": true, "night": true},

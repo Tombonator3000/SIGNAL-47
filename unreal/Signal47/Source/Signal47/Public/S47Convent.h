@@ -42,6 +42,9 @@ namespace S47Convent
 	bool Present();
 	/** S47CalicheAccess, while it builds the room "Church": the church at Root (the room's root, world Three metres, its floor there). */
 	void Build(US47Main* Main, const FVector& Root, USceneComponent* Parent, int32 ParentNode, UStaticMesh* DoorLeaf);
+	/** The level ground under the church and its forecourt, asked of S47GroundEdits (the plan's pad). The ground mesh holds it whichever
+	 *  church stands, so S47CalicheAccess asks for it for the white board church too: the land the walker stands on and the land drawn agree. */
+	void LevelGround(US47Main* Main, const FVector& Root);
 	/** Every frame (S47CalicheAccess::Update): the back door's swing, the night lamps, the pieces on the land. */
 	void Update(US47Main* Main);
 	/** Built in this world. */

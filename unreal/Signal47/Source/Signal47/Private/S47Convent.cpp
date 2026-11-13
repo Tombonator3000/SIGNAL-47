@@ -224,6 +224,21 @@ namespace
 		return FVector2D(21.0 + P.Back.X + .3, 2095.5 + P.Back.Y);   // (the arch piece's outer face stands 0.3 m out from the wall's middle plane)
 	}
 
+	void LevelGround(US47Main* M, const FVector& Root)
+	{
+		// Level with the floor under the church and its forecourt, a soft bank down to the land round it (the ground mesh holds the
+		// same since Tools/freeformterrain/site_ground.py cut it in; the walls' feet go a metre down for a ground that does not).
+		const FPlan& P = Plan();
+		if (!M || !M->Web || !P.bRead || P.PadX1 <= P.PadX0) return;
+		FVector Origin = FVector::ZeroVector;
+		if (const FS47Obj G = M->Web->Obj(TEXT("world.town.group"))) Origin = G.WorldPosition();
+		S47GroundEdits::FPad Pad;
+		Pad.R.X = Root.X - Origin.X + (P.PadX0 + P.PadX1) * .5; Pad.R.Z = Root.Z - Origin.Z + (P.PadZ0 + P.PadZ1) * .5;
+		Pad.R.HalfX = (P.PadX1 - P.PadX0) * .5; Pad.R.HalfZ = (P.PadZ1 - P.PadZ0) * .5;
+		Pad.Y = Root.Y - Origin.Y - P.PadUnder; Pad.Bank = P.PadBank;
+		S47GroundEdits::Set(PadId, { Pad }, {});
+		S47FreeformTerrain::SitesChanged(M->Web);
+	}
 	void Build(US47Main* M, const FVector& Root, USceneComponent* Parent, int32 ParentNode, UStaticMesh* DoorLeaf)
 	{
 		S = FState();
@@ -232,17 +247,7 @@ namespace
 		AS47Web* W = M->Web;
 		S.Main = M; S.Root = Root;
 		if (const FS47Obj G = W->Obj(TEXT("world.town.group"))) S.Origin = G.WorldPosition();
-		// The ground: level with the floor under the church and its forecourt, a soft bank down to the land round it (the ground mesh
-		// holds the same when Tools/freeformterrain/site_ground.py has cut it in; the walls' feet go a metre down meanwhile).
-		if (P.PadX1 > P.PadX0)
-		{
-			S47GroundEdits::FPad Pad;
-			Pad.R.X = Root.X - S.Origin.X + (P.PadX0 + P.PadX1) * .5; Pad.R.Z = Root.Z - S.Origin.Z + (P.PadZ0 + P.PadZ1) * .5;
-			Pad.R.HalfX = (P.PadX1 - P.PadX0) * .5; Pad.R.HalfZ = (P.PadZ1 - P.PadZ0) * .5;
-			Pad.Y = Root.Y - S.Origin.Y - P.PadUnder; Pad.Bank = P.PadBank;
-			S47GroundEdits::Set(PadId, { Pad }, {});
-			S47FreeformTerrain::SitesChanged(W);
-		}
+		LevelGround(M, Root);
 		UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
 		UMaterialInterface* Plain = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
 		TMap<FString, UStaticMesh*> Meshes;

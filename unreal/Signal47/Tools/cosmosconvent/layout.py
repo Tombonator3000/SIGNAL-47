@@ -191,7 +191,7 @@ words.append({'text': 'SAN ISIDRO|THE HEAVENS DECLARE|THE GLORY OF GOD|PS 19:1',
 # ---------- light: the game's own lamps. Warm and few; the corners stay dark ----------
 WARM = [1.0, .78, .5]
 lights += [
-    {'id': 'altar', 'at': [9.6, 1.75, 0], 'lumens': 260, 'reach': 5.5, 'colour': WARM, 'shadows': True},
+    {'id': 'altar', 'at': [9.6, 1.75, 0], 'lumens': 150, 'reach': 5.5, 'colour': WARM, 'shadows': True},
     {'id': 'sacristy', 'at': [13.5, 2.7, -.6], 'lumens': 150, 'reach': 4.0, 'colour': WARM, 'shadows': True},
     {'id': 'door', 'at': [-.75, 3.3, 0], 'lumens': 420, 'reach': 9.0, 'colour': [1.0, .82, .58], 'shadows': True, 'night': True},
     {'id': 'back', 'at': [15.65, 3.2, 0], 'lumens': 160, 'reach': 6.0, 'colour': [1.0, .82, .58], 'shadows': True, 'night': True},
