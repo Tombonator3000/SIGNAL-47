@@ -228,7 +228,9 @@ void FS47Score::Update(double Dt, const FString& InWant, bool bHeld)
 		if (!El || Track != OwnTrack || (bStemsOn && !Stems && !bOwnStemsTried))
 		{
 			bOwnStemsTried = bStemsOn;
-			const FString Key = OwnTrack; OwnTrack.Empty(); StopNow(); Begin(OwnCue, Key, .05); OwnTrack = Key;
+			const FString Key = OwnTrack; OwnTrack.Empty(); StopNow(); Begin(OwnCue, Key, .05);
+			if (!El) { UE_LOG(LogTemp, Warning, TEXT("S47: score: the render's piece %s would not start again: the score is let go"), *Key); OwnCue.Empty(); return; }
+			OwnTrack = Key;
 			UE_LOG(LogTemp, Display, TEXT("S47: score: the render's piece %s again, %s"), *Key, Stems ? TEXT("as its stems") : TEXT("as its mix"));
 		}
 		RequestedMood.Empty(); RequestedSeverity = 0;
