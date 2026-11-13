@@ -156,3 +156,20 @@ staged by Tools/nightsounds (KILDER.md, sources.json "shed*"):
 "Monster breathing" by Zrte, CC0, https://freesound.org/people/Zrte/sounds/470900/
 "Animal Heavy Breathing" by bevibeldesign, CC0, https://freesound.org/people/bevibeldesign/sounds/350414/
 "Heavy Dog Breathing" by Sheyvan, CC0, https://freesound.org/people/Sheyvan/sounds/476032/
+
+MUSIC (2026-11-13, MUSIC-20261113)
+Creative Commons Attribution 4.0 (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/); licences read on the pages below on
+13 November 2026. Trimmed at the ends and levelled (Tools/music/build_music.py); otherwise unchanged.
+"Look Back Steelguitar Organ (F 35)" by Lobo Loco, CC BY 4.0, https://freemusicarchive.org/music/Lobo_Loco/completely-free-2/look-back-steelguitar-organ-f-35/
+"Stumping Slow Deltablues - Guitar Steelguitar (F 30)" by Lobo Loco, CC BY 4.0, https://freemusicarchive.org/music/Lobo_Loco/completely-free-2/stumping-slow-deltablues-guitar-steelguitar-f-30/
+"Standby Mode" by Uuriter (Analog Fields), CC BY 4.0, https://freemusicarchive.org/music/Uuriter/Analog_Fields_1913/03_-_Uuriter_-_Standby_Mode/
+"Routine Drone" by Uuriter (Analog Fields), CC BY 4.0, https://freemusicarchive.org/music/Uuriter/Analog_Fields_1913/08_-_Uuriter_-_Routine_Drone/
+Old records on the AM dial: Library of Congress National Jukebox, public domain (Public Domain Mark), by way of the Internet Archive.
+Mixed to mono, narrowed to AM, declicked and levelled.
+"Hawaiian Hotel", Frank Ferera and Anthony Franchini (1920), https://www.loc.gov/item/jukebox-711901/
+"Roll On, Silver Moon" (1906), https://www.loc.gov/item/jukebox-122577/
+"Till the Sands of the Desert Grow Cold", Victor Orchestra (1912), https://www.loc.gov/item/jukebox-132141/
+"Intro Drive": Tom, made for SIGNAL / 47.
+"Night Freight", "Cold Dish", "Carrier Lock" and "County Road": arranged for SIGNAL / 47 from loops in Function Loops' 1984 Retro
+Music Production Bundle and ABYSS - Dark Cinematic (purchased library; only the finished mixes are in the game).
+No longer played, and no longer credited in the game: "Night on the Docks - Sax" (Kevin MacLeod) and "Cylinder One" (Chris Zabriskie).
