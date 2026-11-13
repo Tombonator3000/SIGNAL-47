@@ -634,10 +634,10 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 	}
 	// Observing work waiting at OPS, and Ward's paper in the tray.
 	{
-		int32 Waiting = 0;
-		for (const auto& J : Fs.Jobs()) Waiting += J.Stage != FS47FreeformSession::EJobStage::Filed && !J.bDuplicateRejected && J.CaseTest < 0 && !Fs.EveningGated(J) ? 1 : 0;
+		// TASKS-TEN-20261113 (change 4): the cards up now, as the HUD and the note count them (CardsUp)
+		const int32 Waiting = Fs.CardsUp();
 		FString Ops;
-		if (Waiting > 0) Ops = FString::Printf(TEXT("OPS: %d %s to do"), Waiting, Waiting == 1 ? TEXT("job") : TEXT("jobs"));
+		if (Waiting > 0) Ops = FString::Printf(TEXT("OPS: %d job %s up"), Waiting, Waiting == 1 ? TEXT("card") : TEXT("cards"));
 		if (Fs.Predecessor && !Fs.Predecessor->TaskLine().IsEmpty() && Fs.Predecessor->TaskLine().Contains(TEXT("tray"))) Ops += Ops.IsEmpty() ? FString(TEXT("OPS: letter in the tray")) : FString(TEXT(", letter in the tray"));
 		if (!Ops.IsEmpty()) Write(TEXT("ops"), TEXT("saro"), 0, 0, Ops);
 	}

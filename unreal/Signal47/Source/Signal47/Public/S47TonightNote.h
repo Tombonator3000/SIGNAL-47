@@ -49,6 +49,11 @@ namespace S47TonightNote
   TArray<FWindow> Windows;      // Freeform: the planned case tests' windows
   TArray<FString> WaitingCases; // Freeform: the titles of open cases with no test planned
   double EveningUp = -1;        // Freeform: when the next evening card's source is up (world clock); negative: none waiting
+  // TASKS-TEN-20261113 (change 4): the night's job cards, counted one way (FS47FreeformSession::CardsUp): those up now on one row
+  // ("OPS: 2 job cards up.", key "cards"); each not up yet named with its window ("card:<id>"), never counted as open. Filed ones
+  // are counted from the list's own lines, as before.
+  struct FCard { FString Id, Source; double Up = -1, Shut = -1; int32 Pay = 0; bool bUp = false, bNightWatch = false; };
+  TArray<FCard> Cards;
   bool bNightWatch = false;     // LOOP-NIGHT-WATCH-20261113: that card is the night watch (after midnight); the hours till then are his own
   bool bSlip = false;           // a live bearing slip whose circle on the map is still to be stood in
   bool bAntennasWait = false;   // Freeform: the station goal waits for daylight (FS47FreeformSession::GoalWaits); TASKS-TEN-20261113: no clock line of its own

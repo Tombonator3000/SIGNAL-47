@@ -3895,6 +3895,12 @@ const FS47FreeformSession::FJob* FS47FreeformSession::NextEveningCard(double& Up
  }
  return Best;
 }
+int32 FS47FreeformSession::CardsUp()const
+{
+ int32 Up=0;
+ for(const FJob& J:Work)Up+=J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected&&J.CaseTest<0&&!EveningGated(J)?1:0;
+ return Up;
+}
 int32 FS47FreeformSession::JobPay(const FJob& J)const
 {
  if(!RulesLive()||TrainingCard(J))return 20;
@@ -4256,8 +4262,9 @@ FString FS47FreeformSession::DeadlineLine()const
 }
 FString FS47FreeformSession::WorkActivities(FString* Card)const
 {
- int32 Pending=0;const FJob* Evening=nullptr;
- for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected){if(!EveningGated(J))++Pending;else if(!Evening)Evening=&J;}
+ // TASKS-TEN-20261113 (change 4): the cards up now, one count everywhere (CardsUp); a case test is the case's own row (step 3 below)
+ const int32 Pending=CardsUp();const FJob* Evening=nullptr;
+ for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected&&EveningGated(J)&&!Evening)Evening=&J;
  // LOOP-NIGHT-WATCH-20261113: the one coming up soonest (with two early cards and the night watch, the first in the list is not it)
  if(Evening){double Soon=0;const FJob* Soonest=NextEveningCard(Soon);if(Soonest&&!Soonest->bDuplicateRejected)Evening=Soonest;}
  // The array is what the whole station is working toward: whatever else is on the line, it stays in sight.
@@ -4298,7 +4305,7 @@ FString FS47FreeformSession::WorkActivities(FString* Card)const
  // 3. A PAID CARD THAT IS UP: a planned case test's job, then the cards at OPS.
  if(Step.Step==ECaseStep::RunPlan&&PlannedFieldTest(Urgent)<0)return Say(Step.Next,Step.Card,Step.Task);
  if(Pending>0)return Say(FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending),
-  FString::Printf(TEXT("OPS // %d OBSERVATION%s WAITING."),Pending,Pending==1?TEXT(""):TEXT("S")),TEXT("cards"));
+  FString::Printf(TEXT("OPS // %d JOB CARD%s UP."),Pending,Pending==1?TEXT(""):TEXT("S")),TEXT("cards"));
  // 4. THE NIGHT WATCH OR THE EVENING'S CARD WITH ITS TIME. LOOP-NIGHT-WATCH-20261113 (Tom 13 November: «nattevakta gå foran»): from
  // 19:00 the night's cards and the night watch's notice lead (NightBeforeGoal), and the goal is said after them.
  const bool bNightFirst=NightBeforeGoal();
@@ -6144,6 +6151,13 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   Eve.TestAdvance(FMath::Fmod(86400.*2+22*3600.-Eve.Clock(),86400.));
   Check(!Eve.EveningGated(*Day2[0])&&!Eve.EveningGated(*Day2[1])&&Eve.EveningGated(*Day2[2]),TEXT("Day: at ten in the evening the two early sources are up, the night watch not yet"));
   {
+   // TASKS-TEN-20261113 (change 4): one count everywhere: the cards up now, the night watch not among them
+   int32 DayOne=0;for(const FJob& J:Eve.Work)DayOne+=J.Day==1&&J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected&&J.CaseTest<0?1:0;
+   FString UpCard;Eve.WorkActivities(&UpCard);
+   Check(Eve.CardsUp()==2+DayOne&&UpCard.StartsWith(FString::Printf(TEXT("OPS // %d JOB CARD"),Eve.CardsUp()))&&Eve.PickRow==TEXT("cards"),
+    TEXT("TASKS-TEN (change 4): at ten the cards up are counted once (CardsUp, the HUD, the map's OPS), the night watch not up is not counted"));
+  }
+  {
    double WatchAt=0;const FJob* Next=Eve.NextEveningCard(WatchAt);
    Check(Next==Day2[2]&&WatchAt==86400.+EveningUp(*Day2[2])&&FS47FreeformSession::NightOf(WatchAt)==2,TEXT("Day: at ten OPS names the night watch, after midnight on shift day 2"));
   }
@@ -6446,7 +6460,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   {
    FString Card;G.WorldClock=Base+10*3600.;
    const FString Work=G.AvailableActivities(&Card);
-   Check(Work.Contains(TEXT("UNFINISHED OBSERVATIONS"))&&Card.StartsWith(TEXT("OPS // "))&&Card.Contains(TEXT("OBSERVATIONS WAITING"))&&!Card.Contains(TEXT("OF 27"))&&!Work.Contains(TEXT("OF 27"))&&Card.Len()<=S47HudGauges::CardMost,
+   Check(Work.Contains(TEXT("UNFINISHED OBSERVATIONS"))&&Card.StartsWith(TEXT("OPS // "))&&Card.Contains(TEXT("JOB CARDS UP"))&&!Card.Contains(TEXT("OF 27"))&&!Work.Contains(TEXT("OF 27"))&&Card.Len()<=S47HudGauges::CardMost,
     TEXT("D45: HUD card: the day's work in one short line; the array count is not repeated on it (it stands on the STATION GOAL line)"));
    Check(G.StationGoalLine().Contains(TEXT("REPAIR THE"))&&!G.StationGoalLine().Contains(TEXT("DAYLIGHT")),TEXT("Station goal: by day, the repair"));
    // D45-20261110: the count is the live one, and the line says what this repair brings back

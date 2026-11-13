@@ -1564,6 +1564,23 @@ namespace S47FlowNotebook
 			}
 			double Up = 0;
 			if (const FS47FreeformSession::FJob* SoonCard = F.NextEveningCard(Up)) { In.EveningUp = Up; In.bNightWatch = FS47FreeformSession::NightWatch(*SoonCard); In.bSlip = F.SlipToFollow(); }
+			// TASKS-TEN-20261113 (change 4): the cards, counted as FS47FreeformSession::CardsUp counts them; one not up yet only when it comes up
+			// before 08:00, with its window on the world clock (as NextEveningCard reckons it)
+			{
+				const double Now = F.Clock(), Base = FMath::FloorToDouble((Now - 8 * 3600.) / 86400.) * 86400.;
+				for (const FS47FreeformSession::FJob& J : F.Jobs())
+				{
+					if (J.Stage == FS47FreeformSession::EJobStage::Filed || J.bDuplicateRejected || J.CaseTest >= 0) continue;
+					S47TonightNote::FIn::FCard C; C.Id = J.Id; C.Source = FS47Observing::Runs().IsValidIndex(J.Source) ? FString(FS47Observing::Runs()[J.Source].Source) : FString(); C.Pay = F.JobPay(J);
+					C.bNightWatch = FS47FreeformSession::NightWatch(J);
+					if (!F.EveningGated(J)) { C.bUp = true; C.Shut = J.Stage == FS47FreeformSession::EJobStage::New && J.Day >= 2 ? Base + FS47FreeformSession::EveningShut(J) : -1; In.Cards.Add(C); continue; }
+					double At = Base + FS47FreeformSession::EveningUp(J);
+					if (At <= Now) At += 86400.;
+					if (At >= Base + 32 * 3600.) continue; // not before 08:00: not tonight's
+					C.Up = At; C.Shut = At - FS47FreeformSession::EveningUp(J) + FS47FreeformSession::EveningShut(J);
+					In.Cards.Add(C);
+				}
+			}
 			In.bAntennasWait = FS47FreeformSession::GoalWaits(F.Clock()) && !F.StationGoalLine().IsEmpty();
 			In.Done = &S47TonightNote::Tonight();
 			In.Game = (uint64(uint32(M->Flow ? M->Flow->CaseId : 0)) << 32) | uint32(F.Seed());
@@ -2499,6 +2516,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			const auto Add = [&](const TCHAR* Group, const S47TonightNote::FLine& L)
 			{
 				FS47NbNowLine N; N.Group = Group; N.Rank = L.Rank; N.Text = S47TonightNote::LineText(L); N.When = L.When; N.Where = L.Where; N.What = L.What; N.Key = L.Key;
+				if (L.Key == TEXT("cards")) N.Fold = TEXT("cards"); // TASKS-TEN-20261113 (change 4): the cards up open under their row
 				N.Why = S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What; N.Item = ItemFor(L.Source); N.bDone = L.Mark == EMark::Done; // (the list's whole words, within the spoiler limits as the line is)
 				if (!N.Item.IsEmpty()) Used.Add(N.Item);
 				X.Now.Add(N);

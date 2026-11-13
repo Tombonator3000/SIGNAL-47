@@ -312,6 +312,10 @@ public:
  static constexpr double DeskHoursPerCard=.25,DeskHoursThirdCard=.6;
  // Cards registered at OPS this night (from 08:00 to 08:00), as they were registered; not saved (a Continue starts the count again).
  int32 CardsTonight() const;
+ // TASKS-TEN-20261113 (change 4): the job cards up now, counted one way on every surface (the HUD, the note, NOW, the map, OPS):
+ // not filed, not dropped, no case test (that is the case's own row), its source up (not EveningGated). A card not up yet is never
+ // counted: it is named with its time.
+ int32 CardsUp() const;
  // M7 (Tom, 9 November): gear can break near what is out there (FS47Upgrades::StepBreakage): what it costs to put right goes on the next sheet.
  static constexpr int32 RepairCap=12; // a week's sheet at most
  void BreakGear(const FString& What,int32 Fee);

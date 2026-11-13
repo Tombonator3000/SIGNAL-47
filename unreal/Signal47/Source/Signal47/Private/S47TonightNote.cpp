@@ -190,6 +190,26 @@ FNote BuildNote(const FIn& In, bool bAll)
   Split(Wd.Text, W.L.Where, W.L.What, bAll ? 2 * MostChars : MostChars);
   All.Add(W);
  }
+ // TASKS-TEN-20261113 (change 4): the cards up now on one row, counted as the HUD counts them; each card not up yet on its own row,
+ // with its window
+ {
+  int32 Up = 0; double UpShut = -1;
+  for (const FIn::FCard& C : In.Cards) if (C.bUp) { ++Up; if (C.Shut >= 0 && (UpShut < 0 || C.Shut < UpShut)) UpShut = C.Shut; }
+  if (Up > 0)
+  {
+   FWork W; W.Order = -1.5; W.Key = TEXT("cards"); W.L.Where = TEXT("OPS"); W.L.Source = W.Key;
+   W.L.What = Up == 1 ? FString(TEXT("One job card up.")) : FString::Printf(TEXT("%d job cards up."), Up);
+   if (UpShut >= 0) W.L.When = TEXT("until ") + HourMinute(UpShut);
+   All.Add(W);
+  }
+  for (const FIn::FCard& C : In.Cards)
+  {
+   if (C.bUp || C.Up < 0) continue;
+   FWork W; W.Order = In.Tasks.Num() + 2; W.Key = TEXT("card:") + C.Id; W.Start = C.Up; W.End = C.Shut; W.L.Where = TEXT("TRACKING PC"); W.L.Source = W.Key;
+   W.L.What = (C.bNightWatch ? TEXT("Night watch card: ") : TEXT("Evening card: ")) + S47HudGauges::Handwritten(C.Source, true) + TEXT(".");
+   All.Add(W);
+  }
+ }
  // tonight's filed cards, ticked off on one line
  if (Filed > 0)
  {
@@ -508,6 +528,20 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
   const FNote Up = Build(Gap);
   Check(bWatchSaid && bNoRest && NoSlip.Clock.EndsWith(TEXT("the time is yours: the camera, the town.")) && CaseFirst.Clock.EndsWith(TEXT("Do a job until then.")) && !Up.Clock.Contains(TEXT("night watch opens")),
    TEXT("20:30 to 01:30: the night watch's hour and the slip, the camera and the town, never rest (a case window too); once it is up the note stops saying it"));
+ }
+ // TASKS-TEN-20261113 (change 4): the cards counted one way: those up on one row with the HUD's count, the night watch not up named with
+ // its window and never counted open; the HUD's row is marked Next in the HUD's own words
+ {
+  FIn Cards; Cards.bFreeform = true; Cards.Clock = Day2 + 22 * 3600.;
+  Cards.Cards = { { TEXT("FF-D0002-0000"), TEXT("3C 286"), -1, Day2 + 23.5 * 3600., 19, true, false }, { TEXT("FF-D0002-0001"), TEXT("CYG A"), -1, Day2 + 23.5 * 3600., 19, true, false },
+   { TEXT("FF-D0002-0002"), TEXT("VIR A"), Day2 + 86400. + 1.5 * 3600., Day2 + 86400. + 4 * 3600., 19, false, true } };
+  Cards.Tasks = { { TEXT("D02 / FF-D0002-0000 / 3C 286 / NEW"), false }, { TEXT("D02 / FF-D0002-0001 / CYG A / NEW"), false }, { TEXT("D02 / FF-D0002-0002 / VIR A / NEW"), false } };
+  Cards.Next = TEXT("OPS // 2 JOB CARDS UP."); Cards.NextRow = TEXT("cards");
+  const FNote C = Gather(Cards, true);
+  const int32 UpRow = Find(C, TEXT("2 job cards up")), WatchRow = Find(C, TEXT("Night watch card"));
+  Check(UpRow != INDEX_NONE && C.Lines[UpRow].Mark == EMark::Next && C.Lines[UpRow].Key == TEXT("cards") && WatchRow != INDEX_NONE && C.Lines[WatchRow].When.StartsWith(TEXT("01:30-04:00"))
+   && Find(C, TEXT("3 job cards")) == INDEX_NONE && !Plain(C).Contains(TEXT("open at OPS")),
+   TEXT("the cards up on one row as the HUD counts them (2), the night watch named with its window and not counted (TASKS-TEN change 4)"));
  }
  // Story (chapter 2): the list's own order, the first thing not done is next with the objective's place; Story's words are its own.
  FIn Story;
