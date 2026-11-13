@@ -2573,7 +2573,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			TSet<FString> Used;
 			const auto Add = [&](const FString& Group, const S47TonightNote::FLine& L)
 			{
-				FS47NbNowLine N; N.Group = Group; N.Rank = L.Rank; N.Text = S47TonightNote::LineText(L); N.When = L.When; N.Where = L.Where; N.What = L.What; N.Key = L.Key;
+				FS47NbNowLine N; N.Group = Group; N.Rank = L.Rank; N.Text = S47TonightNote::LineText(L); N.When = L.When; N.Where = S47TonightNote::PlaceText(L); N.What = L.What; N.Key = L.Key;
 				if (L.Key == TEXT("cards")) N.Fold = TEXT("cards"); // TASKS-TEN-20261113 (change 4): the cards up open under their row
 				N.Tag = S47TonightNote::TagText(L); N.bPinned = L.bPinned; // TASKS-TEN-20261113 (changes 9 and 10)
 				N.Why = L.Source == TEXT("filed cards") || L.Source == TEXT("cards") || L.Source.StartsWith(TEXT("card:")) ? FString() : S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What; // (a row known only by its key, "cards", says no key as WHY) N.Item = L.Key == TEXT("matter:station") ? FindItem(TEXT("array/")) : ItemFor(L.Source); N.bDone = L.Mark == EMark::Done; // (the list's whole words, within the spoiler limits as the line is)
@@ -2718,6 +2718,11 @@ FS47MapView US47Flow::MapView() const
 		// Freeform has no Story chapter clues. It has the survey sheet (MAP-20261108): where the player and the truck are, exactly,
 		// on the land's one frame, and the player's own marks.
 		V.bStation = true; V.bField = true;
+		if (M->Freeform)
+		{
+			const bool bDaleOut = M->Freeform->DaleAsks().ContainsByPredicate([F = M->Freeform](const FS47FreeformSession::FDaleAsk& A) { return A.Kind == TEXT("look") && !A.bDone && A.Night == FS47FreeformSession::NightOf(F->Clock()); });
+			V.bDeskStamp = S47FieldMap::DeskStampShows(M->Freeform->InTutorial(), M->Freeform->SlipToFollow(), bDaleOut); // D69-20261113
+		}
 		double X = 0, Z = 0, Heading = 0; FString Area; bool bDriving = false;
 		if (S47FieldMap::Me(M, X, Z, Heading, Area, bDriving)) { V.bMe = true; V.MeX = X; V.MeZ = Z; V.MeHeading = Heading; V.MeArea = Area; V.bDriving = bDriving; }
 		if (S47FieldMap::Truck(M, X, Z, Heading)) { V.bTruck = true; V.TruckX = X; V.TruckZ = Z; V.TruckHeading = Heading; }

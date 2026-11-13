@@ -114,6 +114,9 @@ namespace S47TonightNote
  // TASKS-TEN-20261113 (change 9): "STATION / 01:45-02:15 / $19", "WARD / by Monday / counts for the review", "THE LAND / until noon /
  // unknown"; empty for a line with no giver (Story)
  SIGNAL47_API FString TagText(const FLine& Line);
+ // D69-20261113: where the row is, for NOW's WHERE: the place, not the paper: a bearing slip's row gives the circle's (or the line's)
+ // place words it already has ("1.2 miles south-southwest of SARO"); any other row its Where
+ SIGNAL47_API FString PlaceText(const FLine& Line);
  // The group's head as the card and NOW print it: "WORK", "FOLLOW-UP", "YOUR OWN TIME"
  SIGNAL47_API const TCHAR* KindHead(uint8 Kind);
  SIGNAL47_API FString HourMinute(double Clock);

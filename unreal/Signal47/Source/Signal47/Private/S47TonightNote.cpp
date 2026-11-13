@@ -150,8 +150,18 @@ FString S47TonightNote::LineText(const FLine& Line)
 FString S47TonightNote::TagText(const FLine& Line)
 {
  if (Line.Giver.IsEmpty()) return FString();
+ if (Line.Giver == TEXT("WARD") && Line.Span.IsEmpty()) return Line.Giver + TEXT(" / ") + Line.Worth; // D69-20261113: no date, no window
  // THE LAND never says what a thing is worth (no spoiler)
  return Line.Giver + TEXT(" / ") + (Line.Span.IsEmpty() ? FString(TEXT("tonight")) : Line.Span) + TEXT(" / ") + (Line.Giver == TEXT("THE LAND") || Line.Worth.IsEmpty() ? FString(TEXT("unknown")) : Line.Worth);
+}
+
+FString S47TonightNote::PlaceText(const FLine& Line)
+{
+ if (!Line.Source.StartsWith(TEXT("BEARING SLIP /"))) return Line.Where;
+ const int32 From = Line.Source.Find(TEXT("on your map, ")), To = Line.Source.Find(TEXT(" of SARO"));
+ if (From == INDEX_NONE || To == INDEX_NONE || To <= From) return Line.Where;
+ const int32 Start = From + 13;
+ return Line.Source.Mid(Start, To + 8 - Start);
 }
 
 const TCHAR* S47TonightNote::KindHead(uint8 Kind)
@@ -201,7 +211,8 @@ namespace S47TonightNoteLocal
   if (IsPost(Source))
   {
    C.Kind = 2; C.Matter = TEXT("Post");
-   if (IsWardPaper(Up)) { C.Giver = TEXT("WARD"); C.Span = Up.Contains(TEXT("MONDAY")) ? TEXT("by Monday") : TEXT("open"); C.Worth = TEXT("counts for the review"); }
+   // D69-20261113: her Monday note is "by Monday"; a letter of hers has no date to give, so its tag says no window ("open" said nothing)
+   if (IsWardPaper(Up)) { C.Giver = TEXT("WARD"); C.Span = Up.Contains(TEXT("MONDAY")) ? TEXT("by Monday") : FString(); C.Worth = TEXT("counts for the review"); }
    else Land(2, TEXT("open"));
    return C;
   }
@@ -223,9 +234,12 @@ namespace S47TonightNoteLocal
    return C;
   }
   if (Up.Contains(TEXT("PAID WORK IS DONE")) || Up.Contains(TEXT("PAID WORK DONE")) || Up.Contains(TEXT("GO OUT WITH THE CAMERA"))) { Land(2, TEXT("until 08:00")); return C; }
+  // D69-20261113: a dish's repair (diagnose, relay, out-and-back) has no clock: it is the player's own time, not WORK "now"; the
+  // station's one row in OPEN MATTERS still stands for the chain
+  if (Up.Contains(TEXT("/ DIAGNOSE AT THE STATUS PC"))) { C.Kind = 2; C.Span = TEXT("open"); return C; }
   // WORK: the station's, with a clock (blocking now first)
   if (Up.StartsWith(TEXT("PRINTER")) || Up.StartsWith(TEXT("TELEX")) || Up.StartsWith(TEXT("FEEDER /")) || Up.StartsWith(TEXT("SERVICE TRUCK /")) || Up.StartsWith(TEXT("TRUCK /"))
-   || Up.Contains(TEXT("/ DIAGNOSE AT THE STATUS PC")) || Up.StartsWith(TEXT("SERVICE BAY")) || Up.StartsWith(TEXT("NO POWER")))
+   || Up.StartsWith(TEXT("SERVICE BAY")) || Up.StartsWith(TEXT("NO POWER")))
   { C.Span = TEXT("now"); return C; }
   if (Up.StartsWith(TEXT("CASE /")) || Up.StartsWith(TEXT("FIELD TEST /")) || Up.StartsWith(TEXT("CONTROL ROOM: RETURN")) || Up.StartsWith(TEXT("FIELD POST")) || Up.StartsWith(TEXT("SARO NORTH FACADE"))
    || Up.StartsWith(TEXT("ARRAY SERVICE GATE")) || Up.StartsWith(TEXT("SEALED SERVICE GATE")) || Up.StartsWith(TEXT("SERVICE GATE")) || Up.StartsWith(TEXT("GATE CONTROL")) || Up.StartsWith(TEXT("CASE BOARD")))
@@ -301,7 +315,9 @@ namespace S47TonightNoteLocal
  // with its window
  {
   int32 Up = 0, UpPay = 0; double UpShut = -1;
-  for (const FIn::FCard& Cd : In.Cards) if (Cd.bUp) { ++Up; UpPay += Cd.Pay; if (Cd.Shut >= 0 && (UpShut < 0 || Cd.Shut < UpShut)) UpShut = Cd.Shut; }
+  // D69-20261113: a shut that has passed is no window: a card still up after it is up by the rules it plays by (a developer run keeps
+  // the cards open), so its row says until 08:00, never an hour gone by; one not up whose window has shut is not tonight's row
+  for (const FIn::FCard& Cd : In.Cards) if (Cd.bUp) { ++Up; UpPay += Cd.Pay; if (Cd.Shut > In.Clock && (UpShut < 0 || Cd.Shut < UpShut)) UpShut = Cd.Shut; }
   if (Up > 0)
   {
    FWork W; W.Order = -1.5; W.Key = TEXT("cards"); W.L.Where = TEXT("OPS"); W.L.Source = W.Key;
@@ -311,7 +327,7 @@ namespace S47TonightNoteLocal
   }
   for (const FIn::FCard& Cd : In.Cards)
   {
-   if (Cd.bUp || Cd.Up < 0) continue;
+   if (Cd.bUp || Cd.Up < 0 || (Cd.Shut >= 0 && Cd.Shut <= In.Clock)) continue;
    FWork W; W.Order = In.Tasks.Num() + 2; W.Key = TEXT("card:") + Cd.Id; W.Start = Cd.Up; W.End = Cd.Shut; W.L.Where = TEXT("TRACKING PC"); W.L.Source = W.Key;
    W.L.What = (Cd.bNightWatch ? TEXT("Night watch card: ") : TEXT("Evening card: ")) + S47HudGauges::Handwritten(Cd.Source, true) + TEXT(".");
    W.L.Giver = TEXT("STATION"); W.L.Worth = FString::Printf(TEXT("$%d"), Cd.Pay);
@@ -662,6 +678,14 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
    && RankOf(TEXT("STATION GOAL / ARRAY 19 OF 27: REPAIR THE WEST BRANCH AT ANTENNA S-13. YOU HAVE THE PARTS."), false) == 2 && RankOf(TEXT("PHOTO LAB: DEVELOP"), true) == 0
    && RankOf(TEXT("S-13 / Diagnose at the status PC, replace the relay and run the local out-and-back test."), false) == 0 && RankOf(TEXT("ROUND / Today: the tank."), false) == 2,
    TEXT("DO FIRST the feeder and a dish's fault, TONIGHT the bearing slip, WHEN YOU CAN the station goal and the round; a window open now is first"));
+  {
+   // D69-20261113: a dish's repair with no clock is YOUR OWN TIME (open, no pay), not WORK "now"
+   FIn Fix; Fix.bFreeform = true; Fix.Clock = Day2 + 21 * 3600.;
+   Fix.Tasks.Add({ TEXT("S-05 / Diagnose at the status PC, replace the relay and run the local out-and-back test."), false });
+   const FNote FixNote = Build(Fix); const int32 Row = Find(FixNote, TEXT("Diagnose"));
+   Check(Row != INDEX_NONE && FixNote.Lines[Row].Kind == 2 && TagText(FixNote.Lines[Row]) == TEXT("STATION / open / no pay"),
+    TEXT("a dish's diagnose-and-repair row has no clock: YOUR OWN TIME, STATION / open / no pay (D69)"));
+  }
   FIn Order; Order.bFreeform = true; Order.Clock = Day2 + 21 * 3600.;
   for (int32 I = 0; I < 7; ++I) Order.Tasks.Add({ FString::Printf(TEXT("ROUND / Today: stop number %d. $6 on the sheet when it is done."), I + 1), false });
   Order.Tasks.Add({ Slip, false });
@@ -675,6 +699,8 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
   Order.Tasks[7].bDone = true;
   const FNote Ticked = Gather(Order, true);
   const int32 TickedSlip = Find(Ticked, TEXT("New circle"));
+  // D69-20261113: NOW's WHERE for the slip is the circle's place, not "BEARING SLIP"
+  Check(LongSlip != INDEX_NONE && PlaceText(Long.Lines[LongSlip]) == TEXT("1.1 miles south-southwest of SARO"), TEXT("the bearing slip's WHERE is the circle's place words, not the paper's name (D69)"));
   Check(LongSlip != INDEX_NONE && Long.Lines[LongSlip].What == TEXT("New circle on your map, 1.1 miles south-southwest of SARO.") && Long.Lines[LongSlip].Source == Slip && Short.Lines[Bear].What == Long.Lines[LongSlip].What
    && TickedSlip != INDEX_NONE && Ticked.Lines[TickedSlip].Mark == EMark::Done && Ticked.Lines[TickedSlip].Key == Long.Lines[LongSlip].Key && S47Script::LintText(Plain(Long)).IsEmpty(),
    TEXT("one sentence on the card and on NOW, the slip's whole words kept for NOW's WHY; ticked off it keeps its key (TASKS-TEN change 9)"));
@@ -714,6 +740,12 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
   Check(UpRow != INDEX_NONE && C.Lines[UpRow].Mark == EMark::Next && C.Lines[UpRow].Key == TEXT("cards") && TagText(C.Lines[UpRow]) == TEXT("STATION / until 23:30 / $38")
    && WatchRow != INDEX_NONE && TagText(C.Lines[WatchRow]) == TEXT("STATION / 01:30-04:00 / $19") && Find(C, TEXT("3 job cards")) == INDEX_NONE && !Plain(C).Contains(TEXT("open at OPS")),
    TEXT("the cards up on one row as the HUD counts them (2, $38 until 23:30), the night watch named with its window and pay, never counted (TASKS-TEN changes 4 and 9)"));
+  // D69-20261113 (seen at 01:42 in a developer run): past 23:30 the cards still up say until 08:00, not an hour gone by
+  Cards.Clock = Day2 + 25.7 * 3600.; Cards.Next.Reset(); Cards.NextRow.Reset();
+  const FNote Late = Gather(Cards, true);
+  const int32 LateRow = Find(Late, TEXT("2 job cards up"));
+  Check(LateRow != INDEX_NONE && TagText(Late.Lines[LateRow]) == TEXT("STATION / until 08:00 / $38") && !Plain(Late).Contains(TEXT("until 23:30")),
+   TEXT("a card window that has shut is not said: the cards still up at 01:42 say until 08:00, never until 23:30 (D69)"));
  }
  // TASKS-TEN-20261113 (change 9): OPEN MATTERS by group, Cases, Station, Post, Unknowns, Ward; no ticks; the station's one row given by
  // the caller stands for the goal's and the work order's lines; a file's hours are an unknown, the weekly report Ward's
@@ -731,7 +763,7 @@ bool S47TonightNote::SelfTest(TArray<FString>& Lines)
   const FNote O = Gather(Open, true);
   TArray<FString> Groups; for (const FLine& L : O.Matters) Groups.Add(L.Matter);
   Check(O.Lines.IsEmpty() && Groups == TArray<FString>({ TEXT("Cases"), TEXT("Station"), TEXT("Post"), TEXT("Unknowns"), TEXT("Ward") }) && Tagged(O)
-   && O.Matters[1].What.Contains(TEXT("needs 1 relay")) && TagText(O.Matters[4]) == TEXT("WARD / by day 8 / counts for the review") && TagText(O.Matters[3]).EndsWith(TEXT(" / unknown"))
+   && O.Matters[1].What.Contains(TEXT("needs 1 relay")) && TagText(O.Matters[4]) == TEXT("WARD / by day 8 / counts for the review") && TagText(O.Matters[2]) == TEXT("WARD / counts for the review") && TagText(O.Matters[3]).EndsWith(TEXT(" / unknown"))
    && !O.Matters.ContainsByPredicate([](const FLine& L) { return L.Mark == EMark::Done; }),
    TEXT("OPEN MATTERS: Cases, Station (one row for the chain), Post, Unknowns, Ward, each tagged, no ticks; the goal without parts is no row tonight (TASKS-TEN change 9)"));
  }

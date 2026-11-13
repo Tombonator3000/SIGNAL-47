@@ -1705,19 +1705,23 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			Y += 22;
 			for (const TCHAR* Line : { TEXT("Topography by photogrammetric methods from aerial"), TEXT("photographs taken 1977. Field checked 1979.") }) { Pen.Text(Line, FVector2f(Px, Y), Small(11), Ink(), LMargin, 0.f, .5f); Y += 15; }
 		}
-		// The night desk's stamp, in the same purple, a little crooked; and a ring where a cup stood on the sheet.
+		// The night desk's stamp, in the same purple, a little crooked (D69-20261113: only while it is true, DeskStampShows); and a ring
+		// where a cup stood on the sheet.
 		{
 			const FVector2f StampAt(Px + 150, 668);
-			// Its frame, turned with it: two rules round the words.
-			const float Tw = FMath::DegreesToRadians(-4.f);
-			const FVector2f Ux(FMath::Cos(Tw), FMath::Sin(Tw)), Uy(-FMath::Sin(Tw), FMath::Cos(Tw));
-			for (const float Grow : { 0.f, 4.f })
+			if (View.bDeskStamp)
 			{
-				const float Hw = 125 + Grow, Hh = 33 + Grow;
-				Pen.Lines({ StampAt - Ux * Hw - Uy * Hh, StampAt + Ux * Hw - Uy * Hh, StampAt + Ux * Hw + Uy * Hh, StampAt - Ux * Hw + Uy * Hh, StampAt - Ux * Hw - Uy * Hh }, Revised(.65f), Grow > 0 ? 2.2f : 1.2f, LMargin);
+				// Its frame, turned with it: two rules round the words.
+				const float Tw = FMath::DegreesToRadians(-4.f);
+				const FVector2f Ux(FMath::Cos(Tw), FMath::Sin(Tw)), Uy(-FMath::Sin(Tw), FMath::Cos(Tw));
+				for (const float Grow : { 0.f, 4.f })
+				{
+					const float Hw = 125 + Grow, Hh = 33 + Grow;
+					Pen.Lines({ StampAt - Ux * Hw - Uy * Hh, StampAt + Ux * Hw - Uy * Hh, StampAt + Ux * Hw + Uy * Hh, StampAt - Ux * Hw + Uy * Hh, StampAt - Ux * Hw - Uy * Hh }, Revised(.65f), Grow > 0 ? 2.2f : 1.2f, LMargin);
+				}
+				Pen.Text(TEXT("S A R O  /  N I G H T   D E S K"), StampAt - FVector2f(0, 12), Printed(16), Revised(.75f), LMargin, .5f, .5f, false, -4.f);
+				Pen.Text(TEXT("NOT TO LEAVE THE BUILDING"), StampAt + FVector2f(0, 13), Printed(13), Revised(.7f), LMargin, .5f, .5f, false, -4.f);
 			}
-			Pen.Text(TEXT("S A R O  /  N I G H T   D E S K"), StampAt - FVector2f(0, 12), Printed(16), Revised(.75f), LMargin, .5f, .5f, false, -4.f);
-			Pen.Text(TEXT("NOT TO LEAVE THE BUILDING"), StampAt + FVector2f(0, 13), Printed(13), Revised(.7f), LMargin, .5f, .5f, false, -4.f);
 			const FVector2f Cup(Px + 236, 548);
 			for (int32 Ring = 0; Ring < 3; ++Ring)
 			{
@@ -1749,11 +1753,18 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 	return LMargin + 4;
 }
 
+bool S47FieldMap::DeskStampShows(bool bFirstShift, bool bSlipLive, bool bDaleOut)
+{
+	return bFirstShift && !bSlipLive && !bDaleOut;
+}
 bool S47FieldMap::SelfTest(TArray<FString>& Lines)
 {
 	using namespace S47FieldMapLocal;
 	bool bAll = true;
 	const auto Check = [&](bool bOk, const FString& What) { bAll &= bOk; Lines.Add(FString(bOk ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("survey map: ") + What); };
+	// D69-20261113: the desk's stamp only while the sheet is the desk's: never beside a bearing to drive to, Dale's "get outside", or free time
+	Check(DeskStampShows(true, false, false) && !DeskStampShows(true, true, false) && !DeskStampShows(true, false, true) && !DeskStampShows(false, false, false),
+		TEXT("the NIGHT DESK / NOT TO LEAVE THE BUILDING stamp shows on the first shift only, and never while a live slip or Dale's ask to go out says go (D69)"));
 	// Every area's terms come to the same road-local point, and the heading with them (STATION 01's are turned a quarter round).
 	{
 		bool bSame = true, bHeading = true;

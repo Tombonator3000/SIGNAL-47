@@ -1057,7 +1057,11 @@ void SS47Notebook::Build()
 			FTextBlockStyle St = FTextBlockStyle().SetFont(Hand(bNext ? Px + 3.f : Px)).SetColorAndOpacity(Ink);
 			if (bDone) St.SetStrikeBrush(StrikeBrush(Ink)); // (MARGINALIA-20261109: a brush Slate draws the strike with)
 			TSharedRef<SWidget> Mark = SNullWidget::NullWidget;
-			if (bNext) Mark = SNew(SNextArrow);
+			// D69-20261113: the pinned row that is also the next one keeps its star beside the arrow
+			if (bNext && N.bPinned) Mark = SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SNextArrow)]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(P(1), 0, 0, 0)[SNew(STextBlock).Text(FText::FromString(TEXT("*"))).Font(Term(22)).ColorAndOpacity(Ph2Red())];
+			else if (bNext) Mark = SNew(SNextArrow);
 			// TASKS-TEN-20261113 (change 10): the pinned row has the due tabs' star
 			else if (N.bPinned) Mark = SNew(STextBlock).Text(FText::FromString(TEXT("*"))).Font(Term(26)).ColorAndOpacity(Ph2Red());
 			else if (N.Group == TEXT("also") || N.bSummary) Mark = SNew(STextBlock).Text(FText::FromString(N.Fold.IsEmpty() ? TEXT("-") : OpenFolds.Contains(N.Fold) ? TEXT("v") : TEXT(">"))).Font(Term(22)).ColorAndOpacity(Ink);
@@ -1065,7 +1069,7 @@ void SS47Notebook::Build()
 				[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : N.Group == TEXT("first") || (N.Rank == 0 && N.Group != TEXT("next")) ? TEXT("!") : TEXT(" "))).Font(Term(16)).ColorAndOpacity(bDone ? Ink : N.Group == TEXT("first") || N.Rank == 0 ? Ph2Red() : Ink)]];
 			const bool bFresh = N.bNew && !bDone;
 			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(6))[Entry(I, SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(8), P(10), 0)[SNew(SBox).WidthOverride(P(26))[Mark]]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(8), P(10), 0)[SNew(SBox).WidthOverride(P(bNext && N.bPinned ? 40 : 26))[Mark]]
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(9), bFresh ? P(8) : 0.f, 0)[SNew(STextBlock).Visibility(bFresh ? EVisibility::Visible : EVisibility::Collapsed).Text(FText::FromString(TEXT("NEW"))).Font(Term(16, 2)).ColorAndOpacity(Ph2Red())]
 				+ SHorizontalBox::Slot().FillWidth(1.f)
 				[

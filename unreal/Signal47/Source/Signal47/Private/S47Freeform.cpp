@@ -4246,7 +4246,8 @@ FString FS47FreeformSession::AvailableActivities(FString* Card)const
   const FString Letter=Predecessor->TaskLine();
   // TASKS-TEN-20261113 (change 10, seen running): a pinned matter is the step; the letter is no paper waiting and does not cut in
   FString PinFull,PinShort;
-  if(LetterWaits(Letter)&&!(Letter.StartsWith(TEXT("MAILBOX"))&&GoalWaits(WorldClock))&&!PinnedStep(PinFull,PinShort))
+  // D69-20261113 (approved order): under what blocks, a window open now and a paid card up; with the deadlines, not ahead of them
+  if(LetterWaits(Letter)&&!(Letter.StartsWith(TEXT("MAILBOX"))&&GoalWaits(WorldClock))&&!PinnedStep(PinFull,PinShort)&&!StepAheadOfLetter())
   {
    const FString Then=WorkActivities(nullptr);
    if(Card)*Card=S47HudGauges::CardLine(Letter);
@@ -4255,6 +4256,17 @@ FString FS47FreeformSession::AvailableActivities(FString* Card)const
   }
  }
  return WorkActivities(Card);
+}
+bool FS47FreeformSession::StepAheadOfLetter()const
+{
+ // the ladder's steps 1 to 4 as WorkActivities takes them (keep the two together)
+ if(!CaseSheets.IsEmpty()&&(!IsBearingSlip(CaseSheets[0])||SheetIndex()==0))return true;
+ if(!TelexLine().IsEmpty())return true;
+ {FString Open;if(WindowOpenStep(Open))return true;}
+ const int32 Urgent=UrgentCase(true);
+ if(Urgent>=0&&CaseStep(Urgent).Step==ECaseStep::RunPlan&&PlannedFieldTest(Urgent)<0)return true;
+ if(CardsUp()>0)return true;
+ return NightBeforeGoal()&&Work.ContainsByPredicate([this](const FJob& J){return J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected&&EveningGated(J);});
 }
 FString FS47FreeformSession::ObjectiveRow()const
 {
@@ -6351,6 +6363,8 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    FString UpCard;Eve.WorkActivities(&UpCard);
    Check(Eve.CardsUp()==2+DayOne&&UpCard.StartsWith(FString::Printf(TEXT("OPS // %d JOB CARD"),Eve.CardsUp()))&&Eve.PickRow==TEXT("cards"),
     TEXT("TASKS-TEN (change 4): at ten the cards up are counted once (CardsUp, the HUD, the map's OPS), the night watch not up is not counted"));
+   // D69-20261113: with paid cards up, Dr. Ward's unread letter does not lead the HUD (it waits with the deadlines)
+   Check(Eve.CardsUp()>0&&Eve.StepAheadOfLetter(),TEXT("TASKS-TEN (D69): a paid card up is a step ahead of Dr. Ward's unread letter (blocking > window > paid card > night's cards > deadline with the letter > free time)"));
   }
   {
    double WatchAt=0;const FJob* Next=Eve.NextEveningCard(WatchAt);
