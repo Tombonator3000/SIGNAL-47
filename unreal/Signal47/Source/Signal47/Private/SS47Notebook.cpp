@@ -555,14 +555,17 @@ namespace
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Bottom)[SNew(STextBlock).Text(FText::FromString(File.Title)).Font(Hand(30)).ColorAndOpacity(InkBlue())]
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom).Padding(P(8), 0, 0, P(4))[SNew(STextBlock).Text(FText::FromString(File.Stage)).Font(Term(19, 1)).ColorAndOpacity(Ph2Red())]
-			]
-			+ SVerticalBox::Slot().AutoHeight().Padding(0, P(4), 0, P(2))[BoxRow];
+			];
+		// LOOP-DOSSIER-GIVES-20261113: what reaching the stage gave, one line under it, in the stage's red
+		if (!File.Gave.IsEmpty())
+			Sheet->AddSlot().AutoHeight().HAlign(HAlign_Right).Padding(0, P(1), 0, 0)[SNew(STextBlock).Text(FText::FromString(File.Gave)).Font(Hand(20)).ColorAndOpacity(Ph2Red()).AutoWrapText(true)];
+		Sheet->AddSlot().AutoHeight().Padding(0, P(4), 0, P(2))[BoxRow];
 		for (const FS47NbUnknown::FBox& One : File.Boxes)
 			if (One.bFilled && !One.Note.IsEmpty())
 				Sheet->AddSlot().AutoHeight().Padding(0, P(3), 0, 0)[SNew(STextBlock).Text(FText::FromString(One.Note)).Font(Hand(23)).ColorAndOpacity(Lead).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(23), 28))];
 		if (!File.Next.IsEmpty())
 			Sheet->AddSlot().AutoHeight().Padding(0, P(5), 0, 0)[SNew(STextBlock).Text(FText::FromString(File.Next)).Font(Hand(20)).ColorAndOpacity(C(0x3a3a40, 0.6f)).AutoWrapText(true)];
-		Said.Add(File.Title + TEXT(". ") + File.Stage + TEXT(".") + (Held.IsEmpty() ? FString() : TEXT(" Kept: ") + Held + TEXT(".")));
+		Said.Add(File.Title + TEXT(". ") + File.Stage + TEXT(".") + (File.Gave.IsEmpty() ? FString() : TEXT(" ") + File.Gave) + (Held.IsEmpty() ? FString() : TEXT(" Kept: ") + Held + TEXT(".")));
 		return SNew(SBorder).BorderImage(Box(C(0xf7f3e6, 0.55f), C(0x3a3a40, 0.55f), 1.5f, 2.f)).Padding(FMargin(P(12), P(6)))[Sheet];
 	}
 }

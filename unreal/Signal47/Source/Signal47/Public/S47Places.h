@@ -72,6 +72,10 @@ public:
  static double SpreadFor(int32 Branches){return Branches<=0?40.:Branches==1?20.:Branches==2?12.:Branches==3?7.:4.;}
  // Whether registered work points out at all: a discrepancy always, routine work with a mended branch.
  static bool Gives(bool bAnomaly,int32 Branches){return bAnomaly||Branches>0;}
+ // LOOP-DOSSIER-GIVES-20261113 (→ M3, M4): whether a registration may point out now. 0 no; 1 the night's own (not Spent yet); 2 one more,
+ // because a file of the unknown at MARKS has an extra bearing open (FS47FreeformSession::DossierExtraOpen) once the night's own is
+ // spent: never for the first day's free slips (bFree), and nothing at all on the big night (bBigOwns). Pure.
+ static int32 SlipAllowed(bool bFree,bool bSpent,bool bExtraOpen,bool bBigOwns){return bBigOwns?0:!bSpent?1:(!bFree&&bExtraOpen)?2:0;}
  // CHAIN-1-20261109: what the slip points at, in this order: 1 marks standing at a place, 2 what is out there tonight
  // (FS47Happenings::OutTonight: what has come, or tonight's lead), 3 a place on the land nobody has looked at, 0 nothing (no slip).
  // T16-17 (→ M1, "the bearings run out"): 4, once every place has been found or heard of, the place where tomorrow's daylight trace

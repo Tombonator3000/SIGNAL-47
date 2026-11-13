@@ -949,9 +949,16 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  // D45-20261110 (D45-26): on the first day a slip in daylight (FreeSlip), or any slip on the first night while the array's burst is still
  // to come (FS47Happenings::FirstBurstOwed), is once that day and leaves the night's one pointing-out to the burst.
  const bool bFree=FreeSlip(Night,Now)||(F.Happenings&&F.Happenings->FirstBurstOwed(Night));
- if(bFree?LastFixDay==F.Day():(F.Director?!F.Director->MayPointOut(Night):LastFixDay==F.Day()))return false;
+ // LOOP-DOSSIER-GIVES-20261113 (→ M3, M4): a file of the unknown brought to MARKS gives one more than that, once (FS47Dossier::Grant):
+ // the night's own is spent, and this is the extra. Never on the first day's free slips, never on the big night (DossierExtraOpen, and
+ // BigOwns); the tiers and the target order are as ever. Only this slip takes it: the burst and the lights still see the night spent.
  // PT-FEEDER-20261109: the big night's night is its own (FS47Happenings::BigOwns): it points, nothing else does, before it or after.
- if(F.Happenings&&F.Happenings->BigOwns(Night))return false;
+ const bool bSpent=bFree?LastFixDay==F.Day():(F.Director?!F.Director->MayPointOut(Night):LastFixDay==F.Day());
+ const int32 Allowed=SlipAllowed(bFree,bSpent,F.DossierExtraOpen(Night),F.Happenings&&F.Happenings->BigOwns(Night));
+ if(Allowed==0)return false;
+ const bool bExtra=Allowed==2;
+ // The extra slip keeps the same order of what it points at, past whatever tonight's slips from SARO have pointed at already.
+ const auto Fresh=[this,&F,bExtra](const FString& Name){return !bExtra||!Fixes.ContainsByPredicate([&F,&Name](const FBearing& Had){return !Had.bCar&&Had.Day==F.Day()&&Had.Target==Name;});};
  double SaroX=0,SaroZ=0;SaroRoad(SaroX,SaroZ);
  // What is off the main beam tonight: the marks, if there are any and their tier allows it at this hour (director.json: before
  // midnight only what can be explained away); otherwise something out on the land nobody has looked at.
@@ -959,7 +966,7 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  if(F.FarmSite&&F.FarmSite->Armed())
  {
   const FString Why=F.FarmSite->FieldVisit()?TEXT("field_visit"):F.FarmSite->PlaceId()==TEXT("farm")?TEXT("farm_lights"):TEXT("town_lights");
-  if(!F.Director||F.Director->MayPointAt(Why,Now,Night))
+  if((!F.Director||F.Director->MayPointAt(Why,Now,Night))&&Fresh(F.FarmSite->PlaceTitle()))
   {
    const FVector C=F.FarmSite->Centre();const FVector Road=S47Legs::ORIGINS(TEXT("road"));
    Target=F.FarmSite->PlaceTitle();
@@ -974,7 +981,7 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  if(!bHave&&F.Happenings)
  {
   FString Event,Title;double X=0,Z=0;
-  if(F.Happenings->OutTonight(Night,Event,Title,X,Z,bAhead)&&(!F.Director||F.Director->MayPointAt(Event,Now,Night)))
+  if(F.Happenings->OutTonight(Night,Event,Title,X,Z,bAhead)&&(!F.Director||F.Director->MayPointAt(Event,Now,Night))&&Fresh((Title.IsEmpty()?Event:Title).Left(64)))
   {
    Target=(Title.IsEmpty()?Event:Title).Left(64);ToX=X;ToZ=Z;bHave=bTonight=true;
   }
@@ -982,27 +989,30 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  }
  // D45-20261110 (D45-26): on the first night the line the night's burst will come back on (ArcPlace), inside the rim.
  bool bArc=false;
- if(!bHave&&Night==1){Target=ArcPlace(F.Seed());bHave=bArc=!Target.IsEmpty()&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
- if(!bHave){Target=NextUnknown(F.Day());bHave=!Target.IsEmpty()&&Spot(Target,ToX,ToZ);}
+ if(!bHave&&Night==1){Target=ArcPlace(F.Seed());bHave=bArc=!Target.IsEmpty()&&Fresh(Target)&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
+ if(!bHave){Target=NextUnknown(F.Day());bHave=!Target.IsEmpty()&&Fresh(Target)&&Spot(Target,ToX,ToZ);}
  // T16-17 (→ M1, "the bearings run out"): every place found or heard of, the slip still points: at the place where the next
  // morning's trace will stand (DayTrace; the day turns at 08:00, so whether it is taken before midnight or after, that is Day+1).
  // The drive is the same as ever: be there by daylight before noon and look closer. Nothing new is saved.
  bool bTrace=false;
- if(!bHave){Target=TracePlace(F.Seed(),F.Day()+1);bHave=bTrace=!Target.IsEmpty()&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
+ if(!bHave){Target=TracePlace(F.Seed(),F.Day()+1);bHave=bTrace=!Target.IsEmpty()&&Fresh(Target)&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
  if(!bHave)return false;
  const double Spread=SpreadFor(Branches);
- FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x4245415au),Target,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));
+ FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),bExtra?0x4245415bu:0x4245415au),Target,FS47NightRhythm::Roll(F.Seed(),F.Day(),bExtra?0x52494e48u:0x52494e47u));
  if(bArc){B.Az=ArcBearing(F.Seed(),SaroX,SaroZ,ToX,ToZ,Spread);RingOf(B,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));ArcRing(B);} // the line's own number; D48-20261110: a small circle on the place
  Fixes.Add(B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
  LastFixDay=F.Day();
- if(F.Director&&!bFree)F.Director->NotePointOut(Night);
+ if(F.Director&&!bFree&&!bExtra)F.Director->NotePointOut(Night);
+ if(bExtra)F.DossierSpendExtra(Night); // once: it is printed
  if(bAhead)F.Happenings->PointedTonight(Night);
  const FString Mended=Branches<=0?FString(TEXT("With no branch of the array repaired, the array still picked up something away from where the dishes were pointed, though only roughly"))
   :FString::Printf(TEXT("With %d %s of the array repaired, the array picked up something away from where the dishes were pointed"),Branches,Branches==1?TEXT("branch"):TEXT("branches"));
- F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FS47PlacesLocalSlipRecord(Mended,B,Now));
+ // LOOP-DOSSIER-GIVES-20261113: the extra slip is a record and a paper of its own, and says why there is one, in the station's words
+ const FString ExtraWhy=bExtra?S47Dossier::ExtraToast()+TEXT(" "):FString();
+ F.RecordEvidence(FString::Printf(TEXT("bearing_d%d%s"),F.Day(),bExtra?TEXT("_more"):TEXT("")),ExtraWhy+FS47PlacesLocalSlipRecord(Mended,B,Now));
  // The slip on the OPS printer, collected there like the result sheets (behind any job's paper).
- const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),SlipNote(B,Branches));
- if(M->UI)M->UI->Toast(FS47PlacesLocalSlipToast(B,bSlip),6);
+ const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),bExtra?S47Dossier::ExtraSlipWords()+TEXT("\n")+SlipNote(B,Branches):SlipNote(B,Branches),bExtra);
+ if(M->UI)M->UI->Toast(ExtraWhy+FS47PlacesLocalSlipToast(B,bSlip),6);
  UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s (%s), %d branches, %s, night %d; circle %.0f %.0f r%.0f, on the land %d%s"),B.Az,Spread,*Target,SlipPoints(bMarks,bTonight,true)==1?TEXT("marks"):SlipPoints(bMarks,bTonight,true)==2?(bAhead?TEXT("tonight's, still to come"):TEXT("tonight's, out there now")):bArc?TEXT("the first night's line"):SlipPoints(false,false,false,bTrace)==4?TEXT("where the morning's trace will be"):TEXT("a place not looked at"),Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night,B.RingX,B.RingZ,B.RingR,B.bRing&&S47OpenLand::InRim(B.RingX,B.RingZ,B.RingR)?1:0,bFree?TEXT("; the night's pointing-out left for the burst"):TEXT(""));
  M->RequestAutosave();
  return true;
@@ -1058,6 +1068,11 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  Check(FMath::IsNearlyEqual(AzimuthOf(0,0,0,-10),0.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,10,0),90.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,0,10),180.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,-10,0),270.),TEXT("a bearing is degrees from north; road-local z runs south"));
  // LOOP-1-20261109: with no branch mended the sector is wide (±40), never none; every mended branch narrows it.
  Check(SpreadFor(0)==40&&SpreadFor(0)>SpreadFor(1)&&SpreadFor(1)>SpreadFor(2)&&SpreadFor(2)>SpreadFor(3)&&SpreadFor(3)>SpreadFor(4)&&SpreadFor(4)>0,TEXT("no branch mended is a wide sector, every mended branch narrows it, and none is exact"));
+ // LOOP-DOSSIER-GIVES-20261113: MARKS's one more slip comes only once the night's own is spent and an extra is open; never for the first
+ // day's free slips, and nothing at all on the big night.
+ Check(SlipAllowed(false,false,false,false)==1&&SlipAllowed(false,false,true,false)==1&&SlipAllowed(false,true,false,false)==0&&SlipAllowed(false,true,true,false)==2
+  &&SlipAllowed(true,true,true,false)==0&&SlipAllowed(true,false,true,false)==1&&SlipAllowed(false,false,true,true)==0&&SlipAllowed(false,true,true,true)==0&&SlipAllowed(false,false,false,true)==0,
+  TEXT("LOOP-DOSSIER-GIVES: one more bearing slip only past the night's own, with a file's extra open; never the first day's free slip, never on the big night"));
  {
   bool bStable=true,bNear=true,bMoves=false,bStill=true;
   for(int32 Day=1;Day<=120;++Day)

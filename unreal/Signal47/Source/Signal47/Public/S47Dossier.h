@@ -18,6 +18,8 @@
 //   MARKS    three kinds, from at least two nights
 //   HABITS   four kinds with LAMP among them, from at least three nights (never the two that stop at MARKS)
 // Saved as "dossier": { "order": ["pale","roswell"], "tags": { "<finding key>": { "k": "pale", "t": "ground", "d": 9 } } }.
+// LOOP-DOSSIER-GIVES-20261113: a tag may also have "h" (the hour) and "x", "z" (where); and the dossier "extra": { "pale": 9 } (the night
+// its MARKS bearing is for) and "spent": ["pale"]. All optional: a save without them reads as before (no hours, no map mark, no extra).
 namespace S47Dossier
 {
  enum class EKind : int32 { Small=0, Low, Tall, Silver, Shining, Count, None=-1 };
@@ -53,6 +55,25 @@ namespace S47Dossier
  // The stamp when evidence is logged: the file's number and the kind of evidence, never which one it is.
  SIGNAL47_API FString Stamp(int32 Number,EType Type,bool bPhoto,bool bNewFile,EStage Reached);
 
+ // LOOP-DOSSIER-GIVES-20261113 (-> M3, M4; Tom 13 November, after the critics: "a thing is done when the player notices it and it has a
+ // consequence"). What reaching each stage gives, with what the game has already; never what the file holds, never what it is:
+ //   OUTLINE  where the file was first logged goes on the field map in pencil, its title beside it (FS47Dossier::FirstWhere)
+ //   MARKS    the array may point out once more than the night allows: one more bearing slip, once, by the slip's own target order,
+ //            never on the big night (FS47Places::AfterRegistered; FS47Dossier::Grant, ExtraOpen, Spend)
+ //   HABITS   tonight's note carries the hours the file has been logged at so far (HoursLine)
+ // Gave: the one line under the stage on THEM and on the binder's sheet. bMapped: it is on the map; Extra: 0 none kept for it (a file at
+ // MARKS from a save that had no record of it), 1 still to come, 2 printed; bHours: some hours are kept for it.
+ SIGNAL47_API FString Gave(EKind Kind,EStage Stage,bool bMapped,int32 Extra,bool bHours);
+ // The extra slip's own words on the printer and its toast, and tonight's note while it is still to come. Never which file gave it.
+ SIGNAL47_API FString ExtraSlipWords();
+ SIGNAL47_API FString ExtraToast();
+ SIGNAL47_API FString ExtraTaskLine();
+ // "UNKNOWN 2 / Logged so far at 23:00, 01:00, 03:00." Hours 0 to 23 in the night's order (from 08:00), each once; empty for none.
+ SIGNAL47_API FString HoursLine(int32 Number,const TArray<int32>& Hours);
+ // The night a stage reached at Clock gives its extra to (FS47FreeformSession::NightOf's nights): that night, or from five in the
+ // morning the next one, so that a file brought to MARKS at dawn or in daylight gives it to the coming night.
+ SIGNAL47_API int32 ExtraNightFor(double Clock);
+
  // ---------- a file as the notebook and the binder show it ----------
  struct FBox
  {
@@ -65,6 +86,7 @@ namespace S47Dossier
   int32 Number=0,Nights=0,Opened=0,Latest=0; // Opened, Latest: the first and the last night something went in
   FString Title,Stage,Next;                  // "UNKNOWN 2", "MARKS", how it is kept from here
   bool bAtMarks=false;
+  FString Gave;                              // LOOP-DOSSIER-GIVES-20261113: what reaching the stage gave, one line
   TArray<FBox> Boxes;                        // six, in the table's order
   TArray<FString> Photos;                    // the photograph claims in it (their ids, for the session to name the prints by)
  };
@@ -80,15 +102,17 @@ namespace S47Dossier
 class SIGNAL47_API FS47Dossier
 {
 public:
- struct FTag { FString Key; S47Dossier::EKind Kind=S47Dossier::EKind::None; S47Dossier::EType Type=S47Dossier::EType::None; int32 Day=1; };
+ // LOOP-DOSSIER-GIVES-20261113: Hour, the whole hour of the clock it was logged at (0 to 23; -1: not kept, as in a save from before),
+ // and where the player stood (road-local x east, z south; bWhere false: not kept, or logged at a bench and not where it was got).
+ struct FTag { FString Key; S47Dossier::EKind Kind=S47Dossier::EKind::None; S47Dossier::EType Type=S47Dossier::EType::None; int32 Day=1; int32 Hour=-1; bool bWhere=false; double X=0,Z=0; };
  // What an older save kept, for Rebuild: a finding's key, its text and its day.
  struct FOld { FString Key,Text; int32 Day=0; };
 
- void Reset(){Sequence.Reset();Kept.Reset();}
+ void Reset(){Sequence.Reset();Kept.Reset();Given.Reset();Spent.Reset();}
  bool IsEmpty() const{return Kept.IsEmpty();}
  // A tag on a find. False when the key has one already, when the kind has no file (the shade), or when that box gives nothing for
  // this one. The first tag of a kind opens its file and gives it the next number.
- bool Tag(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Day);
+ bool Tag(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Day,int32 Hour=-1,const FVector2D* Where=nullptr);
  bool HasTag(const FString& Key) const;
  const TArray<S47Dossier::EKind>& Order() const{return Sequence;}
  const TArray<FTag>& Tags() const{return Kept;}
@@ -102,6 +126,18 @@ public:
  // answers Unknown whatever the table says.
  S47Dossier::EFit Fit(S47Dossier::EKind File,S47Dossier::EType Type,S47Dossier::EKind FindKind) const;
  TArray<S47Dossier::FFile> Files() const; // in the order of their numbers
+ // LOOP-DOSSIER-GIVES-20261113. Where the file was first logged out where it was got: the earliest tag (by day, then as logged) that
+ // kept a place. The hours it has been logged at, each once, in the night's order.
+ bool FirstWhere(S47Dossier::EKind Kind,double& OutX,double& OutZ) const;
+ TArray<int32> HoursOf(S47Dossier::EKind Kind) const;
+ // MARKS's extra bearing: given once to a file, for a night (Grant: false when it has had one); open on that night and any after until
+ // it is printed (Spend, once), so a night without a discrepancy to register, or the big night, does not lose it. ExtraState: 0 none,
+ // 1 open, 2 printed. GrantMissing: a file at MARKS or past it with no extra kept (a save from before) gets one from Night.
+ bool Grant(S47Dossier::EKind Kind,int32 Night);
+ bool ExtraOpen(int32 Night) const;
+ bool Spend(int32 Night);
+ int32 ExtraState(S47Dossier::EKind Kind) const;
+ int32 GrantMissing(int32 Night);
 
  S47J::FObj Save() const;
  // An object that is not a dossier, or a tag that is not sound, is left out; a tag whose kind has no number gets the next one.
@@ -115,4 +151,6 @@ public:
 private:
  TArray<S47Dossier::EKind> Sequence;
  TArray<FTag> Kept;
+ TMap<int32,int32> Given; // by the kind's number: the night each file's extra bearing is for
+ TSet<int32> Spent;       // and the ones printed
 };

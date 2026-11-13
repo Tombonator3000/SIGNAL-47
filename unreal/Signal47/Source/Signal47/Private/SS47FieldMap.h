@@ -43,6 +43,11 @@ namespace S47FieldMap
 	struct FSlipCircle { double X = 0, Z = 0, R = 0; FString Label, Where; bool bChecked = false; float Fade = 1.f; };
 	void AddSlipCircle(FS47MapView& V, const FSlipCircle& C);
 	TArray<FSlipCircle> SlipCircles(const FS47MapView& V);
+	// LOOP-DOSSIER-GIVES-20261113 (→ M3): where a file of the unknown was first logged out on the land, in pencil with its title beside it
+	// ("UNKNOWN 2"; FS47FreeformSession::DossierMap). It rides in FS47MapView::Marks as Kind "first_logged", as the slips' circles do.
+	struct FFirstLogged { double X = 0, Z = 0; FString Label; };
+	void AddFirstLogged(FS47MapView& V, const FFirstLogged& F);
+	TArray<FFirstLogged> FirstLogged(const FS47MapView& V);
 	// How far from O (road-local) along Deg (from north, clockwise) the land runs to the rim, in metres; 0 from outside it.
 	double RimReach(const FVector2D& O, double Deg);
 	// What V reads on the sheet.

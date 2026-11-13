@@ -3395,11 +3395,11 @@ void FS47FreeformSession::QueueResultSheet(int32 Line,int32 Test,const FString& 
   *FS47FreeformCases::TestResultText(Line,Test,bPresent),*FS47FreeformCases::Prediction(Line,Test),*CaseSheetHead(Line,Test),*CaseNextLine(Line),*Sh.Stamp);
  CaseSheets.Add(Sh);
 }
-bool FS47FreeformSession::QueueBearingSlip(int32 Day,const FString& Line,const FString& Note)
+bool FS47FreeformSession::QueueBearingSlip(int32 Day,const FString& Line,const FString& Note,bool bAgain)
 {
  if(Line.IsEmpty()||CaseSheets.Num()>=8)return false;
  // D45-20261110 (Tom: "bearing slip er for rart skrevet"): plain words; Note says what a branch is and where the circle is (FS47Places::SlipNote)
- FResultSheet Sh;Sh.Day=FMath::Max(1,Day);Sh.Job=FString::Printf(TEXT("freeform-bearing-d%d"),Sh.Day);Sh.Stamp=TEXT("CHECK BEFORE NOON");
+ FResultSheet Sh;Sh.Day=FMath::Max(1,Day);Sh.Job=FString::Printf(TEXT("freeform-bearing-d%d%s"),Sh.Day,bAgain?TEXT("-again"):TEXT(""));Sh.Stamp=TEXT("CHECK BEFORE NOON");
  if(CaseSheets.ContainsByPredicate([&](const FResultSheet& X){return X.Job==Sh.Job;}))return false;
  Sh.Page=FString::Printf(TEXT("SARO OPS V4.2  BEARING SLIP  %s %s\n%s\n\nTHE ARRAY PICKED UP SOMETHING AWAY FROM WHERE THE DISHES WERE POINTED.\nIT GIVES A DIRECTION ONLY. IT DOES NOT SAY HOW FAR OUT IT IS OR WHAT IT IS.\n%s"),
   *TerminalDate(WorldClock),*FS47Places::SlipClock(WorldClock),*Line,*Note);
@@ -4929,6 +4929,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(Gear&&Gear->AnyLeft())Result.Add({Gear->TaskLine(),false});
  if(Predecessor){const FString Line=Predecessor->TaskLine();if(!Line.IsEmpty())Result.Add({Line,false});}
+ DossierTasks(Result); // LOOP-DOSSIER-GIVES-20261113: MARKS's extra bearing while it can come tonight, HABITS's hours (S47FreeformDossier.cpp)
  // CRIT9: a new night (or a clock gone back, a load) forgets the chores done; those that stop when done stay ticked off tonight.
  {const double C=Clock();const int32 N=NightOf(C);if(N!=ChoresNight||C+60<ChoresClock){ChoresOpen.Reset();ChoresDone.Reset();ChoresNight=N;}ChoresClock=C;}
  if(Mail){const FString Post=Mail->TaskLine();if(!Post.IsEmpty())Result.Add({Post,false});NoteChore(Result,TEXT("post"),Post.StartsWith(TEXT("MAIL ORDER /"))?FString():Post,FString());}

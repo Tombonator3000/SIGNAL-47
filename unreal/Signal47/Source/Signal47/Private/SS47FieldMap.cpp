@@ -716,6 +716,23 @@ TArray<S47FieldMap::FSlipCircle> S47FieldMap::SlipCircles(const FS47MapView& V)
 	return Found;
 }
 
+// LOOP-DOSSIER-GIVES-20261113: a file's first logged place in the view's marks: Kind, the title, the point.
+void S47FieldMap::AddFirstLogged(FS47MapView& V, const FFirstLogged& Logged)
+{
+	if (!FMath::IsFinite(Logged.X) || !FMath::IsFinite(Logged.Z) || Logged.Label.IsEmpty()) return;
+	FS47MapMark Mk; Mk.Kind = TEXT("first_logged"); Mk.Line = Logged.Label;
+	FS47MapAt At; At.Spot = Logged.Label; At.T = Logged.X; At.M = Logged.Z; Mk.At = At;
+	V.Marks.Add(Mk);
+}
+
+TArray<S47FieldMap::FFirstLogged> S47FieldMap::FirstLogged(const FS47MapView& V)
+{
+	TArray<FFirstLogged> Found;
+	for (const FS47MapMark& Mk : V.Marks)
+		if (Mk.Kind == TEXT("first_logged") && Mk.At.IsSet()) { FFirstLogged Logged; Logged.X = Mk.At->T; Logged.Z = Mk.At->M; Logged.Label = Mk.Line; Found.Add(Logged); }
+	return Found;
+}
+
 double S47FieldMap::RimReach(const FVector2D& O, double Deg)
 {
 	// D45-20261110: a slab clip on the rim's box, z running south; a ray from outside it gets nothing.
@@ -783,6 +800,12 @@ TArray<FString> S47FieldMap::Description(const FS47MapView& V)
 	if (Fixes.Num()) Said.Add(TEXT("Bearings from SARO: ") + FString::Join(Fixes, TEXT("; ")) + TEXT("."));
 	// D45-20261110: each slip's circle said where it is, and whether it has been looked at
 	for (const FSlipCircle& Cc : SlipCircles(V)) Said.Add(FString::Printf(TEXT("A pencilled circle %s (%s), %s."), *Cc.Where, *Cc.Label, Cc.bChecked ? TEXT("looked at") : TEXT("not looked at yet")));
+	// LOOP-DOSSIER-GIVES-20261113: where each file of the unknown was first logged
+	{
+		TArray<FString> Files;
+		for (const FFirstLogged& Logged : FirstLogged(V)) Files.Add(Logged.Label);
+		if (Files.Num()) Said.Add(TEXT("Pencilled where each was first logged: ") + FString::Join(Files, TEXT(", ")) + TEXT("."));
+	}
 	if (FromTruck.Num()) Said.Add(TEXT("Bearings from the truck: ") + FString::Join(FromTruck, TEXT(", ")) + TEXT("."));
 	if (V.Crossings.Num()) Said.Add(FString::Printf(TEXT("%d place%s where two bearings cross, ringed."), V.Crossings.Num(), V.Crossings.Num() == 1 ? TEXT("") : TEXT("s")));
 	TArray<FString> Work;
@@ -1473,6 +1496,16 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		if (Sc < .15) continue;
 		const FVector2f Size = Pen.Text(Pin.Label, Ctr + FVector2f(Pin.bInSector ? 19.f : 13.f, 2), Pencil(24), Lead, LPencilWords, 0.f, .5f, true);
 		if (!Pin.bHeard) { const float By = Pin.bInSector ? 6.f : 0.f; Pen.Lines({ Ctr + FVector2f(12 + By, 3), Ctr + FVector2f(14 + By + Size.X, 1) }, Lead, 1.6f, LPencilWords + 2); }
+	}
+	// LOOP-DOSSIER-GIVES-20261113 (→ M3): where each file of the unknown was first logged, a small pencilled diamond and its title beside it,
+	// so that the sheet shows over the month where each one has been. Never struck: it is not work to be done.
+	for (const S47FieldMap::FFirstLogged& Logged : S47FieldMap::FirstLogged(View))
+	{
+		if (!Visible(Logged.X, Logged.Z, 40)) continue;
+		const FVector2f Ctr = OnPage(Logged.X, Logged.Z);
+		Pen.Lines({ Ctr + FVector2f(0, -7), Ctr + FVector2f(7, 0), Ctr + FVector2f(0, 7), Ctr + FVector2f(-7, 0), Ctr + FVector2f(0, -7) }, Lead, 1.7f, LPencil);
+		if (Sc < .15) continue;
+		Pen.Text(Logged.Label, Ctr + FVector2f(11, -9), Pencil(22), Lead, LPencilWords, 0.f, .5f, true);
 	}
 	// The work the player has now, written in ink by its place, with a line to it: where the words fit, clear of each other.
 	{
