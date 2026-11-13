@@ -32,7 +32,7 @@ namespace S47Score
 		{ TEXT("lightless"), { TEXT("lightless_dawn.mp3"), TEXT("Lightless Dawn"), TEXT("Kevin MacLeod"), 0.45 } },
 		{ TEXT("phantom"), { TEXT("phantom_from_space.mp3"), TEXT("Phantom from Space"), TEXT("Kevin MacLeod"), 0.4 } },
 		{ TEXT("nowhere"), { TEXT("signs_to_nowhere.mp3"), TEXT("Signs To Nowhere"), TEXT("Shane Ivers"), 0.38 } },
-		// MUSIC-20261113 (Tom, 13 Nov: "Ta ut jazz. Den pianolåten om natta må også bort"): "Night on the Docks (Sax)" (docks, the
+		// MUSIC-20261113 (Tom, 13 Nov: take the jazz out, and the piano piece at night too): "Night on the Docks (Sax)" (docks, the
 		// town's) and "Cylinder One" (cylOne, eerie and the motel: the one solo keyboard piece, single ringing notes in slow broken
 		// chords) are out of the table; their files stay where they are. In their place, all optional (never in Git, staged by
 		// Tools/music/build_music.py at -21.5 LUFS like the rest): steel guitar for the town and the road, two analog drones,
