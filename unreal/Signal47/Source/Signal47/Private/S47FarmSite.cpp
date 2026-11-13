@@ -69,6 +69,14 @@ bool FS47FarmSite::TheirHours(double Clock)
  return S47NightTiers::Allows(ES47Allowed::Full,Hour,1)&&Hour<FS47NightRhythm::EndHour;
 }
 
+double FS47FarmSite::VisitDeadline(double StartClock)
+{
+ constexpr double Day=86400,Dawn=FS47NightRhythm::EndHour*3600;
+ const double Start=FMath::Max(0.,StartClock),Days=FMath::FloorToDouble(Start/Day);
+ const double NextDawn=Start-Days*Day<Dawn?Days*Day+Dawn:(Days+1)*Day+Dawn;
+ return FMath::Min(NextDawn,Start+MaxVisitHours*3600);
+}
+
 FString FS47FarmSite::FindingId() const
 {
  if(Place==TEXT("field"))return FString::Printf(TEXT("field_night%d"),M&&M->Freeform?M->Freeform->Day():0);
@@ -309,7 +317,7 @@ void FS47FarmSite::Stop()
  if(bLive)HideBody();
  bBodyOut=false;
  RestoreHome();
- Visit=4;bActive=false;Life.Reset();Show(false);
+ Visit=4;VisitUntil=0;bActive=false;Life.Reset();Show(false);
 }
 
 S47J::FObj FS47FarmSite::Save() const
@@ -385,6 +393,23 @@ void FS47FarmSite::Step(double Dt)
 {
  StepFrost(Dt);
  if(!bActive||!M||!M->Freeform)return;
+ // VISIT-DAWN-20261113: by the clock, not by its own seconds. A natural night at speed (or a long stand-off) ran the visit's
+ // real-time patience across a whole day: begun 03:52, it still held the ground, and the take came, at 20:19 the next evening.
+ if(Visit>=1&&Visit<=3)
+ {
+  const double Now=M->Freeform->Clock();
+  if(VisitUntil<=0)VisitUntil=VisitDeadline(Now);
+  else if(Now>=VisitUntil)
+  {
+   const auto Tk=M->Freeform->Taken;
+   const bool bTaking=bVisitTaken||(Tk&&(Tk->Stage()==FS47Taken::EStage::Lift||Tk->Stage()==FS47Taken::EStage::Away));
+   if(!bTaking)
+   {
+    UE_LOG(LogTemp,Display,TEXT("S47: %s visit over by the clock at %s, day %d %02d:%02d: it does not outlast the night"),bField?TEXT("field"):TEXT("site"),*Place,M->Freeform->Day(),int32(FMath::Fmod(Now,86400.)/3600.),int32(FMath::Fmod(Now,3600.)/60.));
+    EndVisit(false);
+   }
+  }
+ }
  if(ClearAt>0&&M->Freeform->Clock()>=ClearAt){ClearAt=0;if(bField)Home.Visit=4;Show(false);UE_LOG(LogTemp,Display,TEXT("S47: lights site cleared by morning"));return;}
  // MILITARY-20261108: they went over this ground first (S47Visitors): the marks are gone, and the raked circle stands where they were.
  if(Raked())
@@ -808,7 +833,7 @@ void FS47FarmSite::EndVisit(bool bTaken)
 {
  if(M&&M->Rhythm)M->Rhythm->Ended(bField?TEXT("field_visit"):TEXT("site_visit"));
  const bool bWas=Visit>=2;
- Visit=4;VisitDwell=0;bVisitTaken=false;
+ Visit=4;VisitDwell=0;VisitUntil=0;bVisitTaken=false;
  LetAttentionGo();
  EndLure();
  // Over: the lamp steadies, and a truck not yet tried starts again.

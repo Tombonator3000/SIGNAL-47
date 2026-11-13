@@ -581,6 +581,17 @@ bool FS47Taken::SelfTest(TArray<FString>& Lines)
  }
  const double Night2=86400.+19*3600.;
  Check(!FS47FarmSite::TheirHours(Night2)&&!FS47FarmSite::TheirHours(Night2+4.5*3600.)&&FS47FarmSite::TheirHours(Night2+7.5*3600.)&&!FS47FarmSite::TheirHours(Night2+12*3600.),TEXT("no body before about two in the morning, none after six"));
+ // VISIT-DAWN-20261113 (play39 m1tour2): a field visit begun at 03:52 on night 9 held the ground to 20:19 the next evening and took the player then.
+ {
+  const double Begun=8*86400.+3*3600.+52*60.,SixThen=8*86400.+6*3600.,TookAt=9*86400.+20*3600.+19*60.;
+  const double By=FS47FarmSite::VisitDeadline(Begun);
+  Check(By==SixThen&&By<TookAt&&!FS47FarmSite::TheirHours(By)&&FS47FarmSite::TheirHours(By-60),TEXT("a visit begun at 03:52 is over by six that morning, as their hours end"));
+  Check(FS47FarmSite::VisitDeadline(8*86400.+5*3600.+59*60.)==SixThen,TEXT("a visit begun a minute before six is over at six"));
+  Check(FS47FarmSite::VisitDeadline(8*86400.+23*3600.)==9*86400.+2*3600.&&FS47FarmSite::VisitDeadline(8*86400.+14*3600.)==8*86400.+17*3600.,TEXT("begun at any other hour (a test's), a visit lasts at most three hours of the clock"));
+  bool bBounded=true;
+  for(int32 Min=0;Min<24*60;Min+=7){const double At=8*86400.+Min*60.,Until=FS47FarmSite::VisitDeadline(At);bBounded&=Until>At&&Until<=At+FS47FarmSite::MaxVisitHours*3600.&&(FS47FarmSite::ByDaylight(At)||!FS47FarmSite::ByDaylight(Until-1));}
+  Check(bBounded,TEXT("whenever it begins, a visit ends within three hours, and one begun in the dark never runs on into the daylight"));
+ }
  OK&=FS47IndoorDread::SelfTest(Lines);
  OK&=FS47Aftermath::SelfTest(Lines);
  return OK;
