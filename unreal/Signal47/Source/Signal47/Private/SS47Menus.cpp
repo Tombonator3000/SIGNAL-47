@@ -482,9 +482,18 @@ void SS47Pause::Construct(const FArguments& InArgs)
 		[
 			SNew(STextBlock).Text(FText::FromString(bPlan || Place.IsEmpty() ? TEXT("TONIGHT") : TEXT("TONIGHT · ") + Place)).Font(Term(20, 2)).ColorAndOpacity(Css(0x8a3b2c))
 		];
+	// TASKS-TEN-20261113 (change 6): in Freeform by group, WORK, FOLLOW-UP, YOUR OWN TIME (a head where the group changes), four lines
+	// at most, each with its giver, window and worth under it (change 9), and one "+N open matters" for the notebook
+	int32 LastKind = -1;
 	for (const S47TonightNote::FLine& L : Note.Lines)
 	{
 		const bool bDone = L.Mark == S47TonightNote::EMark::Done, bNext = L.Mark == S47TonightNote::EMark::Next;
+		const FString Tag = S47TonightNote::TagText(L);
+		if (!Tag.IsEmpty() && !bDone && int32(L.Kind) != LastKind)
+		{
+			LastKind = L.Kind;
+			Card->AddSlot().AutoHeight().Padding(0, 7 * U, 0, 0)[SNew(STextBlock).Text(FText::FromString(S47TonightNote::KindHead(L.Kind))).Font(Term(15, 2)).ColorAndOpacity(Css(0x8a3b2c, 0.85f))];
+		}
 		const FLinearColor Color = bDone ? Css(0x6d7895) : bNext ? Ink() : Ink(0.82f);
 		FTextBlockStyle LineStyle = FTextBlockStyle().SetFont(Type(16)).SetColorAndOpacity(Color);
 		if (bDone)
@@ -499,15 +508,18 @@ void SS47Pause::Construct(const FArguments& InArgs)
 			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(S47MenusLocal::SS47NoteMark).Mark(L.Mark)]
 			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Top).Padding(4 * U, 0, 0, 0)
 			[
-				SNew(STextBlock).Text(FText::FromString(S47TonightNote::LineText(L))).TextStyle(&LineStyle).AutoWrapText(true).LineHeightPercentage(1.1f)
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString((L.bPinned ? TEXT("* ") : TEXT("")) + S47TonightNote::LineText(L))).TextStyle(&LineStyle).AutoWrapText(true).LineHeightPercentage(1.1f)]
+				+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Visibility(Tag.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible).Text(FText::FromString(Tag)).Font(Term(13, 1)).ColorAndOpacity(Css(0x6d7895))]
 			]
 		];
 	}
 	if (Note.More > 0)
 	{
+		const bool bMatters = LastKind >= 0 || Note.Matters.Num() > 0;
 		Card->AddSlot().AutoHeight().Padding(44 * U, 2 * U, 0, 0)
 		[
-			SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("+%d more in the notebook"), Note.More))).Font(Hand(26)).ColorAndOpacity(Css(0x233a7a))
+			SNew(STextBlock).Text(FText::FromString(FString::Printf(bMatters ? TEXT("+%d open matters in the notebook") : TEXT("+%d more in the notebook"), Note.More))).Font(Hand(26)).ColorAndOpacity(Css(0x233a7a))
 		];
 	}
 	if (Note.Also.Num())

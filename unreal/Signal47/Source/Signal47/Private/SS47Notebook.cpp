@@ -776,8 +776,11 @@ FString SS47Notebook::OpenOn(const FS47NbExtras& Ex, const FString& Last)
 FString SS47Notebook::NowHead(const FString& Group)
 {
 	// D45-20261110: by importance (S47TonightNote::RankOf); the older groups' words for a list made the old way
+	// TASKS-TEN-20261113 (changes 6 and 9): tonight's WORK, FOLLOW-UP, YOUR OWN TIME, and the second section, OPEN MATTERS by group
 	static const TMap<FString, FString> Heads = { { TEXT("first"), TEXT("DO FIRST") }, { TEXT("tonight"), TEXT("TONIGHT") }, { TEXT("later"), TEXT("WHEN YOU CAN") }, { TEXT("done"), TEXT("DONE TONIGHT") },
-		{ TEXT("clock"), TEXT("BY THE CLOCK") }, { TEXT("todo"), TEXT("TO DO") }, { TEXT("also"), TEXT("ALSO OPEN") } };
+		{ TEXT("clock"), TEXT("BY THE CLOCK") }, { TEXT("todo"), TEXT("TO DO") }, { TEXT("also"), TEXT("ALSO OPEN") },
+		{ TEXT("work"), TEXT("WORK") }, { TEXT("follow"), TEXT("FOLLOW-UP") }, { TEXT("own"), TEXT("YOUR OWN TIME") } };
+	if (Group.StartsWith(TEXT("matter:"))) return TEXT("OPEN MATTERS / ") + Group.Mid(7).ToUpper();
 	const FString* Hd = Heads.Find(Group);
 	return Hd ? *Hd : FString();
 }
@@ -1055,15 +1058,23 @@ void SS47Notebook::Build()
 			if (bDone) St.SetStrikeBrush(StrikeBrush(Ink)); // (MARGINALIA-20261109: a brush Slate draws the strike with)
 			TSharedRef<SWidget> Mark = SNullWidget::NullWidget;
 			if (bNext) Mark = SNew(SNextArrow);
+			// TASKS-TEN-20261113 (change 10): the pinned row has the due tabs' star
+			else if (N.bPinned) Mark = SNew(STextBlock).Text(FText::FromString(TEXT("*"))).Font(Term(26)).ColorAndOpacity(Ph2Red());
 			else if (N.Group == TEXT("also") || N.bSummary) Mark = SNew(STextBlock).Text(FText::FromString(N.Fold.IsEmpty() ? TEXT("-") : OpenFolds.Contains(N.Fold) ? TEXT("v") : TEXT(">"))).Font(Term(22)).ColorAndOpacity(Ink);
 			else Mark = SNew(SBox).WidthOverride(P(16)).HeightOverride(P(16))[SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, Ink, 1.5f)).HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0)
-				[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : N.Group == TEXT("first") ? TEXT("!") : TEXT(" "))).Font(Term(16)).ColorAndOpacity(bDone ? Ink : N.Group == TEXT("first") ? Ph2Red() : Ink)]];
+				[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : N.Group == TEXT("first") || (N.Rank == 0 && N.Group != TEXT("next")) ? TEXT("!") : TEXT(" "))).Font(Term(16)).ColorAndOpacity(bDone ? Ink : N.Group == TEXT("first") || N.Rank == 0 ? Ph2Red() : Ink)]];
 			const bool bFresh = N.bNew && !bDone;
 			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(6))[Entry(I, SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(8), P(10), 0)[SNew(SBox).WidthOverride(P(26))[Mark]]
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(9), bFresh ? P(8) : 0.f, 0)[SNew(STextBlock).Visibility(bFresh ? EVisibility::Visible : EVisibility::Collapsed).Text(FText::FromString(TEXT("NEW"))).Font(Term(16, 2)).ColorAndOpacity(Ph2Red())]
-				+ SHorizontalBox::Slot().FillWidth(1.f)[SNew(STextBlock).Text(FText::FromString(N.Text)).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Px), 32))])];
-			Read.Add(bFresh ? TEXT("New. ") + N.Text : N.Text);
+				+ SHorizontalBox::Slot().FillWidth(1.f)
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(N.Text)).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Px), 32))]
+					// TASKS-TEN-20261113 (change 9): who gives it, its window, what it is worth, in the fixed short form
+					+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Visibility(N.Tag.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible).Text(FText::FromString(N.Tag)).Font(Term(15, 1)).ColorAndOpacity(bDone ? Ink : StampRed())]
+				])];
+			Read.Add((bFresh ? TEXT("New. ") + N.Text : N.Text) + (N.Tag.IsEmpty() ? FString() : TEXT(". ") + N.Tag));
 		}
 		// D45-20261110: what has been shown is no longer new the next time the notebook opens
 		if (X.bFreeform) for (const FS47NbNowLine& N : X.Now) if (N.bNew && !N.Key.IsEmpty()) S47TonightNote::Seen().Keys.Add(N.Key);
@@ -1510,6 +1521,7 @@ void SS47Notebook::BuildRight()
 			Said.Add(FString(Word) + TEXT(". ") + Text);
 		};
 		Pg->AddSlot().AutoHeight()[Inked(Title, bLarge ? 34.f : 30.f)];
+		if (N && !N->Tag.IsEmpty()) Row(TEXT("WHO"), N->Tag); // TASKS-TEN-20261113 (change 9)
 		if (N && !N->When.IsEmpty()) Row(TEXT("WHEN"), N->When);
 		FString Where = N ? N->Where : FString();
 		if (W && !W->Location.IsEmpty()) Where = Where.IsEmpty() ? W->Location : Where + TEXT(" / ") + W->Location;

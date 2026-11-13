@@ -118,6 +118,7 @@
 #include "S47Tape.h"
 #include "S47Happenings.h"
 #include "S47Predecessor.h"
+#include "S47WardReport.h"
 #include "SS47Ending.h"
 #include "SS47Notebook.h"
 #include "SS47SaveMenu.h"
@@ -1581,6 +1582,46 @@ namespace S47FlowNotebook
 					In.Cards.Add(C);
 				}
 			}
+			// TASKS-TEN-20261113 (change 9): the open matters the list has no line of its own for. The station: ONE row for the array chain
+			// with the work order's next step inside (the goal's and the work order's lines fold into it). Ward: the weekly report (until
+			// now only on OPS) and the assessment.
+			{
+				const FString Goal = F.StationGoalLine(), Order = F.ActiveServiceGuide() == 1 ? F.ServiceObjective() : FString();
+				if (!Goal.IsEmpty()) In.StationRows.Add(Goal);
+				if (!Order.IsEmpty()) In.StationRows.Add(Order);
+				if (!Goal.IsEmpty() || !Order.IsEmpty())
+				{
+					S47TonightNote::FLine L; L.Matter = TEXT("Station"); L.Key = TEXT("matter:station"); L.Source = Goal.IsEmpty() ? Order : Goal; L.Giver = TEXT("STATION");
+					FString Body = Goal; Body.RemoveFromStart(TEXT("STATION GOAL / "));
+					L.Where = TEXT("ARRAY STATUS");
+					L.What = Goal.IsEmpty() ? FString() : S47HudGauges::Handwritten(S47GoalLine::FirstSentence(Body, 110), false);
+					if (!Order.IsEmpty()) L.What += (L.What.IsEmpty() ? FString() : FString(TEXT(" "))) + TEXT("Work order: ") + S47HudGauges::Handwritten(S47GoalLine::FirstSentence(Order, 90), false);
+					const int32 Plus = Goal.Find(TEXT("(+"));
+					L.Worth = Plus != INDEX_NONE ? Goal.Mid(Plus + 1, Goal.Find(TEXT(")"), ESearchCase::CaseSensitive, ESearchDir::FromStart, Plus) - Plus - 1).ToLower() : FString(TEXT("the array"));
+					L.Span = FS47FreeformSession::GoalWaits(F.Clock()) ? TEXT("by daylight") : TEXT("open");
+					In.Matters.Add(L);
+				}
+				if (F.WardReport)
+					for (const FS47WardReport::FReport& R : F.WardReport->Reports())
+					{
+						if (R.Sent >= 0) continue;
+						S47TonightNote::FLine L; L.Matter = TEXT("Ward"); L.Key = FString::Printf(TEXT("matter:report-%d"), R.Week); L.Where = TEXT("OPS");
+						L.What = TEXT("The weekly report to Dr. Ward waits to be sent."); L.Source = L.What; L.Giver = TEXT("WARD");
+						L.Span = FString::Printf(TEXT("by day %d"), FS47FreeformSession::NightOf(R.Due)); L.Worth = TEXT("counts for the review");
+						In.Matters.Add(L);
+					}
+				if (F.Predecessor)
+				{
+					const FString Standing = F.Predecessor->TaskLine();
+					FString Rest;
+					if (Standing.StartsWith(TEXT("SARO under review / ")) && Standing.Split(TEXT(" / "), nullptr, &Rest))
+					{
+						S47TonightNote::FLine L; L.Matter = TEXT("Ward"); L.Key = TEXT("matter:assessment"); L.Where = TEXT("OPS"); L.What = Rest; L.Source = Standing; L.Giver = TEXT("WARD");
+						L.Span = FString::Printf(TEXT("by day %d"), F.Predecessor->AssessmentDay()); L.Worth = TEXT("the review");
+						In.Matters.Add(L);
+					}
+				}
+			}
 			In.bAntennasWait = FS47FreeformSession::GoalWaits(F.Clock()) && !F.StationGoalLine().IsEmpty();
 			In.Done = &S47TonightNote::Tonight();
 			In.Game = (uint64(uint32(M->Flow ? M->Flow->CaseId : 0)) << 32) | uint32(F.Seed());
@@ -2513,42 +2554,35 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			};
 			using S47TonightNote::EMark;
 			TSet<FString> Used;
-			const auto Add = [&](const TCHAR* Group, const S47TonightNote::FLine& L)
+			const auto Add = [&](const FString& Group, const S47TonightNote::FLine& L)
 			{
 				FS47NbNowLine N; N.Group = Group; N.Rank = L.Rank; N.Text = S47TonightNote::LineText(L); N.When = L.When; N.Where = L.Where; N.What = L.What; N.Key = L.Key;
 				if (L.Key == TEXT("cards")) N.Fold = TEXT("cards"); // TASKS-TEN-20261113 (change 4): the cards up open under their row
-				N.Why = S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What; N.Item = ItemFor(L.Source); N.bDone = L.Mark == EMark::Done; // (the list's whole words, within the spoiler limits as the line is)
+				N.Tag = S47TonightNote::TagText(L); N.bPinned = L.bPinned; // TASKS-TEN-20261113 (changes 9 and 10)
+				N.Why = S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What; N.Item = L.Key == TEXT("matter:station") ? FindItem(TEXT("array/")) : ItemFor(L.Source); N.bDone = L.Mark == EMark::Done; // (the list's whole words, within the spoiler limits as the line is)
+				if (!L.Matter.IsEmpty()) N.bSummary = true; // an open matter: a dash, no box, never ticked
 				if (!N.Item.IsEmpty()) Used.Add(N.Item);
 				X.Now.Add(N);
 			};
-			// D45-20261110 (Tom: the field guide as a plain to-do list, by importance): the next step (the red arrow), then DO FIRST,
-			// TONIGHT and WHEN YOU CAN (S47TonightNote::RankOf), each with its windows first, then DONE TONIGHT. The job cards' line is
-			// tonight's; the cases waiting, the post and work with no line of its own are for when you can.
+			// TASKS-TEN-20261113 (changes 6 and 9): the next step (the red arrow), then tonight's WORK, FOLLOW-UP and YOUR OWN TIME (as the
+			// pause menu's card has them, in full), DONE TONIGHT struck through, and the second section, OPEN MATTERS: Cases, Station, Post,
+			// Unknowns, Ward, no ticks, until each is closed.
 			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Next) Add(TEXT("next"), L);
-			static const TCHAR* const Ranks[] = { TEXT("first"), TEXT("tonight"), TEXT("later") };
-			bool bCases = false;
-			for (uint8 R = 0; R < 3; ++R)
+			static const TCHAR* const Kinds[] = { TEXT("work"), TEXT("follow"), TEXT("own") };
+			for (uint8 K = 0; K < 3; ++K)
 			{
-				for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && L.Rank == R && !L.When.IsEmpty()) Add(Ranks[R], L);
-				for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && L.Rank == R && L.When.IsEmpty()) Add(Ranks[R], L);
-				for (int32 I = 0; I < Note.Also.Num(); ++I)
-				{
-					const FString AlsoKey = Note.AlsoKeys.IsValidIndex(I) ? Note.AlsoKeys[I] : FString();
-					if ((AlsoKey == TEXT("cards") ? 1 : 2) != R) continue;
-					FS47NbNowLine N; N.Group = Ranks[R]; N.Rank = R; N.bSummary = true; N.Text = N.What = N.Why = Note.Also[I]; N.Key = AlsoKey;
-					if (N.Key == TEXT("cards") || N.Key == TEXT("cases")) N.Fold = N.Key;
-					bCases |= N.Key == TEXT("cases");
-					X.Now.Add(N);
-				}
-				if (R != 2) continue;
+				for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Open && L.Kind == K) Add(Kinds[K], L);
+				if (K != 2) continue;
+				// work with no line of its own on the note (a photograph to register, a return guide): his own time
 				for (const FS47NbWorkItem& W : X.WorkItems)
 				{
-					if (W.bCard || W.bDone || W.bEarlier || Used.Contains(W.Id) || (bCases && W.Id.StartsWith(TEXT("case/")))) continue;
+					if (W.bCard || W.bDone || W.bEarlier || Used.Contains(W.Id) || W.Id.StartsWith(TEXT("case/")) || W.Id.StartsWith(TEXT("array/")) || W.Id.StartsWith(TEXT("service/")) || W.Id.StartsWith(TEXT("field-plan/"))) continue;
 					if (!S47Script::LintText(W.Title).IsEmpty()) continue;
-					FS47NbNowLine N; N.Group = Ranks[R]; N.Rank = R; N.Text = N.What = W.Title; N.Why = W.NextAction; N.Item = N.Key = W.Id; X.Now.Add(N);
+					FS47NbNowLine N; N.Group = Kinds[K]; N.Rank = 2; N.Text = N.What = W.Title; N.Why = W.NextAction; N.Item = N.Key = W.Id; N.Tag = TEXT("STATION / until 08:00 / allowance"); X.Now.Add(N);
 				}
 			}
 			for (const S47TonightNote::FLine& L : Note.Lines) if (L.Mark == EMark::Done) Add(TEXT("done"), L);
+			for (const S47TonightNote::FLine& L : Note.Matters) Add(TEXT("matter:") + L.Matter, L);
 			X.NowClock = Note.Clock;
 			X.bNow = true;
 			// N1110 (N1110-9): the three goals over the list: tonight (the note's next step, else the first thing open), this week (the
