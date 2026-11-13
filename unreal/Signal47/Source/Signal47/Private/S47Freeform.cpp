@@ -58,6 +58,7 @@
 #include "S47GameStyle.h"
 #include "S47ReceiverReadout.h"
 #include "S47ReceiverSound.h"
+#include "S47RxSearch.h"
 #include "SS47ScreenView.h"
 #include "CoreGlobals.h"
 #include "UObject/GarbageCollection.h"
@@ -439,7 +440,7 @@ void FS47FreeformSession::Stop()
  LiveCapture.Reset();TapeCapture.Reset();CaptureStartStage=0;
  S47AlienKinds::Hush(TEXT("take"));S47AlienKinds::Hush(TEXT("reel")); // D48-20261110
  StopEquipmentFeedback();StopPrinterFeedback();FeedbackEncoders.Reset();
- if(!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Audio)){M->Audio->ReceiverMonitorOff();M->Audio->ReceiverRecordingOff();}
+ if(!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Audio)){M->Audio->ReceiverMonitorOff();M->Audio->ReceiverRecordingOff();if(RxSearch)RxSearch->Off(M->Audio);}
  // UObject purge may destroy the scene before this plain C++ session is released.
  const bool bCanRestore=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Story)&&IsValid(M->Web);
  if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
@@ -893,6 +894,7 @@ void FS47FreeformSession::Step(double Dt)
   else if(Listen)M->Audio->MonitorReceiver(M->Story->Rx,EffectiveProfile(*Job),FString::Printf(TEXT("freeform-source-%d"),Job->Source),FMath::Max(ReceiverReception(),ReceiverApproach()*.6));
   else M->Audio->ReceiverMonitorOff();
  }
+ StepRxSearch(D); // RX-SEARCH-SOUND-20261113: Tom's search layer, heard where the monitor is (S47FreeformSky.cpp)
  // M7-HUD-20261109: the card gets the short line; the pause menu and the notebook keep the whole of it
  // CASES-OPS-20261109: and a second line for the most pressing case not already on it (HudCaseLine), whatever the first line says
  if(M->UI&&M->Mode==US47Main::EMode::Play){const FString Card=HudObjective();const FString Case=HudCaseLine(Card);M->UI->Objective(Case.IsEmpty()?Card:Card+TEXT("\n")+Case);}
@@ -1195,8 +1197,10 @@ int32 FS47FreeformSession::RxDueTab(const FRxDueIn& In)
  // may be compared on DATA until that page has been seen.
  if(In.Stage>=EJobStage::Chart)return In.bCanControl?Pick(RxRecord):In.bDataAsk?Pick(RxData):-1;
  if(!In.bPower||In.bCaseWaits)return -1;
+ // Tom 13 Nov («ARRAY ikke pulser før tracking»): the pointing is done at the TRACKING PC, so before it nothing is due here, not
+ // even ARRAY for too few antennas (TRACKING's own line says so); from Pointed on the rules below hold.
+ if(In.Stage==EJobStage::New)return -1;
  if(In.bArrayBlocked)return Pick(RxArray); // isolated antennas: the ARRAY tab shows which
- if(In.Stage==EJobStage::New)return Pick(RxArray); // not pointed: ARRAY says so, and where the pointing is commanded
  if(In.Stage==EJobStage::Integrating)
  {
   if(!In.bTuned)return Pick(RxTune);
@@ -1871,7 +1875,7 @@ void FS47FreeformSession::SetPanel(TSharedRef<SWidget> Widget,bool bLive,bool bA
   if(IsEngineExitRequested()||!Owner.IsValid())return;
   US47Main* Main=Owner.Get();
   if(Main->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Main->Freeform.Get()!=this)return;
-  if(Main->Audio)Main->Audio->ReceiverMonitorOff();
+  if(Main->Audio){Main->Audio->ReceiverMonitorOff();if(RxSearch)RxSearch->Off(Main->Audio);}
   bTelemetry=false;bTapePanel=false;TerminalView.Reset();ActiveTerminal=-1;Changed();
  });bTelemetry=bLive;bAudioOpen=bAudio;
 }
@@ -5246,7 +5250,9 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    using E=EJobStage;
    auto Due=[](E Stage,int32 Open,TFunction<void(FRxDueIn&)> Set){FRxDueIn In;In.bJob=true;In.Stage=Stage;In.Open=Open;if(Set)Set(In);return RxDueTab(In);};
    bool Rule=RxDueTab(FRxDueIn())==-1; // no job: nothing
-   Rule&=Due(E::New,RxAcquire,nullptr)==RxArray&&Due(E::New,RxArray,nullptr)==-1; // TRACKING next: ARRAY shows it is not pointed; never the open tab
+   Rule&=Due(E::New,RxAcquire,nullptr)==-1&&Due(E::New,RxTune,nullptr)==-1&&Due(E::New,RxArray,nullptr)==-1; // TRACKING next: no receiver tab pulses before the pointing
+   Rule&=Due(E::New,RxTune,[](FRxDueIn& X){X.bArrayBlocked=true;})==-1; // nor ARRAY for isolated antennas before it
+   Rule&=Due(E::Pointed,RxTune,[](FRxDueIn& X){X.bArrayBlocked=X.bPointReady=X.bSettled=true;})==RxArray; // pointed: too few antennas is ARRAY again
    Rule&=Due(E::Pointed,RxAcquire,nullptr)==RxArray; // slewing
    Rule&=Due(E::Pointed,RxTune,[](FRxDueIn& X){X.bPointReady=true;})==RxAcquire; // settling, then the sky chart
    Rule&=Due(E::Pointed,RxTune,[](FRxDueIn& X){X.bPointReady=X.bSettled=true;})==RxAcquire; // on the card: find it on the chart
@@ -5261,7 +5267,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    Rule&=Due(E::Integrating,RxTune,[](FRxDueIn& X){X.bTuned=X.bSky=true;})==RxArray&&Due(E::Integrating,RxTune,[](FRxDueIn& X){X.bTuned=X.bSky=X.bCrossRunning=true;})==-1; // pointing lost; the reference scan waits
    Rule&=Due(E::Recorded,RxTune,[](FRxDueIn& X){X.bCanControl=true;})==RxRecord&&Due(E::Recorded,RxRecord,[](FRxDueIn& X){X.bCanControl=true;})==-1; // the internal control
    Rule&=Due(E::Chart,RxTune,nullptr)==-1&&Due(E::Registered,RxTune,[](FRxDueIn& X){X.bDataAsk=true;})==RxData&&Due(E::Registered,RxData,[](FRxDueIn& X){X.bDataAsk=true;})==-1;
-   Check(Rule,TEXT("RX-TABS-DUE-20261113: the due receiver tab: ARRAY while not pointed or slewing, ACQUIRE until the fix, TUNE to tune and record, RECORD for the control, DATA to compare; never the open tab, nothing while waiting"));
+   Check(Rule,TEXT("RX-TABS-DUE-20261113: the due receiver tab: nothing before TRACKING has pointed the job, then ARRAY for too few antennas or slewing, ACQUIRE until the fix, TUNE to tune and record, RECORD for the control, DATA to compare; never the open tab, nothing while waiting"));
    FS47FreeformSession Flow(nullptr);Flow.Begin(nullptr);Flow.Tutorial=0;
    const int32 FI=Flow.Work.IndexOfByPredicate([](const FJob& X){return X.Source==1&&X.CaseTest<0;});
    bool Chain=FI!=INDEX_NONE;

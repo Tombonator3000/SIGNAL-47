@@ -559,6 +559,9 @@ public:
  // The selected job's source is the unusual kind on the chart (the same answer the take will give: AnomalyAhead's, without the tuning).
  bool SkyOdd() const;
  TSharedPtr<class FS47SkyAcquire> SkyFix;
+ // RX-SEARCH-SOUND-20261113: Tom's search sound under ACQUIRE and TUNE (S47RxSearch.h), stepped once a frame by the session
+ TSharedPtr<class FS47RxSearch> RxSearch;
+ void StepRxSearch(double Dt);
  static bool SkySelfTest(TArray<FString>& Lines);
  bool AudioAction(const FString& Action);
  void SeekAudio(double At);

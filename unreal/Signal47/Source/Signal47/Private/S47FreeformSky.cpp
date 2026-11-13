@@ -1,12 +1,16 @@
 #include "S47Freeform.h"
 #include "S47Audio.h"
+#include "S47FieldRadio.h"
 #include "S47Flow.h"
 #include "S47FreeformTerminal.h"
 #include "S47Gamepad.h"
 #include "S47Kit.h"
 #include "S47Main.h"
 #include "S47Observing.h"
+#include "S47RxSearch.h"
 #include "S47SkyAcquire.h"
+#include "S47Story.h"
+#include "S47World.h"
 #include "S47UI.h"
 #include "S47Web.h"
 #include "S47WebAudio.h"
@@ -134,6 +138,39 @@ void FS47FreeformSession::SkySound(uint32 Events, int32 Blip)
 		if (SkyFix->Odd()) Play(TEXT("lock_confirm_open"), .60f, 1.f, [&] { Speaker->Beep(1320.f, .10f, .040f, 0, TEXT("sine")); Speaker->Beep(1397.f, .22f, .036f, .12f, TEXT("sine")); });
 		else Play(TEXT("lock_confirm"), .60f, 1.f, [&] { Speaker->Beep(1320.f, .10f, .040f, 0, TEXT("sine")); Speaker->Beep(1760.f, .22f, .040f, .12f, TEXT("sine")); });
 	}
+}
+
+void FS47FreeformSession::StepRxSearch(double Dt)
+{
+	// RX-SEARCH-SOUND-20261113 (S47RxSearch.h): heard where the receiver's monitor is heard (at the centre PC on the glass, at SARO,
+	// powered, not held), on ACQUIRE while the bearings are steady and the fix is not yet held, on TUNE once the fix is held. Any other
+	// page, a closed terminal, the pause: it fades out. Under speech, the phone and a recording it ducks.
+	if (!M || !IsValid(M->Audio)) return;
+	using EUse = S47RxSearch::EUse;
+	FS47RxSearch::FIn In;
+	const FJob* SearchJob = CurrentJob();
+	const bool bHeard = SearchJob && HasPower() && M->Story && M->Story->Rx.bPowered && !Held() && TerminalOnGlass() && ActiveTerminal == 1
+		&& M->World && M->World->Area == TEXT("saro");
+	if (bHeard && ReceiverTab == 0 && SearchJob->Stage == EJobStage::Pointed && SkyFix.IsValid() && SkyFixJob == SearchJob->Id)
+	{
+		using EP = FS47SkyAcquire::EPhase;
+		const EP Now = SkyFix->State();
+		if ((Now == EP::Search && SkyFix->Steady()) || Now == EP::Locking || Now == EP::Locked)
+		{
+			// taking the fix (the rings closing) is the closest the search gets; the held fix fades it into the lock confirm
+			In.Use = EUse::Acquire; In.Closeness = Now == EP::Search ? SkyFix->Closeness() : 1.; In.bLocked = Now == EP::Locked;
+		}
+	}
+	else if (bHeard && ReceiverTab == 1 && (SearchJob->Stage == EJobStage::Pointed || SearchJob->Stage == EJobStage::Integrating) && SkyAcquired() && PointReady() && Settle >= 1)
+	{
+		const FS47Profile P = EffectiveProfile(*SearchJob);
+		In.Use = EUse::Tune; In.Closeness = M->Story->Rx.Quality(P); In.bLocked = M->Story->Rx.Pass(P);
+	}
+	In.bDuck = bAudioPlaying || M->Audio->PhonePlaying() || (M->FieldRadio.IsValid() && M->FieldRadio->DaleSpeaking());
+	In.bCalm = M->Flow && M->Flow->bCalmFlash;
+	if (In.Use == EUse::Off && !RxSearch.IsValid()) return; // nothing heard yet: nothing loaded
+	if (!RxSearch.IsValid()) RxSearch = MakeShared<FS47RxSearch>();
+	RxSearch->Frame(M->Audio, In, Dt);
 }
 
 void FS47FreeformSession::SkyChartStep(double Dt)
