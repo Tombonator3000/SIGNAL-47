@@ -1,6 +1,6 @@
 # Feltbevis som skiller de ukjente (Freeform)
 
-**Status:** Under arbeid. Besluttet av Tom 13. november 2026. Trinn 1 er kodet, ikke bygget og ikke spilt av Tom; trinn 2 og 3 er ikke startet. **Gjelder:** Freeform, feltarbeid, notatboka, arkivpermen og Wards vurdering. **Sist kontrollert:** 13. november 2026 mot kilden på `claude/freeform-20261112` (lest og skrevet, ikke bygget eller spilt).
+**Status:** Under arbeid. Besluttet av Tom 13. november 2026. Trinn 1 og 2 er kodet, ikke bygget og ikke spilt av Tom; trinn 3 er ikke startet. **Gjelder:** Freeform, feltarbeid, notatboka, arkivpermen og Wards vurdering. **Sist kontrollert:** 14. november 2026 mot kilden på `claude/freeform-20261112` (lest og skrevet, ikke bygget eller spilt).
 
 Toms idé 13. november: bevis av ulike slag fra feltet (bilder, geiger, målinger, prøver) logges og legges i arkivet med bilder og tegninger, slik at spilleren gradvis forstår hva slags vesener han har med å gjøre. Inspirasjon er løkka i UFOPHILIA (måle → utelukke → fotografere). Vi tar bare den generelle ideen om å utelukke ut fra bevis. Arter, navn, bevistabell, grensesnitt og ordlyd lages fra det spillet vårt allerede har.
 
@@ -62,6 +62,39 @@ Regler som holder: spillet sier aldri hva noe er; ingen ord fra Freeforms forbud
 Lagring: hvert merke kan ha `h` (timen) og `x`, `z` (der spilleren sto, kartets egne meter), og `dossier` kan ha `extra` (natta peilingen gjelder fra) og `spent`. Alt er valgfritt. En eldre lagring leses som før: uten timer og kartmerke, og en mappe som alt står på MARKS får sin ene peiling ved lasting. En forstørring i mørkerommet gir verken time eller sted.
 
 Kode: `S47Dossier` (`Gave`, `HoursLine`, `ExtraNightFor`, `FirstWhere`, `HoursOf`, `Grant`, `Spend`), `S47FreeformDossier.cpp` (`TagEvidence`, `DossierMap`, `DossierTasks`, `DossierExtraOpen`), `FS47Places::SlipAllowed` og `AfterRegistered`, `S47FieldMap::AddFirstLogged`, THEM i `SS47Notebook.cpp`.
+
+### Trinn 2 slik det er kodet (14. november, ikke bygget, ikke spilt av Tom)
+
+Hver kanal som var lik for alle, har nå et eget trekk per vesen. Alt er små varianter av det spillet har. Ingen nye mekanikker og ingen nye lydfiler.
+
+| Kanal | De små | Den lave | Den høye | Hvor | Merkes når |
+| --- | --- | --- | --- | --- | --- |
+| BÅND (feltbåndet) | tonestiger som ender i et spørsmål | dobbelt hjerteslag, raspende pust | dype pulser, to toner som gnisser, metall som knirker | `FS47Tape`: `OddKind` fra kilden (`S47Dossier::KindOfOmen`), signaturen fra `S47AlienKinds::Render` spilles ved pulten (`Follow`, nøkkel `tape`) i stedet for den vanlige lyden; ord i funnet fra `OddWordsOf` | båndet er spilt av forbi stedet (`HeardThrough`), med time og sted fra opptaket |
+| BAKKE (dagslys på stedet) | små bare spor, steiner snudd med fuktig side opp | spor i firer, en hånd fra hverandre, ut av ringen i løp | lange smale spor, et langt steg, nesten fire fot | `FS47FarmSite::PrintsText`; stedet husker hvem som kom til merkene (`MarksBy`, lagret `marksBy`/`marksByNight`) | siden åpnes ved dagslys |
+| GEIGER | litt over (×0,55) | ingenting (bakgrunn) | klar stigning (×1,6) | `S47Dossier::GeigerFactor` i `FS47Happenings::DoseAt`, over merkene og nær kroppen under besøket | telleren er ute innen 12 m i 3 s (`GeigerReads`) |
+| DYR | hundene bjeffer og tier | coyoten stirrer og løper | fuglene letter | `FS47AnimalWarn::ForVisit`, `FS47FarmSite::WarnAnimals` (covey og coyote med sine egne skript; hundene med lydene spillet har) | 3 s inn i varselet, til fots |
+| LYKT | (regelen fra trinn 1) | (regelen fra trinn 1) | fryser i første lyskjegle: nytt funn `rule-tall-froze` | `FS47FarmSite`, der den høye fryser | når den fryser, sett i lykta |
+
+De to fjerne får bare kanalene matrisen gir dem. Sølvmannens og den som lyser sitt bånd er det uvanlige opptaket på mottakeren (`DossierHeardTake`, hørt gjennom, ikke før midnatt). Lykta kommer fra figuren som kommer nærmere (`figure_near`): sølvmannen er borte når han blir sett, den som lyser synes uten lykt på seg. Skyggen får fortsatt ingenting.
+
+**Mapper som spilleren kan knytte sammen.** En mappe er ikke lenger én per vesen. Et funn går i en mappe som allerede har det samme i samme boks, eller som har noe fra samme natt innen 250 m. Uten sted og av samme vesen er samme natt nok. Finnes ingen slik mappe, åpner funnet sin egne, også når spillet vet at det er det samme vesenet. Et bånd av noe som aldri er fotografert, blir altså sin egen UNKNOWN. Når ett funn knytter to mapper, slår spillet dem ikke sammen. THEM viser dem side om side, boks over boks, med et rødt blyant-likhetstegn der de har det samme. Permen skriver «KEPT BESIDE UNKNOWN n.». Når et funn fra samme natt og sted motsier det som står i en boks, strekes den gamle blyantlinjen over og den nye blir stående. Permen skriver den som «STRUCK / …». Spillet forklarer aldri hva merkene betyr.
+
+**Tempo (M7).** HABITS venter på første uke i kurven som har fare i seg (`director.json`, `curve.weeks`: dag 8). Selvtesten leser portene fra fila (`site_visit`, `field_visit`, `road_glimpse`, `horizon_figure`, `figure_near`, regelbruddet fra natt 4) og regner det beste tilfellet. Ingenting kan nå HABITS i uke 1. De tre som kommer nær, kan nå HABITS fra natt 8, altså innen uke 4. De to fjerne stopper på MARKS, tidligst natt 10. Første MARKS kan komme natt 3, altså godt innen uke 2.
+
+Lagring, alt valgfritt: `files` (vesenet som åpnet hver mappe, bare når et vesen har flere), `f` på et merke (mappa, når det ikke er vesenets første), `n` (rekkefølgen det ble logget i), `same` (parene side om side), og `oddKind` på et bånd. En lagring fra trinn 1 leses som før, og en eldre lagring bygges opp igjen med én mappe per vesen.
+
+Avvik fra planen, og hvorfor:
+
+- **Ingen tilordning ennå.** Planen hadde UNPLACED med spillerens egen tilordning. Her åpner et funn spilleren ikke kan knytte, sin egen mappe, og to mapper som viser seg å være det samme, står side om side. Å legge dem sammen er `FILE AS ONE` i trinn 3.
+- **HABITS-sperren fra kurven er ny.** Portene alene stopper ikke HABITS i uke 1, fordi stedsbesøk finnes fra natt 2 og gir mange bevistyper på én gang. Sperren bruker spillets egen kurve, der uke 1 har fare 0.
+- **Mottakerens bånd teller bare for de to fjerne.** Matrisen sier at båndet til de tre nære kommer fra feltbåndet.
+- **Lykta for de to fjerne kommer bare fra `figure_near` (fra dag 10),** ikke fra figuren på høyden. Ellers kunne de nå MARKS i uke 1.
+- **Den ekstra peilingen ved MARKS gis én gang per vesen, ikke per mappe.** Ellers kunne en delt mappe gi flere.
+- **Dyrevarselet før besøket bruker ikke skriptenes odds.** Det kommer ved hvert besøk til fots, der det er plass til dyret.
+- **Geigeren krever røret fra OPS.** Tempoprøven regner beste tilfelle og antar at telleren er bygget fra første besøk.
+- **Lyden er ikke sendt som WAV.** Signaturene er de samme som mottakeren alt spiller (`S47AlienKinds::Render`), og ingen bygg er kjørt.
+
+Kode: `S47Dossier` (`Tag`, `Together`, `Agreement`, `BesideWords`, `Earliest`, `FGates`, `GeigerFactor`, `KindOfOmen`, `AlienKindOf`, `GeigerReads`, `TakeHeard`, `LintWords`), `S47FreeformDossier.cpp` (`TagEvidenceAt`, `DossierHeardTake`, `DossierHabitsFrom`), `S47Tape`, `S47FarmSite`, `S47Happenings` (`DoseAt`, `StepGeiger`, `StepFigure`), `S47AnimalWarn::ForVisit`, THEM i `SS47Notebook.cpp` (`UnknownPairBox`, strøket blyant) og `S47Flow.cpp`. Selvtest: linjene `EVIDENCE-DOSSIER: slice 2`, `tape: EVIDENCE-DOSSIER slice 2`, `animal warning: EVIDENCE-DOSSIER slice 2` og `Freeform THEM (slice 2)`. F10: «Evidence dossier (M3)» fyller alle kanaler, viser arbeidsnavnene og tempoet fra portene.
 
 ## 1. Mål og løkke
 
