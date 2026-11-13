@@ -371,12 +371,33 @@ bool FS47Rhythm::AllowFloor(FName Id)
  if(V.bMay)return true;
  // Critic 12 Nov: May says only the first reason, and cooldown and budget come before the ground, the rest, the spacing and the danger
  // limits. Asked loosened, every hard rule is still asked: only a clean answer lets the floor through.
- if(Loosens(V.Why)&&May(Id,Now,nullptr,true).bMay)
+ if(Loosens(V.Why))
  {
-  UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm loosens %s for the night's floor: %s %s, day %d %s"),*Id.ToString(),*V.Why.ToString(),*V.Detail,Now.Day,*ClockText(Now.Clock));
-  return true;
+  const FS47Verdict Hard=May(Id,Now,nullptr,true);
+  if(Hard.bMay)
+  {
+   UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm loosens %s for the night's floor: %s %s, day %d %s"),*Id.ToString(),*V.Why.ToString(),*V.Detail,Now.Day,*ClockText(Now.Clock));
+   ShadowSaid.Remove(Id);
+   return true;
+  }
+  // M1-FLOOR-20261113: the third natural tour's night 12 said "cooldown 3 days" for the figure the floor had let the animals go ahead
+  // of; by its times what held it was the rest after the yard's presence (over at 03:21). Said once each time the answer changes.
+  FName& Said=ShadowSaid.FindOrAdd(Id);
+  if(Said!=Hard.Why)
+  {
+   Said=Hard.Why;
+   UE_LOG(LogS47Rhythm,Display,TEXT("S47: rhythm %s %s for the night's floor: %s %s, day %d %s"),E->bEnforce?TEXT("stops"):TEXT("would stop"),*Id.ToString(),*Hard.Why.ToString(),*Hard.Detail,Now.Day,*ClockText(Now.Clock));
+  }
+  return !E->bEnforce;
  }
  return Allow(Id);
+}
+void FS47Rhythm::UseEmbedded()
+{
+ FString Why;
+ Rules=FS47RhythmData();
+ Parse(S47RhythmDefaultJson,Rules,Why);
+ bOverride=false;SourceName=TEXT("embedded");
 }
 
 void FS47Rhythm::Began(FName Id)

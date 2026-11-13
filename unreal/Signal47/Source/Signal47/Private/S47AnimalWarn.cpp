@@ -69,6 +69,17 @@ bool FS47AnimalWarn::Hold(const FString& Id, const FString& Variant, bool bOnFoo
 	return true;
 }
 
+bool FS47AnimalWarn::WouldAsk(const FString& Id, int32 NightNo) const
+{
+	if (!Warned(Id)) return false;
+	// A new night: Hold starts it afresh.
+	if (NightNo != Night) return true;
+	if (bUsed || Asked.Contains(Id)) return false;
+	for (const FWait& W : Pending)
+		if (W.Id == Id) return false;
+	return true;
+}
+
 bool FS47AnimalWarn::StrayNight(int32 Seed, int32 NightNo)
 {
 	return FS47NightRhythm::Roll(Seed, NightNo, 0x53545259u) < 1.f / 3.f;
@@ -152,6 +163,17 @@ bool FS47AnimalWarn::SelfTest(TArray<FString>& Lines)
 	FS47AnimalWarn Bare(nullptr);
 	FString Why;
 	Check(Bare.Hold(TEXT("beam_figure"), FString(), true, Why) && !Bare.Waiting() && Bare.Warnings() == 0, TEXT("without a game the event is never held"));
+	{
+		// M1-FLOOR-20261113: who may still be warned for tonight, so that the rhythm is asked before the animals go up.
+		FS47AnimalWarn W(nullptr);
+		W.Night = 5;
+		const bool bFresh = W.WouldAsk(TEXT("horizon_figure"), 5) && !W.WouldAsk(TEXT("array_burst"), 5);
+		FWait P; P.Id = TEXT("horizon_figure"); W.Pending.Add(P);
+		const bool bWaiting = !W.WouldAsk(TEXT("horizon_figure"), 5) && W.WouldAsk(TEXT("horizon_figure"), 6);
+		W.Pending.Reset(); W.bUsed = true;
+		const bool bUsedUp = !W.WouldAsk(TEXT("beam_figure"), 5) && W.WouldAsk(TEXT("beam_figure"), 6);
+		Check(bFresh && bWaiting && bUsedUp, TEXT("M1 floor: the animals may still go ahead only of a warned event not yet asked, none used and none waiting tonight; a new night starts afresh"));
+	}
 	// the two warning scripts: there, enabled, clean (the script lint also covers them), one thought and one finding each, nothing about the event
 	for (const EKind K : { EKind::Birds, EKind::Coyote })
 	{
