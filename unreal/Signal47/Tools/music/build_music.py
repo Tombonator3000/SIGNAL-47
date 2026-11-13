@@ -1,0 +1,465 @@
+#!/usr/bin/env python3
+"""MUSIC-20261113 (Tom, 13 November 2026): the score's and the radio's pieces that are not in web/public.
+
+  build_music.py free  [--inbox DIR]    the free downloads (CC BY 4.0 and public domain): trimmed, levelled, the radio's narrowed to AM
+  build_music.py own   [--own FILE]     Tom's own "Signal 47 - Track 1 - Intro Drive" (id signal47_intro_drive)
+  build_music.py mixes [--bundle DIR]   our own arrangements of the bought "1984 Retro Music Production Bundle" and "ABYSS" loops
+  build_music.py all                    the three above
+  build_music.py index                  only media.json's rows for what is staged
+  --content DIR    the project's Content (default: this project's); the files go to DIR/Audio/Raw/media/{music,radio}/<name>.wav,
+                   where FS47MediaSource::Open finds music/<name>.mp3 and radio/<name>.mp3 (S47Media.cpp)
+  --previews DIR   also write listening copies there (mp3, at -16 LUFS: the staged files are quieter, like the rest of the score)
+
+Nothing here is in Git but this recipe: Content/Audio is ignored, the bought loops and Tom's own track never leave this machine,
+and the game runs without any of it (S47Score skips a piece whose file is missing; the radio keeps its first record).
+The raw loops are never staged, only the finished mixes. Function Loops' terms for the bundle (use and editing in a game, no
+redistribution of the sounds as sound files: Docs/Research/Assets/LYD_ULTIMATE_SFX_2026-11-10.md) are Tom's and Claude's
+earlier summary, not a licence file: Tom confirms them against the vendor's EULA before a public release.
+
+Levels follow what is already there, measured with ffmpeg ebur128 on 13 November 2026: the score's 17 pieces are -19.6 to
+-25.4 LUFS (median -21.5), the radio's four records -21.9 to -22.9 (mono, 22.05 kHz, 90 to 5500 Hz: web/THIRD_PARTY_NOTICES.md).
+The downloads are data: only ffmpeg ever decodes them. free/own/index need python3 and ffmpeg; mixes also numpy and scipy
+(on this machine: /home/tom/stable-diffusion-webui-forge/venv/bin/python3 -I Tools/music/build_music.py mixes).
+"""
+import argparse
+import glob
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+PROJECT = os.path.dirname(os.path.dirname(HERE))
+MUSIC_LUFS = -21.5
+RADIO_LUFS = -22.7
+PREVIEW_LUFS = -16.0
+INBOX = os.path.expanduser('~/Assets/signal47-free/_inbox/music-20261113')
+OWN = os.path.expanduser('~/Desktop/SIGNAL 47/Music/Signal 47 - Track 1-Intro Drive.mp3')
+BUNDLE = os.path.expanduser('~/Desktop/SIGNAL 47/bt25_ultimatesfxforgames_softwarebundle')
+
+# The free pieces. Licences read on the pages below on 13 November 2026 (Docs/Research/FREE_ASSET_CATALOG.md).
+#   out: media/<out>.wav; fade: seconds of fade-out at the end.
+# Left out on purpose: loc-jukebox-655645 "De gospel train am comin'" (Harry C. Browne and the Knickerbocker Quartet, Columbia
+# A2255, 1916): a minstrel-dialect number by a blackface performer. Not for this game.
+FREE = [
+    {'src': 'fma_look-back-steelguitar-organ-f-35.mp3', 'out': 'music/look_back_steelguitar', 'fade': 1.0,
+     'title': 'Look Back Steelguitar Organ (F 35)', 'by': 'Lobo Loco', 'licence': 'CC BY 4.0',
+     'url': 'https://freemusicarchive.org/music/Lobo_Loco/completely-free-2/look-back-steelguitar-organ-f-35/'},
+    # 80 seconds, cut as a loop: it plays once (the score never repeats a piece back to back), with a longer fade at its end
+    {'src': 'fma_stumping-slow-deltablues-guitar-steelguitar-f-30.mp3', 'out': 'music/stumping_slow_deltablues', 'fade': 2.5,
+     'title': 'Stumping Slow Deltablues - Guitar Steelguitar (F 30)', 'by': 'Lobo Loco', 'licence': 'CC BY 4.0',
+     'url': 'https://freemusicarchive.org/music/Lobo_Loco/completely-free-2/stumping-slow-deltablues-guitar-steelguitar-f-30/'},
+    {'src': 'fma_03_-_Uuriter_-_Standby_Mode.mp3', 'out': 'music/standby_mode', 'fade': 2.0,
+     'title': 'Standby Mode', 'by': 'Uuriter', 'licence': 'CC BY 4.0',
+     'url': 'https://freemusicarchive.org/music/Uuriter/Analog_Fields_1913/03_-_Uuriter_-_Standby_Mode/'},
+    {'src': 'fma_08_-_Uuriter_-_Routine_Drone.mp3', 'out': 'music/routine_drone', 'fade': 2.0,
+     'title': 'Routine Drone', 'by': 'Uuriter', 'licence': 'CC BY 4.0',
+     'url': 'https://freemusicarchive.org/music/Uuriter/Analog_Fields_1913/08_-_Uuriter_-_Routine_Drone/'},
+    # Library of Congress National Jukebox, by way of the Internet Archive (Public Domain Mark): acoustic 78s, for the AM dial
+    {'src': 'loc-jukebox-711901-hawaiian-hotel.mp3', 'out': 'radio/hawaiian_hotel', 'fade': 1.0, 'old': True,
+     'title': 'Hawaiian Hotel', 'by': 'Frank Ferera and Anthony Franchini (1920)', 'licence': 'public domain',
+     'url': 'https://www.loc.gov/item/jukebox-711901/'},
+    {'src': 'loc-jukebox-122577-roll-on-silver-moon.mp3', 'out': 'radio/roll_on_silver_moon', 'fade': 1.0, 'old': True,
+     'title': 'Roll On, Silver Moon', 'by': 'yodel song, Victor (1906)', 'licence': 'public domain',
+     'url': 'https://www.loc.gov/item/jukebox-122577/'},
+    {'src': 'loc-jukebox-132141-till-the-sands-of-the-desert-grow-cold.mp3', 'out': 'radio/till_the_sands', 'fade': 1.0, 'old': True,
+     'title': 'Till the Sands of the Desert Grow Cold', 'by': 'Victor Orchestra (1912)', 'licence': 'public domain',
+     'url': 'https://www.loc.gov/item/jukebox-132141/'},
+]
+# Tom's own track: the score's copy, and one narrowed to AM for a set that plays it as the radio does
+OWN_OUT = [('music/signal47_intro_drive', False), ('radio/signal47_intro_drive', True)]
+MIXES = ['music/s47_night_freight', 'music/s47_cold_dish', 'music/s47_carrier_lock', 'music/s47_county_road', 'radio/s47_night_freight']
+
+TRIM = ('silenceremove=start_periods=1:start_duration=0:start_silence=0.15:start_threshold=-50dB:detection=peak,areverse,'
+        'silenceremove=start_periods=1:start_duration=0:start_silence=0.15:start_threshold=-50dB:detection=peak,areverse')
+# The AM dial: mono, 90 to 5500 Hz as the first four records; an acoustic 78 has nothing under 150 Hz but rumble and
+# nothing over 5 kHz but shellac, and a station's own compressor evens it out
+AM = 'pan=mono|c0=0.5*c0+0.5*c1,highpass=f=90,lowpass=f=5500'
+# (the declicker and the limiter take the shellac's ticks down: measured 2 to 5 dB off the peaks, the loudness unchanged)
+AM_OLD = ('pan=mono|c0=0.5*c0+0.5*c1,adeclick=threshold=4,highpass=f=150,highpass=f=150,lowpass=f=4800,lowpass=f=4800,'
+          'acompressor=threshold=-26dB:ratio=3:attack=20:release=400:makeup=1,alimiter=limit=0.3:attack=2:release=60:level=false')
+
+
+def run(cmd, **kw):
+    return subprocess.run(cmd, capture_output=True, **kw)
+
+
+def loudness(path, pre=None):
+    """Integrated loudness (LUFS), true peak (dBTP) and length (s) of a file, after an optional filter chain."""
+    chain = (pre + ',' if pre else '') + 'ebur128=peak=true'
+    r = run(['ffmpeg', '-hide_banner', '-nostats', '-i', path, '-map', '0:a:0', '-af', chain, '-f', 'null', '-'])
+    text = r.stderr.decode('utf-8', 'replace')
+    tail = text[text.rfind('Summary:'):]
+    i = re.search(r'I:\s+(-?[\d.]+) LUFS', tail)
+    p = re.search(r'Peak:\s+(-?[\d.]+) dBFS', tail)
+    t = re.findall(r'time=(\d+):(\d+):([\d.]+)', text)
+    if r.returncode != 0 or not i or not p:
+        sys.exit('S47 music: ffmpeg could not measure %s: %s' % (path, text[-300:]))
+    secs = (int(t[-1][0]) * 3600 + int(t[-1][1]) * 60 + float(t[-1][2])) if t else 0.0
+    return float(i.group(1)), float(p.group(1)), secs
+
+
+def duration(path):
+    r = run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path])
+    return float(r.stdout.decode().strip())
+
+
+def stage(src, dst, target, pre=None, fade=1.0, rate=44100, channels=2):
+    """src, through pre, without the silence at its ends, at target LUFS with short fades, as PCM16 WAVE at dst."""
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='s47music') as tmp:
+        mid = os.path.join(tmp, 'mid.wav')
+        chain = (pre + ',' if pre else '') + TRIM
+        r = run(['ffmpeg', '-v', 'error', '-y', '-i', src, '-map', '0:a:0', '-af', chain, '-ar', str(rate), '-ac', str(channels),
+                 '-c:a', 'pcm_f32le', mid])
+        if r.returncode != 0:
+            sys.exit('S47 music: ffmpeg failed on %s: %s' % (src, r.stderr.decode('utf-8', 'replace')[-300:]))
+        lufs, peak, _ = loudness(mid)
+        secs = duration(mid)
+        gain = target - lufs
+        if peak + gain > -1.0:  # never louder than a true peak of -1 dBTP
+            gain = -1.0 - peak
+        out = 'volume=%.2fdB,afade=t=in:st=0:d=0.03,afade=t=out:st=%.3f:d=%.3f,aresample=osf=s16:dither_method=triangular' % (
+            gain, max(0.0, secs - fade), fade)
+        tmpdst = dst + '.tmp-%d.wav' % os.getpid()
+        r = run(['ffmpeg', '-v', 'error', '-y', '-i', mid, '-af', out, '-c:a', 'pcm_s16le', '-f', 'wav', tmpdst])
+        if r.returncode != 0:
+            sys.exit('S47 music: ffmpeg failed writing %s: %s' % (dst, r.stderr.decode('utf-8', 'replace')[-300:]))
+        os.replace(tmpdst, dst)
+    lufs, peak, secs = loudness(dst)
+    print('S47 music: %-44s %6.1f s  %6.1f LUFS  %5.1f dBTP' % (os.path.relpath(dst, os.path.dirname(os.path.dirname(dst))), duration(dst), lufs, peak))
+    return dst
+
+
+def preview(src, dst, start=None, secs=None):
+    """A listening copy: mp3 at PREVIEW_LUFS; a clip when start and secs are given, and never over 6 MB."""
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    total = duration(src)
+    cut = []
+    if start is not None:
+        start = max(0.0, min(start, total - secs))
+        cut = ['-ss', '%.2f' % start, '-t', '%.2f' % secs]
+    length = secs if start is not None else total
+    lufs, peak, _ = loudness(src)
+    gain = min(PREVIEW_LUFS - lufs, -1.0 - peak)
+    rate = 192 if length * 192000 / 8 < 5.8e6 else 160 if length * 160000 / 8 < 5.8e6 else 128
+    fades = 'volume=%.2fdB' % gain
+    if start is not None:
+        fades += ',afade=t=in:st=0:d=0.3,afade=t=out:st=%.2f:d=0.6' % (secs - 0.6)
+    r = run(['ffmpeg', '-v', 'error', '-y'] + cut + ['-i', src, '-af', fades, '-c:a', 'libmp3lame', '-b:a', '%dk' % rate, dst])
+    if r.returncode != 0:
+        sys.exit('S47 music: preview failed for %s: %s' % (src, r.stderr.decode('utf-8', 'replace')[-300:]))
+
+
+def index(media):
+    """media.json: the web names of everything in media/{music,radio} (audio-raw.py writes the same rows)."""
+    path = os.path.join(os.path.dirname(media), 'media.json')
+    rows = {}
+    if os.path.isfile(path):
+        rows = json.load(open(path, encoding='utf-8'))
+    for group in ('music', 'radio'):
+        for wav in sorted(glob.glob(os.path.join(media, group, '*.wav'))):
+            base = os.path.splitext(os.path.basename(wav))[0]
+            rows['%s/%s.mp3' % (group, base)] = 'media/%s/%s.wav' % (group, base)
+    tmp = path + '.tmp-%d' % os.getpid()
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(rows, f, ensure_ascii=False, indent=1, sort_keys=True)
+    os.replace(tmp, path)
+    print('S47 music: media.json has %d rows' % len(rows))
+
+
+def free(media, inbox, previews):
+    if not os.path.isdir(inbox):
+        print('S47 music: no %s: the free pieces are left out (the game plays without them)' % inbox)
+        return
+    for row in FREE:
+        src = os.path.join(inbox, row['src'])
+        if not os.path.isfile(src):
+            print('S47 music: %s is not in the inbox: left out' % row['src'])
+            continue
+        radio = row['out'].startswith('radio/')
+        dst = os.path.join(media, row['out'] + '.wav')
+        if radio:
+            stage(src, dst, RADIO_LUFS, AM_OLD if row.get('old') else AM, row['fade'], 22050, 1)
+        else:
+            stage(src, dst, MUSIC_LUFS, None, row['fade'])
+        if previews:
+            name = ('radio_am_' if radio else 'new_') + os.path.basename(row['out']) + '_30s.mp3'
+            preview(dst, os.path.join(previews, name), 40, 30)
+
+
+def own(media, src, previews):
+    if not os.path.isfile(src):
+        print('S47 music: no %s: Tom\'s own track is left out (the game plays without it)' % src)
+        return
+    for out, radio in OWN_OUT:
+        dst = os.path.join(media, out + '.wav')
+        if radio:
+            stage(src, dst, RADIO_LUFS, AM, 1.0, 22050, 1)
+        else:
+            stage(src, dst, MUSIC_LUFS, None, 1.0)
+    if previews:
+        preview(os.path.join(media, OWN_OUT[0][0] + '.wav'), os.path.join(previews, 'new_signal47_intro_drive_20s.mp3'), 30, 20)
+
+
+# ---------------------------------------------------------------- the mixes
+# Each piece is one kit's loops, phase-locked to one bar grid (a loop always plays the bar the piece is on, whenever it comes
+# in), so the kit's own chord cycle holds. Layers come and go on bar lines; levels are set from each loop's measured loudest
+# half, not by ear. The bus: 30 Hz high-pass, a little narrower, 9.5 kHz low-pass, soft saturation, slow wow, 2:1 compression
+# of the loudest few dB, a ceiling, then MUSIC_LUFS. Nobody has listened to these: the previews are for Tom's ear.
+SR = 44100
+
+
+def mixes(media, bundle, previews):
+    retro = os.path.join(bundle, '1984 Retro Music Production Bundle')
+    abyss = os.path.join(bundle, 'ABYSS - Dark Cinematic', 'Loops')
+    if not os.path.isdir(retro) or not os.path.isdir(abyss):
+        print('S47 music: no bought bundle at %s: the mixes are left out (the game plays without them)' % bundle)
+        return
+    try:
+        import numpy as np
+        from scipy.signal import butter, sosfilt
+    except ImportError:
+        print('S47 music: numpy and scipy are needed for the mixes: left out (see this file\'s head)')
+        return
+
+    def load(path):
+        hits = glob.glob(glob.escape(path)) or glob.glob(path)
+        if len(hits) != 1:
+            sys.exit('S47 music: loop not found (or not unique): %s' % path)
+        raw = run(['ffmpeg', '-v', 'error', '-i', hits[0], '-ac', '2', '-ar', str(SR), '-f', 'f32le', '-']).stdout
+        x = np.frombuffer(raw, dtype=np.float32).astype(np.float64).reshape(-1, 2)
+        if len(x) < SR // 4:
+            sys.exit('S47 music: loop is empty: %s' % path)
+        return x
+
+    def loud_rms(x):
+        # the level of the loudest half of its 200 ms windows: a loop that rests half its bars is not turned up for it
+        w = SR // 5
+        n = len(x) // w
+        p = (x[:n * w] ** 2).reshape(n, w, 2).mean(axis=(1, 2))
+        p = np.sort(p)[n // 2:]
+        return 10 * np.log10(p.mean() + 1e-12)
+
+    def sos(kind, hz, order=2):
+        return butter(order, hz, kind, fs=SR, output='sos')
+
+    def ramp(n, up=True):
+        t = np.sin(np.linspace(0, np.pi / 2, max(2, n))) ** 2
+        return t if up else t[::-1]
+
+    class Piece:
+        def __init__(self, bpm, bars):
+            self.spb = SR * 240.0 / bpm
+            self.bars = bars
+            self.n = int(round(bars * self.spb))
+            self.bus = np.zeros((self.n, 2))
+            self.used = []
+
+        def at(self, bar):
+            return int(round(bar * self.spb))
+
+        def add(self, path, level, spans, lp=None, hp=None, perc=False, once=False, open_from=None, close_to=None, width=1.0):
+            """spans: (from bar, to bar, fade-in bars, fade-out bars). open_from/close_to: (Hz, bars) low-pass that opens over the
+            first span's first bars or closes over the last span's last bars."""
+            x = load(path)
+            self.used.append(os.path.relpath(path, bundle))
+            x = x * 10 ** ((level - loud_rms(x)) / 20)
+            if width != 1.0:
+                mid, side = x.mean(axis=1), (x[:, 0] - x[:, 1]) / 2
+                x = np.stack([mid + side * width, mid - side * width], axis=1)
+            edge = int(0.002 * SR)
+            x[-edge:] *= ramp(edge, False)[:, None]  # no click where a loop wraps
+            if not perc:
+                x[:edge // 2] *= ramp(edge // 2)[:, None]
+            for k, (b0, b1, fin, fout) in enumerate(spans):
+                s, e = self.at(b0), min(self.n, self.at(b1))
+                if once:
+                    e = min(e, s + len(x))
+                    seg = x[:e - s].copy()
+                else:
+                    seg = x[np.arange(s, e) % len(x)]
+                if hp:
+                    seg = sosfilt(sos('highpass', hp), seg, axis=0)
+                if lp:
+                    seg = sosfilt(sos('lowpass', lp), seg, axis=0)
+                if open_from and k == 0:
+                    n = min(len(seg), int(open_from[1] * self.spb))
+                    a = ramp(n)[:, None]
+                    seg[:n] = sosfilt(sos('lowpass', open_from[0]), seg[:n], axis=0) * (1 - a) + seg[:n] * a
+                if close_to and k == len(spans) - 1:
+                    n = min(len(seg), int(close_to[1] * self.spb))
+                    a = ramp(n, False)[:, None]
+                    dull = sosfilt(sos('lowpass', close_to[0]), seg, axis=0)[-n:]
+                    seg[-n:] = dull * (1 - a) + seg[-n:] * a
+                n = min(len(seg), max(int(0.005 * SR), int(fin * self.spb)))
+                seg[:n] *= ramp(n)[:, None]
+                n = min(len(seg), max(int(0.005 * SR), int(fout * self.spb)))
+                seg[-n:] *= ramp(n, False)[:, None]
+                self.bus[s:e] += seg
+
+    def measure(x):
+        raw = (np.clip(x, -1, 1)).astype('<f4').tobytes()
+        r = run(['ffmpeg', '-hide_banner', '-nostats', '-f', 'f32le', '-ar', str(SR), '-ac', '2', '-i', '-', '-af', 'ebur128=peak=true', '-f', 'null', '-'], input=raw)
+        tail = r.stderr.decode('utf-8', 'replace')
+        tail = tail[tail.rfind('Summary:'):]
+        return float(re.search(r'I:\s+(-?[\d.]+) LUFS', tail).group(1)), float(re.search(r'Peak:\s+(-?[\d.]+) dBFS', tail).group(1))
+
+    def master(x, name, wow=0.0006):
+        x = sosfilt(sos('highpass', 30), x, axis=0)
+        mid, side = x.mean(axis=1), (x[:, 0] - x[:, 1]) / 2
+        x = np.stack([mid + side * 0.85, mid - side * 0.85], axis=1)
+        x = sosfilt(sos('lowpass', 9500), x, axis=0)
+        # work at a known level: the loudest half at -18 dBFS
+        x *= 10 ** ((-18 - loud_rms(x)) / 20)
+        x = np.tanh(x * 1.6) / 1.6  # tape-like: the peaks round off, the body is left alone
+        # wow: a slow drift in pitch of about 0.06 %, as a deck's capstan gives
+        t = np.arange(len(x), dtype=np.float64)
+        delay = wow * SR / (2 * np.pi * 0.45) * (1 + np.sin(2 * np.pi * 0.45 * t / SR)) + 0.00008 * SR / (2 * np.pi * 5.7) * (1 + np.sin(2 * np.pi * 5.7 * t / SR))
+        src = np.clip(t - delay, 0, len(x) - 1)
+        x = np.stack([np.interp(src, t, x[:, 0]), np.interp(src, t, x[:, 1])], axis=1)
+        # bus compression at control rate (10 ms): 2:1 over -20 dBFS RMS, 30 ms attack, 300 ms release, at most 4 dB
+        hop = SR // 100
+        n = len(x) // hop
+        level = 10 * np.log10((x[:n * hop] ** 2).reshape(n, hop, 2).mean(axis=(1, 2)) + 1e-12)
+        want = np.clip((level + 20) / 2, 0, 4) * -1.0
+        got = np.zeros(n)
+        g = 0.0
+        ka, kr = 1 - np.exp(-0.010 / 0.030), 1 - np.exp(-0.010 / 0.300)
+        for i in range(n):
+            g += (want[i] - g) * (ka if want[i] < g else kr)
+            got[i] = g
+        gain = np.interp(np.arange(len(x)), np.arange(n) * hop + hop / 2, got)
+        x *= (10 ** (gain / 20))[:, None]
+        # ceiling: 5 ms look-ahead, nothing over -4 dBFS at this working level
+        peak = np.abs(x).max(axis=1)
+        look = int(0.005 * SR)
+        n2 = len(peak) // look
+        blk = peak[:n2 * look].reshape(n2, look).max(axis=1)
+        blk = np.maximum(blk, np.roll(blk, -1))
+        need = np.minimum(1.0, 10 ** (-4 / 20) / np.maximum(blk, 1e-9))
+        for i in range(1, n2):  # 80 ms release
+            need[i] = min(need[i], need[i - 1] + (1 - need[i - 1]) * 0.06) if need[i] > need[i - 1] else need[i]
+        x *= np.interp(np.arange(len(x)), np.arange(n2) * look, need)[:, None]
+        lufs, _ = measure(x)
+        x *= 10 ** ((MUSIC_LUFS - lufs) / 20)
+        lufs, peak = measure(x)
+        if peak > -1.0:
+            sys.exit('S47 music: %s peaks at %.1f dBTP' % (name, peak))
+        dst = os.path.join(media, 'music', name + '.wav')
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        tmpdst = dst + '.tmp-%d.wav' % os.getpid()
+        r = run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '2', '-i', '-', '-af', 'aresample=osf=s16:dither_method=triangular',
+                 '-c:a', 'pcm_s16le', '-f', 'wav', tmpdst], input=x.astype('<f4').tobytes())
+        if r.returncode != 0:
+            sys.exit('S47 music: ffmpeg failed writing %s' % dst)
+        os.replace(tmpdst, dst)
+        print('S47 music: %-44s %6.1f s  %6.1f LUFS  %5.1f dBTP (mix)' % ('music/' + name + '.wav', len(x) / SR, lufs, peak))
+        if previews:
+            preview(dst, os.path.join(previews, 'mix_' + name + '.mp3'))
+        return dst
+
+    # (a) "Night Freight": the late truck radio. Neon Highway kit 5, 80 BPM, F#-E-B-D, 72 bars = 3:36.
+    # intro 0-8 (pad, air) / A 8-24 (bass, arp; shaker and high pad from 16) / B 24-40 (kick; lead and snare from 32) /
+    # break 40-48 (pads and the high arp) / C 48-64 (all; lead from 56) / outro 64-72
+    k5 = os.path.join(retro, 'Function Loops - Neon Highway', 'FL_NHW_KIT05_80BPM_F#-E-B-D', 'FL_NHW_KIT05_80BPM_LOOPS', 'FL_NHW_KIT05_80_')
+    p = Piece(80, 72)
+    p.add(k5 + 'F#-E-B-D_LOW NOTE PAD.wav', -23, [(0, 72, 4, 7)])
+    p.add(k5 + 'ATMO SFX.wav', -33, [(0, 16, 2, 2), (40, 48, 1, 1)])
+    p.add(k5 + 'F#-E-B-D_BASS.wav', -21, [(8, 40, 0.1, 0.25), (48, 64, 0.1, 1)], open_from=(260, 6))
+    p.add(k5 + 'F#-E-B-D_ARP.wav', -27, [(8, 72, 4, 7)], open_from=(900, 8))
+    p.add(k5 + 'F#-E-B-D_HIGH PAD.wav', -28, [(16, 40, 2, 1), (48, 64, 1, 2)])
+    p.add(k5 + 'SHAKER.wav', -39, [(16, 40, 1, 0.5), (48, 64, 0.5, 1)], perc=True)
+    p.add(k5 + 'KICK.wav', -25, [(24, 40, 0.02, 0.1), (48, 64, 0.02, 0.5)], lp=240, perc=True)
+    p.add(k5 + 'SNARE.wav', -32, [(32, 40, 0.02, 0.1), (56, 64, 0.02, 0.5)], lp=3000, perc=True)
+    p.add(k5 + 'F#-E-B-D_LEAD.wav', -29, [(32, 40, 0.5, 0.5), (56, 64, 0.5, 1)], lp=4500)
+    p.add(k5 + 'F#_HIGH ARP.wav', -33, [(40, 56, 1, 2)])
+    p.add(k5 + 'F#-E-B-D_MID BASS.wav', -30, [(48, 64, 1, 1)])
+    p.add(k5 + 'CRASH.wav', -36, [(24, 28, 0, 1), (48, 52, 0, 1)], perc=True, once=True)
+    freight = master(p.bus, 's47_night_freight')
+    used = {'s47_night_freight': p.used}
+
+    # (b) "Cold Dish": the observatory's night bed, no drums. ABYSS, 100 BPM, D# minor (D#m, D#m, B, G#m every 8 bars), 88 bars = 3:31.
+    # pedal 0-8 / sub 8-16 / first pad 16-32 / second pad over it 32-48 / thin and high 48-56 / darker pair 56-72 / down 72-88
+    pad = os.path.join(abyss, 'Pad Loops', 'FL_ABB_Pad_100_D#_Obsidian_')
+    p = Piece(100, 88)
+    p.add(pad + '21_8bars.wav', -27, [(0, 88, 8, 8)])
+    p.add(os.path.join(abyss, 'Bass Loops', 'FL_ABB_Bass_100_D#_Void_08_4bars.wav'), -25, [(8, 48, 4, 4), (56, 80, 4, 6)], lp=140)
+    p.add(pad + '01_8bars.wav', -23, [(16, 48, 4, 3), (56, 82, 3, 8)])
+    p.add(pad + '18_8bars.wav', -26, [(32, 48, 4, 3)])
+    p.add(pad + '19_8bars.wav', -27, [(46, 58, 2, 3), (72, 82, 3, 6)])
+    p.add(pad + '02_8bars.wav', -25, [(56, 72, 3, 3)])
+    master(p.bus, 's47_cold_dish', wow=0.0004)
+    used['s47_cold_dish'] = p.used
+
+    # (c) "Carrier Lock": tension, a pulse over a C pedal. Retrowave, 100 BPM, C minor, 72 bars = 2:53.
+    # arp alone 0-8 / pulse 8-16 / heartbeat kick 16-24 / B 24-40 (bass and pad move C, C, Eb, F) / break 40-48 /
+    # pulse again 48-64 / out 64-72
+    rw = os.path.join(retro, 'Function Loops - Retrowave', 'Loops')
+    p = Piece(100, 72)
+    p.add(os.path.join(rw, 'Synth Loops', 'Arps', 'FL_SKY_100_Synth_Arp_Analog_Cm.wav'), -26, [(0, 72, 3, 6)], open_from=(500, 8), close_to=(600, 6))
+    p.add(os.path.join(rw, 'Synth Loops', 'Pads', 'FL_SKY_100_Synth_Pad_Velvet_Cmin.wav'), -25, [(0, 24, 4, 1), (40, 48, 0.5, 1), (64, 72, 1, 6)])
+    p.add(os.path.join(rw, 'Bass Loops', 'FL_SKY_100_Bass_Synth_Pulse_Cm_Bas.wav'), -21, [(8, 24, 0.5, 0.1), (48, 64, 0.5, 1)], open_from=(220, 4))
+    p.add(os.path.join(rw, 'Drum Loops', 'Kicks', 'FL_SKY_100_Drum_Kick_Feedback.wav'), -26, [(16, 40, 0.02, 0.1), (48, 64, 0.02, 1)], lp=160, perc=True)
+    p.add(os.path.join(rw, 'Synth Loops', 'Arps', 'FL_SKY_100_Synth_Arp_Electric_Cm.wav'), -31, [(16, 24, 2, 0.5), (56, 64, 2, 1)], lp=5000)
+    p.add(os.path.join(rw, 'Synth Loops', 'Leads', 'FL_SKY_100_Synth_Lead_Flashes_Cmin.wav'), -30, [(16, 24, 0.5, 0.5), (56, 64, 0.5, 1)], lp=5000)
+    p.add(os.path.join(rw, 'Bass Loops', 'FL_SKY_100_Bass_Synth_Deep_Cm.wav'), -21, [(24, 40, 0.1, 0.25)])
+    p.add(os.path.join(rw, 'Synth Loops', 'Pads', 'FL_SKY_100_Synth_Pad_Starlit_Cmin.wav'), -25, [(24, 40, 1, 1)])
+    p.add(os.path.join(rw, 'Drum Loops', 'Hats', 'FL_SKY_100_Drum_Hat_Textured.wav'), -40, [(24, 40, 1, 1)], perc=True)
+    p.add(os.path.join(rw, 'Synth Loops', 'Leads', 'FL_SKY_100_Synth_Lead_Slowdive_Cmin.wav'), -29, [(40, 48, 0.5, 1)], lp=5000)
+    master(p.bus, 's47_carrier_lock')
+    used['s47_carrier_lock'] = p.used
+
+    # (d) "County Road": the drive. Neon Highway kit 4, 124 BPM, A-C-D, 96 bars = 3:06.
+    # pad 0-8 / arp 8-16 / bass 16-24 / kick and hat 24-40 (mid bass, pluck from 32) / lead and snare 40-56 /
+    # break 56-64 / all 64-88 (lead and snare from 72) / out 88-96
+    k4 = os.path.join(retro, 'Function Loops - Neon Highway', 'FL_NHW_KIT04_124BPM_A-C-D', 'FL_NHW_KIT04_124BPM_LOOPS', 'FL_NHW_KIT04_124_')
+    p = Piece(124, 96)
+    p.add(k4 + 'A-C-D_PAD.wav', -25, [(0, 96, 4, 7)])
+    p.add(k4 + 'ATMO SFX.wav', -34, [(0, 16, 2, 2), (56, 64, 1, 1)])
+    p.add(k4 + 'A_ARP.wav', -26, [(8, 96, 4, 7)], open_from=(800, 8))
+    p.add(k4 + 'A-C-D_BASS.wav', -20, [(16, 56, 0.1, 0.25), (64, 88, 0.1, 1)], open_from=(260, 6))
+    p.add(k4 + 'KICK.wav', -23, [(24, 56, 0.02, 0.1), (64, 88, 0.02, 0.5)], lp=320, perc=True)
+    p.add(k4 + 'CLSHAT.wav', -37, [(24, 56, 1, 0.25), (64, 88, 0.5, 1)], perc=True)
+    p.add(k4 + 'A-C-D_MID BASS.wav', -27, [(32, 56, 1, 0.25), (64, 88, 1, 1)])
+    p.add(k4 + 'A_HIGH PLUCK.wav', -31, [(32, 40, 0.5, 0.5), (56, 64, 0.5, 0.5), (80, 88, 0.5, 1)])
+    p.add(k4 + 'SNARE.wav', -30, [(40, 56, 0.02, 0.1), (72, 88, 0.02, 0.5)], lp=3200, perc=True)
+    p.add(k4 + 'A-C-D_LEAD.wav', -28, [(40, 56, 0.5, 0.5), (72, 88, 0.5, 1)], lp=4500)
+    p.add(k4 + 'CRASH.wav', -36, [(24, 28, 0, 1), (64, 68, 0, 1)], perc=True, once=True)
+    p.add(k4 + 'FLYBY.wav', -33, [(56, 64, 0, 1)], once=True)
+    master(p.bus, 's47_county_road')
+    used['s47_county_road'] = p.used
+
+    # the radio's copy of (a): the far station's late record
+    stage(freight, os.path.join(media, 'radio', 's47_night_freight.wav'), RADIO_LUFS, AM, 1.0, 22050, 1)
+    if previews:
+        preview(os.path.join(media, 'radio', 's47_night_freight.wav'), os.path.join(previews, 'radio_am_s47_night_freight_30s.mp3'), 80, 30)
+    for name, loops in used.items():
+        print('S47 music: %s: %s' % (name, '; '.join(os.path.basename(v) for v in loops)))
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('what', choices=('free', 'own', 'mixes', 'all', 'index'))
+    ap.add_argument('--content', default=os.path.join(PROJECT, 'Content'))
+    ap.add_argument('--inbox', default=INBOX)
+    ap.add_argument('--own', default=OWN)
+    ap.add_argument('--bundle', default=BUNDLE)
+    ap.add_argument('--previews')
+    args = ap.parse_args()
+    media = os.path.join(args.content, 'Audio', 'Raw', 'media')
+    if not os.path.isdir(os.path.dirname(media)):
+        sys.exit('S47 music: no %s (run Scripts/import-audio.sh first)' % os.path.dirname(media))
+    if args.what in ('free', 'all'):
+        free(media, args.inbox, args.previews)
+    if args.what in ('own', 'all'):
+        own(media, args.own, args.previews)
+    if args.what in ('mixes', 'all'):
+        mixes(media, args.bundle, args.previews)
+    index(media)
+
+
+if __name__ == '__main__':
+    main()
