@@ -89,6 +89,8 @@ public:
 	bool Inserted() const { return InsertIn.IsValid(); }
 	// The file of the piece that plays (empty: none), for what is set per piece.
 	FString PlayingFile() const;
+	// MUSIC-20261113: the piece heard now as the credits name it, "Floating Cities (Kevin MacLeod)"; empty: none
+	FString NowPlaying() const;
 	// SIDEBAND-20261113, channels: whether an own mix may play as its stems (S47ScoreStems.h), and the tension that lets them in
 	// and out (0 to 1). Off: the mix file, as before. A piece that is playing keeps the form it started in.
 	void SetStems(bool bOn, double InTension);

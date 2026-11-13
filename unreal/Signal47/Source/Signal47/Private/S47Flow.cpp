@@ -1691,6 +1691,7 @@ FS47PauseOpts US47Flow::Settings()
 	O.Volume = Volume; O.Sens = Sens;
 	O.OnVolume = [this](float V) { Volume = V; ApplyVolume(); StoreSet(TEXT("vol"), double(V)); };
 	O.Music = MusicLevel;
+	O.NowPlaying = M->Score ? M->Score->NowPlaying() : FString(); // MUSIC-20261113
 	O.OnMusic = [this](float V) { MusicLevel = V; if (M->Audio) M->Audio->SetMusic(V); StoreSet(TEXT("music"), double(V)); };
 	O.Radio = RadioLevel;
 	O.OnRadio = [this](float V) { RadioLevel = V; if (M->Audio) M->Audio->SetRadio(V); StoreSet(TEXT("radioVol"), double(V)); };

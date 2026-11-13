@@ -174,6 +174,12 @@ double FS47Score::TransitionAt(bool bUrgent) const
 	return Now + (bUrgent ? FMath::Min(0.35, Wait) : Wait);
 }
 
+FString FS47Score::NowPlaying() const
+{
+	const FS47ScoreTrack* C = El && !Track.IsEmpty() ? S47Score::TRACKS.Find(Track) : nullptr;
+	return C ? FString::Printf(TEXT("%s (%s)"), *C->Title, *C->By) : FString();
+}
+
 FString FS47Score::TrackOf(const FString& Piece)
 {
 	if (S47Score::TRACKS.Contains(Piece)) return Piece;
@@ -393,6 +399,13 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 	NewEl->OnEnded = [this, Alive = bAlive, WeakEl] { if (*Alive && El == WeakEl.Pin()) Done(Rnd(4, 15)); };
 	NewEl->OnError = [this, Alive = bAlive, WeakEl] { if (*Alive && El == WeakEl.Pin()) Done(120); };
 	El = NewEl; Gain = G; Playing = Cue; Track = InTrack; Last.Add(InTrack, T);
+	// MUSIC-20261113 (Tom heard a soft piano at night and could not name it): every piece change, with the clock and the cue
+	{
+		const double Clock = M && M->IsFreeform() && M->Freeform ? M->Freeform->Clock() : M && M->Story ? M->Story->Clock() : -1;
+		const double Hour = Clock >= 0 ? FMath::Fmod(Clock, 86400.) / 3600. : -1;
+		UE_LOG(LogTemp, Display, TEXT("S47: score: now playing \"%s\" by %s (%s, cue %s%s), game clock %s"), *C->Title, *C->By, *InTrack, *Cue, NewStems ? TEXT(", as its stems") : TEXT(""),
+			Hour < 0 ? TEXT("none") : *FString::Printf(TEXT("%02d:%02d"), int32(Hour), int32(FMath::Fmod(Hour * 60., 60.))));
+	}
 	if (!NewEl->Play() && El == NewEl) Done(30);
 	else if (bPaused) NewEl->Pause();
 }
