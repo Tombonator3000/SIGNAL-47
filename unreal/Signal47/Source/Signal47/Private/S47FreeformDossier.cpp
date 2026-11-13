@@ -2,8 +2,11 @@
 #include "S47Dossier.h"
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
+#include "S47Marginalia.h"
+#include "S47PredecessorText.h"
 #include "S47RecordsBinder.h"
 #include "S47RoadGlimpse.h"
+#include "S47Script.h"
 #include "S47UI.h"
 
 // EVIDENCE-DOSSIER-20261113 (-> M3, M4; Tom 13 November), slice 1: the session's part of the files of the unknown. What is in a
@@ -134,5 +137,16 @@ bool FS47FreeformSession::DossierSelfTest(TArray<FString>& Lines)
    TEXT("the binder is handed the same files, each photograph by the print its claim stands on"));
  }
  Again.Stop();
+ { // Dr. Ward's one line: nothing before a file is at MARKS, then that they are kept apart, in words and never what they are
+  bool bWords=S47PredecessorText::Apart(0).IsEmpty()&&S47PredecessorText::Apart(-3).IsEmpty()&&S47PredecessorText::Apart(1).Contains(TEXT("One thing"))&&S47PredecessorText::Apart(3).Contains(TEXT("Three separate things"))
+   &&S47PredecessorText::Apart(9)==S47PredecessorText::Apart(5);
+  for(int32 Files=1;Files<=5;++Files)
+  {
+   const FString Line=S47PredecessorText::Apart(Files);
+   bWords&=Line.StartsWith(TEXT(" "))&&S47Script::LintText(Line).IsEmpty()&&!S47Marginalia::NamesKind(Line)&&!Line.Contains(TEXT("UNKNOWN"));
+   for(const TCHAR Ch:Line)bWords&=!FChar::IsDigit(Ch);
+  }
+  Check(bWords,TEXT("Dr. Ward's Monday note says nothing of the files until one is at MARKS, then only that they are kept apart"));
+ }
  return bOk;
 }

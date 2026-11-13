@@ -1711,6 +1711,7 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddTv(E);
  AddTownDay(E);
  AddWeekCase(E);
+ AddDossier(E);
  // DEV TOY (Tom, 13 November): "Wave shooter (dev toy)", start and stop (S47DevWaves.h).
  Waves=MakeShared<FS47DevWaves>(M);
  Waves->AddEntries(E);

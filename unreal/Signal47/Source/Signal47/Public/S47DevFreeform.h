@@ -112,6 +112,7 @@ private:
  // WEEKLY-CASE-20261109: "Week case (T)": start now, way out A to the morning, stop and clean (S47WeekCaseDev.cpp).
  void AddWeekCase(FS47DevEvents& E);
  void AddTownDay(FS47DevEvents& E); // NPC-DAY: "Town day (T)" (S47TownDayDev.cpp)
+ void AddDossier(FS47DevEvents& E); // EVIDENCE-DOSSIER-20261113: "Evidence dossier (M3)": sample evidence for three files (S47DossierDev.cpp)
  // Every event at a place from the list (S47EventPlaces), the one chosen on the menu or the draw's own (Tom, 8 November).
  void AddAnywhere(FS47DevEvents& E);
  void ToPlace(const FString& Id,double Off,double From,double To,TFunction<void()> Then);
