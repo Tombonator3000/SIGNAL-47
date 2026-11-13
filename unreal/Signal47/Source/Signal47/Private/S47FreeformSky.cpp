@@ -386,15 +386,15 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 				[
 					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot().FillWidth(1)
-					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("UP 5°"), Nudge(0, 1), false, CanSteer, 19)]
+					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("UP 5\u00b0"), Nudge(0, 1), false, CanSteer, 19)]
 					+ SHorizontalBox::Slot().FillWidth(1)
 				]
 				+ SVerticalBox::Slot().FillHeight(1)
 				[
 					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("LEFT 5°"), Nudge(-1, 0), false, CanSteer, 19)]
-					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("DOWN 5°"), Nudge(0, -1), false, CanSteer, 19)]
-					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("RIGHT 5°"), Nudge(1, 0), false, CanSteer, 19)]
+					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("LEFT 5\u00b0"), Nudge(-1, 0), false, CanSteer, 19)]
+					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("DOWN 5\u00b0"), Nudge(0, -1), false, CanSteer, 19)]
+					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("RIGHT 5\u00b0"), Nudge(1, 0), false, CanSteer, 19)]
 				]
 			]
 		]

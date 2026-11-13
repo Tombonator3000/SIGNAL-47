@@ -406,7 +406,7 @@ namespace S47SkySphere
 	inline FString DecText(double DecDeg)
 	{
 		const int32 Total = FMath::RoundToInt32(FMath::Abs(DecDeg) * 60.);
-		return FString::Printf(TEXT("%s%02d°%02d'"), DecDeg < 0 ? TEXT("-") : TEXT("+"), Total / 60, Total % 60);
+		return FString::Printf(TEXT("%s%02d\u00b0%02d'"), DecDeg < 0 ? TEXT("-") : TEXT("+"), Total / 60, Total % 60);
 	}
 
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);

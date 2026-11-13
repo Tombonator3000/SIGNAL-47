@@ -97,7 +97,7 @@ bool S47SkySphere::SelfTest(TArray<FString>& Lines)
 			Toward += A.Lon < 60 || A.Lon > 300 ? 1 : 0;
 		}
 		Check(bDust && Toward * 3 > DustCount, FString::Printf(TEXT("the galactic plane's %d specks are the same every time, within twelve degrees of the plane, most of them toward the centre (%d)"), DustCount, Toward));
-		Check(RaText(152.1).StartsWith(TEXT("10h08m")) && DecText(-0.5) == TEXT("-00°30'") && DecText(19.55) == TEXT("+19°33'"), TEXT("the readouts' words for a right ascension and a declination"));
+		Check(RaText(152.1).StartsWith(TEXT("10h08m")) && DecText(-0.5) == TEXT("-00\u00b030'") && DecText(19.55) == TEXT("+19\u00b033'"), TEXT("the readouts' words for a right ascension and a declination"));
 	}
 	{ // the picture
 		bool bAll = true; double LockLeast = 1e9, LockMost = 0, Slack = 1e9;

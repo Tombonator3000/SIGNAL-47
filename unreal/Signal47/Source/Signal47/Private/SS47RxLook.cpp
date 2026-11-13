@@ -141,7 +141,7 @@ int32 SS47RxHeader::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 		for (int32 I = 0; I < Parts.Num() && I < 3; ++I) Pen.Text(Parts[I].TrimStartAndEnd(), BarB + 12, 5 + 17.f * I, 16, S47RxLFade(S47RxLGreen, .8f));
 	}
 	// ---- the date and clock, and the array's own pointing ----
-	const FString Stn = Now.bPointing ? FString::Printf(TEXT("STN: SARO  EL: %.1f°  AZ: %05.1f°"), Now.El, Now.Az) : FString(TEXT("STN: SARO  EL: --.-  AZ: ---.-"));
+	const FString Stn = Now.bPointing ? FString::Printf(TEXT("STN: SARO  EL: %.1f\u00b0  AZ: %05.1f\u00b0"), Now.El, Now.Az) : FString(TEXT("STN: SARO  EL: --.-  AZ: ---.-"));
 	const float RightWide = FMath::Max(S47RxLWide(Now.Clock.Len(), 28), S47RxLWide(Stn.Len(), 18));
 	Pen.Halo(Now.Clock, Sz.X - S47RxLWide(Now.Clock.Len(), 28) - 2, 1, 28, S47RxLGreen, 1, .12f);
 	Pen.Text(Stn, Sz.X - S47RxLWide(Stn.Len(), 18) - 2, 33, 18, S47RxLFade(S47RxLGreen, .9f));
@@ -384,7 +384,7 @@ int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRe
 		else Pen.Rect(Dot - FVector2f(3.5f, 3.5f), FVector2f(7, 7), Tone, 1.6f, 1);
 		Pen.Glow({ Dot - FVector2f(7, 0), Dot + FVector2f(7, 0) }, S47RxLFade(Tone, .9f), 1.2f, 1);
 		Pen.Glow({ Dot - FVector2f(0, 7), Dot + FVector2f(0, 7) }, S47RxLFade(Tone, .9f), 1.2f, 1);
-		OffA = FString::Printf(TEXT("dAZ %+5.1f"), Off.X); OffE = FString::Printf(TEXT("dEL %+5.1f"), Off.Y); OffD = FString::Printf(TEXT("OFF %5.1f°"), Far);
+		OffA = FString::Printf(TEXT("dAZ %+5.1f"), Off.X); OffE = FString::Printf(TEXT("dEL %+5.1f"), Off.Y); OffD = FString::Printf(TEXT("OFF %5.1f\u00b0"), Far);
 	}
 	const float EyeTextX = Sz.X - S47RxLWide(11, 15) - 4, EyeTextY = Eye.Y + EyeR + 2;
 	if (EyeTextY + 30 <= Sz.Y)
@@ -403,7 +403,7 @@ int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRe
 	{
 		const double Part = Sky->LockProgress();
 		Row(FString::Printf(TEXT("S/N    %5.1f dB"), Sky->SignalToNoise() * Part), S47RxLGreen);
-		Row(FString::Printf(TEXT("RESID  %5.2f°"), Sky->MeanOff()), S47RxLGreen);
+		Row(FString::Printf(TEXT("RESID  %5.2f\u00b0"), Sky->MeanOff()), S47RxLGreen);
 		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm) Row(FString::Printf(TEXT("DELAY %s %+7.1f ns"), ArmName[Arm], Sky->ArmDelayNs(Arm) * Part), S47RxLGreen);
 		// the rate the longest delay changes at as the sky turns, as a fringe rate at the card's frequency
 		double Rate = 0;
@@ -413,7 +413,7 @@ int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRe
 		{
 			const FSky::FSource* Listed = Sky->NearestCatalogued(Sky->Cross(), true);
 			Row(FString(TEXT("CAT ")) + (Listed ? Listed->Name : FString(TEXT("--"))), S47RxLGreen);
-			Row(FString::Printf(TEXT("OFFSET %4.1f°"), Sky->CatalogueOffset()), S47RxLGreen);
+			Row(FString::Printf(TEXT("OFFSET %4.1f\u00b0"), Sky->CatalogueOffset()), S47RxLGreen);
 		}
 		else { Row(TEXT("CAT ........"), Quiet); Row(TEXT("OFFSET ...."), Quiet); }
 	}

@@ -365,22 +365,30 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	Sph::LonLat(Pl.View.Centre, MidHa, MidDec);
 	const FLinearColor GridTone = S47SkyFade(S47SkyLine, .5f * Gain), LabelTone = S47SkyGreen * .85f;
 	TArray<FVector2f> RimHits;
-	for (int32 Circle = -75; Circle <= 75; Circle += 15)
+	// (closed in, the grid is drawn finer: every five degrees and every twenty minutes, the whole ones as before)
+	const bool bFine = Pl.Zoom > 1.6f;
+	const FLinearColor FineTone = S47SkyFade(S47SkyLine, .3f * Gain);
+	for (int32 Circle = -75; Circle <= 75; Circle += bFine ? 5 : 15)
 	{
 		RimHits.Reset();
-		Curve(81, [&](int32 I, FVector2f& P) { return AtHour(MidHa - 120. + 3. * I, double(Circle), P); }, Circle == 0 ? S47SkyFade(S47SkyLine, .9f * Gain) : GridTone, 1.f, L, 0, &RimHits);
+		Curve(81, [&](int32 I, FVector2f& P) { return AtHour(MidHa - 120. + 3. * I, double(Circle), P); }, Circle == 0 ? S47SkyFade(S47SkyLine, .9f * Gain) : Circle % 15 ? FineTone : GridTone, 1.f, L, 0, &RimHits);
 		// its declination beside the rim, where the circle leaves the picture on the right
 		const FVector2f* Best = nullptr;
 		for (const FVector2f& Hit : RimHits) if (Hit.X > Rim.X && FMath::Abs(Hit.Y - Rim.Y) < Semi.Y * .66f && (!Best || Hit.X > Best->X)) Best = &Hit;
-		if (Best) S47SkyText(Out, L, G, Circle == 0 ? FString(TEXT("0°")) : FString::Printf(TEXT("%+d°"), Circle), Best->X + 6, Best->Y - 8, 15, LabelTone);
+		if (Best) S47SkyText(Out, L, G, Circle == 0 ? FString(TEXT("0\u00b0")) : FString::Printf(TEXT("%+d\u00b0"), Circle), Best->X + 6, Best->Y - 8, 15, LabelTone);
 	}
 	TArray<float, TInlineAllocator<24>> HourMarks;
-	for (int32 Hour = 0; Hour < 24; ++Hour)
+	for (int32 Third = 0; Third < 72; ++Third)
 	{
-		const double FromMid = Sph::Wrap180(Lst - Hour * 15. - MidHa);
+		// (every twenty minutes of right ascension; the whole hours always, the thirds only closed in)
+		const int32 Hour = Third / 3;
+		const bool bWhole = Third % 3 == 0;
+		if (!bWhole && !bFine) continue;
+		const double FromMid = Sph::Wrap180(Lst - Third * 5. - MidHa);
 		if (FMath::Abs(FromMid) > 112.) continue;
 		RimHits.Reset();
-		Curve(41, [&](int32 I, FVector2f& P) { return AtHour(MidHa + FromMid, -80. + 4. * I, P); }, Hour % 6 == 0 ? S47SkyFade(S47SkyLine, .8f * Gain) : GridTone, 1.f, L, 0, &RimHits);
+		Curve(41, [&](int32 I, FVector2f& P) { return AtHour(MidHa + FromMid, -80. + 4. * I, P); }, !bWhole ? FineTone : Hour % 6 == 0 ? S47SkyFade(S47SkyLine, .8f * Gain) : GridTone, 1.f, L, 0, &RimHits);
+		if (!bWhole) continue;
 		// its hour under the rim, where it leaves the picture at the foot
 		const FVector2f* Best = nullptr;
 		for (const FVector2f& Hit : RimHits) if (Hit.Y > Rim.Y + Semi.Y * .5f && FMath::Abs(Hit.X - Rim.X) < Semi.X * .7f) Best = &Hit;
@@ -389,7 +397,8 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 		for (const float Mark : HourMarks) bFree &= FMath::Abs(Mark - Best->X) > 30.f;
 		if (!bFree) continue;
 		HourMarks.Add(Best->X);
-		S47SkyText(Out, L, G, FString::Printf(TEXT("%02dh"), Hour), Best->X - 9, Best->Y + 3, 15, LabelTone);
+		// (set outward of where it meets the rim, so the hour never lies over the picture)
+		S47SkyText(Out, L, G, FString::Printf(TEXT("%02dh"), Hour), Best->X < Rim.X ? Best->X - 22 : Best->X - 4, Best->Y + 4, 15, LabelTone);
 	}
 	// ---- the galactic plane: a stippled band ----
 	for (const FS47SkyPlace& Speck : S47SkyDustPlaces())
@@ -421,7 +430,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			if (!AtHour(Lst - StarList[I].Ra, StarList[I].Dec, P)) continue;
 			StarAt[I] = P; StarSeen[I] = 1;
 			if (!InRim(P, .985)) continue;
-			const float Mag = StarList[I].Bright, Side = FMath::Clamp(3.5f - .62f * Mag, 1.2f, 4.4f);
+			const float Mag = StarList[I].Bright, Side = FMath::Clamp(4.f - .7f * Mag, 1.5f, 5.f);
 			const float Lit = FMath::Clamp(1.05f - .14f * Mag, .5f, 1.f) * S47RxLook::Twinkle(I, Now, bCalm) * Gain;
 			S47SkyBox(Out, L + 1, G, P - FVector2f(Side * .5f, Side * .5f), FVector2f(Side, Side), S47SkyFade(S47SkyGreen, Lit), true);
 			if (Mag < 1.6f)
@@ -444,6 +453,28 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	S47SkyGlow(Out, L + 1, G, RimPath, S47SkyFade(S47SkyGreen, .78f), 1.6f);
 
 	// ---- the catalogue: the card sources as squares in their boxes, the minor field as small crosses, each with its name ----
+	// A name stands beside its mark where it is free of the names already placed and inside the rim (above right first, then the
+	// other corners); it is written after the bearings, so that the lines do not lie over the words.
+	struct FNameAt { FString Name; FVector2f Spot; int32 Size; FLinearColor Tone; };
+	TArray<FNameAt> Names;
+	TArray<FSlateRect> NamesTaken;
+	auto PlaceName = [&](const FString& Name, const FVector2f& Mark, int32 Size, const FLinearColor& Tone, float Clear)
+	{
+		const float Wide = Name.Len() * Size * .4f + 2, High = Size + 1.f;
+		const FVector2f Tries[4] = { FVector2f(Clear, -High - 5), FVector2f(-Clear - Wide, -High - 5), FVector2f(Clear, 6), FVector2f(-Clear - Wide, 6) };
+		for (const FVector2f& Try : Tries)
+		{
+			const FVector2f P = Mark + Try;
+			if (!InRim(P + FVector2f(0, High * .5f), .96) || !InRim(P + FVector2f(Wide, High * .5f), .96)) continue;
+			const FSlateRect Area(P.X, P.Y, P.X + Wide, P.Y + High);
+			bool bFree = true;
+			for (const FSlateRect& Other : NamesTaken) bFree &= !FSlateRect::DoRectanglesIntersect(Other, Area);
+			if (!bFree) continue;
+			NamesTaken.Add(Area);
+			Names.Add({ Name, P, Size, Tone });
+			return;
+		}
+	};
 	for (const FSky::FSource& Src : FSky::Catalogue())
 	{
 		FVector2f C;
@@ -461,18 +492,13 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			}
 			Path(BoxPath, bCard ? S47SkyGreen * .8f : S47SkyLine, 1.f, L + 1, bCard ? 0 : 2, nullptr);
 			S47SkyBox(Out, L + 1, G, C - FVector2f(4, 4), FVector2f(8, 8), S47SkyGreen, false);
-			const FString Name = bCard ? Src.Name + TEXT(" / CARD") : Src.Name;
-			const float Wide = Name.Len() * 7.4f;
-			const float X = C.X + 18 + Wide > Rim.X + Semi.X * .86f ? C.X - 18 - Wide : C.X + 18;
-			S47SkyText(Out, L + 1, G, Name, X, C.Y - 24, 18, S47SkyGreen);
+			PlaceName(bCard ? Src.Name + TEXT(" / CARD") : Src.Name, C, 18, S47SkyGreen, 12.f);
 		}
 		else
 		{
 			S47SkyLines(Out, L + 1, G, { C - FVector2f(4, 0), C + FVector2f(4, 0) }, S47SkyLine, 1.5f);
 			S47SkyLines(Out, L + 1, G, { C - FVector2f(0, 4), C + FVector2f(0, 4) }, S47SkyLine, 1.5f);
-			const float Wide = Src.Name.Len() * 6.6f;
-			if (InRim(C + FVector2f(8 + Wide, 0), .94) || InRim(C - FVector2f(8 + Wide, 0), .94))
-				S47SkyText(Out, L + 1, G, Src.Name, InRim(C + FVector2f(8 + Wide, 0), .94) ? C.X + 8 : C.X - 8 - Wide, C.Y - 8, 16, S47SkyGreen * .62f);
+			PlaceName(Src.Name, C, 16, S47SkyGreen * .62f, 7.f);
 		}
 	}
 
@@ -482,8 +508,9 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	At(K.Cross(), Xc);
 	if (bBearings)
 	{
-		// which way each arm's fan comes in from: three ways a third of a turn apart on the rule's chart
-		static const double FanFrom[FSky::ArmCount] = { 1., -1., 1. };
+		// which way each arm's fan comes in from: three ways a third of a turn apart on the rule's chart (headings 205, 85 and
+		// 325 degrees there), which on the glass are the upper left, the right and the foot
+		static const double FanFrom[FSky::ArmCount] = { -1., 1., -1. };
 		const int32 PerArm = FSky::DishCount / FSky::ArmCount;
 		TArray<FVector2f> Ray;
 		for (int32 I = 0; I < FSky::DishCount; ++I)
@@ -494,18 +521,21 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			// past its nearest point to the crossing it runs on a little: far out the three fans cross and make the triangle,
 			// on the lock they all end on the fix
 			const double Over = FMath::Clamp(1.6 * FMath::Abs(Ln.Off) + .8, .8, 14.);
+			// Inside the array's window the line is the rule's own (straight on the rule's chart, so an arc on the sphere); from
+			// the window's edge it is carried straight on across the glass to the rim, so that each arm's fan comes in from the rim.
+			FVector2D From = Ln.Through - Along * Over, Until = Ln.Through + Along * 400.;
+			if (!FSky::ClipSegment(From, Until)) continue;
+			const int32 Pieces = FMath::Clamp(int32(FVector2D::Distance(From, Until) / 3.) + 1, 2, 60);
 			Ray.Reset();
-			bool bWasIn = false;
-			for (double Run = -Over; Run <= 150.; Run += Run < -1e-9 ? Over * .5 : 3.)
+			for (int32 Piece = 0; Piece <= Pieces; ++Piece)
 			{
-				const FVector2D Spot = Ln.Through + Along * Run;
-				if (Spot.Y < -3. || Spot.Y > 150.) break;
 				FVector2f P;
-				if (!At(Spot, P)) break;
-				Ray.Add(P);
-				const bool bIn = InRim(P, 1.);
-				if (bWasIn && !bIn) break; // it has left the picture
-				bWasIn |= bIn;
+				if (At(FMath::Lerp(From, Until, double(Piece) / Pieces), P)) Ray.Add(P);
+			}
+			if (Ray.Num() >= 2)
+			{
+				const FVector2f Onward = (Ray.Last() - Ray[Ray.Num() - 2]).GetSafeNormal();
+				Ray.Add(Ray.Last() + Onward * ((Semi.X + Semi.Y) * 2.f)); // (the path is cut at the rim)
 			}
 			const bool bMiddle = I % PerArm == PerArm / 2;
 			if (Ln.bSolid) Path(Ray, S47SkyFade(S47SkyGreen, (bMiddle ? 1.f : .66f) * Gain), bMiddle ? 1.8f : 1.1f, L + 2, bMiddle ? 1 : 0, nullptr);
@@ -528,6 +558,8 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			}
 		}
 	}
+
+	for (const FNameAt& Each : Names) S47SkyText(Out, L + 2, G, Each.Name, Each.Spot.X, Each.Spot.Y, Each.Size, Each.Tone);
 
 	// ---- the search sweep: a slow hand round the sphere with its fading trail, while the search is on ----
 	if (bSearch)
@@ -658,7 +690,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			const bool bSolid = K.ArmSolid(Arm);
 			Right(FString::Printf(TEXT("ARM %s %s"), ArmName[Arm], !bBearings ? TEXT("--") : bSolid ? TEXT("LOCKED") : TEXT("SWEEPING")), bSolid ? S47SkyGreen : S47SkyGreen * .75f);
 		}
-		Right(bBearings ? FString::Printf(TEXT("SPREAD %4.1f°"), K.MeanOff()) : FString(TEXT("SPREAD --")), S47SkyGreen);
+		Right(bBearings ? FString::Printf(TEXT("SPREAD %4.1f\u00b0"), K.MeanOff()) : FString(TEXT("SPREAD --")), S47SkyGreen);
 		// bottom left: the reticle's place, on the ground and in the sky (for the catalogues' epoch), and in the galaxy
 		const FVector2D Aim = K.ReticleAt();
 		double Ra = 0, Dec = 0;
