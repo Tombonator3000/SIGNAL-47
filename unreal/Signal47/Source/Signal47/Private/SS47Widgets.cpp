@@ -249,7 +249,9 @@ namespace
 				const bool bFirst = I == 0;
 				const FSlateFontInfo Font = Hand(bFirst && bHead ? 31.f : 28.f);
 				const float Baseline = bFirst ? 31.f : 57.f + Pitch * (I - 1);
-				HudTextAt(Out, Layer + 3, G, Written[I], Font, FVector2f(P(bFirst ? 50.f : 52.f), P(Baseline)), 0.f, C(0x233a7a, (bFirst ? 248.f : 240.f) / 255.f * Strength));
+				// TASKS-TEN-20261113 (seen running): resting dim, the paper fades more than the hand on it, so that the words stay readable
+				// on the dark desk and on daylit ground
+				HudTextAt(Out, Layer + 3, G, Written[I], Font, FVector2f(P(bFirst ? 50.f : 52.f), P(Baseline)), 0.f, C(0x233a7a, (bFirst ? 248.f : 240.f) / 255.f * FMath::Min(1.f, Strength * 1.55f)));
 			}
 			// the tape over the top edge
 			const FLinearColor Tape = C(0xcdc096, 165.f / 255.f * Strength);

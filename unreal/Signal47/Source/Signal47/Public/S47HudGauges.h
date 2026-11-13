@@ -86,7 +86,7 @@ namespace S47HudGauges
 	 *  strength T seconds after the change. TASKS-TEN-20261113 (Tom, change 1: «the primary line stays»): after its seven seconds it
 	 *  does not go: it settles small and dim in its corner (NoteRest of its strength, NoteSmall of its size, NoteScale) and stands
 	 *  still there until the task changes, when it comes in bright again. */
-	constexpr double NoteIn = 0.25, NoteHold = 6.0, NoteFade = 1.0, NoteRest = 0.38, NoteSmall = 0.72;
+	constexpr double NoteIn = 0.25, NoteHold = 6.0, NoteFade = 1.0, NoteRest = 0.55, NoteSmall = 0.8; // TASKS-TEN-20261113 (seen running): 0.38/0.72 left the hand unreadable on the dark desk and on daylit ground
 	SIGNAL47_API double NoteAlpha(double T);
 	SIGNAL47_API double NoteScale(double T);
 	/** D45-20261110: two task lines that differ only in their figures ("Recording 37%" and "Recording 38%") are the same task, and the

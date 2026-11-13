@@ -502,7 +502,7 @@ void SS47Pause::Construct(const FArguments& InArgs)
 			Strike.TintColor = Color;
 			LineStyle.SetStrikeBrush(Strike);
 		}
-		Card->AddSlot().AutoHeight().Padding(0, (bNext ? 6 : 3) * U, 0, 0)
+		Card->AddSlot().AutoHeight().Padding(0, (bNext ? 6 : 5) * U, 0, 0)
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)[SNew(S47MenusLocal::SS47NoteMark).Mark(L.Mark)]
@@ -519,7 +519,7 @@ void SS47Pause::Construct(const FArguments& InArgs)
 		const bool bMatters = LastKind >= 0 || Note.Matters.Num() > 0;
 		Card->AddSlot().AutoHeight().Padding(44 * U, 2 * U, 0, 0)
 		[
-			SNew(STextBlock).Text(FText::FromString(bMatters ? FString::Printf(TEXT("+%d open matters in the notebook"), Note.More) : FString::Printf(TEXT("+%d more in the notebook"), Note.More))).Font(Hand(26)).ColorAndOpacity(Css(0x233a7a))
+			SNew(STextBlock).Text(FText::FromString(bMatters ? FString::Printf(TEXT("+%d open %s in the notebook"), Note.More, Note.More == 1 ? TEXT("matter") : TEXT("matters")) : FString::Printf(TEXT("+%d more in the notebook"), Note.More))).Font(Hand(26)).ColorAndOpacity(Css(0x233a7a))
 		];
 	}
 	if (Note.Also.Num())

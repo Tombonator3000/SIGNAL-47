@@ -4204,7 +4204,9 @@ FString FS47FreeformSession::AvailableActivities(FString* Card)const
  if(Predecessor&&Tutorial==0)
  {
   const FString Letter=Predecessor->TaskLine();
-  if(LetterWaits(Letter)&&!(Letter.StartsWith(TEXT("MAILBOX"))&&GoalWaits(WorldClock)))
+  // TASKS-TEN-20261113 (change 10, seen running): a pinned matter is the step; the letter is no paper waiting and does not cut in
+  FString PinFull,PinShort;
+  if(LetterWaits(Letter)&&!(Letter.StartsWith(TEXT("MAILBOX"))&&GoalWaits(WorldClock))&&!PinnedStep(PinFull,PinShort))
   {
    const FString Then=WorkActivities(nullptr);
    if(Card)*Card=S47HudGauges::CardLine(Letter);

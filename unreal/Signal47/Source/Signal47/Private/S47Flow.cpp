@@ -2560,7 +2560,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 				FS47NbNowLine N; N.Group = Group; N.Rank = L.Rank; N.Text = S47TonightNote::LineText(L); N.When = L.When; N.Where = L.Where; N.What = L.What; N.Key = L.Key;
 				if (L.Key == TEXT("cards")) N.Fold = TEXT("cards"); // TASKS-TEN-20261113 (change 4): the cards up open under their row
 				N.Tag = S47TonightNote::TagText(L); N.bPinned = L.bPinned; // TASKS-TEN-20261113 (changes 9 and 10)
-				N.Why = S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What; N.Item = L.Key == TEXT("matter:station") ? FindItem(TEXT("array/")) : ItemFor(L.Source); N.bDone = L.Mark == EMark::Done; // (the list's whole words, within the spoiler limits as the line is)
+				N.Why = L.Source == TEXT("filed cards") || L.Source == TEXT("cards") || L.Source.StartsWith(TEXT("card:")) ? FString() : S47Script::LintText(L.Source).IsEmpty() ? L.Source : L.What; // (a row known only by its key, "cards", says no key as WHY) N.Item = L.Key == TEXT("matter:station") ? FindItem(TEXT("array/")) : ItemFor(L.Source); N.bDone = L.Mark == EMark::Done; // (the list's whole words, within the spoiler limits as the line is)
 				if (!L.Matter.IsEmpty()) N.bSummary = true; // an open matter: a dash, no box, never ticked
 				if (!N.Item.IsEmpty()) Used.Add(N.Item);
 				X.Now.Add(N);

@@ -1532,7 +1532,7 @@ void SS47Notebook::BuildRight()
 		{
 			// CRIT9: the key as the player has it (the pad's A with a gamepad; the notebook's Enter on the keyboard), never a fixed one.
 			const FString Opens = S47Gamepad::UsingGamepad() && !S47Gamepad::Label(TEXT("use")).IsEmpty() ? S47Gamepad::Label(TEXT("use")) : FString(TEXT("Enter"));
-			Why = N->Why + TEXT("\n\n") + (OpenFolds.Contains(N->Fold) ? FString::Printf(TEXT("Open below. %s folds them away again."), *Opens) : (Opens + (N->Fold == TEXT("cards") ? TEXT(" opens the job cards.") : TEXT(" opens the cases."))));
+			Why = (N->Why.IsEmpty() ? FString() : N->Why + TEXT("\n\n")) + (OpenFolds.Contains(N->Fold) ? FString::Printf(TEXT("Open below. %s folds them away again."), *Opens) : (Opens + (N->Fold == TEXT("cards") ? TEXT(" opens the job cards.") : TEXT(" opens the cases."))));
 		}
 		Row(TEXT("WHY"), Why);
 		if (W)
