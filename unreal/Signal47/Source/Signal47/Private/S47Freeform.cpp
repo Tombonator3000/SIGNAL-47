@@ -2823,7 +2823,7 @@ void FS47FreeformSession::OpenReceiver()
   {
    const auto* J=CurrentJob();if(!J)return FString(TEXT("START RECORDING"));
    if(J->Stage==EJobStage::Integrating)return FString(TEXT("RECORDING..."));
-   if(J->bControl&&J->ControlAt<8&&J->Phenomenon!=TEXT("wrong_source"))return FString::Printf(PlainAnomaly(*J)?TEXT("REFERENCE %.1f / 8 s"):TEXT("CONTROL %.1f / 8 s"),J->ControlAt);
+   if(J->bControl&&J->ControlAt<8&&J->Phenomenon!=TEXT("wrong_source"))return PlainAnomaly(*J)?FString::Printf(TEXT("REFERENCE %.1f / 8 s"),J->ControlAt):FString::Printf(TEXT("CONTROL %.1f / 8 s"),J->ControlAt);
    if(CanRecordControl())return FString(TEXT("RECORD CONTROL / 8 s"));
    if(RetainWaits(*J))return FString(TEXT("RETAIN: RECORD TAB")); // RX-ANOMALY-FLOW-20261113: the take is retained on RECORD
    if(PlainAnomaly(*J)&&J->Stage>=EJobStage::Chart&&J->Stage<=EJobStage::Recorded&&!J->bAudioReviewed)return FString(TEXT("ON TAPE / REEL DECK")); // GAMEPLAY-LOOP-01

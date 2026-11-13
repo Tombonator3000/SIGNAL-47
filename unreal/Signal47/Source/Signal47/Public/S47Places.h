@@ -47,6 +47,7 @@ public:
  struct FTake{FString Job;bool bHandFix=false,bTightMarks=false,bOut=false,bOwnMarks=false,bTicks=false;double MarkIn=-1,MarkOut=-1;};
  bool AfterRegistered(bool bAnomaly=false,const FTake* Packet=nullptr);
  // Why bits: 1 a hand fix, 2 marks tight, 4 a take with extra ticks (bTicks: the reel-deck marks are possible). Steps: how many were taken off (clamped at the narrowest step the branches leave).
+ struct FBearing; // (defined below; PacketSection names it)
  struct FHeld{FString Job;int32 Branches=0,Steps=0;uint8 Why=0;bool bExtra=false,bSame=false,bOwnMarks=false;double MarkIn=-1,MarkOut=-1;};
  // Pure: the careful steps (0 to 2) and how many of them the spread can still take with Branches mended.
  static int32 CarefulSteps(bool bHandFix,bool bTightMarks){return (bHandFix?1:0)+(bTightMarks?1:0);}

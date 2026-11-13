@@ -1283,10 +1283,10 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
     for(const TCHAR Ch:All)bPlain&=Ch>=9&&Ch<127;
     const bool bFull=Full.StartsWith(TEXT("OFF-BEAM BEARING\n"))&&Full.Contains(SlipLine(P))&&Full.Contains(TEXT("GOOD UNTIL NOON"))&&Full.Contains(TEXT("CIRCLED ON YOUR MAP"))&&Full.Contains(TEXT("DIRECTION ONLY"))
      &&Full.Contains(TEXT("HAND FIX / MARKS TIGHT: AREA NARROWER BY TWO STEPS."))&&Full.Contains(TEXT("BETWEEN YOUR MARK IN AT 9.0 S AND YOUR MARK OUT AT 13.0 S CAME IN ON THIS BEARING."));
-    const bool bWords=NoNumber.Contains(TEXT("BETWEEN YOUR MARK IN AND YOUR MARK OUT CAME IN ON THIS BEARING."))&&Apart.Contains(TEXT("IT DOES NOT SAY THE TWO ARE THE SAME"))&&!Apart.Contains(TEXT("CAME IN ON THIS BEARING"))
+    const bool bSaid=NoNumber.Contains(TEXT("BETWEEN YOUR MARK IN AND YOUR MARK OUT CAME IN ON THIS BEARING."))&&Apart.Contains(TEXT("IT DOES NOT SAY THE TWO ARE THE SAME"))&&!Apart.Contains(TEXT("CAME IN ON THIS BEARING"))
      &&Teach.Contains(TEXT("MARKS SET CLOSE ROUND THE EXTRA TICKS"))&&TeachSky.Contains(TEXT("A SKY FIX MADE BY HAND MAKES"))&&!TeachSky.Contains(TEXT("MARKS SET"))
      &&Narrowest.Contains(TEXT("HAND FIX: THE AREA IS ALREADY AS NARROW AS THE ARRAY GIVES."))&&!Silent.Contains(TEXT("HAND FIX"))&&!Silent.Contains(TEXT("A SKY FIX MADE BY HAND"));
-    Check(bPlain&&bFull&&bWords,TEXT("LOOP-SLIP-IN-PACKET: the packet's last page is OFF-BEAM BEARING with the direction, spread, circle and noon, why it is narrower, and the tie to the take in his own marks; never a 47 or what it is"));
+    Check(bPlain&&bFull&&bSaid,TEXT("LOOP-SLIP-IN-PACKET: the packet's last page is OFF-BEAM BEARING with the direction, spread, circle and noon, why it is narrower, and the tie to the take in his own marks; never a 47 or what it is"));
     FS47Places Hold(nullptr);Hold.Begin(nullptr);FHeldFix Hf;Hf.B=P;Hf.Info=H;Hold.Held.Add(Hf);
     FS47Places HoldAgain(nullptr);HoldAgain.Begin(S47J::Read(S47J::Write(Hold.Save())));
     FS47MapView Waiting,Out;HoldAgain.FillMapAt(Waiting,Clock+60);

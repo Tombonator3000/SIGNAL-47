@@ -97,9 +97,9 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   TArray<TSharedRef<SButton>> Found;bool TextSeen=false;Scan(Label,Found,TextSeen);
   if(!Check(Found.Num()==1&&Found[0]->IsEnabled(),TEXT("reel deck: unique enabled key ")+Label))return false;
-  const FGeometry G=Found[0]->GetCachedGeometry();const FVector2D At=G.LocalToAbsolute(G.GetLocalSize()*.5f);
-  if(!Check(G.GetLocalSize().X>4&&IcUnderPointer(Found[0],At),TEXT("reel deck: the key is under the pointer at its own centre (nothing over it): ")+Label))return false;
-  IcPointerAt(At);return true;
+  const FGeometry G=Found[0]->GetCachedGeometry();const FVector2D Mid=G.LocalToAbsolute(G.GetLocalSize()*.5f);
+  if(!Check(G.GetLocalSize().X>4&&IcUnderPointer(Found[0],Mid),TEXT("reel deck: the key is under the pointer at its own centre (nothing over it): ")+Label))return false;
+  IcPointerAt(Mid);return true;
  };
  auto FindScope=[&]
  {
@@ -112,9 +112,9 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  auto Trace=[&](double Seconds)
  {
   const TSharedPtr<SS47TapeScope> Scope=FindScope();if(!Check(Scope.IsValid(),TEXT("the reel deck shows the signal trace")))return false;
-  const FGeometry G=Scope->GetCachedGeometry();const FVector2D At=G.LocalToAbsolute(FVector2D(Scope->LocalAt(Seconds,FVector2f(G.GetLocalSize()))));
-  if(!Check(IcUnderPointer(Scope.ToSharedRef(),At),FString::Printf(TEXT("reel deck: the trace is under the pointer at %.1f s"),Seconds)))return false;
-  IcPointerAt(At);return true;
+  const FGeometry G=Scope->GetCachedGeometry();const FVector2D Mid=G.LocalToAbsolute(FVector2D(Scope->LocalAt(Seconds,FVector2f(G.GetLocalSize()))));
+  if(!Check(IcUnderPointer(Scope.ToSharedRef(),Mid),FString::Printf(TEXT("reel deck: the trace is under the pointer at %.1f s"),Seconds)))return false;
+  IcPointerAt(Mid);return true;
  };
  auto Fits=[&](const FString& Label,const TCHAR* What)
  {
