@@ -1,5 +1,6 @@
 // Unreal only (departs from the web version): the free models placed in the world, see S47Props.h.
 #include "S47Props.h"
+#include "S47PropCatalogue.h"
 #include "S47StationPhone.h"
 #include "S47StationWorldRoute.h"
 #include "S47FarmWorldTest.h"
@@ -65,7 +66,8 @@ namespace
 		Out.RemoveAll([](const FString& Name)
 		{
 			return Name == TEXT("lookdev-bindings.json") || Name == TEXT("lookdev-environment.json")
-				|| Name == TEXT("gas_cosmos.json") || Name == TEXT("gas_look.json") || Name == TEXT("school_cosmos.json") || Name == TEXT("church_cosmos.json"); // (GAS-STATION-LIFT-01: the shop's Cosmos props, S47StationDressing; its picture, S47StationLook)
+				|| Name == TEXT("gas_cosmos.json") || Name == TEXT("gas_look.json") || Name == TEXT("school_cosmos.json") || Name == TEXT("church_cosmos.json") // (GAS-STATION-LIFT-01: the shop's Cosmos props, S47StationDressing; its picture, S47StationLook)
+				|| Name == TEXT("catalogue.json"); // (PROPS-REUSE-20261113: the shared real models, S47PropCatalogue)
 		});
 		Out.Sort();
 		return Out;
@@ -147,6 +149,9 @@ void AS47Props::LoadManifests()
 
 UStaticMesh* AS47Props::MeshOf(const FString& Model) const
 {
+	// PROPS-REUSE-20261113: "cat:<id>" is a shared catalogue model, load-if-present (a bought pack not here: the prop is not placed and
+	// what it replaces stays, without a load warning)
+	if (Model.StartsWith(TEXT("cat:"))) return S47PropCatalogue::LoadIfHere(S47PropCatalogue::Resolve(Model));
 	const FString* Asset = Assets.Find(Model);
 	const FString Path = Asset ? *Asset : (Model.StartsWith(TEXT("/")) ? Model : FString());
 	if (Path.IsEmpty()) return nullptr;
@@ -1214,6 +1219,12 @@ bool AS47Props::SelfTest(TArray<FString>& Lines)
 		auto CheckModel = [&](const FString& Id, const FString& Model)
 		{
 			if (Model.IsEmpty()) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: no model"), *F, *Id)); bOk = false; return; }
+			if (Model.StartsWith(TEXT("cat:")))
+			{
+				// PROPS-REUSE-20261113: a shared catalogue model must be in Config/Props/catalogue.json (here or not: load-if-present)
+				if (!S47PropCatalogue::Find(Model)) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: %s is not in catalogue.json"), *F, *Id, *Model)); bOk = false; }
+				return;
+			}
 			if (bManifest && !Model.StartsWith(TEXT("/")) && !Known.Contains(Model)) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: %s is not in free_models.json"), *F, *Id, *Model)); bOk = false; }
 			if (Model.Contains(TEXT("joshua"))) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: no Joshua trees in New Mexico"), *F, *Id)); bOk = false; }
 		};

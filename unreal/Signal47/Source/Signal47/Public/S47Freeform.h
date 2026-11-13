@@ -7,6 +7,7 @@
 #include "S47FreeformJobs.h"
 #include "S47FreeformCases.h"
 #include "S47RecordsBinder.h"
+#include "S47Dossier.h"
 class US47Main;
 class FS47FreeformDirector;
 class FS47FreeformWorld;
@@ -143,6 +144,19 @@ public:
  S47Binder::FSource BinderSource() const;
  TSharedRef<S47Binder::FView> BinderView=MakeShared<S47Binder::FView>();
  static bool BinderSelfTest(TArray<FString>& Lines); // the stamps across a Continue, and what the session hands the binder
+ // EVIDENCE-DOSSIER-20261113 (-> M3, M4), slice 1: one file for each unknown thing the player has logged (S47Dossier.h; the session's
+ // part is S47FreeformDossier.cpp). TagEvidence puts a find in its file where the source already knows which one it was, and stamps
+ // it on the screen there and then (the file's number and the kind of evidence, nothing else); a find tagged already is left alone.
+ // Night 0: today. TagPhotoClaim: a photograph claim ("strange.<group>.n<night>"), when its group is one of the five. Saved as
+ // "dossier" once there is a tag; a save from before is rebuilt from what it kept (FS47Dossier::Rebuild).
+ FS47Dossier Unknowns;
+ bool TagEvidence(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Night=0);
+ bool TagPhotoClaim(const FString& ClaimId);
+ void BinderUnknowns(S47Binder::FSource& Src) const; // the files as the binder's UNKNOWNS divider has them
+ void LoadDossier(const S47J::FObj& Saved);
+ void SaveDossier(const S47J::FObj& Record) const;
+ FString TestFillDossier(); // F10: sample evidence for three files; what it says
+ static bool DossierSelfTest(TArray<FString>& Lines);
  // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS. FIX10-10 (12 Nov): the files opened are saved
  // (stationFilesSeen, by key), so a released file stays marked until it is read, across days and Continue.
  uint32 StationFilesSeen=0;bool StationFileDue() const;
@@ -372,10 +386,11 @@ public:
  // the case file and the work list as they are (nothing saved). The OPS banner and the HUD (Objective, HudCaseLine), the task list
  // (Tasks), TONIGHT'S PLAN and the pause menu's note, the notebook's Now and the case board's star (CaseAwaitingChoice) all read it.
  // CHOOSE_TEST: a test (or control) can be planned; for a mystery, or a filing. RUN_PLAN: the planned test can be run now.
- // WAIT_WINDOW: planned, its dated window not open yet. CONCLUDE: a trial case with one explanation left. FILE: a mystery with one
+ // CONCLUDE: a trial case with one explanation left. FILE: a mystery with one
  // left, its trail cold or no control to be had. AWAIT_REPLY: filed, the morning's reply not in, or in on the telex and not torn off
  // yet (TELEX-20261109). CLOSED: nothing (or not open; the interval case opens when its comparison is registered at OPS).
- enum class ECaseStep : uint8 { Closed, ChooseTest, RunPlan, WaitWindow, Conclude, File, AwaitReply };
+ // (Tom, 13 November: WAIT_WINDOW, the repeat test's wait for its dated window, went with the repeat test.)
+ enum class ECaseStep : uint8 { Closed, ChooseTest, RunPlan, Conclude, File, AwaitReply };
  struct FCaseStep
  {
   ECaseStep Step=ECaseStep::Closed;
@@ -385,17 +400,14 @@ public:
   FString Task; // the task list's line: "CASE / THE SAME MINUTE: file your assessment on the OPS case board"; empty: not a task
  };
  FCaseStep CaseStep(int32 Line) const;
- // The open case whose step is most pressing: CONCLUDE, RUN_PLAN, FILE, CHOOSE_TEST, then (bActionOnly false) WAIT_WINDOW and
- // AWAIT_REPLY; the lower line first among equals. -1: none.
+ // The open case whose step is most pressing: CONCLUDE, RUN_PLAN, FILE, CHOOSE_TEST, then (bActionOnly false) AWAIT_REPLY; the
+ // lower line first among equals. -1: none.
  int32 UrgentCase(bool bActionOnly=false) const;
  // The HUD card's second line while a case is open: the most pressing case not already on the card's first line. Empty: none.
  FString HudCaseLine(const FString& FirstLine) const;
- // A case record kept (FS47FreeformCases::IsCaseRecord) as one line under the night log's WORK: "Case 1, THE REPEATED INTERVAL:
+ // A case record kept (FS47FreeformCases::IsCaseRecord) as one line under the night log's WORK: "THE REPEATED INTERVAL:
  // off-source pointing registered; rules out Follows the sky source." Empty for any other finding.
  FString CaseRecordLine(const FString& Key) const;
- // A planned case test that cannot run before its dated window (the repeat): waiting, not open work. It is not counted with the
- // cards waiting and does not hold back the reference check.
- bool CaseTestWaits(const FJob& Job) const;
  const FS47FreeformCases& CaseFile() const { return Cases; }
  // CASES-OPS-20261109, step 4 (Docs/Research/Gameplay/SAKER_OPS_2026-11-09.md): the case sheet as OPS / CASE BOARD heads it and the
  // printed result sheet repeats it. NEXT from CaseStep ("NEXT > CONCLUDE: INSTRUMENT ARTEFACT"); the kind ("TRIAL CASE", "ASSESSMENT");

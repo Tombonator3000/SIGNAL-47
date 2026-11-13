@@ -12,12 +12,25 @@ struct FS47ScoreTrack
 {
 	FString File, Title, By;
 	double Gain = 0;
+	// MUSIC-20261113: a piece whose file is never in Git (a free download, Tom's own, a mix of the bought loops, all staged
+	// by Tools/music/build_music.py). It is picked only when its file is there; without it the pool plays the rest.
+	bool bOptional = false;
 };
 namespace S47Score
 {
 	extern SIGNAL47_API const TMap<FString, FS47ScoreTrack> TRACKS;
 	extern SIGNAL47_API const TMap<FString, TArray<FString>> CUES;
 	inline constexpr bool bScoreOn = true; // Unreal has files beside the game, unlike the web single-file build.
+	// MUSIC-20261113 (Tom, 13 Nov: "ta med Intro Drive"): Tom's own "Signal 47 - Track 1 - Intro Drive", never in Git, there only
+	// when Tools/music/build_music.py has staged it (as the menu's lic:signal47_menu is). IntroDriveId is its key in TRACKS (the
+	// drive's pool); IntroDriveFile opens the same recording with FS47MediaSource::Open, IntroDriveRadioFile a mono copy narrowed
+	// to AM like the radio's records. A caller with a fallback: MediaOr(IntroDriveFile, TEXT("radio/bama_country.mp3")).
+	inline const TCHAR* const IntroDriveId = TEXT("signal47_intro_drive");
+	inline const TCHAR* const IntroDriveFile = TEXT("music/signal47_intro_drive.mp3");
+	inline const TCHAR* const IntroDriveRadioFile = TEXT("radio/signal47_intro_drive.mp3");
+	// WebName as FS47MediaSource::Open takes it (music/<file>.mp3, radio/<file>.mp3): its staged recording is on this machine.
+	SIGNAL47_API bool MediaPresent(const FString& WebName);
+	SIGNAL47_API FString MediaOr(const FString& WebName, const FString& Fallback);
 }
 
 // core/score.ts: a quiet bed chosen by place, out of the way of voices, scenes and the radio.
@@ -30,6 +43,8 @@ public:
 	FString Playing, Track;
 	void Update(double Dt, const FString& Want, bool bHeld);
 	FString Pick(const FString& Cue) const;
+	// MUSIC-20261113: the piece can be played: it is in the table, and an optional one's file is there.
+	bool Present(const FString& InTrack) const;
 	void Start(const FString& Cue, const FString& InTrack = FString());
 	void Fade(double Secs, double Quiet);
 	void Stop();
@@ -92,6 +107,7 @@ private:
 	TMap<FString, double> Last;
 	bool bFading = false;
 	TSharedRef<bool> bAlive = MakeShared<bool>(true);
+	TFunction<bool(const FS47ScoreTrack&)> HasFile; // the self-test's stand-in for the files on disk; unset: MediaPresent
 	void Done(double Quiet);
 	void RetireOutgoing();
 	void Begin(const FString& Cue, const FString& InTrack, double FadeSeconds);

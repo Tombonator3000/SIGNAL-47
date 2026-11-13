@@ -4,6 +4,7 @@
 #include "S47EventScript.h"
 class US47Main;
 class FS47StoryScene;
+class FS47StoryDrive;
 
 // STORY-ON-FREEFORM-01, step 3 (Docs/Design/Story/STORY_PA_FREEFORM_2026-11-11.md): the story director's skeleton. NEW STORY is a
 // Freeform session marked as Story (US47Flow::StoryNight); this sits on top of it and does nothing in any other session. It holds a
@@ -118,6 +119,8 @@ public:
  // Step 5: the story's telephone call is the player's to pick up (the OPS "phone"); true when it took the use.
  static bool UsePhone(const US47Main* Main);
  FS47StoryScene* SceneHost() const{return Scene.Get();}
+ // STORY-DRIVE-OWN-CAR-20261113: the drive in the player's own station wagon and its radio (S47StoryDrive.h); saved as "car".
+ FS47StoryDrive* DriveHost() const{return Wagon.Get();}
  int32 RunningCount() const;
  // F10's group "Story (director)", shown on a Story night only (FS47DevEvents::AddStory).
  void AddDevLines();
@@ -127,8 +130,10 @@ public:
  // leg, x 8001.8, z TOWN.Z1+35, heading 0), driven on Freeform's own trip and truck. The evening act's evening_drive takes it from there.
  struct FDrive{FString Leg,To;FVector At=FVector::ZeroVector;double Heading=0;};
  static FDrive DriveStart();
- // US47Flow::StartGame on a new Story night (not a Continue): starts that trip (US47World::StartTrip). False when it does not: the
- // world is busy or driving already, or -S47StoryAtSaro (the night then starts at SARO, as before).
+ // US47Flow::StartGame on a new Story night (not a Continue): starts that drive. STORY-DRIVE-OWN-CAR-20261113 (Tom 13 Nov): in the
+ // player's own station wagon (FS47StoryDrive::BeginNew, US47World::BeginCommute: the old Story's drive), with the service truck's trip
+ // (US47World::StartTrip) only if the wagon cannot start. False when neither does: the world is busy or driving already, or
+ // -S47StoryAtSaro (the night then starts at SARO, as before).
  static bool BeginDrive(US47Main* Main);
 
  // Reads acts.json and takes the saved act and flags (Saved may be null: a new night at the first act).
@@ -168,6 +173,7 @@ private:
  // Step 4.
  TUniquePtr<FS47EventBeats> Runner;
  TUniquePtr<FS47StoryScene> Scene; // step 5: the scene beat's host (S47StoryScene.h)
+ TUniquePtr<FS47StoryDrive> Wagon; // STORY-DRIVE-OWN-CAR-20261113: the wagon and its radio
  struct FPending{FString Id;double T=0;int32 Next=0;};
  TArray<FPending> Pending;     // started on the next tick: from an act, a start beat, F10 or a save
  FString ObjectiveLine;

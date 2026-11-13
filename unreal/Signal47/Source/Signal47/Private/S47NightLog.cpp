@@ -62,6 +62,9 @@ namespace S47NightLogLocal
 
 bool FS47NightLog::CaseLine(const FString& Text)
 {
+	// Tom 13 Nov: the line now starts with the case's title only; an older sheet's line has "Case 1, " in front
+	for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
+		if (Text.StartsWith(FString(FS47FreeformCases::Def(Line).Title) + TEXT(": "), ESearchCase::CaseSensitive)) return true;
 	if (Text.Len() > 6 && Text.StartsWith(TEXT("Case "), ESearchCase::CaseSensitive) && FChar::IsDigit(Text[5])) return true;
 	// an older sheet's lines from the field records the case file used to write
 	for (const TCHAR* Old : { TEXT("CASE / "), TEXT("CASE CONCLUDED / "), TEXT("ASSESSMENT FILED / ") })

@@ -8,6 +8,7 @@
 #include "Misc/Paths.h"
 #include "S47Main.h"
 #include "S47Props.h"
+#include "S47PropCatalogue.h"
 #include "S47Three.h"
 #include "S47Web.h"
 #include "Serialization/JsonReader.h"
@@ -58,6 +59,8 @@ bool FS47StationDressing::ReadFile(FVector& Origin, TArray<FPiece>& Out, FString
 		FPiece Pc;
 		P->TryGetStringField(TEXT("id"), Pc.Id);
 		P->TryGetStringField(TEXT("asset"), Pc.Asset);
+		// PROPS-REUSE-20261113: or a shared catalogue model by its id (Config/Props/catalogue.json)
+		if (Pc.Asset.IsEmpty() && P->TryGetStringField(TEXT("model"), Pc.Model)) Pc.Asset = S47PropCatalogue::Resolve(Pc.Model);
 		if (!SSD::Vec(P, TEXT("at"), Pc.Town)) return Fail(FString::Printf(TEXT("%s has no at"), *Pc.Id));
 		Pc.Yaw = SSD::Num(P, TEXT("yaw"), 0);
 		Pc.Pitch = SSD::Num(P, TEXT("pitch"), 0);
@@ -66,9 +69,19 @@ bool FS47StationDressing::ReadFile(FVector& Origin, TArray<FPiece>& Out, FString
 		P->TryGetBoolField(TEXT("collide"), Pc.bCollide);
 		P->TryGetBoolField(TEXT("pivot"), Pc.bPivot);
 		P->TryGetStringField(TEXT("anchor_of"), Pc.AnchorOf);
+		P->TryGetStringField(TEXT("standin"), Pc.Standin);
+		P->TryGetBoolField(TEXT("wait_for_standin"), Pc.bWaitForStandin);
 		Out.Add(MoveTemp(Pc));
 	}
 	return true;
+}
+
+FS47StationDressing::FUse FS47StationDressing::Decide(bool bModelHere, bool bHasStandin, bool bStandinHere, bool bWait)
+{
+	FUse U;
+	U.bModel = bModelHere && (!bWait || !bHasStandin || bStandinHere);
+	U.bStandin = bHasStandin && bStandinHere && !U.bModel;
+	return U;
 }
 
 void FS47StationDressing::SetVisible(bool bOn)
@@ -102,10 +115,36 @@ void FS47StationDressing::Build(UStaticMeshComponent* Station)
 	int32 Blocks = 0;
 	// load-if-present: a missing package is not asked for (no load warning), only counted
 	auto Load = [](const FString& Asset) { return SSD::Here(Asset) ? LoadObject<UStaticMesh>(nullptr, *Asset) : nullptr; };
+	int32 Standins = 0, Waiting = 0;
 	for (const FPiece& Pc : Pieces)
 	{
-		UStaticMesh* Mesh = Load(Pc.Asset);
-		if (!Mesh) { Missing.Add(Pc.Id); continue; }
+		// PROPS-REUSE-20261113: the old stand-in the piece replaces, as its own part of the station model (the part's pivot is the
+		// station's, so it hangs at the station's own transform). It comes back only while the real model is not here; a piece that
+		// waits for it is not stood up while the stand-in is still baked into the station mesh (the two would overlap).
+		UStaticMesh* Real = Load(Pc.Asset);
+		UStaticMesh* Old = Pc.Standin.IsEmpty() ? nullptr : Load(Pc.Standin);
+		const FUse Use = Decide(Real != nullptr, !Pc.Standin.IsEmpty(), Old != nullptr, Pc.bWaitForStandin);
+		if (Use.bStandin)
+		{
+			UStaticMeshComponent* SC = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("Standin_%s_%d"), *Pc.Id, Builds));
+			SC->SetMobility(EComponentMobility::Movable);
+			SC->SetStaticMesh(Old);
+			SC->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			SC->SetCollisionResponseToAllChannels(ECR_Ignore);
+			SC->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+			SC->SetCastShadow(true);
+			SC->RegisterComponent();
+			SC->AttachToComponent(Station, FAttachmentTransformRules::KeepRelativeTransform);
+			SC->SetRelativeTransform(FTransform::Identity);
+			Comps.Add(SC);
+			++Standins;
+		}
+		if (!Use.bModel)
+		{
+			if (Real) ++Waiting; else Missing.Add(Pc.Id);
+			continue;
+		}
+		UStaticMesh* Mesh = Real;
 		// "at" is where the bottom centre of the piece's turned and scaled bounds goes (on a counter, a floor, against a wall), so the
 		// packs' corner pivots do not matter; "anchor_of" takes another piece's bounds (a register's drawer with its body); "pivot" the
 		// mesh's own pivot.
@@ -148,7 +187,8 @@ void FS47StationDressing::Build(UStaticMeshComponent* Station)
 	if (Missing.Num())
 		UE_LOG(LogS47StationDressing, Display, TEXT("S47: station dressing: %d of %d Cosmos pieces not here (Tools/cosmosshop), the shop as before without them: %s"),
 			Missing.Num(), Pieces.Num(), *FString::Join(Missing, TEXT(", ")));
-	if (Comps.Num()) UE_LOG(LogS47StationDressing, Display, TEXT("S47: station dressing: %d Cosmos pieces in the shop, %d in the way"), Comps.Num(), Blocks);
+	if (Comps.Num()) UE_LOG(LogS47StationDressing, Display, TEXT("S47: station dressing: %d pieces in the shop (%d of them old stand-ins), %d in the way"), Comps.Num(), Standins, Blocks);
+	if (Waiting) UE_LOG(LogS47StationDressing, Display, TEXT("S47: station dressing: %d real models wait until the station model has their stand-ins as parts of their own (a new Blender build, then Tools/freemodels/import_free.sh)"), Waiting);
 	++Builds;
 }
 
@@ -178,15 +218,28 @@ bool FS47StationDressing::SelfTest(TArray<FString>& Lines)
 	for (const FPiece& Pc : Pieces)
 	{
 		const double X = Pc.Town.X, Y = Pc.Town.Y, Z = Pc.Town.Z;
-		const bool bGood = !Pc.Id.IsEmpty() && !Ids.Contains(Pc.Id) && Pc.Asset.StartsWith(SSD::Root) && Pc.Scale > .2 && Pc.Scale < 3
+		// a bought Cosmos piece by its path, or a shared catalogue model by its id (PROPS-REUSE-20261113) that the catalogue knows
+		const bool bAsset = Pc.Model.IsEmpty() ? Pc.Asset.StartsWith(SSD::Root) : (S47PropCatalogue::Find(Pc.Model) != nullptr && Pc.Asset.StartsWith(TEXT("/Game/")));
+		const bool bGood = !Pc.Id.IsEmpty() && !Ids.Contains(Pc.Id) && bAsset && Pc.Scale > .2 && Pc.Scale < 3
 			&& X > SSD::X0 && X < SSD::X1 && Z > SSD::Z0 && Z < SSD::Z1 && Y >= SSD::Floor - .01 && Y < SSD::Ceiling + .01
 			&& !SSD::Card.Has(X, Z) && !SSD::Attendant.Has(X, Z);
 		Ids.Add(Pc.Id);
 		if (!bGood) Bad.Add(Pc.Id.IsEmpty() ? TEXT("(no id)") : Pc.Id);
 		HereN += SSD::Here(Pc.Asset) ? 1 : 0;
 	}
-	Check(Bad.IsEmpty(), Bad.IsEmpty() ? TEXT("every piece licensed, sane in scale, inside the shop, off the card patch and the attendant's place")
+	Check(Bad.IsEmpty(), Bad.IsEmpty() ? TEXT("every piece licensed or in the shared catalogue, sane in scale, inside the shop, off the card patch and the attendant's place")
 		: TEXT("out of place: ") + FString::Join(Bad, TEXT(", ")));
+	// PROPS-REUSE-20261113: the real model or its old stand-in, never both
+	{
+		const FUse A = Decide(true, true, true, true), B = Decide(true, true, false, true), C = Decide(false, true, true, true), D = Decide(true, true, false, false),
+			E = Decide(false, false, false, false), F = Decide(true, false, false, true);
+		Check(A.bModel && !A.bStandin && !B.bModel && !B.bStandin && !C.bModel && C.bStandin && D.bModel && !D.bStandin && !E.bModel && !E.bStandin && F.bModel && !F.bStandin,
+			TEXT("real model or old stand-in: the model when here (a waiting one only once its stand-in is a part of its own), the stand-in only without it"));
+		TArray<FString> BadStandin;
+		for (const FPiece& Pc : Pieces)
+			if (!Pc.Standin.IsEmpty() && !Pc.Standin.StartsWith(TEXT("/Game/Free/Town/gas_station/"))) BadStandin.Add(Pc.Id);
+		Check(BadStandin.IsEmpty(), BadStandin.IsEmpty() ? FString(TEXT("every stand-in is a part of the station model (/Game/Free/Town/gas_station)")) : TEXT("stand-in not of the station: ") + FString::Join(BadStandin, TEXT(", ")));
+	}
 	// load-if-present: either way is a pass; the line says which
 	Lines.Add(FString::Printf(TEXT("PASS station dressing: %d of %d Cosmos assets here%s"), HereN, Pieces.Num(),
 		HereN == 0 ? TEXT(" (none: the shop as before)") : TEXT("")));

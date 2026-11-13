@@ -45,7 +45,7 @@ public:
  static FString RemarkFor(const FNight& N);
  // A field record's words, as the sheet has them: the first sentence, no longer than a line, its own time taken off the front.
  static FString Lead(const FString& Record,FString& OutAt);
- // CASES-OPS-20261109: a sheet's line about a case (the WORK line FS47FreeformSession::CaseRecordLine gives it, "Case 1, ...", or an
+ // CASES-OPS-20261109: a sheet's line about a case (the WORK line FS47FreeformSession::CaseRecordLine gives it, "THE REPEATED INTERVAL: ...", once "Case 1, ...", or an
  // older sheet's case record under SEEN AND HEARD): the station's own business. The weekly report leaves it off (FS47WardReport).
  static bool CaseLine(const FString& Text);
 

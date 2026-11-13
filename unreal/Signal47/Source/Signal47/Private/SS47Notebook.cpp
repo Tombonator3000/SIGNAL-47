@@ -499,6 +499,72 @@ namespace
 		}
 		return L;
 	}
+	// EVIDENCE-DOSSIER-20261113: one evidence box of a file on THEM: a square drawn in pencil, shaded with pencil strokes once
+	// something is in it. No tick and no count (the design's rule: a file is not a checklist).
+	class SS47NbEvidenceBox : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SS47NbEvidenceBox) : _Filled(false) {}
+			SLATE_ARGUMENT(bool, Filled)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A) { bShaded = A._Filled; }
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(P(30), P(30)); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+		{
+			const FVector2f Sz = FVector2f(G.GetLocalSize());
+			const float Wd = FMath::Max(1.f, P(1.4f)), Edge = P(2), Wide = Sz.X - 2 * Edge, High = Sz.Y - 2 * Edge;
+			// the square by hand: its corners do not quite meet
+			FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Edge, Edge), FVector2f(Edge + Wide, Edge + P(1)), FVector2f(Edge + Wide - P(1), Edge + High), FVector2f(Edge + P(1), Edge + High - P(1)), FVector2f(Edge, Edge) },
+				ESlateDrawEffect::None, C(0x3a3a40, bShaded ? 0.9f : 0.5f), true, Wd);
+			if (!bShaded) return Layer + 1;
+			// shaded with the side of the lead: strokes from the lower left to the upper right, each the line x + y = Sum inside the square
+			const float Step = FMath::Max(2.f, P(4.5f));
+			for (float Sum = Step; Sum < Wide + High; Sum += Step)
+			{
+				const float From = FMath::Clamp(Sum - High, 0.f, Wide), To = FMath::Clamp(Sum, 0.f, Wide);
+				if (To - From < 1.f) continue;
+				FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Edge + From, Edge + Sum - From), FVector2f(Edge + To, Edge + Sum - To) }, ESlateDrawEffect::None, C(0x3a3a40, 0.55f), true, Wd);
+			}
+			return Layer + 1;
+		}
+	private:
+		bool bShaded = false;
+	};
+	// One file of the unknown on THEM: its number in the pen and its stage typed, the six boxes in a row with what each is and how it
+	// was got, the pencil for what is in the filled ones, and how the file is kept from here. Said: what is read aloud of it.
+	TSharedRef<SWidget> UnknownFileBox(const FS47NbUnknown& File, TArray<FString>& Said)
+	{
+		using namespace S47Game;
+		const FLinearColor Lead = C(0x3a3a40);
+		TSharedRef<SHorizontalBox> BoxRow = SNew(SHorizontalBox);
+		FString Held;
+		for (const FS47NbUnknown::FBox& One : File.Boxes)
+		{
+			BoxRow->AddSlot().FillWidth(1.f).HAlign(HAlign_Center)
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SS47NbEvidenceBox).Filled(One.bFilled)]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(2), 0, 0)[SNew(STextBlock).Text(FText::FromString(One.Label)).Font(Term(15, 1)).ColorAndOpacity(One.bFilled ? Lead : C(0x3a3a40, 0.55f))]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromString(One.How)).Font(Hand(18)).ColorAndOpacity(C(0x3a3a40, 0.8f))]
+			];
+			if (One.bFilled) Held += (Held.IsEmpty() ? FString() : FString(TEXT(", "))) + One.Label.ToLower();
+		}
+		TSharedRef<SVerticalBox> Sheet = SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Bottom)[SNew(STextBlock).Text(FText::FromString(File.Title)).Font(Hand(30)).ColorAndOpacity(InkBlue())]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom).Padding(P(8), 0, 0, P(4))[SNew(STextBlock).Text(FText::FromString(File.Stage)).Font(Term(19, 1)).ColorAndOpacity(Ph2Red())]
+			]
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, P(4), 0, P(2))[BoxRow];
+		for (const FS47NbUnknown::FBox& One : File.Boxes)
+			if (One.bFilled && !One.Note.IsEmpty())
+				Sheet->AddSlot().AutoHeight().Padding(0, P(3), 0, 0)[SNew(STextBlock).Text(FText::FromString(One.Note)).Font(Hand(23)).ColorAndOpacity(Lead).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(23), 28))];
+		if (!File.Next.IsEmpty())
+			Sheet->AddSlot().AutoHeight().Padding(0, P(5), 0, 0)[SNew(STextBlock).Text(FText::FromString(File.Next)).Font(Hand(20)).ColorAndOpacity(C(0x3a3a40, 0.6f)).AutoWrapText(true)];
+		Said.Add(File.Title + TEXT(". ") + File.Stage + TEXT(".") + (Held.IsEmpty() ? FString() : TEXT(" Kept: ") + Held + TEXT(".")));
+		return SNew(SBorder).BorderImage(Box(C(0xf7f3e6, 0.55f), C(0x3a3a40, 0.55f), 1.5f, 2.f)).Padding(FMargin(P(12), P(6)))[Sheet];
+	}
 }
 
 FString SS47Notebook::Excerpt(const FS47Doc& D)
@@ -1538,6 +1604,10 @@ void SS47Notebook::BuildRight()
 		TArray<FString> Boxes, Said;
 		for (const FS47NbScribble& S : X.Scribbles) if (S.Side == TEXT("them")) Boxes.AddUnique(S.Box);
 		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+		// EVIDENCE-DOSSIER-20261113: first the files of the unknown, one for each thing the player has logged evidence of, numbered in the
+		// order they were first logged (S47Dossier): six boxes and a stage each, to be read at a glance, out in the field as anywhere.
+		for (const FS47NbUnknown& UnknownOne : X.Unknowns) L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[UnknownFileBox(UnknownOne, Said)];
+		const bool bAnyOfThem = Boxes.Num() > 0 || X.Unknowns.Num() > 0;
 		for (const FString& Name : Boxes)
 		{
 			TSharedRef<SVerticalBox> Bx = SNew(SVerticalBox) + SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Name)).Font(Hand(30)).ColorAndOpacity(InkBlue()).AutoWrapText(true)];
@@ -1551,14 +1621,14 @@ void SS47Notebook::BuildRight()
 			+ SOverlay::Slot()
 			[
 				SNew(SCanvas)
-				+ SCanvas::Slot().Position(P2(60, 40)).Size(P2(506, 100))[Head(TEXT("Them"), FString::Printf(TEXT("THEM · %d"), Boxes.Num()))]
+				+ SCanvas::Slot().Position(P2(60, 40)).Size(P2(506, 100))[Head(TEXT("Them"), X.Unknowns.Num() ? FString::Printf(TEXT("THEM · %d · ON FILE · %d"), Boxes.Num(), X.Unknowns.Num()) : FString::Printf(TEXT("THEM · %d"), Boxes.Num()))]
 				+ SCanvas::Slot().Position(P2(46, 146)).Size(P2(536, 734 - 146 - 92))
 				[
 					SAssignNew(RightScroll, SScrollBox).Style(S47Game::QuietScroll()).ScrollBarStyle(S47Game::QuietBar(C(0x233a7a, 0.22f))).ScrollBarThickness(FVector2D(P(3), P(3)))
-					+ SScrollBox::Slot().Padding(FMargin(P(14), 0, P(16), P(10)))[Boxes.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(None)]
+					+ SScrollBox::Slot().Padding(FMargin(P(14), 0, P(16), P(10)))[bAnyOfThem ? StaticCastSharedRef<SWidget>(L) : Empty(None)]
 				]
 			]);
-		Readings(Boxes.Num() ? Said : TArray<FString>{ None });
+		Readings(bAnyOfThem ? Said : TArray<FString>{ None });
 	}
 	else if (Tab == TEXT("people") && X.People && X.People->IsValidIndex(I))
 	{
@@ -2160,6 +2230,17 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 			const auto Scrib = [](const TCHAR* Side, const TCHAR* Box, const TCHAR* Text, bool bStruck) { FS47NbScribble S; S.Side = Side; S.Box = Box; S.Text = Text; S.bStruck = bStruck; return S; };
 			Mx.Scribbles = { Scrib(TEXT("people"), TEXT("THE DEPUTY"), TEXT("Writes everything down."), false), Scrib(TEXT("people"), TEXT("DALE"), TEXT("Never seen him."), false),
 				Scrib(TEXT("them"), TEXT("THE LOW ONE"), TEXT("Coyote. A big one."), true) };
+			// EVIDENCE-DOSSIER-20261113: a file of the unknown on THEM, two of its six boxes filled
+			{
+				FS47NbUnknown Sheet; Sheet.Title = TEXT("UNKNOWN 1"); Sheet.Stage = TEXT("OUTLINE"); Sheet.Next = TEXT("Three kinds of evidence from two nights make MARKS.");
+				for (const TCHAR* Label : { TEXT("SHAPE"), TEXT("TAPE"), TEXT("GROUND"), TEXT("LAMP"), TEXT("GEIGER"), TEXT("ANIMALS") }) Sheet.Boxes.Add({ Label, FString(), FString(), false });
+				Sheet.Boxes[0] = { TEXT("SHAPE"), TEXT("on film"), TEXT("Low and folded. Pale. Quick."), true }; Sheet.Boxes[2] = { TEXT("GROUND"), TEXT("noted"), TEXT("Prints in fours, close together, off the edge at a run."), true };
+				Mx.Unknowns.Add(Sheet);
+				TArray<FString> Spoken;
+				const TSharedRef<SWidget> Drawn = UnknownFileBox(Sheet, Spoken);
+				Check(TEXT("Freeform THEM: a file of the unknown is its number, its stage and six boxes; what is read of it names only the kinds of evidence kept"),
+					Drawn != SNullWidget::NullWidget && Spoken.Num() == 1 && Spoken[0] == TEXT("UNKNOWN 1. OUTLINE. Kept: shape, ground.") && S47Script::LintText(Spoken[0]).IsEmpty() && !S47Marginalia::NamesKind(Spoken[0]), Spoken.Num() ? Spoken[0] : FString());
+			}
 			const auto Pencilled = SNew(SS47Notebook).Docs(All).Extras(Mx);
 			Pencilled->Show(TEXT("findings")); Pencilled->Section(1);
 			Check(TEXT("Freeform WHO & WHAT: PEOPLE and THEM on the two pages, and the scribbles change nothing of what can be chosen"),

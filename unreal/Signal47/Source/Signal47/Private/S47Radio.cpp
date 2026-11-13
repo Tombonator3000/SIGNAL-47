@@ -139,12 +139,43 @@ TArray<TSharedPtr<FS47RadioSeg>> FAR()
 	};
 }
 	struct FTrack { FString File; double Dur; };
-	FTrack Track(const FString& Tune)
+	// A tune's records on a station: the first is the one in Git (radio.ts), played alone until MUSIC-20261113.
+	// MUSIC-20261113 (Tom, 13 Nov): old records from the Library of Congress National Jukebox (public domain), staged by
+	// Tools/music/build_music.py, mono and narrowed to AM like the first four, never in Git. 1420's waltz turn is now and then one
+	// of the two instrumentals (Earl's made-up titles go over them as over the others); the far station, which comes and goes
+	// with the dark, also has the yodel song and "Night Freight", our own late synth record. Roswell keeps its three.
+	// "Cattails" and "Anamalie" stay where they were: light folk sits beside a steel guitar from 1920 without a clash.
+	// ("De gospel train am comin'" from the same download is left out: a minstrel-dialect number.)
+	TArray<FTrack> Records(const FString& Tune, const FString& Station)
 	{
-		if (Tune == TEXT("ballad")) return { TEXT("drankin_song"), 246.4 };
-		if (Tune == TEXT("twostep")) return { TEXT("bama_country"), 211.8 };
-		if (Tune == TEXT("waltz")) return { TEXT("cattails"), 159.0 };
-		return { TEXT("anamalie"), 208.2 };
+		if (Tune == TEXT("ballad")) return { { TEXT("drankin_song"), 246.4 } };
+		if (Tune == TEXT("twostep")) return { { TEXT("bama_country"), 211.8 } };
+		if (Tune == TEXT("waltz"))
+		{
+			if (Station != TEXT("caliche")) return { { TEXT("cattails"), 159.0 } };
+			return { { TEXT("cattails"), 159.0 }, { TEXT("hawaiian_hotel"), 175.9 }, { TEXT("till_the_sands"), 234.2 } };
+		}
+		return { { TEXT("anamalie"), 208.2 }, { TEXT("hawaiian_hotel"), 175.9 }, { TEXT("roll_on_silver_moon"), 163.4 }, { TEXT("till_the_sands"), 234.2 }, { TEXT("s47_night_freight"), 213.5 } };
+	}
+	bool RecordStaged(const FTrack& Tr)
+	{
+		return IFileManager::Get().FileExists(*(FPaths::ProjectContentDir() / TEXT("Audio/Raw/media/radio") / (Tr.File + TEXT(".wav"))));
+	}
+	// The record for a station's Turn-th segment (FS47Station::SegNo), Length seconds of it wanted. An extra record plays only when
+	// its file is there and it is long enough for the segment; on 1420 the first record keeps half the waltz turns, on the far
+	// station one in five. Has: the self-test's stand-in for the files on disk.
+	FTrack Track(const FString& Tune, const FString& Station = FString(), int32 Turn = 0, double Length = 0, const TFunction<bool(const FTrack&)>& Has = nullptr)
+	{
+		const TArray<FTrack> All = Records(Tune, Station);
+		if (All.Num() < 2) return All[0];
+		const int32 Extras = All.Num() - 1, Firsts = Station == TEXT("caliche") ? Extras : 1;
+		// (talk and music alternate, so the turn's own parity would always give the same record: mix its bits first)
+		uint32 Mixed = uint32(Turn) + 0x9E3779B9u;
+		Mixed ^= Mixed >> 16; Mixed *= 0x85EBCA6Bu; Mixed ^= Mixed >> 13; Mixed *= 0xC2B2AE35u; Mixed ^= Mixed >> 16;
+		const int32 Slot = int32(Mixed % uint32(Firsts + Extras));
+		if (Slot < Firsts) return All[0];
+		const FTrack& Extra = All[1 + Slot - Firsts];
+		return Extra.Dur >= Length + 3 && (Has ? Has(Extra) : RecordStaged(Extra)) ? Extra : All[0];
 	}
 	// radio.ts pluck, steel and makeTune: the single-file/failed-recording fallback.
 	constexpr int32 SR = 22050;
@@ -438,6 +469,15 @@ void FS47Station::FreeformFixed(double Clock)
 	if (!S47NightLine::OnAir(D))
 	{
 		BlockHour = -1;
+		// STORY-DRIVE-OWN-CAR-20261113: a Story night's evening before eight is the old local evening host (EVENING_LINE) on a loop;
+		// at eight the Night Line's first hour follows what is on (the hour's own branch below).
+		if (Radio.bStoryEvening && D >= 12 * 3600 && D < S47NightLine::OnFrom)
+		{
+			const bool bNew = BlockKey != StoryEveningKey;
+			if (bNew) { BlockKey = StoryEveningKey; Cfg.Loop = EVENING_LINE(); LoopAt = 0; }
+			if (bNew || bJump || After != TEXT("loop")) { After = TEXT("loop"); Start(Refill(Clock), Clock, FMath::FRand() * 20); }
+			return;
+		}
 		// Just past four, the sign-off and the anthem as before; later in the day (or loaded into it), nothing.
 		if (After == TEXT("loop") || bJump) Cross(D - S47Radio::SIGN_OFF, Clock);
 		return;
@@ -694,7 +734,7 @@ void FS47Station::PlayAnthem(FNodes& Nodes)
 }
 void FS47Station::PlayTrack(FNodes& Nodes, const FString& Tune, double Length)
 {
-	const auto Ctx = Radio.Audio->Ctx; const auto Tr = Track(Tune);
+	const auto Ctx = Radio.Audio->Ctx; const auto Tr = Track(Tune, Id, SegNo, Length);
 	// A local media source replaces HTMLAudioElement; the seek and gain timeline are unchanged.
 	const auto Source = FS47MediaSource::Open(Ctx.ToSharedRef(), TEXT("radio/") + Tr.File + TEXT(".mp3"));
 	if (!Source) { bTrackFailed = true; Sync(); return; }
@@ -841,6 +881,28 @@ bool FS47Radio::SelfTest(TArray<FString>& Lines)
 	Car->Pos = FVector::ZeroVector; Car->Carrier(5); Car->Carrier(2);
 	Check(Car->Carrying() && !Car->Live(), TEXT("carrier also lights a switched-off set")); Car->Carrier(0); Check(!Car->Carrying() && !Car->Drift(), TEXT("release carrier and ignore drift on an off set"));
 	Car->Set(true); Check(Car->Drift(3,0.6), TEXT("a live set can drift")); Car->Reset(); Check(!Car->bOn && !Car->Carrying(), TEXT("reset releases the receiver"));
+	// MUSIC-20261113: the records. The first of each tune is the one in Git; the staged extras join 1420's waltz and the far station.
+	{
+		const auto AllFiles = [](const FTrack&) { return true; }; const auto NoFiles = [](const FTrack&) { return false; };
+		bool bFirst = Records(TEXT("ballad"), TEXT("caliche")).Num() == 1 && Records(TEXT("twostep"), TEXT("caliche")).Num() == 1 && Records(TEXT("waltz"), TEXT("roswell")).Num() == 1
+			&& Records(TEXT("waltz"), TEXT("caliche"))[0].File == TEXT("cattails") && Records(TEXT("far"), TEXT("far"))[0].File == TEXT("anamalie")
+			&& Track(TEXT("ballad")).File == TEXT("drankin_song") && Track(TEXT("twostep")).File == TEXT("bama_country") && Track(TEXT("waltz")).File == TEXT("cattails");
+		bool bFirstOnly = true, bLong = true, bRoswell = true, bClean = true; TSet<FString> FarHeard, WaltzHeard; int32 WaltzFirst = 0;
+		for (int32 Turn = 0; Turn < 200; ++Turn)
+		{
+			bFirstOnly &= Track(TEXT("far"), TEXT("far"), Turn, 96, NoFiles).File == TEXT("anamalie") && Track(TEXT("waltz"), TEXT("caliche"), Turn, 152, NoFiles).File == TEXT("cattails");
+			bRoswell &= Track(TEXT("waltz"), TEXT("roswell"), Turn, 64, AllFiles).File == TEXT("cattails") && Track(TEXT("ballad"), TEXT("caliche"), Turn, 78, AllFiles).File == TEXT("drankin_song");
+			const FTrack FarRecord = Track(TEXT("far"), TEXT("far"), Turn, 96, AllFiles), WaltzRecord = Track(TEXT("waltz"), TEXT("caliche"), Turn, 152, AllFiles);
+			FarHeard.Add(FarRecord.File); WaltzHeard.Add(WaltzRecord.File); WaltzFirst += WaltzRecord.File == TEXT("cattails") ? 1 : 0;
+			bLong &= FarRecord.Dur >= 96 + 3 && WaltzRecord.Dur >= 152 + 3 && Track(TEXT("far"), TEXT("far"), Turn, 180, AllFiles).Dur >= 183;
+		}
+		for (const TCHAR* TuneId : { TEXT("ballad"), TEXT("twostep"), TEXT("waltz"), TEXT("far") }) for (const TCHAR* StationId : { TEXT("caliche"), TEXT("roswell"), TEXT("far") })
+			for (const FTrack& Record : Records(TuneId, StationId)) bClean &= !Record.File.Contains(TEXT("gospel")) && Record.Dur > 60;
+		Check(bFirst, TEXT("each tune's first record is the one in Git, and Roswell, the ballad and the two-step have no other"));
+		Check(bFirstOnly && bRoswell, TEXT("without the staged files, and on Roswell, the radio plays the first records only"));
+		Check(FarHeard.Num() == 5 && WaltzHeard.Num() == 3 && WaltzFirst > 60 && WaltzFirst < 140 && bLong, TEXT("staged: the far station turns through its five records, 1420's waltz is Cattails about half the time, and no record is shorter than its segment"));
+		Check(bClean, TEXT("the dialect number from the same download is on no station"));
+	}
 	R.Reset(3 * 3600); const auto C = R.Stations[TEXT("caliche")], Ro = R.Stations[TEXT("roswell")], Far = R.Stations[TEXT("far")];
 	Check(C->OnAir() && !Ro->OnAir() && Far->OnAir(), TEXT("night stations before sign-off and sign-on"));
 	Check(Far->Strength(5 * 3600 + 1800,0) == 0 && Far->Strength(3 * 3600,0) > 0, TEXT("skywave disappears in daylight"));
@@ -887,6 +949,14 @@ bool FS47Radio::SelfTest(TArray<FString>& Lines)
 		FS47NightLineIn Other; Other.Night = 2;
 		for (int32 H = 24; H <= 26 && !bStatic; ++H) for (const auto& S : S47NightLine::Hour(Other, H)) if (S->Kind == TEXT("static")) { C->Start({S}, 3600); bStatic = C->OnAir() && C->Len == S->Len; Faint = C->Strength(3600, 0); }
 		Check(bStatic && Faint < 0.35, TEXT("a stretch of static stays on the air, faint, for its own length"));
+	}
+	// STORY-DRIVE-OWN-CAR-20261113: a Story night's 1420 before eight is the old local evening host; Freeform's stays silent.
+	R.bStoryEvening = true; R.Reset(17 * 3600 + 1200);
+	{
+		const bool bEvening = C->OnAir() && C->BlockKey == FS47Station::StoryEveningKey && C->Cfg.Loop.Num() == EVENING_LINE().Num();
+		R.Reset(20 * 3600 + 5); const bool bNight = C->OnAir() && C->BlockKey != FS47Station::StoryEveningKey;
+		R.bStoryEvening = false; R.Reset(19 * 3600 + 1800); const bool bSilent = !C->OnAir();
+		Check(bEvening && bNight && bSilent, TEXT("STORY-DRIVE-OWN-CAR: on a Story night 1420 before eight is the local evening host, then the Night Line; Freeform's is silent before eight"));
 	}
 	R.NightLineIn = nullptr; R.Reset(3 * 3600); Check(C->OnAir() && C->BlockKey < 0 && C->Cfg.Loop.Num() == NIGHT_LINE().Num(), TEXT("out of Freeform, Story's Night Line again"));
  A->Ctx = FS47AudioContext::Make(); C->Start({Talk({FS47RadioLine(TEXT("Hello, is this the radio?"))})},0); C->EnsureBus()->Connect(A->Ctx->Destination); C->Listen(true);

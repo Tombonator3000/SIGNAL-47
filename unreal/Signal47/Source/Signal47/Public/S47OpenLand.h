@@ -45,8 +45,9 @@ namespace S47OpenLand
 	/** Live's S47Legs::ExitFrom: out of an area wherever it ends, not only on the road. */
 	SIGNAL47_API TOptional<S47Legs::FExit> Exit(const FString& Leg, double X, double Z, double Heading);
 
-	/** On the line of the highway's right-of-way fences or the old pasture's (roadProps.ts fences). None of them holds anyone in Freeform (Tom, 7 November 2026):
-	 *  all that is left to see is a short worn stretch here and there, and now and then a few posts with no wire. */
+	/** On the line of the highway's right-of-way fences or the old pasture's (roadProps.ts fences). None of them holds anyone in Freeform (Tom, 7 November 2026).
+	 *  Of the pasture's all that is left to see is a short worn stretch here and there, and now and then a few posts with no wire; of the highway's nothing
+	 *  (HWY-FENCE-GONE-20261113, Tom 13 November: "det har ikke funksjon lenger"). */
 	SIGNAL47_API bool OnRoadFence(double RoadX, double RoadZ);
 	SIGNAL47_API bool FenceWireStays(double RoadX, double RoadZ);
 	SIGNAL47_API bool FencePostStays(double RoadX, double RoadZ);
@@ -54,4 +55,6 @@ namespace S47OpenLand
 	/** The fence along the rim, posts and two wires, where there is open land to stand on: built once, shown in the road's area. And the old fence's posts taken away. */
 	SIGNAL47_API void ReconcileFence(AS47Web* Web, bool bOn, const FString& Area);
 	SIGNAL47_API int32 FencePosts();
+	/** HWY-FENCE-GONE-20261113: nothing of the highway's fence stays in Freeform; the pasture's remnants do. */
+	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }

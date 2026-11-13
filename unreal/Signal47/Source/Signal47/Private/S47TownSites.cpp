@@ -1,4 +1,5 @@
 #include "S47TownSites.h"
+#include "S47PropCatalogue.h"
 #include "S47GroundEdits.h"
 #include "S47FreeformTerrain.h"
 #include "S47Breather.h"
@@ -518,6 +519,8 @@ bool S47TownSites::ReadDress(const FString& File, TArray<FSite::FDress>& Out, FS
 		if (!P.IsValid() || !P->TryGetArrayField(TEXT("at"), At) || At->Num() != 2) return Fail(TEXT("a piece has no at [x, z]"));
 		FSite::FDress D;
 		P->TryGetStringField(TEXT("id"), D.Id); P->TryGetStringField(TEXT("asset"), D.Asset); P->TryGetStringField(TEXT("replaces"), D.Replaces);
+		// PROPS-REUSE-20261113: or a shared catalogue model by its id (Config/Props/catalogue.json)
+		if (FString Model; D.Asset.IsEmpty() && P->TryGetStringField(TEXT("model"), Model)) D.Asset = S47PropCatalogue::Resolve(Model);
 		D.X = (*At)[0]->AsNumber(); D.Z = (*At)[1]->AsNumber();
 		P->TryGetNumberField(TEXT("yaw"), D.Yaw); P->TryGetNumberField(TEXT("scale"), D.Scale); P->TryGetBoolField(TEXT("collide"), D.bCollide);
 		const TArray<TSharedPtr<FJsonValue>>* BoxOf = nullptr;

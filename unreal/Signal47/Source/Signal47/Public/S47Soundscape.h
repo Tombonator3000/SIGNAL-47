@@ -11,7 +11,8 @@ class FS47AudioBuffer;
 //
 //   the windmills    the farm's and the one on the Baca lease creak as their heads turn, and the pump rod knocks in the tower
 //   the wires        the wind in the power line along the highway and its spurs, a low moan and a thin whistle, loudest under them
-//   cattle           lowing from the pens and the troughs out on the land, most at dusk
+//   cattle           lowing from the farm's pen, most at dusk: on the farm and a few hundred metres round it, nowhere else; at SARO
+//                    only very faintly, and only while the herd is uneasy (CATTLE-FARM-ONLY-20261113)
 //   coyotes          from the washes and the open land, never at noon, most in the hour before dawn
 //   a train          on the line to Roswell, always from the east, miles off
 //   owls             where there are barns and trees: the farm, the town, the station
@@ -56,6 +57,11 @@ public:
 	/** The windmills and the cattle, road-local. */
 	static const TArray<FVector2D>& Mills();
 	static const TArray<FVector2D>& Cattle();
+	/** CATTLE-FARM-ONLY-20261113 (Tom, 13 November: the cows were heard over the whole game): how loud the far lowing is for one
+	 *  standing here (road-local), 0..1 of its full gain, 0 for not at all. Round the farm's pen it fades out by CattleFar; at SARO's
+	 *  site a very faint one, only while bHerdUneasy (the herd's alarm: a visit at the farm, a taking, lights over it, something
+	 *  near the herd, FS47FarmNight::StepCattle); anywhere else nothing. */
+	static double CattleHeard(const FVector2D& Road, bool bHerdUneasy);
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:

@@ -200,3 +200,7 @@ Tidsnivåer for det uforklarlige, Tom 9. november ca. 11:45 (erstatter «ingen a
 Bildetaket, Tom 11. november morgen: ukestaket for fotokostnader blir værende på $35 (forslaget om $80 er avvist).
 
 Story bygger på Freeform, Tom 11. november: alt Freeform har av ressurser og funksjoner brukes også i Story: samme terreng og fjell, samme grafikk, samme systemer. Story skal ikke ha egne fjell, egne kart eller andre grafiske forskjeller. Eneste forskjell: Story er en klart regissert utgave av Freeform med en konkret historie og hendelser som spilles gjennom én natt, med begynnelse, midte og slutt. Retningen er alltid fra Freeform inn i Story; Freeform endres ikke for Storys skyld. Erstatter tidligere egne Story-oppsett der de avviker.
+
+## Gjentakelsesprøven fjernet, 13. november
+
+Tom 13. november: gjentakelsesprøven er fjernet («bare fjern prøven, den er for dårlig til gameplay»). «Repeat in the same window» tilbys ikke lenger i THE REPEATED INTERVAL, THE SAME MINUTE eller THE PRINTED MINUTE, og saksbrett, kveldens plan, HUD, notatlapp og records-telex nevner den ikke. De to prøvene som er igjen (aggregatstrøm og ved siden av kilden) skiller alle tre forklaringene i hver av de tre sakene. Tittelen THE REPEATED INTERVAL står, den beskriver signalet. Eldre lagringer: en planlagt gjentakelsesprøve fjernes stille ved Continue, et allerede tatt opptak blir vanlig arbeid, og et lagret resultat gjelder fortsatt som bevis.

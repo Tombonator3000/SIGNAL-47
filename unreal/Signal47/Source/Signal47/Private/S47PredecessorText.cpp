@@ -391,6 +391,13 @@ FString Levers(bool bLogsCount,bool bTapesCount,int32 TrustPoints,bool bPhotosCo
  if(Arrears>=CarriedWarn)L.Add(FString::Printf(TEXT("$%d is carried on the sheet. Past $%d on that line I can't put my name to keeping the station open, whatever else is in order."),Arrears,Cap));
  return FString::Join(L,TEXT(" "));
 }
+FString Apart(int32 Files)
+{
+ if(Files<1)return FString();
+ if(Files==1)return TEXT(" One thing in your field notes stands apart from the rest now, by your own notes. Keep it apart, and keep to what you saw.");
+ static const TCHAR* const Many[]={TEXT("Two"),TEXT("Three"),TEXT("Four"),TEXT("Five")};
+ return FString::Printf(TEXT(" Keep them apart. %s separate things, by your own notes."),Many[FMath::Clamp(Files,2,5)-2]);
+}
 FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString& FiscalEnd,int32 Taken,const FString& Levers)
 {
  const FString Hours=Taken>0?FString(TEXT("\n\nThe hours in your log nobody can account for are still in it. Stay in the building after dark if you can.")):FString();
