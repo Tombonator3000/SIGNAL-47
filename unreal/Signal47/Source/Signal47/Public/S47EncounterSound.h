@@ -41,6 +41,14 @@ public:
  bool Crackle(US47Audio* Audio,double Strength);
  void Hold(bool bHeld);
  void Reset();
+ // SIDEBAND-20261113 (one owner per job): this class stays where the ground and the hit are asked for (Dread each frame, Hit at a
+ // first sight or a hunt, Scare from a happening), and FLARES (S47Sideband.h) may take either. Ground true: the sink plays the
+ // ground, and the bought beds here stay down. Moment true: the sink took the moment, with or without a sound of its own, and
+ // neither a bought hit nor the made cue follows. Without a sink, or when it says no (its files are missing, the setting is off,
+ // Story), everything here is as it was. An audition (F10) is never offered to it.
+ struct FSink { TFunction<bool(double Low,double High,bool bHeld)> Ground; TFunction<bool(int32 Scare,double Strength,bool bAudition)> Moment; };
+ void SetSink(FSink In) { Sink=MoveTemp(In); }
+ int32 SunkMoments() const { return NSunk; }
  static bool SelfTest(TArray<FString>& Lines);
  static bool RenderTour(const FString& Path);
 private:
@@ -64,6 +72,7 @@ private:
  int32 LastKind=-1;
  FVoice Beds[2]; double BedWant[2]={0,0},NextScare[4]={0,0,0,0},BoughtUntil=0,NextBought=0; int32 ScareTurn[4]={0,0,0,0},NBought=0;
  bool Hit(US47Audio* Audio,EScare Kind,double Strength,double Now);
+ FSink Sink; int32 NSunk=0;
  void BedsDown(double TimeConstant);
  bool Bind(US47Audio* Audio);
  void RadioMix();

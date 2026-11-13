@@ -100,6 +100,8 @@ namespace S47Sideband
 		int32 Moment(double T, bool bSpeech, bool& bSoft, FString& Why, TFunctionRef<bool(int32)> Have);
 		int32 Moment(double T, bool bSpeech, bool& bSoft, FString& Why) { return Moment(T, bSpeech, bSoft, Why, [](int32) { return true; }); }
 		void End() { bEvent = false; }
+		// The event's moment may be no more than this (a light far off in the full hours is still a glimpse's).
+		void Cap(ETier Max) { if (bEvent && uint8(Tier) > uint8(Max)) Tier = Max; }
 		bool InEvent() const { return bEvent; }
 		ETier EventTier() const { return bEvent ? Tier : ETier::None; }
 		bool MomentSpent() const { return bEvent && bSpent; }
@@ -266,8 +268,9 @@ public:
 	bool MomentFor(int32 Scare, double Strength, bool bAudition);
 	bool GroundOwned() const { return bOwnsGround; }
 	double GroundNear() const { return GroundNow; }
-	// What the score should stand back to, from FS47Score::DreadDuck's two cases.
+	// What the score should stand back to, from FS47Score::DreadDuck's two cases; and S47Main hands the result in each frame.
 	double StandBackFor(bool bPlacePiece, double Dread, double Heard) const;
+	void SetStandBack(double InLevel) { StandWant = FMath::IsFinite(InLevel) ? FMath::Clamp(InLevel, 0., 1.) : 1.; }
 
 	// ---------- dev (F10, S47SidebandDev.cpp) ----------
 	// One band held at a value for some seconds (Band 0 to 3; Value under 0: let go).
@@ -298,7 +301,9 @@ private:
 	double AfterEncounter = 0, AfterHold = 0, AfterTaken = 0, HintNudge = 0, FarRise = -1;
 	bool bOwnsGround = false, bWasTaken = false, bGroundFrame = false, bGroundHeld = false;
 	double AuditionV[4] = { -1, -1, -1, -1 }, AuditionLeft[4] = { 0, 0, 0, 0 };
-	double SceneT = -1; bool bSceneHit = false, bSceneBed = false;
+	double SceneT = -1, SceneDelay = -1, StandWant = 1; bool bSceneHit = false, bSceneBed = false;
+	TSharedRef<bool> bAlive = MakeShared<bool>(true);
+	const void* SinkOn = nullptr; // the FS47FieldRadio whose encounter sound asks this session
 	FString RecordPath; bool bRecordAsked = false;
 	FString LastWhy;
 	void Event(double Dt, bool bActive, S47Sideband::ETier Clock);

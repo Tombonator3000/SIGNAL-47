@@ -148,6 +148,7 @@ public:
 	TSharedPtr<class FS47Receiver> CarRadio, DinerRadio;
 	TSharedPtr<class FS47TripRadio> TripRadio;
 	TSharedPtr<class FS47Score> Score;
+	TSharedPtr<class FS47Sideband> Sideband; // SIDEBAND-20261113: the colour bus on the score's own bus, FLARES and the drivers (S47Sideband.h)
 	bool bRadioHeard = false, bCarNear = false;
 	FVector RadioAt = FVector::ZeroVector, CounterAt = FVector::ZeroVector;
 	FString RadioTest; // -S47Radio=<station>: an audible receiver beside the test camera

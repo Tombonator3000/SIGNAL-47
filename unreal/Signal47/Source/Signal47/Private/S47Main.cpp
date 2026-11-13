@@ -71,6 +71,7 @@
 #include "S47NightLine.h"
 #include "S47TripRadio.h"
 #include "S47Score.h"
+#include "S47Sideband.h"
 #include "S47Three.h"
 #include "Misc/CommandLine.h"
 #include "S47HUD.h"
@@ -248,9 +249,18 @@ void US47Main::Step(double Dt)
 		// Critics, 10 Nov: the bought ground under a meeting is the music then (Tom's idea); the score stands back to a third.
 		// D45-20261110: in Freeform a place's own piece (town, dawn, the motel, the drive) goes all but under it, and already as
 		// something is heard coming, until the cue for it has crossed in.
-		Score->SetDuck(Score->MusicDuck() * FS47Score::DreadDuck(bFree && Score->PlacePieceSounding(), FieldRadio ? FieldRadio->DreadNow() : 0.,
-			bFree && FieldRadio ? FieldRadio->Approach() : 0.));
+		// SIDEBAND-20261113: with the colour bus in, the score stands back at the bus's head (the score alone: FLARES' bed and
+		// stingers join after it), and the score's own bus keeps the listening duck, which takes all of it.
+		const bool bPlacePiece = bFree && Score->PlacePieceSounding();
+		const double Dread = FieldRadio ? FieldRadio->DreadNow() : 0., Heard = bFree && FieldRadio ? FieldRadio->Approach() : 0.;
+		if (Sideband && Score->Inserted())
+		{
+			Score->SetDuck(Score->MusicDuck());
+			Sideband->SetStandBack(Sideband->StandBackFor(bPlacePiece, Dread, Heard));
+		}
+		else Score->SetDuck(Score->MusicDuck() * FS47Score::DreadDuck(bPlacePiece, Dread, Heard));
 	}
+	if (Sideband) Sideband->Step(Mode == EMode::Play && !bPausedByMenu && !bOpening ? Dt : 0.);
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
 	if (Night && !bOpening) Night->Step(Dt);
 	if (Player) S47EyeGlint::Step(Player->EyeUE(), Life && Life->Sky.IsValid() ? Life->Sky->Daylight() : 0.);
@@ -333,6 +343,12 @@ void US47Main::InitRadio()
 	CarRadio = Radio->Receiver({0.38, 1.0}); DinerRadio = Radio->Receiver({0.3, 1.6});
 	TripRadio = MakeShared<FS47TripRadio>(*Radio, TownSeen);
 	Score = MakeShared<FS47Score>(this, Audio->Ctx.ToSharedRef(), Audio->Music);
+	// SIDEBAND-20261113: between the score's decks and its bus; nothing else in the game passes it (-S47NoSideband: left out)
+	if (!FParse::Param(FCommandLine::Get(), TEXT("S47NoSideband")))
+	{
+		Sideband = MakeShared<FS47Sideband>(this, Audio->Ctx.ToSharedRef());
+		Score->Insert(Sideband->Bus->Head, Sideband->Bus->Out);
+	}
 	if (World) World->OnRadio = [this] { TurnRadio(); };
 	FParse::Value(FCommandLine::Get(), TEXT("S47Radio="), RadioTest);
 	if (!S47Radio::DIAL.Contains(RadioTest)) RadioTest.Empty();
