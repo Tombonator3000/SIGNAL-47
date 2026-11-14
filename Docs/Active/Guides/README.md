@@ -11,5 +11,6 @@
 - [Porterings- og koordinatkonvensjoner](PORTERING.md).
 - [Fast arbeidsmal for bygninger i Blender og Unreal](BLENDER_BUILDING_WORKFLOW.md).
 - [Hendelsesmanus: slagene inne i Freeform-hendelsene](EVENT_SCRIPTS.md).
+- [Plan: harness og agenter fra modell til ferdig produkt](ART_HARNESS_PLAN_20261114.md).
 
 [Start her](../../README.md).
