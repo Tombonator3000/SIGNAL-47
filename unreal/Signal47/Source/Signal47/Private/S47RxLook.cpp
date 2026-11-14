@@ -284,10 +284,10 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 			for (int32 I = 0; I < 60 * 480; ++I)
 			{
 				const double T = 1000. + I / 480.;
-				const float Tear = TearShift(T, Jam, false), Dark = TearDark(T, Jam, false);
+				const float Tear = TearShift(T, Jam, false), DarkNow = TearDark(T, Jam, false);
 				if (Tear != 0.f && Tear != TearWas) TearAt.Add(T);
-				if (Dark != 0.f && DarkWas == 0.f) DarkAt.Add(T);
-				TearWas = Tear; DarkWas = Dark;
+				if (DarkNow != 0.f && DarkWas == 0.f) DarkAt.Add(T);
+				TearWas = Tear; DarkWas = DarkNow;
 				bCalmTear &= TearShift(T, Jam, true) == 0.f && TearDark(T, Jam, true) == 0.f;
 			}
 			for (int32 I = 0; I < TearAt.Num(); ++I) { int32 InSecond = 0; for (int32 K = I; K < TearAt.Num() && TearAt[K] < TearAt[I] + 1.; ++K) ++InSecond; MostTears = FMath::Max(MostTears, InSecond); }

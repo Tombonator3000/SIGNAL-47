@@ -519,11 +519,11 @@ bool SelfTest(TArray<FString>& Lines)
   double Worst = 0, OldWorst = 0; bool bAll = true;
   for (int32 I = 0; I < 8; ++I)
   {
-   double Sz = 0; const FVector Local = RingStone(I, Sz);
+   double Size = 0; const FVector Local = RingStone(I, Size);
    FVector Stone; bAll &= StoneSeat(Centre, Yaw, Local, GroundAt, Stone);
    // measured off where the stone was put, not off what StoneSeat was asked: its foot on the ground under it, 2.6 m from the middle
-   const double Under = Ground(Stone.X - Shift, Stone.Z), Foot = Stone.Y - Sz * .35;
-   Worst = FMath::Max(Worst, FMath::Abs(Foot - (Under + Local.Y - Sz * .35)) + FMath::Abs(FVector2D::Distance(FVector2D(Stone.X - Shift, Stone.Z), Centre) - 2.6));
+   const double Under = Ground(Stone.X - Shift, Stone.Z), Foot = Stone.Y - Size * .35;
+   Worst = FMath::Max(Worst, FMath::Abs(Foot - (Under + Local.Y - Size * .35)) + FMath::Abs(FVector2D::Distance(FVector2D(Stone.X - Shift, Stone.Z), Centre) - 2.6));
    OldWorst = FMath::Max(OldWorst, FMath::Abs(Ground(Centre.X, Centre.Y) - Under));
   }
   Check(bAll && Worst <= 1e-6 && OldWorst > .05, FString::Printf(TEXT("each ring stone sits on the ground under itself on a slope (%.6f m off at most; on the middle's height it was up to %.2f m off)"), Worst, OldWorst));
@@ -563,7 +563,7 @@ bool SelfTest(TArray<FString>& Lines)
    if (Where == TEXT("cairn")) { bFree &= Free(CW, FVector2D(T.OffX, T.OffZ), .5) && Free(CW, FVector2D(T.OffX, T.OffZ + 1.6), 0); }
   }
   bFree &= Free(SW, FVector2D(0, 5), 0) && Free(CW, FVector2D(0, 5), 0);
-  for (int32 I = 0; I < 8; ++I) { double Sz = 0; const FVector Local = RingStone(I, Sz); bFree &= Free(CW, FVector2D(Local.X, Local.Z), Sz * .6); }
+  for (int32 I = 0; I < 8; ++I) { double Size = 0; const FVector Local = RingStone(I, Size); bFree &= Free(CW, FVector2D(Local.X, Local.Z), Size * .6); }
   FLampPose L; LampOn(ShackC, FVector::ZeroVector, L);
   bFree &= !ShackFlat.IsInside(FVector2D(L.At.X, L.At.Z));
   Check(bFree, FString::Printf(TEXT("Reyes's tags, where his test stands to read them, F10's standing point and the ring's stones are clear of the walk boxes with a walker's width (the nearest %.2f m); the lamp is outside the wall"), Nearest));
