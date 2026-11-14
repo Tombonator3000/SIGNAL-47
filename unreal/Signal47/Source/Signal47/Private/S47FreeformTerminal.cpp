@@ -293,7 +293,8 @@ namespace S47FreeformTerminal
      const float X=S.X*Hash(Beat*2.3+I*1.37),Y=Snow+60*Hash(Beat+I*5.9)-30;
      FSlateDrawElement::MakeBox(Out,L+4,G.ToPaintGeometry(FVector2f(6+18*Hash(I+Beat),2),FSlateLayoutTransform(FVector2f(X,Y))),Fill(),ESlateDrawEffect::None,Tint(GreenNow,.25f+.5f*J));
     }
-    if(Hash(Beat*.91)<J*.35f)Box(0,S.Y,Tint(FLinearColor::Black,.25f+.4f*J),L+4);
+    // RX-LOOK gjennomgang 14 Nov: the whole frame's dark beat by the flash rule (S47RxLook::TearDark: none when calm, at most three a second)
+    if(const float Veil=S47RxLook::TearDark(T,J,CalmNow());Veil>0)Box(0,S.Y,Tint(FLinearColor::Black,Veil),L+4);
    }
    PaintPowerOn(Out,L+5,G,S,GreenNow);
    return L+7;
@@ -314,12 +315,12 @@ namespace S47FreeformTerminal
   const TSharedRef<SScrollBox> Scroll=SNew(SScrollBox);Scroll->AddSlot()[Body];if(Keep>0)Scroll->SetScrollOffset(Keep);
   LastScroll=Scroll;LastScrollTitle=Title;
   const TFunction<float()> Jam=bReel?TFunction<float()>():JamSource; // the reel deck is a panel of lamps, not a tube
-  // On a bad beat the whole picture loses its hold and jumps sideways a few lines' worth.
+  // On a bad beat the whole picture loses its hold and jumps sideways a few lines' worth. RX-LOOK gjennomgang 14 Nov: by the flash
+  // rule (S47RxLook::TearShift: never when calm, at most three a second; it could jump some five times a second).
   const auto Tear=TAttribute<TOptional<FSlateRenderTransform>>::CreateLambda([Jam]
   {
-   const float J=Jam?FMath::Clamp(Jam(),0.f,1.f):0.f;if(J<.15f)return TOptional<FSlateRenderTransform>();
-   const double Beat=FMath::FloorToDouble(Now()*13);const float H=SGlassFx::Hash(Beat*3.3);
-   return H<J*.4f?TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2f((SGlassFx::Hash(Beat)-.5f)*36*J,0))):TOptional<FSlateRenderTransform>();
+   const float Shift=S47RxLook::TearShift(Now(),Jam?FMath::Clamp(Jam(),0.f,1.f):0.f,CalmNow());
+   return Shift!=0.f?TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2f(Shift,0))):TOptional<FSlateRenderTransform>();
   });
   return SNew(SOverlay)
   +SOverlay::Slot()
@@ -484,12 +485,11 @@ namespace S47FreeformTerminal
    }
    const auto Fx=SNew(SGlassFx);Fx->Seed=HumScreen>=0?HumScreen:7;Fx->Jam=JamSource;
    const TFunction<float()> Jam=JamSource;
-   // On a bad beat the whole picture loses its hold and jumps sideways a few lines' worth (as Frame).
+   // On a bad beat the whole picture loses its hold and jumps sideways a few lines' worth (as Frame: by the flash rule, never when calm).
    const auto Tear=TAttribute<TOptional<FSlateRenderTransform>>::CreateLambda([Jam]
    {
-    const float J=Jam?FMath::Clamp(Jam(),0.f,1.f):0.f;if(J<.15f)return TOptional<FSlateRenderTransform>();
-    const double Beat=FMath::FloorToDouble(Now()*13);const float H=SGlassFx::Hash(Beat*3.3);
-    return H<J*.4f?TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2f((SGlassFx::Hash(Beat)-.5f)*36*J,0))):TOptional<FSlateRenderTransform>();
+    const float Shift=S47RxLook::TearShift(Now(),Jam?FMath::Clamp(Jam(),0.f,1.f):0.f,CalmNow());
+    return Shift!=0.f?TOptional<FSlateRenderTransform>(FSlateRenderTransform(FVector2f(Shift,0))):TOptional<FSlateRenderTransform>();
    });
    const FW Head=In.Header.IsValid()?In.Header.ToSharedRef():FW(SNullWidget::NullWidget),State=In.Banner.IsValid()?In.Banner.ToSharedRef():FW(SNullWidget::NullWidget);
    ChildSlot
@@ -734,7 +734,8 @@ namespace S47FreeformTerminal
    Lines(Out,L,G,{{X0,Y0},{X0,Y0+H},{X0+W,Y0+H}},Line,1.5f);
    Text2(Out,L,G,TEXT("ZOOM"),6,Y0-9,RxSmall,Green*.85f);
    if(!R.bPowered){Text2(Out,L+2,G,TEXT("NO POWER / RECEIVER OFF"),X0+W*.36f,Y0+H*.4f,28,Amber);return L+3;}
-   const double T=FPlatformTime::Seconds();const float Peak=Fx(P.F),Tune=Fx(R.Frequency);
+   // (RX-LOOK gjennomgang 14 Nov: with Calm flashes the noise stands, as the receiver's other traces do)
+   const double T=CalmNow()?0.:FPlatformTime::Seconds();const float Peak=Fx(P.F),Tune=Fx(R.Frequency);
    const float Sigma=FMath::Max(3.f,float(P.FTol/(2*Half)*W*.8));
    const float Bw=FMath::Clamp(float(R.Bandwidth/1000./(2*Half)*W),2.f,W);
    const float B0=FMath::Clamp(Tune-Bw*.5f,X0,X0+W),B1=FMath::Clamp(Tune+Bw*.5f,X0,X0+W);

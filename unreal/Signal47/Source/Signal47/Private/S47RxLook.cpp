@@ -183,9 +183,39 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 			&& bTick && FallRuns(FallRow(FScope(), 3u, false), 1u, Unlit) == 0 && !FallLine(FallRow(FScope(), 3u, false), 1u, 0, EdgeHalf, EdgeLevel) && !FallLine(A0(On), On.Seed, FallLineSteps, EdgeHalf, EdgeLevel),
 			FString::Printf(TEXT("the waterfall is the same for the same seed and row: a row is %d to %d runs of grain end to end (%.1f a row), the line a bright core with two fainter steps when the dial is on the card, off to the side when it is off, gone with no lock; a tick is a short wide dash"), RunsLeast, RunsMost, RunCount / 60.));
 		// the spectrum: a peak over the floor at the card's line, none without the source; the dial's mark follows the dial
-		const float PeakOn = FftLevel(On, .5f, 12.3), FloorOn = FftLevel(On, .1f, 12.3), PeakOff = FftLevel(Off, .5f, 12.3);
-		Check(PeakOn > FloorOn + .3f && PeakOff < FloorOn + .25f && FftLevel(On, .5f, 12.3) == PeakOn && FftLevel(FScope(), .5f, 1.) == 0.f && FMath::Abs(FftTuned(On) - .5f) < 1e-6f && FftTuned(Low) > .5f,
-			TEXT("the small spectrum: a peak at the card's line when the source is heard, the floor without it, the dial's mark where the dial is"));
+		const float PeakOn = FftLevel(On, .5f, 12.3, false), FloorOn = FftLevel(On, .1f, 12.3, false), PeakOff = FftLevel(Off, .5f, 12.3, false);
+		// RX-LOOK gjennomgang 14 Nov: with Calm flashes the trace stands at every moment; without it, it moves
+		bool bFftStill = true, bFftMoves = false;
+		for (int32 I = 0; I <= 60; ++I) for (const double At : { 3.1, 47.9, 301.25 })
+		{
+			bFftStill &= FftLevel(On, I / 60.f, At, true) == FftLevel(On, I / 60.f, 12.3, true);
+			bFftMoves |= FftLevel(On, I / 60.f, At, false) != FftLevel(On, I / 60.f, 12.3, false);
+		}
+		Check(PeakOn > FloorOn + .3f && PeakOff < FloorOn + .25f && FftLevel(On, .5f, 12.3, false) == PeakOn && FftLevel(FScope(), .5f, 1., false) == 0.f && FMath::Abs(FftTuned(On) - .5f) < 1e-6f && FftTuned(Low) > .5f && bFftStill && bFftMoves,
+			TEXT("the small spectrum: a peak at the card's line when the source is heard, the floor without it, the dial's mark where the dial is; with Calm flashes the trace stands"));
+		// RX-LOOK gjennomgang 14 Nov: the whole picture's jump and its dark beat on interference: none with Calm flashes, never more
+		// than three a second in any second, and still there without it
+		int32 MostTears = 0, MostDarks = 0, Tears = 0, Darks = 0;
+		bool bCalmTear = true;
+		for (const float Jam : { .2f, .5f, 1.f })
+		{
+			TArray<double> TearAt, DarkAt;
+			float TearWas = 0.f, DarkWas = 0.f;
+			for (int32 I = 0; I < 60 * 480; ++I)
+			{
+				const double T = 1000. + I / 480.;
+				const float Tear = TearShift(T, Jam, false), Dark = TearDark(T, Jam, false);
+				if (Tear != 0.f && Tear != TearWas) TearAt.Add(T);
+				if (Dark != 0.f && DarkWas == 0.f) DarkAt.Add(T);
+				TearWas = Tear; DarkWas = Dark;
+				bCalmTear &= TearShift(T, Jam, true) == 0.f && TearDark(T, Jam, true) == 0.f;
+			}
+			for (int32 I = 0; I < TearAt.Num(); ++I) { int32 InSecond = 0; for (int32 K = I; K < TearAt.Num() && TearAt[K] < TearAt[I] + 1.; ++K) ++InSecond; MostTears = FMath::Max(MostTears, InSecond); }
+			for (int32 I = 0; I < DarkAt.Num(); ++I) { int32 InSecond = 0; for (int32 K = I; K < DarkAt.Num() && DarkAt[K] < DarkAt[I] + 1.; ++K) ++InSecond; MostDarks = FMath::Max(MostDarks, InSecond); }
+			Tears += TearAt.Num(); Darks += DarkAt.Num();
+		}
+		Check(bCalmTear && MostTears <= 3 && MostDarks <= 3 && Tears > 20 && Darks > 20 && TearShift(5., .1f, false) == 0.f,
+			FString::Printf(TEXT("on interference the whole picture jumps (%d times in three minutes) and darkens (%d), at most %d and %d times in any second, never with Calm flashes"), Tears, Darks, MostTears, MostDarks));
 		// I and Q: locked, two clean traces a quarter turn apart (the two squared sum to one size); unlocked, noise
 		double Least = 1e9, Most = 0, Wild = 0; bool bQuad = true;
 		for (int32 I = 0; I <= 200; ++I)

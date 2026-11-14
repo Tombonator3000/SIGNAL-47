@@ -178,6 +178,31 @@ namespace S47RxLook
 		const float Band = float(Hash01(uint32(Index) * 40503u + 7u)) * 420.f;
 		return FMath::Abs(Y - Band) < 46.f ? 1.f : 0.f;
 	}
+	// RX-LOOK gjennomgang 14 Nov: what is on the air makes the whole picture lose its hold and jump sideways (S47FreeformTerminal's
+	// frames). Never with Calm flashes, and never more than three times a second (the project's flash rule): a jump can only
+	// start at the beginning of a slot of TearSlot seconds and lasts a thirteenth of one, so two jumps stand at least a slot
+	// apart. Jam is the interference 0..1 (under .15: none). Returns the sideways shift in units, 0 while there is none.
+	constexpr double TearSlot = .35;
+	inline float TearShift(double T, float Jam, bool bCalm)
+	{
+		if (bCalm || !FMath::IsFinite(T) || T < 0 || !(Jam >= .15f)) return 0.f;
+		const double Slot = FMath::FloorToDouble(T / TearSlot);
+		if (T - Slot * TearSlot >= 1. / 13.) return 0.f;
+		const uint32 Key = uint32(int64(Slot) & 0xffffffff) * 2654435761u;
+		if (Hash01(Key ^ 0x3c6ef372u) >= FMath::Min(1.f, FMath::Min(Jam, 1.f) * .4f * 13.f * float(TearSlot))) return 0.f;
+		const float Shift = (float(Hash01(Key ^ 0xa54ff53au)) - .5f) * 36.f * FMath::Min(Jam, 1.f);
+		return FMath::Abs(Shift) < .5f ? (Shift < 0 ? -.5f : .5f) : Shift;
+	}
+	// The same rule for the frame going dark for a moment on a bad beat (S47FreeformTerminal's glass): its veil's alpha, 0 while none.
+	inline float TearDark(double T, float Jam, bool bCalm)
+	{
+		if (bCalm || !FMath::IsFinite(T) || T < 0 || !(Jam > .03f)) return 0.f;
+		const double Slot = FMath::FloorToDouble(T / TearSlot);
+		if (T - Slot * TearSlot >= 1. / 17.) return 0.f;
+		const uint32 Key = uint32(int64(Slot) & 0xffffffff) * 40503u + 17u;
+		const float J = FMath::Min(Jam, 1.f);
+		return Hash01(Key) < FMath::Min(1.f, J * .35f * 17.f * float(TearSlot)) ? .25f + .4f * J : 0.f;
+	}
 	// The beam is a little wider where it is brighter.
 	inline float Beam(float Width, float Bright) { return Width * (.8f + .45f * FMath::Clamp(Bright, 0.f, 1.f)); }
 
@@ -251,9 +276,11 @@ namespace S47RxLook
 		return true;
 	}
 	// The spectrum across the card's window (0..1 across, the card's line in the middle), 0..1 up: the TUNE page's zoom, small.
-	inline float FftLevel(const FScope& In, float U, double T)
+	// RX-LOOK gjennomgang 14 Nov: with Calm flashes the trace stands (its noise at one moment), as every other effect does.
+	inline float FftLevel(const FScope& In, float U, double Now, bool bCalm)
 	{
 		if (!In.bPowered) return 0.f;
+		const double T = bCalm || !FMath::IsFinite(Now) ? 0. : Now;
 		const double X = U * 240.;
 		const double Noise = (FMath::Sin(X * 1.3 + T * 5.) * 2. + FMath::Sin(X * 4.1 + T * 9.) * 3. + FMath::Sin(X * 12.9898 + T * 13.) * 1.5) * (In.Bandwidth / 35. + .2) / 220.;
 		const double Sigma = FMath::Max(.014, In.FTol / (2. * HalfSpan(In.FTol)) * .8);

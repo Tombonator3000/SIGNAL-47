@@ -391,7 +391,7 @@ int32 SS47RxFft::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect
 	for (int32 I = 0; I <= Points; ++I)
 	{
 		const float U = I / float(Points);
-		Trace.Add(FVector2f(P0.X + Plot.X * U, P0.Y + Plot.Y * (1.f - S47RxLook::FftLevel(Now.Scope, U, T))));
+		Trace.Add(FVector2f(P0.X + Plot.X * U, P0.Y + Plot.Y * (1.f - S47RxLook::FftLevel(Now.Scope, U, T, Now.bCalm))));
 	}
 	// amber for the locked thing: the peak standing on the card with the source heard
 	Pen.Glow(Trace, Now.Scope.Strength >= .9 ? S47RxLAmber : S47RxLGreen, 1.5f, 1);
