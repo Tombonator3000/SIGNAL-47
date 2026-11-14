@@ -27,8 +27,13 @@ public:
  bool ReferencePlaying() const;
  int32 ReferenceIndex() const; // D48-20261110: the reference loaded on the deck, -1 before NEXT or PLAY has loaded one
  FVector InteractionPoint(const FString& Id) const;
+ // Review 14 Nov (B3): the name of a tape on the deck. The station's own tape is the REFERENCE in Freeform's plain anomaly flow
+ // (the owner's word), the CONTROL elsewhere (Story's internal control): the second key, the readout and the toasts all say this.
+ static const TCHAR* SourceName(int32 Source,bool bPlain);
+ static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
+ bool PlainNow() const; // the current job is Freeform's plain anomaly flow
  TWeakObjectPtr<AS47Web> Scene;
  TSharedPtr<uint8> Life;
  FS47Obj Deck;

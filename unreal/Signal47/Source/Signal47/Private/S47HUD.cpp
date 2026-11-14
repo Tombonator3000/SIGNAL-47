@@ -211,6 +211,7 @@
 #include "SS47ScreenView.h"
 #include "SS47Widgets.h"
 #include "S47UiSound.h"
+#include "S47FreeformAudioDesk.h"
 #include "Slate/WidgetRenderer.h"
 #include "TimerManager.h"
 #include "UnrealClient.h"
@@ -368,6 +369,7 @@ void AS47HUD::Start()
 		bOk &= FS47AnomalyWorld::SelfTest(Lines);
 		bOk &= AS47Props::SelfTest(Lines); // (Unreal only: the free models' data files, Config/Props)
 		bOk &= S47CookCoverage::SelfTest(Lines); // (PACKAGE-GAS-TRIM-20261114: every /Game path the tables name has a cook rule; trims and patch meshes are here)
+		bOk &= FS47FreeformAudioDesk::SelfTest(Lines); // (review 14 Nov, B3: REFERENCE in the plain anomaly flow, CONTROL in Story, on the key, readout and toast)
 		bOk &= SS47ScreenView::SelfTest(Lines); // (the station's screens in use: the camera's aim, the glass's pixels; the board's cursor)
 		// Several modules prefix their failures ("props: FAIL ...") or put FAIL
 		// after the check name. Keep those diagnostics when the overall test fails.

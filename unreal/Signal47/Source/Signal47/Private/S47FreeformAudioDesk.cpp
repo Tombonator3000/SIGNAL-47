@@ -33,6 +33,22 @@ namespace
  {for(int32 I=0;I<UE_ARRAY_COUNT(Actions);++I)if(Id==FString(TEXT("ff:audio:"))+Actions[I])return I;return INDEX_NONE;}
 }
 FS47FreeformAudioDesk::~FS47FreeformAudioDesk(){Stop();}
+const TCHAR* FS47FreeformAudioDesk::SourceName(int32 Source,bool bPlain){return Source==0?TEXT("ORIGINAL"):bPlain?TEXT("REFERENCE"):TEXT("CONTROL");}
+bool FS47FreeformAudioDesk::PlainNow()const
+{
+ if(!M||!M->IsFreeform()||!M->Freeform)return false;
+ const auto* J=M->Freeform->CurrentJob();return J&&FS47FreeformSession::PlainAnomaly(*J);
+}
+bool FS47FreeformAudioDesk::SelfTest(TArray<FString>& Lines)
+{
+ // review 14 Nov (B3): one name for the station's tape in each flow, on the key, the readout and the toast that sends the player to it
+ const bool bNames=FString(SourceName(0,true))==TEXT("ORIGINAL")&&FString(SourceName(0,false))==TEXT("ORIGINAL")&&FString(SourceName(1,true))==TEXT("REFERENCE")&&FString(SourceName(1,false))==TEXT("CONTROL");
+ const bool bKeys=FString(Captions[0])==SourceName(0,false)&&FString(Captions[1])==SourceName(1,false)&&FString(Actions[1])==TEXT("control");
+ const FString Toast=FS47Observing::DeckToast();
+ const bool bToast=Toast.Contains(FString(TEXT("ORIGINAL / "))+SourceName(1,false))&&Toast.Contains(TEXT("wall table"))&&!Toast.Contains(TEXT("telephone"))&&!Toast.Contains(TEXT("REFERENCE"));
+ Lines.Add(FString::Printf(TEXT("%s audio desk: the station's tape is REFERENCE in Freeform's plain anomaly flow and CONTROL in Story's, on the key (built as %s, renamed per flow), the readout and Story's toast (\"%s\")"),bNames&&bKeys&&bToast?TEXT("PASS"):TEXT("FAIL"),Captions[1],*Toast));
+ return bNames&&bKeys&&bToast;
+}
 TSharedPtr<FS47FreeformAudioDesk> FS47FreeformAudioDesk::Shared(US47Main* Main)
 {
  static TWeakObjectPtr<US47Main> Owner;static TWeakPtr<FS47FreeformAudioDesk> Desk;
@@ -176,6 +192,7 @@ FString FS47FreeformAudioDesk::Label(const FString& Id)const
  if(I==8)return Reference&&Reference->Playing()?TEXT("Stop reference playback"):TEXT("Play selected listening reference");
  if(I==9)return TEXT("Stop reference playback");
  if(I==2)return (M->IsFreeform()?M->Freeform->AudioPlaying():M->Observing->AudioPlaying())?TEXT("Stop tape playback"):TEXT("Play selected recording");
+ if(I==1&&PlainNow())return TEXT("Select the station reference"); // review 14 Nov (B3)
  static const TCHAR* Labels[]={TEXT("Select original recording"),TEXT("Select independent control"),TEXT("Play selected recording"),TEXT("Rewind selected tape"),TEXT("Mark start on the original"),TEXT("Mark end on the original"),TEXT("Retain measured comparison / then register at OPS")};
  return Labels[I];
 }
@@ -232,7 +249,7 @@ void FS47FreeformAudioDesk::Step(double Dt)
  {
   const auto& O=*M->Observing;Source=O.AudioSource();Cursor=O.AudioPosition();Playing=O.AudioPlaying();Reviewed=O.AudioReviewed();HeardO=O.AudioHeard(0);HeardC=O.AudioHeard(1);MarkIn=O.AudioMarkedStart();MarkOut=O.AudioMarkedEnd();Control=O.ControlElapsed();Original=O.LoopStage()>=FS47Observing::ELoopStage::Rack;
  }
- FString Line=Powered()?FString::Printf(TEXT("%s / %s / %s s\nHEARD TAKE %s/18  REF %s/8\nMARK %s - %s / %s"),Source==0?TEXT("ORIGINAL"):TEXT("CONTROL"),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),*S47Script::TapeSeconds(Cursor,1,true,true),*S47Script::TapeSeconds(HeardO,1,true),*S47Script::TapeSeconds(HeardC,1,true),*(MarkIn<0?FString(TEXT("--.-")):S47Script::TapeSeconds(MarkIn)),*(MarkOut<0?FString(TEXT("--.-")):S47Script::TapeSeconds(MarkOut)),Reviewed?TEXT("RETAINED"):TEXT("COMPARE")):TEXT("NO POWER\nRESTORE FEEDER OR GENERATOR");
+ FString Line=Powered()?FString::Printf(TEXT("%s / %s / %s s\nHEARD TAKE %s/18  REF %s/8\nMARK %s - %s / %s"),SourceName(Source,false),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),*S47Script::TapeSeconds(Cursor,1,true,true),*S47Script::TapeSeconds(HeardO,1,true),*S47Script::TapeSeconds(HeardC,1,true),*(MarkIn<0?FString(TEXT("--.-")):S47Script::TapeSeconds(MarkIn)),*(MarkOut<0?FString(TEXT("--.-")):S47Script::TapeSeconds(MarkOut)),Reviewed?TEXT("RETAINED"):TEXT("COMPARE")):TEXT("NO POWER\nRESTORE FEEDER OR GENERATOR");
  if(Powered()&&!Original)Line=TEXT("NO RETAINED ANOMALOUS ORIGINAL\nCOLLECT ITS CHART AT THE PRINTER\nTHEN RECORD A RACK CONTROL");
  else if(Powered()&&Control<8)Line=FString::Printf(TEXT("INDEPENDENT CONTROL REQUIRED\nUSE RECEIVER RACK / %s OF 8 s\nORIGINAL WILL REMAIN INTACT"),*S47Script::TapeSeconds(Control,1,true));
  if(Powered()&&M->IsFreeform()&&M->Freeform)
@@ -241,7 +258,7 @@ void FS47FreeformAudioDesk::Step(double Dt)
   const auto* J=M->Freeform->CurrentJob();
   if(!J||!FS47FreeformSession::PlainAnomaly(*J)||J->Stage<FS47FreeformSession::EJobStage::Chart)Line=M->Freeform->NextAction();
   else if(FS47FreeformSession::RetainWaits(*J))Line=TEXT("TAKE NOT RETAINED YET\nRECEIVER (CENTRE PC), RECORD TAB\nRETAIN TAKE, THEN PLAY IT HERE"); // RX-ANOMALY-FLOW-20261113
-  else Line=FString::Printf(TEXT("%s / %s / %s s\nHEARD %s/18  REF %s/8\n%s"),Source==0?TEXT("ORIGINAL"):TEXT("REFERENCE"),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),*S47Script::TapeSeconds(Cursor,1,true,true),*S47Script::TapeSeconds(HeardO,1,true),*S47Script::TapeSeconds(HeardC,1,true),Reviewed?TEXT("ANOMALY CONFIRMED / TO OPS"):TEXT("PLAY, MARK THE TICKS, RETAIN"));
+  else Line=FString::Printf(TEXT("%s / %s / %s s\nHEARD %s/18  REF %s/8\n%s"),SourceName(Source,true),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),*S47Script::TapeSeconds(Cursor,1,true,true),*S47Script::TapeSeconds(HeardO,1,true),*S47Script::TapeSeconds(HeardC,1,true),Reviewed?TEXT("ANOMALY CONFIRMED / TO OPS"):TEXT("PLAY, MARK THE TICKS, RETAIN"));
   if(J&&FS47FreeformSession::PlainAnomaly(*J)&&J->bLegacyTrace)Line+=TEXT("\nLEGACY AUDIO RECONSTRUCTION");
   const FString CaptureStatus=M->Freeform->AudioCaptureStatus();if(!CaptureStatus.IsEmpty())Line+=TEXT("\n")+CaptureStatus;
 
@@ -249,6 +266,8 @@ void FS47FreeformAudioDesk::Step(double Dt)
  if(Powered()&&bReferenceView&&Reference)Line=Reference->Label();
  if(Powered()&&M->IsFreeform()&&M->Freeform&&M->Freeform->AudioPreparing())Line+=TEXT("\nLOADING TAPE");
  if(Line!=LastReadout&&Readout.IsValid()){Readout->SetText(FText::FromString(Line));LastReadout=Line;}
+ // review 14 Nov (B3): the second key's caption names the station's tape as the readout does (REFERENCE in the plain anomaly flow)
+ {const FString Key=SourceName(1,PlainNow());if(Texts.IsValidIndex(1)&&Texts[1].IsValid()&&Texts[1]->Text.ToString()!=Key)Texts[1]->SetText(FText::FromString(Key));}
  for(int32 I=0;I<Controls.Num();++I)if(Controls[I].Material.IsValid())
  {
   const bool Lit=Powered()&&((I==0&&Source==0)||(I==1&&Source==1)||(I==2&&Playing&&ListeningPosition())||(I==4&&MarkIn>=0)||(I==5&&MarkOut>=0)||(I==6&&Reviewed)||(I==8&&Reference&&Reference->Playing()));
