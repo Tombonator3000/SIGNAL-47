@@ -2,6 +2,10 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## TODO-skift 14. november fra ca. 13:00, Claude Code
+
+Tom ca. 12:50: «Kjør igjennom resten av todo når du er ferdig.» Kopier: `~/SIGNAL-47` (Claude, `claude/freeform-20261112`, koordinator, bygg, prøver og installasjon); høyst to agent-worktrees om gangen (grensen på fire). Motoren og Blender på omgang via `q.py`, aldri mens Toms spill kjører. Sperre mot hvile aktiv. Disk 121 GB etter at d69s pakkefiler ble pensjonert (d72, d71 og d70 beholdes). Rekkefølge: d72 installeres først, så TODO etter milepæl (sortert av en leser), med landstedene etter [planen](../Docs/Active/Guides/ART_HARNESS_PLAN_20261114.md).
+
 ## Nattskift 13.–14. november til 10:00, Claude Code
 
 Tom ca. 22:00: fortsett til kl. 10:00 med agenter og harness: fullfør, iterer, fiks TODO. Kopier: `~/SIGNAL-47` (Claude, `claude/freeform-20261112`, koordinator; motoren går på omgang, én tung jobb om gangen) og høyst tre agent-worktrees for skrivearbeid uten motor. Codex-kopien `~/SIGNAL-47-cosmic` ble avviklet 13. november (grenen pushet). Samlet diskkontroll før skiftet: 121 GB ledig, pakkene d69, d68 og d67 beholdt, to arbeidskopier. Sperre mot hvilemodus står til etter kl. 10 (`systemd-inhibit`).

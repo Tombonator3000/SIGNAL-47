@@ -4,7 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 14. november kl. 10:40 (d71): versjon 0.9.71, `27755a47` på `claude/freeform-20261112` (flettet i main, PR #515)
+## Installert 14. november kl. 12:51 (d72): versjon 0.9.72, `7071222a` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5651 kontroller), mottakerprøven PASS 847, bevisprøven PASS 102, regresjon PASS 252 (i editoren på samme kilde), pakket, røyktestet som kandidat og installert (selvtest og røyktest OK, Saved urørt: 158 filer). Tilbakerulling: d71 (`27755a47`). Ledig disk etterpå: 105 GB (d69s pakkefiler pensjonert før pakkingen). Ikke spilt av Tom.
+
+- **Båndstasjonen (REEL-DIRECT, → M3):** RETAIN på båndet registrerer et vanlig avvik med en gang (ingen tur til OPS); saken åpnes og pakken skrives ut som før. Ravfarget lampe ved skiltet REEL DECK når opptaket venter der. Andre avspilling av originalen har tre dempede dunk som ikke var der første gang (én gang per opptak, aldri bevis).
+- **Mottakerprøven** er rettet for den nye flyten og for to kontroller fra gjennomgangen som ikke var kjørt; bevisprøvens PLAY-kontroll (rød siden 5. nov) er rettet.
+- **Kjent:** dunkene er ikke hørt av noen; lampen er sett i prøvebildet.
+
+## Tidligere: installert 14. november kl. 10:40 (d71): versjon 0.9.71, `27755a47` på `claude/freeform-20261112` (flettet i main, PR #515)
 
 Editor BUILD 0, selvtest OK (5652 kontroller), pakket, røyktestet som kandidat og installert (selvtest og røyktest OK i installasjonen, Saved urørt: 158 filer). Regresjonen og mottakerprøven er ikke kjørt på denne kandidaten. Tilbakerulling: d70 (`b9e4b91a`). Ledig disk etterpå: 114 GB. Ikke spilt av Tom.
 
