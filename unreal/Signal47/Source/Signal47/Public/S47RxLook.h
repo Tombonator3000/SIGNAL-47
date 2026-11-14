@@ -295,6 +295,9 @@ namespace S47RxLook
 	// carrier's, each with its own phase from the job's seed, and the fine grain). The same for the same clock; with Calm
 	// flashes the whole trace stands, noise and all.
 	constexpr double RideShare = .13;
+	// RX-LOOK gjennomgang 14 Nov: the receiver's noise on the traces drifts: each point's grain passes from one value to the next
+	// over a third of a second (it was drawn afresh 14 times a second, the whole trace re-scribbled at some 0.57 of full scale).
+	constexpr double GrainRate = 3.;
 	inline void Quadrature(const FScope& In, float U, double T, bool bCalm, float& OutI, float& OutQ)
 	{
 		OutI = OutQ = 0.f;
@@ -303,13 +306,16 @@ namespace S47RxLook
 		const double Cycles = 7. + 10. * FMath::Clamp(FMath::Abs(In.Tuned - In.Card) / FMath::Max(In.FTol, 1e-3), 0., 4.);
 		const double Clock = bCalm || !FMath::IsFinite(T) ? 0. : T;
 		const double Along = double(U) * 2. * UE_DOUBLE_PI, Turn = Cycles * Along - Clock * 1.1 * 2. * UE_DOUBLE_PI;
-		const uint32 Key = In.Seed ^ (uint32(FMath::Clamp(U, 0.f, 1.f) * 4096.f) * 0x9e3779b9u) ^ (bCalm ? 0u : uint32(FMath::Max(Clock, 0.) * 14.) * 0x85ebca6bu);
+		const uint32 Place = In.Seed ^ (uint32(FMath::Clamp(U, 0.f, 1.f) * 4096.f) * 0x9e3779b9u);
+		const double Beat = FMath::Max(Clock, 0.) * GrainRate, Slot = FMath::FloorToDouble(Beat), Into = Beat - Slot, Blend = Into * Into * (3. - 2. * Into);
+		const uint32 From = Place ^ (uint32(int64(Slot) & 0xffffffff) * 0x85ebca6bu), To = Place ^ (uint32((int64(Slot) + 1) & 0xffffffff) * 0x85ebca6bu);
+		auto Grain = [&](uint32 Salt) { return FMath::Lerp(2. * Hash01(From ^ Salt) - 1., 2. * Hash01(To ^ Salt) - 1., Blend); };
 		const double Rough = .07 + .5 * (1. - Lock);
 		const double PhaseA = 2. * UE_DOUBLE_PI * Hash01(In.Seed ^ 0x1b873593u), PhaseB = 2. * UE_DOUBLE_PI * Hash01(In.Seed ^ 0xcc9e2d51u), PhaseC = 2. * UE_DOUBLE_PI * Hash01(In.Seed ^ 0xe6546b64u);
 		const double RideI = .5 * FMath::Sin(Along * 23.3 + PhaseA + Clock * 2.3) + .3 * FMath::Sin(Along * 41.7 + PhaseB - Clock * 3.1) + .2 * FMath::Sin(Along * 67.1 + PhaseC + Clock * 1.7);
 		const double RideQ = .5 * FMath::Sin(Along * 23.3 + PhaseB + Clock * 2.3) + .3 * FMath::Sin(Along * 41.7 + PhaseC - Clock * 3.1) + .2 * FMath::Sin(Along * 67.1 + PhaseA + Clock * 1.7);
-		OutI = float(FMath::Clamp(.8 * Lock * FMath::Cos(Turn) + RideShare * Lock * RideI + Rough * (2. * Hash01(Key) - 1.), -1., 1.));
-		OutQ = float(FMath::Clamp(.8 * Lock * FMath::Sin(Turn) + RideShare * Lock * RideQ + Rough * (2. * Hash01(Key ^ 0x5bd1e995u) - 1.), -1., 1.));
+		OutI = float(FMath::Clamp(.8 * Lock * FMath::Cos(Turn) + RideShare * Lock * RideI + Rough * Grain(0u), -1., 1.));
+		OutQ = float(FMath::Clamp(.8 * Lock * FMath::Sin(Turn) + RideShare * Lock * RideQ + Rough * Grain(0x5bd1e995u), -1., 1.));
 	}
 
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);

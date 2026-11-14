@@ -237,6 +237,18 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 			const double Turn = (7. * (I / 200.) - 33.3 * 1.1) * 2. * UE_DOUBLE_PI;
 			Ride = FMath::Max(Ride, FMath::Abs(double(Ti) - .8 * FMath::Cos(Turn)));
 		}
+		// RX-LOOK gjennomgang 14 Nov: unlocked, the noise drifts: from one frame to the next (120 a second) no point of the trace moves
+		// more than a little of full scale, while over a second it has moved
+		double FrameStep = 0, SecondStep = 0;
+		for (int32 Frame = 0; Frame < 240; ++Frame) for (int32 I = 0; I <= 60; ++I)
+		{
+			float Ai = 0, Aq = 0, Bi = 0, Bq = 0, Ci = 0, Cq = 0;
+			const double T = 50. + Frame / 120.;
+			Quadrature(Off, I / 60.f, T, false, Ai, Aq); Quadrature(Off, I / 60.f, T + 1. / 120., false, Bi, Bq); Quadrature(Off, I / 60.f, T + 1., false, Ci, Cq);
+			FrameStep = FMath::Max(FrameStep, double(FMath::Max(FMath::Abs(Bi - Ai), FMath::Abs(Bq - Aq))));
+			SecondStep = FMath::Max(SecondStep, double(FMath::Max(FMath::Abs(Ci - Ai), FMath::Abs(Cq - Aq))));
+		}
+		Check(FrameStep < .06 && SecondStep > .2, FString::Printf(TEXT("the unlocked I and Q noise drifts: at most %.3f of full scale from one frame to the next (it was drawn afresh 14 times a second), %.2f over a second"), FrameStep, SecondStep));
 		Check(bQuad && Least > .5 && Most < 1.05 && Wild < .6 && Wild > .2 && CalmA == CalmC && CalmB == CalmD && Ride > .08 && Ride < RideShare + .08,
 			FString::Printf(TEXT("I and Q: a circle when locked (%.2f to %.2f) with a little noise riding on the sines (%.2f of full scale at most), noise within %.2f when not, the same for the same clock, and standing with Calm flashes"), Least, Most, Ride, Wild));
 	}
