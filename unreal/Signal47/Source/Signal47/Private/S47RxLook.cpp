@@ -211,6 +211,23 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 			&& Num(4.7, 1) == TEXT("4.8") && Num(47.) == TEXT("48") && Num(14.7, 1) == TEXT("14.8") && Num(.47, 2) == TEXT("0.48") && Num(147.) == TEXT("148") && Num(-4.7, 1, 6, true) == TEXT("  -4.8") && Num(47.5, 1) == TEXT("48.0") && Num(1419.647, 3) == TEXT("1419.648")
 			&& Shows47(TEXT("14h47m02s")) && Shows47(TEXT("+4.7")) && !Shows47(TEXT("04h07m")) && !Shows47(TEXT("74")),
 			FString::Printf(TEXT("no number the frame draws shows a 47: %d readouts swept from -2600 to 2600 at nought to three decimals, signed and padded, %d of them moved to the nearest number without one (never more than %.2f away), every other written as it is"), Swept * 3, Moved, Farthest));
+		// RX-LOOK gjennomgang 14 Nov: the TUNE page's readouts as the page writes them (the frequency dial, gain, bandwidth, the carrier
+		// lock, the dial's distance off the card, the take's seconds), swept over every value the dials and the take reach: none shows
+		// a 47, and a readout that climbs never shows a value out of order (47 % is 48 % every time, after 46 % and before 49 %)
+		{
+			bool bDials = true, bOrder = true;
+			int32 Dial = 0;
+			double Was = -1e9;
+			auto Climb = [&](const FString& Shown, double Back) { bDials &= !Shows47(Shown); bOrder &= Back >= Was - 1e-9; Was = Back; ++Dial; };
+			for (int32 Step = 0; Step <= 1200; ++Step) { const FString S = Num(1419.5 + Step * .001, 3) + TEXT(" MHz"); Climb(S, FCString::Atod(*S)); }
+			Was = -1e9; for (int32 V = 0; V <= 100; ++V) { const FString S = Num(double(V)); Climb(S, FCString::Atod(*S)); }
+			Was = -1e9; for (int32 V = 1; V <= 100; ++V) { const FString S = Num(double(V)) + TEXT(" kHz"); Climb(S, FCString::Atod(*S)); }
+			Was = -1e9; for (int32 V = 0; V <= 100; ++V) { const FString S = Num(double(V)) + TEXT(" % CLOSE"); Climb(S, FCString::Atod(*S)); }
+			Was = -1e9; for (int32 Step = -400; Step <= 400; ++Step) { const FString S = Num(Step * .0005, 3, 0, true) + TEXT(" MHz"); Climb(S, FCString::Atod(*S)); }
+			Was = -1e9; for (int32 Step = 0; Step <= 1800; ++Step) { const FString S = TakeCount(Step * .01, 18.); Climb(S, FCString::Atod(*S)); }
+			Check(bDials && bOrder && Num(47.) == TEXT("48") && Num(46.) == TEXT("46") && TakeCount(7.9, 18.) == TEXT("7 / 18 s") && Num(1419.647, 3) + TEXT(" MHz") == TEXT("1419.648 MHz") && Num(-.047, 3, 0, true) == TEXT("-0.048"),
+				FString::Printf(TEXT("the TUNE page's dials and readouts, %d values swept as the page writes them: none shows a 47, and none climbs out of order"), Dial));
+		}
 		int32 Counted = 0;
 		const FString Sixties = Clean47(47, [&Counted](int32 N) { ++Counted; return FString::Printf(TEXT("%02dm"), N); });
 		Check(Sixties == TEXT("48m") && Counted == 2 && Clean47(12, [](int32 N) { return FString::Printf(TEXT("%02dm"), N); }) == TEXT("12m"), TEXT("a readout in sixties that would show a 47 stands a step off; a clean one is written once, as it is"));

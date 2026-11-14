@@ -729,7 +729,7 @@ namespace S47FreeformTerminal
    {
     const float X=X0+W*I/8;Lines(Out,L,G,{{X,Y0},{X,Y0+H}},I==4?Line:Dim,1);
     // (round 2, 13 November: the receiver's small words did not read on the glass; these are the next step's size now)
-    if(I%2==0){const float Wide=S47RxLook::TextWide(8,RxSmall);Text2(Out,L,G,FString::Printf(TEXT("%.3f"),Lo+2*Half*I/8),X-(I==8?Wide:I==0?0.f:Wide*.5f),Y0+H+3,RxSmall,Green*.85f);}
+    if(I%2==0){const float Wide=S47RxLook::TextWide(8,RxSmall);Text2(Out,L,G,S47RxLook::Num(Lo+2*Half*I/8,3),X-(I==8?Wide:I==0?0.f:Wide*.5f),Y0+H+3,RxSmall,Green*.85f);}
    }
    Lines(Out,L,G,{{X0,Y0},{X0,Y0+H},{X0+W,Y0+H}},Line,1.5f);
    Text2(Out,L,G,TEXT("ZOOM"),6,Y0-9,RxSmall,Green*.85f);
@@ -754,7 +754,7 @@ namespace S47FreeformTerminal
    if(In)
    {
     Lines(Out,L+3,G,{{Tune,Y0},{Tune,Y0+H}},Amber,2.5f);
-    Text2(Out,L+3,G,FString::Printf(TEXT("TUNED %.3f"),R.Frequency),FMath::Clamp(Tune+8,X0,X0+W-140),Y0+H-26,RxSmall,Amber);
+    Text2(Out,L+3,G,TEXT("TUNED ")+S47RxLook::Num(R.Frequency,3),FMath::Clamp(Tune+8,X0,X0+W-140),Y0+H-26,RxSmall,Amber);
    }
    else Text2(Out,L+3,G,R.Frequency<Lo?TEXT("<< TUNED BELOW THIS WINDOW"):TEXT("TUNED ABOVE THIS WINDOW >>"),R.Frequency<Lo?X0+8:X0+W-8-S47RxLook::TextWide(26,RxSmall),Y0+8,RxSmall,Amber);
    return L+4;

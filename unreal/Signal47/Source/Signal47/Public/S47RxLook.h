@@ -100,6 +100,12 @@ namespace S47RxLook
 		for (int32 I = SignLen + Digits.Len(); bZeros && I < Width; ++I) Out.AppendChar(TEXT('0'));
 		return Out + Digits;
 	}
+	// RX-LOOK gjennomgang 14 Nov: the take's seconds as every readout of the receiver counts them ("7 / 18 s"): the whole seconds
+	// written (cut down, never rounded up, as the banner counts them), of the take's length.
+	inline FString TakeCount(double Elapsed, double Seconds)
+	{
+		return Num(FMath::FloorToDouble(FMath::Max(0., FMath::IsFinite(Elapsed) ? Elapsed : 0.))) + TEXT(" / ") + Num(FMath::RoundToDouble(Seconds)) + TEXT(" s");
+	}
 	// For a readout written in sixties (hours, minutes and seconds; degrees and minutes): the words of the count nearest Exact
 	// that show no 47, a step up, a step down, two up, two down and on. Words writes a count as the glass shows it.
 	template <typename TWords>

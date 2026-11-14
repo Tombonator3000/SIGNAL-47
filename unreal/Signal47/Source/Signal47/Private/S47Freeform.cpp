@@ -2827,9 +2827,11 @@ void FS47FreeformSession::OpenReceiver()
  TArray<S47Kit::FW> Rows;
  auto Quality=[this]{const auto* J=CurrentJob();return J?M->Story->Rx.Quality(EffectiveProfile(*J)):0.;};
  auto Controls=[this]{return T::Columns({
-  {1.f,T::Control(TEXT("FREQUENCY"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f MHz"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;})},
-  {1.f,T::Control(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;})},
-  {1.f,T::Control(TEXT("BANDWIDTH"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f kHz"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})}},10);};
+  // RX-LOOK gjennomgang 14 Nov: the dials' readouts through the glass's own formatter (S47RxLook::Num: no number shows a 47, a dial
+  // swept across one steps past it the same way each time); the stored values are untouched.
+  {1.f,T::Control(TEXT("FREQUENCY"),TAttribute<FString>::CreateLambda([this]{return S47RxLook::Num(M->Story->Rx.Frequency,3)+TEXT(" MHz");}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;})},
+  {1.f,T::Control(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return S47RxLook::Num(M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;})},
+  {1.f,T::Control(TEXT("BANDWIDTH"),TAttribute<FString>::CreateLambda([this]{return S47RxLook::Num(M->Story->Rx.Bandwidth)+TEXT(" kHz");}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})}},10);};
  if(ReceiverTab==0)
  {
   // RX-ACQUIRE-SKY-20261113: the sky chart (S47FreeformSky.cpp). It has the keys first while there is a search to steer.
@@ -2862,9 +2864,9 @@ void FS47FreeformSession::OpenReceiver()
   }),[this]{if(CanRecordControl())StartControl();else StartAcquisition();},1,TAttribute<bool>::CreateLambda([this]{return ReceiverReady()||CanRecordControl();}));
   Start=T::DueRing(Start,[this]{return (ReceiverReady()&&!AnomalyAhead())||CanRecordControl();}); // RX-TABS-DUE-20261113: the key the TUNE page is due for (RX-ANOMALY-FLOW-20261113: an anomaly is RECORD's)
   Rows.Add(T::Split({
-   {1.15f,T::Readout(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{const int32 Percent=S47Signal::CarrierPercent(Quality());return FString::Printf(TEXT("%d %% %s"),Percent,Percent>=100?TEXT("LOCKED"):Percent>=70?TEXT("CLOSE"):TEXT("SEARCHING"));}))},
-   {.9f,T::Readout(TEXT("OFF TARGET"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("%+.3f MHz"),M->Story->Rx.Frequency-EffectiveProfile(*J).F):FString();}))},
-   {.85f,T::Readout(TEXT("RECORDING"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.0f / %.0f s"),J?J->Elapsed:0.,SourceSeconds());}))},
+   {1.15f,T::Readout(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{const int32 Percent=S47Signal::CarrierPercent(Quality());return FString::Printf(TEXT("%s %% %s"),*S47RxLook::Num(double(Percent)),Percent>=100?TEXT("LOCKED"):Percent>=70?TEXT("CLOSE"):TEXT("SEARCHING"));}))},
+   {.9f,T::Readout(TEXT("OFF TARGET"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?S47RxLook::Num(M->Story->Rx.Frequency-EffectiveProfile(*J).F,3,0,true)+TEXT(" MHz"):FString();}))},
+   {.85f,T::Readout(TEXT("RECORDING"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return S47RxLook::TakeCount(J?J->Elapsed:0.,SourceSeconds());}))},
    {1.1f,Start}}));
   // D45-20261110 (Tom: cooler animations when you record): the receiver's own tape, seen while the take or its control is written and
   // while an unusual take waits for its control: REC lamp, reels, needles and the pen. Collapsed otherwise; an idle page stays still.
@@ -2947,7 +2949,7 @@ void FS47FreeformSession::OpenReceiver()
    {
     const auto* X=CurrentJob();if(!X)return FString();
     if(X->Stage==EJobStage::Pointed)return FString(TEXT("START RECORDING"));
-    if(X->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECORDING %.0f / %.0f s"),X->Elapsed,SourceSeconds());
+    if(X->Stage==EJobStage::Integrating)return TEXT("RECORDING ")+S47RxLook::TakeCount(X->Elapsed,SourceSeconds());
     if(RetainWaits(*X))return FString(TEXT("RETAIN TAKE / RECORD REFERENCE 8 s"));
     if(X->bControl&&X->ControlAt<8)return FString::Printf(TEXT("REFERENCE %s / 8 s"),*S47Script::TapeSeconds(RefTenths(*X),1,true));
     return FString(TEXT("RETAINED / REEL DECK NEXT"));
@@ -2956,7 +2958,7 @@ void FS47FreeformSession::OpenReceiver()
    Key=T::DueRing(Key,[this]{const auto* X=CurrentJob();return X&&((X->Stage==EJobStage::Pointed&&ReceiverReady()&&AnomalyAhead())||RetainWaits(*X));});
    auto TakeState=[this]{const auto* X=CurrentJob();if(!X)return FString();
     if(X->Stage<=EJobStage::Pointed)return FString(TEXT("NOT RECORDED"));
-    if(X->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECORDING %.0f / %.0f s"),X->Elapsed,SourceSeconds());
+    if(X->Stage==EJobStage::Integrating)return TEXT("RECORDING ")+S47RxLook::TakeCount(X->Elapsed,SourceSeconds());
     return FString(X->bPrinted?TEXT("RETAINED / IN NOTEBOOK"):TEXT("ON TAPE / NOT RETAINED"));};
    auto RefState=[this,RefTenths]{const auto* X=CurrentJob();if(!X||!X->bControl)return FString(TEXT("NOT RECORDED"));return X->ControlAt<8?FString::Printf(TEXT("RECORDING %s / 8 s"),*S47Script::TapeSeconds(RefTenths(*X),1,true)):FString(TEXT("ON TAPE"));};
    // D69-20261113: TAKE and REFERENCE read as one phrase side by side; each column has its title above its status, a rule between
@@ -2977,14 +2979,14 @@ void FS47FreeformSession::OpenReceiver()
    }
    Rows.Add(SNew(SBox).Visibility_Lambda([AnomalyHere]{return AnomalyHere()?EVisibility::Collapsed:EVisibility::Visible;})[T::Columns({
     {.9f,T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("LEVELS"),FString()),
-      T::Meter(TEXT("SIGNAL LEVEL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%.0f %%"),100*FMath::Clamp(X?X->ReceivedLevel:0.,0.,1.));}),TAttribute<float>::CreateLambda([this]{const auto* X=CurrentJob();return float(FMath::Clamp(X?X->ReceivedLevel:0.,0.,1.));})),
-      T::Meter(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{return FString::Printf(TEXT("%d %%"),S47Signal::CarrierPercent(Quality()));}),TAttribute<float>::CreateLambda([Quality]{return float(Quality());})),
-      T::Meter(TEXT("TAPE USED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%.0f / %.0f s"),X?X->Elapsed:0.,SourceSeconds());}),TAttribute<float>::CreateLambda([this]{const auto* X=CurrentJob();return X?float(FMath::Clamp(X->Elapsed/FMath::Max(1.,SourceSeconds()),0.,1.)):0.f;}))}))},
+      T::Meter(TEXT("SIGNAL LEVEL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return S47RxLook::Num(100*FMath::Clamp(X?X->ReceivedLevel:0.,0.,1.))+TEXT(" %");}),TAttribute<float>::CreateLambda([this]{const auto* X=CurrentJob();return float(FMath::Clamp(X?X->ReceivedLevel:0.,0.,1.));})),
+      T::Meter(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{return S47RxLook::Num(double(S47Signal::CarrierPercent(Quality())))+TEXT(" %");}),TAttribute<float>::CreateLambda([Quality]{return float(Quality());})),
+      T::Meter(TEXT("TAPE USED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return S47RxLook::TakeCount(X?X->Elapsed:0.,SourceSeconds());}),TAttribute<float>::CreateLambda([this]{const auto* X=CurrentJob();return X?float(FMath::Clamp(X->Elapsed/FMath::Max(1.,SourceSeconds()),0.,1.)):0.f;}))}))},
     {1.1f,T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("TAKE LIST"),FString()),T::Table({TEXT("TAKE"),TEXT("SOURCE"),TEXT("STAGE")},{.8f,1.f,1.4f},Takes)}))}},10)]);
   }
   TArray<S47Kit::FW> JobRows={
    T::Columns({{1.f,T::Value(TEXT("JOB"),J->Id,true)},{1.4f,T::Value(TEXT("STAGE"),TAttribute<FString>::CreateLambda([this]{return CurrentJob()?StageText(CurrentJob()->Stage):FString();}),true)}},10),
-   T::Columns({{1.f,T::Value(TEXT("RECORDED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%s / %.0f s"),*S47Script::TapeSeconds(X?X->Elapsed:0.,1,true),SourceSeconds());}),true)},
+   T::Columns({{1.f,T::Value(TEXT("RECORDED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%s / %s s"),*S47Script::TapeSeconds(X?X->Elapsed:0.,1,true),*S47RxLook::Num(SourceSeconds()));}),true)},
     {1.4f,T::Value(TEXT("ORIGINAL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();if(!X)return FString(); // RX-ANOMALY-FLOW-20261113: live, it changes on this page
      return X->bPrinted?FString(PlainAnomaly(*X)?TEXT("KEPT / IN NOTEBOOK"):TEXT("COLLECTED / IN NOTEBOOK")):RetainWaits(*X)?FString(TEXT("ON TAPE / RETAIN IT HERE")):X->Stage==EJobStage::Chart?FString(TEXT("WAITING AT PRINTER")):FString(TEXT("NOT YET RECORDED"));}),true)}},10)};
   if(!ControlPanel)JobRows.Add(SNew(SBox).Visibility_Lambda([AnomalyHere]{return AnomalyHere()?EVisibility::Collapsed:EVisibility::Visible;})[T::Small(TEXT("Originals print at the table by the service-yard door. Valid recorded seconds are retained if tuning or pointing is lost."))]);
