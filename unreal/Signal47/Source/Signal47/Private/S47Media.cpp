@@ -1,6 +1,7 @@
 // The long media elements of core/radio.ts and core/score.ts, connected to the Web Audio graph.
 #include "S47Media.h"
 
+#include "S47Adpcm.h"
 #include "Async/Async.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
@@ -11,7 +12,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Media, Log, All);
 
 namespace
 {
-	constexpr int64 ChunkFrames = 32768;
+	constexpr int64 ChunkFrames = 32768; // a PCM file's chunk; an ADPCM file's is the whole blocks that fit in it (FS47MediaStream::ChunkLen)
 	uint16 U16(const uint8* P) { return uint16(P[0]) | (uint16(P[1]) << 8); }
 	uint32 U32(const uint8* P) { return uint32(P[0]) | (uint32(P[1]) << 8) | (uint32(P[2]) << 16) | (uint32(P[3]) << 24); }
 	struct FChunk { int64 At = 0; int32 Frames = 0; TArray<float> Data; };
@@ -23,6 +24,12 @@ struct FS47MediaStream
 	FString Path;
 	int32 Channels = 0, Rate = 0;
 	int64 DataAt = 0, Frames = 0;
+	// SIDEBAND-STEMS-ADPCM: a file is 16-bit PCM or IMA ADPCM (S47Adpcm.h). Either is read in chunks of ChunkLen frames; an ADPCM
+	// chunk is BlocksPerChunk whole blocks, decoded to floats where the chunk is read (the reader's thread, or a seek on the game
+	// thread), so the audio thread only ever reads floats, as from a PCM file.
+	bool bAdpcm = false;
+	int32 BlockAlign = 0, BlockFrames = 0;
+	int64 DataBytes = 0, ChunkLen = ChunkFrames, BlocksPerChunk = 0;
 	FCriticalSection Lock;
 	TMap<int64, FChunkPtr> Chunks;
 	TSet<int64> Pending;
@@ -39,35 +46,83 @@ namespace
 		if (!F || F->TotalSize() < 12) return false;
 		uint8 H[16]; F->Serialize(H, 12);
 		if (FMemory::Memcmp(H, "RIFF", 4) || FMemory::Memcmp(H + 8, "WAVE", 4)) return false;
-		bool bFmt = false, bData = false;
+		bool bFmt = false, bData = false, bFact = false;
+		int64 Fact = 0;
 		while (F->Tell() + 8 <= F->TotalSize())
 		{
 			F->Serialize(H, 8);
 			const int64 Len = U32(H + 4), At = F->Tell();
-			if (Len > F->TotalSize() - At) return false;
+			if (Len > F->TotalSize() - At) return false; // (a truncated file: its last chunk says more than is there)
 			if (!FMemory::Memcmp(H, "fmt ", 4))
 			{
 				if (Len < 16) return false;
 				F->Serialize(H, 16);
 				S.Channels = U16(H + 2); S.Rate = int32(U32(H + 4));
-				if (U16(H) != 1 || U16(H + 14) != 16 || S.Channels < 1 || S.Channels > 2 || S.Rate <= 0 || U16(H + 12) != S.Channels * 2) return false;
+				if (S.Channels < 1 || S.Channels > 2 || S.Rate <= 0) return false;
+				if (U16(H) == 1)
+				{
+					if (U16(H + 14) != 16 || U16(H + 12) != S.Channels * 2) return false;
+				}
+				else if (U16(H) == S47Adpcm::FormatTag)
+				{
+					// IMA ADPCM: 4 bits, a block of whole words, and the samples per block the extension states must be the ones that
+					// block holds (a header that says otherwise is not trusted)
+					if (Len < 20) return false;
+					uint8 X[4]; F->Serialize(X, 4);
+					S.bAdpcm = true; S.BlockAlign = U16(H + 12); S.BlockFrames = S47Adpcm::FramesIn(S.BlockAlign, S.Channels);
+					if (U16(H + 14) != 4 || S.BlockFrames <= 1 || U16(X) < 2 || U16(X + 2) != S.BlockFrames) return false;
+				}
+				else return false;
 				bFmt = true;
 			}
-			else if (!FMemory::Memcmp(H, "data", 4)) { S.DataAt = At; S.Frames = Len; bData = true; }
+			else if (!FMemory::Memcmp(H, "fact", 4) && Len >= 4) { F->Serialize(H, 4); Fact = U32(H); bFact = true; }
+			else if (!FMemory::Memcmp(H, "data", 4)) { S.DataAt = At; S.DataBytes = Len; bData = true; }
 			F->Seek(At + Len + (Len & 1));
 		}
-		if (!bFmt || !bData) return false;
-		S.Frames /= S.Channels * 2;
-		return !F->IsError() && S.Frames > 0;
+		if (!bFmt || !bData || F->IsError()) return false;
+		if (!S.bAdpcm) { S.Frames = S.DataBytes / (S.Channels * 2); return S.Frames > 0; }
+		// what the blocks hold: the whole ones, and a shorter last one if it is whole words (other tools write one)
+		const int64 Whole = S.DataBytes / S.BlockAlign, Rest = S.DataBytes - Whole * S.BlockAlign;
+		const int32 RestFrames = Rest ? S47Adpcm::FramesIn(int32(Rest), S.Channels) : 0;
+		if (Rest && RestFrames <= 0) return false;
+		const int64 Held = Whole * S.BlockFrames + RestFrames;
+		// the fact chunk is the length (the last block is padded); one that claims more than the blocks hold is a lie
+		if (bFact && (Fact <= 0 || Fact > Held)) return false;
+		S.Frames = bFact ? Fact : Held;
+		S.BlocksPerChunk = FMath::Max<int64>(1, ChunkFrames / S.BlockFrames);
+		S.ChunkLen = S.BlocksPerChunk * S.BlockFrames;
+		return S.Frames > 0;
 	}
 
 	FChunkPtr Read(const FS47MediaStream& S, int64 Index)
 	{
-		const int64 At = Index * ChunkFrames;
+		const int64 At = Index * S.ChunkLen;
 		if (At < 0 || At >= S.Frames) return nullptr;
 		TUniquePtr<FArchive> F(IFileManager::Get().CreateFileReader(*S.Path));
 		if (!F) return nullptr;
-		auto C = MakeShared<FChunk, ESPMode::ThreadSafe>(); C->At = At; C->Frames = int32(FMath::Min(ChunkFrames, S.Frames - At));
+		auto C = MakeShared<FChunk, ESPMode::ThreadSafe>(); C->At = At; C->Frames = int32(FMath::Min(S.ChunkLen, S.Frames - At));
+		if (S.bAdpcm)
+		{
+			// SIDEBAND-STEMS-ADPCM: the chunk's whole blocks, each decoded from its own header (no state from the block before: the
+			// samples are the same whichever way a deck came to them)
+			const int64 From = Index * S.BlocksPerChunk * S.BlockAlign, Len = FMath::Min<int64>(S.BlocksPerChunk * S.BlockAlign, S.DataBytes - From);
+			if (Len <= 0) return nullptr;
+			TArray<uint8> Coded; Coded.SetNumUninitialized(int32(Len));
+			F->Seek(S.DataAt + From); F->Serialize(Coded.GetData(), Coded.Num());
+			if (F->IsError()) return nullptr;
+			TArray<int16> Pcm; Pcm.SetNumUninitialized(int32(S.BlocksPerChunk * S.BlockFrames * S.Channels));
+			int32 Got = 0;
+			for (int32 B = 0; B < Coded.Num(); B += S.BlockAlign)
+			{
+				const int32 N = S47Adpcm::DecodeBlock(Coded.GetData() + B, FMath::Min(S.BlockAlign, Coded.Num() - B), S.Channels, Pcm.GetData() + Got * S.Channels);
+				if (N < 0) return nullptr; // a broken block: the deck fails as at a read error
+				Got += N;
+			}
+			if (Got < C->Frames) return nullptr;
+			C->Data.SetNumUninitialized(C->Frames * S.Channels);
+			for (int32 I = 0; I < C->Data.Num(); ++I) C->Data[I] = Pcm[I] / 32768.f;
+			return C;
+		}
 		TArray<uint8> Bytes; Bytes.SetNumUninitialized(C->Frames * S.Channels * 2);
 		F->Seek(S.DataAt + At * S.Channels * 2); F->Serialize(Bytes.GetData(), Bytes.Num());
 		if (F->IsError()) return nullptr;
@@ -78,7 +133,7 @@ namespace
 
 	void Request(const TSharedPtr<FS47MediaStream, ESPMode::ThreadSafe>& S, int64 Index)
 	{
-		if (Index * ChunkFrames >= S->Frames) return;
+		if (Index * S->ChunkLen >= S->Frames) return;
 		uint64 Generation;
 		{
 			FScopeLock L(&S->Lock);
@@ -116,7 +171,7 @@ TSharedPtr<FS47MediaSource> FS47MediaSource::Open(const TSharedRef<FS47AudioCont
 {
 	auto S = MakeShared<FS47MediaStream, ESPMode::ThreadSafe>();
 	S->Path = FPaths::IsRelative(File) ? FPaths::ProjectContentDir() / TEXT("Audio/Raw/media") / FPaths::ChangeExtension(File, TEXT("wav")) : File;
-	if (!Header(*S)) { UE_LOG(LogS47Media, Warning, TEXT("S47: media missing or not PCM16 WAVE: %s"), *S->Path); return nullptr; }
+	if (!Header(*S)) { UE_LOG(LogS47Media, Warning, TEXT("S47: media missing, or not a PCM16 or IMA ADPCM WAVE that holds what its header says: %s"), *S->Path); return nullptr; }
 	auto M = MakeShared<FS47MediaSource>(Ctx); M->Stream = S; M->Name = File;
 	M->Seek(0);
 	if (S->bFailed) return nullptr;
@@ -147,7 +202,7 @@ bool FS47MediaSource::ReadyAt(double At, double Step) const
 {
 	if (!Stream.IsValid() || bFailed) return false;
 	if (At >= Stream->Frames) return true; // at its end: nothing to wait for
-	const int64 First = int64(At) / ChunkFrames, Last = FMath::Min(int64(At + Step * S47Quantum), Stream->Frames - 1) / ChunkFrames;
+	const int64 First = int64(At) / Stream->ChunkLen, Last = FMath::Min(int64(At + Step * S47Quantum), Stream->Frames - 1) / Stream->ChunkLen;
 	bool bHave = true;
 	for (int64 I = First; I <= Last; ++I)
 	{
@@ -178,7 +233,7 @@ bool FS47MediaSource::PlaySelf()
 		else
 		{
 			bool bReady;
-			{ FScopeLock L(&Stream->Lock); bReady = Stream->Chunks.Contains(int64(Pos) / ChunkFrames); }
+			{ FScopeLock L(&Stream->Lock); bReady = Stream->Chunks.Contains(int64(Pos) / Stream->ChunkLen); }
 			if (!bReady) NeedSeek = Pos / Stream->Rate;
 		}
 	}
@@ -211,10 +266,10 @@ void FS47MediaSource::SeekSelf(double Seconds)
 	// the old position while they load; only the completed seek is swapped under the lock.
 	const auto S = Stream;
 	const double At = FMath::Clamp(Seconds * S->Rate, 0.0, double(S->Frames));
-	const int64 Index = int64(At) / ChunkFrames;
+	const int64 Index = int64(At) / S->ChunkLen;
 	TMap<int64, FChunkPtr> Chunks;
 	bool bReadFailed = false;
-	for (int64 I = Index; I <= Index + 1 && I * ChunkFrames < S->Frames; ++I)
+	for (int64 I = Index; I <= Index + 1 && I * S->ChunkLen < S->Frames; ++I)
 	{
 		FChunkPtr C = Read(*S, I);
 		if (C.IsValid()) Chunks.Add(I, C); else bReadFailed = true;
@@ -232,6 +287,7 @@ void FS47MediaSource::Stop()
 	bPlaying = false; Pos = 0; ++Serial;
 	if (Leads()) for (const TWeakPtr<FS47MediaSource>& W : Sync->Members) if (const TSharedPtr<FS47MediaSource> D = W.Pin()) { D->bPlaying = false; D->Pos = 0; ++D->Serial; }
 }
+bool FS47MediaSource::Adpcm() const { return Stream.IsValid() && Stream->bAdpcm; }
 double FS47MediaSource::Duration() const { return Stream.IsValid() ? double(Stream->Frames) / Stream->Rate : 0; }
 double FS47MediaSource::CurrentTime() const { FS47AudioContext::FBatch B(*Ctx); return Stream.IsValid() ? Pos / Stream->Rate : 0; }
 bool FS47MediaSource::Paused() const { FS47AudioContext::FBatch B(*Ctx); return !bPlaying; }
@@ -280,7 +336,7 @@ void FS47MediaSource::Process(int64 Quantum)
 	for (int32 I = 0; I < S47Quantum; ++I)
 	{
 		if (Pos >= S->Frames) { bPlaying = false; Notify(false); break; }
-		const int64 Frame = int64(Pos), Index = Frame / ChunkFrames;
+		const int64 Frame = int64(Pos), Index = Frame / S->ChunkLen;
 		if (CachedIndex != Index)
 		{
 			bool bReadFailed;

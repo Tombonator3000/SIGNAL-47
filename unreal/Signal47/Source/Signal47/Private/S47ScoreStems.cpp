@@ -1,5 +1,6 @@
 // SIDEBAND-20261113, channels: the nine own mixes as stems on one position, let in and out by tension on the piece's bar lines.
 #include "S47ScoreStems.h"
+#include "S47Adpcm.h"
 
 #include "S47Json.h"
 #include "S47Media.h"
@@ -58,9 +59,22 @@ namespace S47Stems
 		return FMath::CeilToDouble((FMath::Max(0., Position) + 1e-5) / Bar) * Bar - FMath::Max(0., Position);
 	}
 
+	const TCHAR* Folder()
+	{
+		// SIDEBAND-STEMS-ADPCM: the PCM set while it is staged; the ADPCM set (Tools/music/stems_adpcm.py) when it is the only one,
+		// or with -S47StemsAdpcm. Shipping ADPCM is staging only stems_adpcm.
+		static const TCHAR* Chosen = []()
+		{
+			const FString Media = FPaths::ProjectContentDir() / TEXT("Audio/Raw/media/music");
+			const bool bPcm = FPaths::FileExists(Media / TEXT("stems/stems.json")), bAdpcm = FPaths::FileExists(Media / TEXT("stems_adpcm/stems.json"));
+			return bAdpcm && (!bPcm || FParse::Param(FCommandLine::Get(), TEXT("S47StemsAdpcm"))) ? TEXT("stems_adpcm") : TEXT("stems");
+		}();
+		return Chosen;
+	}
+
 	FString WebName(const FPiece& Piece, const FRow& Row)
 	{
-		return FString::Printf(TEXT("music/stems/%s__%s.mp3"), Piece.File, Row.Name);
+		return FString::Printf(TEXT("music/%s/%s__%s.mp3"), Folder(), Piece.File, Row.Name);
 	}
 
 	struct FStaged { double Level = 0, Lowpass = 0; };
@@ -72,7 +86,7 @@ namespace S47Stems
 		{
 			bRead = true;
 			FString Text;
-			if (FFileHelper::LoadFileToString(Text, *(FPaths::ProjectContentDir() / TEXT("Audio/Raw/media/music/stems/stems.json"))))
+			if (FFileHelper::LoadFileToString(Text, *(FPaths::ProjectContentDir() / TEXT("Audio/Raw/media/music") / Folder() / TEXT("stems.json"))))
 			{
 				const S47J::FObj All = S47J::Obj(S47J::Read(Text), TEXT("pieces"));
 				if (All.IsValid()) for (const auto& Row : All->Values)
@@ -81,7 +95,7 @@ namespace S47Stems
 					if (Row.Value.IsValid() && Row.Value->TryGetObject(O) && O) Levels.Add(FString(Row.Key.ToView()), { S47J::Num(*O, TEXT("level"), 0.), S47J::Num(*O, TEXT("lowpass_hz"), 0.) });
 				}
 			}
-			UE_LOG(LogS47Stems, Display, TEXT("S47: stems staged for %d of the own mixes (Content/Audio/Raw/media/music/stems)"), Levels.Num());
+			UE_LOG(LogS47Stems, Display, TEXT("S47: stems staged for %d of the own mixes (Content/Audio/Raw/media/music/%s)"), Levels.Num(), Folder());
 		}
 		return Levels.Find(BaseName);
 	}
@@ -221,7 +235,7 @@ bool S47Stems::SelfTest(TArray<FString>& Lines)
 		{
 			bRows &= R.From >= 0 && R.To <= 1 && R.From < R.To && R.In > 0 && R.Out > 0 && !Names.Contains(R.Name);
 			Names.Add(R.Name);
-			bRows &= WebName(P, R) == FString::Printf(TEXT("music/stems/%s__%s.mp3"), P.File, R.Name);
+			bRows &= WebName(P, R) == FString::Printf(TEXT("music/%s/%s__%s.mp3"), Folder(), P.File, R.Name);
 		}
 	}
 	Check(bNine && bOwn, TEXT("the nine own mixes have stems, each a piece of the score's table, found by its file"));
@@ -303,6 +317,24 @@ bool S47Stems::SelfTest(TArray<FString>& Lines)
 		Check(!S->In(1) && S->ChangeAt(1) > C->CurrentTime(), TEXT("and it is set to leave when the tension has gone"));
 		S->Close();
 		Check(S->Num() == 0 && Two[0]->Paused(), TEXT("closing stops every deck"));
+	}
+	{
+		// SIDEBAND-STEMS-ADPCM: the same steady stem as IMA ADPCM opens as a deck of the same length, and groups with the PCM one
+		constexpr int32 Frames = 48000 * 4;
+		TArray<int16> Steady; Steady.Init(int16(3277), Frames);
+		TArray<uint8> Coded; S47Adpcm::Test::Encode(Steady.GetData(), Frames, 1, 512, Coded);
+		const FString AdpcmPath = FPaths::ProjectSavedDir() / TEXT("S47StemsSelfTestAdpcm.wav");
+		FFileHelper::SaveArrayToFile(S47Adpcm::Test::Wave(Coded, 1, 48000, 512, Frames), *AdpcmPath);
+		const TSharedPtr<FS47MediaSource> A = FS47MediaSource::Open(C, FPaths::ConvertRelativePathToFull(AdpcmPath)), Pcm = FS47MediaSource::Open(C, Full);
+		Check(A.IsValid() && Pcm.IsValid() && A->Adpcm() && !Pcm->Adpcm() && FMath::IsNearlyEqual(A->Duration(), Pcm->Duration(), 1e-6),
+			TEXT("an IMA ADPCM stem opens as a deck, as long as its PCM twin"));
+		TArray<TSharedPtr<FS47MediaSource>> Pair = { Pcm, A };
+		const FPiece Flat = { TEXT("test"), 0., { Always, Rise } };
+		const TSharedPtr<FS47ScoreStems> G = A.IsValid() && Pcm.IsValid() ? FS47ScoreStems::Make(C, Flat, Pair, .5, 0., 11000.) : nullptr;
+		Check(G.IsValid() && A->Grouped() && Pcm->Grouped(), TEXT("and makes one group with a PCM stem"));
+		if (G.IsValid()) G->Close();
+		Check(FString(Folder()) == TEXT("stems") || FString(Folder()) == TEXT("stems_adpcm"), *FString::Printf(TEXT("the stems are read from music/%s"), Folder()));
+		IFileManager::Get().Delete(*AdpcmPath);
 	}
 	{
 		// a one-channel stem beside a two-channel one (the staged form may fold a stem whose sides are far under its middle), and

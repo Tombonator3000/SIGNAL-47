@@ -15,6 +15,11 @@
                                         Staged at half the mixes' rate (22.05 kHz, 16 bit; see STEM_RATE below for why and how), a
                                         stem whose sides are 30 dB or more under its middle as one channel; checked as staged and
                                         as the game plays them.
+  build_music.py stems --adpcm          SIDEBAND-STEMS-ADPCM: the staged PCM stems again as IMA ADPCM (4 bits, 4:1) to
+                                        DIR/Audio/Raw/media/music/stems_adpcm/ with a stems.json of the same rows (stems_adpcm.py,
+                                        ima_adpcm.py; numpy only). The PCM stems are not rendered again and not touched.
+  build_music.py stems --adpcm-check    decode that set back (the mirror of the game's decoder) and measure it against the PCM
+                                        set, stem by stem and piece by piece: --report FILE, --ab DIR (A/B of the worst cases)
   build_music.py all                    free, own and mixes
   build_music.py index                  only media.json's rows for what is staged
   --content DIR    the project's Content (default: this project's); the files go to DIR/Audio/Raw/media/{music,radio}/<name>.wav,
@@ -900,6 +905,11 @@ def main():
     ap.add_argument('--own', default=OWN)
     ap.add_argument('--bundle', default=BUNDLE)
     ap.add_argument('--previews')
+    ap.add_argument('--adpcm', action='store_true', help='stems: transcode the staged PCM stems to IMA ADPCM (media/music/stems_adpcm)')
+    ap.add_argument('--adpcm-check', action='store_true', help='stems: measure the ADPCM set against the PCM set')
+    ap.add_argument('--report', help='--adpcm-check: write the table here (Markdown)')
+    ap.add_argument('--ab', help='--adpcm-check: write A/B WAVs of the worst cases here')
+    ap.add_argument('--jobs', type=int, default=8, help='--adpcm/--adpcm-check: processes')
     args = ap.parse_args()
     media = os.path.join(args.content, 'Audio', 'Raw', 'media')
     if not os.path.isdir(os.path.dirname(media)):
@@ -910,6 +920,15 @@ def main():
         own(media, args.own, args.previews)
     if args.what in ('mixes', 'quiet', 'all'):
         mixes(media, args.bundle, args.previews, first=args.what != 'quiet')
+    if args.what == 'stems' and (args.adpcm or args.adpcm_check):
+        # (the ADPCM set is made from the staged PCM set: nothing is rendered again, media.json is not touched)
+        sys.path.insert(0, HERE)
+        import stems_adpcm
+        if args.adpcm:
+            stems_adpcm.transcode(media, jobs=args.jobs)
+        if args.adpcm_check:
+            stems_adpcm.check(media, report=args.report, ab_dir=args.ab, jobs=args.jobs)
+        return
     if args.what == 'stems':
         mixes(media, args.bundle, None, stems=True)
     index(media)
