@@ -7,6 +7,7 @@
 
 #include "S47Ambience.h"
 #include "S47SignalVoice.h"
+#include "S47UiSound.h"
 
 namespace
 {
@@ -417,10 +418,13 @@ void US47Audio::TvHiss(TOptional<FVector> At)
 	if (Tv.Src.IsValid()) { const FTv Old = Tv; Tv = FTv(); Old.Gain->Gain.SetTargetAtTime(0, Now, 0.05); Old.Src->Stop(Now + 0.3); }
 	if (!At) return;
 	auto N = NoiseSrc(false, true);
+	// FIX10-7: the bought static bed when it is staged, lifted to the noise's own level through these filters (S47UiSound)
+	const TSharedPtr<FS47AudioBuffer> Bed = S47UiSound::TvBed();
+	if (Bed) N->Buffer = Bed;
 	auto Bp = Ctx->CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Frequency.SetValue(2600); Bp->Q.SetValue(0.5);
 	auto Hp = Ctx->CreateBiquadFilter(); Hp->SetType(TEXT("highpass")); Hp->Frequency.SetValue(450);
 	auto G = Ctx->CreateGain(); G->Gain.SetValue(0);
-	G->Gain.SetTargetAtTime(0.09, Now, 0.15);
+	G->Gain.SetTargetAtTime(0.09 * (Bed ? S47UiSound::TvBedLift(S47UiSound::EChain::Office) : 1.0), Now, 0.15);
 	N->Connect(Hp); Hp->Connect(Bp); Bp->Connect(G); G->Connect(Panner(*At, 0.9));
 	N->Start();
 	Tv = { N, G };
