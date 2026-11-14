@@ -158,8 +158,8 @@ void FS47FreeformSession::BinderUnknowns(S47Binder::FSource& Src) const
    S47Dossier::EKind Kind=S47Dossier::EKind::None;int32 Night=0;S47Dossier::ClaimKind(ClaimId,Kind,Night);
    const FS47FreeformDirector::FPhotoClaim* Claim=Director?Director->PhotoClaims().FindByPredicate([&ClaimId](const FS47FreeformDirector::FPhotoClaim& One){return One.Id==ClaimId;}):nullptr;
    PhotoLines.Add(Claim&&!Claim->PhotoId.IsEmpty()
-    ?FString::Printf(TEXT("DAY %02d / ORIGINAL %s / %s"),Night,*Claim->PhotoId,Claim->bPaid?TEXT("REGISTERED AT OPS"):TEXT("NOT YET REGISTERED AT OPS"))
-    :FString::Printf(TEXT("DAY %02d / THE FRAME IS NOT IN THE ALBUM"),Night));
+    ?FString::Printf(TEXT("DAY %02d / ORIGINAL %s / %s"),S47Dossier::ShownNight(Night),*Claim->PhotoId,Claim->bPaid?TEXT("REGISTERED AT OPS"):TEXT("NOT YET REGISTERED AT OPS"))
+    :FString::Printf(TEXT("DAY %02d / THE FRAME IS NOT IN THE ALBUM"),S47Dossier::ShownNight(Night)));
   }
   S47Binder::FUnknownIn Sheet;Sheet.Number=File.Number;Sheet.Title=File.Title;Sheet.Stage=File.Stage;Sheet.Opened=File.Opened;Sheet.Latest=File.Latest;Sheet.bAtMarks=File.bAtMarks;
   Sheet.Body=S47Dossier::Sheet(File,PhotoLines);

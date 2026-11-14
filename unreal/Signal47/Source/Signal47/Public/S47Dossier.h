@@ -160,6 +160,10 @@ namespace S47Dossier
  // What is read aloud of a pair, and the binder's line for it.
  SIGNAL47_API FString BesideWords(const FFile& A,const FFile& B);
  SIGNAL47_API FString BesideLine(int32 Number);
+ // REVIEW (14 Nov): a night (or a count of nights) as the dossier prints it: stepped past any number whose digits read 47 (47 shows
+ // 48, 147 148, 470 to 479 480), as the cassettes are counted (S47Tape) and the clock is shown (S47Script::PlayerClock). Only what
+ // is shown moves.
+ SIGNAL47_API int32 ShownNight(int32 Night);
  // The file typed for the binder: the stage, the six boxes, the photographs as the session names them, the pencil notes.
  SIGNAL47_API FString Sheet(const FFile& File,const TArray<FString>& PhotoLines);
  // Every word the dossier can show, and what is wrong with any of it (empty: nothing): Freeform's spoiler limits

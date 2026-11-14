@@ -287,6 +287,12 @@ FString BesideWords(const FFile& A,const FFile& B)
  return Out;
 }
 FString BesideLine(int32 Number){return FString::Printf(TEXT("KEPT BESIDE UNKNOWN %d."),Number);}
+int32 ShownNight(int32 Night)
+{
+ int32 N=FMath::Clamp(Night,0,Tables::MaxDay*2);
+ while(FString::FromInt(N).Contains(TEXT("47")))++N;
+ return N;
+}
 FString Sheet(const FFile& File,const TArray<FString>& PhotoLines)
 {
  // slice 3: the player's own name for it, typed as he wrote it, and whether that files it
@@ -294,11 +300,11 @@ FString Sheet(const FFile& File,const TArray<FString>& PhotoLines)
  Out+=FString::Printf(TEXT("STAGE     %s\n"),*File.Stage);
  if(!File.Gave.IsEmpty())Out+=TEXT("          ")+File.Gave+TEXT("\n"); // LOOP-DOSSIER-GIVES-20261113: what the stage gave, under it
  if(File.Stage==StageWord(EStage::Habits))Out+=FString(TEXT("          "))+(File.bFiled?Slice3::SheetFiled:Slice3::SheetUnnamed)+TEXT("\n");
- Out+=FString::Printf(TEXT("NIGHTS    %d / FIRST DAY %02d / LAST DAY %02d\n"),File.Nights,File.Opened,File.Latest);
+ Out+=FString::Printf(TEXT("NIGHTS    %d / FIRST DAY %02d / LAST DAY %02d\n"),ShownNight(File.Nights),ShownNight(File.Opened),ShownNight(File.Latest));
  for(const FBox& One:File.Boxes)
  {
   const FString Label=One.Label+FString::ChrN(FMath::Max(1,10-One.Label.Len()),TEXT(' '));
-  Out+=TEXT("\n")+Label+(One.bFilled?FString::Printf(TEXT("%s / DAY %02d"),*One.How.ToUpper(),One.Day):FString(TEXT("NOTHING KEPT")));
+  Out+=TEXT("\n")+Label+(One.bFilled?FString::Printf(TEXT("%s / DAY %02d"),*One.How.ToUpper(),ShownNight(One.Day)):FString(TEXT("NOTHING KEPT")));
  }
  Out+=TEXT("\n\nPHOTOGRAPHS");
  if(PhotoLines.IsEmpty())Out+=TEXT("\nNONE IN THE ALBUM.");
@@ -315,7 +321,7 @@ FString Sheet(const FFile& File,const TArray<FString>& PhotoLines)
  for(const int32 Other:File.Beside)Out+=TEXT("\n")+BesideLine(Other);
  // slice 3: what was filed in it as one, and on which night
  if(!File.Merged.IsEmpty())Out+=TEXT("\n");
- for(int32 At=0;At<File.Merged.Num();++At)Out+=TEXT("\n")+FString::Printf(TEXT("FILED AS ONE WITH IT: UNKNOWN %d / NIGHT %02d"),File.Merged[At],File.MergedNight.IsValidIndex(At)?File.MergedNight[At]:0);
+ for(int32 At=0;At<File.Merged.Num();++At)Out+=TEXT("\n")+FString::Printf(TEXT("FILED AS ONE WITH IT: UNKNOWN %d / NIGHT %02d"),File.Merged[At],ShownNight(File.MergedNight.IsValidIndex(At)?File.MergedNight[At]:0));
  if(!File.Next.IsEmpty())Out+=TEXT("\n\n")+File.Next;
  Out+=TEXT("\n\nKEPT AS THE NOTEBOOK HAS IT.");
  return Out;
@@ -365,6 +371,9 @@ TArray<FString> Words()
   Out.Add(Sheet(Filed,TArray<FString>()));
   Out.Add(StampOf(Filed.Named,EType::Ground,false,false,EStage::Habits));Out.Add(HoursLineOf(Filed.Named,TArray<int32>{23,1}));
   Filed.bFiled=false;Out.Add(Sheet(Filed,TArray<FString>()));
+  // REVIEW (14 Nov): a long game's nights, every way the sheet prints one (Lint: no number reads 47)
+  Filed.Nights=47;Filed.Opened=47;Filed.Latest=147;Filed.MergedNight={470};Filed.Boxes[0].bFilled=true;Filed.Boxes[0].How=HowSeen;Filed.Boxes[0].Day=247;
+  Out.Add(Sheet(Filed,TArray<FString>()));
  }
  return Out;
 }
@@ -1488,6 +1497,8 @@ bool SelfTest(TArray<FString>& Lines)
   bool bWeek4=true;for(const EKind Near:{Small,Low,Tall}){const int32 H=Earliest(Near,EStage::Habits,G);bWeek4&=H>7&&H<=30;}
   Check(bWeek1&&bWeek4&&bFar&&FirstMarks<=14&&Earliest(EKind::None,EStage::Outline,G)==0,*FString::Printf(TEXT("slice 2: pacing (standard gates): no HABITS in week 1, the near three can by week 4, the far two stop at MARKS, the first MARKS by night %d"),FirstMarks));
  }
+ Check(ShownNight(46)==46&&ShownNight(47)==48&&ShownNight(147)==148&&ShownNight(471)==480&&ShownNight(9)==9&&ShownNight(-3)==0,
+  TEXT("review: a night the dossier prints steps past any number that reads 47"));
  { // slice 3: the player's name, its rules, the suggestion, and the fallback
   FString Got,Why;
   const bool bWritten=CleanName(TEXT("  Bare   feet "),Got,Why)&&Got==TEXT("Bare feet")&&Why.IsEmpty()&&CleanName(TEXT("Long-legs"),Got,Why)&&CleanName(TEXT("O'Hara's dog, maybe."),Got,Why);
