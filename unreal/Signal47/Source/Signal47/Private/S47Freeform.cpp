@@ -107,6 +107,7 @@
 #include "Widgets/SLeafWidget.h"
 #include "Rendering/DrawElements.h"
 #include "Brushes/SlateColorBrush.h"
+#include "S47UiSound.h"
 
 namespace
 {
@@ -3103,7 +3104,7 @@ void FS47FreeformSession::OpenTapePanel()
  FollowTapeJob();
  const T::FReelLook ReelLook;
  // FIX-20261110: this is a machine, not a terminal: its keys are heavy and nothing beeps (the motor is heard in TransportSound)
- {const TWeakObjectPtr<US47Main> Main=M;T::SetSound([Main](int32 Kind){if(Main.IsValid()&&Main->Audio&&Main->Freeform&&Main->Freeform->TapePanelOpen()&&Kind<3)Main->Audio->Play(Kind==1?TEXT("rack_switch"):TEXT("small_switch"),Kind==1?.42f:.38f,FVector::ZeroVector,Kind==2?1.1f:.95f);});}
+ {const TWeakObjectPtr<US47Main> Main=M;T::SetSound([Main](int32 Kind){if(Main.IsValid()&&Main->Audio&&Main->Freeform&&Main->Freeform->TapePanelOpen()&&Kind<3&&!S47UiSound::Play(Main->Audio,S47UiSound::EKind::Transport,true))Main->Audio->Play(Kind==1?TEXT("rack_switch"):TEXT("small_switch"),Kind==1?.42f:.38f,FVector::ZeroVector,Kind==2?1.1f:.95f);});}
  auto Press=[this](const TCHAR* Action){return [this,Action]{if(AudioDesk)AudioDesk->Use(FString(TEXT("ff:audio:"))+Action);};};
  // GAMEPLAY-LOOP-01 (Tom, 12 November): the extra-tick take is on the deck once it is retained at the receiver (RX-ANOMALY-FLOW-
  // 20261113), with its 8-second reference on the REFERENCE key; heard past its ticks and marked, RETAIN (the operator's press) confirms it.
