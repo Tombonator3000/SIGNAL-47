@@ -2685,7 +2685,7 @@ void US47World::ReconcileFarm(bool bEnabled)
     };
     for(const FS47Rect& C:M->Web->CollidersMutable(Id))
     {
-     if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar")||C.Id.StartsWith(TEXT("door:"))||C.Id.StartsWith(TEXT("eastwing:"))||C.Id.StartsWith(TEXT("temp:"))||C.Id.StartsWith(TEXT("townuse:"))||S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))continue; // (temp:, townuse: M4's own, S47TownSites puts them in the truck's list itself)
+     if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar")||C.Id.StartsWith(TEXT("door:"))||C.Id.StartsWith(TEXT("eastwing:"))||C.Id.StartsWith(TEXT("temp:"))||C.Id.StartsWith(TEXT("townuse:"))||C.Id.StartsWith(TEXT("landplace:"))||S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))continue; // (temp:, townuse: M4's own, S47TownSites puts them in the truck's list itself; landplace: the windmill's, S47LandWindmill puts its own in)
      // FENCES-INVISIBLE-20261108: a cow's walk box has its own circle in the truck's list, which goes with the cow (S47Herd); a copy
      // made here stayed where the cow stood when the farm opened, and held the truck in the empty pasture.
      const double CX=(C.MinX+C.MaxX)*.5,CZ=(C.MinZ+C.MaxZ)*.5,CR=(C.MaxX-C.MinX)*.5;

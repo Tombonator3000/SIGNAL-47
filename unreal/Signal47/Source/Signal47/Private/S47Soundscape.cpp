@@ -1,4 +1,5 @@
 #include "S47Soundscape.h"
+#include "S47LandWindmill.h"
 
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
@@ -324,6 +325,7 @@ void FS47Soundscape::StepVoices(double Dt, double Hour)
 			// Tom 13 November (d67): the creak carried far too far (600 m, never under a quarter strength). It is the farm's own sound:
 			// gone by MillReach, and falling off fast on the way there.
 			Night.MillCreak(Ear, Here(*Mill, 9.5), FMath::Clamp(FMath::Square(1.0 - Best / MillReach), 0.04, 1.0));
+			S47LandWindmill::Creak(*Mill); // LAND-PLACES-WINDMILL-20261114: the head and the wheel strain as it creaks (the sound itself is as it was)
 			Counts.FindOrAdd(TEXT("windmill"))++;
 		}
 	}
@@ -373,7 +375,7 @@ bool FS47Soundscape::DevPlay(const FString& Kind, FString& Why)
 	{
 		const FVector2D* Mill = Nearest(Mills(), Dist);
 		if (!Mill || Dist > 2000) { Why = TEXT("no windmill within two kilometres"); return false; }
-		Night.MillCreak(Ear, Here(*Mill, 9.5), 1.0); Counts.FindOrAdd(Kind)++;
+		Night.MillCreak(Ear, Here(*Mill, 9.5), 1.0); S47LandWindmill::Creak(*Mill); Counts.FindOrAdd(Kind)++;
 		Why = FString::Printf(TEXT("the windmill %.0f m off"), Dist); return true;
 	}
 	if (Kind == TEXT("cattle"))

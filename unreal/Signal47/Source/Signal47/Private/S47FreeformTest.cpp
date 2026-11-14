@@ -243,6 +243,7 @@ void FS47FreeformTest::Step(double Dt)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47DevMenuTest"))){StepDevMenu(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TasksShotTest"))){StepTasksShots(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47RecordsShotTest"))){StepRecordsShots(Dt);return;}
+ {FString LandPlace;if(FParse::Value(FCommandLine::Get(),TEXT("S47LandPlaceShotTest="),LandPlace)){StepLandPlaceShots(Dt);return;}}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47HighwayWallTest"))){StepHighwayWall(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47StationFilesTest"))){StepStationFiles(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){StepInternalControl(Dt);return;}

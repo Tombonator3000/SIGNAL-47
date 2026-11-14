@@ -1,4 +1,5 @@
 #include "S47HUD.h"
+#include "S47LandWindmill.h"
 #include "S47GroundEdits.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -274,6 +275,7 @@ void AS47HUD::Start()
 		bOk &= FS47StationInsects::SelfTest(Lines); // (GAS-STATION-LIFT-01: the canopy swarm's population by light, hour, weather and hush)
 		bOk &= FS47StationDressing::SelfTest(Lines); // (GAS-STATION-LIFT-01: the shop's Cosmos props: the file, their places; with or without the assets)
 		bOk &= S47RecordsRoom::SelfTest(Lines); // (RECORDS-ROOM-LIFT-20261113: the room's measures and what it stands on; with or without the assets)
+		bOk &= S47LandWindmill::SelfTest(Lines); // (LAND-PLACES-WINDMILL-20261114: the model's walk boxes, its hooks, what moves, its seat; with or without the assets)
 		bOk &= S47PropCatalogue::SelfTest(Lines); // (PROPS-REUSE-20261113: the shared real models: ids, paths, sizes, fronts; with or without the assets)
 		bOk &= S47StreetLamps::SelfTest(Lines); // (STREETLAMP-GLOW: every LOD's lens, no WorldGrid slot, the spot in the head, the glow on and off)
 		// D37-SARO-EMPTY-20261109: the fleet cars keep their paint; no parked staff cars at SARO, no S-03 text on any car.

@@ -1,4 +1,5 @@
 #include "S47Main.h"
+#include "S47LandWindmill.h"
 #include "S47DirectorCam.h"
 #include "S47DevWaves.h"
 #include "S47CarPaint.h"
@@ -319,6 +320,8 @@ void US47Main::Step(double Dt)
 		S47Lived::Update(this, Dt);
 		// FARM-LIGHTS (Tom, 9 November): the barn's swinging bulb, the yard's dusk-to-dawn lamp, the old house's lit room. Freeform only.
 		S47FarmLights::Update(this, Dt);
+		// LAND-PLACES-WINDMILL-20261114: the windmill's model on the Baca lease and at the farm: its seat, its wheel, head, rod and lid.
+		S47LandWindmill::Update(this, Dt);
 		if (Web && Web->IsLoaded()) S47SaroLegacyCleanup::Build(Web.Get());
 		FS47Rx3Detail::Update(this, Dt);
 		FS47SaroPeriodProps::Update(this, Dt);

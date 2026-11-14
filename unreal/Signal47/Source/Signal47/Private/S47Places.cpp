@@ -1,4 +1,5 @@
 #include "S47Places.h"
+#include "S47LandWindmill.h"
 #include "S47Audio.h"
 #include "S47Calm.h"
 #include "S47Balloon.h"
@@ -365,6 +366,14 @@ bool FS47Places::Stand(const FString& Id,FVector& OutWorld,bool& bOutSeated) con
  if(InOldHouse(B->Id)){OutWorld=S47OpenLand::FromRoad(TEXT("saro"),B->X,B->Z);OutWorld.Y=B->Y;bOutSeated=B->bSeated;return true;} // T16-17: the land's metres on SARO's ground
  OutWorld=B->Id==Motel?FVector(B->X,B->Y,B->Z):FVector(Road.X+B->X,B->Y,Road.Z+B->Z);bOutSeated=B->bSeated;return true;
 }
+bool FS47Places::MillHead(double& OutAz,bool& bOutTraces) const
+{
+ // LAND-PLACES-WINDMILL-20261114: the compass way the windmill's wheel faces (north as it was built; the bearing from SARO on the
+ // first days), and whether the first days' traces show now.
+ const FBuilt* B=Built.FindByPredicate([](const FBuilt& X){return X.Id==TEXT("windmill");});
+ OutAz=B?B->HeadAz:0.;bOutTraces=B&&B->TraceFrom>=0&&B->bTraceOn;
+ return B!=nullptr;
+}
 bool FS47Places::Build()
 {
  if(bBuilt)return true;
@@ -400,8 +409,13 @@ bool FS47Places::Build()
   if(M->Freeform&&Traced(D.Id,M->Freeform->Seed(),M->Freeform->Day()))
   {
    double Sx=0,Sz=0;SaroRoad(Sx,Sz);
-   B.TraceFrom=MillTraces(Shapes,ArcBearing(M->Freeform->Seed(),Sx,Sz,B.X,B.Z,SpreadFor(0)));
+   B.HeadAz=ArcBearing(M->Freeform->Seed(),Sx,Sz,B.X,B.Z,SpreadFor(0));
+   B.TraceFrom=MillTraces(Shapes,B.HeadAz);
   }
+  // LAND-PLACES-WINDMILL-20261114: the model (S47LandWindmill) stands in for the windmill's eight basic shapes and the first days'
+  // wire while its assets are in the build. The shapes are still built (the place's handle, its node and the order of its parts are
+  // what the rest goes by) and are hidden, with nothing left to point at where nothing is drawn; without the assets they show as ever.
+  const bool bMillModel=FString(D.Id)==TEXT("windmill")&&S47LandWindmill::Available();
   for(int32 Index=0;Index<Shapes.Num();++Index)
   {
    const FPart& P=Shapes[Index];
@@ -429,8 +443,10 @@ bool FS47Places::Build()
     C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
     const FS47Obj More=M->Web->ObjAt(M->Web->AdoptNode(C,bSaro?SaroRoot:RoadRoot,Name));if(More)M->Web->MarkUsable(More.I,UseId(D.Id));
    }
+   if(bMillModel&&(Index<8||(B.TraceFrom>=0&&Index>=B.TraceFrom&&Index<B.TraceFrom+4))){C->SetHiddenInGame(true);C->SetCastShadow(false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
    B.Parts.Add(C);B.Local.Add(P.At);
   }
+  if(bMillModel){UE_LOG(LogTemp,Display,TEXT("S47: place windmill: its basic shapes are hidden, the model stands there (S47LandWindmill)"));}
   if(B.Hit)
   {
    const FString Id=D.Id;

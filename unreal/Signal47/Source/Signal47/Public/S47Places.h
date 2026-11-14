@@ -34,6 +34,9 @@ public:
  // The first place the player has neither found nor heard of, by this game's seed; empty when there is none.
  FString NextUnknown(int32 Salt) const;
  bool Use(const FString& Id);
+ // LAND-PLACES-WINDMILL-20261114: the windmill's head for its model (S47LandWindmill): the compass way the wheel faces, and whether the
+ // first days' traces (the new wire) show now. False until the place is built.
+ bool MillHead(double& OutAz,bool& bOutTraces) const;
  void FillMap(FS47MapView& View) const;
  // Registered work gives one bearing a night: a discrepancy always (LOOP-1-20261109, HELHETLIG_LOKKE step 1: also with no branch
  // mended, then wide), routine work only with mended branches. The Director holds the night's one pointing-out (MayPointOut) and
@@ -191,7 +194,7 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
- struct FBuilt{FString Id;double X=0,Z=0,Y=0;bool bSeated=false;FVector2D Shift=FVector2D::ZeroVector;int32 ShiftDay=0;TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;TArray<FVector> Local;FS47Obj Hit;int32 TraceFrom=-1;bool bTraceOn=true;};
+ struct FBuilt{FString Id;double X=0,Z=0,Y=0;bool bSeated=false;FVector2D Shift=FVector2D::ZeroVector;int32 ShiftDay=0;TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;TArray<FVector> Local;FS47Obj Hit;int32 TraceFrom=-1;bool bTraceOn=true;double HeadAz=0;};
  TArray<FBuilt> Built;
  TSet<FString> HeardOf;
  TArray<FBearing> Fixes;

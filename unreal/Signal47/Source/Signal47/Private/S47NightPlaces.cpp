@@ -1,4 +1,5 @@
 #include "S47Happenings.h"
+#include "S47LandWindmill.h"
 #include "S47Ambience.h"
 #include "S47Audio.h"
 #include "S47Drive.h"
@@ -313,6 +314,8 @@ bool FS47Happenings::StepPlace(double Dt)
     FS47Sound O;O.At=At;O.Gain=H->Gain;O.Rate=bOther?H->RateB:H->Rate;O.Lp=H->Lp;O.When=float(K*H->Gap);
     A->Sfx(bOther?H->SoundB:H->Sound,O);
    }
+   // LAND-PLACES-WINDMILL-20261114: what is heard is seen on the model: the rod at the bottom on the knock, at the top on the lighter one
+   if(Now.Id==TEXT("windmill_knock"))S47LandWindmill::Knock(bOther);
    Now.Dir.X+=1;
    if(!Now.bSeen&&PlaceHeardAt(Away,H->MaxM))
    {
@@ -327,6 +330,7 @@ bool FS47Happenings::StepPlace(double Dt)
   if(Now.Stage==0&&H->StopM>0&&(Away<H->StopM||bLampOnIt))
   {
    Now.Stage=2;Now.Len=FMath::Min(Now.Len,Now.Age+1.5);
+   if(Now.Id==TEXT("windmill_knock"))S47LandWindmill::KnockEnd();
    if(A&&A->Night)A->Night->Hush(6,.05,.2,2.5);
   }
   if(Now.Age>=Now.Len)EndPlace(Now.Stage==2?1:0);

@@ -1,5 +1,6 @@
 #include "S47FarmWindmill.h"
 #include "S47FarmWorld.h"
+#include "S47LandWindmill.h"
 #include "S47HighwayLandscape.h"
 #include "S47Three.h"
 #include "S47Web.h"
@@ -137,7 +138,9 @@ namespace
 
  TArray<FBox2D> Footprints()
  {
-  return { FBox2D(MillAt - FVector2D(FootHalf + .05), MillAt + FVector2D(FootHalf + .05)) };
+  // LAND-PLACES-WINDMILL-20261114: the model's tower stands 2.5 m square on its piers
+  const double Half = S47LandWindmill::Available() ? S47LandWindmill::Foot + S47LandWindmill::PierHalf + .03 : FootHalf + .05;
+  return { FBox2D(MillAt - FVector2D(Half), MillAt + FVector2D(Half)) };
  }
 
  FVector3d TankRound() { return FVector3d(TankAt.X, TankAt.Y, TankR + .05); }
@@ -153,6 +156,8 @@ namespace
  void Reconcile(AS47Web* W,bool bOn)
  {
   if(!W||!Available())return;
+  // LAND-PLACES-WINDMILL-20261114: the windmill's model stands here in place of the cubes while its assets are in the build
+  if(S47LandWindmill::Available()){S47LandWindmill::ReconcileFarm(W,bOn);return;}
   if(BuiltFor.Get()!=W){BuiltFor=W;Root.Reset();Pieces.Reset();AppliedArea.Reset();AppliedOn=-1;if(bOn)Build(W);}
   else if(bOn&&!Root.IsValid())Build(W);
   USceneComponent* R=Root.Get();if(!R)return;
