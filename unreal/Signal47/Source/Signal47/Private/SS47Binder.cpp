@@ -111,7 +111,15 @@ void SS47Binder::Tick(const FGeometry& G,const double Time,const float Dt)
  SCompoundWidget::Tick(G,Time,Dt);
  S47Theme::KeepFocus(SharedThis(this));
  // The hints name the keys of whatever is in the hand now.
- if(const uint32 Pad=S47Gamepad::Changes();Pad!=PadSeen){PadSeen=Pad;Rebuild();}
+ if(const uint32 Pad=S47Gamepad::Changes();Pad!=PadSeen)
+ {
+  PadSeen=Pad;
+  // REVIEW (14 Nov): the name being written in the file's field, and the keys it has, outlast the hints drawn again
+  const bool bHad=NameBox.IsValid(),bTyping=bHad&&NameBox->HasAnyUserFocusOrFocusedDescendants();
+  const FText Typed=bHad?NameBox->GetText():FText();
+  Rebuild();
+  if(bHad&&NameBox.IsValid()){NameBox->SetText(Typed);if(bTyping)FSlateApplication::Get().SetAllUserFocus(NameBox,EFocusCause::SetDirectly);}
+ }
 }
 int32 SS47Binder::Section() const{return Where->Tab;}
 const S47Binder::FEntry* SS47Binder::Shown() const
