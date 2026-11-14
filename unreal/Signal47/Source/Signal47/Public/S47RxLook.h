@@ -321,6 +321,17 @@ namespace S47RxLook
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }
 
+struct FS47RxLive;
+namespace S47RxLook
+{
+	// RX-LOOK gjennomgang 14 Nov: what of the receiver's picture moves with time, as numbers, for a receiver so and a moment: the
+	// small spectrum and the I and Q traces at their points, the search sweep, the stars' shimmer, the bands that slip, the
+	// picture's jump and dark beat on interference (at full interference), a mark's breath and the banner's letters. With Calm
+	// flashes the same for every moment (the test compares two frames by it). The waterfall is not in it: its rows are the
+	// receiver's history and scroll as time passes, calm or not.
+	SIGNAL47_API TArray<float> MovingPicture(const FS47RxLive& Live, double T);
+}
+
 // What the receiver's frame shows this frame: every number the session's own (FS47FreeformSession::RxLive).
 struct FS47RxLive
 {

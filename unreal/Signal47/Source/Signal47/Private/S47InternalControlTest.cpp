@@ -11,6 +11,7 @@
 #include "S47Inter.h"
 #include "S47FreeformAudioDesk.h"
 #include "S47SkyAcquire.h"
+#include "S47RxLook.h"
 #include "SS47TapeScope.h"
 #include "UnrealClient.h"
 #include "Containers/Ticker.h"
@@ -64,6 +65,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  using J=FS47FreeformSession::EJobStage;
  static double TapeFrom=0;
  static double LookFrom=0;static bool bLookCalmWas=false; // RX-LOOK-20261113 (stages 101 to 107)
+ static TArray<float> CalmPicture;static double CalmAt=0; // RX-LOOK gjennomgang 14 Nov (stages 102 and 103)
  Age+=FMath::Min(Dt,.2);if(Hold>0){Hold-=Dt;return;}
  if(Age>240){Finish(false,FString::Printf(TEXT("internal control exceeded its time bound at stage %d"),Stage));return;}
  if(!M||!M->Flow||M->Flow->bStarting||S47Startup::Blocking()||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Player||!M->UI)return;
@@ -118,6 +120,17 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(!Check(IcUnderPointer(Scope.ToSharedRef(),Mid),FString::Printf(TEXT("reel deck: the trace is under the pointer at %.1f s"),Seconds)))return false;
   IcPointerAt(Mid);return true;
  };
+ // RX-LOOK gjennomgang 14 Nov: the same for a page with no key of its own (ARRAY): found by a line of its text
+ auto FitsText=[&](const FString& Label,const TCHAR* What)
+ {
+  TSharedPtr<SWidget> Found;
+  TFunction<void(TSharedRef<SWidget>)> Find=[&](TSharedRef<SWidget> X){if(Found.IsValid()||!X->GetVisibility().IsVisible())return;if(X->GetTypeAsString()==TEXT("STextBlock")&&StaticCastSharedRef<STextBlock>(X)->GetText().ToString().Contains(Label)){Found=X;return;}FChildren* Ch=X->GetChildren();for(int32 I=0;Ch&&I<Ch->Num();++I)Find(Ch->GetChildAt(I));};
+  FSlateApplication::Get().ForEachUser([&](FSlateUser& User){auto W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;Find(W.ToSharedRef());},true);
+  TSharedPtr<SWidget> Up=Found;while(Up.IsValid()&&Up->GetTypeAsString()!=TEXT("SScrollBox"))Up=Up->GetParentWidget();
+  const float Over=Up.IsValid()?StaticCastSharedPtr<SScrollBox>(Up)->GetScrollOffsetOfEnd():-1.f;
+  UE_LOG(LogTemp,Display,TEXT("S47 receiver %s: %.1f units past the glass"),What,Over);
+  return Check(Found.IsValid()&&Up.IsValid()&&Over<1.f,FString::Printf(TEXT("%s fits the glass without scrolling (%.1f over)"),What,Over));
+ };
  auto Fits=[&](const FString& Label,const TCHAR* What)
  {
   TArray<TSharedRef<SButton>> Keys;bool Seen=false;Scan(Label,Keys,Seen);if(!Check(Keys.Num()==1,FString(What)+TEXT(": its key ")+Label))return false;
@@ -170,9 +183,20 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: sky chart state %d, reticle %.1f degrees off the crossing"),int32(F.SkyFix->State()),F.SkyFix->Distance());
   Shot(TEXT("acquire-searching.png"));bLookCalmWas=M->Flow->bCalmFlash;M->Flow->bCalmFlash=true;Go(102,.6);return;
  }
- if(Stage==102){Shot(TEXT("acquire-searching-calm.png"));Go(103,.3);return;}
+ if(Stage==102)
+ {
+  // RX-LOOK gjennomgang 14 Nov: with Calm flashes nothing of the receiver's picture moves: what moves with time (S47RxLook::MovingPicture)
+  // is read now and again on the next stage, a third of a second later, and must be the same
+  if(!Check(F.RxLive().bCalm,TEXT("RX-LOOK: the receiver's frame reads the Calm flashes setting")))return;
+  CalmPicture=S47RxLook::MovingPicture(F.RxLive(),FPlatformTime::Seconds());CalmAt=FPlatformTime::Seconds();
+  Shot(TEXT("acquire-searching-calm.png"));Go(103,.3);return;
+ }
  if(Stage==103)
  {
+  {
+   const double Now=FPlatformTime::Seconds();
+   if(!Check(Now-CalmAt>.2&&S47RxLook::MovingPicture(F.RxLive(),Now)==CalmPicture,FString::Printf(TEXT("RX-LOOK: with Calm flashes the receiver's picture is the same %.2f s later (spectrum, I and Q, sweep, stars, slips, jump)"),Now-CalmAt)))return;
+  }
   M->Flow->bCalmFlash=bLookCalmWas;
   // the reticle put just inside the capture radius: the receiver eases it onto the crossing, the picture closes in, the fix is taken
   F.SkyFix->Nudge(F.SkyFix->Cross()+FVector2D(4.,2.5)-F.SkyFix->ReticleAt());LookFrom=Age;Go(104,1.2);return;
@@ -182,6 +206,8 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   if(!F.SkyFix->Locked()&&Age-LookFrom<15)return;
   UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: fix %s %.1f s after the reticle was put by the crossing"),F.SkyFix->Locked()?TEXT("held"):TEXT("NOT held"),Age-LookFrom);
+  // RX-LOOK gjennomgang 14 Nov: the picture that follows is the lock moment, so the fix must be held (it was only logged)
+  if(!Check(F.SkyFix->Locked(),FString::Printf(TEXT("RX-LOOK: the fix is held %.1f s after the reticle was put by the crossing"),Age-LookFrom)))return;
   Go(106,.35);return;
  }
  if(Stage==106){Shot(TEXT("acquire-lock-moment.png"));Go(107,2.2);return;}
@@ -238,6 +264,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(!Check(Take->bPrinted&&!Take->OriginalPage.IsEmpty()&&Take->bControl&&!FS47FreeformSession::RetainWaits(*Take)&&F.JobNextAction(*Take).StartsWith(TEXT("REEL DECK"))&&F.JobLocation(*Take).StartsWith(TEXT("Reel deck")),TEXT("RETAIN TAKE keeps the original, records its reference and names the reel deck: ")+F.JobNextAction(*Take)))return;
   if(Take->ControlAt<8)return;
   if(!Check(Shows(TEXT("RETAINED / REEL DECK NEXT"))&&F.ReceiverDuePage()==-1,TEXT("RECORD says the take is retained and the reel deck is next; no receiver tab is due")))return;
+  if(!FitsText(TEXT("RETAINED / REEL DECK NEXT"),TEXT("RECORD with the take retained")))return; // RX-LOOK gjennomgang 14 Nov
   Shot(TEXT("record-retained.png"));Go(20,.3);return;
  }
  if(Stage==20){if(!Click(TEXT("TUNE")))return;Go(21,1.);return;} // RX-ACQUIRE-SKY-20261113: the recording key and the tape strip are TUNE's too
@@ -267,16 +294,15 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  if(Stage==25)
  {
   if(!Check(F.ReceiverPage()==2&&Shows(TEXT("ARRAY / ANTENNAS ON THIS TARGET")),TEXT("RX-LOOK: the ARRAY tab opens in the receiver's frame")))return;
+  if(!FitsText(TEXT("ARRAY / ANTENNAS ON THIS TARGET"),TEXT("the ARRAY tab")))return; // RX-LOOK gjennomgang 14 Nov
   Shot(TEXT("array-tab.png"));
   if(!Click(TEXT("DATA")))return;Go(26,1.);return;
  }
  if(Stage==26)
  {
   if(!Check(F.ReceiverPage()==4&&Shows(TEXT("WORK CARD")),TEXT("RX-LOOK: the DATA tab opens in the receiver's frame")))return;
-  TArray<TSharedRef<SButton>> Keys;bool KeySeen=false;Scan(TEXT("NEXT >"),Keys,KeySeen);
-  TSharedPtr<SWidget> Up;if(Keys.Num()>0)Up=Keys[0];
-  while(Up.IsValid()&&Up->GetTypeAsString()!=TEXT("SScrollBox"))Up=Up->GetParentWidget();
-  UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: DATA is %.1f units past the glass (below 1: it fits)"),Up.IsValid()?StaticCastSharedPtr<SScrollBox>(Up)->GetScrollOffsetOfEnd():-1.f);
+  // RX-LOOK gjennomgang 14 Nov: DATA fits the glass like the other tabs (it was only logged)
+  if(!Fits(TEXT("NEXT >"),TEXT("the DATA tab")))return;
   Shot(TEXT("data-tab.png"));Go(70,1.);return;
  }
  if(Stage==70)

@@ -58,6 +58,26 @@ FString S47RxLook::TextFault(const FString& Shown)
 	return FString();
 }
 
+TArray<float> S47RxLook::MovingPicture(const FS47RxLive& Live, double T)
+{
+	TArray<float> Out;
+	const bool bCalm = Live.bCalm;
+	for (int32 I = 0; I <= 48; ++I)
+	{
+		const float U = I / 48.f;
+		float InPhase = 0, Quad = 0;
+		Quadrature(Live.Scope, U, T, bCalm, InPhase, Quad);
+		Out.Add(FftLevel(Live.Scope, U, T, bCalm)); Out.Add(InPhase); Out.Add(Quad);
+		Out.Add(Jitter(T, float(I * 9), bCalm));
+	}
+	for (int32 Star = 0; Star < 24; ++Star) Out.Add(Twinkle(Star, T, bCalm));
+	float Grow = 0, Alpha = 0;
+	Out.Add(float(Sweep(T, bCalm))); Out.Add(Breath(T, 1.1, bCalm)); Out.Add(float(Typed(16, FMath::Fmod(T, 1.), bCalm)));
+	Out.Add(Bloom(FMath::Fmod(T, 1.), bCalm)); Out.Add(Pulse(FMath::Fmod(T, 2.), 0, bCalm, Grow, Alpha) ? Grow + Alpha : -1.f);
+	Out.Add(TearShift(T, 1.f, bCalm)); Out.Add(TearDark(T, 1.f, bCalm));
+	return Out;
+}
+
 const FS47RxLive& FS47RxFeed::Now()
 {
 	if (Frame != GFrameCounter || !Read)
@@ -99,6 +119,14 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 		Check(bNone && bDark && bPoint && bSlew && bBlocked && bSettle && bSearch && bTaking && bFix && bLock && bRec && bHeld && bTape && bRef && bDone,
 			TEXT("the banner: NO JOB, NO POWER, POINT THE ARRAY, ARRAY SLEWING, SETTLING, SEARCHING, TAKING THE FIX, FIX HELD, SOURCE LOCK, RECORDING n/N s, REFERENCE n/8 s, each from its own state"));
 		Check(bNotYet && bUntuned && bOdd && bStill, TEXT("the banner says ANOMALY DETECTED only where the receiver's own line does: fix held and tuned, or the take on tape before the reel deck has heard it"));
+	}
+	{ // RX-LOOK gjennomgang 14 Nov: with Calm flashes the receiver's moving picture is the same at every moment (the receiver test
+		// compares two frames by it); without them it moves
+		FS47RxLive Calm; Calm.bCalm = true; Calm.Scope.bPowered = true; Calm.Scope.Strength = .3; Calm.Scope.Tuned = Calm.Scope.Card + .01;
+		FS47RxLive Moving = Calm; Moving.bCalm = false;
+		const TArray<float> First = MovingPicture(Calm, 100.), Later = MovingPicture(Calm, 100.37), Much = MovingPicture(Calm, 2031.9);
+		Check(First.Num() > 100 && First == Later && First == Much && MovingPicture(Moving, 100.) != MovingPicture(Moving, 100.37),
+			FString::Printf(TEXT("with Calm flashes the receiver's moving picture (%d numbers: the spectrum, I and Q, the sweep, the stars, the slips, the jump, the breath, the letters) is the same frame after frame; without them it moves"), First.Num()));
 	}
 	{ // the line and its wavelength
 		Check(FMath::Abs(WavelengthCm(1420.405) - 21.106) < .001 && FMath::Abs(WavelengthCm(1419.6) - 21.118) < .001 && WavelengthCm(0) == 0 && OnHydrogenLine(1420.38) && !OnHydrogenLine(1419.9) && FString(LineName(1419.6)) == TEXT("CONT"),
