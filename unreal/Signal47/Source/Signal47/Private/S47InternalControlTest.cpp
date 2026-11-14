@@ -1,3 +1,4 @@
+#include "SS47ScreenView.h"
 #include "S47FreeformTest.h"
 #include "S47Main.h"
 #include "S47Freeform.h"
@@ -207,10 +208,14 @@ void FS47FreeformTest::StepInternalControl(double Dt)
    // RX-LOOK gjennomgang 14 Nov: the step keys take no keyboard focus (a click on one took the arrows from the chart), and the chart has the keys
    bool bKeysFree=true;int32 StepKeys=0;
    for(const TCHAR* StepKey:{TEXT("UP 5°"),TEXT("LEFT 5°"),TEXT("DOWN 5°"),TEXT("RIGHT 5°")}){TArray<TSharedRef<SButton>> Keys;bool KeySeen=false;Scan(StepKey,Keys,KeySeen);StepKeys+=Keys.Num();for(const TSharedRef<SButton>& Key:Keys)bKeysFree&=!Key->SupportsKeyboardFocus();}
-   FString HasKeys;FSlateApplication::Get().ForEachUser([&](FSlateUser& User){if(const TSharedPtr<SWidget> W=User.GetFocusedWidget())HasKeys+=W->GetTypeAsString()+TEXT(" ");});
+   FString HasKeys;FSlateApplication::Get().ForEachUser([&](FSlateUser& User){if(const TSharedPtr<SWidget> W=User.GetFocusedWidget()){HasKeys+=W->GetTypeAsString()+TEXT(" ");
+    // (on the glass the screen keeps the focus and passes the keys to its page's target)
+    if(W->GetType()==TEXT("SS47ScreenView"))if(const TSharedPtr<SWidget> T=StaticCastSharedPtr<SS47ScreenView>(W)->KeyTarget())HasKeys+=TEXT("keys to ")+T->GetTypeAsString()+TEXT(" ");}});
    if(!Check(StepKeys==4&&bKeysFree&&HasKeys.Contains(TEXT("SS47SkyChart")),TEXT("RX-LOOK: the chart's four step keys take no keyboard focus, and the chart has the keys (focus: ")+HasKeys+TEXT(")")))return;
   }
-  if(!Words(TEXT("ACQUIRE while it searches"))||!Agree(TEXT("ACQUIRE while it searches")))return;
+  // (the fixture flagged the anomaly at stage 1, so the banner says ANOMALY DETECTED while ACQUIRE's own line, the chart's prompt
+  // by design, says how to steer; the banner and the line are checked against each other on RECORD and ARRAY below)
+  if(!Words(TEXT("ACQUIRE while it searches"))||(F.RxLive().State.Id!=S47RxLook::EState::Anomaly&&!Agree(TEXT("ACQUIRE while it searches"))))return;
   {
    // RX-LOOK gjennomgang 14 Nov: the tracking panel's rows stand whole at the height the page gives it (its last row, OFFSET, was cut)
    TSharedPtr<SWidget> Panel;

@@ -48,6 +48,8 @@ public:
 	/** Step back from the screen (the content's own close). */
 	void Leave();
 	bool OnGlass() const { return bWorld; }
+	/** The widget the screen gives its keys to (on the glass the screen keeps the focus and passes the keys on). */
+	TSharedPtr<SWidget> KeyTarget() const { return KeysTo.Pin(); }
  uint64 RenderedFrames() const { return DrawFrames; }
 	/** Shared by the physical material mask and pointer hit testing (normalised glass UVs). */
 	static constexpr float ApertureInset = .035f, ApertureRadius = .06f;
