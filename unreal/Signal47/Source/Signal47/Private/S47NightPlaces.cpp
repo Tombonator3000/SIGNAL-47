@@ -17,6 +17,7 @@
 #include "S47StoryDirector.h"
 #include "S47FieldRadio.h"
 #include "S47Places.h"
+#include "S47LandPlaceFixes.h"
 #include "S47Walker.h"
 #include "S47Weather.h"
 #include "S47Web.h"
@@ -349,7 +350,7 @@ bool FS47Happenings::StepPlace(double Dt)
   At.Y+=.75;Turn=0;
  }
  else if(bFlare){At.Y+=.02;Turn=0;}
- else At.Y+=1.4;
+ else if(!S47LandPlaceFixes::LampPose(M,Now.Id,At,Turn))At.Y+=1.4; // LAND-PLACES-FIXES-20261114: the shack's lamp in its window, outside the wall
  const double Away=AwayFrom(At);
  const bool bBurning=Now.Stage<2||(bFlare&&Now.Age<Now.Dir.Y+3.);
  if(Pp){PoseProp(*Pp,At,Turn);ShowProp(*Pp,bBurning);}

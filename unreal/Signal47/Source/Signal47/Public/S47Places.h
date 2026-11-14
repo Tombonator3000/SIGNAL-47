@@ -176,6 +176,7 @@ public:
  // Continue changes nothing. Only what could be carried. Only moved while nobody is near.
  static FVector2D DriftOf(const FString& Id,int32 Seed,int32 Day);
  static bool Drifts(const FString& Id);
+ static bool PartOf(const FString& Kind,int32 Index,FVector& OutAt,FVector& OutSize); // LAND-PLACES-FIXES-20261114: a basic shape as it is drawn (its middle and size, the place's metres)
  // Where the place really stands, road-local, after the land has had its say.
  bool Spot(const FString& Id,double& OutX,double& OutZ) const;
  // D48-20261110: where a built place stands with its ground, three-space world metres (the motel on SARO's ground, the rest on the

@@ -479,7 +479,7 @@ void FS47MotelTv::Sound(double InDist)
 		else { const auto O = Ctx->CreateOscillator(); O->SetType(TEXT("sawtooth")); O->Frequency.SetValue(60); HOsc = O; }
 		const auto Lp = Ctx->CreateBiquadFilter(); Lp->SetType(TEXT("lowpass")); Lp->Frequency.SetValue(380); HOsc->Connect(Lp); Lp->Connect(HumGain);
 		// FIX10-7: the hiss is the bought static bed when it is staged (lifted to the noise's own level through this high-pass), else noise
-		const TSharedPtr<FS47AudioBuffer> Bed = S47UiSound::TvBed();
+		const TSharedPtr<FS47AudioBuffer> Bed = S47UiSound::TvBed(S47UiSound::EChain::Motel);
 		const auto Hiss = Gain(); const auto N = Ctx->CreateBufferSource(); N->Buffer = Bed ? Bed : Noise; N->bLoop = true;
 		const auto Hp = Ctx->CreateBiquadFilter(); Hp->SetType(TEXT("highpass")); Hp->Frequency.SetValue(900); N->Connect(Hp); Hp->Connect(Hiss);
 		const auto Whine = Gain(); const auto WOsc = Ctx->CreateOscillator(); WOsc->Frequency.SetValue(15734); WOsc->Connect(Whine);

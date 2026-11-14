@@ -4253,6 +4253,14 @@ bool FS47FreeformSession::NightBeforeGoal()const
  if(Now<EveningOpens||Now>=NightWatchCloses)return false;
  return Work.ContainsByPredicate([](const FJob& J){return J.bGenerated&&J.CaseTest<0&&J.Day>=2&&J.Stage!=EJobStage::Filed&&!J.bDuplicateRejected;});
 }
+bool FS47FreeformSession::NightWatchOpen(double& UpHours,double& SuggestedHours)const
+{
+ UpHours=SuggestedHours=0;
+ if(!RulesLive()||DayNumber<2)return false;
+ for(const FJob& J:Work)if(J.Day==DayNumber&&NightWatch(J)&&J.Stage<EJobStage::Registered&&!J.bDuplicateRejected)
+ {UpHours=EveningUp(J)/3600.;SuggestedHours=FS47FreeformJobs::ShiftClock(J.Card.SuggestedClock)/3600.;return true;}
+ return false;
+}
 bool FS47FreeformSession::SlipToFollow()const
 {
  if(!Places)return false;

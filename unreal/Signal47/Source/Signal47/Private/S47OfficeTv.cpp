@@ -187,10 +187,11 @@ void FS47OfficeTv::Switch()
 	if (M && M->Audio)
 	{
 		US47Audio* A = M->Audio.Get();
-		FS47Sound O; O.At = Speaker(); O.Gain = 0.5f; O.Rate = *Off ? 0.9f : 1.05f;
+		// FIX10-7: the tube under the switch: its buzz swelling as the picture comes, running down as it goes (when there is one).
+		// Review 14 Nov: with the tube under it the switch is quieter, so that the pair is no louder than the switch was alone.
+		const bool bTube = (*Off ? Show != EShow::Off : Powered()) && S47UiSound::Tv(A, *Off ? S47UiSound::ETv::PowerOff : S47UiSound::ETv::PowerOn, Speaker(), S47UiSound::TubeWithSwitch);
+		FS47Sound O; O.At = Speaker(); O.Gain = bTube ? S47UiSound::SwitchWithTube : S47UiSound::SwitchAlone; O.Rate = *Off ? 0.9f : 1.05f;
 		A->Sfx(A->Or(TEXT("small_switch"), TEXT("click")), O);
-		// FIX10-7: the tube under the switch: its buzz swelling as the picture comes, running down as it goes (when there is one)
-		if (*Off ? Show != EShow::Off : Powered()) S47UiSound::Tv(A, *Off ? S47UiSound::ETv::PowerOff : S47UiSound::ETv::PowerOn, Speaker(), 0.4f);
 	}
 	UE_LOG(LogS47OfficeTv, Display, TEXT("S47: Operations television switched %s"), *Off ? TEXT("off") : TEXT("on"));
 }

@@ -16,6 +16,7 @@
 #include "S47GameStyle.h"
 #include "S47Inter.h"
 #include "S47Kit.h"
+#include "S47LandPlaceFixes.h"
 #include "S47Legs.h"
 #include "S47Mail.h"
 #include "S47Main.h"
@@ -322,6 +323,8 @@ void FS47Predecessor::Step(double Dt)
   // Placed once when built, and measured again only near the player, when there is ground there to measure.
   const FVector Road=S47Legs::ORIGINS(TEXT("road"));
   const auto Close=[&](const FSpot& P){return M->Player&&FVector2D(M->Player->Pos.X-(Road.X+P.X),M->Player->Pos.Z-(Road.Z+P.Z)).Size()<300;};
+  // LAND-PLACES-FIXES-20261114: a tag at a place that drifts (the cairn) goes with it, to the same offset from where it stands today
+  for(FSpot& P:Land)for(const S47PredecessorText::FTagDef& D:S47PredecessorText::Tags())if(P.Id==D.Doc&&S47LandPlaceFixes::Follow(M,D.Place,P.X,P.Z,D.OffX,D.OffZ))Seat(P);
   for(FSpot& P:Land)if(!P.bSeated&&Close(P))Seat(P);
   if(!WagonSpot.bSeated&&!WagonSpot.Parts.IsEmpty()&&Close(WagonSpot))SeatWagon();
  }
@@ -1869,6 +1872,15 @@ bool FS47Predecessor::SelfTest(TArray<FString>& Lines)
    &&X::HoursSaid(1).Contains(TEXT("once"))&&X::HoursSaid(2).Contains(TEXT("twice"))&&X::HoursSaid(0).IsEmpty()&&X::HoursSaid(3).IsEmpty()&&X::WeekNote(1,3,0,20,3,0,20,TEXT("MONDAY"),1,PointsToStay,1).Contains(TEXT("If it comes to three times"));
   for(const FString& Said:{Once,Twice,X::HoursSaid(1),X::HoursSaid(2)})bSaid&=S47Script::LintText(Said).IsEmpty()&&!Said.ToLower().Contains(TEXT("taken"))&&!Said.ToLower().Contains(TEXT("abduct"))&&!Said.Contains(TEXT("47"));
   Check(bSaid&&TakenTooOften==3&&GoneDue(3,0,9,10)&&!GoneDue(2,0,9,10),TEXT("LOOP-GONE-LEGIBLE: her words say the hours, once or twice, and what three times does, never how; the rule and its count are unchanged"));
+ }
+ {
+  // FELT-WEEK1-20261114: the still rule is in Reyes's hand before the first visit (the locker note), unfinished: it never says what
+  // they are or what happens to anyone, and never tells the other two lamp rules beyond «not all of them».
+  const S47PredecessorText::FDocDef* Note=S47PredecessorText::Doc(TEXT("note"));
+  const FString Body=Note?FString(Note->Page):FString();
+  Check(Note&&Body.Contains(TEXT("lamp OFF. don't move."))&&Body.Contains(TEXT("not all of them"))&&!Body.ToLower().Contains(TEXT("taken"))&&!Body.ToLower().Contains(TEXT("stand still"))
+   &&!Body.ToLower().Contains(TEXT("tall"))&&!Body.ToLower().Contains(TEXT("pale"))&&S47Script::LintText(Body).IsEmpty()&&S47Script::LintText(Note->Summary).IsEmpty()&&FS47Predecessor::DayOneSecond(TEXT("locker")),
+   TEXT("FELT-WEEK1: the locker's note tells the still rule half-finished, as Reyes's hearsay, on day one; nothing of the other two"));
  }
  FTally Owing=Good;Owing.Arrears=FS47FreeformSession::ArrearsCap;Check(Decide(Owing)!=EOutcome::Stays,TEXT("not with the sheet at its limit"));
  Check(FS47FreeformSession::ArrearsCap==80&&X::Letter(false,FString(),FString()).Contains(TEXT("less than $80")),TEXT("the first letter names the same limit as the code (CHAIN-5-20261109)"));
