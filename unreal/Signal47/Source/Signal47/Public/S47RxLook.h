@@ -11,7 +11,9 @@
 namespace S47RxLook
 {
 	// ---- the state banner ----
-	enum class EState : uint8 { NoJob, NoPower, NotUp, Point, Blocked, Slewing, Settling, Searching, TakingFix, FixHeld, SourceLock, Anomaly, Recording, RecordingHeld, Reference, OnTape, Done };
+	// (RX-LOOK gjennomgang 14 Nov: CaseWaits, a case test whose physical precondition is not met; Scan, the automatic reference scan
+	// during a take, while the take goes on)
+	enum class EState : uint8 { NoJob, NoPower, NotUp, Point, Blocked, Slewing, Settling, Searching, TakingFix, FixHeld, SourceLock, Anomaly, Recording, RecordingHeld, Reference, OnTape, Done, CaseWaits, Scan };
 	// The job's stage as FS47FreeformSession::EJobStage counts it (0 new, 1 pointed, 2 recording, 3 at the printer, 4 recorded, 5 and on: registered).
 	struct FStateIn
 	{
@@ -22,11 +24,17 @@ namespace S47RxLook
 		bool bAnomalyAhead = false;              // tuned and ready, the take would be an unusual one (the screens already say ANOMALY DETECTED)
 		bool bPlainOnTape = false;               // an unusual take on tape that the reel deck has not heard yet (the screens still say it)
 		bool bReference = false;                 // its 8-second reference is being recorded
+		bool bCaseWaits = false;                 // a case test's physical precondition is not met (FS47FreeformSession::CasePrecondition)
+		bool bCrossRunning = false;              // the automatic reference scan is moving the array during the take
 		int32 Stage = 0;
 		double Elapsed = 0, Seconds = 18, ReferenceAt = 0;
 	};
 	struct FState { EState Id = EState::NoJob; FString Text; bool bAmber = false; };
 	SIGNAL47_API FState StateOf(const FStateIn& In);
+	// RX-LOOK gjennomgang 14 Nov: whether the receiver's own line (ReceiverNextAction, or the sky chart's on ACQUIRE) says the same
+	// as a banner state: the words of that state's step are in it (a state whose line is free text, as the evening's plan or a
+	// case test's precondition, agrees with any).
+	SIGNAL47_API bool Agrees(EState Banner, const FString& Prompt);
 
 	// ---- the line and its wavelength ----
 	constexpr double HydrogenMhz = 1420.40575;

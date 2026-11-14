@@ -691,7 +691,8 @@ double FS47FreeformSession::ArrayErrorDeg()const
 FString FS47FreeformSession::ArrayMeasurementStatus()const
 {
  const int32 N=AvailableDishCount();const bool Worn=Field&&Field->ArrayWear().bActive;const int32 Least=Worn?FS47ArrayWear::MinDishes:24;
- return FString::Printf(TEXT("ARRAY %d/27 / MEASUREMENT RATE %.0f%% / %s"),N,100*ArrayMeasurementRate(),N<Least?*FString::Printf(TEXT("BLOCKED: inspect ARRAY STATUS (left-hand PC); need %d"),Least):N<27?(Worn&&Field->ArrayWear().DownCount()>0?TEXT("WORN: restore the outer branches to speed up measuring"):TEXT("DEGRADED: repair restores rate")):TEXT("FULL RATE"));
+ // (RX-LOOK gjennomgang 14 Nov: the receiver's prompt says this while the array is blocked; its numbers by the glass's formatter)
+ return FString::Printf(TEXT("ARRAY %s/27 / MEASUREMENT RATE %s%% / %s"),*S47RxLook::Num(double(N)),*S47RxLook::Num(100*ArrayMeasurementRate()),N<Least?*FString::Printf(TEXT("BLOCKED: inspect ARRAY STATUS (left-hand PC); need %s"),*S47RxLook::Num(double(Least))):N<27?(Worn&&Field->ArrayWear().DownCount()>0?TEXT("WORN: restore the outer branches to speed up measuring"):TEXT("DEGRADED: repair restores rate")):TEXT("FULL RATE"));
 }
 FVector2D FS47FreeformSession::AimAzEl()
 {

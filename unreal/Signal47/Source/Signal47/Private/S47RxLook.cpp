@@ -5,32 +5,63 @@
 S47RxLook::FState S47RxLook::StateOf(const FStateIn& In)
 {
 	// The order is FS47FreeformSession::ReceiverNextAction's: the banner never says more than the receiver's own line does.
+	// RX-LOOK gjennomgang 14 Nov: exactly its order: the evening's gate first; at the printer, in the packet or filed the job's own
+	// next step before the power; a case test's precondition and too few antennas before the pointing; the reference scan during a
+	// take (the take goes on) apart from a take held.
 	auto Say = [](EState Id, const FString& Text, bool bAmber) { FState S; S.Id = Id; S.Text = Text; S.bAmber = bAmber; return S; };
+	auto AfterTake = [&]
+	{
+		if (In.Stage <= 4)
+		{
+			if (In.bReference) return Say(EState::Reference, FString::Printf(TEXT("REFERENCE %s/8 s"), *Num(FMath::Clamp(int32(In.ReferenceAt), 0, 8))), true);
+			if (In.bPlainOnTape) return Say(EState::Anomaly, TEXT("ANOMALY DETECTED"), true);
+			return Say(EState::OnTape, TEXT("TAKE ON TAPE"), false);
+		}
+		return Say(EState::Done, TEXT("TAKE REGISTERED"), false);
+	};
 	if (!In.bJob) return Say(EState::NoJob, TEXT("NO JOB"), false);
+	if (In.bNotUp) return Say(EState::NotUp, TEXT("SOURCE NOT UP"), false);
+	if (In.Stage == 3 || In.Stage >= 6) return AfterTake(); // at the printer, in the packet, filed
 	if (!In.bPower) return Say(EState::NoPower, TEXT("NO POWER"), false);
-	if (In.bNotUp && In.Stage <= 1) return Say(EState::NotUp, TEXT("SOURCE NOT UP"), false);
+	if (In.Stage >= 3) return AfterTake();
+	if (In.bCaseWaits && In.Stage <= 1) return Say(EState::CaseWaits, TEXT("TEST NOT READY"), false);
+	if (In.bBlocked) return Say(EState::Blocked, TEXT("ARRAY BLOCKED"), false);
 	if (In.Stage <= 0) return Say(EState::Point, TEXT("POINT THE ARRAY"), false);
 	if (In.Stage == 1)
 	{
-		if (In.bBlocked) return Say(EState::Blocked, TEXT("ARRAY BLOCKED"), false);
 		if (!In.bPointReady) return Say(EState::Slewing, TEXT("ARRAY SLEWING"), false);
 		if (!In.bSettled) return Say(EState::Settling, TEXT("ARRAY SETTLING"), false);
 		if (!In.bSky) return In.bSkyLocking ? Say(EState::TakingFix, TEXT("TAKING THE FIX"), true) : Say(EState::Searching, TEXT("SEARCHING"), false);
 		if (!In.bTuned) return Say(EState::FixHeld, TEXT("FIX HELD"), true);
 		return In.bAnomalyAhead ? Say(EState::Anomaly, TEXT("ANOMALY DETECTED"), true) : Say(EState::SourceLock, TEXT("SOURCE LOCK"), true);
 	}
-	if (In.Stage == 2)
+	// the take (stage 2)
+	if (!In.bTuned) return Say(EState::RecordingHeld, TEXT("RECORDING HELD"), false);
+	if (!In.bPointReady || !In.bSettled) return In.bCrossRunning ? Say(EState::Scan, TEXT("REFERENCE SCAN"), true) : Say(EState::RecordingHeld, TEXT("RECORDING HELD"), false);
+	return Say(EState::Recording, FString::Printf(TEXT("RECORDING %s/%s s"), *Num(FMath::Clamp(int32(In.Elapsed), 0, 999)), *Num(FMath::Clamp(FMath::RoundToInt32(In.Seconds), 0, 999))), true);
+}
+
+bool S47RxLook::Agrees(EState Banner, const FString& Prompt)
+{
+	auto Says = [&Prompt](std::initializer_list<const TCHAR*> Words) { for (const TCHAR* Word : Words) if (Prompt.Contains(Word)) return true; return false; };
+	switch (Banner)
 	{
-		if (In.bBlocked || !In.bTuned || !In.bPointReady || !In.bSettled) return Say(EState::RecordingHeld, TEXT("RECORDING HELD"), false);
-		return Say(EState::Recording, FString::Printf(TEXT("RECORDING %s/%s s"), *Num(FMath::Clamp(int32(In.Elapsed), 0, 999)), *Num(FMath::Clamp(FMath::RoundToInt32(In.Seconds), 0, 999))), true);
+	case EState::NoJob: return Says({ TEXT("Select an observation") });
+	case EState::NoPower: return Says({ TEXT("generator"), TEXT("feeder"), TEXT("MAINS"), TEXT("PRINTER") });
+	case EState::Blocked: return Says({ TEXT("BLOCKED") });
+	case EState::Point: return Says({ TEXT("Point the array"), TEXT("POINT THE ARRAY") });
+	case EState::Slewing: return Says({ TEXT("commanded direction") });
+	case EState::Settling: return Says({ TEXT("settle") });
+	case EState::Searching: case EState::TakingFix: return Says({ TEXT("ACQUIRE"), TEXT("STEER"), TEXT("HINT"), TEXT("ASSIST"), TEXT("CROSSING"), TEXT("TURNING"), TEXT("BEARINGS") });
+	case EState::FixHeld: return Says({ TEXT("Tune"), TEXT("TUNE"), TEXT("GAIN"), TEXT("BANDWIDTH"), TEXT("Fine-tune") });
+	case EState::SourceLock: return Says({ TEXT("START RECORDING") });
+	case EState::Anomaly: return Says({ TEXT("ANOMALY"), TEXT("RETAIN"), TEXT("REEL DECK") });
+	case EState::Recording: return Says({ TEXT("Recording at the receiver"), TEXT("Let the take run") });
+	case EState::RecordingHeld: return Says({ TEXT("Restore") });
+	case EState::Scan: return Says({ TEXT("reference scan") });
+	case EState::Reference: return Says({ TEXT("CONTROL"), TEXT("REFERENCE"), TEXT("RECEIVER RACK") });
+	default: return true; // NotUp, CaseWaits, OnTape, Done: the line is the plan's, the case's or the job's own
 	}
-	if (In.Stage <= 4)
-	{
-		if (In.bReference) return Say(EState::Reference, FString::Printf(TEXT("REFERENCE %s/8 s"), *Num(FMath::Clamp(int32(In.ReferenceAt), 0, 8))), true);
-		if (In.bPlainOnTape) return Say(EState::Anomaly, TEXT("ANOMALY DETECTED"), true);
-		return Say(EState::OnTape, TEXT("TAKE ON TAPE"), false);
-	}
-	return Say(EState::Done, TEXT("TAKE REGISTERED"), false);
 }
 
 FString S47RxLook::ClockLine(const FString& DateAndClock)
@@ -119,6 +150,27 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 		Check(bNone && bDark && bPoint && bSlew && bBlocked && bSettle && bSearch && bTaking && bFix && bLock && bRec && bHeld && bTape && bRef && bDone,
 			TEXT("the banner: NO JOB, NO POWER, POINT THE ARRAY, ARRAY SLEWING, SETTLING, SEARCHING, TAKING THE FIX, FIX HELD, SOURCE LOCK, RECORDING n/N s, REFERENCE n/8 s, each from its own state"));
 		Check(bNotYet && bUntuned && bOdd && bStill, TEXT("the banner says ANOMALY DETECTED only where the receiver's own line does: fix held and tuned, or the take on tape before the reel deck has heard it"));
+		// RX-LOOK gjennomgang 14 Nov: ReceiverNextAction's order exactly. The evening's gate before the power; at the printer, in the
+		// packet or filed the job's own step before the power, recorded after it; a case test's precondition, then too few antennas,
+		// before the pointing (also when not yet pointed, and during the take); the reference scan during a take apart from a take held.
+		FStateIn Order; Order.bJob = true; Order.Stage = 0;
+		auto Is = [&](EState Want) { return StateOf(Order).Id == Want; };
+		Order.bPower = false; Order.bNotUp = true; const bool bGateFirst = Is(EState::NotUp); Order.bNotUp = false;
+		Order.Stage = 3; const bool bPrinter = Is(EState::OnTape); Order.Stage = 6; const bool bPacket = Is(EState::Done); Order.Stage = 7; const bool bFiled = Is(EState::Done);
+		Order.Stage = 4; const bool bRecordedDark = Is(EState::NoPower); Order.Stage = 5; const bool bRegisteredDark = Is(EState::NoPower);
+		Order.bPower = true; Order.Stage = 0; Order.bCaseWaits = true; Order.bBlocked = true; const bool bCase = Is(EState::CaseWaits);
+		Order.Stage = 1; const bool bCasePointed = Is(EState::CaseWaits); Order.bCaseWaits = false;
+		Order.Stage = 0; const bool bBlockedNew = Is(EState::Blocked); Order.Stage = 2; const bool bBlockedTake = Is(EState::Blocked); Order.bBlocked = false;
+		Order.bTuned = true; Order.bPointReady = false; Order.bSettled = true; Order.bCrossRunning = true; const bool bScan = Is(EState::Scan) && StateOf(Order).Text == TEXT("REFERENCE SCAN");
+		Order.bCrossRunning = false; const bool bHeldTake = Is(EState::RecordingHeld);
+		Order.bCrossRunning = true; Order.bTuned = false; const bool bUntunedScan = Is(EState::RecordingHeld);
+		Check(bGateFirst && bPrinter && bPacket && bFiled && bRecordedDark && bRegisteredDark && bCase && bCasePointed && bBlockedNew && bBlockedTake && bScan && bHeldTake && bUntunedScan,
+			TEXT("the banner follows the receiver's line in its order: the evening's gate, the printer, packet and file before the power, a case test's precondition and the blocked array before the pointing, the reference scan apart from a held take"));
+		// and the banner's words are the line's: each state's step is in the receiver's own words for it
+		Check(Agrees(EState::Scan, TEXT("TRACKING (right-hand PC): Automatic reference scan in progress. Wait for the samples; the take goes on, then RETAIN TAKE on the RECORD tab.")) && !Agrees(EState::RecordingHeld, TEXT("TRACKING (right-hand PC): Automatic reference scan in progress."))
+			&& Agrees(EState::Blocked, TEXT("ARRAY 20/27 / MEASUREMENT RATE 74% / BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24")) && !Agrees(EState::Point, TEXT("ARRAY 20/27 / BLOCKED"))
+			&& Agrees(EState::NoPower, TEXT("Restore the SARO feeder, or start the fuelled standby generator outside behind the control room.")) && !Agrees(EState::NoPower, TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT")),
+			TEXT("the banner's states and the receiver's own lines: a reference scan is not a held take, a blocked array is not a pointing to do"));
 	}
 	{ // RX-LOOK gjennomgang 14 Nov: with Calm flashes the receiver's moving picture is the same at every moment (the receiver test
 		// compares two frames by it); without them it moves

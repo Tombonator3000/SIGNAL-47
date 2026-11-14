@@ -141,6 +141,15 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(!bLog&&OnGlass>20&&Count==0)return true;
   return Check(OnGlass>20&&Count==0,FString::Printf(TEXT("RX-LOOK: %s: %d lines on the glass and %d painted keep to the text rule%s"),Where,OnGlass,Seen.Num()-OnGlass,Count?*(FString::Printf(TEXT(", NOT %d:"),Count)+Faults):TEXT("")));
  };
+ // RX-LOOK gjennomgang 14 Nov: the banner and the receiver's line on the glass say the same (S47RxLook::Agrees: the banner state's step
+ // is in one of the lines the page shows)
+ auto Agree=[&](const TCHAR* Where)
+ {
+  bool bSaid=false;
+  TFunction<void(TSharedRef<SWidget>)> Visit=[&](TSharedRef<SWidget> X){if(bSaid||!X->GetVisibility().IsVisible())return;if(X->GetTypeAsString()==TEXT("STextBlock")&&S47RxLook::Agrees(F.RxLive().State.Id,StaticCastSharedRef<STextBlock>(X)->GetText().ToString()))bSaid=true;FChildren* Ch=X->GetChildren();for(int32 I=0;Ch&&I<Ch->Num();++I)Visit(Ch->GetChildAt(I));};
+  FSlateApplication::Get().ForEachUser([&](FSlateUser& User){auto W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;Visit(W.ToSharedRef());},true);
+  return Check(bSaid,FString::Printf(TEXT("RX-LOOK: %s: the banner's %s and the receiver's line agree"),Where,*F.RxLive().State.Text));
+ };
  // RX-LOOK gjennomgang 14 Nov: the same for a page with no key of its own (ARRAY): found by a line of its text
  auto FitsText=[&](const FString& Label,const TCHAR* What)
  {
@@ -201,7 +210,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
    FString HasKeys;FSlateApplication::Get().ForEachUser([&](FSlateUser& User){if(const TSharedPtr<SWidget> W=User.GetFocusedWidget())HasKeys+=W->GetTypeAsString()+TEXT(" ");});
    if(!Check(StepKeys==4&&bKeysFree&&HasKeys.Contains(TEXT("SS47SkyChart")),TEXT("RX-LOOK: the chart's four step keys take no keyboard focus, and the chart has the keys (focus: ")+HasKeys+TEXT(")")))return;
   }
-  if(!Words(TEXT("ACQUIRE while it searches")))return;
+  if(!Words(TEXT("ACQUIRE while it searches"))||!Agree(TEXT("ACQUIRE while it searches")))return;
   UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: sky chart state %d, reticle %.1f degrees off the crossing"),int32(F.SkyFix->State()),F.SkyFix->Distance());
   Shot(TEXT("acquire-searching.png"));bLookCalmWas=M->Flow->bCalmFlash;M->Flow->bCalmFlash=true;Go(102,.6);return;
  }
@@ -266,7 +275,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   if(!Check(F.ReceiverPage()==3&&F.ReceiverDuePage()==-1&&Shows(TEXT("ANOMALY / RECORD IT, THEN RETAIN IT"))&&!Shows(TEXT("TAKE LIST")),TEXT("RECORD holds the anomaly (its panel in the take list's place) and is no longer due once open")))return;
   if(!Fits(TEXT("START RECORDING"),TEXT("RECORD with the anomaly before the take")))return;
-  if(!Words(TEXT("RECORD before the take")))return;
+  if(!Words(TEXT("RECORD before the take"))||!Agree(TEXT("RECORD before the take")))return;
   Shot(TEXT("record-before-take.png"));
   // 2: record it there
   if(!Click(TEXT("START RECORDING")))return;Go(12,.5);return;
@@ -301,7 +310,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(Take->ControlAt<8)return;
   if(!Check(Shows(TEXT("RETAINED / REEL DECK NEXT"))&&F.ReceiverDuePage()==-1,TEXT("RECORD says the take is retained and the reel deck is next; no receiver tab is due")))return;
   if(!FitsText(TEXT("RETAINED / REEL DECK NEXT"),TEXT("RECORD with the take retained")))return; // RX-LOOK gjennomgang 14 Nov
-  if(!Words(TEXT("RECORD with the take retained")))return;
+  if(!Words(TEXT("RECORD with the take retained"))||!Agree(TEXT("RECORD with the take retained")))return;
   Shot(TEXT("record-retained.png"));Go(20,.3);return;
  }
  if(Stage==20){if(!Click(TEXT("TUNE")))return;Go(21,1.);return;} // RX-ACQUIRE-SKY-20261113: the recording key and the tape strip are TUNE's too
@@ -332,7 +341,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   if(!Check(F.ReceiverPage()==2&&Shows(TEXT("ARRAY / ANTENNAS ON THIS TARGET")),TEXT("RX-LOOK: the ARRAY tab opens in the receiver's frame")))return;
   if(!FitsText(TEXT("ARRAY / ANTENNAS ON THIS TARGET"),TEXT("the ARRAY tab")))return; // RX-LOOK gjennomgang 14 Nov
-  if(!Words(TEXT("the ARRAY tab")))return;
+  if(!Words(TEXT("the ARRAY tab"))||!Agree(TEXT("the ARRAY tab")))return;
   Shot(TEXT("array-tab.png"));
   if(!Click(TEXT("DATA")))return;Go(26,1.);return;
  }

@@ -335,6 +335,9 @@ FS47RxLive FS47FreeformSession::RxLive() const
 		In.bPlainOnTape = PlainAnomaly(*LookJob) && LookJob->Stage >= EJobStage::Integrating && LookJob->Stage <= EJobStage::Recorded && !LookJob->bAudioReviewed;
 		In.bReference = LookJob->bControl && LookJob->ControlAt < 8 && LookJob->Phenomenon != TEXT("wrong_source");
 		In.Elapsed = LookJob->Elapsed; In.Seconds = SourceSeconds(); In.ReferenceAt = LookJob->ControlAt;
+		// (RX-LOOK gjennomgang 14 Nov: ReceiverNextAction's two other conditions)
+		In.bCaseWaits = LookJob->CaseTest >= 0 && LookJob->Stage <= EJobStage::Pointed && !CasePrecondition(*LookJob).IsEmpty();
+		In.bCrossRunning = bCrossRunning;
 		// the waterfall marks a tick only as the tape passes it, while the take is being written (as the tape strip shows it)
 		Look.bRecording = LookJob->Stage == EJobStage::Integrating && bTunedNow && In.bPointReady && In.bSettled;
 		Look.Elapsed = LookJob->Elapsed; Look.Seconds = SourceSeconds();
@@ -541,6 +544,24 @@ bool FS47FreeformSession::SkySelfTest(TArray<FString>& Lines)
 		Check(Glass > SS47ScreenView::ContentHigh(false) + 20.f && Body >= 560.f && Body < Glass - 200.f, *FString::Printf(TEXT("the receiver's frame leaves %.0f of the glass's %.0f units for the page"), Body, Glass));
 		// the banner never says more than the receiver's own line: with the job back at the start it asks for the pointing
 		Check(Bare.State.Id == S47RxLook::EState::Point || Bare.State.Id == S47RxLook::EState::NotUp || Bare.State.Id == S47RxLook::EState::NoPower, TEXT("a job that is not pointed: the banner asks for the array, or says why not"));
+		{
+			// RX-LOOK gjennomgang 14 Nov: the banner and the receiver's own line agree over every stage of the job, with the power on
+			// and off and the reference scan running or not (S47RxLook::Agrees); the job and the session as they were after
+			const EJobStage StageWas = S.Work[0].Stage;
+			const bool bFaultWas = S.bPowerFault, bCrossWas = S.bCrossRunning;
+			int32 Pairs = 0;
+			FString Disagree;
+			for (int32 Stage = 0; Stage <= int32(EJobStage::Filed); ++Stage) for (const bool bFault : { false, true }) for (const bool bCross : { false, true })
+			{
+				S.Work[0].Stage = EJobStage(Stage); S.bPowerFault = bFault; S.bCrossRunning = bCross;
+				const S47RxLook::FState Shown = S.RxLive().State;
+				const FString Line = S.ReceiverNextAction();
+				++Pairs;
+				if (Disagree.IsEmpty() && !S47RxLook::Agrees(Shown.Id, Line)) Disagree = FString::Printf(TEXT("stage %d%s%s: %s / %s"), Stage, bFault ? TEXT(", no power") : TEXT(""), bCross ? TEXT(", scan") : TEXT(""), *Shown.Text, *Line);
+			}
+			S.Work[0].Stage = StageWas; S.bPowerFault = bFaultWas; S.bCrossRunning = bCrossWas;
+			Check(Disagree.IsEmpty(), *FString::Printf(TEXT("the banner and the receiver's own line agree at every stage of a job, with the power on and off and the scan running or not (%d pairs)%s"), Pairs, Disagree.IsEmpty() ? TEXT("") : *(TEXT(": NOT ") + Disagree)));
+		}
 	}
 	Before.Stop(); Again.Stop(); S.Stop();
 	return bOk;
