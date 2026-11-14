@@ -86,7 +86,7 @@ namespace
   if(Kind==TEXT("balloon"))return FS47Balloon::HaveModel()?TArray<FPart>{}:TArray<FPart>{{Ball,{0,.1,0},{3,.16,2.2},Pale,20,0},{Ball,{1.8,.08,1.2},{1.6,.1,.9},Pale,70,0},{Cube,{-.8,.02,-.6},{1.9,.015,.015},Dark,38,0}};
   if(Kind==TEXT("cow"))return {{CowBody,{0,.42,0},{1,1,1},0,30,86},{CowHead,{0,.42,0},{1,1,1},0,30,86}};
   if(Kind==TEXT("stake"))return {{Cube,{0,.65,0},{.05,1.3,.05},Wood,0,2},{Cube,{.13,1.15,0},{.26,.13,.012},Flag,0,0},{Cube,{.6,.04,.3},{.04,.08,.04},Wood,0,0}};
-  if(Kind==TEXT("shack"))return {{Cube,{0,1.2,0},{4.5,2.4,3.2},Wood,0,0},{Cube,{0,2.6,0},{5,.12,3.8},Rust,0,8},{Cube,{2.26,1,.2},{.05,2,.9},Dark,0,0},{Cube,{0,1.5,1.61},{.8,.7,.03},Dark,0,0}};
+  if(Kind==TEXT("shack"))return {{Cube,{0,1.2,0},{4.5,2.4,3.2},Wood,0,0},{Cube,{0,2.6,0},{5,.12,3.8},Rust,0,8},{Cube,{2.26,1,.2},{.05,2,.9},Dark,0,0},{Cube,{-2.265,1.3,0},{.03,1,1.2},Dark,0,0}}; // LAND-PLACES-FIXES-20261114: the window on the west wall (toward the highway and SARO), where shack_lamp lights it
   if(Kind==TEXT("trough"))return {{Cube,{0,.32,0},{3.2,.64,.9},Rust,0,0},{Cube,{0,.62,0},{3,.03,.7},Dark,0,0},{Cube,{2.6,.2,.8},{.4,.4,.4},Pale,12,0},{Cube,{-3,.6,-1},{.1,1.2,.1},Wood,0,5}};
   if(Kind==TEXT("cairn"))return {{Ball,{0,.3,0},{1.5,.7,1.3},Stone,0,0},{Ball,{.2,.8,.1},{1,.55,.9},Stone,40,0},{Ball,{0,1.2,0},{.6,.4,.6},Stone,10,0},{Cube,{.05,1.65,0},{.05,.7,.05},Wood,0,6}};
   // PT-SAUCER-ROCK-20261109 (Tom: at Saucer Rock and nothing there). A pillar of pale rock with a wide flat cap balanced on it, a
@@ -492,6 +492,7 @@ void FS47Places::Seat(FBuilt& B)
  for(int32 I=0;I<B.Parts.Num();++I)if(auto* C=B.Parts[I].Get())C->SetWorldLocation(S47Three::ToUE(FVector(World.X,Y,World.Z)+B.Local[I]));
 }
 bool FS47Places::Drifts(const FString& Id){return Id==TEXT("stake")||Id==TEXT("cairn")||Id==TEXT("trough");}
+bool FS47Places::PartOf(const FString& Kind,int32 Index,FVector& OutAt,FVector& OutSize){const TArray<FPart> P=PartsOf(Kind);if(!P.IsValidIndex(Index))return false;OutAt=P[Index].At;OutSize=P[Index].Size;return true;} // LAND-PLACES-FIXES-20261114
 FVector2D FS47Places::DriftOf(const FString& Id,int32 Seed,int32 Day)
 {
  if(!Drifts(Id))return FVector2D::ZeroVector;

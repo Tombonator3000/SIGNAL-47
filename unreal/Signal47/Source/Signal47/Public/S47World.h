@@ -15,6 +15,7 @@
 class US47Main;
 class FS47RoadArea;
 class FS47OldRoad;
+struct FS47Rect;
 
 /** World.startTrip's options: perMetre (the clock's skip per metre driven), onArrive, onStart, at
  *  (start there, not where the truck stands), legs and places (what the trip may pass through),
@@ -233,6 +234,7 @@ public:
 	bool Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out);
 	void Update(double Dt, double T);
  void ReconcileFarm(bool bEnabled);
+ static bool CopiesToTruck(const FS47Rect& C); // LAND-PLACES-FIXES-20261114: ReconcileFarm copies this walk row into the truck's list (not the ones that put their own in: landplace:, temp:, townuse:, door:, eastwing:)
  /** Freeform's open land (S47OpenLand): the player on foot past the line of the area's land goes on in the next area. Every frame. */
  void WalkOver();
  /** A leg's drive area and what OnLand refuses here in the current area, by name: for S47ReliefProbe's measure of how far one gets. */

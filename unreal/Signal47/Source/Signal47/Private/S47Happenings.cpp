@@ -3080,7 +3080,8 @@ void FS47Happenings::PlaceSites()
  const FString Area=M->Web->Area();
  const bool bLand=Area==TEXT("road")||Area==TEXT("diner");
  TSet<FString> Want;
- // LAND-PLACES-FIXES-20261114: a ring laid round the cairn is where the cairn stands today, if it has drifted since
+ // LAND-PLACES-FIXES-20261114: a ring laid round the cairn is where the cairn stands today, if it has drifted since. (This writes the
+ // site's own X and Z, which are saved: idempotent, and only the values change in the save, not its fields.)
  for(FSite& S:Sites)if(S.Kind==TEXT("cairnring"))S47LandPlaceFixes::Follow(M,S.Place,S.X,S.Z);
  for(const FSite& S:Sites)
  {
@@ -3141,8 +3142,8 @@ void FS47Happenings::PlaceSites()
    // LAND-PLACES-FIXES-20261114: each stone on the ground under itself, not on the middle's height (on a slope they floated or sank)
    if(FProp* Ring=Prop(TEXT("cairnring")))for(FProp::FPart& Pt:Ring->Parts)if(UStaticMeshComponent* C=Pt.C.Get())
    {
-    const FVector2D On=S47LandPlaceFixes::StoneAt(FVector2D(S.X,S.Z),S.Yaw,Pt.At);FVector Under;
-    if(WorldOf(On.X,On.Y,Under))C->SetWorldLocation(S47Three::ToUE(Under+FVector(0,Pt.At.Y,0)));
+    FVector Stone; // (S47LandPlaceFixes::StoneSeat: its self-test seats the same way on a sloped ground of its own)
+    if(S47LandPlaceFixes::StoneSeat(FVector2D(S.X,S.Z),S.Yaw,Pt.At,[this](double Rx,double Rz,FVector& Into){return WorldOf(Rx,Rz,Into);},Stone))C->SetWorldLocation(S47Three::ToUE(Stone));
    }
   }
   else if(S.Kind==TEXT("deadbirds"))Show(TEXT("deadbirds"),At,S.Yaw);
