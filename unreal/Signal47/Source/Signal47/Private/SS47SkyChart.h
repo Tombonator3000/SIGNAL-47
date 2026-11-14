@@ -101,6 +101,11 @@ public:
 	// (OffWas, OffNow: its true distance last frame and now, OffWas below zero: none), never so fast that its distance on the glass
 	// grows while it nears the crossing, nor shrinks while it goes away.
 	static float ZoomStep(float Was, float Want, double Dt, double OffWas, double OffNow);
+	// RX-LOOK gjennomgang 14 Nov: the reticle's inner mark, the rule's lock circle as it lies on the glass (an ellipse: a degree of
+	// azimuth is cos(elevation) degrees of arc), so that the crossing is inside it exactly when the fix can be taken. Open, it is
+	// drawn at the inner ring's old size (Ring, its mean radius) in the ellipse's shape; it comes to its true size as the picture
+	// closes in (all of it at ZoomMost, which the picture is whenever the crossing can be that near). Out: the closed path.
+	static void LockMark(const FPlot& P, const FVector2D& Reticle, float Ring, TArray<FVector2f>& Out);
 	// The four ways a key can steer on the glass (-1, 0 or 1 across and up).
 	static FVector2D SteerOf(const FKey& Key);
 	// The step in azimuth and elevation (a unit vector) that moves the reticle that way on the glass, where it stands now: for

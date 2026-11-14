@@ -230,6 +230,29 @@ float SS47SkyChart::ZoomForTrue(double TrueOff)
 	return ZoomFor((Lo + Hi) * .5);
 }
 
+void SS47SkyChart::LockMark(const FPlot& P, const FVector2D& Reticle, float Ring, TArray<FVector2f>& Out)
+{
+	Out.Reset();
+	constexpr int32 Steps = 40;
+	FVector2f Mid;
+	if (!Place(P, Reticle, Mid)) return;
+	FVector2f Edge[Steps];
+	float Sum = 0.f;
+	for (int32 I = 0; I < Steps; ++I)
+	{
+		const double A = 2. * UE_DOUBLE_PI * I / Steps;
+		if (!Place(P, Reticle + FVector2D(FMath::Cos(A), FMath::Sin(A)) * FS47SkyAcquire::LockRadius, Edge[I])) return;
+		Sum += FVector2f::Distance(Edge[I], Mid);
+	}
+	const float Mean = FMath::Max(Sum / Steps, 1e-3f), Close = FMath::Clamp((P.Zoom - 1.f) / (ZoomMost - 1.f), 0.f, 1.f);
+	Out.Reserve(Steps + 1);
+	for (int32 I = 0; I <= Steps; ++I)
+	{
+		const FVector2f Way = Edge[I % Steps] - Mid;
+		Out.Add(Mid + Way * FMath::Lerp(Ring / Mean, 1.f, Close));
+	}
+}
+
 float SS47SkyChart::ZoomStep(float Was, float Want, double Dt, double OffWas, double OffNow)
 {
 	float Zoom = FMath::Clamp(Was + (Want - Was) * float(FMath::Min(1., FMath::Max(Dt, 0.) * (Want > Was ? 5. : 1.6))), 1.f, ZoomMost);
@@ -880,7 +903,11 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 		// three rings inside the corners (with the fix taken or held they are the lock sequence's own), and the hairs
 		if (!bLocking && !bLocked)
 		{
-			S47SkyGlowHot(Out, L + 5, G, S47SkyRingPath(Ret, Gap * .3f), Col, 1.5f);
+			// (RX-LOOK gjennomgang 14 Nov: the inner one is the rule's lock circle on the glass, LockMark: the crossing inside it is on the lock)
+			TArray<FVector2f> Inner;
+			LockMark(Pl, K.ReticleAt(), Gap * .3f, Inner);
+			for (FVector2f& Spot : Inner) Spot = Slip(Spot);
+			S47SkyGlowHot(Out, L + 5, G, Inner.Num() >= 3 ? Inner : S47SkyRingPath(Ret, Gap * .3f), Col, 1.5f);
 			S47SkyRing(Out, L + 5, G, Ret, Gap * .5f, S47SkyFade(Col, .8f), 1.3f);
 			S47SkyRing(Out, L + 5, G, Ret, Gap * .72f, S47SkyFade(Col, .6f), 1.1f);
 		}
@@ -1047,6 +1074,56 @@ bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 	Check(SteerOf(EKeys::Up) == FVector2D(0, 1) && SteerOf(EKeys::Down) == FVector2D(0, -1) && SteerOf(EKeys::Left) == FVector2D(-1, 0) && SteerOf(EKeys::Right) == FVector2D(1, 0)
 		&& SteerOf(EKeys::Gamepad_DPad_Up) == FVector2D(0, 1) && SteerOf(EKeys::Gamepad_DPad_Left) == FVector2D(-1, 0) && SteerOf(EKeys::Escape).IsZero(),
 		TEXT("the arrow keys and the d-pad steer; Escape stays the way out"));
+	{
+		// RX-LOOK gjennomgang 14 Nov: closed in, the reticle's inner mark is the rule's lock circle on the glass. At each card source,
+		// a crossing a tenth inside the lock radius in any direction stands inside the mark, one a tenth outside stands outside it;
+		// a round ring of the mark's mean size (the old inner ring's shape) is measured beside it.
+		const FPlot Open = PlotFor(FVector2f(716, 440));
+		int32 Right = 0, Wrong = 0, RoundWrong = 0, Sources = 0;
+		float Narrowest = 1e9f, Widest = 0.f;
+		for (const FSky::FSource& Src : FSky::Catalogue())
+		{
+			if (!Src.bMajor) continue;
+			++Sources;
+			FPlot Z = Open;
+			Z.Zoom = ZoomMost; Z.Focus = ToLocal(Open, Src.At);
+			const FVector2D Reticle = Src.At + FVector2D(.8, -.5);
+			TArray<FVector2f> Mark;
+			LockMark(Z, Reticle, 10.f, Mark);
+			if (Mark.Num() < 3) { ++Wrong; continue; }
+			const FVector2f Mid = ToLocal(Z, Reticle);
+			float Mean = 0.f;
+			for (int32 I = 0; I + 1 < Mark.Num(); ++I) { const float R = FVector2f::Distance(Mark[I], Mid); Mean += R; Narrowest = FMath::Min(Narrowest, R); Widest = FMath::Max(Widest, R); }
+			Mean /= float(Mark.Num() - 1);
+			// how far out the mark stands the way a place on the glass lies from the reticle
+			auto Reach = [&](const FVector2f& Toward)
+			{
+				const float Want = FMath::Atan2(Toward.Y - Mid.Y, Toward.X - Mid.X);
+				for (int32 I = 0; I + 1 < Mark.Num(); ++I)
+				{
+					const FVector2f A = Mark[I] - Mid, B = Mark[I + 1] - Mid;
+					const float Ta = FMath::Atan2(A.Y, A.X), Span = FMath::FindDeltaAngleRadians(Ta, FMath::Atan2(B.Y, B.X)), Into = FMath::FindDeltaAngleRadians(Ta, Want);
+					if (FMath::Abs(Span) < 1e-6f) continue;
+					const float Part = Into / Span;
+					if (Part >= -1e-4f && Part <= 1.0001f) return FMath::Lerp(A.Size(), B.Size(), FMath::Clamp(Part, 0.f, 1.f));
+				}
+				return 0.f;
+			};
+			for (int32 Turn = 0; Turn < 24; ++Turn)
+			{
+				const FVector2D Way(FMath::Cos(Turn * UE_DOUBLE_PI / 12.), FMath::Sin(Turn * UE_DOUBLE_PI / 12.));
+				for (const double Share : { .9, 1.1 })
+				{
+					const FVector2f At = ToLocal(Z, Reticle + Way * (FSky::LockRadius * Share));
+					const bool bInside = FVector2f::Distance(At, Mid) < Reach(At), bRoundInside = FVector2f::Distance(At, Mid) < Mean;
+					((bInside == (Share < 1.)) ? Right : Wrong) += 1;
+					RoundWrong += bRoundInside != (Share < 1.) ? 1 : 0;
+				}
+			}
+		}
+		Check(Sources >= 3 && Wrong == 0 && Right == Sources * 48 && RoundWrong > 0 && Widest > Narrowest * 1.3f,
+			FString::Printf(TEXT("closed in, the reticle's inner mark is the lock circle on the glass (%.1f to %.1f units out): at %d card sources a crossing just inside the lock radius stands inside it and one just outside stands outside, %d of %d (a round ring of its size misjudged %d)"), Narrowest, Widest, Sources, Right, Right + Wrong, RoundWrong));
+	}
 	// the tables as the picture uses them: every place a direction, and a path's lengths as the bearings' rungs count them
 	bool bUnit = S47SkyStarPlaces().Num() == int32(S47SkySphere::Star::Count) && S47SkyDustPlaces().Num() == S47SkySphere::DustCount && S47SkyFaintPlaces().Num() == S47SkySphere::FieldCount;
 	for (const FS47ChartPlace& Each : S47SkyStarPlaces()) bUnit &= FMath::Abs(Each.Unit.Size() - 1.) < 1e-9;
