@@ -120,7 +120,8 @@ void FS47Calm::Step(double Dt)
 	// walkie when it can be heard; not on a Story night, not over a panel or anything the Director holds).
 	const bool bStory = FS47StoryDirector::Of(M) != nullptr;
 	if (!bStory && F->TubeRemarkDue(F->Day()) && !bDriving && TubeRemarkHour(NightHourOf(Clock)) && M->T >= NextTry
-		&& M->FieldRadio && M->FieldRadio->HearsDale() && !F->Held() && !M->ModalOpen() && !M->OneAtATime())
+		&& M->FieldRadio && DaleMayRemark(M->FieldRadio->HearsDale(), M->FieldRadio->Hailing(), M->FieldRadio->DaleSpeaking(), M->FieldRadio->PresenceLevel(), F->Taken && F->Taken->Busy())
+		&& !F->Held() && !M->ModalOpen() && !M->OneAtATime())
 	{
 		NextTry = M->T + 5.;
 		FS47EventCtx Ctx;
@@ -280,6 +281,9 @@ bool FS47Calm::SelfTest(TArray<FString>& Lines)
 		}
 		Check(Flashes == 1 && MinGap >= 1. / 3. && Dip <= .15f && FlashFor > .06 && FlashFor < .1 && bCalm && FS47TubeFlicker::SparkLevel(FS47TubeFlicker::SparkSecs(false), false) == 0 && FS47TubeFlicker::SparkLevel(FS47TubeFlicker::SparkSecs(true), true) == 0,
 			TEXT("the burned-out tube dips, then flashes once to full for about 80 ms against its own light (one flash, under the three a second limit), fades only with calm flashes, then stays dark"));
+		Check(DaleMayRemark(true, false, false, 0., false) && !DaleMayRemark(false, false, false, 0., false) && !DaleMayRemark(true, true, false, 0., false) && !DaleMayRemark(true, false, true, 0., false)
+			&& !DaleMayRemark(true, false, false, .3, false) && !DaleMayRemark(true, false, false, 0., true),
+			TEXT("Dale's word on the new tube keeps his other lines' rules: heard, not over a hail or another line of his, nothing near, nobody being taken"));
 		Check(TubeRemarkHour(19.5) && TubeRemarkHour(22.9) && !TubeRemarkHour(18.9) && !TubeRemarkHour(23.5), TEXT("Dale's word on the new tube comes between 19:00 and 23:00"));
 	}
 	FS47Calm Bare(nullptr);

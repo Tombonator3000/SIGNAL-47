@@ -45,6 +45,10 @@ public:
 	{ return Day >= 8 && WornNow == 0 && bTubeLeft && bInControlRoom && !bStoryNight; }
 	// Dale's word the evening after the day shift's new tube (FS47FreeformSession::TubeRemarkDue): 19:00 to 23:00 (night hours 19 to 23).
 	static bool TubeRemarkHour(double NightHour) { return NightHour >= 19. && NightHour < 23.; }
+	// REVIEW (14 Nov): Dale's word goes by the rules his other walkie lines keep (FS47Predecessor's hail): a set that hears him, no
+	// hail or line of his already on the air, nothing near enough to break the set up, no light taking someone.
+	static bool DaleMayRemark(bool bHearsDale, bool bHailing, bool bSpeaking, double Presence, bool bTaking)
+	{ return bHearsDale && !bHailing && !bSpeaking && Presence <= .01 && !bTaking; }
 
 	/** Once a frame from FS47Happenings::Step. */
 	void Step(double Dt);
