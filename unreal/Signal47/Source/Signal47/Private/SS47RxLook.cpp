@@ -1,6 +1,7 @@
 #include "SS47RxLook.h"
 #include "S47RxLook.h"
 #include "S47SkyAcquire.h"
+#include "SS47SkyChart.h"
 #include "S47Kit.h"
 #include "SS47Widgets.h"
 #include "Brushes/SlateColorBrush.h"
@@ -434,7 +435,7 @@ int32 SS47RxIq::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&
 
 void SS47RxTrack::Construct(const FArguments& Args)
 {
-	Live = Args._Feed; Sky = Args._Model;
+	Live = Args._Feed; Sky = Args._Model; ViewFn = Args._View;
 	ForceVolatile(true);
 }
 
@@ -442,6 +443,17 @@ float SS47RxTrack::EyeShare(double Degrees)
 {
 	// square root: the lock radius stands a third of the way out, the capture radius two thirds
 	return float(FMath::Sqrt(FMath::Clamp(Degrees / EyeFull, 0., 1.)));
+}
+
+FVector2D SS47RxTrack::EyeAt(const S47SkySphere::FView& View, const FVector2D& Reticle, const FVector2D& Cross)
+{
+	// RX-LOOK gjennomgang 14 Nov: the way the reticle stands from the crossing on the chart's picture (the picture closes in about
+	// the crossing alike in every direction, so the open picture's way is the glass's), y turned up; as far out as the rule says
+	const double Far = FVector2D::Distance(Reticle, Cross);
+	if (Far < 1e-9) return FVector2D::ZeroVector;
+	FVector2D AtRet, AtCross, Way = FVector2D(Reticle.X - Cross.X, Reticle.Y - Cross.Y);
+	if (S47SkySphere::ProjectAzEl(View, Reticle, AtRet) && S47SkySphere::ProjectAzEl(View, Cross, AtCross) && FVector2D::Distance(AtRet, AtCross) > 1e-9) Way = FVector2D(AtRet.X - AtCross.X, AtCross.Y - AtRet.Y);
+	return Way.GetSafeNormal() * double(EyeShare(Far));
 }
 
 int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 L, const FWidgetStyle&, bool) const
@@ -452,7 +464,7 @@ int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRe
 	const FS47RxLive& Now = S47RxLRead(Live);
 	const FS47RxLPen Pen{ Out, G, L };
 	const double T = FPlatformTime::Seconds();
-	// ---- the bull's-eye, at the right: the reticle's offset from the crossing, azimuth across and elevation up ----
+	// ---- the bull's-eye, at the right: the reticle's offset from the crossing, the way it lies on the chart (EyeAt) ----
 	const float EyeR = FMath::Clamp(FMath::Min(Sz.X * .19f, (Sz.Y - 30) * .5f), 16.f, 70.f);
 	const FVector2f Eye(Sz.X - EyeR - 6, EyeR + 3);
 	const bool bHave = Sky.IsValid() && Sky->HasBearings();
@@ -466,9 +478,9 @@ int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRe
 	FString OffD = TEXT("OFF --");
 	if (bHave)
 	{
-		const FVector2D Off = Sky->ReticleAt() - Sky->Cross();
-		const double Far = Off.Size();
-		const FVector2f Dot = Eye + (Far > 1e-9 ? FVector2f(float(Off.X / Far), float(-Off.Y / Far)) * (EyeR * EyeShare(Far)) : FVector2f::ZeroVector);
+		const double Far = Sky->Distance();
+		const FVector2D Share = EyeAt(ViewFn ? ViewFn() : SS47SkyChart::PlotFor(FVector2f(716, 440)).View, Sky->ReticleAt(), Sky->Cross());
+		const FVector2f Dot = Eye + FVector2f(float(Share.X), float(-Share.Y)) * EyeR;
 		const bool bOn = Far <= FSky::LockRadius;
 		const FLinearColor Tone = bOn || bLocked || bLocking ? S47RxLAmber : S47RxLGreen;
 		// on the crossing: a filled mark; off it: an open one; past the rim: pinned to it, with a stroke outward
@@ -536,6 +548,43 @@ bool S47RxLookPaint::SelfTest(TArray<FString>& Lines)
 	for (double D = .25; D <= 30; D += .25) bGrows &= SS47RxTrack::EyeShare(D) >= SS47RxTrack::EyeShare(D - .25) && SS47RxTrack::EyeShare(D) <= 1.f;
 	Check(bGrows && SS47RxTrack::EyeShare(0) == 0.f && SS47RxTrack::EyeShare(FSky::LockRadius) > .25f && SS47RxTrack::EyeShare(FSky::LockRadius) < SS47RxTrack::EyeShare(FSky::CaptureRadius) - .2f && SS47RxTrack::EyeShare(SS47RxTrack::EyeFull) == 1.f,
 		TEXT("the bull's-eye: the lock ring a third of the way out, the capture ring two thirds, an offset past the rim pinned to it"));
+	{
+		// RX-LOOK gjennomgang 14 Nov: the bull's-eye lies the way the chart does. At each card source, a reticle a step off the
+		// crossing the way a key points on the glass (S47SkySphere::SteerOnGlass) stands that way on the bull's-eye, and UP held
+		// from below brings the mark straight up. The old way (azimuth across, elevation up) is measured beside it: it was off by
+		// the parallactic angle.
+		const S47SkySphere::FView View = SS47SkyChart::PlotFor(FVector2f(716, 440)).View;
+		double Worst = 0, OldWorst = 0, Sideways = 0;
+		bool bUp = true;
+		int32 Sources = 0;
+		auto AngleOff = [](const FVector2D& A, const FVector2D& B) { return FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector2D::DotProduct(A.GetSafeNormal(), B.GetSafeNormal()), -1., 1.))); };
+		for (const FSky::FSource& Src : FSky::Catalogue())
+		{
+			if (!Src.bMajor) continue;
+			++Sources;
+			for (const FVector2D Way : { FVector2D(0, 1), FVector2D(0, -1), FVector2D(-1, 0), FVector2D(1, 0), FVector2D(.6, .8) })
+			{
+				const FVector2D Ret = Src.At + S47SkySphere::SteerOnGlass(View, Src.At, Way) * 3.;
+				Worst = FMath::Max(Worst, AngleOff(SS47RxTrack::EyeAt(View, Ret, Src.At), Way));
+				OldWorst = FMath::Max(OldWorst, AngleOff(Ret - Src.At, Way));
+			}
+			// UP held from below the crossing on the glass, in steps the keys take
+			FVector2D Below;
+			if (!S47SkySphere::ProjectAzEl(View, Src.At, Below)) { bUp = false; continue; }
+			FVector2D Ret = S47SkySphere::UnprojectAzEl(View, Below + FVector2D(0, 20));
+			double WasY = SS47RxTrack::EyeAt(View, Ret, Src.At).Y;
+			for (int32 Step = 0; Step < 16; ++Step)
+			{
+				Ret += S47SkySphere::SteerOnGlass(View, Ret, FVector2D(0, 1)) * .25;
+				const FVector2D Mark = SS47RxTrack::EyeAt(View, Ret, Src.At);
+				bUp &= Mark.Y > WasY;
+				if (Mark.Size() > .15) Sideways = FMath::Max(Sideways, FMath::Abs(Mark.X) / Mark.Size());
+				WasY = Mark.Y;
+			}
+		}
+		Check(Sources >= 3 && Worst < 4. && bUp && Sideways < .1 && OldWorst > 20. && SS47RxTrack::EyeAt(View, FVector2D(100, 40), FVector2D(100, 40)).IsZero() && FMath::IsNearlyEqual(SS47RxTrack::EyeAt(View, FVector2D(100, 44), FVector2D(100, 40)).Size(), double(SS47RxTrack::EyeShare(4.)), 1e-6),
+			FString::Printf(TEXT("the bull's-eye lies the way the chart does: a key's step at %d card sources stands within %.1f degrees of the key's way (azimuth across and elevation up was %.0f off), and UP held brings the mark straight up (%.2f of it sideways at most)"), Sources, Worst, OldWorst, Sideways));
+	}
 	// the waterfall's clock: a full picture at first sight, a row every beat after, a tick only in the row written as the tape passes
 	// it and only while recording, and nothing written twice
 	FS47RxLFall Fall; FS47RxLive Live; Live.Scope.bPowered = true; Live.Scope.Strength = 1.; Live.Ticks = { 1.05, 9.3 };

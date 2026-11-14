@@ -95,6 +95,9 @@ public:
 	// The step in azimuth and elevation (a unit vector) that moves the reticle that way on the glass, where it stands now: for
 	// the page's own step keys.
 	FVector2D SkyStep(const FVector2D& GlassDir) const;
+	// The open picture as last painted (before the first frame: the picture at the chart's usual size), for the tracking panel's
+	// bull's-eye, which lies the way the chart does.
+	S47SkySphere::FView OpenView() const { return (ShownSize.X > 0 ? Shown : PlotFor(FVector2f(716, 440))).View; }
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:

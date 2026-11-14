@@ -374,7 +374,7 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 				[SkyT::RxPanel(TEXT("FFT SPECTRUM"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxFft).Feed(Feed)],
 					TAttribute<FString>::CreateLambda([Feed] { return FString::Printf(TEXT("BW %s kHz"), *S47RxLook::Num(Feed->Now().Scope.Bandwidth)); }))]
 				+ SVerticalBox::Slot().FillHeight(.43f)
-				[SkyT::RxPanel(TEXT("ACQUISITION / TRACKING"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxTrack).Feed(Feed).Model(SkyFix)])]
+				[SkyT::RxPanel(TEXT("ACQUISITION / TRACKING"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxTrack).Feed(Feed).Model(SkyFix).View([Weak = TWeakPtr<SS47SkyChart>(Chart)] { const TSharedPtr<SS47SkyChart> Pinned = Weak.Pin(); return Pinned.IsValid() ? Pinned->OpenView() : SS47SkyChart::PlotFor(FVector2f(716, 440)).View; })])]
 			]
 		];
 	const TSharedRef<SWidget> SkyStrip = SNew(SHorizontalBox)
