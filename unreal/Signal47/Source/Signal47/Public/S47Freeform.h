@@ -922,8 +922,11 @@ public:
  bool TubeWorn(int32 K) const{return WornTubes.Contains(K);}
  int32 WornTubeCount() const{return WornTubes.Num();}
  // At the turn to shift day Day (08:00): the day shift replaces what burned out before it; returns how many. Dale remarks that evening.
- int32 DayShiftTubes(int32 Day){if(WornTubes.IsEmpty()||Day<=TubeWornDay)return 0;const int32 N=WornTubes.Num();for(const int32 K:WornTubes)BrokenTubes.Remove(K);WornTubes.Reset();TubeWornDay=0;TubeRemarkDay=Day;return N;}
+ // REVIEW (14 Nov): bWatched, the player in the control room: nobody comes in while he is there, so a tube never relights by itself
+ // in front of him; it waits until he has gone out (Step asks again; TubeWatched).
+ int32 DayShiftTubes(int32 Day,bool bWatched=false){if(bWatched||WornTubes.IsEmpty()||Day<=TubeWornDay)return 0;const int32 N=WornTubes.Num();for(const int32 K:WornTubes)BrokenTubes.Remove(K);WornTubes.Reset();TubeWornDay=0;TubeRemarkDay=Day;return N;}
  bool TubeRemarkDue(int32 Day) const{return TubeRemarkDay>0&&TubeRemarkDay==Day;}
+ bool TubeWatched() const; // the player in the control room (US47Audio::InControlRoom); false without a world
  void TubeRemarkSaid(){TubeRemarkDay=0;}
  static TSet<int32> TubesFrom(const TArray<double>& Saved);
  static TArray<double> TubesToSave(const TSet<int32>& Broken);

@@ -585,11 +585,16 @@ bool FS47FreeformSession::RequirePower()
  if(HasPower())return true;
  bAudioPlaying=false;Feedback=TEXT("No power to this instrument. Restore the feeder or transfer to the fuelled generator. Retained papers can still be read.");Changed(Feedback);return false;
 }
+bool FS47FreeformSession::TubeWatched() const
+{
+ return M&&M->Player&&US47Audio::InControlRoom(S47Three::ToThree(M->Player->EyeUE()));
+}
 void FS47FreeformSession::AddDay(int32 Number)
 {
  // PLAY-31-34 (14 Nov): the day shift puts in new tubes for those that burned out of age before this 08:00 (every way the day turns
  // comes through here: the clock, a rest, a wait); a tube put out by sabotage stays out until a pair from the store.
- if(const int32 Back=DayShiftTubes(Number))UE_LOG(LogTemp,Display,TEXT("S47: day shift replaced %d burned-out ceiling tube%s for day %d"),Back,Back==1?TEXT(""):TEXT("s"),Number);
+ // REVIEW (14 Nov): not in front of the player: with him in the control room it waits until he is out (Step)
+ if(const int32 Back=DayShiftTubes(Number,TubeWatched()))UE_LOG(LogTemp,Display,TEXT("S47: day shift replaced %d burned-out ceiling tube%s for day %d"),Back,Back==1?TEXT(""):TEXT("s"),Number);
  if(Work.ContainsByPredicate([&](const FJob& J){return J.Day==Number;}))return;
  for(const auto& Card:FS47FreeformJobs::Generate(JobSeed,Number)){FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-J%d"),Number,Card.Slot+1);J.Day=Number;J.Slot=Card.Slot;J.Source=Card.Source;J.Card=Card;J.bGenerated=true;Work.Add(J);}
 }
@@ -783,6 +788,9 @@ void FS47FreeformSession::Step(double Dt)
  }
  const double D=FMath::Min(Dt,.1);
  if(!Held())StepSky(D);
+ // PLAY-31-34 (REVIEW 14 Nov): the day shift's new tube, held back at 08:00 while the player was in the control room, once he is out
+ if(WornTubeCount()>0&&TubeWornDay<DayNumber&&!TubeWatched())
+  if(const int32 Back=DayShiftTubes(DayNumber))UE_LOG(LogTemp,Display,TEXT("S47: day shift replaced %d burned-out ceiling tube%s for day %d, the control room empty"),Back,Back==1?TEXT(""):TEXT("s"),DayNumber);
  // FIX10-10: a lockout left by a passage that nobody mended: the county line crew restores the feeder in the end.
  if(bPowerFault&&SkyFaultUntil>0&&WorldClock>=SkyFaultUntil)
  {
@@ -5635,12 +5643,13 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    FS47FreeformSession Old(nullptr);
    const bool bWore=Old.WearTube(2,9),bWorkLight=Old.WearTube(1,9);Old.BreakTube(3);
    FS47FreeformSession Kept(nullptr);Kept.BrokenTubes=TubesFrom(TubesToSave(Old.BrokenTubes));Kept.WornTubes=TubesFrom(TubesToSave(Old.WornTubes)).Intersect(Kept.BrokenTubes);Kept.TubeWornDay=Old.TubeWornDay;
-   const bool bSameDay=Kept.DayShiftTubes(9)==0&&Kept.TubeBroken(2)&&!Kept.TubeRemarkDue(9);
+   const bool bSameDay=Kept.DayShiftTubes(9)==0&&Kept.TubeBroken(2)&&!Kept.TubeRemarkDue(9)
+    &&Kept.DayShiftTubes(10,true)==0&&Kept.TubeBroken(2)&&!Kept.TubeRemarkDue(10); // (REVIEW 14 Nov: never while he watches; it waits)
    const bool bNextDay=Kept.DayShiftTubes(10)==1&&!Kept.TubeBroken(2)&&Kept.TubeBroken(3)&&!Kept.TubeWorn(2)&&Kept.TubeRemarkDue(10)&&!Kept.TubeRemarkDue(11);
    Kept.TubeRemarkSaid();
    FS47FreeformSession Mend(nullptr);Mend.WearTube(2,4);Mend.MendTubes(1);
    Check(bWore&&!bWorkLight&&bSameDay&&bNextDay&&!Kept.TubeRemarkDue(10)&&Kept.DayShiftTubes(11)==0&&Mend.WornTubeCount()==0&&!Mend.TubeBroken(2),
-    TEXT("Tubes: one burned out of age keeps through a save and the night, the day shift puts it back at the next 08:00, Dale's word is due that evening once; sabotage's stays out"));
+    TEXT("Tubes: one burned out of age keeps through a save and the night, the day shift puts it back at the next 08:00 (never with the player in the control room: it waits for him to go), Dale's word is due that evening once; sabotage's stays out"));
   }
  }
  S47CaptureSound::FTrack SoundPolicy;SoundPolicy.Begin(TEXT("sound-policy-original"),false,{});
