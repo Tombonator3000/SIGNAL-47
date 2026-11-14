@@ -1,6 +1,9 @@
 #include "S47Freeform.h"
 #include "S47AlienKinds.h"
 #include "S47AnimalWarn.h"
+#include "S47Attention.h"
+#include "S47FieldRadio.h"
+#include "S47Taken.h"
 #include "S47FarmSite.h"
 #include "S47RuleBreak.h"
 #include "S47Tape.h"
@@ -236,6 +239,7 @@ void FS47FreeformSession::DossierHabitStep()
  if(!M||!RulesLive()||Unknowns.IsEmpty()||FMath::Abs(Clock()-HabitLastCheck)<60.)return;
  HabitLastCheck=Clock();
  if(S47SaroSave::InStation(M))return;
+ if(!HabitHourMay(Held(),(FarmSite&&FarmSite->VisitWantsGround())||(Attention&&Attention->Visiting()),M->FieldRadio.IsValid()&&M->FieldRadio->PresenceHunting(),Taken&&Taken->Busy()))return;
  const int32 Night=NightOf(Clock());int32 Hour=-1;
  const int32 Number=Unknowns.HabitHourFile(Clock(),HabitThought,Night,Hour);
  if(Number>0&&S47Thoughts::ThinkLine(M,S47Dossier::HabitHourThought(Hour),TEXT("habit-hour")))HabitThought.Add(Number,Night);
@@ -476,6 +480,8 @@ bool FS47FreeformSession::DossierSelfTest(TArray<FString>& Lines)
   Check(bMerged&&bBack&&bOut,TEXT("slice 3: two filed as one at the binder (a wrong one too, never said), kept through a Continue, out again that night; Dr. Ward's count follows"));
   Back.Stop();
  }
+ Check(HabitHourMay(false,false,false,false)&&!HabitHourMay(true,false,false,false)&&!HabitHourMay(false,true,false,false)&&!HabitHourMay(false,false,true,false)&&!HabitHourMay(false,false,false,true),
+  TEXT("slice 3 (review): the hour's habit never comes to mind while the night is held, a visit is on, something hunts on the set or a light is taking someone"));
  { // EVIDENCE-DOSSIER slice 2 (M7): the pacing against the week gates and the tiers, from director.json itself
   FS47Rhythm Rules(nullptr);Rules.LoadRules();
   const FS47RhythmData& R=Rules.Data();

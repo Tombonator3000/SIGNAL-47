@@ -194,6 +194,9 @@ public:
  int32 DossierPayFiled();
  void DossierHabitStep();
  bool DossierHabitLamp(S47Dossier::EKind Near);
+ // REVIEW (14 Nov): the hour's habit is a quiet thought: never while the night is held, a visit is on (at the site or at SARO), the
+ // carried set hears something hunting, or a light is taking someone
+ static bool HabitHourMay(bool bHeld,bool bVisit,bool bHunted,bool bTaking){return !bHeld&&!bVisit&&!bHunted&&!bTaking;}
  TMap<int32,int32> HabitThought;double HabitLastCheck=-1e9;
  static constexpr int32 FiledAllowance=5;
  FString TestNameDossier();   // F10: every file named by its suggestion, as at the binder
