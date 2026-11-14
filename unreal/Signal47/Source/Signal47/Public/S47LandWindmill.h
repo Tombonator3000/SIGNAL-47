@@ -55,6 +55,9 @@ namespace S47LandWindmill
  // Whether a road-local point lies under either mill's tower or tank while the model is drawn (S47FarmWorld clears the scattered
  // plants there: none grows up through the housing or out of the water).
  SIGNAL47_API bool Covers(double RoadX,double RoadZ);
+ // The same ground as road-local squares, for the ground cover's blocks (S47GroundCover): each mill's foot and its tank. Empty
+ // while the model is not drawn.
+ SIGNAL47_API TArray<FBox2D> Plots();
  // How fast a free wheel turns in this wind (degrees a second), and the rod's height over the bottom of its stroke at a wheel angle.
  SIGNAL47_API double FreeRate(double Mph);
  SIGNAL47_API double RodLift(double WheelDeg);

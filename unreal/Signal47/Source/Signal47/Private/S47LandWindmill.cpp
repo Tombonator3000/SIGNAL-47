@@ -21,6 +21,8 @@
 #include "S47World.h"
 #include "CollisionQueryParams.h"
 #include "Components/DecalComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -62,6 +64,7 @@ namespace S47LandWindmillLocal
   double Strain=99,KnockFor=0;bool bKnocking=false,bTraces=false,bReadBefore=false,bWiredBefore=false;
   FString Area;int32 AppliedOn=-1;
   TArray<FS47Obstacle> Drive;bool bDriveOn=false;
+  double PlantsIn=0;int32 PlantLooks=0,PlantsGone=0;
   TWeakObjectPtr<UDecalComponent> Ground;TWeakObjectPtr<UMaterialInstanceDynamic> GroundMat;float GroundDay=-1.f;
  };
  FMill Baca,Farm;
@@ -211,6 +214,31 @@ namespace S47LandWindmillLocal
   }
   Mill.bDriveOn=bOn;
  }
+ // The land scatters its plants and stones by cells that come in as the player nears: none is left standing in the tower's foot, through
+ // the housing or out of the water. Looked for every second or two while the player is near, each instance drawn in to nothing.
+ void ClearPlants(FMill& Mill,double Dt,bool bNear)
+ {
+  AS47Web* W=Mill.Web.Get();auto* Tower=Mill.Tower.Get();auto* Tank=Mill.Tank.Get();
+  if(!W||!Tower||!Tank||!bNear||(Mill.PlantsIn-=Dt)>0)return;
+  Mill.PlantsIn=1.5;++Mill.PlantLooks;   // (for as long as the player is near: a cell that comes in again brings its plants back)
+  FBox Foot=Tower->Bounds.GetBox();Foot.Max.Z=Foot.Min.Z+250;Foot.Min.Z-=150;
+  const FBox Round=Tank->Bounds.GetBox().ExpandBy(FVector(25,25,150));
+  TArray<UInstancedStaticMeshComponent*> Comps;W->GetComponents<UInstancedStaticMeshComponent>(Comps);
+  int32 Gone=0;
+  for(UInstancedStaticMeshComponent* C:Comps)
+  {
+   if(!C||!C->GetStaticMesh()||!C->IsRegistered())continue;
+   bool bTouched=false;
+   for(const FBox& Box:{Foot,Round})for(const int32 I:C->GetInstancesOverlappingBox(Box,true))
+   {
+    FTransform T;if(!C->GetInstanceTransform(I,T,false)||T.GetScale3D().GetAbsMax()<=.001)continue;
+    T.SetScale3D(FVector(.0001));C->UpdateInstanceTransform(I,T,false,false,true);bTouched=true;++Gone;
+   }
+   if(bTouched){C->MarkRenderStateDirty();if(auto* H=Cast<UHierarchicalInstancedStaticMeshComponent>(C))H->BuildTreeIfOutdated(false,true);}
+  }
+  if(Gone>0&&Mill.PlantsGone==0){UE_LOG(LogS47LandWindmill,Display,TEXT("S47: land windmill: the first %d scattered plants and stones under the %s mill drawn in"),Gone,Mill.bFarm?TEXT("farm's"):TEXT("Baca"));}
+  Mill.PlantsGone+=Gone;
+ }
  FS47Predecessor* Trail(US47Main* M){return M&&M->Freeform?M->Freeform->Predecessor.Get():nullptr;}
  bool PageRead(US47Main* M){const FS47Predecessor* P=Trail(M);return P&&P->Found(PageDoc);}
  bool PageDue(US47Main* M){const FS47Predecessor* P=Trail(M);return P&&P->BookDue(PageDoc);}
@@ -316,6 +344,7 @@ namespace S47LandWindmillLocal
   if(auto* C=Baca.LidWire.Get())C->SetHiddenInGame(!bWired);
   Pose(Baca,S47Weather::Live().bOn?S47Weather::Live().Wind:0.);
   Wire(Baca,bTraces);
+  ClearPlants(Baca,Dt,Baca.Tower.IsValid()&&Baca.Tower->IsVisible()&&M->Player&&FVector2D(M->Player->Pos.X-World.X,M->Player->Pos.Z-World.Z).Size()<160);
   if(auto* D=Baca.Ground.Get())
   {
    // there with the tower, and toned by the hour as the farm's worn ground is (S47FarmWorld ToneFarmDecals: the land's own day and night)
@@ -344,7 +373,7 @@ namespace S47LandWindmillLocal
   Farm.WheelRate+=(FreeRate(Mph)-Farm.WheelRate)*FMath::Min(1.,Dt/5.);
   Farm.WheelDeg=FMath::Fmod(Farm.WheelDeg+Farm.WheelRate*Dt,360.);Farm.RodDeg=Farm.WheelDeg;
   Pose(Farm,Live.bOn?Live.Wind:0.);
-  static_cast<void>(M);
+  ClearPlants(Farm,Dt,M->Player&&Farm.Root.IsValid()&&FVector::Dist2D(S47Three::ToUE(M->Player->Pos),Farm.Root->GetComponentLocation())<16000);
  }
 }
 using namespace S47LandWindmillLocal;
@@ -370,6 +399,18 @@ bool Covers(double RoadX,double RoadZ)
  };
  const FS47Places::FDef* D=FS47Places::Def(PlaceId);
  return Under(FarmMill,FarmTank,FarmTankR)||(D&&Under(FVector2D(D->X,D->Z),FVector2D(D->X+TankX,D->Z+TankZ),TankR));
+}
+TArray<FBox2D> Plots()
+{
+ TArray<FBox2D> Out;if(!Available())return Out;
+ const auto Add=[&Out](const FVector2D& Mill,const FVector2D& Tank,double Radius)
+ {
+  Out.Add(FBox2D(Mill-FVector2D(Foot+.45),Mill+FVector2D(Foot+.45)));
+  Out.Add(FBox2D(Tank-FVector2D(Radius+.35),Tank+FVector2D(Radius+.35)));
+ };
+ Add(FarmMill,FarmTank,FarmTankR);
+ if(const FS47Places::FDef* D=FS47Places::Def(PlaceId))Add(FVector2D(D->X,D->Z),FVector2D(D->X+TankX,D->Z+TankZ),TankR);
+ return Out;
 }
 double FreeRate(double Mph){return FMath::Clamp((Mph-4.5)*14.,0.,250.);}
 double RodLift(double WheelDeg){return Stroke*(1.-FMath::Cos(FMath::DegreesToRadians(WheelDeg)))*.5;}

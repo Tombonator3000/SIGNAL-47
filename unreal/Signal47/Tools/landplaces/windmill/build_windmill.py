@@ -116,7 +116,7 @@ def build_tower():
     if K.LOD >= 4:
         # beyond half a kilometre a lattice is less than a pixel a member: one slim tapered pylon, about as dark as the lattice was
         x, y = (1, 0, 0), (0, 1, 0)
-        K.sweep('leg0_1', K.sec_rect(0.95, 0.95), [ring((0, 0, PIER_TOP), x, y), ring((0, 0, LEG_TOP), x, y, 0.2), ring((0, 0, MAST_TOP), x, y, 0.12)], 'galv', cap0=False, cap1=False, vmax=40.0)
+        K.sweep('cap', K.sec_rect(1.3, 1.3), [ring((0, 0, PIER_TOP), x, y), ring((0, 0, LEG_TOP), x, y, 0.2), ring((0, 0, MAST_TOP), x, y, 0.12)], 'galv', cap0=False, cap1=False, vmax=40.0)   # (on the cap's dark iron: a far tower reads dark against the sky)
         K.bar('plank0', (0, 0, GIRTS[-1] + 0.06), (0, 0, GIRTS[-1] + 0.14), K.sec_rect(1.06, 1.08), 'wood', ref=(0, 1, 0))
         return
     k = N(1, 1, 1.6, 3.4)                                      # far off the members are drawn thicker, so the tower still reads
@@ -306,7 +306,7 @@ def build_wheel():
     e1, e2, ea = (1, 0, 0), UP, (0, -1, 0)
     ax = place(C, e1, e2, ea)
     if K.LOD >= 4:
-        K.revolve('rim1', [(0.0, -0.04), (1.12, -0.04), (1.12, 0.02), (0.0, 0.02)], ax, 12, 'galv')
+        K.revolve('hub', [(0.0, -0.04), (1.15, -0.04), (1.15, 0.02), (0.0, 0.02)], ax, 12, 'galv')
         return
     K.revolve('hub', [(0.0, -0.10), (0.07, -0.10), (0.07, -0.012), (0.15, -0.012), (0.15, 0.012), (0.07, 0.012), (0.07, 0.08), (0.045, 0.105), (0.0, 0.105)], ax, N(16, 12, 8, 6), 'cast', dens=1.1, tone=.7)
     if K.LOD == 0:

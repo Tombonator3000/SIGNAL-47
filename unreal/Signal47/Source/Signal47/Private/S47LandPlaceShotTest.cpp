@@ -20,8 +20,8 @@
 #include "UnrealClient.h"
 
 // LAND-PLACES-20261114, -S47LandPlaceShotTest=windmill: a place out on the land as a player sees it, for the pictures of a model's
-// critique rounds: from 6 m, 40 m, 300 m and 1 km along one compass line from it (-S47LandPlaceAz=<degrees>, 195: from the south-
-// south-west), and its close-ups, at each hour of -S47LandPlaceHours=<h,h,...> (13,18.6,25: day, dusk (the game's sun sets at 18:27) and one in the night, when the
+// critique rounds: from 6 m, 40 m, 300 m and 1 km along a compass line from it (-S47LandPlaceAz=<degrees>, 195: from the south-
+// south-west; the two far ones along -S47LandPlaceFarAz=, 285, where the land lets it stand against the sky), and its close-ups, at each hour of -S47LandPlaceHours=<h,h,...> (13,18.6,25: day, dusk (the game's sun sets at 18:27) and one in the night, when the
 // moon is put up for the picture if the date's own is down). -S47ShotDir=<dir> takes the PNGs, named <view>-<hhmm>.png. With
 // -S47LandMillOff the same views show the place as it was before its model. The run also holds the model's seat: its pieces against
 // the drawn ground under them (S47LandWindmill::Audit). Pictures for a look; the seat is a check.
@@ -59,7 +59,7 @@ void FS47FreeformTest::StepLandPlaceShots(double Dt)
  if(Age>520){FS47Sky::DevMoon=FS47Sky::FDevMoon();Finish(false,FString::Printf(TEXT("land place shots exceeded the time bound at stage %d"),Stage));return;}
  if(!M||!M->Flow||M->Flow->bStarting||S47Startup::Blocking()||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Player||!M->UI||!M->World||!M->Freeform->Places)return;
  auto& F=*M->Freeform;US47World& W=*M->World;
- static FString Dir;static TArray<double> Hours;static double LineAz=195;static bool bSeatHeld=false,bSeatGood=true;
+ static FString Dir;static TArray<double> Hours;static double LineAz=195,FarAz=285;static bool bSeatHeld=false,bSeatGood=true;
  if(Dir.IsEmpty())
  {
   if(!FParse::Value(FCommandLine::Get(),TEXT("S47ShotDir="),Dir))Dir=Root/TEXT("landplace");
@@ -67,6 +67,7 @@ void FS47FreeformTest::StepLandPlaceShots(double Dt)
   FString List;if(!FParse::Value(FCommandLine::Get(),TEXT("S47LandPlaceHours="),List,false))List=TEXT("13,18.6,25");
   TArray<FString> Bits;List.ParseIntoArray(Bits,TEXT(","));for(const FString& B:Bits)Hours.Add(FCString::Atod(*B));
   FParse::Value(FCommandLine::Get(),TEXT("S47LandPlaceAz="),LineAz);
+  FParse::Value(FCommandLine::Get(),TEXT("S47LandPlaceFarAz="),FarAz);
  }
  static FString Which;if(Which.IsEmpty())FParse::Value(FCommandLine::Get(),TEXT("S47LandPlaceShotTest="),Which);
  const bool bFarm=Which==TEXT("farmmill");
@@ -76,7 +77,7 @@ void FS47FreeformTest::StepLandPlaceShots(double Dt)
  auto Pose=[&](const FView& V)
  {
   if(W.bDriving)W.StopDriving();
-  const double Rad=FMath::DegreesToRadians(LineAz);
+  const double Rad=FMath::DegreesToRadians(V.Along>=300?FarAz:LineAz);   // (the far ones from where the land lets it stand against the sky)
   double EX=V.Along>0?FMath::Sin(Rad)*V.Along:V.EX,EZ=V.Along>0?-FMath::Cos(Rad)*V.Along:V.EZ,TX=V.TX,TZ=V.TZ;
   if(V.Pose==3)
   {
