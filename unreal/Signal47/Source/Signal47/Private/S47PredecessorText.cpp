@@ -7,8 +7,10 @@ const TArray<FDocDef>& Docs()
  static const TArray<FDocDef> Table={
   // ---- the locker
   {TEXT("note"),TEXT("A note to self, on the back of a fuel slip"),TEXT("hand"),TEXT("REYES"),
-   TEXT("~ MONDAY\n~ call Dale re truck (brakes. he'll yell. call anyway)\n~ coffee filters. the real ones\n~ pay Danny back $20\n~ do NOT sign the fuel sheet till they fix the total\n~ type up RFI list\n~ ask Ward re a Sunday off in May"),
-   TEXT("Reyes's list for a Monday. Dale, coffee filters, twenty dollars owed, a list to type up. The Monday was April 14."),nullptr},
+   TEXT("~ MONDAY\n~ call Dale re truck (brakes. he'll yell. call anyway)\n~ coffee filters. the real ones\n~ pay Danny back $20\n~ do NOT sign the fuel sheet till they fix the total\n~ type up RFI list\n~ ask Ward re a Sunday off in May\n~ if one of the small ones comes close: lamp OFF. don't move. I think it's the light they\n   (not all of them. not the"),
+   // FELT-WEEK1-20261114 (→ M1, M3): the still rule told once before the first visit, as his hearsay, half finished; the field record
+   // (rule-still-held, S47FarmSite) still proves it. The other two lamp rules stay a surprise: only «not all of them».
+   TEXT("Reyes's list for a Monday. Dale, coffee filters, twenty dollars owed, a list to type up. The Monday was April 14. At the bottom, a line about the lamp that Reyes never finished."),nullptr},
   {TEXT("list"),TEXT("Dale's interference list, on a clipboard"),TEXT("typed"),TEXT("SARO / FIELD"),
    TEXT("FROM: DALE, FIELD MAINT.\nTO: REYES\n\nRFI SOURCE LIST. YES, ANOTHER ONE.\n\nSomebody's pump is in my receiver and I will find it if I have to dig up New Mexico with my hands. Every motor, every fence charger, every bad ground inside ten miles. You go and you look. You tag it, you date it, you initial it. Daylight only and no overtime, Ward will have my head and I am using it.\n\nDo not be clever. Clever I can get anywhere.\n\n~ start with the windmill on the Baca lease\n~ he underlined \"look\" three times. I'll work it out as I go - R."),
    TEXT("Dale had Reyes driving the land for interference sources, tagging each stop. Reyes's list starts with the windmill on the Baca lease."),TEXT("windmill")},
