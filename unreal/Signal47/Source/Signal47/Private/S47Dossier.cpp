@@ -936,7 +936,13 @@ bool FS47Dossier::TakeOut(int32 Into,int32 From,int32 Night)
  if(At==INDEX_NONE)return false;
  const FMerge Was=Merges[At];
  Merges.RemoveAt(At);
- if(Was.bHadName)Names.Add(Was.Into,Was.NameWas);else Names.Remove(Was.Into);
+ // REVIEW (14 Nov): the name the survivor took from the other goes back with it, but only while it is still that one: a name the
+ // player wrote on it after they were filed as one is his and stays (a file that had its own name kept it, and keeps what it has)
+ if(!Was.bHadName)
+ {
+  const FNamed* Now=Names.Find(Was.Into);const FNamed* Carried=Names.Find(Was.From);
+  if(Now&&Carried&&Now->Text==Carried->Text&&Now->Day==Carried->Day)Names.Remove(Was.Into);
+ }
  // what went in after it stays with the survivor; its stage is its own again, never below what it had before
  if(Reached.Num()<Sequence.Num())Reached.SetNumZeroed(Sequence.Num());
  Reached[Was.Into]=FMath::Max(Was.ReachedWas,int32(StageNow(Was.Into)));
@@ -1525,8 +1531,11 @@ bool SelfTest(TArray<FString>& Lines)
   const bool bKept=S47J::Write(Back.Save())==S47J::Write(D.Save())&&!Back.IsFile(2)&&Back.StageOfFile(1)==EStage::Habits&&Back.CanTakeOut(1,2,5)&&Back.NameOf(1)==TEXT("Ladder notes")&&S47J::Arr(Record,TEXT("merged")).Num()==1;
   const bool bOut=!Back.TakeOut(1,2,6)&&Back.TakeOut(1,2,5)&&Back.IsFile(2)&&Back.Files().Num()==2&&Back.NameOf(1).IsEmpty()&&Back.NameOf(2)==TEXT("Ladder notes")&&Back.FileOf(TEXT("m-later"))==1
    &&Back.FileOf(TEXT("m-tape"))==2&&!Back.Filed(1)&&!Back.TakeOut(1,2,5);
+  // a name written on the survivor after the filing is the player's and stays when the other comes out again
+  FS47Dossier Renamed;Renamed.Load(Record);
+  const bool bOwnName=Renamed.SetName(1,TEXT("Lamp shy"),5)&&Renamed.TakeOut(1,2,5)&&Renamed.NameOf(1)==TEXT("Lamp shy")&&Renamed.NameOf(2)==TEXT("Ladder notes");
   FS47Dossier Again;Again.Load(S47J::Read(S47J::Write(Back.Save())));
-  Check(bApart&&bMerged&&bLater&&bKept&&bOut&&Again.IsFile(2)&&Again.Files().Num()==2&&!Again.Save()->HasField(TEXT("merged"))&&S47J::Write(Again.Save())==S47J::Write(Back.Save()),
+  Check(bApart&&bMerged&&bLater&&bKept&&bOut&&bOwnName&&Again.IsFile(2)&&Again.Files().Num()==2&&!Again.Save()->HasField(TEXT("merged"))&&S47J::Write(Again.Save())==S47J::Write(Back.Save()),
    TEXT("slice 3: two filed as one: the lower number survives with both, the name kept or carried over, the stage from both; out again only that night; both ways survive a Continue"));
   // two the game knows are not the same: nothing says so, the contradictions are struck, the stage is what is consistent
   FS47Dossier W;
