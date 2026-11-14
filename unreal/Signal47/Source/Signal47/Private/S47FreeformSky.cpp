@@ -10,6 +10,7 @@
 #include "S47Observing.h"
 #include "S47RxLook.h"
 #include "S47RxSearch.h"
+#include "S47Script.h"
 #include "S47SkyAcquire.h"
 #include "S47SkySphere.h"
 #include "S47Story.h"
@@ -265,7 +266,8 @@ FS47RxLive FS47FreeformSession::RxLive() const
 {
 	// RX-LOOK-20261113: see S47Freeform.h. Read every frame by the receiver's frame; nothing is decided or changed here.
 	FS47RxLive Look;
-	Look.Clock = TerminalClock();
+	// (RX-LOOK gjennomgang 14 Nov: the clock by the rule for a clock in player text, S47RxLook::ClockLine; the other terminals keep theirs)
+	Look.Clock = S47RxLook::ClockLine(TerminalClock());
 	// "SARO OPS V4.2  TERM 3  OPR NIGHT", less the name the header draws large
 	Look.Term = TerminalStation(1);
 	Look.Term.RemoveFromStart(TEXT("SARO OPS "));
@@ -490,13 +492,24 @@ bool FS47FreeformSession::SkySelfTest(TArray<FString>& Lines)
 	Check(!S.SkyPrompt().IsEmpty() && !S.SkyOdd(), TEXT("the page has a line to say with no chart open, and an ordinary card is ordinary"));
 	{ // RX-LOOK-20261113: the frame's reading, as far as it goes without a station round it
 		const FS47RxLive Bare = S.RxLive();
+		// RX-LOOK gjennomgang 14 Nov: the header's clock as the frame draws it, at a minute that would read 47 and one that would not
+		// (it used to be compared with the terminal's own clock, which it was a copy of)
+		const double ClockWas = S.WorldClock;
+		S.WorldClock = FMath::FloorToDouble(ClockWas / 86400.) * 86400. + 23. * 3600. + 47. * 60. + 12.;
+		const FString At47 = S.RxLive().Clock, Terminal47 = S.TerminalClock();
+		S.WorldClock = FMath::FloorToDouble(ClockWas / 86400.) * 86400. + 21. * 3600. + 14. * 60.;
+		const FString At14 = S.RxLive().Clock, Terminal14 = S.TerminalClock();
+		S.WorldClock = ClockWas;
+		const bool bClock = Terminal47.EndsWith(TEXT("23:47")) && At47 == Terminal47.LeftChop(5) + TEXT("23:48") && !S47Script::SaysFortySeven(At47) && At14 == Terminal14 && At14.EndsWith(TEXT("21:14"))
+			&& S47RxLook::ClockLine(TEXT("28-APR-86 08:15")) == TEXT("28-APR-86 08:16") && S47RxLook::ClockLine(TEXT("NO CLOCK")) == TEXT("NO CLOCK");
+		Check(bClock, *FString::Printf(TEXT("the receiver's header clock never reads 47: the terminal's %s is drawn %s, its %s as it is"), *Terminal47, *At47, *Terminal14));
 		const bool bSky = FMath::IsFinite(S.SiderealDeg()) && S.SiderealDeg() >= 0 && S.SiderealDeg() < 360;
 		// the first morning at 08:00, the session's own first date (28 April 1986: a little after 22 h 18 min of sidereal time)
 		FS47FreeformSession Fresh(nullptr); Fresh.Begin(nullptr);
 		const FDateTime FirstDate = Fresh.DateOfDay(1);
 		const double Morning = Fresh.SiderealDeg() / 15., Almanac = S47SkySphere::LstOf(FirstDate.GetYear(), FirstDate.GetMonth(), FirstDate.GetDay(), Fresh.Clock()) / 15.;
 		Fresh.Stop();
-		Check(Bare.bJob && Bare.CardMhz > 1419. && Bare.CardMhz < 1421. && !Bare.Source.IsEmpty() && Bare.Clock == S.TerminalClock() && Bare.Term.StartsWith(TEXT("V4.2")) && !Bare.bPointing && !Bare.bRecording && Bare.Ticks.IsEmpty() && Bare.Scope.Strength == 0.,
+		Check(Bare.bJob && Bare.CardMhz > 1419. && Bare.CardMhz < 1421. && !Bare.Source.IsEmpty() && Bare.Clock == S47RxLook::ClockLine(S.TerminalClock()) && Bare.Term.StartsWith(TEXT("V4.2")) && !Bare.bPointing && !Bare.bRecording && Bare.Ticks.IsEmpty() && Bare.Scope.Strength == 0.,
 			TEXT("the receiver's frame reads the job's card, the terminal's clock and name; with no station round it there is no pointing, no source on the scopes and nothing recorded"));
 		Check(bSky && FMath::Abs(Morning - Almanac) < 1e-6 && Morning > 21. && Morning < 23., *FString::Printf(TEXT("the station's sidereal time follows the world's clock and date (the first morning: %.2f h)"), Morning));
 		// the frame on the glass: with its own row of keys the screen has no second one, and what the frame's rows leave is the

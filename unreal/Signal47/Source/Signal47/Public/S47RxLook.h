@@ -106,6 +106,10 @@ namespace S47RxLook
 	{
 		return Num(FMath::FloorToDouble(FMath::Max(0., FMath::IsFinite(Elapsed) ? Elapsed : 0.))) + TEXT(" / ") + Num(FMath::RoundToDouble(Seconds)) + TEXT(" s");
 	}
+	// The header's date and clock ("28-APR-86 23:47") as the glass shows it: the clock by the project's rule for a clock in player
+	// text (S47Script::PlayerClock: never a minute or digits that read 47, nor 08:15 or 20:15; a minute on). The date is as given
+	// (a day or a year of the game's calendar cannot read 47). Anything that does not end in HH:MM is given back as it is.
+	SIGNAL47_API FString ClockLine(const FString& DateAndClock);
 	// For a readout written in sixties (hours, minutes and seconds; degrees and minutes): the words of the count nearest Exact
 	// that show no 47, a step up, a step down, two up, two down and on. Words writes a count as the glass shows it.
 	template <typename TWords>

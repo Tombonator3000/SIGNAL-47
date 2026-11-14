@@ -1205,7 +1205,7 @@ FString FS47FreeformSession::ReceiverNextAction() const
  // GAMEPLAY-LOOP-01: the unusual take says so for as long as it is written
  if(J->Stage==EJobStage::Integrating&&PlainAnomaly(*J))return TEXT("RECEIVER (centre PC): ANOMALY DETECTED. Let the take run to the end; then RETAIN TAKE on the RECORD tab.");
  // D45-20261110 (Tom: the task card flickered with the count): the line names the step, the receiver's own readout counts.
- if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECEIVER (centre PC): Recording at the receiver (%d/27 antennas). Keep the tuning, pointing and power valid until the take ends."),AvailableDishCount());
+ if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECEIVER (centre PC): Recording at the receiver (%s/27 antennas). Keep the tuning, pointing and power valid until the take ends."),*S47RxLook::Num(double(AvailableDishCount())));
  if(J->Stage!=EJobStage::Pointed)return JobNextAction(*J);
  if(!PointReady())return TEXT("TRACKING (right-hand PC): Wait for the commanded direction. If movement stops, inspect isolated elements at ARRAY STATUS (left-hand PC).");
  if(Settle<1)return SkyAcquired()?TEXT("RECEIVER (centre PC): Wait one second for the array to settle, then tune the work card."):TEXT("RECEIVER (centre PC): Wait one second for the array to settle, then find the source on the ACQUIRE sky chart.");
@@ -1213,9 +1213,9 @@ FString FS47FreeformSession::ReceiverNextAction() const
  if(!SkyAcquired())return TEXT("RECEIVER (centre PC): ACQUIRE. Steer the reticle to where the bearings cross.");
  const auto P=EffectiveProfile(*J);const auto& R=M->Story->Rx;
  if(R.Pass(P))return AnomalyAhead()?TEXT("RECEIVER (centre PC): ANOMALY DETECTED. RECORD tab: press START RECORDING, then RETAIN TAKE."):TEXT("RECEIVER (centre PC): TUNE tab: press START RECORDING to record this source.");
- if(FMath::Abs(R.Frequency-P.F)>P.FTol)return FString::Printf(TEXT("RECEIVER (centre PC): Tune FREQUENCY to %.3f MHz (now %.3f). Watch the carrier peak and received percentage."),P.F,R.Frequency);
- if(R.Gain<P.Gain[0]||R.Gain>P.Gain[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set GAIN between %.0f and %.0f (now %.0f)."),P.Gain[0],P.Gain[1],R.Gain);
- if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set BANDWIDTH between %.0f and %.0f kHz (now %.0f)."),P.Bw[0],P.Bw[1],R.Bandwidth);
+ if(FMath::Abs(R.Frequency-P.F)>P.FTol)return FString::Printf(TEXT("RECEIVER (centre PC): Tune FREQUENCY to %s MHz (now %s). Watch the carrier peak and received percentage."),*S47RxLook::Num(P.F,3),*S47RxLook::Num(R.Frequency,3));
+ if(R.Gain<P.Gain[0]||R.Gain>P.Gain[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set GAIN between %s and %s (now %s)."),*S47RxLook::Num(P.Gain[0]),*S47RxLook::Num(P.Gain[1]),*S47RxLook::Num(R.Gain));
+ if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set BANDWIDTH between %s and %s kHz (now %s)."),*S47RxLook::Num(P.Bw[0]),*S47RxLook::Num(P.Bw[1]),*S47RxLook::Num(R.Bandwidth));
  return TEXT("RECEIVER (centre PC): Fine-tune until the received carrier reaches 100%.");
 }
 // RX-TABS-DUE-20261113 (Tom 13 Nov: «På receiver: tab som Tuning etc. må blinke når de skal brukes»): ReceiverNextAction's steps, in its
@@ -2913,10 +2913,10 @@ void FS47FreeformSession::OpenReceiver()
   auto DishState=[this,DishOff](int32 I){if(DishOff(I))return 2;return FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),TargetAz()))>.1||FMath::Abs(M->Web->DishEl(I)-TargetEl())>.1?3:0;};
   auto Short=[this](int32 I){return M->Web->DishId(I).Replace(TEXT("-"),TEXT(""));};
   auto Slew=[this]{return PointReady()?1.f:float(FMath::Clamp(1.-ArrayErrorDeg()/90.,0.,1.));};
-  Rows.Add(T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("ARRAY / ANTENNAS ON THIS TARGET"),FString::Printf(TEXT("%s  |  AZ %.1f EL %.1f"),*Name,TargetAz(),TargetEl())),T::AntennaGrid(Dishes,Short,DishState,nullptr)})));
+  Rows.Add(T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("ARRAY / ANTENNAS ON THIS TARGET"),FString::Printf(TEXT("%s  |  AZ %s EL %s"),*Name,*S47RxLook::Num(TargetAz(),1),*S47RxLook::Num(TargetEl(),1))),T::AntennaGrid(Dishes,Short,DishState,nullptr)})));
   Rows.Add(T::Columns({
-   {1.3f,T::Meter(TEXT("SLEW PROGRESS"),TAttribute<FString>::CreateLambda([this]{return PointReady()?FString(Settle>=1?TEXT("ON TARGET / STEADY"):TEXT("ON TARGET / SETTLING")):FString::Printf(TEXT("%.1f\u00b0 TO GO"),ArrayErrorDeg());}),TAttribute<float>::CreateLambda(Slew))},
-   {1.f,T::Value(TEXT("POINTING / OFF"),TAttribute<FString>::CreateLambda([this,Dishes,DishState]{int32 On=0,Off=0;for(int32 I=0;I<Dishes;++I){const int32 St=DishState(I);On+=St==0;Off+=St==2;}return FString::Printf(TEXT("%d / %d"),On,Off);}),true)}},10));
+   {1.3f,T::Meter(TEXT("SLEW PROGRESS"),TAttribute<FString>::CreateLambda([this]{return PointReady()?FString(Settle>=1?TEXT("ON TARGET / STEADY"):TEXT("ON TARGET / SETTLING")):FString::Printf(TEXT("%s\u00b0 TO GO"),*S47RxLook::Num(ArrayErrorDeg(),1));}),TAttribute<float>::CreateLambda(Slew))},
+   {1.f,T::Value(TEXT("POINTING / OFF"),TAttribute<FString>::CreateLambda([this,Dishes,DishState]{int32 On=0,Off=0;for(int32 I=0;I<Dishes;++I){const int32 St=DishState(I);On+=St==0;Off+=St==2;}return FString::Printf(TEXT("%s / %s"),*S47RxLook::Num(double(On)),*S47RxLook::Num(double(Off)));}),true)}},10));
   Rows.Add(T::Small(TEXT("Steady = on remote and on target. Pulsing = still moving. Red = off remote. Antennas are commanded from the right-hand tracking PC; this receiver records only while pointing, tuning and power are all valid.")));
  }
  else if(ReceiverTab==3)
@@ -3039,13 +3039,13 @@ void FS47FreeformSession::OpenReceiver()
   Rows.Add(T::Columns({
    {.8f,T::Panel(TEXT("WORK CARD"),S47Kit::Col(Left))},
    {1.2f,T::Panel(FString(),S47Kit::Col({
-    T::TitleRow(TEXT("LAST TAKE / FREQUENCY OVER TIME"),FString::Printf(TEXT("%.0f s"),SourceSeconds())),T::Spectrogram(TakeLook,HasTake,128), // RX-LOOK-20261113: 150 and 110, lower for the frame's body (round 2: 128 and 92, the body is 8 lower)
+    T::TitleRow(TEXT("LAST TAKE / FREQUENCY OVER TIME"),S47RxLook::Num(SourceSeconds())+TEXT(" s")),T::Spectrogram(TakeLook,HasTake,128), // RX-LOOK-20261113: 150 and 110, lower for the frame's body (round 2: 128 and 92, the body is 8 lower)
     T::TitleRow(TEXT("KNOWN SOURCE FOR COMPARISON"),TAttribute<FString>::CreateLambda(RefShown)),T::Spectrogram(RefLook,[]{return true;},92)}))}},10));
   Rows.Add(T::Note(TAttribute<FString>::CreateLambda([this]{return FString(FS47ReceiverSound::BlurbOf(DataRef));}),20,TAttribute<FLinearColor>(S47Kit::Css(0x8cffa4))));
   Rows.Add(T::Columns({
    {1.f,T::Button(TEXT("< PREVIOUS"),[this,Refs]{DataRef=(DataRef+Refs-1)%Refs;OpenReceiver();})},
    {1.f,T::Button(TEXT("NEXT >"),[this,Refs]{DataRef=(DataRef+1)%Refs;OpenReceiver();})},
-   {1.6f,T::Big(TAttribute<FString>::CreateLambda([this,Odd]{const auto* C=Cases.Get(0);return Odd()?FString::Printf(TEXT("THE TAKE SOUNDS LIKE THIS / %d LEFT"),C?Cases.RefTriesLeft(0):0):FString(TEXT("MATCH: AN UNUSUAL TAKE IS NEEDED"));}),[this]{MarkReference(DataRef);OpenReceiver();},1,TAttribute<bool>::CreateLambda(Odd))}},10));
+   {1.6f,T::Big(TAttribute<FString>::CreateLambda([this,Odd]{const auto* C=Cases.Get(0);return Odd()?FString::Printf(TEXT("THE TAKE SOUNDS LIKE THIS / %s LEFT"),*S47RxLook::Num(double(C?Cases.RefTriesLeft(0):0))):FString(TEXT("MATCH: AN UNUSUAL TAKE IS NEEDED"));}),[this]{MarkReference(DataRef);OpenReceiver();},1,TAttribute<bool>::CreateLambda(Odd))}},10));
   Rows.Add(T::Small(TEXT("Listen to each source at the reel deck on the wall table (NEXT REFERENCE, PLAY REFERENCE). A match that is right rules an explanation out on the OPS case board; a take of something new matches none.")));
  }
  // RX-LOOK-20261113: the frame round the page. The next step in words is the frame's line on every tab (the chart's own on ACQUIRE);

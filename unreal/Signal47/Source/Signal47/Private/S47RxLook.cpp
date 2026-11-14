@@ -1,4 +1,5 @@
 #include "S47RxLook.h"
+#include "S47Script.h"
 
 // RX-LOOK-20261113 (-> M3, M6): see S47RxLook.h.
 S47RxLook::FState S47RxLook::StateOf(const FStateIn& In)
@@ -30,6 +31,16 @@ S47RxLook::FState S47RxLook::StateOf(const FStateIn& In)
 		return Say(EState::OnTape, TEXT("TAKE ON TAPE"), false);
 	}
 	return Say(EState::Done, TEXT("TAKE REGISTERED"), false);
+}
+
+FString S47RxLook::ClockLine(const FString& DateAndClock)
+{
+	// RX-LOOK gjennomgang 14 Nov: the header's clock showed xx:47 one minute every hour
+	const int32 Len = DateAndClock.Len();
+	auto Digit = [&](int32 At) { return At >= 0 && At < Len && FChar::IsDigit(DateAndClock[At]); };
+	if (Len < 5 || DateAndClock[Len - 3] != TEXT(':') || !Digit(Len - 5) || !Digit(Len - 4) || !Digit(Len - 2) || !Digit(Len - 1) || Digit(Len - 6)) return DateAndClock;
+	const int32 Hours = FCString::Atoi(*DateAndClock.Mid(Len - 5, 2)), Minutes = FCString::Atoi(*DateAndClock.Mid(Len - 2, 2));
+	return DateAndClock.Left(Len - 5) + S47Script::PlayerClock(double(Hours * 3600 + Minutes * 60));
 }
 
 const FS47RxLive& FS47RxFeed::Now()
