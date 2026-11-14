@@ -43,7 +43,8 @@ S47Binder::FSource FS47FreeformSession::BinderSource() const
    JobIn.Showed=!J.bAnomaly?TEXT("ROUTINE RESULT"):!J.bAudioReviewed?TEXT("COMPARISON PENDING"):J.Phenomenon==TEXT("wrong_source")?TEXT("OFF-SOURCE RESPONSE")
     :J.Phenomenon==TEXT("time_disagreement")?TEXT("CLOCK DISAGREEMENT"):J.Phenomenon==TEXT("duplicate_print")?TEXT("DUPLICATE ORIGINAL"):TEXT("SOURCE UNRESOLVED");
    // An unusual original belongs with the case its kind opens, once that case is open.
-   if(J.bAnomaly)JobIn.CaseLine=FS47FreeformCases::LineForFinding(J.Phenomenon);
+   // Critic 12 Nov: the plain extra-tick take (GAMEPLAY-LOOP-01) has no phenomenon of its own: it belongs with Case 01, the pulsar's.
+   if(J.bAnomaly)JobIn.CaseLine=PlainAnomaly(J)?0:FS47FreeformCases::LineForFinding(J.Phenomenon);
   }
   Src.Jobs.Add(MoveTemp(JobIn));
  }
@@ -72,6 +73,7 @@ S47Binder::FSource FS47FreeformSession::BinderSource() const
   Src.Files.Add({File.Key,File.Title,File.Text,File.Day,At<32&&(StationFilesSeen&(1u<<At))!=0});
  }
  if(Predecessor)Src.Older=Predecessor->ArchiveLabel();
+ BinderUnknowns(Src); // EVIDENCE-DOSSIER-20261113: the files of the unknown, behind UNKNOWNS (S47FreeformDossier.cpp)
  return Src;
 }
 void FS47FreeformSession::OpenBinder()
@@ -97,6 +99,7 @@ void FS47FreeformSession::ShowBinder()
   .OnFile([this,Mine](FString& Words){return Mine()&&FileAtBinder(Words);})
   .OnShown([this,Mine](const FString& EntryKey){if(Mine())BinderRead(EntryKey);})
   .OnOlder([this,Mine]{if(Mine()&&Predecessor)Predecessor->OpenGap();})
+  .OnDo([this,Mine](const FString& Do,const FString& Typed,FString& Words){return Mine()&&DossierAct(Do,Typed,Words);}) // EVIDENCE-DOSSIER slice 3
   .OnLeave([this,Mine]{if(Mine()&&M&&M->UI)M->UI->Close();}));
 }
 bool FS47FreeformSession::FileAtBinder(FString& Words)

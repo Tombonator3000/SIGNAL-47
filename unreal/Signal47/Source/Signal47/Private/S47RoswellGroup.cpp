@@ -17,6 +17,8 @@
 #include "S47Freeform.h"
 #include "S47Three.h"
 #include "S47Weather.h"
+#include "S47WorldLife.h"
+#include "S47Sky.h"
 #include "Components/PoseableMeshComponent.h"
 
 struct FS47RoswellGroup::FImpl
@@ -183,6 +185,15 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
  int32 Active=0;
  for (const auto& A:P->Actors) Active+=A->bActive?1:0;
  const bool RoofBusy=M->Night && M->Night->Hooks.RoofStepsBusy && M->Night->Hooks.RoofStepsBusy();
+ // M5 (13 November): how far they see the player tonight, by the moon on the land and the blowing sand (S47Weather::SightScale); a
+ // lit lamp shows where the player is whatever the sky. Only in a live Freeform game: a developer's fixtures see as they always did.
+ double SightK=1.;
+ if (M->IsFreeform() && M->Freeform && M->Freeform->RulesLive() && M->Web)
+ {
+  const S47Weather::FLive& Wx=S47Weather::Live();
+  const double Daylight=M->Life && M->Life->Sky.IsValid() ? M->Life->Sky->Daylight() : 0.;
+  SightK=S47Weather::SightScale(M->Web->MoonLightNow(),Wx.bOn?Wx.Dust:0.,Daylight,Input.bFlashlight);
+ }
  if (!bHeld && !P->bDev && !P->bControlled && Input.bOk && !Input.Scene.IsEmpty() && Active==0 && NightCount<8 && Input.May!=TOptional<bool>(false))
  {
   P->Wait-=FMath::Min(Dt,.25)*Input.Pace.Get(1.);
@@ -248,6 +259,7 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   }
   // WEATHER-20261108: a strong wind covers steps and breath
   if (const S47Weather::FLive& Wx=S47Weather::Live(); Wx.bOn) In.HearScale=1.-.5*FMath::Clamp(Wx.Wind,0.,1.);
+  In.SightScale=SightK;
   if (P->HoldId==INDEX_NONE || P->HoldId==A.Id) { In.HoldLook=P->HoldLook; In.HoldBack=P->HoldBack; In.bHoldHeard=P->bHoldHeard; }
   A.Brain.Tick(Dt,In,W);
   A.Root->SetWorldLocation(S47Three::ToUE(A.Brain.Pos));

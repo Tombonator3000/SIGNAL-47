@@ -70,6 +70,7 @@ public:
  int32 ActiveTerminalScreen() const { return ActiveTerminal; }
  bool TerminalWindowRendered() const;
  void OpenAudioComparison();
+ static FString DeckToast(); // review 14 Nov (B3): where the deck is and what its keys say (FS47FreeformAudioDesk::SourceName)
  bool AudioListeningAvailable() const { return AudioAvailable(); }
  double AudioHeard(int32 Source) const { return Source>=0&&Source<2?AudioCovered[Source]:0; }
  const FString& AudioFeedbackText() const { return AudioFeedback; }

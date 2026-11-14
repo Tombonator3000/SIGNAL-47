@@ -15,6 +15,7 @@
 class US47Main;
 class FS47RoadArea;
 class FS47OldRoad;
+struct FS47Rect;
 
 /** World.startTrip's options: perMetre (the clock's skip per metre driven), onArrive, onStart, at
  *  (start there, not where the truck stands), legs and places (what the trip may pass through),
@@ -62,6 +63,9 @@ public:
 	bool bCommuteVehicle = false;
 	void BeginCommute(const S47J::FObj& SavedCar = nullptr);
 	void FinishCommute();
+	/** STORY-DRIVE-OWN-CAR-20261113: a Story night's wagon let go without parking anything (the night stopped, or the drive could not
+	 *  start): the cab and rigs are the truck's again and no second vehicle is kept. SARO 07's own pose is not touched. */
+	void EndPersonalVehicle();
 	void SetArrivalServiceWaiting(bool bVisible);
 	void SetPersonalPark(const FVector& Position, double Heading, bool bVisible, const FString& WalkArea = TEXT("saro"), bool bService = false);
 	bool PersonalTransport() const { return bPersonalTransport; }
@@ -210,6 +214,8 @@ public:
 	FS47EngineSound* EngineSound() const { return Engine.Get(); }
 	/** The truck the player has, if it is in this area, or null (not on the old road). */
 	FS47Truck* TruckHere() const;
+	/** Critic 12 Nov: whether a truck kept from earlier is still one of this world's (a leg's, SARO's, the station's, the diner's, the old road's). */
+	bool OwnsTruck(const FS47Truck* T) const;
 	/** The copies of the truck: on SARO's pad, on the road and the diner's lot, at the station, on the old road. */
 	FS47Truck* SaroTruck() const { return SaroTruckP.Get(); }
 	FS47Truck* OldTruck() const { return OldTruckP.Get(); }
@@ -228,6 +234,7 @@ public:
 	bool Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out);
 	void Update(double Dt, double T);
  void ReconcileFarm(bool bEnabled);
+ static bool CopiesToTruck(const FS47Rect& C); // LAND-PLACES-FIXES-20261114: ReconcileFarm copies this walk row into the truck's list (not the ones that put their own in: landplace:, temp:, townuse:, door:, eastwing:)
  /** Freeform's open land (S47OpenLand): the player on foot past the line of the area's land goes on in the next area. Every frame. */
  void WalkOver();
  /** A leg's drive area and what OnLand refuses here in the current area, by name: for S47ReliefProbe's measure of how far one gets. */
@@ -265,6 +272,7 @@ private:
 	TMap<FString, FLegRec> Legs;
  bool bFarmMode=false,bFarmObstaclesReady=false;
  TMap<FString,TArray<TPair<int32,FS47Obstacle>>> FarmControlledObstacles;
+ TSet<FString> LowRocksMeasured; // HWY-WALL-20261113: the legs whose low roadside rocks have been measured (ReconcileFarm)
 	TUniquePtr<FS47Truck> SaroTruckP, TruckP, ParkedP, OldTruckP;
 	FS47RoadArea* Road = nullptr;
 	TUniquePtr<FS47EngineSound> Engine;

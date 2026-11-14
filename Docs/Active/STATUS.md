@@ -1,10 +1,76 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 11. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 14. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 12. november kl. 22:37 (d63): versjon 0.9.63, `ac5663cd` på `claude/freeform-20261112`
+## Installert 14. november kl. 00:48 (d70): versjon 0.9.70, `b9e4b91a` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5535 kontroller), regresjon PASS 252, mottakerprøven PASS 321, oppgavebildeprøven PASS 7, pakket, røyktestet og installert. Tilbakerulling: d69 (`8fd3a2fb`). Ledig disk etterpå: 129 GB (pakkene d67 og d68 fjernet, kvitteringene beholdt). Ikke spilt av Tom.
+
+- **Rettet feil fra d69 (uavhengig gjennomlesing):** feltguidens NOW-side fikk tilbake lenker og avkryssing (to kodelinjer lå bak en kommentar: rader ble ikke strøket, Enter festet i stedet for å følge, punkter sto to ganger). Ingen tall i spillerteksten leser 47: båndsekunder, klokkeslett, tellere, mil og kassettnummer går gjennom felles formatering (`S47Script::TapeSeconds`, `PlayerClock`, `PlayerCounter`). Festet Ward-sak slipper når rapporten er sendt; nattevakta venter til neste natt slik beslutningen sier; en peiling som ligger i en uhentet pakke, regnes fra hentingen.
+- **Arkivrommet (→ M6, Toms referanseark):** blokkvegg, vinylflis, himling med to armaturer, banklampe som lyser bordplata, egne modeller for skrivemaskin, lampe, bord, reoler, esker, arkivskap, korktavle; vifte og brannslukker fra Cosmos. Fri gange rundt bordet (minst 0,81 m). Alt spillet henger på, står der det sto.
+- **Mottakerskjermen (→ M3, M6, Toms målbilde):** egen ramme på alle faner, himmelkule med stjernefelt, stjernebilder, gradtall og timer, gult sikte, peilinger som tynne linjer, fossefall, FFT, sporingspanel og I/Q. To runder sett i motoren.
+- **Usynlig vegg ved Baca-vindmølla:** en lav veistein fra den gamle verdenen; steiner under 45 cm sperrer ikke lenger i Freeform. Loggen sier nå hva bilen stoppet mot.
+- **Bevismappene trinn 2 (→ M3, M4):** hver nær type har eget kjennetegn på tape, bakken, geiger, dyr og lykt; funn telles bare når spilleren har oppfattet dem; mapper som hører sammen, vises side om side. Gjennomlest av uavhengig leser, seks funn rettet.
+- **Natthendelser ute i landskapet (→ M1):** ni nye ved vindmølla, skolen, linjehytta, motorveien, bensinstasjonen, kirkegården, varden, gruva og saltsteinen; uro-reglene (høyst tre per natt, aldri samme to netter på rad, 45 minutter mellom) håndheves. Gjennomlest, ti funn rettet (lamper som ellers ville brent usett, ord over CB når spilleren er langt unna).
+- **Småfeil:** spoledekkets merkelapp og akse, RECORD-fanens kolonner, kartstempelet bare når det er sant, merkene på radene større, SIDEBAND-dukkingen i dB som i prøven, myk inngang på stingeren, ingen klikk når radioverten eller skrekkbunnen skifter, «Now playing» under SOUND.
+- **Kjent:** den andre reolen i arkivrommet har blank rygg mot rommet; lampeskjermen ser ut som plast; fossefallet på mottakeren er grovt; lyder og musikkendringer er ikke hørt av Tom; natthendelsene er ikke sett i spill.
+- **Underveis:** Fable modellerer vindmølla ved Baca etter referansepakken; bevismappenes trinn 3, dagsplaner for bypersoner, lysrør som ryker i kontrollrommet og kalenderen skrives.
+
+## Tidligere: installert 13. november kl. 19:51 (d69): versjon 0.9.69, `8fd3a2fb` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5421 kontroller), regresjon PASS 252, mottakerprøven PASS 310, oppgavebildeprøven PASS 7, pakket, røyktestet og installert. Tilbakerulling: d68 (`2d9eca0e`). Ledig disk etterpå: 120 GB. Ikke spilt av Tom.
+
+- **Oppgavelista (→ M3, ti endringer, Tom):** HUD-kortet blir stående dempet (55 %/80 %); én rekkefølge for HUD, pausekort, notatbok og arbeidsstasjon; status ut av lista; én telling av jobbkort; pausekortet har høyst fire linjer under WORK / FOLLOW-UP / YOUR OWN TIME; det Dale ber om lagres; hver rad har giver (STATION, WARD, THE LAND), vindu og verdi; ÅPNE SAKER i notatboka; én rad kan festes (F2). Nattevakta går foran reparasjonsmålet om natta.
+- **SIDEBAND (→ M2, M5):** fargebussen på musikken (WORN, BROKEN, WIDE, FAR) styrt av spillets tilstand, FLARES (skrekkseng og stingere etter tidstrinn; tar over for det gamle møtelaget når filene finnes), kanaler (lag) for de ni egne stykkene på 22 kHz (518 MB). Innstillinger «Music reacts» og «Stingers». Målt mot prøven i motoren; ikke hørt i spill av noen.
+- **Kjent:** dukkingen etter stingeren er grunnere enn i prøven; kanalene er ikke hørt i opptak; kartstempelet «NOT TO LEAVE THE BUILDING» står ved en peiling som sier kjør ut; Ward-brevet går foran et ufestet jobbkort; merkene på radene er små.
+- **Underveis:** Codex lager referansebilder for vindmølla, linjehytta, gruva og varden (`~/scratch-bm/refs/land-places-20261113/`); oversikten over steder og modeller ligger i [Design/World](../Design/World/STEDER_MODELLER_20261113.md).
+
+## Tidligere: installert 13. november kl. 16:43 (d68): versjon 0.9.68, `2d9eca0e` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5296 kontroller), regresjon PASS 252, mottakerprøven (hele avviksflyten) PASS, pakket, røyktestet og installert. Tilbakerulling: d67 (`b2db7eb4`). Ledig disk etterpå: 121 GB. Ikke spilt av Tom.
+
+- **Avviksflyten (→ M3, Tom etter d67):** ANOMALY DETECTED → RECORD-fanen: START RECORDING, RETAIN TAKE / RECORD REFERENCE 8 s → spolebåndet: MARK IN/OUT eller to klikk på båndet, REFERENCE, RETAIN → OPS → pakke → perm. Avslag sier hvorfor.
+- **Spilløkka etter kritikerrunden (Tom: «gjør som du anbefaler»):** peilingen er siste side i avvikspakken; nattevakt (kort 3 rundt 01:30) og tett kveld; bevismappene gir kartmerke, ekstra peiling og timer; rent-opptak-bonus bare for egen himmelfiks, og nøyaktig arbeid gir trangere sirkel; avviket kan komme på pulsaren eller nattevakta fra dag 15; Ward varsler etter første og andre natt med timer uten forklaring (regelen uendret).
+- **Lyd:** Toms søkelyd følger nærheten på ACQUIRE og TUNE; byens siste jazzspor ute; vindmøllas knirk bærer 240 m og er halvert tett på; ARRAY pulserer ikke før peking.
+- **Verden:** San Isidro er misjonskirke av Colonial Convent-delene (gåbar, bakdør mot kirkegården; den hvite kirka er reserve uten pakken); gjemmestedets grå boks under pultene er skjult.
+- **Kjent:** RECORD-panelets kolonner flyter sammen, en etikett på spolebåndet er kuttet; pakkesiden med peilingen er ikke sett i motoren; gjerdet Tom møtte ved Baca-vindmølla er ikke funnet i dagens kode (ingen tegnet der); med deler i hånda går reparasjonsmålet foran nattevaktbeskjeden 20:30–01:00.
+
+## Tidligere: installert 13. november kl. 13:26 (d67): versjon 0.9.67, `b2db7eb4` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5246 kontroller), regresjon PASS 251, pakket, røyktestet og installert. Tilbakerulling: d66 (`a756625b`). Ledig disk etterpå: 125 GB. Ikke spilt av Tom.
+
+- **Mottakeren (→ M3):** fanen som holder neste steg, pulserer rolig og har en stjerne (ARRAY, ACQUIRE, TUNE, RECORD, DATA); START RECORDING pulserer på TUNE; DAILY WORK på OPS får stjerne når neste steg er der. Med rolige blink står fanen fast markert. Ikke sett pulsere i spill ennå.
+- **Musikk:** fem rolige ambient-miks (Third Shift, Dry Lake, Vacancy, Grey Hour, Standing Wave) i nattens, motellets og morgenens lister. Ikke hørt i spill.
+
+## Tidligere: installert 13. november kl. 12:46 (d66): versjon 0.9.66, `a756625b` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5238 kontroller), regresjon PASS 251, pakket, røyktestet og installert. Tilbakerulling: d65 (`13430204`). Ledig disk etterpå: 121 GB. Ikke spilt av Tom.
+
+- **Mottakeren (→ M3):** ACQUIRE er et himmelkart der spilleren finner området antennene peker på (peilelinjer, sikte, lås), deretter TUNE; ni nye lyder. Sakene vises uten nummer. Gjentakelsesprøven er fjernet fra alle tre sakene (Tom).
+- **Bevismapper trinn 1 (→ M3, M4):** bevis logges der det tas, UNKNOWN 1–5 i notatboka og i permens UNKNOWNS; nøytrale bildetitler på OPS.
+- **Verden:** gjerdet langs motorveien er borte; kuene høres bare ved gården (svakt ved SARO under hendelser); verksteddøra på bensinstasjonen åpnes og lukkes; kaffemaskinen snudd, lavpoly-trakter og gammel stol byttet (felles modellkatalog).
+- **Musikk:** jazzen og nattpianoet (Cylinder One) ute; steelgitar, synth og gamle plater inne; fire egne miks av 80-tallsloopene; Toms Intro Drive.
+- **Story (→ M8):** egen stasjonsvogn og radio med stemme på kjøreturen er tilbake, med Intro Drive fra starten. Ikke prøvd i spill.
+- **Kjent:** rulledørens håndtak og hengelås henger igjen nederst når verksteddøra er oppe (krever egen del i modellen); Uuriter-sporenes lisens spriker (side CC BY 4.0, filmerker BY-NC-SA) og loop-pakkens vilkår må bekreftes før offentlig utgivelse; de gamle bytrim-meshene ved bensinstasjonen mangler i pakken (også i d65).
+
+## Tidligere: installert 13. november kl. 09:44 (d65): versjon 0.9.65, `13430204` på `claude/freeform-20261112`
+
+Editor BUILD 0, selvtest OK (5134 kontroller), regresjon PASS 251, pakket, røyktestet og installert. Tilbakerulling: d64 (`1e9a3964`). Ledig disk etterpå: 120 GB. Ikke spilt av Tom.
+
+- **M1:** fjerde naturlige rundtur ga 23 netter uten én tom natt (1–4 lagt merke til per natt); reserven åpner kl. 02 og har alltid noe som passer der spilleren er; nattsummen teller møter fra alle systemer.
+- **M7:** innholdet er spredd over 30 dager (hendelser låses opp uke for uke, stasjonsfilene til dag 24, sene saker åpner senest dag 12/15/18, fjerde store natt dag 23–26, jobbkort roterer per uke). Faren og regelen for å bli borte er ikke endret (Tom avgjør).
+- **M2–M5:** skikkelsen på åpen mark venter lenger når spilleren huker med lykta av; en forstørrelse fra negativet kan registreres på OPS; kirkegården er hendelsessted med et funn; måne og sand avgjør hvor langt de små ser.
+- **Ellers:** Reyes' notatbok som spor gjennom måneden, San Isidro-kirkegården bak kirken (Cosmos-gravminner, utenfor Git), fototeksturer i Caliche, besøk på gården slutter senest kl. 06.
+- **Utviklerlek (bare F10):** bølgeskyting ved SARO med egen karabin, HUD og lyder. Sett i automatiske kjøringer på bølge 1 og 2; resten er kodet, ikke sett. Lydene er ikke hørt av noen.
+- **Lærdom:** maskinen gikk i hvile 05:22–08:41 (30 minutter uten tastetrykk). Skift starter nå med `systemd-inhibit`, se nattskift-skillen.
+
+## Tidligere: installert 13. november kl. 01:34 (d64): versjon 0.9.64, `1e9a3964` på `claude/freeform-20261112`
+
+Ikke merget (PR #514 åpen); rask levering. I tillegg til d63: kartet viser saksforsøk og logger, gjort arbeid strøket over, tegnforklaring; hinderlista uten falske treff; SARO med Toms fototeksturer (blokkhud ute, østfløyen, kontorsettet); ingen tomme netter (en liten hendelse ved spilleren kl. 03 når ingenting er merket); Free100-gange for sheriffen bak `-S47Free100=walk,idle` (standard uendret); 14 rettinger etter kritikk (bl.a. lys på bilen etter alien, bilpanelet med pakke, peilegrensen). Selvtest 5041, regresjon PASS 251. Tilbakerulling: d63 (`ac5663cd`). Ikke spilt av Tom.
+
+## Tidligere: installert 12. november kl. 22:37 (d63): versjon 0.9.63, `ac5663cd` på `claude/freeform-20261112`
 
 Ikke merget; rask levering. Freeform (Story står på vent): avviksjobben strømlinjeformet (ANOMALY DETECTED → opptak → spolebånd → bekreft på OPS → print → perm), ny perm i arkivrommet, peilesirkelen klar rød og blir stående til stedet er sjekket, musepekeren på kartet, tanker midt på og glir bort + flere anledninger, stedskort, TV-ens sign-off med ekte nasjonalsang (US Navy Band), F10 lukker seg ikke lenger, biloppbevaringen viser hva som er i bilen, aliens undersøker en bil på tomgang; bakken og Cosmos-lekeplassen ved skolen (fra d62) er med. Selvtest 5019, regresjon PASS 250. Tilbakerulling: d62 (`e63eea04`). Ikke spilt av Tom.
 

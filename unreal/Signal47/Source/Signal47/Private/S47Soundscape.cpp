@@ -1,4 +1,5 @@
 #include "S47Soundscape.h"
+#include "S47LandWindmill.h"
 
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
@@ -10,10 +11,12 @@
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
 #include "S47Geo.h"
+#include "S47Herd.h"
 #include "S47Main.h"
 #include "S47Omen.h"
 #include "S47OpenLand.h"
 #include "S47Three.h"
+#include "S47TownLayer.h"
 #include "S47Walker.h"
 #include "S47WebAudio.h"
 #include "S47Web.h"
@@ -24,7 +27,11 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Soundscape, Log, All);
 namespace S47SoundscapeLocal
 {
 	// How far each carries on a still desert night, road-local metres.
-	constexpr double MillReach = 600, WireReach = 70, CattleNear = 180, CattleFar = 1100, OwlReach = 650, CoyoteNear = 220, CoyoteFar = 1500;
+	// CATTLE-FARM-ONLY-20261113: the far lowing carried 1100 m from three spots (two of them with no cattle), through a panner whose
+	// inverse fall (ref 80, rolloff .5) still left an eighth of it at 1100 m: heard over nearly the whole land. Now the farm's pen only,
+	// faded to nothing by CattleFar on top of the panner's fall; at SARO a whisper (CattleAtSaro of the gain) while the herd is uneasy.
+	constexpr double MillReach = 240, WireReach = 70, CattleNear = 180, CattleFar = 420, CattleRef = 40, OwlReach = 650, CoyoteNear = 220, CoyoteFar = 1500;
+	constexpr double CattleAtSaro = .25, CattleSaroReach = 160, CattleUneasy = .05;
 	// The onset is as dangerous as FS47Omen's; the hush holds this long after the last of it, and our own voices wait after.
 	constexpr double HushSeverity = 0.35, HushHoldSeconds = 2.0, AfterHushSeconds = 25, BreathSeconds = 28;
 	// The power line along the highway and its spurs (S47HighwayPower), road-local.
@@ -94,9 +101,22 @@ const TArray<FVector2D>& FS47Soundscape::Mills()
 
 const TArray<FVector2D>& FS47Soundscape::Cattle()
 {
-	// The farm's pen, the salt lick and trough, the fence past the turnoff.
-	static const TArray<FVector2D> Spots = { FVector2D(55, 240), FVector2D(240, 1740), FVector2D(110, 1590) };
+	// The farm's pen (the corral, road x 30..80, z 215..265: US47World::ReconcileFarm), where the herd is (FS47Herd). CATTLE-FARM-ONLY-20261113:
+	// the salt lick (240, 1740) and the fence past the turnoff (110, 1590) had lowing and no cattle; they are gone.
+	static const TArray<FVector2D> Spots = { FVector2D(55, 240) };
 	return Spots;
+}
+
+double FS47Soundscape::CattleHeard(const FVector2D& RoadAt, bool bHerdUneasy)
+{
+	using namespace S47SoundscapeLocal;
+	double Best = 1e12;
+	for (const FVector2D& Spot : Cattle()) Best = FMath::Min(Best, FVector2D::Distance(RoadAt, Spot));
+	// (inside CattleNear the near ones are FS47FarmNight's, from the cows themselves)
+	if (Best > CattleNear && Best < CattleFar) return FMath::Square(1.0 - (Best - CattleNear) / (CattleFar - CattleNear));
+	const FVector2D Saro(S47Geo::SARO_IN_ROAD.X, S47Geo::SARO_IN_ROAD.Z);
+	if (bHerdUneasy && FVector2D::Distance(RoadAt, Saro) < CattleSaroReach) return CattleAtSaro;
+	return 0;
 }
 
 // ---------- the world ----------
@@ -182,7 +202,7 @@ bool FS47Soundscape::Moo(const FVector& Listener, const FVector& Where, double G
 		}
 	}
 	if (Moos.IsEmpty()) return false;
-	return M->Audio->Night->PlayBufferAt(Moos[FMath::RandRange(0, Moos.Num() - 1)], Listener, Where, Gain, FMath::FRandRange(0.9f, 1.06f), 80).IsValid();
+	return M->Audio->Night->PlayBufferAt(Moos[FMath::RandRange(0, Moos.Num() - 1)], Listener, Where, Gain, FMath::FRandRange(0.9f, 1.06f), S47SoundscapeLocal::CattleRef).IsValid();
 }
 
 // ---------- in play ----------
@@ -302,19 +322,24 @@ void FS47Soundscape::StepVoices(double Dt, double Hour)
 		if (Mill && (Next -= Dt) <= 0)
 		{
 			Next = FMath::FRandRange(5.f, 13.f) / FMath::Max(0.2, Activity(TEXT("windmill"), Hour));
-			Night.MillCreak(Ear, Here(*Mill, 9.5), FMath::Clamp(1.0 - Best / MillReach, 0.25, 1.0));
+			// Tom 13 November (d67): the creak carried far too far (600 m, never under a quarter strength). It is the farm's own sound:
+			// gone by MillReach, and falling off fast on the way there.
+			Night.MillCreak(Ear, Here(*Mill, 9.5), FMath::Clamp(FMath::Square(1.0 - Best / MillReach), 0.04, 1.0));
+			S47LandWindmill::Creak(*Mill); // LAND-PLACES-WINDMILL-20261114: the head and the wheel strain as it creaks (the sound itself is as it was)
 			Counts.FindOrAdd(TEXT("windmill"))++;
 		}
 	}
-	// cattle lowing a long way off (the near ones are FS47FarmNight's)
+	// cattle lowing some way off the farm (the near ones are FS47FarmNight's); at SARO only a whisper of an uneasy herd (CATTLE-FARM-ONLY-20261113)
 	{
-		const FVector2D* Herd = nullptr; double Best = CattleFar;
-		for (const FVector2D& Spot : Cattle()) { const double Dist = FVector2D::Distance(From, Spot); if (Dist > CattleNear && Dist < Best) { Best = Dist; Herd = &Spot; } }
+		const FS47Herd* Herd = M->TownLayer && !M->TownLayer->Herds.IsEmpty() ? M->TownLayer->Herds[0].Get() : nullptr;
+		const bool bUneasy = Herd && Herd->AlarmLevel() > CattleUneasy;
+		const double Heard = CattleHeard(From, bUneasy);
 		double& Next = Due.FindOrAdd(TEXT("cattle"));
-		if (Herd && (Next -= Dt) <= 0)
+		if (Heard > 0 && (Next -= Dt) <= 0)
 		{
-			Next = FMath::FRandRange(35.f, 90.f) / FMath::Max(0.2, Activity(TEXT("cattle"), Hour));
-			if (Moo(Ear, Here(*Herd + FVector2D(FMath::FRandRange(-15.f, 15.f), FMath::FRandRange(-15.f, 15.f)), 1.4), 0.9)) Counts.FindOrAdd(TEXT("cattle"))++;
+			// (an uneasy herd calls more, the hour or not)
+			Next = bUneasy ? FMath::FRandRange(12.f, 30.f) : FMath::FRandRange(35.f, 90.f) / FMath::Max(0.2, Activity(TEXT("cattle"), Hour));
+			if (Moo(Ear, Here(Cattle()[0] + FVector2D(FMath::FRandRange(-15.f, 15.f), FMath::FRandRange(-15.f, 15.f)), 1.4), 0.9 * Heard)) Counts.FindOrAdd(TEXT("cattle"))++;
 		}
 	}
 }
@@ -350,7 +375,7 @@ bool FS47Soundscape::DevPlay(const FString& Kind, FString& Why)
 	{
 		const FVector2D* Mill = Nearest(Mills(), Dist);
 		if (!Mill || Dist > 2000) { Why = TEXT("no windmill within two kilometres"); return false; }
-		Night.MillCreak(Ear, Here(*Mill, 9.5), 1.0); Counts.FindOrAdd(Kind)++;
+		Night.MillCreak(Ear, Here(*Mill, 9.5), 1.0); S47LandWindmill::Creak(*Mill); Counts.FindOrAdd(Kind)++;
 		Why = FString::Printf(TEXT("the windmill %.0f m off"), Dist); return true;
 	}
 	if (Kind == TEXT("cattle"))
@@ -403,7 +428,21 @@ bool FS47Soundscape::SelfTest(TArray<FString>& Lines)
 	const FVector2D TrainA = TrainFrom(FVector2D(0, 500), 0.f), TrainB = TrainFrom(FVector2D(-2000, 500), 1.f);
 	Check(TrainA.X > 3000 && TrainB.X > 3000 && TrainA.Y < 500 && TrainB.Y > 500, TEXT("the train is always east of the land, up or down the line"));
 	Check(HushReach(70) >= 80 && HushReach(260) > HushReach(70) && HushReach(0) == FS47Omen::MinSense, TEXT("the hush reaches as far as the night's own sense of what comes"));
-	Check(Mills().Num() == 2 && Cattle().Num() == 3, TEXT("two windmills and three places with cattle on the land"));
+	Check(Mills().Num() == 2 && Cattle().Num() == 1, TEXT("two windmills and one place with cattle on the land: the farm's pen"));
+	{
+		// CATTLE-FARM-ONLY-20261113: on and round the farm, faded out by 420 m; at SARO only a whisper of an uneasy herd; nowhere else.
+		const FVector2D Pen = Cattle()[0], Saro(S47Geo::SARO_IN_ROAD.X, S47Geo::SARO_IN_ROAD.Z);
+		const double Near = CattleHeard(Pen + FVector2D(200, 0), false), Mid = CattleHeard(Pen + FVector2D(0, 320), false);
+		Check(Near > .8 && Mid > 0 && Mid < Near && CattleHeard(Pen + FVector2D(0, 430), false) == 0 && CattleHeard(Pen + FVector2D(0, 430), true) == 0,
+			TEXT("cattle: the far lowing fades from the farm and is gone past 420 m"));
+		const double AtSaro = CattleHeard(Saro, true);
+		Check(CattleHeard(Saro, false) == 0 && AtSaro > 0 && AtSaro < .3 && CattleHeard(Saro + FVector2D(0, -200), true) == 0,
+			TEXT("cattle: at SARO only a whisper, and only while the herd is uneasy"));
+		bool bNone = true;
+		for (const FVector2D& Far : { FVector2D(240, 1740), FVector2D(110, 1590), FVector2D(0, 1000), FVector2D(0, 2000), FVector2D(-600, 1300), FVector2D(20, -900) })
+			bNone &= CattleHeard(Far, true) == 0;
+		Check(bNone, TEXT("cattle: not on the highway, in Caliche, by the old troughs, at the mine or the antenna field"));
+	}
 	FS47Soundscape Bare(nullptr); Bare.Step(1); Bare.Reset();
 	Check(!Bare.Hushed() && Bare.Hushes() == 0, TEXT("without a game nothing is hushed"));
 	return bOk;

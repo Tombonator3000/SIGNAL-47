@@ -3,6 +3,7 @@
 #include "S47CalicheAccess.h"
 #include "S47CaseFieldTests.h"
 #include "S47DevEvents.h"
+#include "S47DevWaves.h"
 #include "S47DoorVisit.h"
 #include "S47EventPlaces.h"
 #include "S47OpenLand.h"
@@ -158,6 +159,7 @@ void FS47DevFreeform::ClearRunning()
 {
  auto* F=Session();if(!F)return;
  Waiting.Reset();
+ if(Waves)Waves->Stop(TEXT("another F10 line started")); // DEV TOY: the wave shooter ends, the player back where they stood
  if(M->World){M->World->TestInput=nullptr;M->World->Autopilot.Reset();}
  if(M->Player)M->Player->TestMove.Reset(); // (a line's walk, FARM-GATE's, stops with it)
  if(F->Director&&DevRun()&&F->Director->Busy())F->Director->CancelForTest();
@@ -899,10 +901,11 @@ void FS47DevFreeform::StepCards()
  if(CardsStage<0)return;
  const auto& Jobs=F->Jobs();
  const auto Give=[&](const TCHAR* Why){Say(FString(TEXT("GAVE UP: "))+Why);if(!CardsId.IsEmpty())CardsDone.Add(CardsId);CardsStage=0;CardsJob=-1;CardsId.Empty();};
- if(H>=27.&&CardsStage!=0){Give(TEXT("the work was not through by 03:00"));return;}
+ // LOOP-NIGHT-WATCH-20261113: the night watch is up from 01:15 to 01:45 and waits from 04:00, so the night's work runs to 04:30
+ if(H>=28.5&&CardsStage!=0){Give(TEXT("the work was not through by 04:30"));return;}
  if(CardsStage==0)
  {
-  if(H>=27.)
+  if(H>=28.5)
   {
    UE_LOG(LogS47DevFreeform,Display,TEXT("S47: F10 cards night %d %s: night done: case 1 %s; case 2 %s; plan [%s]"),Night,*ClockText(F->Clock()),*CaseText(0),*CaseText(1),*F->TonightPlan().Replace(TEXT("\n"),TEXT(" | ")).Left(300));
    CardsStage=-1;return;
@@ -930,7 +933,7 @@ void FS47DevFreeform::StepCards()
     for(int32 K=0;K<3;++K)
     {
      const int32 T=Order[Line][K];
-     if(C->Results[T].bDone||CardsRefused.Contains(Line*10+T))continue;
+     if(C->Results[T].bDone||CardsRefused.Contains(Line*10+T)||!FS47FreeformCases::Offered(Line,T))continue; // (the repeat: withdrawn, Tom 13 November)
      const EC Cond=FS47FreeformCases::Def(Line).Tests[T].Condition;
      if(Cond==EC::Generator&&F->InventoryCount(TEXT("fuel"))<=0&&(!F->Field||F->Field->GeneratorHours()<=0))continue;
      if(Cond==EC::RelaySwap&&F->InventoryCount(TEXT("relay"))<=0)continue;
@@ -943,14 +946,14 @@ void FS47DevFreeform::StepCards()
     if(!CardsRefused.Contains(Line*10+9)){CardsRefused.Add(Line*10+9);Say(FString::Printf(TEXT("case %d: no test the station can meet tonight (%s)"),Line+1,*Step.Next));}
     continue;
    }
-   if(Step.Step==ES::RunPlan||Step.Step==ES::WaitWindow)
+   if(Step.Step==ES::RunPlan)
    {
     const int32 Index=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==C->PlannedJob&&X.CaseLine==Line&&!X.bCaseRecorded;});
     if(Index<0||CardsDone.Contains(C->PlannedJob))continue;
     const auto& Test=Jobs[Index];
-    if(F->EveningGated(Test)||F->CaseTestWaits(Test))
+    if(F->EveningGated(Test))
     {
-     if(!CardsRefused.Contains(Line*10+8)){CardsRefused.Add(Line*10+8);Say(FString::Printf(TEXT("case %d: test job %s waits: gated %d, window %d, %s"),Line+1,*Test.Id,F->EveningGated(Test)?1:0,F->CaseTestWaits(Test)?1:0,*Step.Next));}
+     if(!CardsRefused.Contains(Line*10+8)){CardsRefused.Add(Line*10+8);Say(FString::Printf(TEXT("case %d: test job %s waits: gated %d, %s"),Line+1,*Test.Id,F->EveningGated(Test)?1:0,*Step.Next));}
      continue;
     }
     // The condition, met by hand as the plan says.
@@ -968,12 +971,13 @@ void FS47DevFreeform::StepCards()
     return;
    }
   }
-  // Then the day's paid cards: the reference (slot 0), then the pulsar (slot 1).
-  for(int32 Slot=0;Slot<2;++Slot)
+  // Then the day's paid cards: the reference (slot 0), then the pulsar (slot 1), and after midnight the night watch (slot 2, kind 3:
+  // kind 2 is a case test). LOOP-NIGHT-WATCH-20261113: the bot takes all three, each as its window comes up.
+  for(int32 Slot=0;Slot<3;++Slot)
   {
    const int32 Index=Jobs.IndexOfByPredicate([&](const FS47FreeformSession::FJob& X){return X.Day==F->Day()&&X.Slot==Slot&&X.CaseTest<0&&X.Stage==J::New&&!CardsDone.Contains(X.Id);});
    if(Index<0||F->EveningGated(Jobs[Index]))continue;
-   CardsJob=Index;CardsId=Jobs[Index].Id;CardsKind=Slot;CardsStage=1;CardsFrom=F->Clock();
+   CardsJob=Index;CardsId=Jobs[Index].Id;CardsKind=Slot<2?Slot:3;CardsStage=1;CardsFrom=F->Clock();
    const bool bOut=F->OutThereTonight();
    FString Event,Title;double X=0,Z=0;bool bAhead=false;const bool bAny=F->Happenings&&F->Happenings->OutTonight(Night,Event,Title,X,Z,bAhead);
    Say(FString::Printf(TEXT("card %s (slot %d): out there tonight %d (lead %s at %s%s), director anomaly %d"),*Jobs[Index].Id,Slot,bOut?1:0,bAny?*Event:TEXT("none"),bAny?*Title:TEXT("-"),bAhead?TEXT(", still to come"):TEXT(""),F->Anomaly()?1:0));
@@ -1003,6 +1007,7 @@ void FS47DevFreeform::StepCards()
   // A sealed-station test: both outside doors shut and the player in the control room, through the whole take.
   if(bCase&&FS47FreeformCases::Def(Card.CaseLine).Tests[Card.CaseTest].Condition==EC::DoorsSealed)
   {M->Web->SetDoorOpen(TEXT("doorSouth"),false);M->Web->SetDoorOpen(TEXT("doorEast"),false);M->Player->Place(0,-1.2,UE_DOUBLE_PI);}
+  F->AcquireSky(); // RX-ACQUIRE-SKY-20261113: the sky fix, once the array has settled (nothing where it is not asked for)
   if(!F->StartAcquisition())
   {
    if(F->Clock()-CardsWait>=600){Say(FString::Printf(TEXT("recording would not start: %s"),*F->NextAction().Left(200)));Give(TEXT("the recording would not start"));}
@@ -1017,8 +1022,12 @@ void FS47DevFreeform::StepCards()
   // GAMEPLAY-LOOP-01 (Tom, 12 November): the extra-tick take is kept as it ends, with no chart: straight to the reel deck
   if(Card.Stage==J::Recorded&&FS47FreeformSession::PlainAnomaly(Card))
   {
-   Say(FString::Printf(TEXT("anomaly on tape: original kept %d, control %d, next %s"),Card.bPrinted?1:0,Card.bControl?1:0,*F->NextAction().Left(160)));
-   if(M->UI)M->UI->Close(true);F->SelectJob(CardsJob);CardsStage=26;CardsWait=F->Clock();return;
+   // RX-ANOMALY-FLOW-20261113: retained on the receiver's RECORD tab with its 8-second reference first, then the reel deck
+   if(M->UI)M->UI->Close(true);F->SelectJob(CardsJob);
+   const bool bKept=FS47FreeformSession::RetainWaits(Card)?F->RetainTake():Card.bPrinted;
+   Say(FString::Printf(TEXT("anomaly on tape: retained at the receiver %d, reference %d, next %s"),bKept?1:0,Card.bControl?1:0,*F->NextAction().Left(160)));
+   if(!bKept){Give(*(FString(TEXT("RETAIN TAKE on the receiver's RECORD tab refused: "))+F->FeedbackText()));return;}
+   CardsStage=26;CardsWait=F->Clock();return;
   }
   if(Card.Stage!=J::Chart||F->PrinterProgress()<1)
   {
@@ -1037,7 +1046,8 @@ void FS47DevFreeform::StepCards()
  }
  if(CardsStage==26)
  {
-  // The reel deck: the take, played once from the start, confirms the anomaly by itself (no control, no second reel, no marks).
+  // The reel deck: the take, played once from the start; then RETAIN (the marks are filled in when none are set).
+  if(FS47FreeformSession::RetainWaits(Card)&&!F->RetainTake()){Give(*(FString(TEXT("RETAIN TAKE refused: "))+F->FeedbackText()));return;}
   if(F->AudioDesk){const FVector P=F->AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(P.X,P.Z-1.2,0);}
   F->OpenAudio();F->AudioAction(TEXT("original"));F->AudioAction(TEXT("play"));CardsStage=27;CardsOlder=0;return;
  }
@@ -1048,10 +1058,11 @@ void FS47DevFreeform::StepCards()
   if(!Card.bAudioReviewed&&!FS47FreeformSession::TapeHeard(Card)&&++CardsOlder<4){F->OpenAudio();F->AudioAction(TEXT("original"));F->AudioAction(TEXT("play"));return;}
   if(!Card.bAudioReviewed&&!FS47FreeformSession::TapeHeard(Card))Say(FString::Printf(TEXT("the take stopped at %.1f of 18 s: %s"),Card.OriginalCovered,*F->AudioStopReason()));
   CardsOlder=0;
+  if(!Card.bAudioReviewed&&FS47FreeformSession::TapeHeard(Card))F->AudioAction(TEXT("confirm")); // RX-ANOMALY-FLOW-20261113: RETAIN
   const bool bOk=Card.bAudioReviewed;
   Say(FString::Printf(TEXT("take heard once (%.0f s), anomaly confirmed %d, marks %.1f-%.1f, next %s"),Card.OriginalCovered,bOk?1:0,Card.MarkStart,Card.MarkEnd,*F->NextAction().Left(120)));
   if(M->UI)M->UI->Close(true);
-  if(!bOk){Give(TEXT("one listen at the reel deck did not confirm the anomaly"));return;}
+  if(!bOk){Give(*(FString(TEXT("RETAIN at the reel deck did not confirm the anomaly: "))+F->FeedbackText()));return;}
   CardsStage=9;return;
  }
  if(CardsStage==40)
@@ -1087,7 +1098,9 @@ void FS47DevFreeform::StepCards()
   const bool bOk=F->RegisterComparison(Conclusion);
   const auto* Now=F->Jobs().FindByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==CardsId;});
   const auto* B=F->Places&&F->Places->Bearings().Num()>Before?&F->Places->Bearings().Last():nullptr;
-  Say(FString::Printf(TEXT("registered %d as %s, discrepancy %d, stage %d, bearing slip %s%s"),bOk?1:0,*Conclusion,bWasAnomaly?1:0,Now?int32(Now->Stage):-1,B?TEXT("toward "):TEXT("NONE"),B?*B->Target:TEXT("")));
+  // LOOP-SLIP-IN-PACKET-20261113: a discrepancy's bearing waits for its packet (on the map once the packet is collected)
+  const bool bHeld=!B&&F->Places&&F->Places->HeldFor(CardsId);
+  Say(FString::Printf(TEXT("registered %d as %s, discrepancy %d, stage %d, bearing slip %s%s"),bOk?1:0,*Conclusion,bWasAnomaly?1:0,Now?int32(Now->Stage):-1,B?TEXT("toward "):bHeld?TEXT("IN THE PACKET"):TEXT("NONE"),B?*B->Target:TEXT("")));
   if(M->UI)M->UI->Close(true);
   if(!bOk){Give(TEXT("registration refused"));return;}
   CardsWait=F->Clock();
@@ -1135,6 +1148,9 @@ void FS47DevFreeform::StepTour()
  auto* F=Session();
  if(StandPlace!=TEXT("tour")||!F||!M->Player||!M->Web||!M->World||M->World->bBusy||M->ModalOpen()||!HoldFor().IsEmpty())return;
  if(F->Taken&&F->Taken->Busy())return;
+ // LOOP-NIGHT-WATCH-20261113: a card under way (the night watch from 01:15, back in the control room at 02:00) keeps the tour at SARO
+ // until it is through, as a player working it would stay.
+ if(bCards&&CardsStage>=1&&CardsStage<90&&M->Web->Area()==TEXT("saro"))return;
  const double H0=FMath::Fmod(F->Clock(),86400.)/3600.,H=H0<12?H0+24:H0;
  if(H<19.9||H>=29.9)return;
  // 0 the control room, 1 Caliche's street, 2 at the wheel on the highway, 3 the farm yard, 4 the open land past the farm.
@@ -1706,9 +1722,14 @@ void FS47DevFreeform::AddEntries(FS47DevEvents& E)
  AddFarmLights(E);
  AddFarmGate(E);
  AddDread(E);
+ AddSideband(E);
  AddTv(E);
  AddTownDay(E);
  AddWeekCase(E);
+ AddDossier(E);
+ // DEV TOY (Tom, 13 November): "Wave shooter (dev toy)", start and stop (S47DevWaves.h).
+ Waves=MakeShared<FS47DevWaves>(M);
+ Waves->AddEntries(E);
 }
 
 bool FS47DevFreeform::SelfTest(TArray<FString>& Lines)
@@ -1718,12 +1739,14 @@ bool FS47DevFreeform::SelfTest(TArray<FString>& Lines)
  Check(!PutsDownUnread(true,false,true),TEXT("Natural rhythm turned on from F10: an open F10 menu or sheet stays open (Tom 12 Nov)"));
  Check(PutsDownUnread(true,true,true)&&!PutsDownUnread(true,true,false),TEXT("a run nobody plays (-S47NaturalNight) still puts an open sheet down"));
  Check(!PutsDownUnread(false,true,true)&&!PutsDownUnread(false,false,true),TEXT("without Natural rhythm nothing is put down"));
+ bOk&=FS47DevWaves::SelfTest(Lines); // DEV TOY: the wave shooter's rules ("devWaves:")
  return bOk;
 }
 
 void FS47DevFreeform::Stop()
 {
  // A new game or the title: the session these were set on has gone.
+ if(Waves)Waves->Stop(TEXT("the session ended"));
  Waiting.Reset();bNatural=false;bUnattended=false;Speed=SpeedUsed=1;Holding.Empty();bFlagRead=false;
  if(EyeGlintClear)EyeGlintClear();
  if(TripoNewClear)TripoNewClear();
@@ -1742,6 +1765,7 @@ void FS47DevFreeform::Stop()
 void FS47DevFreeform::Step(double Dt)
 {
  if(!M)return;
+ if(Waves)Waves->Step(Dt); // DEV TOY: the wave shooter, when it runs (S47DevWaves.h)
  // Ticks only while the night runs: a menu holds them as it holds the night.
  if(M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&!M->ModalOpen()&&Dt>0)
  {
@@ -1763,8 +1787,8 @@ void FS47DevFreeform::Step(double Dt)
  // NIGHT-20261110: a sheet the night puts in front of the player (the note on the desk) holds the night until it is read; the card player reads it and puts it down.
  {
   static double ModalHeld=0;
-  // F10-CLOSES-20261112 (Tom: "the F10 menu closes by itself after a few seconds"): only a run nobody plays (-S47NaturalNight from
-  // the command line) has its sheets put down. With Natural rhythm turned on from F10 the player is there, and this closed F10
+  // F10-CLOSES-20261112 (Tom: "the F10 menu closes by itself after a few seconds"): only a run nobody plays (-S47NaturalNight with
+  // -unattended or -S47SmokeTest on the command line) has its sheets put down. With Natural rhythm turned on from F10 the player is there, and this closed F10
   // itself, the truck's menu and every sheet after six seconds.
   if(PutsDownUnread(bNatural,bUnattended,M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&M->ModalOpen()&&M->UI)){ModalHeld+=FApp::GetDeltaTime();if(ModalHeld>UnreadSeconds){ModalHeld=0;UE_LOG(LogS47DevFreeform,Display,TEXT("S47: natural night: a sheet lay open 6 s with nobody at it; put down"));M->UI->Close();}}
   else ModalHeld=0;
@@ -1777,7 +1801,9 @@ void FS47DevFreeform::Step(double Dt)
   double Flag=0;
   if(FParse::Value(FCommandLine::Get(),TEXT("S47NaturalNight="),Flag)&&DevRun())
   {
-   Speed=FMath::Clamp(Flag,1.,60.);bUnattended=true;SetNatural(true);
+   // Critic 12 Nov: the title's Developer screen starts the same flag with a human at the keys; only a run nobody plays (the
+   // command line's -unattended or -S47SmokeTest) has its sheets put down.
+   Speed=FMath::Clamp(Flag,1.,60.);bUnattended=FParse::Param(FCommandLine::Get(),TEXT("unattended"))||FParse::Param(FCommandLine::Get(),TEXT("S47SmokeTest"));SetNatural(true);
    if(Menu)Menu->Relabel(TEXT("Natural rhythm: off"),TEXT("Natural rhythm: ON"));
    // -S47NaturalDay=2: begin at 17:00 on that day, past the first night's grace, with every rule live. Nothing else is set.
    int32 FromDay=0;

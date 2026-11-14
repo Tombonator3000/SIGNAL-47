@@ -1178,6 +1178,76 @@ bool AS47Web::RehouseSaroCorridorLights(bool bApply)
 	return true;
 }
 
+bool AS47Web::RehouseSaroRecordsLights(UStaticMeshComponent* Ceiling, bool bApply)
+{
+	const int32 Set = FloodSet(TEXT("annex"));
+	if (!Ceiling || !Ceiling->GetStaticMesh() || Set < 0) return false;
+	// The tired tube (node 490, the flicker's slot 4) stays over the table's west end; the other (491, slot 3) moves from (-2.4, 9.4)
+	// into the same row over the east end, so the south third of the room and the nook behind the second shelving stay dim. Two
+	// lamps of different age: a cool white that has gone a little green, and a warmer, weaker one.
+	struct FBinding { int32 Node, Geo, Pool; FVector At; const TCHAR* Material; uint32 Hex; float Lumens; };
+	const FBinding Bindings[] = {{490,321,4,FVector(-4.6,2.688,8.0),TEXT("M_Rec_TrofferLensA"),0xf2f6e4,34.f}, {491,322,3,FVector(-2.2,2.688,8.0),TEXT("M_Rec_TrofferLensB"),0xffefd0,29.f}};
+	TArray<FFixtureLight*> Found; TArray<int32> Slots;
+	for (const FBinding& B : Bindings)
+	{
+		if (!Nodes.IsValidIndex(B.Node) || Nodes[B.Node].Geo != B.Geo) return false;
+		FFixtureLight* Fixture = nullptr;
+		for (FFixtureLight& F : FixtureLights) if (F.Node == B.Node && F.Set == Set && F.Slot == B.Pool)
+		{ if (Fixture) return false; Fixture = &F; }
+		const int32 Slot = Ceiling->GetMaterialIndex(B.Material);
+		if (!Fixture || !Fixture->Light.IsValid() || Slot < 0) return false;
+		if (!bApply && (!Fixture->NativeDiffuser.IsValid() || Ceiling->GetMaterial(Slot) != Fixture->NativeDiffuser.Get() ||
+			!Fixture->Light->GetComponentLocation().Equals(ToUE(B.At), .02))) return false;
+		Found.Add(Fixture); Slots.Add(Slot);
+	}
+	if (!bApply) return true;
+	for (int32 I=0; I<UE_ARRAY_COUNT(Bindings); ++I)
+	{
+		const FBinding& B = Bindings[I]; FFixtureLight& F = *Found[I];
+		URectLightComponent* Light = F.Light.Get();
+		Light->SetWorldLocation(ToUE(B.At));
+		Light->SetWorldRotation(FRotationMatrix::MakeFromXY(FVector(0,0,-1),FVector(1,0,0)).Rotator());
+		// the lens of a 0.6 x 1.2 m troffer: a broad source, so shadows under the shelves and the table are soft at their edges and deep inside
+		Light->SetSourceWidth(108); Light->SetSourceHeight(48);
+		Light->SetBarnDoorAngle(84.f); Light->SetBarnDoorLength(4.f);
+		Light->SetAttenuationRadius(720.f);
+		F.Color = Hex(B.Hex); F.Lumens = B.Lumens;
+		Light->SetLightColor(F.Color);
+		if (!F.NativeDiffuser.IsValid())
+		{
+			UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Ceiling->GetMaterial(Slots[I]),this);
+			Ceiling->SetMaterial(Slots[I],D); F.NativeDiffuser=D; KeepMids.Add(D);
+		}
+		F.LastK=-1;
+		if (UPrimitiveComponent* Old=Cast<UPrimitiveComponent>(Nodes[B.Node].Comp.Get()))
+		{ Old->SetHiddenInGame(true); Old->SetCastShadow(false); }
+	}
+	UpdateFixtureLighting();
+	return true;
+}
+
+URectLightComponent* AS47Web::RehouseSaroRecordsLamp(const FVector& AtUE, bool bApply)
+{
+	const int32 Set = FloodSet(TEXT("annex"));
+	FFixtureLight* Fixture = nullptr;
+	for (FFixtureLight& F : FixtureLights) if (F.Set == Set && F.Slot == 5) { if (Fixture) return nullptr; Fixture = &F; }
+	if (Set < 0 || !Fixture || !Fixture->Light.IsValid()) return nullptr;
+	URectLightComponent* Light = Fixture->Light.Get();
+	if (!bApply) return Light;
+	// A small bulb high inside the shade: the shade's own edges shape the pool on the table top (the old source hung under the
+	// shade and threw a hard-edged cone past the table onto the floor). A warm 60 W lamp, a third of the tubes' light.
+	Light->SetWorldLocation(AtUE);
+	Light->SetWorldRotation(FRotationMatrix::MakeFromXY(FVector(0,0,-1),FVector(1,0,0)).Rotator());
+	Light->SetSourceWidth(11); Light->SetSourceHeight(2.5f);
+	Light->SetBarnDoorAngle(88.f); Light->SetBarnDoorLength(1.f);
+	Light->SetAttenuationRadius(260.f);
+	Fixture->Color = FLinearColor(1.f,.72f,.42f); Fixture->Lumens = 12.f;
+	Light->SetLightColor(Fixture->Color);
+	Fixture->LastK = -1;
+	UpdateFixtureLighting();
+	return Light;
+}
+
 // ---------- items ----------
 
 const FS47WebItem* AS47Web::Item(const FString& Id) const

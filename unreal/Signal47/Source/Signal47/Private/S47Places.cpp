@@ -1,4 +1,5 @@
 #include "S47Places.h"
+#include "S47LandWindmill.h"
 #include "S47Audio.h"
 #include "S47Calm.h"
 #include "S47Balloon.h"
@@ -17,6 +18,7 @@
 #include "S47Legs.h"
 #include "S47Main.h"
 #include "S47NightRhythm.h"
+#include "S47Predecessor.h"
 #include "S47OpenLand.h"
 #include "S47Relief.h"
 #include "S47Script.h"
@@ -84,7 +86,7 @@ namespace
   if(Kind==TEXT("balloon"))return FS47Balloon::HaveModel()?TArray<FPart>{}:TArray<FPart>{{Ball,{0,.1,0},{3,.16,2.2},Pale,20,0},{Ball,{1.8,.08,1.2},{1.6,.1,.9},Pale,70,0},{Cube,{-.8,.02,-.6},{1.9,.015,.015},Dark,38,0}};
   if(Kind==TEXT("cow"))return {{CowBody,{0,.42,0},{1,1,1},0,30,86},{CowHead,{0,.42,0},{1,1,1},0,30,86}};
   if(Kind==TEXT("stake"))return {{Cube,{0,.65,0},{.05,1.3,.05},Wood,0,2},{Cube,{.13,1.15,0},{.26,.13,.012},Flag,0,0},{Cube,{.6,.04,.3},{.04,.08,.04},Wood,0,0}};
-  if(Kind==TEXT("shack"))return {{Cube,{0,1.2,0},{4.5,2.4,3.2},Wood,0,0},{Cube,{0,2.6,0},{5,.12,3.8},Rust,0,8},{Cube,{2.26,1,.2},{.05,2,.9},Dark,0,0},{Cube,{0,1.5,1.61},{.8,.7,.03},Dark,0,0}};
+  if(Kind==TEXT("shack"))return {{Cube,{0,1.2,0},{4.5,2.4,3.2},Wood,0,0},{Cube,{0,2.6,0},{5,.12,3.8},Rust,0,8},{Cube,{2.26,1,.2},{.05,2,.9},Dark,0,0},{Cube,{-2.265,1.3,0},{.03,1,1.2},Dark,0,0}}; // LAND-PLACES-FIXES-20261114: the window on the west wall (toward the highway and SARO), where shack_lamp lights it
   if(Kind==TEXT("trough"))return {{Cube,{0,.32,0},{3.2,.64,.9},Rust,0,0},{Cube,{0,.62,0},{3,.03,.7},Dark,0,0},{Cube,{2.6,.2,.8},{.4,.4,.4},Pale,12,0},{Cube,{-3,.6,-1},{.1,1.2,.1},Wood,0,5}};
   if(Kind==TEXT("cairn"))return {{Ball,{0,.3,0},{1.5,.7,1.3},Stone,0,0},{Ball,{.2,.8,.1},{1,.55,.9},Stone,40,0},{Ball,{0,1.2,0},{.6,.4,.6},Stone,10,0},{Cube,{.05,1.65,0},{.05,.7,.05},Wood,0,6}};
   // PT-SAUCER-ROCK-20261109 (Tom: at Saucer Rock and nothing there). A pillar of pale rock with a wide flat cap balanced on it, a
@@ -200,6 +202,44 @@ double FS47Places::AzimuthOf(double FromX,double FromZ,double ToX,double ToZ)
  const double A=FMath::RadiansToDegrees(FMath::Atan2(ToX-FromX,-(ToZ-FromZ)));
  return A<0?A+360:A;
 }
+bool FS47Places::ReadFix(const S47J::FObj& O,FBearing& B)
+{
+ if(!O.IsValid())return false;
+ B=FBearing();
+ B.Day=FMath::Max(0,S47J::Int(O,TEXT("day")));B.Az=S47J::Num(O,TEXT("az"));B.Spread=S47J::Num(O,TEXT("spread"));B.Target=S47J::Str(O,TEXT("target"));
+ // LOOP-1-20261109: when it was taken, when it goes cold, and from where; an older save has none of them (no time, never cold,
+ // from SARO), so the save needs no new version.
+ B.Clock=S47J::Num(O,TEXT("clock"),-1);B.Until=S47J::Num(O,TEXT("until"),-1);
+ if(!FMath::IsFinite(B.Clock)||B.Clock<0)B.Clock=-1;
+ if(!FMath::IsFinite(B.Until)||B.Until<0||(B.Clock>=0&&B.Until<=B.Clock))B.Until=-1;
+ B.bCar=S47J::Bool(O,TEXT("car"));SaroRoad(B.FromX,B.FromZ);
+ if(B.bCar)
+ {
+  const TArray<double> From=S47J::Nums(O,TEXT("from"));
+  if(From.Num()!=2||!FMath::IsFinite(From[0])||!FMath::IsFinite(From[1])||!S47OpenLand::InRim(From[0],From[1]))return false;
+  B.FromX=From[0];B.FromZ=From[1];
+ }
+ else
+ {
+  // D45-20261110: what the slip points at and its circle, both on the land; an older save has neither (the wedge alone).
+  const TArray<double> To=S47J::Nums(O,TEXT("to")),Ring=S47J::Nums(O,TEXT("ring"));
+  if(To.Num()==2&&FMath::IsFinite(To[0])&&FMath::IsFinite(To[1])&&S47OpenLand::InRim(To[0],To[1])){B.bTo=true;B.ToX=To[0];B.ToZ=To[1];}
+  if(Ring.Num()==3&&FMath::IsFinite(Ring[0])&&FMath::IsFinite(Ring[1])&&FMath::IsFinite(Ring[2])&&S47OpenLand::InRim(Ring[0],Ring[1])&&Ring[2]>50&&Ring[2]<=600)
+  {B.bRing=true;B.RingX=Ring[0];B.RingZ=Ring[1];B.RingR=Ring[2];B.bVisited=S47J::Bool(O,TEXT("visited"));}
+ }
+ return FMath::IsFinite(B.Az)&&FMath::IsFinite(B.Spread)&&B.Az>=0&&B.Az<=360&&B.Spread>0&&B.Spread<=45;
+}
+S47J::FObj FS47Places::WriteFix(const FBearing& B)
+{
+ auto X=S47J::New();S47J::Set(X,TEXT("day"),B.Day);S47J::Set(X,TEXT("az"),B.Az);S47J::Set(X,TEXT("spread"),B.Spread);S47J::Set(X,TEXT("target"),B.Target);
+ if(B.Clock>=0)S47J::Set(X,TEXT("clock"),B.Clock);
+ if(B.Until>=0)S47J::Set(X,TEXT("until"),B.Until);
+ if(B.bCar){S47J::Set(X,TEXT("car"),true);S47J::Set(X,TEXT("from"),TArray<double>{FMath::RoundToDouble(B.FromX*10)/10,FMath::RoundToDouble(B.FromZ*10)/10});}
+ // D45-20261110: new keys, written only when there is something (an older save reads as before)
+ if(B.bTo)S47J::Set(X,TEXT("to"),TArray<double>{FMath::RoundToDouble(B.ToX*10)/10,FMath::RoundToDouble(B.ToZ*10)/10});
+ if(B.bRing){S47J::Set(X,TEXT("ring"),TArray<double>{FMath::RoundToDouble(B.RingX*10)/10,FMath::RoundToDouble(B.RingZ*10)/10,FMath::RoundToDouble(B.RingR*10)/10});if(B.bVisited)S47J::Set(X,TEXT("visited"),true);}
+ return X;
+}
 void FS47Places::Begin(const S47J::FObj& Saved)
 {
  Stop();Life=MakeShared<uint8>(0);HeardOf.Reset();Fixes.Reset();LastFixDay=0;NeedleIn=0;Marks.Reset();
@@ -211,29 +251,21 @@ void FS47Places::Begin(const S47J::FObj& Saved)
  }
  for(const auto& V:S47J::Arr(Saved,TEXT("fixes")))
  {
-  if(!V||V->Type!=EJson::Object)continue;const auto O=V->AsObject();FBearing B;
-  B.Day=FMath::Max(0,S47J::Int(O,TEXT("day")));B.Az=S47J::Num(O,TEXT("az"));B.Spread=S47J::Num(O,TEXT("spread"));B.Target=S47J::Str(O,TEXT("target"));
-  // LOOP-1-20261109: when it was taken, when it goes cold, and from where; an older save has none of them (no time, never cold,
-  // from SARO), so the save needs no new version.
-  B.Clock=S47J::Num(O,TEXT("clock"),-1);B.Until=S47J::Num(O,TEXT("until"),-1);
-  if(!FMath::IsFinite(B.Clock)||B.Clock<0)B.Clock=-1;
-  if(!FMath::IsFinite(B.Until)||B.Until<0||(B.Clock>=0&&B.Until<=B.Clock))B.Until=-1;
-  B.bCar=S47J::Bool(O,TEXT("car"));SaroRoad(B.FromX,B.FromZ);
-  if(B.bCar)
-  {
-   const TArray<double> From=S47J::Nums(O,TEXT("from"));
-   if(From.Num()!=2||!FMath::IsFinite(From[0])||!FMath::IsFinite(From[1])||!S47OpenLand::InRim(From[0],From[1]))continue;
-   B.FromX=From[0];B.FromZ=From[1];
-  }
-  else
-  {
-   // D45-20261110: what the slip points at and its circle, both on the land; an older save has neither (the wedge alone).
-   const TArray<double> To=S47J::Nums(O,TEXT("to")),Ring=S47J::Nums(O,TEXT("ring"));
-   if(To.Num()==2&&FMath::IsFinite(To[0])&&FMath::IsFinite(To[1])&&S47OpenLand::InRim(To[0],To[1])){B.bTo=true;B.ToX=To[0];B.ToZ=To[1];}
-   if(Ring.Num()==3&&FMath::IsFinite(Ring[0])&&FMath::IsFinite(Ring[1])&&FMath::IsFinite(Ring[2])&&S47OpenLand::InRim(Ring[0],Ring[1])&&Ring[2]>50&&Ring[2]<=600)
-   {B.bRing=true;B.RingX=Ring[0];B.RingZ=Ring[1];B.RingR=Ring[2];B.bVisited=S47J::Bool(O,TEXT("visited"));}
-  }
-  if(FMath::IsFinite(B.Az)&&FMath::IsFinite(B.Spread)&&B.Az>=0&&B.Az<=360&&B.Spread>0&&B.Spread<=45&&Fixes.Num()<MaxFixes){Fixes.Add(B);if(!B.bCar)LastFixDay=FMath::Max(LastFixDay,B.Day);}
+  if(!V||V->Type!=EJson::Object)continue;FBearing B;
+  if(ReadFix(V->AsObject(),B)&&Fixes.Num()<MaxFixes){Fixes.Add(B);if(!B.bCar)LastFixDay=FMath::Max(LastFixDay,B.Day);}
+ }
+ // LOOP-SLIP-IN-PACKET-20261113: a discrepancy's bearing waiting for its packet (an older save has none: its slip is on the printer)
+ Held.Reset();
+ for(const auto& V:S47J::Arr(Saved,TEXT("held")))
+ {
+  if(!V||V->Type!=EJson::Object||Held.Num()>=MaxHeld)continue;const auto O=V->AsObject();FHeldFix H;
+  const auto Fix=S47J::Obj(O,TEXT("fix"));H.Info.Job=S47J::Str(O,TEXT("job")).Left(64);
+  if(H.Info.Job.IsEmpty()||!Fix.IsValid()||!ReadFix(Fix,H.B)||H.B.bCar)continue;
+  H.Info.Branches=FMath::Clamp(S47J::Int(O,TEXT("branches")),0,27);H.Info.Steps=FMath::Clamp(S47J::Int(O,TEXT("steps")),0,2);H.Info.Why=uint8(FMath::Clamp(S47J::Int(O,TEXT("why")),0,7));
+  H.Info.bExtra=S47J::Bool(O,TEXT("extra"));H.Info.bSame=S47J::Bool(O,TEXT("same"));H.Info.bOwnMarks=S47J::Bool(O,TEXT("own"));
+  const TArray<double> Mk=S47J::Nums(O,TEXT("marks"));
+  if(H.Info.bOwnMarks&&Mk.Num()==2&&FMath::IsFinite(Mk[0])&&FMath::IsFinite(Mk[1])&&Mk[0]>=0&&Mk[1]>Mk[0]&&Mk[1]<=18){H.Info.MarkIn=Mk[0];H.Info.MarkOut=Mk[1];}else H.Info.bOwnMarks=false;
+  Held.Add(H);LastFixDay=FMath::Max(LastFixDay,H.B.Day);
  }
  if(!M||!IsValid(M->Web.Get()))return;
  if(Scene.Get()!=M->Web.Get()){bBuilt=false;Built.Reset();}
@@ -250,18 +282,24 @@ S47J::FObj FS47Places::Save() const
  if(!Fixes.IsEmpty())
  {
   TArray<TSharedPtr<FJsonValue>> List;
-  for(const FBearing& B:Fixes)
+  for(const FBearing& B:Fixes)List.Add(MakeShared<FJsonValueObject>(WriteFix(B)));
+  O->SetArrayField(TEXT("fixes"),List);
+ }
+ if(!Held.IsEmpty())
+ {
+  // LOOP-SLIP-IN-PACKET-20261113 (optional; an older build ignores it)
+  TArray<TSharedPtr<FJsonValue>> List;
+  for(const FHeldFix& H:Held)
   {
-   auto X=S47J::New();S47J::Set(X,TEXT("day"),B.Day);S47J::Set(X,TEXT("az"),B.Az);S47J::Set(X,TEXT("spread"),B.Spread);S47J::Set(X,TEXT("target"),B.Target);
-   if(B.Clock>=0)S47J::Set(X,TEXT("clock"),B.Clock);
-   if(B.Until>=0)S47J::Set(X,TEXT("until"),B.Until);
-   if(B.bCar){S47J::Set(X,TEXT("car"),true);S47J::Set(X,TEXT("from"),TArray<double>{FMath::RoundToDouble(B.FromX*10)/10,FMath::RoundToDouble(B.FromZ*10)/10});}
-   // D45-20261110: new keys, written only when there is something (an older save reads as before)
-   if(B.bTo)S47J::Set(X,TEXT("to"),TArray<double>{FMath::RoundToDouble(B.ToX*10)/10,FMath::RoundToDouble(B.ToZ*10)/10});
-   if(B.bRing){S47J::Set(X,TEXT("ring"),TArray<double>{FMath::RoundToDouble(B.RingX*10)/10,FMath::RoundToDouble(B.RingZ*10)/10,FMath::RoundToDouble(B.RingR*10)/10});if(B.bVisited)S47J::Set(X,TEXT("visited"),true);}
+   auto X=S47J::New();S47J::Set(X,TEXT("job"),H.Info.Job);X->SetObjectField(TEXT("fix"),WriteFix(H.B));S47J::Set(X,TEXT("branches"),H.Info.Branches);
+   if(H.Info.Steps>0)S47J::Set(X,TEXT("steps"),H.Info.Steps);
+   if(H.Info.Why)S47J::Set(X,TEXT("why"),int32(H.Info.Why));
+   if(H.Info.bExtra)S47J::Set(X,TEXT("extra"),true);
+   if(H.Info.bSame)S47J::Set(X,TEXT("same"),true);
+   if(H.Info.bOwnMarks){S47J::Set(X,TEXT("own"),true);S47J::Set(X,TEXT("marks"),TArray<double>{H.Info.MarkIn,H.Info.MarkOut});}
    List.Add(MakeShared<FJsonValueObject>(X));
   }
-  O->SetArrayField(TEXT("fixes"),List);
+  O->SetArrayField(TEXT("held"),List);
  }
  if(!Marks.IsEmpty()){TArray<double> Xz;for(const FVector2D& Mk:Marks){Xz.Add(FMath::RoundToDouble(Mk.X*10)/10);Xz.Add(FMath::RoundToDouble(Mk.Y*10)/10);}S47J::Set(O,TEXT("marks"),Xz);}
  return O;
@@ -328,6 +366,14 @@ bool FS47Places::Stand(const FString& Id,FVector& OutWorld,bool& bOutSeated) con
  if(InOldHouse(B->Id)){OutWorld=S47OpenLand::FromRoad(TEXT("saro"),B->X,B->Z);OutWorld.Y=B->Y;bOutSeated=B->bSeated;return true;} // T16-17: the land's metres on SARO's ground
  OutWorld=B->Id==Motel?FVector(B->X,B->Y,B->Z):FVector(Road.X+B->X,B->Y,Road.Z+B->Z);bOutSeated=B->bSeated;return true;
 }
+bool FS47Places::MillHead(double& OutAz,bool& bOutTraces) const
+{
+ // LAND-PLACES-WINDMILL-20261114: the compass way the windmill's wheel faces (north as it was built; the bearing from SARO on the
+ // first days), and whether the first days' traces show now.
+ const FBuilt* B=Built.FindByPredicate([](const FBuilt& X){return X.Id==TEXT("windmill");});
+ OutAz=B?B->HeadAz:0.;bOutTraces=B&&B->TraceFrom>=0&&B->bTraceOn;
+ return B!=nullptr;
+}
 bool FS47Places::Build()
 {
  if(bBuilt)return true;
@@ -363,8 +409,13 @@ bool FS47Places::Build()
   if(M->Freeform&&Traced(D.Id,M->Freeform->Seed(),M->Freeform->Day()))
   {
    double Sx=0,Sz=0;SaroRoad(Sx,Sz);
-   B.TraceFrom=MillTraces(Shapes,ArcBearing(M->Freeform->Seed(),Sx,Sz,B.X,B.Z,SpreadFor(0)));
+   B.HeadAz=ArcBearing(M->Freeform->Seed(),Sx,Sz,B.X,B.Z,SpreadFor(0));
+   B.TraceFrom=MillTraces(Shapes,B.HeadAz);
   }
+  // LAND-PLACES-WINDMILL-20261114: the model (S47LandWindmill) stands in for the windmill's eight basic shapes and the first days'
+  // wire and plate of bare ground (the model has its own wire, and trampled ground under it always) while its assets are in the build. The shapes are still built (the place's handle, its node and the order of its parts are
+  // what the rest goes by) and are hidden, with nothing left to point at where nothing is drawn; without the assets they show as ever.
+  const bool bMillModel=FString(D.Id)==TEXT("windmill")&&S47LandWindmill::Available();
   for(int32 Index=0;Index<Shapes.Num();++Index)
   {
    const FPart& P=Shapes[Index];
@@ -392,8 +443,10 @@ bool FS47Places::Build()
     C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
     const FS47Obj More=M->Web->ObjAt(M->Web->AdoptNode(C,bSaro?SaroRoot:RoadRoot,Name));if(More)M->Web->MarkUsable(More.I,UseId(D.Id));
    }
+   if(bMillModel&&(Index<8||(B.TraceFrom>=0&&Index>=B.TraceFrom&&Index<B.TraceFrom+5))){C->SetHiddenInGame(true);C->SetCastShadow(false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
    B.Parts.Add(C);B.Local.Add(P.At);
   }
+  if(bMillModel){UE_LOG(LogTemp,Display,TEXT("S47: place windmill: its basic shapes are hidden, the model stands there (S47LandWindmill)"));}
   if(B.Hit)
   {
    const FString Id=D.Id;
@@ -439,6 +492,7 @@ void FS47Places::Seat(FBuilt& B)
  for(int32 I=0;I<B.Parts.Num();++I)if(auto* C=B.Parts[I].Get())C->SetWorldLocation(S47Three::ToUE(FVector(World.X,Y,World.Z)+B.Local[I]));
 }
 bool FS47Places::Drifts(const FString& Id){return Id==TEXT("stake")||Id==TEXT("cairn")||Id==TEXT("trough");}
+bool FS47Places::PartOf(const FString& Kind,int32 Index,FVector& OutAt,FVector& OutSize){const TArray<FPart> P=PartsOf(Kind);if(!P.IsValidIndex(Index))return false;OutAt=P[Index].At;OutSize=P[Index].Size;return true;} // LAND-PLACES-FIXES-20261114
 FVector2D FS47Places::DriftOf(const FString& Id,int32 Seed,int32 Day)
 {
  if(!Drifts(Id))return FVector2D::ZeroVector;
@@ -536,6 +590,8 @@ void FS47Places::Panel(const FDef& D,bool bFirst,const FString& Extra)
  if(!Extra.IsEmpty())Rows.Add(S47Kit::Text(Extra));
  Rows.Add(S47Kit::Small(bFirst?TEXT("Kept as a field record: what you found here, and when."):TEXT("Already in your field records."))); // D45-20261110: plain words
  auto* F=M->Freeform.Get();
+ // T16-17 (→ M3/M7): a page of Reyes's notebook left here, when its turn has come (S47PredecessorBook.cpp).
+ if(F->Predecessor)F->Predecessor->PlaceRows(D.Id,Rows);
  const double Next=(FMath::FloorToDouble((F->Clock()-8*3600)/86400.)+1)*86400.+8*3600;
  if(FString(D.Id)==Motel)
  {
@@ -648,6 +704,8 @@ bool FS47Places::Use(const FString& Id)
  }
  // T16-17 (→ M1, "the places are reading stations"): a second look with nothing new says so, and what can change that (Saucer Rock
  // always has its hour to tell)
+ // T16-17 (→ M3/M7): a page of Reyes's notebook lying here now is something new (FS47Predecessor::PlaceRows shows it).
+ bNews|=F.Predecessor&&F.Predecessor->PlaceNews(Id);
  if(!bFirst&&!bNews&&Id!=Motel&&Id!=TEXT("saucer_rock"))Extra+=(Extra.IsEmpty()?FString():TEXT("\n"))+NothingNew(InOldHouse(Id));
  Panel(*D,bFirst,Extra);return true;
 }
@@ -781,7 +839,7 @@ FString FS47Places::SlipWhere(const FBearing& B)
  const double Metres=FVector2D::Distance(FVector2D(Sx,Sz),FVector2D(X,Z)),Mi=Metres/1609.344;
  // yards under half a mile, in fifties (never a 47); miles to a tenth above it
  const FString Far=Mi<.5?FString::Printf(TEXT("%d yards"),FMath::Max(50,FMath::RoundToInt(Metres/.9144/50)*50))
-  :FString::Printf(TEXT("%.1f"),Mi)==TEXT("1.0")?FString(TEXT("1 mile")):FString::Printf(TEXT("%.1f miles"),Mi);
+  :FString::Printf(TEXT("%.1f"),Mi)==TEXT("1.0")?FString(TEXT("1 mile")):S47Script::TapeSeconds(Mi)+TEXT(" miles"); // (4.7 miles says a 47 too: the shared formatter steps past it)
  return FString::Printf(TEXT("%s %s of SARO"),*Far,*S47FieldMap::Compass(AzimuthOf(Sx,Sz,X,Z)));
 }
 FString FS47Places::SlipNote(const FBearing& B,int32 Branches)
@@ -931,7 +989,77 @@ static FString FS47PlacesLocalSlipToast(const FS47Places::FBearing& B,bool bSlip
  return FString::Printf(TEXT("%sThe array picked up something about %03.0f degrees from the station (%s), give or take %.0f. %s (%s)."),bSlip?TEXT("PRINTER / Bearing slip printing. "):TEXT(""),
   B.Az,*S47FieldMap::Compass(B.Az),B.Spread,B.bRing?TEXT("It's circled on your map"):TEXT("It's penciled on your map"),*FS47PlacesLocalMapKey());
 }
-bool FS47Places::AfterRegistered(bool bAnomaly)
+static FString FS47PlacesLocalMended(int32 Branches)
+{
+ return Branches<=0?FString(TEXT("With no branch of the array repaired, the array still picked up something away from where the dishes were pointed, though only roughly"))
+  :FString::Printf(TEXT("With %d %s of the array repaired, the array picked up something away from where the dishes were pointed"),Branches,Branches==1?TEXT("branch"):TEXT("branches"));
+}
+FString FS47Places::CarefulLine(const FHeld& H)
+{
+ // LOOP-CAREFUL-PAYS-20261113: what made the area narrower, in the terminal's words; with neither, how it could have been
+ const FString Who=(H.Why&3)==3?FString(TEXT("HAND FIX / MARKS TIGHT")):(H.Why&1)?FString(TEXT("HAND FIX")):(H.Why&2)?FString(TEXT("MARKS TIGHT")):FString();
+ if(Who.IsEmpty()&&H.Branches>=4)return FString(); // nothing could have made it narrower
+ if(Who.IsEmpty())return (H.Why&4)?FString(TEXT("A SKY FIX MADE BY HAND AND MARKS SET CLOSE ROUND THE EXTRA TICKS EACH MAKE THE AREA ONE STEP NARROWER."))
+  :FString(TEXT("A SKY FIX MADE BY HAND MAKES THE AREA ONE STEP NARROWER."));
+ if(H.Steps<=0)return Who+TEXT(": THE AREA IS ALREADY AS NARROW AS THE ARRAY GIVES.");
+ return Who+(H.Steps>=2?TEXT(": AREA NARROWER BY TWO STEPS."):TEXT(": AREA NARROWER BY ONE STEP."));
+}
+FString FS47Places::TieLine(const FHeld& H)
+{
+ // LOOP-SLIP-IN-PACKET-20261113: the bearing and this take. Only when the take was odd because of what is out tonight and the slip
+ // points at that same thing does it say they belong together, in the operator's own marks if he set them. Never what it is.
+ if(H.bSame&&H.bOwnMarks)
+ {
+  // (read as digits: 14.7 or 4.7 says a 47 as well as 47.0 does; REVIEW-20261113: the shared rule, S47Script::TapeSeconds)
+  const FString In=S47Script::TapeSeconds(H.MarkIn),Out=S47Script::TapeSeconds(H.MarkOut);
+  const FString Digits=(In+TEXT(" ")+Out).Replace(TEXT("."),TEXT(""));
+  if(!Digits.Contains(TEXT("47"))&&In!=TEXT("8.15")&&Out!=TEXT("8.15"))
+   return FString::Printf(TEXT("THE EXTRA TICKS BETWEEN YOUR MARK IN AT %s S AND YOUR MARK OUT AT %s S CAME IN ON THIS BEARING."),*In,*Out);
+  return TEXT("THE EXTRA TICKS BETWEEN YOUR MARK IN AND YOUR MARK OUT CAME IN ON THIS BEARING.");
+ }
+ if(H.bSame)return TEXT("THE EXTRA TICKS ON THIS TAKE CAME IN ON THIS BEARING.");
+ return TEXT("LOGGED AS THIS TAKE WAS REGISTERED. IT DOES NOT SAY THE TWO ARE THE SAME.");
+}
+FString FS47Places::PacketSection(const FBearing& B,const FHeld& H)
+{
+ // LOOP-SLIP-IN-PACKET-20261113 (→ M3): the slip's own words as the packet's last section, under a plain head
+ TArray<FString> L={TEXT("OFF-BEAM BEARING"),SlipLine(B),
+  TEXT("THE ARRAY PICKED UP SOMETHING AWAY FROM WHERE THE DISHES WERE POINTED. IT GIVES A DIRECTION ONLY. IT DOES NOT SAY HOW FAR OUT IT IS OR WHAT IT IS.")};
+ if(H.bExtra)L.Add(S47Dossier::ExtraSlipWords());
+ L.Add(SlipNote(B,H.Branches));
+ if(const FString Careful=CarefulLine(H);!Careful.IsEmpty())L.Add(Careful);
+ L.Add(TieLine(H));
+ return FString::Join(L,TEXT("\n"));
+}
+FString FS47Places::PacketSection(const FString& Job) const
+{
+ const FHeldFix* H=Held.FindByPredicate([&Job](const FHeldFix& X){return X.Info.Job==Job;});
+ return H?PacketSection(H->B,H->Info):FString();
+}
+bool FS47Places::ReleasePacket(const FString& Job,FString* OutPage,int32* OutDay,bool* bOutExtra,double AtClock)
+{
+ const int32 I=Held.IndexOfByPredicate([&Job](const FHeldFix& X){return X.Info.Job==Job;});
+ if(I==INDEX_NONE)return false;
+ FHeldFix H=Held[I];Held.RemoveAt(I);
+ // REVIEW-20261113: a packet fetched after the bearing's noon brings it live until the next noon, not already cold
+ const double Now=AtClock>=0?AtClock:M&&M->Freeform?M->Freeform->Clock():-1;
+ if(Now>=0&&H.B.Until>=0&&H.B.Until<=Now+3600.)H.B.Until=FMath::Max(H.B.Until,ColdAt(Now));
+ if(OutPage)*OutPage=PacketSection(H.B,H.Info);
+ if(OutDay)*OutDay=H.B.Day;
+ if(bOutExtra)*bOutExtra=H.Info.bExtra;
+ // on the map now (as live as its noon allows), and in the field record and the toast as a slip's would have been at the registration
+ Fixes.Add(H.B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
+ if(M&&M->Freeform)
+ {
+  const FString ExtraWhy=H.Info.bExtra?S47Dossier::ExtraToast()+TEXT(" "):FString();
+  M->Freeform->RecordEvidence(FString::Printf(TEXT("bearing_d%d%s"),H.B.Day,H.Info.bExtra?TEXT("_more"):TEXT("")),ExtraWhy+FS47PlacesLocalSlipRecord(FS47PlacesLocalMended(H.Info.Branches),H.B,H.B.Clock>=0?H.B.Clock:M->Freeform->Clock()));
+  if(M->UI)M->UI->Toast(ExtraWhy+TEXT("ANOMALY PACKET / Its last page is the bearing. ")+FS47PlacesLocalSlipToast(H.B,false),6);
+ }
+ UE_LOG(LogTemp,Display,TEXT("S47: bearing held for %s released with its packet: %.0f within %.0f toward %s"),*Job,H.B.Az,H.B.Spread,*H.B.Target);
+ if(M)M->RequestAutosave();
+ return true;
+}
+bool FS47Places::AfterRegistered(bool bAnomaly,const FTake* Packet)
 {
  if(!M||!M->Freeform||!M->Freeform->RulesLive()||!M->Freeform->Field)return false;
  auto& F=*M->Freeform;
@@ -944,9 +1072,18 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  // D45-20261110 (D45-26): on the first day a slip in daylight (FreeSlip), or any slip on the first night while the array's burst is still
  // to come (FS47Happenings::FirstBurstOwed), is once that day and leaves the night's one pointing-out to the burst.
  const bool bFree=FreeSlip(Night,Now)||(F.Happenings&&F.Happenings->FirstBurstOwed(Night));
- if(bFree?LastFixDay==F.Day():(F.Director?!F.Director->MayPointOut(Night):LastFixDay==F.Day()))return false;
+ // LOOP-DOSSIER-GIVES-20261113 (→ M3, M4): a file of the unknown brought to MARKS gives one more than that, once (FS47Dossier::Grant):
+ // the night's own is spent, and this is the extra. Never on the first day's free slips, never on the big night (DossierExtraOpen, and
+ // BigOwns); the tiers and the target order are as ever. Only this slip takes it: the burst and the lights still see the night spent.
  // PT-FEEDER-20261109: the big night's night is its own (FS47Happenings::BigOwns): it points, nothing else does, before it or after.
- if(F.Happenings&&F.Happenings->BigOwns(Night))return false;
+ const bool bSpent=bFree?LastFixDay==F.Day():(F.Director?!F.Director->MayPointOut(Night):LastFixDay==F.Day());
+ const int32 Allowed=SlipAllowed(bFree,bSpent,F.DossierExtraOpen(Night),F.Happenings&&F.Happenings->BigOwns(Night));
+ if(Allowed==0)return false;
+ const bool bExtra=Allowed==2;
+ // The extra slip keeps the same order of what it points at, past whatever tonight's slips from SARO have pointed at already.
+ // (LOOP-SLIP-IN-PACKET-20261113: a bearing still held for its packet counts as pointed at)
+ const auto Fresh=[this,&F,bExtra](const FString& Name){return !bExtra||(!Fixes.ContainsByPredicate([&F,&Name](const FBearing& Had){return !Had.bCar&&Had.Day==F.Day()&&Had.Target==Name;})
+  &&!Held.ContainsByPredicate([&F,&Name](const FHeldFix& Had){return Had.B.Day==F.Day()&&Had.B.Target==Name;}));};
  double SaroX=0,SaroZ=0;SaroRoad(SaroX,SaroZ);
  // What is off the main beam tonight: the marks, if there are any and their tier allows it at this hour (director.json: before
  // midnight only what can be explained away); otherwise something out on the land nobody has looked at.
@@ -954,7 +1091,7 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  if(F.FarmSite&&F.FarmSite->Armed())
  {
   const FString Why=F.FarmSite->FieldVisit()?TEXT("field_visit"):F.FarmSite->PlaceId()==TEXT("farm")?TEXT("farm_lights"):TEXT("town_lights");
-  if(!F.Director||F.Director->MayPointAt(Why,Now,Night))
+  if((!F.Director||F.Director->MayPointAt(Why,Now,Night))&&Fresh(F.FarmSite->PlaceTitle()))
   {
    const FVector C=F.FarmSite->Centre();const FVector Road=S47Legs::ORIGINS(TEXT("road"));
    Target=F.FarmSite->PlaceTitle();
@@ -969,7 +1106,7 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  if(!bHave&&F.Happenings)
  {
   FString Event,Title;double X=0,Z=0;
-  if(F.Happenings->OutTonight(Night,Event,Title,X,Z,bAhead)&&(!F.Director||F.Director->MayPointAt(Event,Now,Night)))
+  if(F.Happenings->OutTonight(Night,Event,Title,X,Z,bAhead)&&(!F.Director||F.Director->MayPointAt(Event,Now,Night))&&Fresh((Title.IsEmpty()?Event:Title).Left(64)))
   {
    Target=(Title.IsEmpty()?Event:Title).Left(64);ToX=X;ToZ=Z;bHave=bTonight=true;
   }
@@ -977,27 +1114,46 @@ bool FS47Places::AfterRegistered(bool bAnomaly)
  }
  // D45-20261110 (D45-26): on the first night the line the night's burst will come back on (ArcPlace), inside the rim.
  bool bArc=false;
- if(!bHave&&Night==1){Target=ArcPlace(F.Seed());bHave=bArc=!Target.IsEmpty()&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
- if(!bHave){Target=NextUnknown(F.Day());bHave=!Target.IsEmpty()&&Spot(Target,ToX,ToZ);}
+ if(!bHave&&Night==1){Target=ArcPlace(F.Seed());bHave=bArc=!Target.IsEmpty()&&Fresh(Target)&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
+ if(!bHave){Target=NextUnknown(F.Day());bHave=!Target.IsEmpty()&&Fresh(Target)&&Spot(Target,ToX,ToZ);}
  // T16-17 (→ M1, "the bearings run out"): every place found or heard of, the slip still points: at the place where the next
  // morning's trace will stand (DayTrace; the day turns at 08:00, so whether it is taken before midnight or after, that is Day+1).
  // The drive is the same as ever: be there by daylight before noon and look closer. Nothing new is saved.
  bool bTrace=false;
- if(!bHave){Target=TracePlace(F.Seed(),F.Day()+1);bHave=bTrace=!Target.IsEmpty()&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
+ if(!bHave){Target=TracePlace(F.Seed(),F.Day()+1);bHave=bTrace=!Target.IsEmpty()&&Fresh(Target)&&Spot(Target,ToX,ToZ)&&S47OpenLand::InRim(ToX,ToZ);}
  if(!bHave)return false;
- const double Spread=SpreadFor(Branches);
- FBearing B=StationFix(F.Day(),Now,Branches,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x4245415au),Target,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));
+ // LOOP-CAREFUL-PAYS-20261113 (→ M3, M2): a discrepancy worked with care (a sky fix by hand, marks tight round the ticks) narrows the
+ // search one step each, on the mended branches' own ladder (SpreadFor, and with it RingFor and RingOf), never past the narrowest.
+ const bool bPacket=Packet&&!Packet->Job.IsEmpty();
+ const int32 Steps=bPacket?StepsTaken(Branches,CarefulSteps(Packet->bHandFix,Packet->bTightMarks)):0;
+ const double Spread=SpreadFor(Branches+Steps);
+ FBearing B=StationFix(F.Day(),Now,Branches+Steps,SaroX,SaroZ,ToX,ToZ,FS47NightRhythm::Roll(F.Seed(),F.Day(),bExtra?0x4245415bu:0x4245415au),Target,FS47NightRhythm::Roll(F.Seed(),F.Day(),bExtra?0x52494e48u:0x52494e47u));
  if(bArc){B.Az=ArcBearing(F.Seed(),SaroX,SaroZ,ToX,ToZ,Spread);RingOf(B,FS47NightRhythm::Roll(F.Seed(),F.Day(),0x52494e47u));ArcRing(B);} // the line's own number; D48-20261110: a small circle on the place
- Fixes.Add(B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
+ // The night's pointing-out is spent here, at the registration, as ever (LOOP-SLIP-IN-PACKET-20261113: a slip held for its packet too).
  LastFixDay=F.Day();
- if(F.Director&&!bFree)F.Director->NotePointOut(Night);
+ if(F.Director&&!bFree&&!bExtra)F.Director->NotePointOut(Night);
+ if(bExtra)F.DossierSpendExtra(Night); // once: it is printed
  if(bAhead)F.Happenings->PointedTonight(Night);
- const FString Mended=Branches<=0?FString(TEXT("With no branch of the array repaired, the array still picked up something away from where the dishes were pointed, though only roughly"))
-  :FString::Printf(TEXT("With %d %s of the array repaired, the array picked up something away from where the dishes were pointed"),Branches,Branches==1?TEXT("branch"):TEXT("branches"));
- F.RecordEvidence(FString::Printf(TEXT("bearing_d%d"),F.Day()),FS47PlacesLocalSlipRecord(Mended,B,Now));
+ if(bPacket)
+ {
+  // LOOP-SLIP-IN-PACKET-20261113 (→ M3): the last page of the job's packet; the map, the record and the toast when it is collected
+  FHeldFix H;H.B=B;H.Info.Job=Packet->Job.Left(64);H.Info.Branches=Branches;H.Info.Steps=Steps;H.Info.Why=uint8((Packet->bHandFix?1:0)|(Packet->bTightMarks?2:0)|(Packet->bTicks?4:0));H.Info.bExtra=bExtra;
+  // the take was odd because of what is out tonight, and the slip points at that same thing (not at marks standing somewhere else)
+  H.Info.bSame=Packet->bOut&&bTonight;
+  H.Info.bOwnMarks=Packet->bOwnMarks&&Packet->MarkIn>=0&&Packet->MarkOut>Packet->MarkIn;H.Info.MarkIn=H.Info.bOwnMarks?Packet->MarkIn:-1;H.Info.MarkOut=H.Info.bOwnMarks?Packet->MarkOut:-1;
+  Held.RemoveAll([&H](const FHeldFix& X){return X.Info.Job==H.Info.Job;});
+  Held.Add(H);while(Held.Num()>MaxHeld)Held.RemoveAt(0);
+  UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s held for the packet of %s, %d branches, %d careful steps (why %d), same %d, night %d"),B.Az,Spread,*Target,*H.Info.Job,Branches,Steps,int32(H.Info.Why),H.Info.bSame?1:0,Night);
+  M->RequestAutosave();
+  return true;
+ }
+ Fixes.Add(B);while(Fixes.Num()>MaxFixes)Fixes.RemoveAt(0);
+ // LOOP-DOSSIER-GIVES-20261113: the extra slip is a record and a paper of its own, and says why there is one, in the station's words
+ const FString ExtraWhy=bExtra?S47Dossier::ExtraToast()+TEXT(" "):FString();
+ F.RecordEvidence(FString::Printf(TEXT("bearing_d%d%s"),F.Day(),bExtra?TEXT("_more"):TEXT("")),ExtraWhy+FS47PlacesLocalSlipRecord(FS47PlacesLocalMended(Branches),B,Now));
  // The slip on the OPS printer, collected there like the result sheets (behind any job's paper).
- const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),SlipNote(B,Branches));
- if(M->UI)M->UI->Toast(FS47PlacesLocalSlipToast(B,bSlip),6);
+ const bool bSlip=F.QueueBearingSlip(B.Day,SlipLine(B),bExtra?S47Dossier::ExtraSlipWords()+TEXT("\n")+SlipNote(B,Branches):SlipNote(B,Branches),bExtra);
+ if(M->UI)M->UI->Toast(ExtraWhy+FS47PlacesLocalSlipToast(B,bSlip),6);
  UE_LOG(LogTemp,Display,TEXT("S47: bearing: %.0f within %.0f toward %s (%s), %d branches, %s, night %d; circle %.0f %.0f r%.0f, on the land %d%s"),B.Az,Spread,*Target,SlipPoints(bMarks,bTonight,true)==1?TEXT("marks"):SlipPoints(bMarks,bTonight,true)==2?(bAhead?TEXT("tonight's, still to come"):TEXT("tonight's, out there now")):bArc?TEXT("the first night's line"):SlipPoints(false,false,false,bTrace)==4?TEXT("where the morning's trace will be"):TEXT("a place not looked at"),Branches,bAnomaly?TEXT("a discrepancy"):TEXT("routine"),Night,B.RingX,B.RingZ,B.RingR,B.bRing&&S47OpenLand::InRim(B.RingX,B.RingZ,B.RingR)?1:0,bFree?TEXT("; the night's pointing-out left for the burst"):TEXT(""));
  M->RequestAutosave();
  return true;
@@ -1053,6 +1209,11 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
  Check(FMath::IsNearlyEqual(AzimuthOf(0,0,0,-10),0.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,10,0),90.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,0,10),180.)&&FMath::IsNearlyEqual(AzimuthOf(0,0,-10,0),270.),TEXT("a bearing is degrees from north; road-local z runs south"));
  // LOOP-1-20261109: with no branch mended the sector is wide (±40), never none; every mended branch narrows it.
  Check(SpreadFor(0)==40&&SpreadFor(0)>SpreadFor(1)&&SpreadFor(1)>SpreadFor(2)&&SpreadFor(2)>SpreadFor(3)&&SpreadFor(3)>SpreadFor(4)&&SpreadFor(4)>0,TEXT("no branch mended is a wide sector, every mended branch narrows it, and none is exact"));
+ // LOOP-DOSSIER-GIVES-20261113: MARKS's one more slip comes only once the night's own is spent and an extra is open; never for the first
+ // day's free slips, and nothing at all on the big night.
+ Check(SlipAllowed(false,false,false,false)==1&&SlipAllowed(false,false,true,false)==1&&SlipAllowed(false,true,false,false)==0&&SlipAllowed(false,true,true,false)==2
+  &&SlipAllowed(true,true,true,false)==0&&SlipAllowed(true,false,true,false)==1&&SlipAllowed(false,false,true,true)==0&&SlipAllowed(false,true,true,true)==0&&SlipAllowed(false,false,false,true)==0,
+  TEXT("LOOP-DOSSIER-GIVES: one more bearing slip only past the night's own, with a file's extra open; never the first day's free slip, never on the big night"));
  {
   bool bStable=true,bNear=true,bMoves=false,bStill=true;
   for(int32 Day=1;Day<=120;++Day)
@@ -1109,6 +1270,67 @@ bool FS47Places::SelfTest(TArray<FString>& Lines)
    }
    Check(bRinged&&bHolds&&bLand&&bSector&&RingFor(40)==450&&RingFor(4)==140&&RingFor(20)<RingFor(40)&&RingFor(7)<RingFor(12),
     TEXT("a slip's circle holds what it points at, stays on the land inside the rim, has its middle in the sector, and shrinks with every branch"));
+   // LOOP-CAREFUL-PAYS-20261113 (→ M3, M2): a hand fix and tight marks take a step each off the same ladder, never past the narrowest,
+   // and the narrowed circle still holds its target on the land inside the sector.
+   {
+    bool bLadder=CarefulSteps(true,true)==2&&CarefulSteps(true,false)==1&&CarefulSteps(false,true)==1&&CarefulSteps(false,false)==0
+     &&StepsTaken(0,2)==2&&StepsTaken(3,2)==1&&StepsTaken(4,2)==0&&StepsTaken(9,1)==0&&SpreadFor(0+StepsTaken(0,2))==12&&RingFor(SpreadFor(2))==240&&SpreadFor(0+StepsTaken(0,1))==20;
+    bool bNarrowHolds=true;
+    for(int32 Br=0;Br<=5;++Br)for(int32 St=0;St<=2;++St)
+    {
+     const int32 Taken=StepsTaken(Br,St);
+     bLadder&=Taken>=0&&Taken<=St&&SpreadFor(Br+Taken)==SpreadFor(FMath::Min(FMath::Min(Br,4)+St,4))&&SpreadFor(Br+Taken)<=SpreadFor(Br);
+     for(const FVector2D& T:Targets)for(int32 K=0;K<=10;K+=5)
+     {
+      const FBearing R=StationFix(3,20*3600.,Br+Taken,Sx,Sz,T.X,T.Y,float(K)/10.f,TEXT("t"),float(10-K)/10.f);
+      bNarrowHolds&=R.bRing&&R.RingR<=RingFor(R.Spread)&&FVector2D::Distance(FVector2D(R.RingX,R.RingZ),T)<=R.RingR*.45+1&&S47OpenLand::InRim(R.RingX,R.RingZ,R.RingR)&&InSector(R,R.RingX,R.RingZ);
+     }
+    }
+    Check(bLadder&&bNarrowHolds,TEXT("LOOP-CAREFUL-PAYS: a hand fix and tight marks each take one step off the spread and the circle (40/20/12/7/4, 450 to 140 m), clamped at the narrowest; the target stays inside the circle"));
+   }
+   // LOOP-SLIP-IN-PACKET-20261113 (→ M3): the packet's last section in the slip's plain words, the reasons and the tie to the take;
+   // held for its packet it is off the map and off the slip rows, kept over a Continue, and on the map once the packet is collected.
+   {
+    const FBearing P=StationFix(4,Clock,2,Sx,Sz,Sx+500,Sz,.5f,TEXT("windmill"));
+    FHeld H;H.Job=TEXT("FF-D0004-J2");H.Branches=0;H.Steps=2;H.Why=1|2|4;H.bSame=true;H.bOwnMarks=true;H.MarkIn=9.;H.MarkOut=13.;
+    const FString Full=PacketSection(P,H);
+    FHeld Loose=H;Loose.MarkOut=14.7;const FString NoNumber=PacketSection(P,Loose); // (REVIEW-20261113: shown as 14.6, the way the deck shows that mark; never 14.7)
+    FHeld Other=H;Other.bSame=false;const FString Apart=PacketSection(P,Other);
+    FHeld Plain0=H;Plain0.Why=4;Plain0.Steps=0;Plain0.bOwnMarks=false;const FString Teach=PacketSection(P,Plain0);
+    FHeld Instr=Plain0;Instr.Why=0;Instr.bSame=false;const FString TeachSky=PacketSection(P,Instr);
+    FHeld Full4=H;Full4.Branches=4;Full4.Steps=0;Full4.Why=1|4;const FString Narrowest=PacketSection(P,Full4);
+    FHeld None4=Full4;None4.Why=4;const FString Silent=PacketSection(P,None4);
+    const FString All=Full+NoNumber+Apart+Teach+TeachSky+Narrowest+Silent;
+    bool bPlain=S47Script::LintText(All).IsEmpty()&&!All.Contains(TEXT("47"))&&!All.ToLower().Contains(TEXT("taken"))&&!All.Contains(TEXT(" C "))&&!All.ToLower().Contains(TEXT("alien"));
+    for(const TCHAR Ch:All)bPlain&=Ch>=9&&Ch<127;
+    const bool bFull=Full.StartsWith(TEXT("OFF-BEAM BEARING\n"))&&Full.Contains(SlipLine(P))&&Full.Contains(TEXT("GOOD UNTIL NOON"))&&Full.Contains(TEXT("CIRCLED ON YOUR MAP"))&&Full.Contains(TEXT("DIRECTION ONLY"))
+     &&Full.Contains(TEXT("HAND FIX / MARKS TIGHT: AREA NARROWER BY TWO STEPS."))&&Full.Contains(TEXT("BETWEEN YOUR MARK IN AT 9.0 S AND YOUR MARK OUT AT 13.0 S CAME IN ON THIS BEARING."));
+    const bool bSaid=NoNumber.Contains(TEXT("YOUR MARK OUT AT 14.6 S CAME IN ON THIS BEARING."))&&!NoNumber.Contains(TEXT("14.7"))&&Apart.Contains(TEXT("IT DOES NOT SAY THE TWO ARE THE SAME"))&&!Apart.Contains(TEXT("CAME IN ON THIS BEARING"))
+     &&Teach.Contains(TEXT("MARKS SET CLOSE ROUND THE EXTRA TICKS"))&&TeachSky.Contains(TEXT("A SKY FIX MADE BY HAND MAKES"))&&!TeachSky.Contains(TEXT("MARKS SET"))
+     &&Narrowest.Contains(TEXT("HAND FIX: THE AREA IS ALREADY AS NARROW AS THE ARRAY GIVES."))&&!Silent.Contains(TEXT("HAND FIX"))&&!Silent.Contains(TEXT("A SKY FIX MADE BY HAND"));
+    Check(bPlain&&bFull&&bSaid,TEXT("LOOP-SLIP-IN-PACKET: the packet's last page is OFF-BEAM BEARING with the direction, spread, circle and noon, why it is narrower, and the tie to the take in his own marks; never a 47 or what it is"));
+    FS47Places Hold(nullptr);Hold.Begin(nullptr);FHeldFix Hf;Hf.B=P;Hf.Info=H;Hold.Held.Add(Hf);
+    FS47Places HoldAgain(nullptr);HoldAgain.Begin(S47J::Read(S47J::Write(Hold.Save())));
+    FS47MapView Waiting,Out;HoldAgain.FillMapAt(Waiting,Clock+60);
+    const bool bWaits=HoldAgain.HeldFor(H.Job)&&!HoldAgain.HeldFor(TEXT("FF-D0004-J1"))&&HoldAgain.Bearings().IsEmpty()&&Waiting.Sectors.IsEmpty()&&S47FieldMap::SlipCircles(Waiting).IsEmpty()&&HoldAgain.SlipRows(Clock+60).IsEmpty()
+     &&HoldAgain.PacketSection(H.Job).StartsWith(TEXT("OFF-BEAM BEARING"))&&HoldAgain.PacketSection(H.Job).Contains(SlipLine(P))&&HoldAgain.PacketSection(TEXT("FF-D0004-J1")).IsEmpty();
+    FString Page;int32 PageDay=0;bool bPageExtra=true;
+    const bool bOut=HoldAgain.ReleasePacket(H.Job,&Page,&PageDay,&bPageExtra)&&!HoldAgain.ReleasePacket(H.Job);
+    HoldAgain.FillMapAt(Out,Clock+60);
+    const bool bShown=bOut&&Page.StartsWith(TEXT("OFF-BEAM BEARING"))&&PageDay==4&&!bPageExtra&&!HoldAgain.HeldFor(H.Job)&&HoldAgain.Bearings().Num()==1&&Out.Sectors.Num()==1&&S47FieldMap::SlipCircles(Out).Num()==1
+     &&HoldAgain.SlipRows(Clock+60).Num()==1&&FS47Places(nullptr).HeldCount()==0;
+    {
+     // REVIEW-20261113: the packet left on the printer past the bearing's noon: collected at 14:00, the bearing is live (to the next
+     // noon), on the map and on NOW, not cold as it arrives
+     FS47Places Late(nullptr);Late.Begin(nullptr);FHeldFix Lf=Hf;Late.Held.Add(Lf);
+     const double After=P.Until+2*3600.;
+     FS47MapView LateMap;const bool bLateOut=Late.ReleasePacket(H.Job,nullptr,nullptr,nullptr,After);Late.FillMapAt(LateMap,After+60);
+     Check(bLateOut&&Late.Bearings().Num()==1&&Late.Bearings()[0].Until>After&&Late.Bearings()[0].Until==ColdAt(After)&&LateMap.Sectors.Num()==1&&Late.SlipRows(After+60).Num()==1,
+      TEXT("REVIEW: a packet collected after its bearing's noon brings the bearing live to the next noon: on the map and on NOW, never cold on arrival"));
+    }
+    FS47Places OldSave(nullptr);OldSave.Begin(S47J::Read(S47J::Write(Map.Save())));
+    Check(bWaits&&bShown&&OldSave.HeldCount()==0&&!Map.Save()->HasField(TEXT("held")),TEXT("LOOP-SLIP-IN-PACKET: held for its packet the bearing is off the map and NOW, kept over a Continue, then on the map with its circle once the packet is collected; an older save has none"));
+   }
    // The circle on the sheet with the wedge's label; the old sheet's label is "Day 4 slip, 19:52", never "D4" (read as a grid square).
    const TArray<S47FieldMap::FSlipCircle> Circles=S47FieldMap::SlipCircles(Fresh);
    Check(B.bRing&&Circles.Num()==1&&Circles[0].Label==Fresh.Sectors[0].Label&&Fresh.Sectors[0].Label==TEXT("Day 4 slip, 19:52")&&FMath::IsNearlyEqual(Circles[0].R,B.RingR)&&!Circles[0].bChecked&&Circles[0].Where.EndsWith(TEXT("of SARO"))

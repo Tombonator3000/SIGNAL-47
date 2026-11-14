@@ -289,7 +289,9 @@ private:
 	bool bTransferHere = false;
 	double TransferOutSince = -1;                  // T16-09: when the listener left the control room with the modem on
 	void StepTransferWalls(const FVector& Eye);
-	static bool InControlRoom(const FVector& EyeThree);
+public:
+	static bool InControlRoom(const FVector& EyeThree); // (public: the calm night's tube wear asks the same question, S47Calm.cpp)
+private:
 	TWeakObjectPtr<UWorld> World;
 	UPROPERTY() TObjectPtr<US47Synth> Synth;
 	UPROPERTY() TObjectPtr<AActor> SynthHost;

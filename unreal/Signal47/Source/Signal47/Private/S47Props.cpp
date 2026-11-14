@@ -1,5 +1,6 @@
 // Unreal only (departs from the web version): the free models placed in the world, see S47Props.h.
 #include "S47Props.h"
+#include "S47PropCatalogue.h"
 #include "S47StationPhone.h"
 #include "S47StationWorldRoute.h"
 #include "S47FarmWorldTest.h"
@@ -65,7 +66,8 @@ namespace
 		Out.RemoveAll([](const FString& Name)
 		{
 			return Name == TEXT("lookdev-bindings.json") || Name == TEXT("lookdev-environment.json")
-				|| Name == TEXT("gas_cosmos.json") || Name == TEXT("gas_look.json") || Name == TEXT("school_cosmos.json"); // (GAS-STATION-LIFT-01: the shop's Cosmos props, S47StationDressing; its picture, S47StationLook)
+				|| Name == TEXT("gas_cosmos.json") || Name == TEXT("gas_look.json") || Name == TEXT("school_cosmos.json") || Name == TEXT("church_cosmos.json") || Name == TEXT("church_convent.json") // (GAS-STATION-LIFT-01: the shop's Cosmos props, S47StationDressing; its picture, S47StationLook)
+				|| Name == TEXT("catalogue.json"); // (PROPS-REUSE-20261113: the shared real models, S47PropCatalogue)
 		});
 		Out.Sort();
 		return Out;
@@ -147,6 +149,9 @@ void AS47Props::LoadManifests()
 
 UStaticMesh* AS47Props::MeshOf(const FString& Model) const
 {
+	// PROPS-REUSE-20261113: "cat:<id>" is a shared catalogue model, load-if-present (a bought pack not here: the prop is not placed and
+	// what it replaces stays, without a load warning)
+	if (Model.StartsWith(TEXT("cat:"))) return S47PropCatalogue::LoadIfHere(S47PropCatalogue::Resolve(Model));
 	const FString* Asset = Assets.Find(Model);
 	const FString Path = Asset ? *Asset : (Model.StartsWith(TEXT("/")) ? Model : FString());
 	if (Path.IsEmpty()) return nullptr;
@@ -916,7 +921,7 @@ void AS47Props::ApplyTrim(const FString& Model)
 	const int32 Group = W->Handle(Str(*M, TEXT("group")));
 	const TSharedPtr<FJsonObject>* Meshes = nullptr;
 	if (Group < 0 || !(*M)->TryGetObjectField(TEXT("meshes"), Meshes)) return;
-	int32 Swapped = 0, Hidden = 0, Stale = 0;
+	int32 Swapped = 0, Hidden = 0, Stale = 0, Missing = 0;
 	for (int32 I = 0; I < W->PartCount(); ++I)
 	{
 		const FS47WebNode* N = W->Node(I);
@@ -928,10 +933,15 @@ void AS47Props::ApplyTrim(const FString& Model)
 		const int32 Tris = Old && Old->GetRenderData() && Old->GetRenderData()->LODResources.Num() ? Old->GetRenderData()->LODResources[0].GetNumTriangles() : -1;
 		if (!C || Tris != int32(Num(*G, TEXT("tris"), -2))) { ++Stale; continue; }
 		if (Bool(*G, TEXT("hidden"), false)) { C->SetHiddenInGame(true); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); ++Hidden; continue; }
-		if (UStaticMesh* Cut = LoadObject<UStaticMesh>(nullptr, *Str(*G, TEXT("asset")))) { C->SetStaticMesh(Cut); ++Swapped; }
-		else ++Stale;
+		// PACKAGE-GAS-TRIM-20261114: a cut mesh that is not here (deleted by a re-import, or not cooked) is MISSING, not STALE,
+		// and is not asked for (no load warning per mesh); S47CookCoverage's self-test fails on it unless a composed town patch takes
+		// its part out. The hidden rows above need no mesh and keep working (the gas station's when the town patches are rejected)
+		if (UStaticMesh* Cut = S47PropCatalogue::LoadIfHere(Str(*G, TEXT("asset")))) { C->SetStaticMesh(Cut); ++Swapped; }
+		else ++Missing;
 	}
-	UE_LOG(LogS47Props, Display, TEXT("S47: props: %s cut out of the export: %d meshes trimmed, %d hidden%s"), *Model, Swapped, Hidden, Stale ? *FString::Printf(TEXT(", %d STALE (a new export needs Tools/freemodels/import_free.sh again)"), Stale) : TEXT(""));
+	const FString Stales = Stale ? FString::Printf(TEXT(", %d STALE (a new export needs Tools/freemodels/import_free.sh again)"), Stale) : FString();
+	const FString Missings = Missing ? FString::Printf(TEXT(", %d MISSING (the cut meshes are not here: import_free.sh with the trim again)"), Missing) : FString();
+	UE_LOG(LogS47Props, Display, TEXT("S47: props: %s cut out of the export: %d meshes trimmed, %d hidden%s%s"), *Model, Swapped, Hidden, *Stales, *Missings);
 }
 
 UStaticMeshComponent* AS47Props::PlacedMesh(const FString& Id)
@@ -1214,6 +1224,12 @@ bool AS47Props::SelfTest(TArray<FString>& Lines)
 		auto CheckModel = [&](const FString& Id, const FString& Model)
 		{
 			if (Model.IsEmpty()) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: no model"), *F, *Id)); bOk = false; return; }
+			if (Model.StartsWith(TEXT("cat:")))
+			{
+				// PROPS-REUSE-20261113: a shared catalogue model must be in Config/Props/catalogue.json (here or not: load-if-present)
+				if (!S47PropCatalogue::Find(Model)) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: %s is not in catalogue.json"), *F, *Id, *Model)); bOk = false; }
+				return;
+			}
 			if (bManifest && !Model.StartsWith(TEXT("/")) && !Known.Contains(Model)) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: %s is not in free_models.json"), *F, *Id, *Model)); bOk = false; }
 			if (Model.Contains(TEXT("joshua"))) { Lines.Add(FString::Printf(TEXT("props: FAIL %s %s: no Joshua trees in New Mexico"), *F, *Id)); bOk = false; }
 		};

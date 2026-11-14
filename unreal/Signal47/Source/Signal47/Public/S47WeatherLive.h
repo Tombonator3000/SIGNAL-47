@@ -76,4 +76,9 @@ private:
 	double WetApplied = -1;
 	TWeakObjectPtr<UMaterialInstanceDynamic> WetSeen;
 	void ApplyGroundWet(double Wet);
+	// M5 (13 November): the night's thought about being seen (S47Weather::NightThoughtKey): seconds out on foot in the dark, and the
+	// night (noon to noon) it was last given on
+	double OutFor = 0;
+	int32 ThoughtNight = -100000;
+	void StepNightThought(double Dt);
 };

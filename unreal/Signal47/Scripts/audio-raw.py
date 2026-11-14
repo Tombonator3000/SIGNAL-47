@@ -9,7 +9,8 @@ game's own Web Audio (S47WebAudio.h, US47Audio::DecodeAll), with the tables it l
   Content/Audio/Raw/index.json            sources (web name -> file), character (voice -> text ->
                                           character:<id>, empty for now); texts normalised
                                           as readAloud.ts normalizeReadingText
-  Content/Audio/Raw/media/{music,radio}/*.wav  the long recordings, seekable PCM16 for S47Media
+  Content/Audio/Raw/media/{music,radio}/*.wav  the long recordings, seekable PCM16 for S47Media (and, kept as they are, the
+                                          pieces Tools/music/build_music.py stages there: MUSIC-20261113)
   Content/Audio/Raw/voice/<bank>/*.wav    the voice banks read a clip at a time: Serling's (with the opening's)
                                           for the narrator (core/readAloud.ts, core/narrationBanks.ts),
                                           and the four RadioVoice banks, decoded lazily by RadioVoice
@@ -142,11 +143,12 @@ def write_json(path, data, **kw):
 
 if not args.recordings_only:
     # (Raw/tv is the TVs' programme sound from prepare-tv.py, and Raw/night Freeform's recorded night from
-    # Tools/nightsounds, not from web/src: they stay)
+    # Tools/nightsounds, not from web/src: they stay. So does Raw/media, MUSIC-20261113: beside web/public's recordings,
+    # written again below, it holds the pieces Tools/music/build_music.py stages from sources that are not in Git)
     for d in (RAW, LICRAW):
         for name in os.listdir(d) if os.path.isdir(d) else []:
             path = os.path.join(d, name)
-            if d == RAW and name in ('tv', 'night'):
+            if d == RAW and name in ('tv', 'night', 'media'):
                 continue
             if os.path.isdir(path) and not os.path.islink(path):
                 shutil.rmtree(path)
@@ -267,6 +269,12 @@ for group in ('music', 'radio'):
                 media[group + '/' + name] = rel
                 count += 1
     print('S47: raw media %s: %d' % (group, count))
+    # MUSIC-20261113: the staged pieces beside them (Tools/music/build_music.py) keep their rows
+    staged = os.path.join(RAW, 'media', group)
+    for name in sorted(os.listdir(staged)) if os.path.isdir(staged) else []:
+        base, ext = os.path.splitext(name)
+        if ext.lower() == '.wav' and not any(k.startswith(group + '/' + base + '.') for k in media):
+            media['%s/%s.mp3' % (group, base)] = 'media/%s/%s.wav' % (group, base)
 with open(os.path.join(RAW, 'media.json'), 'w', encoding='utf-8') as f:
     json.dump(media, f, ensure_ascii=False, indent=1, sort_keys=True)
 

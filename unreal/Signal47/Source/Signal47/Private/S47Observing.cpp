@@ -946,11 +946,17 @@ double FS47Observing::AudioLevel() const
  return Level;
 }
 
+FString FS47Observing::DeckToast()
+{
+ // review 14 Nov (B3): the deck is on the wall table (as every other line says), and its second key in this flow reads CONTROL
+ return FString::Printf(TEXT("Use the reel deck on the wall table: ORIGINAL / %s, PLAY, MARK IN / MARK OUT, RETAIN."),FS47FreeformAudioDesk::SourceName(1,false));
+}
+
 void FS47Observing::OpenAudioComparison()
 {
  if(!bWorkEnabled||!Active()||!M||!M->UI||!AudioDesk||!AudioDesk->Ready())return;
  if(!AudioAvailable()){M->UI->Toast(PulsarObjective(),5);return;}
- if(!AudioDesk->ListeningPosition()){M->UI->Toast(TEXT("Use the reel deck beside the telephone: ORIGINAL / CONTROL, PLAY, MARK IN / OUT, RETAIN."),5);return;}
+ if(!AudioDesk->ListeningPosition()){M->UI->Toast(DeckToast(),5);return;}
  bAudioPanelOpen=true;
 }
 

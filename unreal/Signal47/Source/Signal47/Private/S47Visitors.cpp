@@ -6,6 +6,7 @@
 #include "S47GameStyle.h"
 #include "S47FreeformDirector.h"
 #include "S47Geo.h"
+#include "S47Happenings.h"
 #include "S47Inter.h"
 #include "S47Kit.h"
 #include "S47Main.h"
@@ -16,6 +17,8 @@
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47TownSites.h"
+#include "S47StoryDirector.h"
+#include "S47TownDay.h"
 #include "S47Townsfolk.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -116,6 +119,15 @@ bool FS47Visitors::Cleared(const FString& Place, int32 Night) const
 {
 	const double Now = M && M->Freeform ? M->Freeform->Clock() : 1e12;
 	return Visits.ContainsByPredicate([&](const FVisit& V) { return V.Place == Place && V.Night == Night && !V.bLooked && Now >= V.Start; });
+}
+
+bool FS47Visitors::RakedRecently(int32 Nights) const
+{
+	if (!M || !M->Freeform) return false;
+	const double Now = M->Freeform->Clock();
+	const int32 Tonight = FS47FreeformSession::NightOf(Now);
+	// Gone by late morning (StepMilitary), whether or not a Continue has kept bGone.
+	return Visits.ContainsByPredicate([&](const FVisit& V) { return !V.bLooked && (V.bGone || Now > V.Start + 5 * 3600.) && Tonight - V.Night <= Nights; });
 }
 
 void FS47Visitors::RakeAt(const FString& Place, int32 Night, double RoadX, double RoadZ)
@@ -710,6 +722,7 @@ void FS47Visitors::StepMilitary(double Dt)
 				M->Audio->Play(TEXT("engineIdle"), .6f, Three, .85f);
 			}
 			UE_LOG(LogS47Visitors, Display, TEXT("S47: visitors: the sedans at %s drive off as the player comes up (%.0f m)"), *V.Place, Away);
+			FS47Happenings::TellOther(M, TEXT("visitors"), V.Place); // M1-MEASURE-20261113: met at the place
 		}
 		if (V.Leave >= 0)
 		{
@@ -734,6 +747,7 @@ void FS47Visitors::StepMilitary(double Dt)
 		F.RegisterFinding(Id, Text);
 		if (M->UI) M->UI->Open(S47Kit::Shell(M->UI, TEXT("SOMEBODY GOT HERE FIRST"), S47Kit::Col({ S47Kit::Text(Text), S47Kit::Small(TEXT("Kept as a field record.")) }), 760));
 		UE_LOG(LogS47Visitors, Display, TEXT("S47: visitors: the raked ground at %s read, night %d"), *V.Place, V.Night);
+		FS47Happenings::TellOther(M, TEXT("visitors"), V.Place); // M1-MEASURE-20261113: what they left, read (same key: one meeting a place a night)
 		break;
 	}
 	if (Live)
@@ -887,11 +901,26 @@ FS47Visitors::FTale FS47Visitors::Tale(int32 Day) const
 	return T;
 }
 
-void FS47Visitors::OpenBaca()
+FString FS47Visitors::BacaInTownCard()
+{
+	return TEXT("Nobody comes to the door. The truck is gone from the shed and the dog lies in the dust where it stood. A card is stuck in the screen door, in pencil: IN TOWN AT NOON. FEED AND SEED. BACK BY HALF PAST ONE.");
+}
+
+void FS47Visitors::OpenBaca(bool bInTown)
 {
 	if (!M || !M->UI || !M->Freeform) return;
 	FS47FreeformSession& F = *M->Freeform;
 	TArray<TSharedRef<SWidget>> Rows;
+	// NPC-DAY-FOLLOW-20261109: at noon he is in town. Not on a Story night (its night is the story's own).
+	const bool bNoon = !BacaGone() && !FS47StoryDirector::Of(M) && S47TownDay::EloyAt(Hour()) == TEXT("feed");
+	if (bInTown && !bNoon) return;
+	if (!bInTown && bNoon)
+	{
+		Rows.Add(S47Kit::Paper(BacaInTownCard()));
+		Rows.Add(S47Kit::Button(TEXT("Leave it"), [this] { if (M && M->UI) M->UI->Close(); }));
+		M->UI->Open(S47Kit::Shell(M->UI, TEXT("THE BACA PLACE"), S47Kit::Col(Rows), 760));
+		return;
+	}
 	if (BacaGone())
 	{
 		Rows.Add(S47Kit::Paper(TEXT("The door stands open. Coffee on the stove, cold, and a cup poured and not drunk. The dog is under the porch and will not come out for you. The truck is in the shed.")));
@@ -912,7 +941,9 @@ void FS47Visitors::OpenBaca()
 		return;
 	}
 	// The first time he says what he has waited for; after that the coffee is just on.
-	Rows.Add(S47Kit::Paper(BacaTold.IsEmpty() ? TEXT("An old man in a pressed shirt comes to the screen door before you knock. \"You're from the dishes. Sit down. I've been waiting for one of you to come out here for four years.\"")
+	if (bInTown) Rows.Add(S47Kit::Paper(BacaTold.IsEmpty() ? TEXT("At the end of the Feed & Seed counter an old man in a pressed shirt is arguing the price of range cubes. He stops when he sees the SARO patch. \"You're from the dishes. I've been waiting for one of you for four years. Walk me out to the truck.\"")
+		: TEXT("Eloy Baca, at the end of the counter with a sack of range cubes on his shoulder. \"You again. Walk me out to the truck.\"")));
+	else Rows.Add(S47Kit::Paper(BacaTold.IsEmpty() ? TEXT("An old man in a pressed shirt comes to the screen door before you knock. \"You're from the dishes. Sit down. I've been waiting for one of you to come out here for four years.\"")
 		: TEXT("He is at the screen door before you knock. \"Sit down. The coffee's on.\"")));
 	FString Said = BacaLast;
 	if (BacaDay != F.Day() || BacaLast.IsEmpty())
@@ -927,7 +958,7 @@ void FS47Visitors::OpenBaca()
 	Rows.Add(S47Kit::Text(TEXT("ELOY BACA: ") + Said));
 	Rows.Add(S47Kit::Small(TEXT("Kept as a field record, unconfirmed. He is sure of it. He was sure of the last one too.")));
 	Rows.Add(S47Kit::Button(TEXT("Thank him and go"), [this] { if (M && M->UI) M->UI->Close(); }));
-	M->UI->Open(S47Kit::Shell(M->UI, TEXT("THE BACA PLACE / ELOY BACA"), S47Kit::Col(Rows), 820));
+	M->UI->Open(S47Kit::Shell(M->UI, bInTown ? TEXT("FEED & SEED / ELOY BACA") : TEXT("THE BACA PLACE / ELOY BACA"), S47Kit::Col(Rows), 820));
 }
 
 // ---------- the enthusiasts ----------
@@ -1137,5 +1168,8 @@ bool FS47Visitors::SelfTest(TArray<FString>& Lines)
 		}
 		Check(bClean, bClean ? FString(TEXT("Baca's stories: nothing of 1947, no brands, American spelling, his places on the land")) : TEXT("not said: ") + Bad);
 	}
+	// NPC-DAY-FOLLOW-20261109: at noon his door has a card saying where he is, and the hour on it is the hour he is back.
+	Check(!BacaInTownCard().Contains(TEXT("47")) && BacaInTownCard().Contains(TEXT("FEED AND SEED")) && S47TownDay::EloyAt(12.5) == TEXT("feed") && S47TownDay::EloyAt(13.3) == TEXT("baca") && S47TownDay::EloyAt(11.7) == TEXT("baca"),
+		TEXT("Eloy Baca's noon in town: the card in his door says where and until when, as his day has it"));
 	return bAll;
 }

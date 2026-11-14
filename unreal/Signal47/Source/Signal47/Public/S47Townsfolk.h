@@ -47,6 +47,8 @@ public:
 	// The night's events took Who (last seen at a catalogue place, may be empty). False: not one of them, or someone is already gone.
 	bool Vanish(const FString& Who, const FString& Place);
 	bool Away(const FString& Who) const;
+	// The day Who went (0: not gone). M7-SPREAD-20261113: the late case's rack log the day after (FS47Predecessor::LateRackDue).
+	int32 GoneDay(const FString& Who) const { const FGone* G = Gone.FindByPredicate([&Who](const FGone& Each) { return Each.Who == Who; }); return G ? G->Day : 0; }
 	// Whoever is gone in the running game (one game at a time).
 	static bool AwayNow(const FString& Who);
 	// What the town has seen, for FS47RadioTips' "town:" lines: "away_deputy" while the deputy is gone, "back_deputy" for three
@@ -57,6 +59,9 @@ public:
 	// The waitress has no talk of her own in Freeform: the diner's counter (FS47FreeformSession::Use, "diner:waitress").
 	bool Use(const FString& Id);
 	void OpenDiner();
+	// NPC-DAY-FOLLOW-20261109: the counter's panel when she is not on her shift (S47TownDay::Counter): Behind "cook" (by day,
+	// through the hatch), else nobody (before the kitchen opens, Hour before noon, or the cook's break).
+	static FString DinerLine(const FString& Behind, double Hour);
 	// For a counter's panel: a line of the attendant's or the souvenir man's, or who is minding it while they are gone.
 	FString CounterLine(const FString& Who);
 	// The odds and the wait, worked out from the game's seed: whether a night's event at their place takes them, how long they stay away.
@@ -95,6 +100,7 @@ private:
 	int32 LastVanishDay = -100, CheckedNight = 0;
 	double StepIn = 0;
 	void Publish();
+	void StepGrave(); // M4: the cemetery behind the church, once the waitress has told of it
 	// The town's own figures as who is gone says: the deputy's car and window, the man on the stoop. bAll: everyone back (Stop).
 	void ShowPosts(bool bAll);
 	struct FLine { FString Key, Text; int32 Rank = 0; };

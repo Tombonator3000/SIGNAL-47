@@ -15,6 +15,8 @@
 #include "Containers/Ticker.h"
 #include "S47CreatureCapture.h"
 #include "S47EyeGlint.h"
+#include "S47CreatureClips.h"
+#include "Engine/SkeletalMesh.h"
 
 void S47CreaturePreview::Start(US47Main* M)
 {
@@ -28,6 +30,91 @@ void S47CreaturePreview::Start(US47Main* M)
  struct FPreview { FS47PaleBody Body; bool bReported=false; FS47RoswellMotion RoswellMotion; double Travelled=0; double StageError=0; double StagePlanted=0; int32 StageFrames=0; int32 Style=0; double X=7885,Z=522,Yaw=PI; double T=0; bool bPlaced=false; int32 Last=-1, Contacts=0; double MaxPlantError=0, MaxPlantAngle=0, MaxSoleProbeError=0, NextLog=0; };
  auto Fixture=MakeShared<FPreview>(); TWeakObjectPtr<US47Main> Weak=M;
  FString Style;FParse::Value(FCommandLine::Get(),TEXT("S47CreatureStyle="),Style);
+ if(Style.StartsWith(TEXT("npc:")))
+ {
+  // ANIM-TRY-20261112: one of the townsfolk on its own rig, as FS47TripoNpcs wears it (the Tripo clips, or with
+  // -S47Free100=walk,idle the retargeted Free100 ones): it stands 2 s, walks 8 m straight at the town's 1.25 m/s, stands 3 s.
+  // -S47CreatureCam=front|side|top follows it. Model-only fixture: no AI, no day plan.
+  struct FNpc { TSharedPtr<FS47TripoCreature> Rig; TWeakObjectPtr<USceneComponent> Root; FString Role,Cam; double T=0,Travel=0,Worst=0,StageWorst=0,NextLog=0; int32 Last=-1,Steps=0; bool bPlaced=false,bDone=false; };
+  auto N=MakeShared<FNpc>();N->Role=Style.Mid(4);
+  FParse::Value(FCommandLine::Get(),TEXT("S47CreatureCam="),N->Cam);
+  auto NpcCapture=FS47CreatureCapture::Create([N]
+  { return FS47CreatureCapture::FSample{N->T,N->Last,N->bPlaced,N->Rig&&N->Rig->Rendered(),N->Rig?N->Rig->Mesh:nullptr}; });
+  FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Weak,N,NpcCapture](float Dt)
+  {
+   FS47CreatureCapture::FFrameScope CaptureFrame{NpcCapture.Get()};
+   US47Main* Main=Weak.Get(); if (!Main) return false;
+   if (!Main->Web || !Main->Web->IsLoaded() || !Main->World || !Main->Player || Main->Mode!=US47Main::EMode::Play) return true;
+   if(!N->bPlaced)
+   {
+    Main->World->Enter(TEXT("diner"));
+    if (Main->Story) Main->Story->SetClock(12*3600);
+    AS47Web* W=Main->Web.Get();
+    auto* RigRoot=NewObject<USceneComponent>(W,TEXT("NpcPreviewRoot"));
+    W->AddInstanceComponent(RigRoot);RigRoot->SetMobility(EComponentMobility::Movable);
+    RigRoot->SetupAttachment(W->GetRootComponent());RigRoot->RegisterComponent();
+    const FString Skin=FString::Printf(TEXT("/Game/Licensed/TripoNPC/Rigged/SK_Tripo_%s.SK_Tripo_%s"),*N->Role,*N->Role);
+    USkeletalMesh* SkinAsset=LoadObject<USkeletalMesh>(nullptr,*Skin,nullptr,LOAD_NoWarn|LOAD_Quiet);
+    N->Rig=MakeShared<FS47TripoCreature>();
+    if(!SkinAsset||!N->Rig->Build(W,RigRoot,TEXT("NpcPreviewRig"),*Skin))
+    { UE_LOG(LogTemp,Error,TEXT("S47: npc preview: no rigged skin for %s"),*N->Role); return false; }
+    static const TArray<FString> Free100=[]{FString V;TArray<FString> Out;if(FParse::Value(FCommandLine::Get(),TEXT("S47Free100="),V,false))V.ParseIntoArray(Out,TEXT(","));return Out;}();
+    const FString Prefer=FString::Printf(TEXT("/Game/Licensed/Free100/Retargeted/%s/A_F100_%s_"),*N->Role,*N->Role);
+    N->Rig->Clips=FS47ClipBank::For(SkinAsset,*N->Rig,*FString::Printf(TEXT("/Game/Licensed/TripoNPC/Rigged/A_Tripo_%s_"),*N->Role),Free100.Num()?*Prefer:nullptr,&Free100);
+    if(!N->Rig->Clips){ UE_LOG(LogTemp,Error,TEXT("S47: npc preview: no clips for %s"),*N->Role); return false; }
+    N->Rig->Mesh->SetRelativeRotation(FRotator::ZeroRotator);
+    N->Root=RigRoot;N->bPlaced=true;
+    UE_LOG(LogTemp,Display,TEXT("S47: npc preview FIXTURE %s cam %s: walk %.2f m/s a cycle of %.0f cm, %.2f s; idle %.2f s"),*N->Role,*N->Cam,
+     N->Rig->Clips->GaitSpeedMps(ES47Clip::Walk),N->Rig->Clips->GaitCycleCm(ES47Clip::Walk),N->Rig->Clips->Seconds(ES47Clip::Walk),N->Rig->Clips->Seconds(ES47Clip::Idle));
+   }
+   USceneComponent* RigRoot=N->Root.Get(); if(!RigRoot||!N->Rig->Ready()) return false;
+   const double Sd=FMath::Min(double(Dt),.1);
+   N->T+=Sd;
+   const double T=N->T;
+   const int32 St=T<2?0:N->Travel<8?1:2;
+   if(St==1)N->Travel=FMath::Min(8.,N->Travel+1.25*Sd);
+   // It faces +Z of the game's space at yaw 0 (as the bake); here it walks towards -X.
+   const double Yaw=-PI/2;
+   const FVector Ahead(FMath::Sin(Yaw),0,FMath::Cos(Yaw));
+   const double X=7885+Ahead.X*N->Travel,Z=522+Ahead.Z*N->Travel;
+   const FVector At(X,S47RoadTerrain::SurfaceY(X-8000,Z),Z);
+   double E[16];S47Three::Compose(At,S47Three::Euler(0,Yaw,0),FVector::OneVector,E);
+   RigRoot->SetWorldTransform(S47Three::MatToUE(E));
+   FS47ClipPose Clip;Clip.bVisible=true;Clip.Clock=T;Clip.Move=ES47Clip::Walk;
+   N->Rig->PlayClips(Clip);
+   const auto& Plant=N->Rig->Contacts;
+   N->Steps+=int32(Plant.bLeft)+int32(Plant.bRight);
+   N->Worst=FMath::Max(N->Worst,Plant.MaxPlantErrorCm);N->StageWorst=FMath::Max(N->StageWorst,Plant.MaxPlantErrorCm);
+   if(auto* Skin=N->Rig->Mesh.Get())
+   {
+    // every frame: where the feet and hips really are (world cm), for the sliding measure
+    const FVector L=Skin->GetBoneLocationByName(TEXT("foot_l"),EBoneSpaces::WorldSpace),R=Skin->GetBoneLocationByName(TEXT("foot_r"),EBoneSpaces::WorldSpace),
+     BL=Skin->GetBoneLocationByName(TEXT("ball_l"),EBoneSpaces::WorldSpace),BR=Skin->GetBoneLocationByName(TEXT("ball_r"),EBoneSpaces::WorldSpace),
+     P=Skin->GetBoneLocationByName(TEXT("pelvis"),EBoneSpaces::WorldSpace);
+    UE_LOG(LogTemp,Display,TEXT("S47: npc preview f t=%.4f st=%d ground=%.2f root=(%.2f,%.2f) L=(%.2f,%.2f,%.2f) R=(%.2f,%.2f,%.2f) BL=(%.2f,%.2f,%.2f) BR=(%.2f,%.2f,%.2f) P=(%.2f,%.2f,%.2f) on=%d%d"),T,St,At.Y*100.,X*100.,Z*100.,L.X,L.Y,L.Z,R.X,R.Y,R.Z,BL.X,BL.Y,BL.Z,BR.X,BR.Y,BR.Z,P.X,P.Y,P.Z,int32(Plant.bLeft),int32(Plant.bRight));
+   }
+   if(St!=N->Last)
+   {
+    if(N->Last>=0)UE_LOG(LogTemp,Display,TEXT("S47: npc preview %s stage %d done, worst planted %.2f cm"),*N->Role,N->Last,N->StageWorst);
+    N->StageWorst=0;N->Last=St;
+   }
+   // The camera follows: from ahead, from the side (feet in view), or from above.
+   const FVector Side(Ahead.Z,0,-Ahead.X);
+   FVector Eye,To=At+FVector(0,.9,0);
+   if(N->Cam==TEXT("front"))Eye=At+Ahead*3.4+FVector(0,1.1,0);
+   else if(N->Cam==TEXT("top")){Eye=At-Ahead*.5+FVector(0,4.2,0);To=At+FVector(0,.2,0);}
+   else {Eye=At-Side*3.+FVector(0,.9,0);To=At+FVector(0,.85,0);}
+   const FVector D=To-Eye;
+   Main->Player->Place(Eye.X,Eye.Z,FMath::Atan2(-D.X,-D.Z));Main->Player->Eye=Eye.Y-Main->Player->FloorY;Main->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   if(St==2&&!N->bDone&&T>=2+8/1.25+3)
+   {
+    N->bDone=true;
+    UE_LOG(LogTemp,Display,TEXT("S47: npc preview COMPLETE %s: %d steps, worst planted error %.3f cm, skin rendered %d"),*N->Role,N->Steps,N->Worst,N->Rig->Rendered());
+   }
+   return true;
+  }));
+  return;
+ }
  Fixture->Style=Style==TEXT("pale")?4:Style==TEXT("roswell")?3:Style==TEXT("crab")?2:Style==TEXT("tall")?1:0;
  if(Fixture->Style==3)Fixture->Body.CreatureAsset=S47KindBody::Roswell;
  if(Fixture->Style==2)Fixture->Body.CreatureAsset=S47KindBody::Crab;

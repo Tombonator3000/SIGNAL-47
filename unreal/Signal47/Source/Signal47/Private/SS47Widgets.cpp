@@ -38,6 +38,8 @@
 #include "S47UI.h"
 #include "Widgets/Layout/SScaleBox.h"
 #include "S47Rx.h"
+#include "S47DirectorCam.h"
+#include "S47DevWaves.h"
 #include "S47Story.h"
 #include "S47Theme.h"
 #include "Styling/CoreStyle.h"
@@ -247,7 +249,9 @@ namespace
 				const bool bFirst = I == 0;
 				const FSlateFontInfo Font = Hand(bFirst && bHead ? 31.f : 28.f);
 				const float Baseline = bFirst ? 31.f : 57.f + Pitch * (I - 1);
-				HudTextAt(Out, Layer + 3, G, Written[I], Font, FVector2f(P(bFirst ? 50.f : 52.f), P(Baseline)), 0.f, C(0x233a7a, (bFirst ? 248.f : 240.f) / 255.f * Strength));
+				// TASKS-TEN-20261113 (seen running): resting dim, the paper fades more than the hand on it, so that the words stay readable
+				// on the dark desk and on daylit ground
+				HudTextAt(Out, Layer + 3, G, Written[I], Font, FVector2f(P(bFirst ? 50.f : 52.f), P(Baseline)), 0.f, C(0x233a7a, (bFirst ? 248.f : 240.f) / 255.f * FMath::Min(1.f, Strength * 1.55f)));
 			}
 			// the tape over the top edge
 			const FLinearColor Tape = C(0xcdc096, 165.f / 255.f * Strength);
@@ -308,6 +312,14 @@ namespace
 
 bool SS47Hud::Playing() const { const US47Main* M = Main(); return !M || M->Mode == US47Main::EMode::Play; }
 bool SS47Hud::ModalOpen() const { const US47Main* M = Main(); return M && M->UI && M->UI->Modal(); }
+// TASKS-TEN-20261113 (change 1): a scene that holds the game (the director's shot, the wave shooter, a recovery) hides the resting card too
+bool SS47Hud::NoteHeld() const
+{
+	const US47Main* M = Main();
+	if (!M) return false;
+	if (S47DirectorCam::On(M) || FS47DevWaves::On(M)) return true;
+	return M->IsFreeform() && M->Freeform && M->Freeform->Active() && M->Freeform->Held() && !M->Freeform->TerminalOnGlass();
+}
 
 void SS47Hud::Construct(const FArguments& InArgs)
 {
@@ -323,8 +335,12 @@ void SS47Hud::Construct(const FArguments& InArgs)
 	auto PromptOn = [this] { return ShowPromptAttr.Get(ShowAimAttr.Get(true)); };
 	// HUD-D-20261109: the task on a cassette card, written by hand, when it changes: six seconds, then out over one (no line of
 	// digital text). The place (or the task's own head) on its first line, the task under it.
+	// TASKS-TEN-20261113 (change 1): after its seven seconds the card stays, small and dim in its corner (S47HudGauges::NoteScale), so
+	// that it keeps the HUD's own hide rules: the viewfinder, a panel, a held scene (the director's camera, the wave shooter, being taken).
 	const TSharedRef<SWidget> Note = SNew(SBox)
-		.Visibility_Lambda([this] { return NoteT < 0.f || ObjectiveText.IsEmpty() || Vf.bOn || !Playing() || ModalOpen() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
+		.Visibility_Lambda([this] { return NoteT < 0.f || ObjectiveText.IsEmpty() || Vf.bOn || !Playing() || ModalOpen() || NoteHeld() ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
+		.RenderTransformPivot(FVector2D(0, 0))
+		.RenderTransform_Lambda([this] { return TOptional<FSlateRenderTransform>(FSlateRenderTransform(float(S47HudGauges::NoteScale(NoteT)))); })
 		[
 			Turned(SNew(SS47HudNote)
 				.Head_Lambda([this] { return ObjectiveHead.IsEmpty() ? Place : ObjectiveHead; })
@@ -766,7 +782,8 @@ void SS47Hud::Tick(const FGeometry& G, const double InCurrentTime, const float D
 	if (NoteT >= 0.f && Playing() && !ModalOpen() && !Vf.bOn)
 	{
 		NoteT += Dt;
-		if (NoteT >= float(S47HudGauges::NoteHold + S47HudGauges::NoteFade)) NoteT = -1.f;
+		// TASKS-TEN-20261113 (change 1): it rests there, dim, until the task changes (no motion while it rests)
+		if (NoteT >= float(S47HudGauges::NoteHold + S47HudGauges::NoteFade)) NoteT = float(S47HudGauges::NoteHold + S47HudGauges::NoteFade);
 	}
 	// the slip's time runs only while it can be seen
 	if (SlipT >= 0.f && Playing() && !ModalOpen())

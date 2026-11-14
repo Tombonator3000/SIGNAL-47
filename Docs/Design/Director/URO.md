@@ -1,6 +1,6 @@
 # Uro: små ting som bygger psykologisk skrekk
 
-**Status:** Forslag fra Tom og Claude 8. november 2026, til implementering i M1. **Gjelder:** Freeform. **Sist kontrollert:** 8. november 2026.
+**Status:** Forslag fra Tom og Claude 8. november 2026, til implementering i M1. **Gjelder:** Freeform. **Sist kontrollert:** 14. november 2026 (mot kilden, se «Status i koden»).
 
 Toms ord: «uro-liste over ting som kan skje bare for å bygge litt psykologisk skrekk, som bilalarm som går av, banking på døren men ingen der». Det er ingen fare og ingen belønning. Målet er at spilleren aldri er helt sikker på om noe skjedde. Det finnes fra før: telefonen som ringer én gang, skritt og tikk i taket, printeren, klikk i racket, radiosus, servicedøra, antennene som knirker, bank i gjerdet og stillheten. Listen under kommer i tillegg.
 
@@ -41,3 +41,9 @@ Toms ord: «uro-liste over ting som kan skje bare for å bygge litt psykologisk 
 - Noen få kan senere bli forvarsel om en ekte hendelse samme natt, men aldri alle, så spilleren ikke lærer mønsteret.
 - Stedet trekkes fra stedskatalogen når hendelsen krever et sted.
 - Nr. 20 (lapp med egen håndskrift) og nr. 3 (navnet) er sterke. De bør være sjeldne, høyst én gang hver per spill.
+
+## Status i koden (kontrollert mot kilden 14. november 2026)
+Alle 25 finnes i `FireUnease` i `S47Happenings.cpp` (kodet før, ikke spilt av Tom), med F10-linje hver. Reglene håndheves i koden:
+- Aldri to like samme natt, ikke rett etter en fare (20 min) eller rett før en trukket fare (30 min), 3 og 20 én gang per spill og ikke før uke tre: kodet før.
+- Høyst tre per natt, to på en rolig natt, aldri samme uroting to netter på rad, og minst 45 minutter mellom to: kodet 14. nov, ikke bygget (`UneaseWantFor`, `UneaseMayCome`, gjelder også reserven ved midnatt og gulvet; før kunne uke fire gi fire).
+- Forvarsel om en ekte hendelse samme natt: ikke kodet for uro; nattens egne forvarsler (`PlanCues`) gjør den jobben.

@@ -20,6 +20,9 @@ namespace S47Thoughts
  bool May(double NowReal,double LastReal);
  // As the night's events ask: a thought for Key, if the pool, the cooldown and the screen allow. True when one was sent.
  bool Think(US47Main* M,const FString& Key);
+ // EVIDENCE-DOSSIER-20261113 slice 3: one line of the player's own (a file's habit at HABITS, S47Dossier::HabitHourThought and
+ // HabitLampThought), under the same cooldown and screen rules as Think. Tag: for the log. True when it was sent.
+ bool ThinkLine(US47Main* M,const FString& Line,const TCHAR* Tag);
  // UI-20261112 (Tom: «flere anledninger»): more occasions, each its own pool, all under the same cooldown.
  //  "find": a field record the player has just found out on the land (FS47FreeformSession::RecordEvidence);
  //  "two": once a night as the clock passes 02:00; "anomaly": the chart off the printer shows a discrepancy;

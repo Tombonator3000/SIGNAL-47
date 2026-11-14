@@ -108,6 +108,19 @@ namespace S47EventPlacesLocal
  // Nearer than this is somewhere the player is or is going; past it, somewhere they hear of.
  constexpr double FarFrom=900;
  const double Nan=std::numeric_limits<double>::quiet_NaN();
+ // M4 (CHURCH, 13 November): the San Isidro cemetery behind the church. A landmark on S47TownSites' table, so not one of its boxes'
+ // entries, but open ground in town all the same: lights can stand over the graves and a trace can be left among them, as anywhere
+ // (Tom: the farm is only the first place). Its middle, its gate and its size are the site's own, so they move with its row.
+ const TCHAR* const CemeteryId=TEXT("cemetery");
+ bool Cemetery(FS47EventPlace& Out)
+ {
+  const S47TownSites::FSite* C=S47TownSites::Find(CemeteryId);
+  if(!C)return false;
+  const FVector2D At=S47TownSites::ToRoad(*C,C->PlaceX,C->PlaceZ),In=S47TownSites::ToRoad(*C,C->EntryX,C->EntryZ);
+  Out=FS47EventPlace();Out.Id=C->Id;Out.Title=C->Title;Out.Region=TEXT("caliche");
+  Out.X=At.X;Out.Z=At.Y;Out.EntryX=In.X;Out.EntryZ=In.Y;Out.Traits=C->Traits;Out.Radius=C->Radius;Out.Up=C->Up;
+  return true;
+ }
 }
 
 void FS47EventPlaces::Begin(const S47J::FObj& Saved)
@@ -143,6 +156,7 @@ const TArray<FS47EventPlace>& FS47EventPlaces::All() const
   for(const FSeed& S:Seeds())List.Add(Make(S));
   // M4's temporary boxes (S47TownSites): the trailer park, the school, the Grange hall, from the one table there.
   List.Append(S47TownSites::EventPlaces());
+  {FS47EventPlace C;if(Cemetery(C))List.Add(C);}
   // The motel's lot and STATION 01's gate are their own terms' numbers: on the land's here.
   if(FS47EventPlace* Motel=List.FindByPredicate([](const FS47EventPlace& P){return P.Id==TEXT("motel");}))
   {
@@ -421,6 +435,7 @@ TArray<FString> FS47EventPlaces::Ids()
 {
  TArray<FString> Out;for(const auto& S:S47EventPlacesLocal::Seeds())Out.Add(S.Id);
  for(const auto& S:S47TownSites::EventPlaces())Out.Add(S.Id); // (N1110: a landmark, the Breather, is not a place for events)
+ {FS47EventPlace C;if(S47EventPlacesLocal::Cemetery(C))Out.Add(C.Id);} // (M4: the cemetery is)
  return Out;
 }
 
@@ -465,5 +480,16 @@ bool FS47EventPlaces::SelfTest(TArray<FString>& Lines)
  FS47PlaceNeed Doors;Doors.Kind=TEXT("selftest");Doors.All=ES47PlaceTrait::Door;
  int32 DoorPlaces=0;for(const auto& P:L)DoorPlaces+=P.Has(ES47PlaceTrait::Door)&&!P.DoorKey.IsEmpty()?1:0;
  Check(DoorPlaces>=10&&C.WithDoor(TEXT("house"))&&C.WithDoor(TEXT("house"))->Id==TEXT("oldhouse"),FString::Printf(TEXT("event places: %d places with a door something can try, the old house among them"),DoorPlaces));
+ // M4: the cemetery behind the church is a place for events: open ground in town, no door or window, its gate on the church's side
+ // (west of its middle, between the church's rear wall and the graves), on the F10 list, and in the road's area with the town.
+ {
+  const FS47EventPlace* G=C.Find(TEXT("cemetery"));const FS47EventPlace* Ch=C.Find(TEXT("church"));
+  Check(G&&Ch&&G->Has(ES47PlaceTrait::Town|ES47PlaceTrait::Open)&&!G->HasAny(ES47PlaceTrait::Door|ES47PlaceTrait::Window|ES47PlaceTrait::Indoors|ES47PlaceTrait::People)
+   &&G->EntryX<G->X&&G->EntryX>35.1&&FMath::Abs(G->EntryZ-G->Z)<1.5&&G->X>Ch->X&&FVector2D::Distance(FVector2D(G->X,G->Z),FVector2D(Ch->X,Ch->Z))<60
+   &&AreaOf(*G)==TEXT("road")&&Ids().Contains(TEXT("cemetery"))&&G->Region==TEXT("caliche"),
+   G?FString::Printf(TEXT("event places: the cemetery behind the church at road %.1f %.1f, its gate at %.1f %.1f, open ground in town on the list"),G->X,G->Z,G->EntryX,G->EntryZ):FString(TEXT("event places: the cemetery is missing from the list")));
+  FS47PlaceNeed InTown;InTown.Kind=TEXT("selftest");InTown.All=ES47PlaceTrait::Town|ES47PlaceTrait::Open;InTown.Only={TEXT("cemetery")};
+  Check(C.PickFor(InTown,47,3,FVector2D(20,2100),FVector2D::ZeroVector).Id==TEXT("cemetery"),TEXT("event places: a need for open ground in town can draw the cemetery"));
+ }
  return bAll;
 }

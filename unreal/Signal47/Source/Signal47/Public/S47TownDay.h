@@ -79,13 +79,31 @@ namespace S47TownDay
  // In the running game: every planned standing spot and every path between them against the walk's colliders (diner/road), and
  // inside the rooms against their furniture. Lines: a summary first. Returns how many are in something.
  // NPC-DAY-FOLLOW-20261109 (N1110): the day's hours for the people whose bodies are not drawn here, as a table: where each is by the
- // hour, and one small thing a player who keeps the same hours can notice. Dale (never met: his truck, his porch light, when the
- // phone rings) and Eloy Baca (under the east rim) have no plan above; the others' rows follow their plan (self-tested). Day times
- // run 0 to 24, a row does not cross midnight.
+ // hour, and one small thing a player who keeps the same hours can notice. Dale (never seen: a voice on the phone and the walkie,
+ // DECISIONS) and Eloy Baca (under the east rim, in town at noon) have no plan above; the others' rows follow their plan
+ // (self-tested). Day times run 0 to 24, a row does not cross midnight.
  struct FHabit { const TCHAR* Who; double From, To; const TCHAR* Place; const TCHAR* Seen; };
  SIGNAL47_API const TArray<FHabit>& Routine();
  // What Who is doing at Hour that can be noticed ("" if nothing in particular), and the place from the table.
  SIGNAL47_API FString HabitAt(const FString& Who, double Hour, FString* OutPlace = nullptr);
+ // NPC-DAY-FOLLOW-20261109 (14 November, Freeform only, never on a Story night). The bodies drawn by others are there only while
+ // their own plan has them there: the Mesa's waitress (the MetaHuman, S47Waitress: "diner.night"), Earl in the 1420 studio
+ // (FS47TripoNpcs: "radio.air", midnight to four as the studio's card says) and the woman on the laundromat bench (FS47Town's
+ // woman: "bench", not in a shower or blowing sand). A change is held while the player could see it (the walkers' own rule, Seen),
+ // so nobody pops in or out in view. Present: false when the day is not running here (Story, -S47TownDayOff): keep your own rule.
+ SIGNAL47_API bool Present(const FString& Who, bool& bOut);
+ // Pure: whether a plan's spot puts Who's own body where it is drawn.
+ SIGNAL47_API bool BodyAt(const FString& Who, const FString& SpotId);
+ // Pure: the swap rule for a body that cannot walk off: while it could be seen it stays as it was.
+ inline bool HeldShow(bool bWas, bool bWant, bool bSeen) { return bSeen ? bWas : bWant; }
+ // Pure: whether the bench is no place to sit at Hour of calendar day Day (TownDay's day, 0 the first): rain or blowing sand.
+ SIGNAL47_API bool BenchWeather(int32 Seed, int32 Day, double Hour);
+ // Who is behind the Mesa's counter now: "waitress" (her shift), "cook" (by day, through the hatch), "" nobody (before the kitchen
+ // opens, the cook's break): then the coffee machine is cold (FS47Fatigue::AtDiner, FS47Townsfolk::OpenDiner). Not running: "waitress".
+ SIGNAL47_API FString Counter();
+ // Eloy Baca has no body and no plan above: where Routine has him at Hour, "baca" (his porch, his door) or "feed" (noon, in town at
+ // the Feed & Seed counter: S47TownUse, S47Visitors::OpenBaca).
+ SIGNAL47_API FString EloyAt(double Hour);
  SIGNAL47_API int32 MeasureSpots(AS47Web* W, TArray<FString>& Lines);
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }

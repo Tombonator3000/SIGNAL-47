@@ -1,4 +1,6 @@
 #include "S47TownSites.h"
+#include "S47Convent.h"
+#include "S47PropCatalogue.h"
 #include "S47GroundEdits.h"
 #include "S47FreeformTerrain.h"
 #include "S47Breather.h"
@@ -7,6 +9,7 @@
 #include "S47Freeform.h"
 #include "S47Visitors.h"
 #include "Components/PointLightComponent.h"
+#include "Components/DecalComponent.h"
 #include "S47Legs.h"
 #include "S47Main.h"
 #include "S47OpenLand.h"
@@ -48,6 +51,9 @@ namespace S47TownSitesLocal
 		// N1110 (Caliche history): the Breather's tour entrance, a landmark and not a box: west of the town's fence (x -42), behind the
 		// laundromat and the Plaza, facing the street. Its mouth looks east, its gate is 40 m from Main Street's west walk.
 		{ TEXT("breather"), -62, 2146, 0 },
+		// CHURCH (Tom, 13 November: "lag kirkegården bak også"): San Isidro's graveyard, a landmark and not a box: the plot behind the
+		// church (its rear wall is road x 35.1, z 2090.9 to 2100.1), east of the town's lots, north of the waitress's yard (z 2108.5).
+		{ TEXT("cemetery"), 49, 2095.5, 0 },
 	};
 	// Pale grey, as a model maker's grey box is, with the parts a shade apart so the shapes read.
 	constexpr uint32 Grey = 0xb4b0a6, GreyDark = 0x8e8a82, GreyLight = 0xc9c5bb, Board = 0x2b2a27, Steel = 0x8b8e8a, CarA = 0x6f4a3c, CarB = 0x4d5866;
@@ -357,6 +363,71 @@ namespace S47TownSitesLocal
 			Add(6.0, 7.87, .9, .06, 2.0, 0x5a4632, false, 0, Hut);
 			S.Words.Add({ TEXT("TICKETS"), 8.07, 9.2, 2.1, 90, .2 });
 		}
+		else if (S.Id == TEXT("cemetery"))
+		{
+			// A small town's graveyard as New Mexico has them: a plot of bare ground 22 m square behind the church, a low fence of iron
+			// pipe rail round it, a gravel path from the church's rear corner in at the west gate and straight through to the back.
+			// The stones and the bench are bought pieces (Config/Props/church_cosmos.json; a grey box each without them). Three ways
+			// through the fence (AGENTS.md, the rule of two routes): the gate to the church, a gap in the east side to the open
+			// land, and a panel gone in the north side where a footpath comes in. The land rises 0.6 m from north to south, as
+			// it lies: nothing is levelled, each piece stands on the ground under it.
+			S.Sign = TEXT("SAN ISIDRO CEMETERY"); S.Title = TEXT("the cemetery behind the church"); S.MapName = TEXT("San Isidro Cemetery");
+			S.Traits = ES47PlaceTrait::Town | ES47PlaceTrait::Open;
+			S.Radius = 16; S.Up = 20; S.NameSide = 1; S.bLandmark = true;
+			S.PlaceX = 0; S.PlaceZ = 0; S.EntryX = -12.4; S.EntryZ = 0;
+			if (S47Convent::Present()) S.EntryX = -11.9;   // CHURCH-COLONIAL-20261113: clear of the sacristy's back wall (road x 36.2)
+			constexpr double X0 = -11, X1 = 11, Z0 = -11, Z1 = 10, GateHalf = 1.1, NorthA = 3.0, NorthB = 4.8;
+			constexpr uint32 Iron = 0x1d1d1b, Gravel = 0xa89e88, Dirt = 0x9a8a70;
+			S.Yards.Add({ X0, X1, Z0, Z1 });
+			const auto Add = [&S](double X, double Z, double W, double D, double H, uint32 Colour, bool bSolid, double Lift)
+			{
+				FPart P = Box(X, Z, W, D, H, Colour, bSolid); P.Lift = Lift; S.Parts.Add(P);
+			};
+			// A run of fence between two points of one side: a post every bay (2.2 m at most), three rails; the middle rail holds the walker.
+			const auto Run = [&Add](double Ax, double Az, double Bx, double Bz)
+			{
+				const bool bAlongX = FMath::Abs(Bx - Ax) > FMath::Abs(Bz - Az);
+				const double Len = bAlongX ? Bx - Ax : Bz - Az;
+				const int32 Bays = FMath::Max(1, FMath::CeilToInt(Len / 2.2));
+				for (int32 I = 0; I <= Bays; ++I)
+				{
+					const double T = double(I) / Bays, Px = Ax + (Bx - Ax) * T, Pz = Az + (Bz - Az) * T;
+					Add(Px, Pz, .06, .06, 1.08, Iron, false, 0);
+					if (I == Bays) break;
+					const double Mx = Px + (Bx - Ax) * .5 / Bays, Mz = Pz + (Bz - Az) * .5 / Bays, L = Len / Bays;
+					for (const double Up : { .22, .6, .98 }) Add(Mx, Mz, bAlongX ? L : .04, bAlongX ? .04 : L, .04, Iron, Up == .6, Up);
+				}
+			};
+			Run(X0, Z0, X0, -GateHalf); Run(X0, GateHalf, X0, Z1);       // west, the gate between
+			Run(X1, Z0, X1, -GateHalf); Run(X1, GateHalf, X1, Z1);       // east, the gap to the open land
+			Run(X0, Z0, NorthA, Z0); Run(NorthB, Z0, X1, Z0);            // north, a panel gone
+			Run(X0, Z1, X1, Z1);                                         // south, whole (the neighbour's yard)
+			// The gate: two taller posts with a bar over them, both leaves standing open into the plot.
+			for (const double Gz : { -GateHalf, GateHalf })
+			{
+				Add(X0, Gz, .1, .1, 2.35, Iron, false, 0);
+				const double Lz = Gz + (Gz < 0 ? .04 : -.04);
+				for (const double Up : { .2, .98 }) Add(X0 + .55, Lz, 1.0, .03, .03, Iron, false, Up);
+				for (const double Lx : { X0 + .3, X0 + .55, X0 + .8, X0 + 1.05 }) Add(Lx, Lz, .03, .03, .81, Iron, false, .2);
+			}
+			Add(X0, 0, .05, 2 * GateHalf, .05, Iron, false, 2.3);
+			// The paths: gravel from the church's south-east corner along its rear wall, in at the gate and through to the east gap;
+			// a trodden footpath from the gap in the north side. Short pieces, so each lies on the land.
+			const int32 Path0 = S.Parts.Num();
+			// (the gravel's picture thins out at its edges, so the pieces lie half over each other and the path is whole)
+			// CHURCH-COLONIAL-20261113: the mission church (S47Convent) has a back door on the axis, 2 m from the gate: the path starts
+			// at that door's wall and the run round the old church's corner is not laid. Without the pack, as it was.
+			const bool bConvent = S47Convent::Present();
+			const double PathWest = bConvent ? S47Convent::BackDoorRoad().X - S.X : X0 - 2.85;   // the old church: 0.15 m off its rear wall
+			for (double Px = PathWest + 1.6; Px < X1 - .4; Px += 1.5) Add(Px, 0, 3.2, 2.0, .03, Gravel, false, 0);   // to just out of the east gap
+			if (!bConvent) for (double Pz = 1.2; Pz < 5.6; Pz += 1.4) Add(X0 - 1.5, Pz, 1.8, 3.0, .03, Gravel, false, 0);
+			for (double Pz = Z0 - .6; Pz < -1.5; Pz += 1.3) Add((NorthA + NorthB) * .5, Pz, 1.3, 2.8, .02, Dirt, false, 0);
+			for (int32 I = Path0; I < S.Parts.Num(); ++I) S.Parts[I].bGround = true;
+			// The name, on a board on the fence north of the gate, read from the church's side.
+			Add(X0 - .04, -2.2, .03, 1.5, .5, Board, false, .7);
+			S.Words.Add({ TEXT("SAN ISIDRO\nCEMETERY"), X0 - .07, -2.2, .95, 270, .12, true });
+			S.DressFile = TEXT("church_cosmos.json");
+		}
 		else if (S.Id == TEXT("grange"))
 		{
 			// A Grange hall: one big room for dances, meetings and bingo, gable end to the highway, a gravel lot in front.
@@ -454,8 +525,12 @@ bool S47TownSites::ReadDress(const FString& File, TArray<FSite::FDress>& Out, FS
 		if (!P.IsValid() || !P->TryGetArrayField(TEXT("at"), At) || At->Num() != 2) return Fail(TEXT("a piece has no at [x, z]"));
 		FSite::FDress D;
 		P->TryGetStringField(TEXT("id"), D.Id); P->TryGetStringField(TEXT("asset"), D.Asset); P->TryGetStringField(TEXT("replaces"), D.Replaces);
+		// PROPS-REUSE-20261113: or a shared catalogue model by its id (Config/Props/catalogue.json)
+		if (FString Model; D.Asset.IsEmpty() && P->TryGetStringField(TEXT("model"), Model)) D.Asset = S47PropCatalogue::Resolve(Model);
 		D.X = (*At)[0]->AsNumber(); D.Z = (*At)[1]->AsNumber();
 		P->TryGetNumberField(TEXT("yaw"), D.Yaw); P->TryGetNumberField(TEXT("scale"), D.Scale); P->TryGetBoolField(TEXT("collide"), D.bCollide);
+		const TArray<TSharedPtr<FJsonValue>>* BoxOf = nullptr;
+		if (P->TryGetArrayField(TEXT("box"), BoxOf) && BoxOf->Num() == 3) { D.BoxW = (*BoxOf)[0]->AsNumber(); D.BoxD = (*BoxOf)[1]->AsNumber(); D.BoxH = (*BoxOf)[2]->AsNumber(); }
 		Out.Add(MoveTemp(D));
 	}
 	return true;
@@ -515,7 +590,7 @@ bool S47TownSites::SelfTest(TArray<FString>& Lines)
 	using namespace S47TownSitesLocal;
 	bool bAll = true;
 	const auto Check = [&](bool bOk, const FString& What) { bAll &= bOk; Lines.Add(FString(bOk ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("temp sites: ") + What); };
-	Check(Sites().Num() == 5 && Find(TEXT("trailers")) && Find(TEXT("school")) && Find(TEXT("grange")) && Find(TEXT("baca")) && Find(TEXT("breather")), TEXT("the trailer park, the school, the Grange hall, the Baca place and the Breather are in the table"));
+	Check(Sites().Num() == 6 && Find(TEXT("trailers")) && Find(TEXT("school")) && Find(TEXT("grange")) && Find(TEXT("baca")) && Find(TEXT("breather")) && Find(TEXT("cemetery")), TEXT("the trailer park, the school, the Grange hall, the Baca place, the Breather and the cemetery are in the table"));
 	bool bNamed = true, bTitled = true, bInRim = true, bOffRoad = true, bWords = true;
 	int32 Trailers = 0, Cars = 0;
 	for (const FSite& S : Sites())
@@ -612,13 +687,25 @@ bool S47TownSites::SelfTest(TArray<FString>& Lines)
 		for (const FPart& P : S.Parts) if (!P.Group.IsEmpty()) Groups.Add(P.Group);
 		for (const FSite::FDress& D : Dress)
 		{
-			bGood &= !D.Id.IsEmpty() && !Ids.Contains(D.Id) && D.Asset.StartsWith(TEXT("/Game/Licensed/CosmosPlayground/")) && D.Scale > .5 && D.Scale < 1.5 && (D.Replaces.IsEmpty() || Groups.Contains(D.Replaces));
+			bGood &= !D.Id.IsEmpty() && !Ids.Contains(D.Id) && D.Asset.StartsWith(TEXT("/Game/Licensed/Cosmos")) && D.Scale > .5 && D.Scale < 1.5 && (D.Replaces.IsEmpty() || Groups.Contains(D.Replaces));
 			// on the yard or the pad, outside the building
 			bGood &= S.Yards.ContainsByPredicate([&D](const FSite::FWall& Y) { return D.X > Y.MinX && D.X < Y.MaxX && D.Z > Y.MinZ && D.Z < Y.MaxZ; });
 			Ids.Add(D.Id);
 			Here += FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(D.Asset)) ? 1 : 0;
 		}
-		Check(bGood, FString::Printf(TEXT("%s: %s reads%s: %d pieces with an id, a licensed path and a sane scale, each on the playground's ground, each standing in for a known group of boxes or none; %d of the assets are here"), *S.Id, *S.DressFile, bRead ? TEXT("") : *(TEXT(" NOT (") + Error + TEXT(")")), Dress.Num(), Here));
+		Check(bGood, FString::Printf(TEXT("%s: %s reads%s: %d pieces with an id, a licensed path and a sane scale, each on the site's own yard, each standing in for a known group of boxes or none; %d of the assets are here"), *S.Id, *S.DressFile, bRead ? TEXT("") : *(TEXT(" NOT (") + Error + TEXT(")")), Dress.Num(), Here));
+	}
+	// CHURCH: the cemetery is not a trap: three ways through its fence a walker fits (0.3 m each side), and whole runs between them.
+	if (const FSite* C = Find(TEXT("cemetery")))
+	{
+		TArray<FBox2D> Fence;
+		for (const FPart& P : C->Parts) if (P.bSolid) Fence.Append(Footprint(*C, P));
+		const auto Open = [&](double X, double Z) { const FVector2D At = ToRoad(*C, X, Z); return !Fence.ContainsByPredicate([&At](const FBox2D& B) { return B.ExpandBy(.3).IsInside(At); }); };
+		const int32 Ways = (Open(-11, 0) ? 1 : 0) + (Open(11, 0) ? 1 : 0) + (Open(3.9, -11) ? 1 : 0);
+		const bool bHeld = !Open(-11, -6) && !Open(11, 6) && !Open(-4, -11) && !Open(0, 10) && !Open(-11, 5);
+		const FBox2D Yard = C->Yards.Num() ? ModelRect(*C, C->Yards[0]) : FBox2D(ForceInit);
+		Check(C->bLandmark && Ways == 3 && bHeld && Yard.Min.X > 35.5 && Yard.Max.Y < 2108,
+			FString::Printf(TEXT("the cemetery: behind the church (road x %.1f to %.1f, z %.1f to %.1f), %d ways through its fence (the gate, the east gap, the north gap), the rest of it whole"), Yard.Min.X, Yard.Max.X, Yard.Min.Y, Yard.Max.Y, Ways));
 	}
 	bAll &= S47Breather::SelfTest(Lines);
 	return bAll;
@@ -658,11 +745,21 @@ bool FS47TownSites::Build()
 		D->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(Hex)); D->SetScalarParameterValue(TEXT("Roughness"), .9f); D->SetScalarParameterValue(TEXT("NativeLighting"), 1);
 		return Mats.Add(Hex, D);
 	};
+	// CHURCH: the lot gravel S47Lived lays in front of Caliche's buildings, for a path on the land
+	const TCHAR* const GravelPath = TEXT("/Game/Lived/Town/Materials/M_Lived_LotGravel");
+	UMaterialInterface* GravelDecal = FPackageName::DoesPackageExist(GravelPath) ? LoadObject<UMaterialInterface>(nullptr, *(FString(GravelPath) + TEXT(".M_Lived_LotGravel"))) : nullptr;
 	int32 Models = 0;
 	S47TownSitesLocal::ModelsUpSet.Reset();
 	DressedGroups.Reset();
 	for (const FSite& S : Sites())
 	{
+		// CHURCH: a landmark's own yard is kept bare of plants as the land lies (no pad)
+		if (S.bLandmark && S.Yards.Num() && S47TownSitesLocal::Square(S.Yaw))
+		{
+			TArray<S47GroundEdits::FRect> Bare;
+			for (const FSite::FWall& Y : S.Yards) { const FBox2D B = ModelRect(S, Y); S47GroundEdits::FRect O; O.X = B.GetCenter().X; O.Z = B.GetCenter().Y; O.HalfX = B.GetExtent().X + .5; O.HalfZ = B.GetExtent().Y + .5; Bare.Add(O); }
+			S47GroundEdits::SetBare(S.Id, Bare);
+		}
 		// SCHOOL-PLAYGROUND: the bought pieces that are here, each on the land where the file says; the boxes they stand in for go unseen.
 		if (!S.DressFile.IsEmpty())
 		{
@@ -675,14 +772,18 @@ bool FS47TownSites::Build()
 			{
 				const FSite::FDress& D = Dress[I];
 				UStaticMesh* Mesh = FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(D.Asset)) ? LoadObject<UStaticMesh>(nullptr, *D.Asset) : nullptr;
-				if (!Mesh) { Missing.Add(D.Id); continue; }
+				// (CHURCH: a piece with a box stands as that box while its asset is not here)
+				const bool bBox = !Mesh && D.BoxH > 0;
+				if (!Mesh) { Missing.Add(D.Id); if (!bBox) continue; Mesh = Cube; }
 				UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("S47SiteDress_%s_%s"), *S.Id, *D.Id));
 				C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(W->GetRootComponent());
 				C->SetStaticMesh(Mesh); C->SetCastShadow(true);
+				if (bBox) C->SetMaterial(0, Mat(0x8f8d86));
 				C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetCollisionResponseToAllChannels(ECR_Ignore);
 				C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
 				C->RegisterComponent();
 				FBuiltPart B; B.Site = S.Id; B.Dress = I; B.Comp = C; Parts.Add(B);
+				if (bBox) continue;
 				if (!D.Replaces.IsEmpty()) DressedGroups.Add(S.Id + TEXT(":") + D.Replaces);
 				++Up;
 			}
@@ -725,6 +826,14 @@ bool FS47TownSites::Build()
 		{
 			const FPart& P = S.Parts[I];
 			const FString Name = FString::Printf(TEXT("S47TempSite_%s_%d"), *S.Id, I);
+			if (P.bGround && GravelDecal)
+			{
+				UDecalComponent* D = NewObject<UDecalComponent>(W, *Name);
+				D->SetupAttachment(W->GetRootComponent()); D->SetDecalMaterial(GravelDecal); D->SetFadeScreenSize(0.f); D->SortOrder = -1;
+				D->RegisterComponent();
+				FBuiltPart B; B.Site = S.Id; B.Part = I; B.Comp = D; Parts.Add(B);
+				continue;
+			}
 			UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, *Name);
 			C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(W->GetRootComponent());
 			C->SetStaticMesh(P.bRound ? Cyl : Cube); C->SetMaterial(0, Mat(P.Colour)); C->SetCastShadow(true);
@@ -904,15 +1013,24 @@ void FS47TownSites::Seat(const FString& Site, bool bWithFloor)
 			const FSite::FDress& D = (*Dress)[B.Dress];
 			// the bottom centre of its turned and scaled bounds on the land at its place (the packs' pivots are not in the middle)
 			const FRotator Rot(0, S->Yaw + D.Yaw, 0);
-			const FBox Bd = DC->GetStaticMesh()->GetBoundingBox().TransformBy(FTransform(Rot, FVector::ZeroVector, FVector(D.Scale)));
+			// (a stand-in box: the engine's metre cube stretched to the piece's size)
+			const FVector Size = DC->GetStaticMesh()->GetPathName() == S47TownSitesLocal::CubePath ? FVector(D.BoxW, D.BoxD, D.BoxH) : FVector(D.Scale);
+			const FBox Bd = DC->GetStaticMesh()->GetBoundingBox().TransformBy(FTransform(Rot, FVector::ZeroVector, Size));
 			const FVector2D At = ToRoad(*S, D.X, D.Z);
-			DC->SetWorldTransform(FTransform(Rot, S47Three::ToUE(FVector(Road.X + At.X, Ground(At.X, At.Y, bWithFloor), Road.Z + At.Y)) - FVector(Bd.GetCenter().X, Bd.GetCenter().Y, Bd.Min.Z), FVector(D.Scale)));
+			DC->SetWorldTransform(FTransform(Rot, S47Three::ToUE(FVector(Road.X + At.X, Ground(At.X, At.Y, bWithFloor), Road.Z + At.Y)) - FVector(Bd.GetCenter().X, Bd.GetCenter().Y, Bd.Min.Z), Size));
 		}
 		else if (!B.bWords)
 		{
 			const FPart& P = S->Parts[B.Part];
 			const FVector2D At = ToRoad(*S, P.X, P.Z);
 			// Standing parts go into the ground to the lowest corner; a raised one (the tank, the board) hangs over the highest.
+			if (UDecalComponent* D = Cast<UDecalComponent>(C))
+			{
+				// thrown straight down on the land: the decal's y is the land's z, its z the land's x (S47Lived's lots); every other piece turned round
+				D->DecalSize = FVector(80.f, float(P.D * 50), float(P.W * 50));
+				D->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + At.X, (Bottom[B.Part] + Top[B.Part]) * .5, Road.Z + At.Y)), FRotator(-90.f, 0.f, S->Yaw + (B.Part % 2 ? 180.f : 0.f)));
+				continue;
+			}
 			const double Y0 = P.Lift > 0 ? Top[B.Part] + P.Lift : Bottom[B.Part] - .3;
 			const double Y1 = (P.Lift > 0 ? Top[B.Part] + P.Lift : Top[B.Part]) + P.H;
 			C->SetWorldLocationAndRotation(S47Three::ToUE(FVector(Road.X + At.X, (Y0 + Y1) * .5, Road.Z + At.Y)), FRotator(0, S->Yaw, 0));
@@ -1071,7 +1189,10 @@ void FS47TownSites::HidePlants(bool bHide)
 	for (const FBox2D& B : S47GroundEdits::ClearBoxes()) Under.Add(B.ExpandBy(.5)); // CALICHE-GROUND: pads, banks and cuts
 	// (N1110: and the Breather's landing and surround, inside its fence.)
 	for (const S47TownSites::FSite& S : S47TownSites::Sites()) if (S.bLandmark)
+	{
 		for (const S47TownSites::FPart& P : S.Parts) if (!P.bSolid && P.Lift <= 0) for (const FBox2D& B : S47TownSites::Footprint(S, P)) Under.Add(B.ExpandBy(.5));
+		for (const S47TownSites::FSite::FWall& Y : S.Yards) Under.Add(S47TownSites::ModelRect(S, Y).ExpandBy(.5)); // CHURCH: no shrub among the graves
+	}
 	const FVector Road = S47Legs::ORIGINS(TEXT("road"));
 	TArray<UInstancedStaticMeshComponent*> All;
 	M->Web->GetComponents<UInstancedStaticMeshComponent>(All);
@@ -1111,6 +1232,7 @@ void FS47TownSites::ShowAll(bool bShow)
 			C->SetHiddenInGame(!bOn);
 			if (!B.bWords) C->SetCollisionEnabled(bOn ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 		}
+		else if (UDecalComponent* D = Cast<UDecalComponent>(B.Comp.Get())) D->SetVisibility(bShow);
 }
 
 void FS47TownSites::Begin()

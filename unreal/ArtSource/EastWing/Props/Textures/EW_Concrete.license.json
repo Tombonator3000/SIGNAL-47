@@ -1,6 +1,6 @@
 {
   "asset": "EW_Concrete",
-  "license": "Project-owned original procedural artwork; no third-party image assets",
+  "license": "Project-owned artwork: albedo from an image generated for the project by its owner (ChatGPT, 12 Nov 2026), processed by photo_tex.py; no third-party image assets",
   "copyright": "SIGNAL / 47 project",
   "redistribution": "May accompany the project; no external purchased/Tripo content",
   "source": "build_textures.py",
@@ -17,13 +17,13 @@
   "files": {
     "BaseColor": {
       "file": "EW_Concrete_BaseColor.png",
-      "sha256": "e0f90bd08d8ab85b2e983729aeac2f3b37689530e112d86719360267b53f6a4a",
+      "sha256": "6a1409a3dce19b7a8156ab37c1587fb231abec1b5d667b2fc844eb44b4d4c39a",
       "color_space": "sRGB",
       "bit_depth": 8
     },
     "Roughness": {
       "file": "EW_Concrete_Roughness.png",
-      "sha256": "bd8bdbdc377793a70d2e6cb708294e9322e2be583bd5e6c819c3a236b5cb859a",
+      "sha256": "01481c318d242129c7d9311a5ab57577c72489c9cfb6cbb2c4a0798ccfe1d538",
       "color_space": "linear",
       "bit_depth": 8
     },
@@ -35,24 +35,24 @@
     },
     "NormalDX": {
       "file": "EW_Concrete_NormalDX.png",
-      "sha256": "fb34f060a59ea66f0747fb88f219c9f4d28db908cf7491bda1c1db880f9c9d1c",
+      "sha256": "a48fc62ef85e7467a208745c5932de7ce307dcd2d64603c7256c4fa93e8eac66",
       "color_space": "linear",
       "bit_depth": 8
     },
     "NormalGL": {
       "file": "EW_Concrete_NormalGL.png",
-      "sha256": "eee0d7f1164dc367d6478ed42d9121546a0889750caf0037ba7b3d05de5ef938",
+      "sha256": "412a82b8a771975b62633242d4d75cc0de41f9bd5646498d6e882d53056645ef",
       "color_space": "linear",
       "bit_depth": 8
     },
     "Height": {
       "file": "EW_Concrete_Height.png",
-      "sha256": "c83cfec81c1d7777681377508edd47132badf5325a208479d46cd00e2e6fee73",
+      "sha256": "1bb75545da0b154c01b43892b05e9703b560087d699b5cb12605ee949df62ff9",
       "color_space": "linear",
       "bit_depth": 16,
       "decode_metres": {
-        "offset": -0.0005765921087004244,
-        "scale": 0.000847458781208843
+        "offset": -0.0023224439937621355,
+        "scale": 0.004388930043205619
       }
     }
   }

@@ -1,5 +1,7 @@
 #include "S47Main.h"
+#include "S47LandWindmill.h"
 #include "S47DirectorCam.h"
+#include "S47DevWaves.h"
 #include "S47CarPaint.h"
 #include "S47TripoCreature.h"
 #include "S47EyeGlint.h"
@@ -38,6 +40,7 @@
 #include "S47T02Test.h"
 #include "S47GraphicsTest.h"
 #include "S47SkyVisitors.h"
+#include "S47LandPlaceFixes.h"
 #include "S47DaleDocumentsTest.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
@@ -49,6 +52,7 @@
 #include "S47MotelTv.h"
 #include "S47Seen.h"
 #include "S47Web.h"
+#include "S47StoryDrive.h"
 #include "Misc/Parse.h"
 #include "S47TripoNpcs.h"
 #include "S47Lived.h"
@@ -69,6 +73,7 @@
 #include "S47NightLine.h"
 #include "S47TripRadio.h"
 #include "S47Score.h"
+#include "S47Sideband.h"
 #include "S47Three.h"
 #include "Misc/CommandLine.h"
 #include "S47HUD.h"
@@ -103,7 +108,7 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
-bool US47Main::OneAtATime() const { if (HighwayUfo && HighwayUfo->Busy()) return true; if (IsFreeform()) return (Freeform && Freeform->Director && Freeform->Director->Busy()) || FS47StoryDirector::Holds(this) || S47DirectorCam::On(this); /* STORY-ON-FREEFORM-01 (step 4): a Story night's script; false in any other night. DIRECTOR-MODE-01: the director's camera */ return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
+bool US47Main::OneAtATime() const { if (HighwayUfo && HighwayUfo->Busy()) return true; if (IsFreeform()) return (Freeform && Freeform->Director && Freeform->Director->Busy()) || FS47StoryDirector::Holds(this) || S47DirectorCam::On(this) || FS47DevWaves::On(this); /* STORY-ON-FREEFORM-01 (step 4): a Story night's script; false in any other night. DIRECTOR-MODE-01: the director's camera */ return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
 
 void US47Main::RequestAutosave(bool bMilestone)
 {
@@ -122,6 +127,7 @@ void US47Main::Step(double Dt)
 	}
 	const bool bFree = IsFreeform();
 	if (Freeform && bFree) Freeform->Step(Dt);
+	S47LandPlaceFixes::Update(this, Dt); // LAND-PLACES-FIXES-20261114: the shack's and the cairn's walk boxes and truck obstacles, where they stand
 	S47Thoughts::Step(this, Dt); S47LocationCards::Step(this, Dt); // UI-20261112 (Tom): the thoughts that wait and 02:00; the location card of a place just come to
 	if (bFree && StoryDirector && Flow && Flow->StoryNight() && StoryDirector->Active()) StoryDirector->Tick(Dt); // STORY-ON-FREEFORM-01: nothing outside a Story night
 	if (!bFree && Evening) Evening->Step(Dt);
@@ -242,13 +248,24 @@ void US47Main::Step(double Dt)
 			const double Danger = FieldRadio ? FieldRadio->ObservedThreat() : 0;
 			Score->RequestMood(Danger >= 1 ? TEXT("action") : Danger > 0 ? TEXT("tension") : FString(), Danger);
 		}
+		// SIDEBAND-20261113, channels: in Freeform, with "Music reacts" on, an own mix plays as its stems and the tension lets them in and out
+		Score->SetStems(bFree && Sideband && Sideband->Reacts == S47Sideband::EMode::On, Sideband ? Sideband->Tension() : 0.);
 		Score->Update(bPausedByMenu ? 0 : Dt, Score->MusicWant(), Score->MusicHeld());
 		// Critics, 10 Nov: the bought ground under a meeting is the music then (Tom's idea); the score stands back to a third.
 		// D45-20261110: in Freeform a place's own piece (town, dawn, the motel, the drive) goes all but under it, and already as
 		// something is heard coming, until the cue for it has crossed in.
-		Score->SetDuck(Score->MusicDuck() * FS47Score::DreadDuck(bFree && Score->PlacePieceSounding(), FieldRadio ? FieldRadio->DreadNow() : 0.,
-			bFree && FieldRadio ? FieldRadio->Approach() : 0.));
+		// SIDEBAND-20261113: with the colour bus in, the score stands back at the bus's head (the score alone: FLARES' bed and
+		// stingers join after it), and the score's own bus keeps the listening duck, which takes all of it.
+		const bool bPlacePiece = bFree && Score->PlacePieceSounding();
+		const double Dread = FieldRadio ? FieldRadio->DreadNow() : 0., Heard = bFree && FieldRadio ? FieldRadio->Approach() : 0.;
+		if (Sideband && Score->Inserted())
+		{
+			Score->SetDuck(Score->MusicDuck());
+			Sideband->SetStandBack(Sideband->StandBackFor(bPlacePiece, Dread, Heard));
+		}
+		else Score->SetDuck(Score->MusicDuck() * FS47Score::DreadDuck(bPlacePiece, Dread, Heard));
 	}
+	if (Sideband) Sideband->Step(Mode == EMode::Play && !bPausedByMenu && !bOpening ? Dt : 0.);
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
 	if (Night && !bOpening) Night->Step(Dt);
 	if (Player) S47EyeGlint::Step(Player->EyeUE(), Life && Life->Sky.IsValid() ? Life->Sky->Daylight() : 0.);
@@ -305,6 +322,8 @@ void US47Main::Step(double Dt)
 		S47Lived::Update(this, Dt);
 		// FARM-LIGHTS (Tom, 9 November): the barn's swinging bulb, the yard's dusk-to-dawn lamp, the old house's lit room. Freeform only.
 		S47FarmLights::Update(this, Dt);
+		// LAND-PLACES-WINDMILL-20261114: the windmill's model on the Baca lease and at the farm: its seat, its wheel, head, rod and lid.
+		S47LandWindmill::Update(this, Dt);
 		if (Web && Web->IsLoaded()) S47SaroLegacyCleanup::Build(Web.Get());
 		FS47Rx3Detail::Update(this, Dt);
 		FS47SaroPeriodProps::Update(this, Dt);
@@ -312,6 +331,7 @@ void US47Main::Step(double Dt)
 		// Tom's test of d36 at SARO (PT-RAMP, PT-PATHS, PT-STOP, PT-HALL, PT-DALE-LIGHT, PT-SWITCH; PT-RECORDS in its own file).
 		S47SaroFixes::Update(this, Dt);
 		S47RecordsDressing::Update(this, Dt);
+		S47RecordsRoom::Update(this, Dt); // RECORDS-ROOM-LIFT-20261113: after the dressing it re-houses
 		S47Lookdev::Update(this, Dt);
 	}
 	if (!bFree && SkyVisitors) SkyVisitors->Step(Dt);
@@ -331,6 +351,13 @@ void US47Main::InitRadio()
 	CarRadio = Radio->Receiver({0.38, 1.0}); DinerRadio = Radio->Receiver({0.3, 1.6});
 	TripRadio = MakeShared<FS47TripRadio>(*Radio, TownSeen);
 	Score = MakeShared<FS47Score>(this, Audio->Ctx.ToSharedRef(), Audio->Music);
+	// SIDEBAND-20261113: between the score's decks and its bus; nothing else in the game passes it (-S47NoSideband: left out)
+	if (!FParse::Param(FCommandLine::Get(), TEXT("S47NoSideband")))
+	{
+		Sideband = MakeShared<FS47Sideband>(this, Audio->Ctx.ToSharedRef());
+		Score->Insert(Sideband->Bus->Head, Sideband->Bus->Out);
+		if (Flow) Flow->ApplySideband();
+	}
 	if (World) World->OnRadio = [this] { TurnRadio(); };
 	FParse::Value(FCommandLine::Get(), TEXT("S47Radio="), RadioTest);
 	if (!S47Radio::DIAL.Contains(RadioTest)) RadioTest.Empty();
@@ -353,6 +380,12 @@ void US47Main::InitRadio()
 void US47Main::TurnRadio()
 {
 	if (Evening && Evening->Commute()) { Evening->Use(TEXT("evening:radio")); return; }
+	// STORY-DRIVE-OWN-CAR-20261113: on a Story night's drive the wagon's radio is the local evening host's, on or off (Story nights only).
+	if (FS47StoryDrive* Wagon = IsFreeform() ? FS47StoryDrive::Of(this) : nullptr; Wagon && Wagon->OwnsRadio())
+	{
+		if (Mode == EMode::Play && !ModalOpen() && World && World->bDriving) Wagon->ToggleRadio();
+		return;
+	}
 	if (Mode != EMode::Play || ModalOpen() || !World || !World->bDriving || (Story && Story->IsCinematic())) return;
 	if (!World->TruckHere()) { if (UI) UI->Toast(TEXT("The radio stays on the Roswell station."), 2.5f); return; }
 	if (!CarRadio) return;
@@ -372,10 +405,14 @@ void US47Main::RadioStep(double Dt)
 	if (!Radio || !World || !Player) return;
 	FS47Truck* Tr = World->TruckHere();
 	if (Tr) { RadioAt = Tr->Group.WorldPosition(); RadioAt.Y += 1.05; }
-	CarRadio->Pos = Tr ? TOptional<FVector>(RadioAt) : TOptional<FVector>();
+	// STORY-DRIVE-OWN-CAR-20261113: while a Story night's wagon owns the dial (its evening host and bed, FS47StoryDrive) the car's receiver
+	// is not in the cab: silent, no captions, its station kept for the truck after the drive. Never so outside a Story night.
+	const FS47StoryDrive* Wagon = IsFreeform() ? FS47StoryDrive::Of(this) : nullptr;
+	const bool bWagonRadio = Wagon && Wagon->OwnsRadio();
+	CarRadio->Pos = Tr && !bWagonRadio ? TOptional<FVector>(RadioAt) : TOptional<FVector>();
 	CarRadio->Power = (World->bDriving ? World->Trouble.RadioLevel() : 1) * (!World->bDriving && Space == TEXT("room") ? 0.3 : 1);
 	CarRadio->Muffle = World->bDriving ? 0 : 1;
-	if (Tr) Tr->SetRadio(S47Radio::DialX(S47Radio::Freq(CarRadio->Station)), CarRadio->bOn || CarRadio->Carrying());
+	if (Tr) Tr->SetRadio(S47Radio::DialX(bWagonRadio ? double(FS47StoryDrive::Dial) : S47Radio::Freq(CarRadio->Station)), bWagonRadio ? Wagon->RadioOn() : (CarRadio->bOn || CarRadio->Carrying()));
 	bCarNear = Tr && (World->bDriving || FVector::Distance(Player->Pos, RadioAt) < 7);
 	const FS47Obj Counter = Web ? Web->Obj(TEXT("world.diner.proxies.counter")) : FS47Obj(); bool bDinerOn = false;
 	if (Counter && (World->Area == TEXT("diner") || World->Area == TEXT("road")))
@@ -390,6 +427,8 @@ void US47Main::RadioStep(double Dt)
 	// A test receiver uses the same graph, positioned by the camera, without starting a trip.
 	if (!RadioTest.IsEmpty()) { CarRadio->Set(true, RadioTest); CarRadio->Pos = S47Three::ToThree(Player->EyeUE()); CarRadio->Power = 1; CarRadio->Muffle = 0; bCarNear = true; }
 	// NIGHT-RADIO-20261109: in Freeform 1420 is Earl's Night Line from eight to four, made for the night (S47NightLine).
+	// STORY-DRIVE-OWN-CAR-20261113: on a Story night 1420 is the old local evening host's programme before the Night Line's eight o'clock.
+	Radio->bStoryEvening = IsFreeform() && Flow && Flow->StoryNight();
 	if (IsFreeform() != bool(Radio->NightLineIn)) Radio->NightLineIn = IsFreeform() ? TFunction<bool(FS47NightLineIn&)>([this](FS47NightLineIn& In) { return S47NightLine::Fill(this, In); }) : TFunction<bool(FS47NightLineIn&)>();
 	Radio->Update(Dt, Story ? Story->Clock() : 0);
 	if (TripRadio) TripRadio->Update({World->TripNow(), Story ? Story->ChapterKey : FString(), Story ? Story->Clock() : 0, World->bDriving && CarRadio->Live() && !(Story && Story->IsCinematic()) ? CarRadio->Station : FString()});

@@ -396,6 +396,48 @@ void FS47DevFreeform::AddHappenings(FS47DevEvents& E)
    Go(Stage,Fire);
   });
  }
+ // ---- NIGHT31-PLACES-20261114 (S47NightPlaces.cpp): the nine at their places beyond the farm ----
+ static const TCHAR* const NP=TEXT("Night events: places");
+ struct FPlaceLine{const TCHAR* Id;const TCHAR* Label;const TCHAR* Note;int32 Stage;const TCHAR* Land;double Off,Hour;double TownZ;const TCHAR* Site;};
+ // Stage: 0 on foot out on the land (Land, Off metres south of it), 1 Caliche's street (road-local z TownZ), 2 the highway, -1 a mark.
+ static const FPlaceLine PlaceLines[]={
+  {TEXT("windmill_knock"),TEXT("The Baca windmill knocks with no wind"),TEXT("22:00, on foot 120 m off it; walk up and it stops"),0,TEXT("windmill"),120,22,0,nullptr},
+  {TEXT("school_swing"),TEXT("A swing creaks at the school"),TEXT("22:30, Caliche's street by the school; walk up or the lamp on it"),1,nullptr,0,22.5,2195,nullptr},
+  {TEXT("mine_knock"),TEXT("Knocking down in the old mine"),TEXT("00:30, on foot 90 m off it; walk up to the shaft"),0,TEXT("mine"),90,.5,0,nullptr},
+  {TEXT("bay_door"),TEXT("The gas station's bay door goes up"),TEXT("23:00, Caliche's street; the bay stays open"),1,nullptr,0,23,2150,nullptr},
+  {TEXT("cemetery_lamp"),TEXT("A lamp among the graves"),TEXT("23:00, Caliche's street; look east past the church"),1,nullptr,0,23,2150,nullptr},
+  {TEXT("shack_lamp"),TEXT("A lamp lit in the line shack"),TEXT("22:00, on foot 400 m off it; look at it, then walk up"),0,TEXT("shack"),400,22,0,nullptr},
+  {TEXT("road_flare"),TEXT("A flare burning on the shoulder ahead"),TEXT("22:00, the highway; stop by it, or drive past"),2,nullptr,0,22,0,nullptr},
+  {TEXT("cairn_stones"),TEXT("Stones laid round the cairn: go to it"),TEXT("on foot beside it; look at it with the lamp"),-1,nullptr,0,0,0,TEXT("cairnring")},
+  {TEXT("trough_birds"),TEXT("Dead birds round the trough: go to it"),TEXT("on foot beside it; look at it with the lamp"),-1,nullptr,0,0,0,TEXT("deadbirds")},
+ };
+ for(const FPlaceLine& Line:PlaceLines)
+ {
+  const FString Id=Line.Id,Land=Line.Land?Line.Land:TEXT(""),Site=Line.Site?Line.Site:TEXT("");
+  const int32 St=Line.Stage;const double Off=Line.Off,Hour=Line.Hour,TownZ=Line.TownZ;
+  E.AddFreeform(NP,Line.Label,Line.Note,[this,Haps,Road,ToSite,Id,Land,Site,St,Off,Hour,TownZ]
+  {
+   const auto Fire=[this,Haps,Id]
+   {
+    FS47Happenings* H=Haps();FString Why;
+    if(!H||!H->DevStart(Id,FString(),Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+    FVector At;if(H->LiveAt(At))AimAt(At+FVector(0,1,0));
+    Tell(H->Live(Id),FString::Printf(TEXT("%s: started."),*Id),5);
+   };
+   if(St<0)
+   {
+    FS47Happenings* H=Haps();FString Why;
+    if(!H||!H->DevStart(Id,FString(),Why)){Tell(false,Why.IsEmpty()?FString(TEXT("Freeform only")):Why);return;}
+    ToSite(Site,6,FString::Printf(TEXT("%s, ahead of you. Look at it with the lamp."),*Id));
+    return;
+   }
+   if(St==2){Road(Hour,4.5,false,Fire);return;}
+   if(St==0){ToLandPlace(Land,Off,Hour,4.5,[Fire](double,double){Fire();});return;}
+   FStage Stage;Stage.From=Hour;Stage.To=4.5;Stage.Area=TEXT("diner");Stage.Yaw=0;
+   Stage.Where=[TownZ]{const FVector W=S47OpenLand::FromRoad(TEXT("diner"),-5.,TownZ);return FVector2D(W.X,W.Z);};
+   Go(Stage,Fire);
+  });
+ }
  // F10-NORDIC-COSMIC-20261109: the figure on the rise as the Nordic or the Cosmic one (S47RoadGlimpse::DevBodies), at 00:30.
  for(const S47RoadGlimpse::FDevBody& D:S47RoadGlimpse::DevBodies())
  {

@@ -1,5 +1,6 @@
 #include "S47Taken.h"
 #include "S47DirectorCam.h"
+#include "S47DevWaves.h"
 #include "S47Rhythm.h"
 #include "S47Sneak.h"
 #include "S47CalicheAccess.h"
@@ -89,7 +90,7 @@ bool FS47Taken::Indoors() const
 
 bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
 {
- if(S47DirectorCam::On(M))return false; // DIRECTOR-MODE-01: nobody is taken while the director's camera flies
+ if((S47DirectorCam::On(M)||FS47DevWaves::On(M)))return false; // DIRECTOR-MODE-01: nobody is taken while the director's camera flies
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving))return false;
  if(!RulesAllow(M))return false;
  if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
@@ -100,14 +101,17 @@ bool FS47Taken::Begin(ES47Taker Who,const FString& Title,bool bOnlyDread)
  if(!bOutdoors||bOnlyDread)
  {
   Now=EStage::Dread;StepIn=.6;TalkIn=3.5;StepAt=Feet()+FVector(-3,3.4,1);
+  FS47Happenings::TellOther(M,TEXT("taken"),Title); // M1-MEASURE-20261113: a taking is always at the player
   return true;
  }
- return StartFlood();
+ const bool bFlood=StartFlood();
+ if(bFlood)FS47Happenings::TellOther(M,TEXT("taken"),Title); // M1-MEASURE-20261113
+ return bFlood;
 }
 
 bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over)
 {
- if(S47DirectorCam::On(M))return false; // DIRECTOR-MODE-01
+ if((S47DirectorCam::On(M)||FS47DevWaves::On(M)))return false; // DIRECTOR-MODE-01
  if(Busy()||!M||!M->Player||!M->Freeform||(M->World&&M->World->bDriving)||Indoors())return false;
  if(!RulesAllow(M))return false;
  if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));
@@ -122,17 +126,19 @@ bool FS47Taken::BeginOver(ES47Taker Who,const FString& Title,const FVector& Over
   M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.Rate=.7f,.At=Over});
  }
  UE_LOG(LogTemp,Display,TEXT("S47: taken: a light stands over %s"),*Title);
+ FS47Happenings::TellOther(M,TEXT("taken"),Title); // M1-MEASURE-20261113
  return true;
 }
 
 bool FS47Taken::TakeNow(ES47Taker Who,const FString& Title)
 {
- if(Now==EStage::None&&S47DirectorCam::On(M))return false; // DIRECTOR-MODE-01: not from nothing (director mode is never entered with one under way)
+ if(Now==EStage::None&&(S47DirectorCam::On(M)||FS47DevWaves::On(M)))return false; // DIRECTOR-MODE-01: not from nothing (director mode is never entered with one under way)
  if(!M||!M->Player||!M->Freeform)return false;
  if(Now==EStage::Lift||Now==EStage::Away)return false;
  Taker=Who;Place=Title;
  // Reached by a body: the end of a meeting the rules already let begin (a site or field visit), so it is not asked again.
  if(Now==EStage::None){SafeClock=M->Freeform->Clock();if(M->Rhythm)M->Rhythm->Began(TEXT("taken"));StopScript(M);}
+ FS47Happenings::TellOther(M,TEXT("taken"),Title); // M1-MEASURE-20261113: once a night by the place, however it was begun
  bOutdoors=!Indoors();
  if(!Terms(Who).bLift){Now=EStage::Away;Age=0;HideLight();White(TOptional<double>());if(M->UI)M->UI->Fade(true);M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.9f});return true;}
  // In a shut room, where no light can reach: it comes straight down on them all the same, once they are held.
@@ -581,6 +587,17 @@ bool FS47Taken::SelfTest(TArray<FString>& Lines)
  }
  const double Night2=86400.+19*3600.;
  Check(!FS47FarmSite::TheirHours(Night2)&&!FS47FarmSite::TheirHours(Night2+4.5*3600.)&&FS47FarmSite::TheirHours(Night2+7.5*3600.)&&!FS47FarmSite::TheirHours(Night2+12*3600.),TEXT("no body before about two in the morning, none after six"));
+ // VISIT-DAWN-20261113 (play39 m1tour2): a field visit begun at 03:52 on night 9 held the ground to 20:19 the next evening and took the player then.
+ {
+  const double Begun=8*86400.+3*3600.+52*60.,SixThen=8*86400.+6*3600.,TookAt=9*86400.+20*3600.+19*60.;
+  const double By=FS47FarmSite::VisitDeadline(Begun);
+  Check(By==SixThen&&By<TookAt&&!FS47FarmSite::TheirHours(By)&&FS47FarmSite::TheirHours(By-60),TEXT("a visit begun at 03:52 is over by six that morning, as their hours end"));
+  Check(FS47FarmSite::VisitDeadline(8*86400.+5*3600.+59*60.)==SixThen,TEXT("a visit begun a minute before six is over at six"));
+  Check(FS47FarmSite::VisitDeadline(8*86400.+23*3600.)==9*86400.+2*3600.&&FS47FarmSite::VisitDeadline(8*86400.+14*3600.)==8*86400.+17*3600.,TEXT("begun at any other hour (a test's), a visit lasts at most three hours of the clock"));
+  bool bBounded=true;
+  for(int32 Min=0;Min<24*60;Min+=7){const double At=8*86400.+Min*60.,Until=FS47FarmSite::VisitDeadline(At);bBounded&=Until>At&&Until<=At+FS47FarmSite::MaxVisitHours*3600.&&(FS47FarmSite::ByDaylight(At)||!FS47FarmSite::ByDaylight(Until-1));}
+  Check(bBounded,TEXT("whenever it begins, a visit ends within three hours, and one begun in the dark never runs on into the daylight"));
+ }
  OK&=FS47IndoorDread::SelfTest(Lines);
  OK&=FS47Aftermath::SelfTest(Lines);
  return OK;

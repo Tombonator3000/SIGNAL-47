@@ -187,8 +187,15 @@ double S47HudGauges::NoteAlpha(double T)
 	if (!FMath::IsFinite(T) || T < 0) return 0;
 	if (T < NoteIn) return FMath::SmoothStep(0.0, 1.0, T / NoteIn);
 	if (T < NoteHold) return 1;
-	if (T < NoteHold + NoteFade) return 1.0 - FMath::SmoothStep(0.0, 1.0, (T - NoteHold) / NoteFade);
-	return 0;
+	if (T < NoteHold + NoteFade) return 1.0 - (1.0 - NoteRest) * FMath::SmoothStep(0.0, 1.0, (T - NoteHold) / NoteFade);
+	return NoteRest; // TASKS-TEN-20261113: it stays, dim
+}
+
+double S47HudGauges::NoteScale(double T)
+{
+	if (!FMath::IsFinite(T) || T < NoteHold) return 1;
+	if (T < NoteHold + NoteFade) return 1.0 - (1.0 - NoteSmall) * FMath::SmoothStep(0.0, 1.0, (T - NoteHold) / NoteFade);
+	return NoteSmall;
 }
 
 // D45-20261110: a count going up inside the task (a recording's percent, a printer's feed) leaves the task as it was
@@ -583,9 +590,11 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 	bool bHold = true, bFalls = true;
 	for (double T = NoteIn; T < NoteHold; T += 0.25) bHold &= NoteAlpha(T) == 1.0;
 	for (double T = NoteHold; T < NoteHold + NoteFade + 0.5; T += 0.05) bFalls &= NoteAlpha(T + 0.05) <= NoteAlpha(T);
-	Check(NoteAlpha(0) == 0 && NoteAlpha(-1) == 0 && NoteAlpha(NoteIn * 0.5) > 0 && bHold && FMath::IsNearlyEqual(NoteAlpha(NoteHold + NoteFade * 0.5), 0.5, 1e-9)
-		&& NoteAlpha(NoteHold + NoteFade) == 0 && NoteAlpha(60) == 0 && NoteAlpha(std::numeric_limits<double>::quiet_NaN()) == 0 && bFalls,
-		TEXT("the task's card stands six seconds after the task changes and fades out over one"));
+	Check(NoteAlpha(0) == 0 && NoteAlpha(-1) == 0 && NoteAlpha(NoteIn * 0.5) > 0 && bHold && FMath::IsNearlyEqual(NoteAlpha(NoteHold + NoteFade * 0.5), 1.0 - (1.0 - NoteRest) * 0.5, 1e-9)
+		&& NoteAlpha(NoteHold + NoteFade) == NoteRest && NoteAlpha(60) == NoteRest && NoteAlpha(std::numeric_limits<double>::quiet_NaN()) == 0 && bFalls,
+		TEXT("the task's card stands six seconds after the task changes and settles over one, dim, and stays (TASKS-TEN-20261113, change 1)"));
+	Check(NoteScale(0) == 1 && NoteScale(NoteHold - 0.1) == 1 && NoteScale(NoteHold + NoteFade) == NoteSmall && NoteScale(600) == NoteSmall && NoteRest > 0.2 && NoteRest < 0.6 && NoteSmall < 1,
+		TEXT("the resting card is smaller and dimmer than the fresh one, and still (TASKS-TEN-20261113, change 1)"));
 	// D45-20261110: the recording's count going up is the same task (the card stood still), another place is a new one
 	Check(SameTask(TEXT("RECEIVER PC // Recording 37% at 100% measurement rate (27/27 antennas)."), TEXT("RECEIVER PC // Recording 38% at 100% measurement rate (27/27 antennas)."))
 		&& SameTask(TEXT("RECEIVER PC // Recording 9%"), TEXT("RECEIVER PC // Recording 10%")) && SameTask(TEXT("PRINTER // Feeding paper (40%)"), TEXT("PRINTER // Feeding paper (41%)"))
@@ -641,6 +650,7 @@ bool S47HudGauges::SelfTest(TArray<FString>& Lines)
 				TEXT("FIRST SHIFT 5/5 / OPS (corner PC): REGISTER THE ROUTINE RESULT"),
 				TEXT("FIRST SHIFT 6/6 / PRINTER: COLLECT THE LABELLED REGISTERED PACKET"),
 				TEXT("FIRST SHIFT 6/6 / RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER"),
+				TEXT("FIRST SHIFT 3/5 / RECEIVER (centre PC): ACQUIRE THE SOURCE ON THE SKY CHART, THEN TUNE"), // RX-ACQUIRE-SKY-20261113 (last, so the indexes above stay)
 			};
 			bool bWhole = true;
 			FString Cut;

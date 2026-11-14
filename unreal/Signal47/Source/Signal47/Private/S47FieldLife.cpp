@@ -305,6 +305,7 @@ void FS47TruckCare::Step(double Dt)
  if(!M||!M->Freeform||!M->World||!M->Freeform->RulesLive())return;
  ShowSand();
  if(!M->World->bDriving){if(M->World->TruckAt==TEXT("saro"))LegMetres=0;Bog=0;return;} // parked at SARO: the next tow is priced from there
+ if(M->World->bCommuteVehicle){Bog=0;return;} // STORY-DRIVE-OWN-CAR-20261113: the player's own wagon on a Story night's drive: none of the truck's wear, sand or strand
  auto* D=M->World->CabDrive();if(!D)return;
  // (WEATHER-20261108: after a shower the dirt is slick for a few hours, the gravel a little, the asphalt hardly)
  {

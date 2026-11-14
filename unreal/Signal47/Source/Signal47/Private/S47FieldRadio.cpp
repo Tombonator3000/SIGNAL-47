@@ -242,6 +242,8 @@ bool FS47FieldRadio::Message(const FString& Text,bool bDeskToo)
  ++MessageCount; SinceMessage=0; SinceLoud=0;
  // DALE-WIRE-20261109: what he said, whole, is what his takes are looked up by.
  const FString Whole=Said;
+ // TASKS-TEN-20261113 (change 7): what he asks is kept on the night's list and in the night log (FS47FreeformSession::DaleSaid)
+ if(!Who.IsEmpty()&&M->IsFreeform()&&M->Freeform)M->Freeform->DaleSaid(Whole);
  // GEAR-FLICKER-20261108: near something, words of his are lost in the noise, and the set crackles over them.
  if(!Who.IsEmpty()&&M->IsFreeform()&&M->Gear.IsValid())
  {

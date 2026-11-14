@@ -31,6 +31,9 @@ public:
   TOptional<FNoise> Noise;
   // WEATHER-20261108: how far sounds carry now, 1 on a still night; a strong wind covers steps and breath (down to about half).
   double HearScale = 1.;
+  // M5 (13 November): how far it sees the player now, 1 at a half moon; a full moon further, no moon or blowing sand less far, a lit
+  // lamp never less (S47Weather::SightScale, from FS47RoswellGroup in a live Freeform game). Times S47Sneak's reach, never touching it.
+  double SightScale = 1.;
   // A visit's attention (FS47VisitAttention): stop and face this, a lamp or a sound, easing back from it at HoldBack m/s.
   // Comes from outside on each tick, so nothing of it is in a save and Story never sets it. Never changes the mode.
   TOptional<FVector> HoldLook;

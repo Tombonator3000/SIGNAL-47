@@ -103,6 +103,8 @@ private:
 	int32 LoopAt = 0, Said = -1, SegNo = 0, TrackSkip = -1;
 	// NIGHT-RADIO-20261109: which night and hour of Freeform's Night Line Cfg.Loop holds (Night x 100 + hour), and the hour last seen.
 	int32 BlockKey = -1, BlockHour = -1;
+	// STORY-DRIVE-OWN-CAR-20261113: BlockKey while Cfg.Loop is the Story night's evening programme (never a Night Line key: night x 100 + hour).
+	static constexpr int32 StoryEveningKey = 2000000000;
 	void FreeformFixed(double Clock);
 	FString After = TEXT("loop");
 	TOptional<double> Prev, AudioAt;
@@ -216,6 +218,9 @@ public:
 	// NIGHT-RADIO-20261109: set in Freeform (US47Main::RadioStep), it fills tonight's facts (S47NightLine::Fill), and 1420 is then
 	// Earl's Night Line from eight in the evening to four, made for the night by S47NightLine. Unset: Story's programme as it was.
 	TFunction<bool(FS47NightLineIn&)> NightLineIn;
+	// STORY-DRIVE-OWN-CAR-20261113: set on a Story night (US47Main::RadioStep): with NightLineIn, 1420 before the Night Line's eight
+	// o'clock (from noon) is the old local evening host's programme (EVENING_LINE) rather than silence. Unset: Freeform's 1420 as it was.
+	bool bStoryEvening = false;
 	FS47RadioVoice HostBank, CallerBank;
 	bool HostVoice() const { return bRecordedHost; }
 	bool CallerVoice() const { return bRecordedCallers; }

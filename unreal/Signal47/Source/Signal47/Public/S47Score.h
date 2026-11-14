@@ -6,18 +6,32 @@
 class US47Main;
 class FS47MediaSource;
 class FS47CosmicAmbient;
+class FS47ScoreStems;
 
 // core/score.ts: the pieces, and what each place plays. Empty cue means TypeScript's null.
 struct FS47ScoreTrack
 {
 	FString File, Title, By;
 	double Gain = 0;
+	// MUSIC-20261113: a piece whose file is never in Git (a free download, Tom's own, a mix of the bought loops, all staged
+	// by Tools/music/build_music.py). It is picked only when its file is there; without it the pool plays the rest.
+	bool bOptional = false;
 };
 namespace S47Score
 {
 	extern SIGNAL47_API const TMap<FString, FS47ScoreTrack> TRACKS;
 	extern SIGNAL47_API const TMap<FString, TArray<FString>> CUES;
 	inline constexpr bool bScoreOn = true; // Unreal has files beside the game, unlike the web single-file build.
+	// MUSIC-20261113 (Tom, 13 Nov: "ta med Intro Drive"): Tom's own "Signal 47 - Track 1 - Intro Drive", never in Git, there only
+	// when Tools/music/build_music.py has staged it (as the menu's lic:signal47_menu is). IntroDriveId is its key in TRACKS (the
+	// drive's pool); IntroDriveFile opens the same recording with FS47MediaSource::Open, IntroDriveRadioFile a mono copy narrowed
+	// to AM like the radio's records. A caller with a fallback: MediaOr(IntroDriveFile, TEXT("radio/bama_country.mp3")).
+	inline const TCHAR* const IntroDriveId = TEXT("signal47_intro_drive");
+	inline const TCHAR* const IntroDriveFile = TEXT("music/signal47_intro_drive.mp3");
+	inline const TCHAR* const IntroDriveRadioFile = TEXT("radio/signal47_intro_drive.mp3");
+	// WebName as FS47MediaSource::Open takes it (music/<file>.mp3, radio/<file>.mp3): its staged recording is on this machine.
+	SIGNAL47_API bool MediaPresent(const FString& WebName);
+	SIGNAL47_API FString MediaOr(const FString& WebName, const FString& Fallback);
 }
 
 // core/score.ts: a quiet bed chosen by place, out of the way of voices, scenes and the radio.
@@ -30,6 +44,8 @@ public:
 	FString Playing, Track;
 	void Update(double Dt, const FString& Want, bool bHeld);
 	FString Pick(const FString& Cue) const;
+	// MUSIC-20261113: the piece can be played: it is in the table, and an optional one's file is there.
+	bool Present(const FString& InTrack) const;
 	void Start(const FString& Cue, const FString& InTrack = FString());
 	void Fade(double Secs, double Quiet);
 	void Stop();
@@ -67,6 +83,27 @@ public:
 		TFunction<bool()> RoofStepsBusy, ReelTapeBusy, SaroDarkBusy, OfficePhoneBusy;
 		TFunction<bool()> ArchiveBusy, ArrayBackBusy, TruckBRacing, MorningBusy;
 	} Held;
+	// SIDEBAND-20261113: every deck passes Mix on its way to the bus. What is put in here (In ... Out: the colour bus, S47Sideband.h)
+	// sits between the decks and the bus, so a duck on the bus takes it too; the texture under the score does not pass it.
+	void Insert(const TSharedPtr<FS47AudioNode>& In, const TSharedPtr<FS47AudioNode>& Out);
+	bool Inserted() const { return InsertIn.IsValid(); }
+	// The file of the piece that plays (empty: none), for what is set per piece.
+	FString PlayingFile() const;
+	// MUSIC-20261113: the piece heard now as the credits name it, "Floating Cities (Kevin MacLeod)"; empty: none
+	FString NowPlaying() const;
+	// SIDEBAND-20261113, channels: whether an own mix may play as its stems (S47ScoreStems.h), and the tension that lets them in
+	// and out (0 to 1). Off: the mix file, as before. A piece that is playing keeps the form it started in.
+	void SetStems(bool bOn, double InTension);
+	int32 StemsPlaying() const;
+	// SIDEBAND-20261113 (d69: a render of the scene had no music for its first 8 s and lost it at 58 s): a developer render owns the
+	// score. Own(piece): that piece (a TRACKS key, "coldDish", or its file's name, "s47_cold_dish") starts now, in a twentieth of a
+	// second, through the stems when they may play, and keeps playing: what the night wants, a listening hold, a fade, a pause or a
+	// stop asked by anything else is held off (and logged) until Own(empty) lets go. False: no such piece, or it cannot play.
+	bool Own(const FString& Piece);
+	bool Owned() const { return !OwnTrack.IsEmpty(); }
+	// The TRACKS key for a key or a file's name; empty: none. The first pool (cue) that has it.
+	static FString TrackOf(const FString& Piece);
+	static FString CueOf(const FString& InTrack);
 	static bool SelfTest(TArray<FString>& Lines);
 	static bool RenderTour(const FString& Path, TArray<FString>& Lines);
 
@@ -75,6 +112,11 @@ private:
 	TSharedRef<FS47AudioContext> Ctx;
 	TSharedPtr<FS47AudioNode> Dest;
 	TSharedPtr<FS47GainNode> Bus; // every deck passes this, so a duck leaves deck fades alone
+	TSharedPtr<FS47GainNode> Mix; // the decks' sum, before the bus (SIDEBAND-20261113)
+	TSharedPtr<FS47AudioNode> InsertIn, InsertOut;
+	TSharedPtr<FS47ScoreStems> Stems, OutgoingStems; // the decks El and Outgoing lead, when the piece plays as stems
+	bool bStemsOn = false;
+	double Tension = 0;
 	TSharedPtr<FS47CosmicAmbient> Cosmic;
 	TSharedPtr<FS47MediaSource> El;
 	TSharedPtr<FS47GainNode> Gain;
@@ -92,7 +134,10 @@ private:
 	TMap<FString, double> Last;
 	bool bFading = false;
 	TSharedRef<bool> bAlive = MakeShared<bool>(true);
+	TFunction<bool(const FS47ScoreTrack&)> HasFile; // the self-test's stand-in for the files on disk; unset: MediaPresent
 	void Done(double Quiet);
+	void StopNow();
+	FString OwnTrack, OwnCue; bool bOwnStemsTried = false;
 	void RetireOutgoing();
 	void Begin(const FString& Cue, const FString& InTrack, double FadeSeconds);
 	double TransitionAt(bool bUrgent) const;

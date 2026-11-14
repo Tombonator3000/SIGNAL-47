@@ -18,7 +18,10 @@
 #include "S47Outfit.h"
 #include "S47RoomDecor.h"
 #include "S47Three.h"
+#include "S47StoryDirector.h"
+#include "S47TownDay.h"
 #include "S47Townsfolk.h"
+#include "S47Visitors.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -140,7 +143,7 @@ int32 FS47TownUse::PrintValue(const FS47AlbumShot& Shot, bool bRecord, FString& 
 	const double Hour = FMath::Fmod(FMath::Max(0., Shot.Clock), 86400.) / 3600.;
 	if (Hour >= 20 || Hour < 5) V += 1;
 	if (!Shot.Enlarged.IsEmpty()) V += 1;
-	if (Shot.Targets.Num() > 0) V += 4;
+	if (Shot.HasSeenTarget()) V += 4;
 	if (bRecord) V += 3;
 	if (Shot.bOdd) V += 10;
 	Why = Shot.bOdd ? TEXT("he goes quiet over it, and then names a price") : V >= 5 ? TEXT("he likes it") : V >= 3 ? TEXT("a fair postcard") : TEXT("a print is a print");
@@ -670,6 +673,13 @@ void FS47TownUse::OpenFeed()
 		return;
 	}
 	Rows.Add(S47Kit::Paper(TEXT("FEED & SEED. Range cubes on a pallet, salt blocks stacked like bricks, rolls of wire, a rack of tools. The man behind the counter writes every sale in a receipt book with a carpenter's pencil and asks after the weather out your way.")));
+	// NPC-DAY-FOLLOW-20261109: Eloy Baca's noon in town (S47TownDay::EloyAt), unless he is gone or it is a Story night.
+	if (M->Freeform->Visitors && !M->Freeform->Visitors->BacaGone() && !FS47StoryDirector::Of(M) && S47TownDay::EloyAt(Hour()) == TEXT("feed"))
+	{
+		Rows.Add(S47Kit::Text(TEXT("An old man in a pressed shirt at the end of the counter, a sack of range cubes on his shoulder, arguing the price. Eloy Baca, from under the east rim.")));
+		const TSharedPtr<FS47Visitors> Visitors = M->Freeform->Visitors;
+		Rows.Add(S47Kit::Button(TEXT("Walk out with Eloy Baca"), [Visitors] { if (Visitors) Visitors->OpenBaca(true); }));
+	}
 	BasketRows(Feed, FeedWares(), Rows, [this] { OpenFeed(); });
 	Rows.Add(S47Kit::Small(TEXT("He sells spades, jacks and lug wrenches too. SARO's set rides behind your seat already. A lantern takes the same cells.")));
 	Rows.Add(S47Kit::Button(TEXT("Leave"), [this] { if (M && M->UI) M->UI->Close(); }));
@@ -736,7 +746,7 @@ bool FS47TownUse::SellCopy(const FString& PhotoId)
 	SoldPrints.Add(PhotoId); ++SoldToday;
 	// M7 (Tom, 9 November): inside the week's cap on side money; past it he still takes the copy, for the window, and pays nothing
 	const int32 Paid = F.EarnSide(Pay, TEXT("souvenir copy"));
-	if (Shot->bOdd || Shot->Targets.Num() > 0) Note(TEXT("sold_odd"));
+	if (Shot->bOdd || Shot->HasSeenTarget()) Note(TEXT("sold_odd"));
 	UE_LOG(LogS47TownUse, Display, TEXT("S47: town: a copy of print %s sold for $%d (%s)"), *PhotoId, Pay, *Why);
 	if (M->UI) M->UI->Toast(Paid >= Pay ? FString::Printf(TEXT("$%d for the right to copy it. You keep your print."), Pay)
 		: Paid > 0 ? FString::Printf(TEXT("$%d for it, not $%d: with that, this week's field allowance is used up. You keep your print."), Paid, Pay)

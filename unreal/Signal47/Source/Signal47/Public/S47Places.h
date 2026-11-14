@@ -34,12 +34,41 @@ public:
  // The first place the player has neither found nor heard of, by this game's seed; empty when there is none.
  FString NextUnknown(int32 Salt) const;
  bool Use(const FString& Id);
+ // LAND-PLACES-WINDMILL-20261114: the windmill's head for its model (S47LandWindmill): the compass way the wheel faces, and whether the
+ // first days' traces (the new wire) show now. False until the place is built.
+ bool MillHead(double& OutAz,bool& bOutTraces) const;
  void FillMap(FS47MapView& View) const;
  // Registered work gives one bearing a night: a discrepancy always (LOOP-1-20261109, HELHETLIG_LOKKE step 1: also with no branch
  // mended, then wide), routine work only with mended branches. The Director holds the night's one pointing-out (MayPointOut) and
  // the tiers (MayPointAt). The bearing goes on the map and its slip on the OPS printer (FS47FreeformSession::QueueBearingSlip).
  // True if it gave one.
- bool AfterRegistered(bool bAnomaly=false);
+ // LOOP-SLIP-IN-PACKET-20261113 (→ M3, Tom 13 November): for a discrepancy (Packet: the job's take) the slip is not a paper of its
+ // own: it is decided here, by the same rules and in the same order, spends the night's pointing-out here, and is held for the job's
+ // registered packet (HeldFor), whose last page it prints as (PacketSection). The map, the record and the toast come when the packet
+ // is collected (ReleasePacket). LOOP-CAREFUL-PAYS-20261113 (→ M3, M2): a sky fix made by hand and reel-deck marks tight round the
+ // ticks each take one step off the spread (SpreadFor) and so the circle (RingFor), down to the narrowest.
+ struct FTake{FString Job;bool bHandFix=false,bTightMarks=false,bOut=false,bOwnMarks=false,bTicks=false;double MarkIn=-1,MarkOut=-1;};
+ bool AfterRegistered(bool bAnomaly=false,const FTake* Packet=nullptr);
+ // Why bits: 1 a hand fix, 2 marks tight, 4 a take with extra ticks (bTicks: the reel-deck marks are possible). Steps: how many were taken off (clamped at the narrowest step the branches leave).
+ struct FBearing; // (defined below; PacketSection names it)
+ struct FHeld{FString Job;int32 Branches=0,Steps=0;uint8 Why=0;bool bExtra=false,bSame=false,bOwnMarks=false;double MarkIn=-1,MarkOut=-1;};
+ // Pure: the careful steps (0 to 2) and how many of them the spread can still take with Branches mended.
+ static int32 CarefulSteps(bool bHandFix,bool bTightMarks){return (bHandFix?1:0)+(bTightMarks?1:0);}
+ static int32 StepsTaken(int32 Branches,int32 Steps){const int32 B=FMath::Clamp(Branches,0,4);return FMath::Min(B+FMath::Max(0,Steps),4)-B;}
+ // Pure: the packet's last section (OFF-BEAM BEARING ...), upper case, in the slip's plain words.
+ static FString PacketSection(const FBearing& B,const FHeld& H);
+ // Pure: the line that says why the area is narrower (or how it can be), and the line that ties the bearing to the take.
+ static FString CarefulLine(const FHeld& H);
+ static FString TieLine(const FHeld& H);
+ bool HeldFor(const FString& Job) const{return Held.ContainsByPredicate([&Job](const FHeldFix& X){return X.Info.Job==Job;});}
+ FString PacketSection(const FString& Job) const;
+ // The packet is collected: the held bearing goes on the map, into the field record and the toast. OutPage/OutDay/bOutExtra: the
+ // section and the slip's day, for the notebook's "Bearing slip, D0N". True if there was one.
+ // REVIEW-20261113: collected after its noon (the packet waited on the printer), the bearing's time on the map starts again from the
+ // collection: live until the next noon (ColdAt), so "before noon" stays true and the circle is not off the map as it arrives.
+ // AtClock: the collection's clock (-1: the session's).
+ bool ReleasePacket(const FString& Job,FString* OutPage=nullptr,int32* OutDay=nullptr,bool* bOutExtra=nullptr,double AtClock=-1);
+ int32 HeldCount() const{return Held.Num();}
  // WEEKLY-CASE-20261109: the evening after the first big night the night's one pointing-out is the week's case's (FS47WeekCase): a
  // slip from SARO toward Target (road-local ToX, ToZ), its sector over it, the spread by the mended branches as a registration's.
  // The same rules: once a night (the Director's MayPointOut), on the map and the OPS printer. True if it gave one.
@@ -72,6 +101,10 @@ public:
  static double SpreadFor(int32 Branches){return Branches<=0?40.:Branches==1?20.:Branches==2?12.:Branches==3?7.:4.;}
  // Whether registered work points out at all: a discrepancy always, routine work with a mended branch.
  static bool Gives(bool bAnomaly,int32 Branches){return bAnomaly||Branches>0;}
+ // LOOP-DOSSIER-GIVES-20261113 (→ M3, M4): whether a registration may point out now. 0 no; 1 the night's own (not Spent yet); 2 one more,
+ // because a file of the unknown at MARKS has an extra bearing open (FS47FreeformSession::DossierExtraOpen) once the night's own is
+ // spent: never for the first day's free slips (bFree), and nothing at all on the big night (bBigOwns). Pure.
+ static int32 SlipAllowed(bool bFree,bool bSpent,bool bExtraOpen,bool bBigOwns){return bBigOwns?0:!bSpent?1:(!bFree&&bExtraOpen)?2:0;}
  // CHAIN-1-20261109: what the slip points at, in this order: 1 marks standing at a place, 2 what is out there tonight
  // (FS47Happenings::OutTonight: what has come, or tonight's lead), 3 a place on the land nobody has looked at, 0 nothing (no slip).
  // T16-17 (→ M1, "the bearings run out"): 4, once every place has been found or heard of, the place where tomorrow's daylight trace
@@ -143,6 +176,7 @@ public:
  // Continue changes nothing. Only what could be carried. Only moved while nobody is near.
  static FVector2D DriftOf(const FString& Id,int32 Seed,int32 Day);
  static bool Drifts(const FString& Id);
+ static bool PartOf(const FString& Kind,int32 Index,FVector& OutAt,FVector& OutSize); // LAND-PLACES-FIXES-20261114: a basic shape as it is drawn (its middle and size, the place's metres)
  // Where the place really stands, road-local, after the land has had its say.
  bool Spot(const FString& Id,double& OutX,double& OutZ) const;
  // D48-20261110: where a built place stands with its ground, three-space world metres (the motel on SARO's ground, the rest on the
@@ -161,10 +195,15 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;
- struct FBuilt{FString Id;double X=0,Z=0,Y=0;bool bSeated=false;FVector2D Shift=FVector2D::ZeroVector;int32 ShiftDay=0;TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;TArray<FVector> Local;FS47Obj Hit;int32 TraceFrom=-1;bool bTraceOn=true;};
+ struct FBuilt{FString Id;double X=0,Z=0,Y=0;bool bSeated=false;FVector2D Shift=FVector2D::ZeroVector;int32 ShiftDay=0;TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;TArray<FVector> Local;FS47Obj Hit;int32 TraceFrom=-1;bool bTraceOn=true;double HeadAz=0;};
  TArray<FBuilt> Built;
  TSet<FString> HeardOf;
  TArray<FBearing> Fixes;
+ struct FHeldFix{FBearing B;FHeld Info;};
+ TArray<FHeldFix> Held; // LOOP-SLIP-IN-PACKET-20261113: bearings waiting for their packet, saved ("held"), never on the map
+ static constexpr int32 MaxHeld=4;
+ static bool ReadFix(const S47J::FObj& O,FBearing& B);
+ static S47J::FObj WriteFix(const FBearing& B);
  TArray<FVector2D> Marks;
  TSharedPtr<uint8> Life;
  TWeakObjectPtr<AS47Web> Scene;

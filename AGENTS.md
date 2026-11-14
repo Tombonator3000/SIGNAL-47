@@ -65,3 +65,19 @@ Gjelder viktige gjenstander spilleren går tett på (telefonkiosk, pumper, SARO-
 3. **Bakte PBR-kart** fra en detaljert modell: farge, normal og ruhet/metall/AO i 4K (2K for små ting); slitasje fra krumning og AO; etiketter som egen tekstur.
 4. **Kritikk i spillet:** bilder fra spillet side om side med referansen, høyst fire runder, og bilder til Tom underveis.
 5. **Tid:** sett av timer per gjenstand, ikke minutter, og bland ikke gjenstander inn i en byggerunde.
+
+## Fast regel: animasjon av NPC-er, aliens og dyr (Tom 12. november 2026)
+
+Gjelder all ny og endret animasjon i spillet. Byggeregelen og regelen for viktige gjenstander over gjelder i tillegg for modellene.
+
+1. **Velg kilde etter type bevegelse.**
+   - *Mekanisk og prosedyrisk* (antenner, dører, luker, bilen, tentakler, pust, flimmer, hode som følger noe): lages med kode eller nøkkelrammer av Fable i Blender eller direkte i spillet.
+   - *Gange, løp, sniking, sitting, gestikulering for mennesker, humanoide aliens og dyr*: start fra ekte bevegelse (opptak eller lisensierte/egne klipp med kjent lisens), og la Fable tilpasse (retarget), rense og bake den til vårt skjelett. Ren håndlaget nøkkelramme-gange for figurer brukes bare som blokkering, aldri som ferdig.
+   - Klipp uten avklart lisens holdes utenfor Git og pakker til lisensen er klar. Epic-baserte klipp (Manny/Quinn) kan brukes i spillet, men råfilene ligger utenfor det offentlige repoet.
+2. **Brief med tall:** skjelett og navn på bein, lengde i sekunder og bilder per sekund, løkke eller ikke, rotbevegelse (root motion) eller på stedet, fart i m/s for gange, og hvilke overganger klippet må passe med.
+3. **Se før ferdig:** bilder fra flere vinkler og en kort video (front, side, ovenfra; fot­kontakt synlig) for hver runde. Ingen «ferdig» uten at noen har sett bevegelsen.
+4. **Sjekk:** føtter som ikke glir eller går gjennom bakken, hender og skuldre uten knekk, løkkepunkt uten hopp, riktig fart mot rotbevegelsen, ingen skala på beina, samme ramme i Blender og Unreal.
+5. **Prøv i spillet:** samme sekvens før og etter i Unreal (`Tools/animals/check_rig.py` og lignende), kollisjon og fotlyder, og at atferden (AI) bruker klippet riktig. Spillet er målstreken, ikke Blender.
+6. **Én figur og ett klipp om gangen**, opptil fire kritikkrunder med bilder/video til Tom; bevar dagens fungerende klipp til det nye er godkjent.
+7. **Stil:** troverdig 1986-realisme for folk og dyr; aliens etter designbibelen (stille, rolige, få bevegelser, aldri tegneserieaktig).
+8. **Kilder vi skal prøve først** (se [gratisressursene](Docs/Research/FREE_ASSET_CATALOG.md)): *Free100Animations* (`~/Assets/signal47-free/_inbox/free100animations-20261111/`, Manny/Quinn: gange og jogg i åtte retninger, tomgang, hopp, fall, treff, død; Tom 12. november: gratis til bruk, laget av en privatperson på Epic-innhold – kan brukes i spillet og pakken, men råfilene holdes utenfor det offentlige Git-repoet etter Epics vilkår for Manny/Quinn); *MetaHuman Animator Markerless Motion Capture* (video til animasjon; krever Toms Epic-innlogging på Fab); Quaternius CC0-dyr (ulv/husky, i bruk). Prøv dem før noe lages fra bunnen av.

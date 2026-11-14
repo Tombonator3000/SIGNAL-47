@@ -347,6 +347,8 @@ namespace S47FarmWorldTest
    const bool Target=Id==TEXT("ff:cargo")||(S.Stage==14&&Id==TEXT("ff:parcel"));
    if(!Check(M,Target&&bool(M->Player->OnUse),TEXT("actual native eye ray selects parked cargo or its loaded parcel: ")+Id))return;
    M->Player->OnUse(Id);
+   // Critic 12 Nov: the rack itself opens its panel with the parcel loaded; unloading is its button (the parcel's own pickup unloads).
+   if(S.Stage==14&&Id==TEXT("ff:cargo")){M->Freeform->Field->UnloadFromRack();if(M->UI)M->UI->Close(true);}
    if(!Check(M,M->Freeform->Field->ParcelStage()==(S.Stage==14?2:3),S.Stage==14?TEXT("production cargo Use unloads restored parcel"):TEXT("production cargo Use reloads the same parcel without delivery/reward")))return;
    if(S.Stage==14){Go(15);return;}if(S.CargoProbe){Finish(M,true,TEXT("cargo-only fixture completed actual unload/reload; full route excluded"));return;}M->World->Roam(TEXT("saro"));Go(16);return;
   }

@@ -242,7 +242,7 @@ bool FS47Album::ExposeFrom(const FVector& Eye, const FVector& Look, const FStrin
 	return true;
 }
 
-FString FS47Album::AddEnlargement(const FS47AlbumShot& From, const TArray<FColor>& Px, int32 W, int32 H, const FString& Text)
+FString FS47Album::AddEnlargement(const FS47AlbumShot& From, const TArray<FColor>& Px, int32 W, int32 H, const FString& Text, const TPair<FString, FVector2D>& Target)
 {
 	if (W <= 0 || H <= 0 || Px.Num() != W * H) return FString();
 	FS47AlbumShot Shot;
@@ -252,6 +252,7 @@ FString FS47Album::AddEnlargement(const FS47AlbumShot& From, const TArray<FColor
 	Shot.Url = S47Image::ToDataUrl(Px, W, H, true, 74);
 	Shot.Clock = From.Clock; Shot.Place = From.Place; Shot.Pose = From.Pose; Shot.Text = Text; Shot.Enlarged = From.Id;
 	Shot.LabStage = -1; // a finished print off the enlarger
+	if (!Target.Key.IsEmpty()) Shot.Targets.Add(Target);
 	// Paper, not film: one more frame on the books, so Left() is what it was.
 	Data.FilmCapacity += 1;
 	Data.Shots.Add(Shot);

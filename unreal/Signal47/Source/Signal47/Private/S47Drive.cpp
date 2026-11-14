@@ -286,6 +286,9 @@ void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVec
 		{
 			Lat = 0;
 			const double Impact = FMath::Abs(Speed);
+			// HWY-WALL-20261113 (Tom, d68: the truck stopped against nothing off the highway): what stopped it goes in the log, so that
+			// an unseen wall met in play names itself (world terms; road-local is x - 8000 in the road's leg).
+			if (Impact > 0.8 && BumpT <= 0) UE_LOG(LogTemp, Display, TEXT("S47: truck stopped at %.1f %.1f (heading %.2f, %.1f m/s) by %s"), Pos.X, Pos.Z, Heading, Impact, *HitWhy());
 			Pos.X = Ox; Pos.Z = Oz; Heading = Oh;
 			Speed = -Sign(Speed) * FMath::Min(1.2, Impact * 0.15);
 			if (Impact > 0.8 && BumpT <= 0) { BumpT = 0.6; if (OnBump) OnBump(Impact); }
@@ -350,6 +353,37 @@ FS47DriveController::FGround FS47DriveController::Ground() const
 	G.Roll = FMath::Atan2((Fr + Rr - Fl - Rl) / 2, 2 * TRACK);
 	G.At[0] = Fl; G.At[1] = Fr; G.At[2] = Rl; G.At[3] = Rr;
 	return G;
+}
+
+FString FS47DriveController::HitWhy() const
+{
+	// (as Hit, one obstacle at a time)
+	if (!Area) return TEXT("no area");
+	if (Area->Blocked(Pos.X, Pos.Z)) return TEXT("the area's Blocked (a hill, the rim, or the way)");
+	const double HalfW=Truck?Truck->HalfWidth()-.05:HALF_W, HalfL=Truck?Truck->HalfLength()-.10:HALF_L;
+	const double C = FMath::Cos(Heading), Sn = FMath::Sin(Heading), X = Pos.X, Z = Pos.Z;
+	for (int32 I = 0; I < Area->Obstacles.Num(); ++I)
+	{
+		const FS47Obstacle& O = Area->Obstacles[I];
+		bool bHit = false;
+		if (O.bCircle)
+		{
+			const double Dx = O.X - X, Dz = O.Z - Z;
+			const double Lx = Dx * C - Dz * Sn, Lz = Dx * Sn + Dz * C;
+			const double Qx = Lx - FMath::Clamp(Lx, -HalfW, HalfW), Qz = Lz - FMath::Clamp(Lz, -HalfL, HalfL);
+			bHit = Qx * Qx + Qz * Qz < O.R * O.R;
+		}
+		else
+		{
+			const double Bx = (O.MinX + O.MaxX) / 2, Bz = (O.MinZ + O.MaxZ) / 2, Hx = (O.MaxX - O.MinX) / 2, Hz = (O.MaxZ - O.MinZ) / 2;
+			const double Ac = FMath::Abs(C), As = FMath::Abs(Sn), Dx = Bx - X, Dz = Bz - Z;
+			bHit = FMath::Abs(Dx) <= Hx + HalfW * Ac + HalfL * As && FMath::Abs(Dz) <= Hz + HalfW * As + HalfL * Ac
+				&& FMath::Abs(Dx * C - Dz * Sn) <= HalfW + Hx * Ac + Hz * As && FMath::Abs(Dx * Sn + Dz * C) <= HalfL + Hx * As + Hz * Ac;
+		}
+		if (bHit) return O.bCircle ? FString::Printf(TEXT("obstacle %d, a circle r %.2f at %.1f %.1f"), I, O.R, O.X, O.Z)
+			: FString::Printf(TEXT("obstacle %d, a box x %.2f..%.2f z %.2f..%.2f"), I, O.MinX, O.MaxX, O.MinZ, O.MaxZ);
+	}
+	return TEXT("nothing found again");
 }
 
 // Overlap of the truck's footprint (an oriented rectangle) with any obstacle.

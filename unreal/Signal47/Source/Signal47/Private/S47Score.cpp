@@ -7,6 +7,7 @@
 #include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47Media.h"
+#include "S47ScoreStems.h"
 #include "S47Story.h"
 #include "S47Taken.h"
 #include "S47Walker.h"
@@ -23,7 +24,6 @@ namespace S47Score
 		{ TEXT("solitude"), { TEXT("in_search_of_solitude.mp3"), TEXT("In Search of Solitude"), TEXT("Scott Buckley"), 0.42 } },
 		{ TEXT("neon"), { TEXT("neon.mp3"), TEXT("Neon"), TEXT("Scott Buckley"), 0.36 } },
 		{ TEXT("hymn"), { TEXT("hymn_to_the_dawn.mp3"), TEXT("Hymn to the Dawn"), TEXT("Scott Buckley"), 0.45 } },
-		{ TEXT("cylOne"), { TEXT("cylinder_one.mp3"), TEXT("Cylinder One"), TEXT("Chris Zabriskie"), 0.42 } },
 		{ TEXT("cylTwo"), { TEXT("cylinder_two.mp3"), TEXT("Cylinder Two"), TEXT("Chris Zabriskie"), 0.42 } },
 		{ TEXT("cylEight"), { TEXT("cylinder_eight.mp3"), TEXT("Cylinder Eight"), TEXT("Chris Zabriskie"), 0.4 } },
 		{ TEXT("floating"), { TEXT("floating_cities.mp3"), TEXT("Floating Cities"), TEXT("Kevin MacLeod"), 0.45 } },
@@ -32,18 +32,49 @@ namespace S47Score
 		{ TEXT("longNote"), { TEXT("long_note_four.mp3"), TEXT("Long Note Four"), TEXT("Kevin MacLeod"), 0.5 } },
 		{ TEXT("lightless"), { TEXT("lightless_dawn.mp3"), TEXT("Lightless Dawn"), TEXT("Kevin MacLeod"), 0.45 } },
 		{ TEXT("phantom"), { TEXT("phantom_from_space.mp3"), TEXT("Phantom from Space"), TEXT("Kevin MacLeod"), 0.4 } },
-		{ TEXT("docks"), { TEXT("night_on_the_docks.mp3"), TEXT("Night on the Docks (Sax)"), TEXT("Kevin MacLeod"), 0.42 } },
-		{ TEXT("nowhere"), { TEXT("signs_to_nowhere.mp3"), TEXT("Signs To Nowhere"), TEXT("Shane Ivers"), 0.38 } },
+		// MUSIC-20261113 (Tom, 13 Nov: take the jazz out, and the piano piece at night too): "Night on the Docks (Sax)" (docks, the
+		// town's) and "Cylinder One" (cylOne, eerie and the motel: the one solo keyboard piece, single ringing notes in slow broken
+		// chords) are out of the table; their files stay where they are. In their place, all optional (never in Git, staged by
+		// Tools/music/build_music.py at -21.5 LUFS like the rest): steel guitar for the town and the road, two analog drones,
+		// Tom's own "Intro Drive", and four pieces arranged for this game from the bought 1984 Retro and ABYSS loops.
+		{ TEXT("lookBack"), { TEXT("look_back_steelguitar.mp3"), TEXT("Look Back Steelguitar Organ (F 35)"), TEXT("Lobo Loco"), 0.4, true } },
+		{ TEXT("stumping"), { TEXT("stumping_slow_deltablues.mp3"), TEXT("Stumping Slow Deltablues - Guitar Steelguitar (F 30)"), TEXT("Lobo Loco"), 0.4, true } },
+		{ TEXT("standby"), { TEXT("standby_mode.mp3"), TEXT("Standby Mode"), TEXT("Uuriter"), 0.45, true } },
+		{ TEXT("routine"), { TEXT("routine_drone.mp3"), TEXT("Routine Drone"), TEXT("Uuriter"), 0.45, true } },
+		{ S47Score::IntroDriveId, { TEXT("signal47_intro_drive.mp3"), TEXT("Intro Drive"), TEXT("Tom"), 0.38, true } },
+		{ TEXT("nightFreight"), { TEXT("s47_night_freight.mp3"), TEXT("Night Freight"), TEXT("SIGNAL / 47"), 0.38, true } },
+		{ TEXT("coldDish"), { TEXT("s47_cold_dish.mp3"), TEXT("Cold Dish"), TEXT("SIGNAL / 47"), 0.45, true } },
+		{ TEXT("carrierLock"), { TEXT("s47_carrier_lock.mp3"), TEXT("Carrier Lock"), TEXT("SIGNAL / 47"), 0.42, true } },
+		{ TEXT("countyRoad"), { TEXT("s47_county_road.mp3"), TEXT("County Road"), TEXT("SIGNAL / 47"), 0.36, true } },
+		// (Tom, 13 Nov, after hearing those four: "Prøv å mikse sammen de andre musikk-loopene med 1980s-loopene, noe ambient,
+		// skummelt men rolig.") Five beds without drums: the 1984 bundle's synth loops far inside the dark ones (ABYSS, Ambience
+		// SciFi). All at -21.5 LUFS; the gains put each at its pool's median level (file loudness plus gain, measured 13 Nov:
+		// eerie and the motel -28.4 LUFS, the night -28.7, the dawn -28.8), the still one a little under.
+		{ TEXT("thirdShift"), { TEXT("s47_third_shift.mp3"), TEXT("Third Shift"), TEXT("SIGNAL / 47"), 0.45, true } },
+		{ TEXT("dryLake"), { TEXT("s47_dry_lake.mp3"), TEXT("Dry Lake"), TEXT("SIGNAL / 47"), 0.43, true } },
+		{ TEXT("vacancy"), { TEXT("s47_vacancy.mp3"), TEXT("Vacancy"), TEXT("SIGNAL / 47"), 0.45, true } },
+		{ TEXT("greyHour"), { TEXT("s47_grey_hour.mp3"), TEXT("Grey Hour"), TEXT("SIGNAL / 47"), 0.43, true } },
+		{ TEXT("standingWave"), { TEXT("s47_standing_wave.mp3"), TEXT("Standing Wave"), TEXT("SIGNAL / 47"), 0.42, true } },
 	};
 	const TMap<FString, TArray<FString>> CUES = {
-		{ TEXT("night"), { TEXT("cylEight"), TEXT("floating"), TEXT("ossuary1"), TEXT("longNote"), TEXT("lightless"), TEXT("shadows"), TEXT("phantom"), TEXT("cylTwo") } },
-		{ TEXT("eerie"), { TEXT("ossuary5"), TEXT("cylOne"), TEXT("decoherence"), TEXT("longNote") } },
-		{ TEXT("tension"), { TEXT("oldOnes"), TEXT("longNote"), TEXT("lightless"), TEXT("phantom") } },
-		{ TEXT("motel"), { TEXT("solitude"), TEXT("ossuary5"), TEXT("cylOne") } },
-		{ TEXT("drive"), { TEXT("neon"), TEXT("cylTwo"), TEXT("floating"), TEXT("cylEight") } },
-		{ TEXT("town"), { TEXT("nowhere"), TEXT("docks") } },
-		{ TEXT("dawn"), { TEXT("hymn"), TEXT("cylEight"), TEXT("floating") } },
+		// (every pool starts with the pieces whose files are in Git; the optional ones follow)
+		{ TEXT("night"), { TEXT("cylEight"), TEXT("floating"), TEXT("ossuary1"), TEXT("longNote"), TEXT("lightless"), TEXT("shadows"), TEXT("phantom"), TEXT("cylTwo"), TEXT("standby"), TEXT("coldDish"), TEXT("dryLake") } },
+		// ("Standing Wave" is the still one, made for the archive and for waiting: SARO indoors is this pool, the archive with it.
+		// The title screen keeps Tom's own piece, and a pause freezes the score where it is.)
+		{ TEXT("eerie"), { TEXT("ossuary5"), TEXT("decoherence"), TEXT("longNote"), TEXT("standby"), TEXT("routine"), TEXT("coldDish"), TEXT("thirdShift"), TEXT("standingWave") } },
+		{ TEXT("tension"), { TEXT("oldOnes"), TEXT("longNote"), TEXT("lightless"), TEXT("phantom"), TEXT("routine"), TEXT("carrierLock") } },
+		{ TEXT("motel"), { TEXT("solitude"), TEXT("ossuary5"), TEXT("cylTwo"), TEXT("vacancy") } },
+		{ TEXT("drive"), { TEXT("neon"), TEXT("cylTwo"), TEXT("floating"), TEXT("cylEight"), TEXT("lookBack"), TEXT("stumping"), S47Score::IntroDriveId, TEXT("countyRoad"), TEXT("nightFreight") } },
+		// Tom 13 November (d67): "Signs To Nowhere" was jazz too and is gone from the town. Without the staged steel guitar the town
+		// has "Neon" alone, with the score's own quiet between its turns.
+		{ TEXT("town"), { TEXT("neon"), TEXT("lookBack"), TEXT("stumping") } },
+		{ TEXT("dawn"), { TEXT("hymn"), TEXT("cylEight"), TEXT("floating"), TEXT("greyHour") } },
 	};
+	bool MediaPresent(const FString& WebName)
+	{
+		return IFileManager::Get().FileExists(*(FPaths::ProjectContentDir() / TEXT("Audio/Raw/media") / FPaths::ChangeExtension(WebName, TEXT("wav"))));
+	}
+	FString MediaOr(const FString& WebName, const FString& Fallback) { return MediaPresent(WebName) ? WebName : Fallback; }
 }
 
 namespace
@@ -72,12 +103,41 @@ FS47Score::FS47Score(US47Main* InM, const TSharedRef<FS47AudioContext>& InCtx, c
 {
 	FS47AudioContext::FBatch Batch(*Ctx);
 	Bus = Ctx->CreateGain(); Bus->Gain.SetValue(1); Bus->Connect(Dest);
+	Mix = Ctx->CreateGain(); Mix->Connect(Bus);
+}
+
+void FS47Score::Insert(const TSharedPtr<FS47AudioNode>& In, const TSharedPtr<FS47AudioNode>& Out)
+{
+	if (!Mix || !Bus) return;
+	FS47AudioContext::FBatch Batch(*Ctx);
+	if (InsertIn) Mix->Disconnect(InsertIn);
+	if (InsertOut) InsertOut->Disconnect(Bus);
+	Mix->Disconnect(Bus);
+	InsertIn = In.IsValid() && Out.IsValid() ? In : nullptr; InsertOut = InsertIn ? Out : nullptr;
+	if (InsertIn) { Mix->Connect(InsertIn); InsertOut->Connect(Bus); }
+	else Mix->Connect(Bus);
+}
+
+void FS47Score::SetStems(bool bOn, double InTension)
+{
+	bStemsOn = bOn; Tension = FMath::IsFinite(InTension) ? FMath::Clamp(InTension, 0., 1.) : 0.;
+	// (with the stems switched off while a piece plays as stems, all of them come back in: it is the mix again)
+	if (Stems && !bPaused) Stems->Step(bStemsOn ? Tension : 0.);
+}
+
+int32 FS47Score::StemsPlaying() const { return Stems.IsValid() ? Stems->Num() : 0; }
+
+FString FS47Score::PlayingFile() const
+{
+	const FS47ScoreTrack* C = El.IsValid() ? S47Score::TRACKS.Find(Track) : nullptr;
+	return C ? C->File : FString();
 }
 
 FS47Score::~FS47Score()
 {
 	*bAlive = false;
-	Stop();
+	StopNow();
+	Insert(nullptr, nullptr);
 }
 
 // The current imported tracks have no verified BPM/key/stems. Their transitions use a
@@ -114,8 +174,68 @@ double FS47Score::TransitionAt(bool bUrgent) const
 	return Now + (bUrgent ? FMath::Min(0.35, Wait) : Wait);
 }
 
+FString FS47Score::NowPlaying() const
+{
+	const FS47ScoreTrack* C = El && !Track.IsEmpty() ? S47Score::TRACKS.Find(Track) : nullptr;
+	return C ? FString::Printf(TEXT("%s (%s)"), *C->Title, *C->By) : FString();
+}
+
+FString FS47Score::TrackOf(const FString& Piece)
+{
+	if (S47Score::TRACKS.Contains(Piece)) return Piece;
+	const FString Want = FPaths::GetBaseFilename(Piece);
+	for (const TPair<FString, FS47ScoreTrack>& T : S47Score::TRACKS) if (FPaths::GetBaseFilename(T.Value.File) == Want) return T.Key;
+	return FString();
+}
+
+FString FS47Score::CueOf(const FString& InTrack)
+{
+	for (const TCHAR* Cue : { TEXT("night"), TEXT("eerie"), TEXT("tension"), TEXT("motel"), TEXT("drive"), TEXT("town"), TEXT("dawn") })
+		if (const TArray<FString>* Pool = S47Score::CUES.Find(Cue); Pool && Pool->Contains(InTrack)) return Cue;
+	return FString();
+}
+
+bool FS47Score::Own(const FString& Piece)
+{
+	if (Piece.IsEmpty())
+	{
+		if (!OwnTrack.IsEmpty()) UE_LOG(LogTemp, Display, TEXT("S47: score: the render lets go of %s"), *OwnTrack);
+		OwnTrack.Empty(); OwnCue.Empty(); bOwnStemsTried = false;
+		return true;
+	}
+	const FString Key = TrackOf(Piece), Cue = CueOf(Key);
+	if (Key.IsEmpty() || Cue.IsEmpty() || !Present(Key) || !S47Score::bScoreOn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("S47: score: the render asked for %s, which cannot play (%s)"), *Piece, Key.IsEmpty() ? TEXT("no such piece") : TEXT("its file is not staged"));
+		return false;
+	}
+	OwnTrack.Empty(); // (so that the stop below is not held)
+	if (bPaused) Pause(false);
+	if (El && Track == Key && Playing == Cue && !(bStemsOn && !Stems)) { OwnTrack = Key; OwnCue = Cue; return true; }
+	StopNow();
+	Begin(Cue, Key, .05);
+	OwnTrack = Key; OwnCue = Cue; bOwnStemsTried = bStemsOn;
+	UE_LOG(LogTemp, Display, TEXT("S47: score: the render owns the score: %s (%s), %s"), *Key, *Cue, Stems ? TEXT("as its stems") : TEXT("as its mix"));
+	return El.IsValid();
+}
+
 void FS47Score::Update(double Dt, const FString& InWant, bool bHeld)
 {
+	if (!OwnTrack.IsEmpty())
+	{
+		// SIDEBAND-20261113: the render's piece, whatever the night asks; once more through the stems if they came on after it began
+		if (bPaused) Pause(false);
+		if (!El || Track != OwnTrack || (bStemsOn && !Stems && !bOwnStemsTried))
+		{
+			bOwnStemsTried = bStemsOn;
+			const FString Key = OwnTrack; OwnTrack.Empty(); StopNow(); Begin(OwnCue, Key, .05);
+			if (!El) { UE_LOG(LogTemp, Warning, TEXT("S47: score: the render's piece %s would not start again: the score is let go"), *Key); OwnCue.Empty(); return; }
+			OwnTrack = Key;
+			UE_LOG(LogTemp, Display, TEXT("S47: score: the render's piece %s again, %s"), *Key, Stems ? TEXT("as its stems") : TEXT("as its mix"));
+		}
+		RequestedMood.Empty(); RequestedSeverity = 0;
+		return;
+	}
 	if (bPaused)
 	{
 		if (Cosmic) Cosmic->Pause(true);
@@ -197,7 +317,10 @@ FString FS47Score::Pick(const FString& Cue) const
 	const TArray<FString>* Found = Cue == TEXT("action") ? &Action
 		: Cue == TEXT("calm") ? &Calm : S47Score::CUES.Find(PoolFor(Cue));
 	if (!Found || Found->IsEmpty()) return FString();
-	const TArray<FString>& List = *Found;
+	// MUSIC-20261113: an optional piece is in the pool only while its file is there
+	TArray<FString> List;
+	for (const FString& K : *Found) if (Present(K)) List.Add(K);
+	if (List.IsEmpty()) return FString();
 	TArray<FString> Fresh;
 	for (const FString& K : List) if (K != Track) Fresh.Add(K);
 	const TArray<FString>& Pool = Fresh.IsEmpty() ? List : Fresh;
@@ -212,10 +335,19 @@ FString FS47Score::Pick(const FString& Cue) const
 	return Pool[Best];
 }
 
+bool FS47Score::Present(const FString& InTrack) const
+{
+	const FS47ScoreTrack* C = S47Score::TRACKS.Find(InTrack);
+	if (!C) return false;
+	if (!C->bOptional) return true;
+	return HasFile ? HasFile(*C) : S47Score::MediaPresent(TEXT("music/") + C->File);
+}
+
 // Start remains the named developer entry point; normal state changes use the same two decks.
 void FS47Score::Start(const FString& Cue, const FString& InTrack)
 {
 	if (!S47Score::bScoreOn) return;
+	if (!OwnTrack.IsEmpty()) { UE_LOG(LogTemp, Display, TEXT("S47: score: %s held off: the render owns the score"), *Cue); return; }
 	const FString Next = InTrack.IsEmpty() ? Pick(Cue) : InTrack;
 	if (!S47Score::TRACKS.Contains(Next) || !KnownCue(Cue)) return;
 	if (El && Track == Next) Stop(); // Explicit named replay; adaptive Begin keeps its position.
@@ -227,6 +359,7 @@ void FS47Score::RetireOutgoing()
 {
 	FS47AudioContext::FBatch B(*Ctx);
 	SilenceDeck(Outgoing, OutgoingGain); OutgoingUntil = 0; OutgoingCue.Empty();
+	if (OutgoingStems) { OutgoingStems->Close(); OutgoingStems.Reset(); }
 }
 
 void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSeconds)
@@ -236,7 +369,9 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 	// A piece may suit two moods. Recategorize it without replaying its intro.
 	// Explicit developer Start still restarts because it calls Stop first.
 	if (El && Track == InTrack) { Playing = Cue; return; }
-	const TSharedPtr<FS47MediaSource> NewEl = FS47MediaSource::Open(Ctx, TEXT("music/") + C->File);
+	// SIDEBAND-20261113: an own mix as its stems when they are staged (the first of them leads, as El); else the mix file
+	const TSharedPtr<FS47ScoreStems> NewStems = bStemsOn ? FS47ScoreStems::Open(Ctx, C->File, Tension) : nullptr;
+	const TSharedPtr<FS47MediaSource> NewEl = NewStems ? NewStems->Leader() : FS47MediaSource::Open(Ctx, TEXT("music/") + C->File);
 	if (!NewEl) { if (!El) Rest = 120; return; }
 	FS47AudioContext::FBatch B(*Ctx);
 	// An interrupted transition keeps the louder deck under the incoming music, instead of
@@ -245,24 +380,34 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 	if (Outgoing && OutgoingGain && Gain && OutgoingGain->Gain.ValueAt(Now) > Gain->Gain.ValueAt(Now))
 	{
 		Swap(El, Outgoing); Swap(Gain, OutgoingGain); Swap(Playing, OutgoingCue); // Playing is set again below
+		Swap(Stems, OutgoingStems);
 	}
 	RetireOutgoing(); ++Generation; bFading = false;
 	if (El)
 	{
-		Outgoing = El; OutgoingGain = Gain; OutgoingCue = Playing;
+		Outgoing = El; OutgoingGain = Gain; OutgoingCue = Playing; OutgoingStems = Stems;
 		Outgoing->OnEnded = nullptr; Outgoing->OnError = nullptr;
 		OutgoingGain->Gain.CancelAndHoldAtTime(Now);
 		OutgoingGain->Gain.LinearRampToValueAtTime(0, Now + FadeSeconds);
 		OutgoingUntil = Now + FadeSeconds;
 	}
 	const TSharedPtr<FS47GainNode> G = Ctx->CreateGain(); G->Gain.SetValue(0);
-	NewEl->Connect(G); G->Connect(Bus);
+	if (NewStems) NewStems->Out()->Connect(G); else NewEl->Connect(G);
+	G->Connect(Mix);
+	Stems = NewStems;
 	G->Gain.SetValueAtTime(0, Now); G->Gain.LinearRampToValueAtTime(C->Gain, Now + FadeSeconds);
 	RampUntil = Now + FadeSeconds; TargetGain = C->Gain;
 	const TWeakPtr<FS47MediaSource> WeakEl = NewEl;
 	NewEl->OnEnded = [this, Alive = bAlive, WeakEl] { if (*Alive && El == WeakEl.Pin()) Done(Rnd(4, 15)); };
 	NewEl->OnError = [this, Alive = bAlive, WeakEl] { if (*Alive && El == WeakEl.Pin()) Done(120); };
 	El = NewEl; Gain = G; Playing = Cue; Track = InTrack; Last.Add(InTrack, T);
+	// MUSIC-20261113 (Tom heard a soft piano at night and could not name it): every piece change, with the clock and the cue
+	{
+		const double Clock = M && M->IsFreeform() && M->Freeform ? M->Freeform->Clock() : M && M->Story ? M->Story->Clock() : -1;
+		const double Hour = Clock >= 0 ? FMath::Fmod(Clock, 86400.) / 3600. : -1;
+		UE_LOG(LogTemp, Display, TEXT("S47: score: now playing \"%s\" by %s (%s, cue %s%s), game clock %s"), *C->Title, *C->By, *InTrack, *Cue, NewStems ? TEXT(", as its stems") : TEXT(""),
+			Hour < 0 ? TEXT("none") : *FString::Printf(TEXT("%02d:%02d"), int32(Hour), int32(FMath::Fmod(Hour * 60., 60.))));
+	}
 	if (!NewEl->Play() && El == NewEl) Done(30);
 	else if (bPaused) NewEl->Pause();
 }
@@ -270,6 +415,7 @@ void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSec
 // Explicit fades and listening holds fade both decks. The generation protects replacements.
 void FS47Score::Fade(double Secs, double Quiet)
 {
+	if (!OwnTrack.IsEmpty()) { UE_LOG(LogTemp, Display, TEXT("S47: score: a fade of %.1f s held off: the render owns the score"), Secs); return; }
 	if (Cosmic) Cosmic->Set(FString(), true);
 	if (!El || !Gain || bFading) return;
 	Secs = FMath::IsFinite(Secs) ? FMath::Clamp(Secs, 0.01, 30.0) : 0.35;
@@ -289,10 +435,17 @@ void FS47Score::Fade(double Secs, double Quiet)
 
 void FS47Score::Stop()
 {
+	if (!OwnTrack.IsEmpty()) { UE_LOG(LogTemp, Display, TEXT("S47: score: a stop held off: the render owns the score")); return; }
+	StopNow();
+}
+
+void FS47Score::StopNow()
+{
 	if (Cosmic) { FS47AudioContext::FBatch Batch(*Ctx); Cosmic->Disconnect(); Cosmic.Reset(); }
 	FS47AudioContext::FBatch B(*Ctx);
 	++Generation;
 	SilenceDeck(El, Gain); RetireOutgoing();
+	if (Stems) { Stems->Close(); Stems.Reset(); }
 	Playing.Empty(); Pending.Empty(); Candidate.Empty(); RequestedMood.Empty(); RequestedSeverity = 0;
 	bFading = false; bPaused = false; bRecovering = false; ActionUntil = RecoveryUntil = 0;
 }
@@ -301,6 +454,7 @@ void FS47Score::Stop()
 void FS47Score::Pause(bool bOn)
 {
 	if (bOn == bPaused) return;
+	if (bOn && !OwnTrack.IsEmpty()) { UE_LOG(LogTemp, Display, TEXT("S47: score: a pause held off: the render owns the score")); return; }
 	FS47AudioContext::FBatch B(*Ctx);
 	const double Now = Ctx->CurrentTime();
 	bPaused = bOn;
@@ -330,7 +484,7 @@ void FS47Score::Done(double Quiet)
 	// A natural track gap keeps the same texture, seed and reference timeline.
 	const bool WasPaused = bPaused;
 	auto KeepCosmic = MoveTemp(Cosmic);
-	Stop(); Cosmic = MoveTemp(KeepCosmic); bPaused = WasPaused; Rest = Quiet;
+	StopNow(); Cosmic = MoveTemp(KeepCosmic); bPaused = WasPaused; Rest = Quiet;
 }
 
 // main.ts musicWant: keep these tests in the same order as the original.
@@ -433,8 +587,62 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 	auto Check = [&Lines, &bOk](bool bPass, const TCHAR* What) { Lines.Add(FString::Printf(TEXT("%s score: %s"), bPass ? TEXT("PASS") : TEXT("FAIL"), What)); bOk &= bPass; };
 	const TSharedRef<FS47AudioContext> C = FS47AudioContext::Make();
 	FS47Score S(nullptr, C, C->Destination);
-	Check(S47Score::TRACKS.Num() == 17 && S47Score::CUES.Num() == 7, TEXT("17 tracks and seven cues"));
-	Check(S47Score::CUES.FindChecked(TEXT("night"))[0] == TEXT("cylEight") && S47Score::CUES.FindChecked(TEXT("town"))[1] == TEXT("docks"), TEXT("cue order"));
+	Check(S47Score::TRACKS.Num() == 28 && S47Score::CUES.Num() == 7 && !S47Score::TRACKS.Contains(TEXT("nowhere")), TEXT("28 tracks and seven cues; the town's jazz is not among them"));
+	// SIDEBAND-20261113: the render names its piece by key or by file, and plays it in its first pool
+	Check(TrackOf(TEXT("s47_cold_dish")) == TEXT("coldDish") && TrackOf(TEXT("coldDish")) == TEXT("coldDish") && TrackOf(TEXT("nothing_such")).IsEmpty() && CueOf(TEXT("coldDish")) == TEXT("night")
+		&& !S.Owned() && !S.Own(TEXT("nothing_such")) && !S.Owned(), TEXT("a render's piece by key or file name, in its first pool; an unknown one is refused and owns nothing"));
+	Check(S47Score::CUES.FindChecked(TEXT("night"))[0] == TEXT("cylEight") &&S47Score::CUES.FindChecked(TEXT("town"))[0] == TEXT("neon") && S47Score::CUES.FindChecked(TEXT("town"))[1] == TEXT("lookBack"), TEXT("cue order"));
+	// MUSIC-20261113: the jazz and the night's solo keyboard are gone from the table and every pool; the pools stand without the optional files
+	{
+		bool bGone = !S47Score::TRACKS.Contains(TEXT("docks")) && !S47Score::TRACKS.Contains(TEXT("cylOne")), bTwo = true, bInGit = true, bFilesOnce = true, bOptionalLast = true;
+		TSet<FString> Files;
+		for (const auto& Tr : S47Score::TRACKS)
+		{
+			bGone &= !Tr.Value.File.Contains(TEXT("night_on_the_docks")) && !Tr.Value.File.Contains(TEXT("cylinder_one"));
+			bFilesOnce &= !Files.Contains(Tr.Value.File) && Tr.Value.Gain > 0.2 && Tr.Value.Gain <= 0.5 && !Tr.Value.Title.IsEmpty() && !Tr.Value.By.IsEmpty();
+			Files.Add(Tr.Value.File);
+		}
+		for (const auto& Cue : S47Score::CUES)
+		{
+			int32 InGit = 0; bool bSeenOptional = false; TSet<FString> Seen;
+			for (const FString& K : Cue.Value)
+			{
+				const FS47ScoreTrack* Tr = S47Score::TRACKS.Find(K);
+				bGone &= K != TEXT("docks") && K != TEXT("cylOne");
+				bFilesOnce &= !Seen.Contains(K); Seen.Add(K);
+				if (!Tr) continue; // (the missing-id check below names it)
+				if (Tr->bOptional) bSeenOptional = true; else { ++InGit; bOptionalLast &= !bSeenOptional; }
+			}
+			bTwo &= Cue.Value.Num() >= 2; bInGit &= InGit >= 1;
+		}
+		Check(bGone, TEXT("Night on the Docks and Cylinder One are in no pool and not in the table"));
+		Check(bTwo && bInGit && bOptionalLast, TEXT("every pool has at least two pieces, one or more with its file in Git, the optional ones after them"));
+		Check(bFilesOnce, TEXT("every piece has its own file, a title, a credit and a gain like the others; no pool names a piece twice"));
+		const FS47ScoreTrack* Own = S47Score::TRACKS.Find(S47Score::IntroDriveId);
+		Check(Own && Own->bOptional && FString(S47Score::IntroDriveId) == TEXT("signal47_intro_drive") && FString(S47Score::IntroDriveFile) == TEXT("music/") + Own->File
+			&& S47Score::CUES.FindChecked(TEXT("drive")).Contains(S47Score::IntroDriveId), TEXT("Tom's Intro Drive is signal47_intro_drive, optional, in the drive's pool, and its media name is its file"));
+		Check(S47Score::MediaOr(TEXT("music/s47_no_such_piece.mp3"), TEXT("radio/bama_country.mp3")) == TEXT("radio/bama_country.mp3"), TEXT("a staged piece that is not there gives its fallback"));
+		// The five quiet mixes of 13 Nov: each optional, a file of its own in the s47_ scheme, and only in the pools of the places it was made for
+		{
+			const TMap<FString, TArray<FString>> Quiet = {
+				{ TEXT("thirdShift"), { TEXT("eerie") } }, { TEXT("dryLake"), { TEXT("night") } }, { TEXT("vacancy"), { TEXT("motel") } },
+				{ TEXT("greyHour"), { TEXT("dawn") } }, { TEXT("standingWave"), { TEXT("eerie") } },
+			};
+			bool bQuiet = true;
+			for (const auto& Q : Quiet)
+			{
+				const FS47ScoreTrack* Tr = S47Score::TRACKS.Find(Q.Key);
+				bQuiet &= Tr && Tr->bOptional && Tr->File.StartsWith(TEXT("s47_")) && Tr->File.EndsWith(TEXT(".mp3")) && Tr->By == TEXT("SIGNAL / 47") && Tr->Gain >= 0.4 && Tr->Gain <= 0.45;
+				for (const auto& Cue : S47Score::CUES) bQuiet &= Cue.Value.Contains(Q.Key) == Q.Value.Contains(Cue.Key);
+			}
+			Check(bQuiet, TEXT("the five quiet mixes are optional, s47_ files, and each only in the pool of its place: SARO indoors, the land, the motel, the dawn"));
+			FS47Score Room(nullptr, C, C->Destination);
+			Room.HasFile = [](const FS47ScoreTrack& Tr) { return Tr.File == TEXT("s47_vacancy.mp3"); };
+			Room.Last.Add(TEXT("solitude"), 0); Room.Last.Add(TEXT("ossuary5"), 0); Room.Last.Add(TEXT("cylTwo"), 0); Room.Last.Add(TEXT("vacancy"), -1000);
+			Check(Room.Pick(TEXT("motel")) == TEXT("vacancy") && !Room.Present(TEXT("greyHour")) && Room.Pick(TEXT("recovery")) == TEXT("vacancy"),
+				TEXT("a staged quiet mix is picked in its pool (the motel's, and recovery with it), and the unstaged ones are not there"));
+		}
+	}
 	Check(S.Rest >= 6 && S.Rest <= 14, TEXT("initial quiet 6 to 14 seconds"));
 	{
 		FS47Score Layer(nullptr, C, C->Destination);
@@ -449,18 +657,36 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 		Layer.Stop();
 		Check(!Layer.HasAudio() && !Layer.Cosmic, TEXT("full score stop releases cosmic audio even without a deck"));
 	}
-	S.Track = TEXT("nowhere");
-	Check(S.Pick(TEXT("town")) == TEXT("docks"), TEXT("does not immediately repeat a piece"));
-	S.Track.Empty(); S.Last.Add(TEXT("nowhere"), -1000); S.Last.Add(TEXT("docks"), 0);
-	Check(S.Pick(TEXT("town")) == TEXT("nowhere"), TEXT("longest unheard wins beyond the random 120 seconds"));
+	// (the picks below are the same on a machine with the staged files and on one without: the test says which are there)
+	S.HasFile = [](const FS47ScoreTrack&) { return true; };
+	S.Track = TEXT("neon"); S.Last.Add(TEXT("lookBack"), 0);
+	Check(S.Pick(TEXT("town")) == TEXT("stumping"), TEXT("does not immediately repeat a piece"));
+	S.Track.Empty(); S.Last.Add(TEXT("neon"), -1000); S.Last.Add(TEXT("stumping"), 0);
+	Check(S.Pick(TEXT("town")) == TEXT("neon"), TEXT("longest unheard wins beyond the random 120 seconds"));
+	{
+		bool bEveryPiece = true;
+		for (const auto& Cue : S47Score::CUES) for (const FString& K : Cue.Value) bEveryPiece &= S.Present(K);
+		Check(bEveryPiece && !S.Present(TEXT("docks")) && !S.Present(TEXT("cylOne")), TEXT("with the staged files every pool's pieces can be picked, and the removed ones cannot"));
+		S.HasFile = [](const FS47ScoreTrack&) { return false; };
+		bool bNoOptional = true;
+		for (int32 I = 0; I < 40; ++I) for (const auto& Cue : S47Score::CUES) { const FS47ScoreTrack* Tr = S47Score::TRACKS.Find(S.Pick(Cue.Key)); bNoOptional &= Tr && !Tr->bOptional; }
+		Check(bNoOptional && !S.Present(TEXT("lookBack")) && S.Present(TEXT("neon")), TEXT("without the staged files no pool picks an optional piece, and none is left empty"));
+		S.Track = TEXT("neon");
+		Check(S.Pick(TEXT("town")) == TEXT("neon"), TEXT("a pool down to one piece plays it again rather than nothing"));
+		S.Track.Empty();
+		S.HasFile = [](const FS47ScoreTrack& Tr) { return Tr.File == TEXT("look_back_steelguitar.mp3"); };
+		S.Last.Add(TEXT("neon"), 0); S.Last.Add(TEXT("lookBack"), -1000);
+		Check(S.Pick(TEXT("town")) == TEXT("lookBack") && S.Present(TEXT("lookBack")) && !S.Present(TEXT("stumping")), TEXT("a staged optional piece joins its pool, and only that one"));
+		S.HasFile = [](const FS47ScoreTrack&) { return false; };
+	}
 	S.Rest = 1; S.Update(2, TEXT("night"), true);
 	Check(S.Rest == 4 && S.T == 2 && S.Playing.IsEmpty(), TEXT("held music waits at least four seconds"));
 	S.Rest = 2; S.Update(1, FString(), false);
 	Check(S.Rest == 4 && S.T == 3, TEXT("no wanted cue also holds the quiet"));
 	S.Done(15);
 	Check(S.Rest == 15 && S.Track.IsEmpty() && S.Playing.IsEmpty(), TEXT("done sets the next quiet"));
-	S.Track = TEXT("docks"); S.Stop();
-	Check(S.Track == TEXT("docks") && S.Rest == 15, TEXT("stop keeps the last track and quiet"));
+	S.Track = TEXT("neon"); S.Stop();
+	Check(S.Track == TEXT("neon") && S.Rest == 15, TEXT("stop keeps the last track and quiet"));
 	bool bAllTracks = true;
 	for (const auto& Cue : S47Score::CUES) for (const FString& K : Cue.Value) bAllTracks &= S47Score::TRACKS.Contains(K);
 	Check(bAllTracks, TEXT("every cue references an existing track"));

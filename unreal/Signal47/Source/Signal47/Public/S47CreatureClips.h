@@ -32,7 +32,9 @@ class FS47ClipBank
 public:
  static constexpr double Rate=24;
  // Null if this mesh has no walk and nothing to stand in under the prefix: the body then keeps its procedural motions.
- static TSharedPtr<FS47ClipBank> For(const USkeletalMesh* Mesh,const FS47TripoCreature& Creature,const TCHAR* Prefix);
+ // ANIM-TRY (Free100 on trial): for the clip names in Prefer only, a clip under PreferPrefix on the same skeleton is worn instead
+ // of the one under Prefix; without it, the one under Prefix as before. Today's clips stay until the new one is approved.
+ static TSharedPtr<FS47ClipBank> For(const USkeletalMesh* Mesh,const FS47TripoCreature& Creature,const TCHAR* Prefix,const TCHAR* PreferPrefix=nullptr,const TArray<FString>* Prefer=nullptr);
  bool Has(ES47Clip Clip) const;
  double Seconds(ES47Clip Clip) const;
  // What this bank stands in when nothing else is asked.

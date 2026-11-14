@@ -9,6 +9,7 @@
 #include "S47Openings.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
+#include "S47Happenings.h"
 #include "S47Legs.h"
 #include "S47Main.h"
 #include "S47Night.h"
@@ -417,6 +418,7 @@ void FS47HighwayUfo::Draw()
 void FS47HighwayUfo::Note()
 {
  if(bLogged||!bSeen||!M)return;bLogged=true;
+ FS47Happenings::TellOther(M,TEXT("highway ufo"),FString::Printf(TEXT("%d"),Serial)); // M1-MEASURE-20261113: seen, as its record says
  FString Text=bFollow?TEXT("A low light came up behind the truck and followed it along the highway."):TEXT("A low red light moved along the highway.");
  if(bSawCar&&!bFollow)Text+=TEXT(" A patrol car followed it.");
  if(bSawPass)Text+=TEXT(" Then the light turned back and came past me low, lighting up the road.");

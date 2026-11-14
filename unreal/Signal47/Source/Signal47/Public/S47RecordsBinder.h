@@ -13,13 +13,15 @@
 //   CASES          one sheet for each case, open or closed, with its pages (originals, test recordings, leads) listed under it
 //   DAILY WORK     every original by day; FILED once its packet is in the binder, HELD AT OPS until then
 //   FIELD + BENCH  what was retained in the field, on the station round and at the workshop bench, by day
+//   UNKNOWNS       EVIDENCE-DOSSIER-20261113: the operator's own files of what is out there and not yet known, one sheet each, as the
+//                  notebook has them (S47Dossier.h); at the binder itself a file is named and two are filed as one (slice 3)
 //   STATION FILES  the station's own papers as the duty officer releases them; read only
 //
 // One page belongs to one divider (its home). TODAY and a case's list point at pages that live behind other dividers; ENTER on such
 // a line turns to the page's own divider, and ENTER on a page that belongs to a case turns to the case.
 namespace S47Binder
 {
- enum ESection : int32 { SecIndex=0, SecToday, SecCases, SecDaily, SecField, SecStation, SecCount };
+ enum ESection : int32 { SecIndex=0, SecToday, SecCases, SecDaily, SecField, SecUnknowns, SecStation, SecCount };
 
  // ---------- what the session hands over ----------
  struct FJobIn
@@ -38,12 +40,23 @@ namespace S47Binder
   TArray<FString> Tests,Leads; // Tests: one line for each result registered; Leads: the keys of the findings kept as its leads
  };
  struct FFileIn { FString Key,Title,Text; int32 Day=1; bool bSeen=false; };
+ // EVIDENCE-DOSSIER-20261113: one file of the unknown, typed by the session (S47Dossier::Sheet): its number, its title ("UNKNOWN 2"),
+ // its stage, the sheet, and the first and the last day something went in.
+ // Slice 3 (14 November): the player's name and the suggestion the name field is filled with; FILED (named, at HABITS); the other
+ // files as they stand, that it could be filed as one with (those kept beside it first, and marked); the ones filed in it tonight,
+ // that can be taken out again until 08:00. Naming and filing as one are done only at the binder itself (FSource::bAtBinder).
+ struct FUnknownIn
+ {
+  int32 Number=0; FString Title,Stage,Body; int32 Opened=0,Latest=0; bool bAtMarks=false;
+  FString Name,Suggest; bool bFiled=false;
+  TArray<int32> Others,TakeOut; TArray<bool> OthersBeside;
+ };
  struct FSource
  {
   int32 Today=1;FDateTime Day1=FDateTime(1986,4,28);
   bool bAtBinder=false; // the operator stands at the binder itself: a packet can go in
   FString ToFileId;     // the job whose packet the next filing puts in (FS47FreeformSession::FilePacket's choice); empty for none
-  TArray<FJobIn> Jobs;TArray<FFindingIn> Findings;TArray<FCaseIn> Cases;TArray<FFileIn> Files;
+  TArray<FJobIn> Jobs;TArray<FFindingIn> Findings;TArray<FCaseIn> Cases;TArray<FFileIn> Files;TArray<FUnknownIn> Unknowns;
   int32 FilesHeld=0; // station files the duty officer has not released yet
   FString Older;     // the binder from before, on the same shelf: its label, empty for none
  };
@@ -51,7 +64,7 @@ namespace S47Binder
  // ---------- the binder ----------
  struct FEntry
  {
-  FString Key;                 // "job:<id>", "rec:<finding key>", "case:<line>", "file:<key>"
+  FString Key;                 // "job:<id>", "rec:<finding key>", "case:<line>", "file:<key>", "unk:<number>"
   int32 Home=SecDaily;            // the divider it is filed behind
   int32 Day=0,Rank=0,Seq=0;    // Day: the day it belongs to (0: undated). Within a divider: higher Rank first, then lower Seq
   int32 TodayGroup=-1;         // on TODAY: 0 to file, 1 filed today, 2 retained today, 3 still at OPS; -1 not there
@@ -63,12 +76,18 @@ namespace S47Binder
   FString Link,LinkLabel;      // the page it belongs with (a case), and the words for turning to it
   TArray<FString> Children;    // a case's pages: keys of entries behind other dividers
   FString Stamp;               // the rubber stamp on a filed page; empty when it is not in the binder
+  // EVIDENCE-DOSSIER slice 3: a file of the unknown (its number, 0 for any other page), its name, the suggestion, and what can be
+  // done with it at the binder: filed as one with another (Others, OthersBeside), one filed in it taken out again (TakeOut)
+  int32 Unknown=0;
+  FString NameNow,NameSuggest;
+  TArray<int32> Others,TakeOut; TArray<bool> OthersBeside;
  };
  // A line of a divider's list. A heading (bHead) is not chosen. Id is unique within the list.
  struct FRow
  {
   FString Id,Left,Mid,Right; // Left and Right on the first line, Mid under them
   FString Jump,Act;          // ENTER: turn to this entry (Jump), with the words for it (Act); "FILE THE PACKET" on the packet in hand
+  FString Do;                // EVIDENCE-DOSSIER slice 3: ENTER asks the session to do this ("name:2", "merge:1:3", "out:1:3"), at the binder only
   int32 Entry=-1,Indent=0,Goto=-1,Tone=0; // Goto: ENTER turns to this divider
   bool bHead=false,bFile=false,bOlder=false,bNew=false;
  };
@@ -101,6 +120,10 @@ namespace S47Binder
  SIGNAL47_API FString RecordKey(const FString& FindingKey);
  SIGNAL47_API FString CaseKey(int32 Line);
  SIGNAL47_API FString FileKey(const FString& Key);
+ SIGNAL47_API FString UnknownKey(int32 Number);
+ // EVIDENCE-DOSSIER slice 3 (REVIEW 14 Nov): the file whose page the slip of a Do ("name:2", "merge:3:1", "out:1:3") goes on: the
+ // number it was done from, and for two filed as one (bDone) the lower, which is the one that stands; 0 for none.
+ SIGNAL47_API int32 PageAfterDo(const FString& Do,bool bDone);
  // The binder's own words keep to Freeform's spoiler limits (S47Script::LintText). Empty when all is well.
  SIGNAL47_API FString Lint();
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);

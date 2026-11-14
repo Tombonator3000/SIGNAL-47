@@ -21,6 +21,8 @@ namespace
 	FRWLock Lock;
 	TArray<FSiteEdits> Sites;
 	std::atomic<int32> Count{ 0 };
+	TArray<TPair<FString, FRect>> BareRects;      // SetBare
+	std::atomic<int32> BareCount{ 0 };
 	bool bBakedRead = false;
 	TArray<FSiteEdits> BakedSites;
 
@@ -97,6 +99,14 @@ void Set(const FString& Id, const TArray<FPad>& Pads, const TArray<FCut>& Cuts)
 	}
 }
 
+void SetBare(const FString& Id, const TArray<FRect>& Bare)
+{
+	FWriteScopeLock W(Lock);
+	BareRects.RemoveAll([&Id](const TPair<FString, FRect>& B) { return B.Key == Id; });
+	for (const FRect& R : Bare) BareRects.Add({ Id, R });
+	BareCount = BareRects.Num();
+}
+
 double Apply(double X, double Z, double Y)
 {
 	if (Count.load(std::memory_order_relaxed) == 0 || !S47Relief::Active()) return Y;
@@ -118,8 +128,9 @@ double Apply(double X, double Z, double Y)
 
 bool Clears(double X, double Z, double Margin)
 {
-	if (Count.load(std::memory_order_relaxed) == 0 || !S47Relief::Active()) return false;
+	if ((Count.load(std::memory_order_relaxed) == 0 && BareCount.load(std::memory_order_relaxed) == 0) || !S47Relief::Active()) return false;
 	FReadScopeLock R(Lock);
+	for (const TPair<FString, FRect>& B : BareRects) if (Outside(B.Value, X, Z) <= Margin) return true;
 	for (const FSiteEdits& S : Sites)
 	{
 		if (X < S.Box.Min.X - Margin || X > S.Box.Max.X + Margin || Z < S.Box.Min.Y - Margin || Z > S.Box.Max.Y + Margin) continue;
@@ -179,6 +190,14 @@ bool SelfTest(TArray<FString>& Lines)
 	Check(Outside(R, 10, 20) == 0 && Outside(R, 14, 22) == 0 && FMath::IsNearlyEqual(Outside(R, 17, 20), 3.0) && FMath::IsNearlyEqual(Outside(R, 17, 26), 5.0), TEXT("a point's distance to a rectangle is 0 inside, straight out from a side, round at a corner"));
 	FRect T = R; T.Yaw = 90;
 	Check(Outside(T, 12, 24) == 0 && Outside(T, 14, 20) > 1.9, TEXT("a rectangle turned a quarter has its long side the other way"));
+	{
+		FRect B; B.X = -900; B.Z = -900; B.HalfX = 3; B.HalfZ = 2;
+		SetBare(TEXT("selftest"), { B });
+		const bool bOn = S47Relief::Active();
+		const bool bIn = Clears(-900, -900), bOut = Clears(-890, -900), bLand = Apply(-900, -900, 7.5) == 7.5;
+		SetBare(TEXT("selftest"), {});
+		Check((bIn == bOn) && !bOut && bLand && !Clears(-900, -900), TEXT("bare ground keeps plants off its rectangle (with the relief on), leaves the land's height alone and goes when taken away"));
+	}
 	// (the list as it stands is whatever the sites gave: measured, not changed)
 	const bool bWas = S47Relief::Active();
 	int32 N = 0; double Worst = 0;

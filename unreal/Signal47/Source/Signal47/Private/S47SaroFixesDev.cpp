@@ -174,7 +174,7 @@ void FS47DevFreeform::AddSaroFixes(FS47DevEvents& E)
   {
    After(2.5, [this, Log]
    {
-    TArray<FString> Lines; S47SaroFixes::Report(M, Lines); S47RecordsDressing::Report(M, Lines);
+    TArray<FString> Lines; S47SaroFixes::Report(M, Lines); S47RecordsDressing::Report(M, Lines); S47RecordsRoom::Report(M, Lines);
     Log(Lines);
     int32 Stuck = 0; for (const FString& L : Lines) Stuck += L.Contains(TEXT("waiting")) ? 1 : 0;
     Tell(Stuck == 0, FString::Printf(TEXT("%d lines, %d waiting (the log has each)"), Lines.Num(), Stuck), 10);

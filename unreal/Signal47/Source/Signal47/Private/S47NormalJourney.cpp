@@ -255,7 +255,7 @@ namespace
    if(Stage>=601&&Stage<=608)
    {
     const auto* J=F.CurrentJob();if(!J||J->Id!=CaptureJob)return Finish(false,TEXT("same selected capture job lost"));
-   if(Stage==601){if(F.StartAcquisition()){Go(602);}return true;}
+   if(Stage==601){F.AcquireSky();if(F.StartAcquisition()){Go(602);}return true;} // RX-ACQUIRE-SKY-20261113: the sky fix first, once the array has settled
    if(Stage==602)
    {
     if(!J->CaptureOriginal.Failure.IsEmpty())return Finish(false,J->CaptureOriginal.Failure);
@@ -273,9 +273,10 @@ namespace
     if(Age-At<.4)return true;
     if(!Check(M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())==TEXT("printer")&&bool(M->Player->OnUse),TEXT("actual printer selectable by physical eye ray")))return false;
     M->Player->OnUse(TEXT("printer"));M->UI->Close(true);J=F.CurrentJob();
+    if(J&&FS47FreeformSession::RetainWaits(*J)&&!Check(F.RetainTake(),TEXT("RX-ANOMALY-FLOW-20261113: RETAIN TAKE at the receiver keeps the original and starts its reference")))return false;
     if(!Check(J->Stage==FS47FreeformSession::EJobStage::Recorded&&!J->OriginalPage.IsEmpty(),TEXT("actual printed original retained")))return false;Document=J->OriginalPage;
     const auto* P=F.ConsoleProfile();M->Story->Rx.Gain=P->Gain[0];M->Story->Rx.Bandwidth=P->Bw[0];M->Player->Place(0,-2.15,0);F.OpenReceiver();
-    if(!Check(F.StartControl(),TEXT("production eight-second internal reference begins with own settings")))return false;Go(604);return true;
+    if(!Check(J->bControl||F.StartControl(),TEXT("production eight-second internal reference begins with own settings")))return false;Go(604);return true;
    }
    if(Stage==604)
    {
@@ -334,7 +335,8 @@ namespace
     case 13:if(!Use(TEXT("crtRight")))return false;Go(14);break;
     case 14:if(FParse::Param(FCommandLine::Get(),TEXT("S47JourneyTrackingDrag"))){if(!DragMarker())return true;}else Main->Freeform->AimAtSource();if(!Enabled(TEXT("POINT ARRAY")))return true;/* A button's state follows on the next frame. */if(!Click(TEXT("POINT ARRAY"))||!Place(TEXT("crtCenter")))return false;Go(15);break;
     case 15:if(!Use(TEXT("crtCenter")))return false;Go(16);break;
-    case 16:if(Tune())Go(17);break;
+    case 16:if(!F.AcquireSky())return true;Go(161);break; // RX-ACQUIRE-SKY-20261113: the fix once the array has settled (FS47FreeformSession::AcquireSky); the page goes over to TUNE by itself
+    case 161:if(Tune())Go(17);break;
     case 17:if(!Enabled(TEXT("START RECORDING")))return true;if(!Click(TEXT("START RECORDING")))return false;M->UI->Close(true);Go(18);break;
     case 18:if(!F.CurrentJob()||F.CurrentJob()->Stage!=FS47FreeformSession::EJobStage::Chart||F.PrinterProgress()<1)return true;if(!Place(TEXT("printer")))return false;Go(19);break;
     case 19:if(!Use(TEXT("printer")))return false;Go(20);break;

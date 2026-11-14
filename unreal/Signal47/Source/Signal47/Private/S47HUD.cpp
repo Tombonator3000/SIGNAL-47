@@ -1,4 +1,5 @@
 #include "S47HUD.h"
+#include "S47LandWindmill.h"
 #include "S47GroundEdits.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -41,6 +42,7 @@
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
+#include "S47LandPlaceFixes.h"
 #include "S47FreeformDirector.h"
 #include "S47CaseFieldTests.h"
 #include "S47HighwayUfo.h"
@@ -103,6 +105,9 @@
 #include "S47RoomLightsTest.h"
 #include "S47ReactiveLightTest.h"
 #include "S47FarmWorld.h"
+#include "S47OpenLand.h"
+#include "S47GasBayDoor.h"
+#include "S47Convent.h"
 #include "S47T02Test.h"
 #include "S47Graphics.h"
 #include "S47GraphicsTest.h"
@@ -128,6 +133,9 @@
 #include "S47NightLife.h"
 #include "S47StationInsects.h"
 #include "S47StationDressing.h"
+#include "S47PropCatalogue.h"
+#include "S47CookCoverage.h"
+#include "S47SaroFixes.h"
 #include "S47Ops.h"
 #include "S47Rx.h"
 #include "S47Three.h"
@@ -153,6 +161,7 @@
 #include "S47Radio.h"
 #include "S47TripRadio.h"
 #include "S47Score.h"
+#include "S47Sideband.h"
 #include "S47Media.h"
 #include "S47Phones.h"
 #include "S47Station.h"
@@ -201,6 +210,8 @@
 #include "S47TripoNew.h"
 #include "SS47ScreenView.h"
 #include "SS47Widgets.h"
+#include "S47UiSound.h"
+#include "S47FreeformAudioDesk.h"
 #include "Slate/WidgetRenderer.h"
 #include "TimerManager.h"
 #include "UnrealClient.h"
@@ -266,6 +277,9 @@ void AS47HUD::Start()
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
 		bOk &= FS47StationInsects::SelfTest(Lines); // (GAS-STATION-LIFT-01: the canopy swarm's population by light, hour, weather and hush)
 		bOk &= FS47StationDressing::SelfTest(Lines); // (GAS-STATION-LIFT-01: the shop's Cosmos props: the file, their places; with or without the assets)
+		bOk &= S47RecordsRoom::SelfTest(Lines); // (RECORDS-ROOM-LIFT-20261113: the room's measures and what it stands on; with or without the assets)
+		bOk &= S47LandWindmill::SelfTest(Lines); // (LAND-PLACES-WINDMILL-20261114: the model's walk boxes, its hooks, what moves, its seat; with or without the assets)
+		bOk &= S47PropCatalogue::SelfTest(Lines); // (PROPS-REUSE-20261113: the shared real models: ids, paths, sizes, fronts; with or without the assets)
 		bOk &= S47StreetLamps::SelfTest(Lines); // (STREETLAMP-GLOW: every LOD's lens, no WorldGrid slot, the spot in the head, the glow on and off)
 		// D37-SARO-EMPTY-20261109: the fleet cars keep their paint; no parked staff cars at SARO, no S-03 text on any car.
 		bOk &= S47CarPaint::SelfTest(Lines);
@@ -280,6 +294,7 @@ void AS47HUD::Start()
 		bOk &= FS47FreeformJobs::SelfTest(Lines);
 		bOk &= FS47FreeformCases::SelfTest(Lines);
 		bOk &= S47Binder::SelfTest(Lines) & FS47FreeformSession::BinderSelfTest(Lines); // (RECORDS-BINDER: the records-room binder's dividers, order, filing and stamps)
+		bOk &= S47Dossier::SelfTest(Lines) & FS47FreeformSession::DossierSelfTest(Lines); // (EVIDENCE-DOSSIER: the files of the unknown, their stages, the save and an older save)
 		bOk &= FS47EastWing::SelfTest(Lines);
 		bOk &= FS47FreeformDirector::SelfTest(Lines);
 		bOk &= FS47CaseFieldTests::SelfTest(Lines);
@@ -305,6 +320,8 @@ void AS47HUD::Start()
 		bOk &= FS47Omen::SelfTest(Lines) & FS47GearFlicker::SelfTest(Lines) & FS47Soundscape::SelfTest(Lines) & FS47Animals::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
+		bOk &= S47UiSound::SelfTest(Lines); // (FIX10-7: the UI clicks and the TV static from the bundle: fallback, variants, rate, pause, levels)
+		bOk &= FS47Sideband::SelfTest(Lines); // SIDEBAND-20261113 (the stems' own test with it)
 		bOk &= FS47Taken::SelfTest(Lines);
 		bOk &= FS47NightRhythm::SelfTest(Lines);
 		bOk &= S47NightTiers::SelfTest(Lines); // (TIERS-20261109: hint, glimpse, full by the clock and the week)
@@ -312,6 +329,7 @@ void AS47HUD::Start()
 		bOk &= FS47DeputyRound::SelfTest(Lines);
 		bOk &= FS47LeftGear::SelfTest(Lines);
 		bOk &= FS47Places::SelfTest(Lines);
+		bOk &= S47LandPlaceFixes::SelfTest(Lines); // (LAND-PLACES-FIXES-20261114: the shack's lamp in its window, lights and marks outside, the cairn's tag and ring, the walk boxes)
 		bOk &= FS47Balloon::SelfTest(Lines); // (D48-20261110: the balloon find, its beacon and its instrument box)
 		bOk &= FS47EventPlaces::SelfTest(Lines);
 		bOk &= FS47Predecessor::SelfTest(Lines);
@@ -343,16 +361,29 @@ void AS47HUD::Start()
 		bOk &= FS47RoomLights::SelfTest(Lines);
 		bOk &= FS47Darkroom::SelfTest(Lines); // (D45-20261110: the darkroom's door and safelight rule, the fogged print, its saved switch)
 		bOk &= S47FarmWorld::SelfTest(Lines);
+		bOk &= S47OpenLand::SelfTest(Lines);
+		bOk &= S47Convent::SelfTest(Lines); // (CHURCH-COLONIAL-20261113: San Isidro as the mission church or the old one, never both; two ways out; the cemetery path at a door)
+		bOk &= S47GasBayDoor::SelfTest(Lines); // (GAS-BAY-DOOR-20261113: the gas station's roll-up door, its height, its lock and the wall cut round it) // (HWY-FENCE-GONE-20261113: the highway's fence gone in Freeform, the pasture's remnants kept)
 		bOk &= FS47Substation::SelfTest(Lines);
 		bOk &= FS47Anomaly::SelfTest(Lines);
 		bOk &= FS47AnomalyWorld::SelfTest(Lines);
 		bOk &= AS47Props::SelfTest(Lines); // (Unreal only: the free models' data files, Config/Props)
+		bOk &= S47CookCoverage::SelfTest(Lines); // (PACKAGE-GAS-TRIM-20261114: every /Game path the tables name has a cook rule; trims and patch meshes are here)
+		bOk &= FS47FreeformAudioDesk::SelfTest(Lines); // (review 14 Nov, B3: REFERENCE in the plain anomaly flow, CONTROL in Story, on the key, readout and toast)
 		bOk &= SS47ScreenView::SelfTest(Lines); // (the station's screens in use: the camera's aim, the glass's pixels; the board's cursor)
 		// Several modules prefix their failures ("props: FAIL ...") or put FAIL
 		// after the check name. Keep those diagnostics when the overall test fails.
 		for (const FString& L : Lines)
+		{
 			if (L.StartsWith(TEXT("FAIL")) || L.Contains(TEXT(": FAIL")) || L.EndsWith(TEXT(" FAIL")))
+			{
 				UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
+			}
+			else if (L.StartsWith(TEXT("INFO ")))
+			{
+				UE_LOG(LogS47HUD, Display, TEXT("S47: %s"), *L); // (measured figures beside the checks, e.g. SIDEBAND's against its prototype)
+			}
+		}
 		// D45-20261110: a failure whose line has none of the markers above is still findable: every line goes to Saved
 		if (!bOk) FFileHelper::SaveStringArrayToFile(Lines, *(FPaths::ProjectSavedDir() / TEXT("S47SelfTest-lines.txt")));
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());

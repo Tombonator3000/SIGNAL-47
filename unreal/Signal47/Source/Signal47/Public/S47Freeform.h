@@ -7,14 +7,19 @@
 #include "S47FreeformJobs.h"
 #include "S47FreeformCases.h"
 #include "S47RecordsBinder.h"
+#include "S47Dossier.h"
 class US47Main;
 class FS47FreeformDirector;
 class FS47FreeformWorld;
 class FS47CaseFieldTests;
 struct FS47Task;
 struct FS47Doc;
+struct FS47MapView;
 
 // Separate, persistent SARO working life. Story progression never grants its jobs or facts.
+struct FS47RxLive;
+struct FS47RhythmData;
+class FS47RxFeed;
 class FS47FreeformSession
 {
  // The month's assessment test (S47AssessMonthTest.cpp, profile "cases"): files the day's jobs as a fixture.
@@ -47,6 +52,18 @@ public:
   bool bCaseValid=true,bCaseRecorded=false;
   int32 PaidAmount=-1; // N1110 (T16-20): what was credited when this card paid, for the shift log; -1 before it paid (or in a save from before)
   bool bDocked=false; // the day the player was taken: this card pays half (TakenCosts)
+  // Critic 12 Nov (GAMEPLAY-LOOP-01): what the take will be, decided once as the tuned receiver first shows it (DecideTake), so that
+  // ANOMALY DETECTED and the take agree whatever the Director says later. -1 not yet, 0 routine, 1 unusual. Saved while Pointed.
+  int32 TakeDecided=-1;bool bTakeOut=false;FString TakePhen;
+  // RX-ACQUIRE-SKY-20261113: the source found on the receiver's sky chart (ACQUIRE) for this pointing. Saved while Pointed ("sky");
+  // a save from before has none, and a job back at the start loses it.
+  bool bSky=false;
+  // LOOP-CAREFUL-PAYS-20261113 (→ M3, M2): how the fix was made: 0 not known (no chart rule, an older save), 1 by hand (or the
+  // programmatic way through, AcquireSky, which counts as a hand fix), 2 the assist pulled the reticle in (no clean bonus). Saved
+  // ("skyBy") at every stage from the lock on; a job back at the start loses it with its fix.
+  int32 SkyBy=0;
+  // LOOP-CAREFUL-PAYS-20261113: both reel-deck marks were the operator's own when the take was confirmed (none filled in). Saved ("ownMarks").
+  bool bOwnMarks=false;
  };
  explicit FS47FreeformSession(US47Main* Main);
  ~FS47FreeformSession();
@@ -127,7 +144,8 @@ public:
  static FString TerminalNextLine(const FString& Text,int32 Screen);
  FString MeasurementRecord() const;
  bool ArrayBlocked() const; // too few antennas to measure at all
- void OpenArchive();
+ // bBinderOffGlass: off the OPS glass, the records-room binder (OpenBinder); false: the paper records page itself.
+ void OpenArchive(bool bBinderOffGlass=true);
  void OpenPhotos(); // FIX-20261110: OPS / PHOTOGRAPHS, the film record and the allowance desk
  int32 ArchiveTab=0,ArchivePage=0;FString ArchivePick; // presentation only, never saved
  // RECORDS-BINDER (-> M3): the records-room binder on paper (S47RecordsBinder.h the model, SS47Binder.h the pages; the session's
@@ -139,6 +157,52 @@ public:
  S47Binder::FSource BinderSource() const;
  TSharedRef<S47Binder::FView> BinderView=MakeShared<S47Binder::FView>();
  static bool BinderSelfTest(TArray<FString>& Lines); // the stamps across a Continue, and what the session hands the binder
+ // EVIDENCE-DOSSIER-20261113 (-> M3, M4), slice 1: one file for each unknown thing the player has logged (S47Dossier.h; the session's
+ // part is S47FreeformDossier.cpp). TagEvidence puts a find in its file where the source already knows which one it was, and stamps
+ // it on the screen there and then (the file's number and the kind of evidence, nothing else); a find tagged already is left alone.
+ // Night 0: today. TagPhotoClaim: a photograph claim ("strange.<group>.n<night>"), when its group is one of the five. Saved as
+ // "dossier" once there is a tag; a save from before is rebuilt from what it kept (FS47Dossier::Rebuild).
+ FS47Dossier Unknowns;
+ // LOOP-DOSSIER-GIVES-20261113: bHere, the find was got where the player stands (its hour and place go in the tag); false for a bench's
+ // (an enlargement in the darkroom). What each stage gives: the map's mark (DossierMap), the extra bearing (FS47Places::AfterRegistered
+ // asks DossierExtraOpen and DossierSpendExtra), the hours on tonight's note (DossierTasks).
+ bool TagEvidence(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Night=0,bool bHere=true);
+ bool TagPhotoClaim(const FString& ClaimId,bool bHere=true);
+ // EVIDENCE-DOSSIER slice 2 (14 November): with the hour and the place given (Hour -1, Where null: not kept), as a tape played back
+ // at the desk has them from where it was recorded. The file is the one the player could tie it to (FS47Dossier::Tag).
+ bool TagEvidenceAt(const FString& Key,S47Dossier::EKind Kind,S47Dossier::EType Type,int32 Night,int32 Hour,const FVector2D* Where);
+ // The receiver's unusual take, heard (S47AlienKinds' kind as an int, the tier of its hour as ES47Allowed): the far two's TAPE.
+ void DossierHeardTake(int32 SigNight,const FString& JobId,int32 AlienKind,int32 TierCode,double Cursor);
+ static int32 DossierHabitsFrom(const FS47RhythmData& Rules); // the curve's first week with danger in it
+ void DossierMap(FS47MapView& View) const;
+ void DossierTasks(TArray<FS47Task>& Out) const;
+ bool DossierExtraOpen(int32 Night) const;
+ bool DossierSpendExtra(int32 Night);
+ void BinderUnknowns(S47Binder::FSource& Src) const; // the files as the binder's UNKNOWNS divider has them
+ void LoadDossier(const S47J::FObj& Saved);
+ void SaveDossier(const S47J::FObj& Record) const;
+ // EVIDENCE-DOSSIER slice 3 (14 November). At the binder in the records room (bAt: NearBinder; a test passes it): the player's own
+ // name written on a file, two filed as one, one taken out again (until 08:00); the slip's words either way. DossierAct: a binder
+ // line's Do ("name:2", "merge:1:3", "out:1:3"). A file FILED (named, at HABITS) is paid FiledAllowance once, under the week's cap
+ // (DossierPayFiled). The habits as the player's own thoughts, once a night a file (HabitThought, by number; tonight's saved as "habitCame"): the hour
+ // coming up on a night out (DossierHabitStep, every frame from S47Thoughts::Step) and the lamp raised near one (DossierHabitLamp,
+ // FS47FarmSite). Dr. Ward's count is Unknowns.KindsFiled (FS47Predecessor::Count).
+ bool DossierName(int32 Number,const FString& Typed,FString& Words,bool bAt);
+ bool DossierFileAsOne(int32 A,int32 B,FString& Words,bool bAt);
+ bool DossierTakeOut(int32 Into,int32 From,FString& Words,bool bAt);
+ bool DossierAct(const FString& Do,const FString& Typed,FString& Words);
+ int32 DossierPayFiled();
+ void DossierHabitStep();
+ bool DossierHabitLamp(S47Dossier::EKind Near);
+ // REVIEW (14 Nov): the hour's habit is a quiet thought: never while the night is held, a visit is on (at the site or at SARO), the
+ // carried set hears something hunting, or a light is taking someone
+ static bool HabitHourMay(bool bHeld,bool bVisit,bool bHunted,bool bTaking){return !bHeld&&!bVisit&&!bHunted&&!bTaking;}
+ TMap<int32,int32> HabitThought;double HabitLastCheck=-1e9;
+ static constexpr int32 FiledAllowance=5;
+ FString TestNameDossier();   // F10: every file named by its suggestion, as at the binder
+ FString TestMergeDossier();  // F10: the first pair kept side by side filed as one, or taken out again tonight
+ FString TestFillDossier(); // F10: sample evidence for three files; what it says
+ static bool DossierSelfTest(TArray<FString>& Lines);
  // FIX-20261110: the station's files (S47StationFiles), a new one marks RECORDS. FIX10-10 (12 Nov): the files opened are saved
  // (stationFilesSeen, by key), so a released file stays marked until it is read, across days and Continue.
  uint32 StationFilesSeen=0;bool StationFileDue() const;
@@ -173,12 +237,69 @@ public:
  // Dr. Ward's letter or his assessment waiting (FS47Predecessor::TaskLine "MAILBOX / ...", "OPS / There is a letter ...", "OPS / Dr.
  // Ward's assessment ..."): the next thing to do once the first shift is done.
  static bool LetterWaits(const FString& Line);
+ // TASKS-TEN-20261113 (change 3): a line that says how things stand (SARO under review, the post's flag up, a parcel due, YOU / Tired):
+ // never a row on the night's list
+ static bool IsStatusLine(const FString& Line);
  // From day two the day's third card is a real evening's work: its source is not up until about half an hour before the
  // card's suggested time. Nothing else waits on it, it never expires, and OPS can wait for it. Developer runs leave it
  // open (their fixtures run all three cards in one sitting) unless a test asks.
- static constexpr double EveningLead=30*60.,EveningOpens=19*3600.,EveningCloses=23.5*3600.;
- // The clock of day this card's source comes up: never before seven in the evening.
- static double EveningUp(const FJob& Job){return FMath::Max(EveningOpens,Job.Card.SuggestedClock-EveningLead);}
+ // LOOP-NIGHT-WATCH-20261113 (→ M1, M7): from day 2 the third card is the night watch (FS47FreeformJobs::NightWatch): its source is
+ // up between 01:15 and 01:45, after midnight on its own shift day, and one not begun by 04:00 (NightWatchCloses) waits for the next
+ // night. Both times are on the shift's clock (FS47FreeformJobs::ShiftClock: 08:00 to 08:00, the small hours after 24:00).
+ static constexpr double EveningLead=30*60.,EveningOpens=19*3600.,EveningCloses=23.5*3600.,NightWatchCloses=28*3600.;
+ // The clock of day this card's source comes up, on the shift's clock: never before seven in the evening.
+ static double EveningUp(const FJob& Job){return FMath::Max(EveningOpens,FS47FreeformJobs::ShiftClock(Job.Card.SuggestedClock)-EveningLead);}
+ // When one not begun by then waits for the next evening (or night), on the shift's clock.
+ static double EveningShut(const FJob& Job){return NightWatch(Job)?NightWatchCloses:EveningCloses;}
+ static bool NightWatch(const FJob& Job){return Job.bGenerated&&Job.CaseTest<0&&FS47FreeformJobs::NightWatch(Job.Card);}
+ // LOOP-NIGHT-WATCH-20261113: whether OPS may say "or rest" now: not from 19:00 until 02:30 of a shift from day 2 (the night watch
+ // keeps him up into the full hours), unless he is worn out (FS47Fatigue at S47Thoughts::ExhaustedFrom). Pure.
+ static bool RestSuggestedAt(double AtClock,int32 ShiftDay,bool bLive,bool bWorn);
+ // LOOP-NIGHT-WATCH-20261113 (Tom 13 November: «nattevakta gå foran»): from 19:00 until 04:00 on the shift's clock, while one of the
+ // night's cards from day 2 (the night watch last) is still to be done, the cards and the night watch's notice come before the station
+ // goal on the next step (WorkActivities) and in the notebook (Tasks); the goal is said after them, and leads again by day.
+ bool NightBeforeGoal() const;
+ // A live bearing slip whose circle on the map has not been stood in yet (FS47Places::SlipRows).
+ bool SlipToFollow() const;
+ // FELT-WEEK1-20261114 (→ M1, M3): tonight's night watch, not yet worked (before REGISTER): its source's hour (EveningUp, the «be
+ // back by» time) and its suggested time, in hours on the shift's clock (25.5 is 01:30). False on a night with none, or done.
+ bool NightWatchOpen(double& UpHours,double& SuggestedHours) const;
+ // TASKS-TEN-20261113 (Tom 13 November, «Godtar ti endringene»; change 2, one arbiter): the HUD's ladder (Objective, NextAction,
+ // AvailableActivities, WorkActivities) is the one ordering every surface reads: the HUD card, the pause menu's TONIGHT Next, the
+ // notebook's arrow and the workstations' NEXT line. Blocking now (paper on the printer, the power, a take under way, RETAIN) > a
+ // window open now > a paid card that is up > the night watch or the evening's card with its time > a deadline before noon (the
+ // bearing slip, a report, worth a look, what Dale asked) > free time. ObjectiveRow: which of the night's rows the step is (the
+ // note marks that one), as the ladder chose it: "cards" (the cards up), "card:<id>" (a card not up yet), a task line's own words,
+ // or empty (the step is no row of the list: the note writes it as the HUD has it).
+ FString ObjectiveRow() const;
+ // D69-20261113: whether the ladder has a step above a deadline (paper on the printer, the telex, a window open now, a paid card
+ // up, a planned case test's job, the night's cards from 19:00): Dr. Ward's unread letter waits under those, with the deadlines.
+ bool StepAheadOfLetter() const;
+ // The field test whose dated window is open now, its step in Next. False: none.
+ bool WindowOpenStep(FString& Next) const;
+ // A field test made ready whose window has not opened: it waits, named with its time; it is no next step before then.
+ bool FieldWindowWaits(int32 Line) const;
+ // The first deadline before noon still open: a bearing slip's circle, a report, a worth-a-look, what Dale asked. Empty: none.
+ FString DeadlineLine() const;
+ // TASKS-TEN-20261113 (change 7): what Dale asks over the walkie (get outside and look, put it on your map, write it in the night log)
+ // is kept: a row "DALE ASKED / ..." under FOLLOW-UP on the note and NOW, in his own words (no new line of his), and a line in the
+ // night log as he asks; ticked off when it is done (outdoors, the map looked at, a line logged by hand), gone at 08:00. Saved with
+ // the notebook's state ("notePlan"; an older save has none). DaleSaid: a line of his heard on the set (FS47FieldRadio::Message).
+ struct FDaleAsk { FString Kind, Row; int32 Night=0; int32 Base=0; bool bDone=false; };
+ void DaleSaid(const FString& Words);
+ TArray<FString> DaleAskRows() const; // the open ones, oldest first
+ const TArray<FDaleAsk>& DaleAsks() const { return DaleAskList; }
+ // TASKS-TEN-20261113 (change 10): the row the player pinned on NOW ("this is what I am doing"; the notebook's PIN, the due tabs'
+ // star). With a pin the ladder's step is the pinned matter's next step, after what blocks now (paper waiting, the power, a take
+ // under way); CloseSoonLine is the one line beside it when something else closes within 30 minutes. A pin whose row is done or
+ // shut stays inert and clears at 08:00. Saved with the notebook's state ("notePlan"). Pin again (the same key) to take it off.
+ void PinRow(const FString& Key,const FString& Row);
+ FString PinnedKey() const { return bPinLive?PinKey:FString(); }
+ // REVIEW-20261113: whether a pinned Ward matter still stands: "matter:report-N" while week N's report is unsent (Unsent), and
+ // "matter:assessment" while the predecessor's line says the station is under review (Standing); any other matter key: true. Pure.
+ static bool MatterLive(const FString& Key,const TArray<int32>& Unsent,const FString& Standing);
+ bool PinnedStep(FString& Full,FString& Short) const;
+ FString CloseSoonLine() const;
  // The soonest of the cards waiting for the evening, and the next time it comes up; null if none is.
  const FJob* NextEveningCard(double& Up) const;
  // The rules a real game plays by. Developer fixtures keep the fixed ones unless a test asks (TestLiveRules).
@@ -208,6 +329,18 @@ public:
  static int32 PayAfterDays(int32 Days){return Days<=1?14:Days==2?10:Days==3?7:4;}
  static constexpr int32 OnTimeBonus=2,CleanBonus=3,ControlBonus=1;
  static constexpr double CleanRecordQuality=.6;
+ // LOOP-CAREFUL-PAYS-20261113 (→ M3, M2): the clean bonus only for a sky fix the operator made himself (FJob::SkyBy 2: none). Hints cost nothing.
+ static bool CleanBonusFor(const FJob& Job){return Job.SkyBy!=2;}
+ // LOOP-CAREFUL-PAYS-20261113: marks tight round the extra ticks (9.30 to 12.60 s): covering them (MarkCoversTicks) with at most
+ // TightSlack seconds to spare in all, against the 2.7 s the RETAIN check allows. 9.0 to 13.0 is tight; 8.0 to 13.5 is not.
+ static constexpr double TightSlack=1.;
+ static bool MarksTight(double In,double Out);
+ // LOOP-ANOMALY-ANY-CARD-20261113 (→ M7): from day AnyCardFrom the take that is odd because of what is out tonight may fall on the
+ // pulsar (card 2) or the third card (hydrogen drift or Virgo A, the night watch), never the pointing cross (card 1: its 12 s take can
+ // end before the last extra tick, and it carries the five-point cross). The day's own carrier by the seed (OddCarrier: 1 or 2); the
+ // other only once the carrier's card is past without it. At most one a night. Pure.
+ static constexpr int32 AnyCardFrom=15;
+ static int32 OddCarrier(int32 Seed,int32 Day);
  int32 JobPay(const FJob& Job) const;
  // What of JobPay is the bonus for good work (0 to 6), and the words for it ("on time, clean recording").
  int32 JobBonus(const FJob& Job,FString* Why=nullptr) const;
@@ -233,6 +366,10 @@ public:
  static constexpr double DeskHoursPerCard=.25,DeskHoursThirdCard=.6;
  // Cards registered at OPS this night (from 08:00 to 08:00), as they were registered; not saved (a Continue starts the count again).
  int32 CardsTonight() const;
+ // TASKS-TEN-20261113 (change 4): the job cards up now, counted one way on every surface (the HUD, the note, NOW, the map, OPS):
+ // not filed, not dropped, no case test (that is the case's own row), its source up (not EveningGated). A card not up yet is never
+ // counted: it is named with its time.
+ int32 CardsUp() const;
  // M7 (Tom, 9 November): gear can break near what is out there (FS47Upgrades::StepBreakage): what it costs to put right goes on the next sheet.
  static constexpr int32 RepairCap=12; // a week's sheet at most
  void BreakGear(const FString& What,int32 Fee);
@@ -365,13 +502,14 @@ public:
  bool CaseFromField(int32 Line) const;
  FString TonightPlan() const;
  // CASES-OPS-20261109 (Docs/Research/Gameplay/SAKER_OPS_2026-11-09.md): where an open case stands and its next step, worked out from
- // the case file and the work list as they are (nothing saved). The OPS banner and the HUD (Objective, HudCaseLine), the task list
+ // the case file and the work list as they are (nothing saved). The OPS banner and the HUD (Objective), the task list
  // (Tasks), TONIGHT'S PLAN and the pause menu's note, the notebook's Now and the case board's star (CaseAwaitingChoice) all read it.
  // CHOOSE_TEST: a test (or control) can be planned; for a mystery, or a filing. RUN_PLAN: the planned test can be run now.
- // WAIT_WINDOW: planned, its dated window not open yet. CONCLUDE: a trial case with one explanation left. FILE: a mystery with one
+ // CONCLUDE: a trial case with one explanation left. FILE: a mystery with one
  // left, its trail cold or no control to be had. AWAIT_REPLY: filed, the morning's reply not in, or in on the telex and not torn off
  // yet (TELEX-20261109). CLOSED: nothing (or not open; the interval case opens when its comparison is registered at OPS).
- enum class ECaseStep : uint8 { Closed, ChooseTest, RunPlan, WaitWindow, Conclude, File, AwaitReply };
+ // (Tom, 13 November: WAIT_WINDOW, the repeat test's wait for its dated window, went with the repeat test.)
+ enum class ECaseStep : uint8 { Closed, ChooseTest, RunPlan, Conclude, File, AwaitReply };
  struct FCaseStep
  {
   ECaseStep Step=ECaseStep::Closed;
@@ -381,17 +519,13 @@ public:
   FString Task; // the task list's line: "CASE / THE SAME MINUTE: file your assessment on the OPS case board"; empty: not a task
  };
  FCaseStep CaseStep(int32 Line) const;
- // The open case whose step is most pressing: CONCLUDE, RUN_PLAN, FILE, CHOOSE_TEST, then (bActionOnly false) WAIT_WINDOW and
- // AWAIT_REPLY; the lower line first among equals. -1: none.
+ // The open case whose step is most pressing: CONCLUDE, RUN_PLAN, FILE, CHOOSE_TEST, then (bActionOnly false) AWAIT_REPLY; the
+ // lower line first among equals. -1: none.
  int32 UrgentCase(bool bActionOnly=false) const;
- // The HUD card's second line while a case is open: the most pressing case not already on the card's first line. Empty: none.
- FString HudCaseLine(const FString& FirstLine) const;
- // A case record kept (FS47FreeformCases::IsCaseRecord) as one line under the night log's WORK: "Case 1, THE REPEATED INTERVAL:
+ // (TASKS-TEN-20261113, change 5: the HUD card's second line for a case, HudCaseLine, is gone: one line, from one arbiter)
+ // A case record kept (FS47FreeformCases::IsCaseRecord) as one line under the night log's WORK: "THE REPEATED INTERVAL:
  // off-source pointing registered; rules out Follows the sky source." Empty for any other finding.
  FString CaseRecordLine(const FString& Key) const;
- // A planned case test that cannot run before its dated window (the repeat): waiting, not open work. It is not counted with the
- // cards waiting and does not hold back the reference check.
- bool CaseTestWaits(const FJob& Job) const;
  const FS47FreeformCases& CaseFile() const { return Cases; }
  // CASES-OPS-20261109, step 4 (Docs/Research/Gameplay/SAKER_OPS_2026-11-09.md): the case sheet as OPS / CASE BOARD heads it and the
  // printed result sheet repeats it. NEXT from CaseStep ("NEXT > CONCLUDE: INSTRUMENT ARTEFACT"); the kind ("TRIAL CASE", "ASSESSMENT");
@@ -414,7 +548,7 @@ public:
  // its document's id. Printed after any job's paper and collected at the printer the same way; saved while waiting. False: the
  // printer already holds as many papers as it takes, and the bearing is on the map without it.
  static bool IsBearingSlip(const FResultSheet& Sh){return Sh.Line<0&&Sh.Test<0&&Sh.Job.StartsWith(TEXT("freeform-bearing-"));}
- bool QueueBearingSlip(int32 Day,const FString& Line,const FString& Note);
+ bool QueueBearingSlip(int32 Day,const FString& Line,const FString& Note,bool bAgain=false); // bAgain: a second slip that night (LOOP-DOSSIER-GIVES-20261113, MARKS), a paper of its own
  // -1: no result sheet waiting; otherwise its paper fraction 0..1 (it feeds only while no job's paper is waiting).
  double SheetProgress() const;
  // TELEX-20261109 (Tom, 9 November, DECISIONS "Saker og OPS"): the telex in the control room is paper. What comes back to SARO, a
@@ -525,12 +659,50 @@ public:
  static bool PlainAnomaly(const FJob& J);
  // One listen at the reel deck: the original heard from the start past its last extra tick.
  static bool TapeHeard(const FJob& J);
+ // RX-ANOMALY-FLOW-20261113 (-> M3, Tom 13 November: from RECORD on the receiver to the sound confirmed at the reel deck, with a
+ // reference to hear it against). The extra-tick take, once it ends, waits on the receiver's RECORD tab until the operator retains it
+ // there (RetainTake): its original page goes into the notebook and the 8-second station reference (antennas out, the internal
+ // control) records with it. Only then does the reel deck play it; RETAIN at the deck is the operator's own press (ConfirmOnTape).
+ static bool RetainWaits(const FJob& J);
+ static FString PlainAnomalyNext(const FJob& J); // the next step of an extra-tick take after its take ends
+ bool RetainTake();
+ // The receiver's RECORD tab holds the extra-tick take from ANOMALY DETECTED until it is retained there.
+ bool RecordTabHoldsAnomaly() const;
+ // The receiver tab open and the tab due (-1 none): 0 ACQUIRE, 1 TUNE, 2 ARRAY, 3 RECORD, 4 DATA (read by the native test).
+ int32 ReceiverPage() const { return ReceiverTab; }
+ int32 ReceiverDuePage() const { return ReceiverDueTab(); }
  // The selected job, tuned and ready, would be an extra-tick take if recorded now (StartAcquisition decides the same way).
  bool AnomalyAhead() const;
+ // RX-ACQUIRE-SKY-20261113 (-> M3, Tom 13 November): the receiver's ACQUIRE page is a sky chart; the operator steers a reticle to where
+ // the antennas' bearings cross and the receiver takes the fix, then TUNE is the frequency search (S47SkyAcquire.h the rule,
+ // SS47SkyChart the picture, S47FreeformSky.cpp the session's part). Where the rule is live (a real game; a developer run only
+ // when a test asks) recording waits for the fix: ReceiverReady asks SkyAcquired.
+ // AcquireSky: the way through without a hand on the chart (bots, tests, the F10 card player): the fix at once, if the selected
+ // job's array is on target and settled. True when the job has its fix (now or already).
+ bool AcquireSky();
+ bool SkyAcquired() const;
+ bool SkyRuleLive() const;
+ void TestSkyRule(){bTestSky=true;}
+ // The selected job's source is the unusual kind on the chart (the same answer the take will give: AnomalyAhead's, without the tuning).
+ bool SkyOdd() const;
+ TSharedPtr<class FS47SkyAcquire> SkyFix;
+ // RX-SEARCH-SOUND-20261113: Tom's search sound under ACQUIRE and TUNE (S47RxSearch.h), stepped once a frame by the session
+ TSharedPtr<class FS47RxSearch> RxSearch;
+ void StepRxSearch(double Dt);
+ static bool SkySelfTest(TArray<FString>& Lines);
+ // RX-LOOK-20261113 (-> M3, M6; Tom 13 November: the receiver to look like his reference picture): what the receiver PC's frame
+ // shows this frame (S47RxLook.h): the header's clock and the array's own pointing, the state banner's words (the same order and
+ // conditions as ReceiverNextAction and the idle picture's ANOMALY DETECTED), the card's frequency, and the receiver's own numbers
+ // for the small scopes. Nothing is decided here. RxFeed: one reading a frame for every painted part. SiderealDeg: the station's
+ // sidereal time from the world's clock and date, for the sky chart's stars.
+ FS47RxLive RxLive() const;
+ TSharedRef<FS47RxFeed> RxFeed() const;
+ double SiderealDeg() const;
  bool AudioAction(const FString& Action);
  void SeekAudio(double At);
  // Marks by a place on the tape, without moving it: first click is MARK IN, second MARK OUT, a third starts over.
  bool MarkAudioAt(double At);
+ static FString MarkSaid(const FJob& J); // RX-ANOMALY-FLOW-20261113: what the marks cover, in the deck's words
  bool CompareInstrument();
  bool RegisterComparison(const FString& Conclusion);
  bool FilePacket();
@@ -600,7 +772,9 @@ public:
  // CHAIN-1-20261109: something is out on the land tonight that a bearing may still point at (FS47Happenings::OutTonight): the
  // pulsar card run tonight then shows a discrepancy by itself, and registering it prints the slip toward that place.
  bool OutThereTonight() const;
- void SetPhenomenon(const FString& Id) { PhenomenonId=Id; Changed(); }
+ void SetPhenomenon(const FString& Id) { if(PhenomenonId!=Id)UndecideTakes(); PhenomenonId=Id; Changed(); }
+ // Critic 12 Nov: an instrument fault set or cleared is a new question for what the tuned receiver shows (FJob::TakeDecided).
+ void UndecideTakes() { for(FJob& W:Work)if(W.Stage==EJobStage::Pointed)W.TakeDecided=-1; }
  const FString& Phenomenon() const { return PhenomenonId; }
  int32 SelectedJob() const { return FieldFocus>=0?-1:Selected; }
  const TArray<FJob>& Jobs() const { return Work; }
@@ -732,6 +906,11 @@ private:
  // N1110 (PLAY-31-34): the control room's ceiling tubes that have gone out for good in this game (indices 2 to 7 of room.tubes; 0 and 1 are the
  // working light and never go). Saved "brokenTubes", absent = none; AS47Web::TubeLit keeps them dark through a power return, Continue and a change of area.
  TSet<int32> BrokenTubes;
+ // PLAY-31-34 (14 November, Tom's «Vurder»): those of BrokenTubes that burned out of age (FS47Calm's tube_wear, from week 2): the day
+ // shift puts new ones in at the next 08:00 (AddDay), and Dale says a dry word that evening (tube_wear_dale). Saved "wornTubes",
+ // "tubeWornDay", "tubeRemarkDay"; absent = none.
+ TSet<int32> WornTubes;
+ int32 TubeWornDay=0,TubeRemarkDay=0;
 public:
  bool TubeBroken(int32 K) const{return BrokenTubes.Contains(K);}
  int32 BrokenTubeCount() const{return BrokenTubes.Num();}
@@ -740,7 +919,18 @@ public:
  // N1110: the next N still-working tubes of 2 to 7, lowest first (what every sabotage puts out: {"beat":"tube","next":2}); nothing is changed.
  TArray<int32> NextTubes(int32 N) const{TArray<int32> Out;for(int32 K=2;K<=7&&Out.Num()<N;++K)if(!BrokenTubes.Contains(K))Out.Add(K);return Out;}
  // N1110: a pair of tubes from the store (PARTS STORAGE) puts back the last N that went out, highest first. Returns how many came back.
- int32 MendTubes(int32 N){int32 Mended=0;for(int32 K=7;K>=2&&Mended<N;--K)if(BrokenTubes.Remove(K))++Mended;return Mended;}
+ int32 MendTubes(int32 N){int32 Mended=0;for(int32 K=7;K>=2&&Mended<N;--K)if(BrokenTubes.Remove(K)){WornTubes.Remove(K);++Mended;}return Mended;}
+ // PLAY-31-34 (14 November): a tube burned out of age on shift day Day: dark as a broken one (TubeLit), until the day shift.
+ bool WearTube(int32 K,int32 Day){if(!BreakTube(K))return false;WornTubes.Add(K);TubeWornDay=Day;return true;}
+ bool TubeWorn(int32 K) const{return WornTubes.Contains(K);}
+ int32 WornTubeCount() const{return WornTubes.Num();}
+ // At the turn to shift day Day (08:00): the day shift replaces what burned out before it; returns how many. Dale remarks that evening.
+ // REVIEW (14 Nov): bWatched, the player in the control room: nobody comes in while he is there, so a tube never relights by itself
+ // in front of him; it waits until he has gone out (Step asks again; TubeWatched).
+ int32 DayShiftTubes(int32 Day,bool bWatched=false){if(bWatched||WornTubes.IsEmpty()||Day<=TubeWornDay)return 0;const int32 N=WornTubes.Num();for(const int32 K:WornTubes)BrokenTubes.Remove(K);WornTubes.Reset();TubeWornDay=0;TubeRemarkDay=Day;return N;}
+ bool TubeRemarkDue(int32 Day) const{return TubeRemarkDay>0&&TubeRemarkDay==Day;}
+ bool TubeWatched() const; // the player in the control room (US47Audio::InControlRoom); false without a world
+ void TubeRemarkSaid(){TubeRemarkDay=0;}
  static TSet<int32> TubesFrom(const TArray<double>& Saved);
  static TArray<double> TubesToSave(const TSet<int32>& Broken);
 private:
@@ -775,6 +965,14 @@ private:
  void IngestObservations();
  int32 IngestedObservations=0;
  int32 OpsSection=0,ReceiverTab=0;
+ // RX-ACQUIRE-SKY-20261113: the job the chart's search is for, the job and state the receiver last chose its page for (a tab picked
+ // by hand stays), when the page goes over to TUNE after a lock (real seconds; -1 none), and the sounds read once. None of it saved.
+ bool bTestSky=false,bSkySoundsTried=false;FString SkyFixJob,SkyTabKey;double SkyHandAt=-1;
+ void SyncSkyFix();void SkyChartStep(double Dt);void SkyHeld(FJob& HeldJob,bool bByHand);void StepSkyFix();
+ void LoadSkySounds();void SkySound(uint32 Events,int32 Blip);
+ FString SkyPrompt() const;
+ // (RX-LOOK-20261113: the page reads the frame's feed, and fills the body height the frame tells it)
+ TSharedRef<class SWidget> SkyPage(TSharedPtr<class SWidget>& KeysTo,TSharedRef<FS47RxFeed> Feed,TSharedPtr<float> BodyHigh);
  int32 DataRef=0; // D48-20261110 (D46-16): the reference the receiver's DATA page shows beside the take; not saved
  // D45-20261110: ARRAY STATUS's tab (0 STATUS, 1 MAINTENANCE) and the fault picked on MAINTENANCE; presentation only, never saved
  int32 StatusTab=0;FString MaintPick;
@@ -808,6 +1006,13 @@ private:
  // CRIT9: the list's chores that simply stop when done (the post, the truck, the feeder, the tank, the relay): by kind, the line last
  // open tonight, and the one gone from it since (shown ticked off until 08:00, as the note's header promises). In memory only.
  mutable TMap<FString,FString> ChoresOpen,ChoresDone;mutable int32 ChoresNight=0;mutable double ChoresClock=-1;
+ mutable FString PickRow; // TASKS-TEN-20261113: the row the ladder's last answer is (ObjectiveRow)
+ TArray<FDaleAsk> DaleAskList; // TASKS-TEN-20261113 (change 7)
+ FString PinKey,PinText;int32 PinNight=0;bool bPinLive=false;double PinCheckAt=-1; // TASKS-TEN-20261113 (change 10)
+ void StepPin();
+ void StepDaleAsks();
+ void LoadNotePlan(const S47J::FObj& Saved);
+ void SaveNotePlan(const S47J::FObj& Out) const;
  void NoteChore(TArray<FS47Task>& Result,const TCHAR* Kind,const FString& OpenLine,const FString& DoneLine) const;
  double PrimeBefore=-1; // an older save: what came back before this clock is not asked again (-1: nothing to prime)
  int32 AskLook=-1;
@@ -836,6 +1041,25 @@ private:
  bool PointReady() const;
  bool ReceiverReady() const;
  FString ReceiverNextAction() const;
+ // RX-TABS-DUE-20261113 (Tom 13 Nov: the receiver tab to use next blinks): the receiver tab that holds the next step, read from the
+ // same predicates and in the same order as ReceiverNextAction (and CanRecordControl after the take); -1 when there is nothing to do
+ // at this receiver, or the step's tab is the one already open. Tabs: 0 ACQUIRE, 1 TUNE, 2 ARRAY, 3 RECORD, 4 DATA.
+ enum ERxTab : int32 { RxAcquire=0, RxTune=1, RxArray=2, RxRecord=3, RxData=4 };
+ struct FRxDueIn
+ {
+  bool bJob=false,bGated=false,bTutorialGate=false,bPower=true,bCaseWaits=false,bArrayBlocked=false;
+  bool bPointReady=false,bSettled=false,bSky=false,bTuned=false,bCrossRunning=false,bCanControl=false,bDataAsk=false;
+  bool bAnomalyAhead=false,bPlainTake=false,bRetain=false; // RX-ANOMALY-FLOW-20261113: the extra-tick take is RECORD's
+  EJobStage Stage=EJobStage::New;int32 Open=-1;
+ };
+ static int32 RxDueTab(const FRxDueIn& In);
+ int32 ReceiverDueTab() const;
+ bool RxDataAsk(const FJob& J) const; // an unusual take on tape with its case open and comparisons left, its DATA page not yet seen
+ FString RxDataSeenJob; // not saved: the job whose DATA page was opened
+ mutable uint64 RxDueFrame=~0ull;mutable int32 RxDueCache=-1;
+ // The OPS PC's DAILY WORK line is due while the job's next step is an OPS one there (confirm, register, compare): JobNextAction's own words.
+ static bool OpsWorkDueFor(EJobStage Stage,const FString& Next);
+ bool OpsWorkDue() const;
  bool EncodersAt(double Az,double El) const;
  void PointBeamControl();
  void CollectDuplicate();
@@ -864,11 +1088,26 @@ private:
  void PrintJob(bool bPacket,bool bShow=true);
  // GAMEPLAY-LOOP-01: what StartAcquisition decides, without deciding it (Phen: the phenomenon it would carry; bOutThere: from the land).
  bool TakeAnomalous(const FJob& J,FString& Phen,bool& bOutThere) const;
+ // LOOP-ANOMALY-ANY-CARD-20261113: whether J may carry tonight's out-there take (card 2 only before AnyCardFrom), and whether another
+ // take tonight already does (decided while pointed, or recorded tonight with no instrument cause).
+ bool OddCarries(const FJob& J) const;
+ bool OutTakeTonight(const FJob& Except) const;
+ // The take's decision kept on the job (FJob::TakeDecided): TakeAnomalous once, then what it said.
+ void DecideTake(FJob& J);
+ bool DecidedTake(const FJob& J,FString& Phen,bool& bOutThere) const;
  void RetainOriginal(FJob& J); // the original page kept as the take ends, with no chart to fetch
  bool ConfirmOnTape(FJob& J); // the reel deck's one listen: marks the ticks if they are not, keeps the review, names OPS
+ // Critic 12 Nov: an extra-tick take waiting for its one listen at the deck; and the deck threading the oldest of them when the
+ // selected job is not one (OpenAudio, OpenTapePanel).
+ static bool TapeWaits(const FJob& J);
+ void FollowTapeJob();
  FString DetectedJob; // the job whose ANOMALY DETECTED was last said aloud (once a take; not saved)
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);
- void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false);
+ // KeysTo (RX-ACQUIRE-SKY-20261113): the widget on the page that has the keys first; none: the page itself, as before.
+ void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false,TSharedPtr<SWidget> KeysTo=nullptr);
+ // RX-LOOK-20261113: OpenTerminal's two halves, for a screen that brings its own frame (the receiver's, S47FreeformTerminal::RxFrame).
+ bool TerminalBegin(int32 Screen,const FString& Title);
+ void TerminalShow(int32 Screen,TSharedRef<SWidget> Content,bool bLive,TSharedPtr<SWidget> KeysTo,bool bOwnKeyRow);
  void OpenWaitConfirmation(double Target);
  FS47Profile EffectiveProfile(const FJob& Job) const;
  FString JobLine(const FJob& J) const;

@@ -1,5 +1,6 @@
 #include "S47FreeformDirector.h"
 #include "S47DirectorCam.h"
+#include "S47DevWaves.h"
 #include <limits>
 #include "S47SmallHints.h"
 #include "S47Rhythm.h"
@@ -33,6 +34,7 @@
 #include "S47Audio.h"
 #include "S47UI.h"
 #include "S47Inter.h"
+#include "S47LandPlaceFixes.h"
 #include "S47Walker.h"
 #include "S47Story.h"
 #include "S47Album.h"
@@ -43,6 +45,7 @@
 #include "S47Docs.h"
 #include "S47Flow.h"
 #include "S47SaroSave.h"
+#include "S47Marginalia.h"
 #include "S47ScriptPlayer.h"
 #include "S47Fx.h"
 #include "NiagaraComponent.h"
@@ -406,11 +409,13 @@ struct FS47FreeformDirector::FEffects
 
 FS47FreeformDirector::FS47FreeformDirector(US47Main* Main):Effects(MakeUnique<FEffects>()),M(Main){Effects->M=Main;Random.Initialize(4701986);}
 FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
+// EVIDENCE-DOSSIER-20261113: a photograph's title never says what the thing is (below, by the table of what is strange enough to pay).
+namespace { FString StrangeTitleOf(const FString& G); }
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
  Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;bEveningTold=false;Event.Empty();PhotoId.Empty();PlaceId.Empty();NextPlace.Empty();bTracePlaced=false;Scene=TEXT("saro");DangerNight=DangerCount=SlotNight=PeekNight=0;PointNight=PointCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  MysteryRollDay=PendingMysteryNight=MysterySeen=0;MysteryClue=-1;MysteryAfter=MysteryClearAt=MysteryAge=0;
- PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
+ PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;bLightOwed=false;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;bWasFirstShift=false;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
  {
@@ -426,6 +431,8 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
    const S47J::FObj* C=nullptr;if(!V.IsValid()||!V->TryGetObject(C)||!C)continue;
    FPhotoClaim P;P.Id=S47J::Str(*C,TEXT("id"));P.PhotoId=S47J::Str(*C,TEXT("photo"));P.Title=S47J::Str(*C,TEXT("title"));P.bPaid=S47J::Bool(*C,TEXT("paid"));
    P.Quality=S47J::Num(*C,TEXT("quality"));P.Reward=PhotoReward(P.Id,P.Quality);
+   // EVIDENCE-DOSSIER-20261113: a claim from before, titled by what it was ("grey visitor", "Nordic figure"): by what it looked like.
+   if(P.Id.StartsWith(TEXT("strange."))&&S47Marginalia::NamesKind(P.Title)){FString Group=P.Id.Mid(8);int32 GroupEnd=INDEX_NONE;if(Group.FindChar(TEXT('.'),GroupEnd))Group.LeftInline(GroupEnd);P.Title=StrangeTitleOf(Group);}
    P.LocalNoiseOriginalId=S47J::Str(*C,TEXT("localNoiseOriginal")).Left(128);P.LocalNoisePlannedAt=S47J::Num(*C,TEXT("localNoisePlannedAt"),-1);
    if(!FMath::IsFinite(P.LocalNoisePlannedAt)||P.LocalNoisePlannedAt<0||P.LocalNoiseOriginalId.IsEmpty()){P.LocalNoisePlannedAt=-1;P.LocalNoiseOriginalId.Empty();}
    P.ControlOriginalId=S47J::Str(*C,TEXT("controlOriginal"));P.ControlPhotoId=S47J::Str(*C,TEXT("controlPhoto"));P.ControlPlannedAt=S47J::Num(*C,TEXT("controlPlannedAt"),-1);
@@ -448,6 +455,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   LightRollDay=FMath::Max(0,S47J::Int(O,TEXT("lightRollDay")));PendingLightNight=FMath::Max(0,S47J::Int(O,TEXT("pendingLightNight")));
   // An older save has no hour for them: they come as soon as they can, as before.
   LightAfter=FMath::Clamp(S47J::Num(O,TEXT("lightAfter")),0.,26.5);
+  bLightOwed=S47J::Bool(O,TEXT("lightOwed")); // FELT-WEEK1-20261114: older saves owe none
   // Older saves: a night not yet drawn, nothing waiting.
   ObserverRollDay=FMath::Max(0,S47J::Int(O,TEXT("observerRollDay")));PendingObserverNight=FMath::Max(0,S47J::Int(O,TEXT("pendingObserverNight")));
   SiteRollDay=FMath::Max(0,S47J::Int(O,TEXT("siteRollDay")));PendingSiteNight=FMath::Max(0,S47J::Int(O,TEXT("pendingSiteNight")));
@@ -510,7 +518,7 @@ S47J::FObj FS47FreeformDirector::Save()const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("duskOrb"),DuskOrb.Save());if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);if(!LightPlace.IsEmpty())S47J::Set(O,TEXT("lightPlace"),LightPlace);if(!PlaceId.IsEmpty())S47J::Set(O,TEXT("place"),PlaceId);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
  S47J::Set(O,TEXT("seenDay"),SeenDay);if(DangerNight>0){S47J::Set(O,TEXT("dangerNight"),DangerNight);S47J::Set(O,TEXT("danger"),DangerCount);}if(SlotNight>0)S47J::Set(O,TEXT("slotNight"),SlotNight);if(PeekNight>0)S47J::Set(O,TEXT("peekNight"),PeekNight);if(PointNight>0){S47J::Set(O,TEXT("pointNight"),PointNight);S47J::Set(O,TEXT("pointOut"),PointCount);}S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("minorBudget"),MinorBudget);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
- S47J::Set(O,TEXT("lightRollDay"),LightRollDay);S47J::Set(O,TEXT("pendingLightNight"),PendingLightNight);if(LightAfter>0)S47J::Set(O,TEXT("lightAfter"),LightAfter);if(ObserverRollDay>0)S47J::Set(O,TEXT("observerRollDay"),ObserverRollDay);if(PendingObserverNight>0)S47J::Set(O,TEXT("pendingObserverNight"),PendingObserverNight);if(SiteRollDay>0)S47J::Set(O,TEXT("siteRollDay"),SiteRollDay);if(PendingSiteNight>0)S47J::Set(O,TEXT("pendingSiteNight"),PendingSiteNight);S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
+ S47J::Set(O,TEXT("lightRollDay"),LightRollDay);S47J::Set(O,TEXT("pendingLightNight"),PendingLightNight);if(LightAfter>0)S47J::Set(O,TEXT("lightAfter"),LightAfter);if(bLightOwed)S47J::Set(O,TEXT("lightOwed"),true);if(ObserverRollDay>0)S47J::Set(O,TEXT("observerRollDay"),ObserverRollDay);if(PendingObserverNight>0)S47J::Set(O,TEXT("pendingObserverNight"),PendingObserverNight);if(SiteRollDay>0)S47J::Set(O,TEXT("siteRollDay"),SiteRollDay);if(PendingSiteNight>0)S47J::Set(O,TEXT("pendingSiteNight"),PendingSiteNight);S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
  if(bCarLight){S47J::Set(O,TEXT("carLight"),true);if(CarLightClock>=0)S47J::Set(O,TEXT("carLightClock"),CarLightClock);}
  if(SkyLeft>0)S47J::Set(O,TEXT("skyLeft"),SkyLeft);if(bOwedArray)S47J::Set(O,TEXT("owedArray"),true);if(bOwedFeeder)S47J::Set(O,TEXT("owedFeeder"),true);if(bForcedEvent)S47J::Set(O,TEXT("forced"),true);
  if(MysteryRollDay>0)
@@ -570,6 +578,7 @@ FVector FS47FreeformDirector::LightPlacePoint(const FString& Place)const
  const FS47EventPlaces* Places=PlacesOf(M);const FS47EventPlace* P=Places?Places->Find(Place):nullptr;
  if(!P)return FVector::ZeroVector;
  // A place with a front of its own (a door, a find) is measured off it, as it always was; the rest off the land itself.
+ {FVector Outside;if(S47LandPlaceFixes::LightPoint(M,Place,Outside))return Outside;} // LAND-PLACES-FIXES-20261114: the shack and the cairn: on the ground outside the solid, not in its middle
  if(!P->Prop.IsEmpty()&&M->Inter)if(auto* It=M->Inter->Get(P->Prop))if(It->Object)return It->Object.WorldBox().GetCenter();
  FVector At;Places->AtNow(Place,At);
  return At;
@@ -675,7 +684,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced,double At)cons
  // STORY steg 6: the start a story beat asks for (StartForStory) is the one that may: the beat itself is the story's script running.
  if(FS47StoryDirector::Holds(M)&&!bForStory)return false;
  // DIRECTOR-MODE-01: nor while the developer flies the director's camera.
- if(S47DirectorCam::On(M))return false;
+ if(S47DirectorCam::On(M)||FS47DevWaves::On(M))return false; // (and the F10 wave shooter, a dev toy)
  const auto* D=Definition(Id);if(!bEnabled||!D||!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!Event.IsEmpty()||M->Freeform->Held())return false;
  // CRIT9-20261109: from ten to two the night is the week's case's: no threat, major or presence on the ground before it begins.
  if(!Forced&&FS47WeekCase::HoldsFarm(M))
@@ -1164,6 +1173,25 @@ bool FS47FreeformDirector::StartPendingNightChoice(const FString& Id,int32 Day,i
  if(PendingNight!=Day||!Eligible(Id,false)||!Start(Id,false))return false;
  PendingNight=0;Changed();return true;
 }
+double FS47FreeformDirector::HoldLightsForWatch(double At,double WatchUp,double WatchSuggested)
+{
+ // FELT-WEEK1-20261114 (→ M1, M3; the critic, 14 November): «go and look» and «be back in the control room» on the same half hour.
+ const double From=WatchUp-45./60.,Until=WatchSuggested+10./60.;
+ if(At<From||At>Until)return At;
+ const double Held=FMath::Max(26.+20./60.,Until+5./60.);
+ return Held>LightsLatest+1e-6?-1.:FMath::Min(Held,LightsLatest);
+}
+bool FS47FreeformDirector::HoldLightsTonight()
+{
+ double Up=0,Suggested=0;
+ if(!M||!M->Freeform||!M->Freeform->NightWatchOpen(Up,Suggested))return false;
+ const double Hour=FMath::Fmod(M->Freeform->Clock(),86400.)/3600.,At=Hour<12?Hour+24:Hour;
+ const double Held=HoldLightsForWatch(At,Up,Suggested);
+ if(Held==At)return false;
+ if(Held<0){PendingLightNight=0;bLightOwed=true;}else LightAfter=Held;
+ UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: the lights tip at %.2f h waits for the night watch (up %.2f h): %s"),At,Up,Held<0?TEXT("the next night"):*FString::Printf(TEXT("%.2f h"),Held));
+ Changed();return true;
+}
 void FS47FreeformDirector::RollTonight(int32 Day)
 {
  // A calm night draws nothing at all. The rest grow slowly with the nights played; lights stay as they were.
@@ -1173,8 +1201,10 @@ void FS47FreeformDirector::RollTonight(int32 Day)
  const auto Per=[this](const TCHAR* Id,float Usual){return M&&M->Rhythm?M->Rhythm->PerNight(Id,Usual):Usual;};
  bool bAny=RollNightChoice(Day,2,Chance(Per(TEXT("service_presence"),.35f)*float(Growing)),ThreatRollDay,PendingThreatNight);
  bAny|=RollNightChoice(Day,4,Chance(Per(TEXT("close_pass"),.10f)*float(Growing)),MajorRollDay,PendingMajorNight);
- if(RollNightChoice(Day,2,TestLightAfter>=0?1.f:Chance(Per(TEXT("farm_lights"),.45f)),LightRollDay,PendingLightNight))
+ // FELT-WEEK1-20261114: lights held past their hour for the night watch come on the next night that can have them (never a calm one).
+ if(RollNightChoice(Day,2,TestLightAfter>=0?1.f:bLightOwed&&!bCalm?1.f:Chance(Per(TEXT("farm_lights"),.45f)),LightRollDay,PendingLightNight))
  {
+  if(PendingLightNight==Day)bLightOwed=false;
   // Some nights while there is still work on, most nights late, when going out to them can come to something. Never
   // later than half past two, so that there is a night left to go out in.
   if(PendingLightNight==Day)LightAfter=TestLightAfter>=0?TestLightAfter:Random.FRand()<.35f?Random.FRandRange(21.f,23.5f):Random.FRandRange(24.5f,26.5f);
@@ -1415,7 +1445,7 @@ void FS47FreeformDirector::Step(double Dt)
    // Lights are a night's own draw, not left to what the day's instruments use up. Seen from where the player is:
    // over the farm or in town, from SARO; in town, from the road.
    const double LightHour=FMath::Fmod(M->Freeform->Clock(),86400.)/3600.;
-   if(PendingLightNight==Day&&(LightHour<12?LightHour+24:LightHour)>=LightAfter)
+   if(PendingLightNight==Day&&(LightHour<12?LightHour+24:LightHour)>=LightAfter&&!HoldLightsTonight())
    {
     // Seen from here or heard of: either, wherever the player is on the land.
     const FString First=FMath::RandBool()?TEXT("farm_lights"):TEXT("town_lights");
@@ -1623,6 +1653,9 @@ void FS47FreeformDirector::ObserveVisitor(const FVector& At,bool Heard)
 void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
 {
  if(Event.IsEmpty())return;const auto* D=Definition(Event);const bool Threat=D&&D->Family==TEXT("threat");
+ // M1-MEASURE-20261113: the director's own events in the night's summary, when the player saw it (its bSeen: in view, heard near
+ // for the steps, or photographed); an F10 one is not counted, as the happenings' own are not.
+ if(bSeen&&!bForcedEvent)FS47Happenings::TellOther(M,*Event,FString::Printf(TEXT("day %d"),M&&M->Freeform?M->Freeform->Day():0));
  if((Event==TEXT("farm_lights")||Event==TEXT("town_lights"))&&M&&M->Freeform&&M->Freeform->FarmSite)
  {
   // Their marks where they were, at whichever place that was: the farm's pasture as any other.
@@ -1763,8 +1796,11 @@ namespace
  FString StrangeTitleOf(const FString& G)
  {
   static const TPair<const TCHAR*,const TCHAR*> Names[]={
-   {TEXT("nordic"),TEXT("Nordic figure")},{TEXT("cosmic"),TEXT("Cosmic figure")},{TEXT("tallfigure"),TEXT("tall figure")},{TEXT("shadow"),TEXT("shadow figure")},
-   {TEXT("crawler"),TEXT("low crawler")},{TEXT("shade"),TEXT("figure on the height")},{TEXT("cattle"),TEXT("dead cow")},{TEXT("scorch"),TEXT("scorched ring")},
+   // EVIDENCE-DOSSIER-20261113 (Tom): what it looked like, never what it is. The game hands out no name for any of them
+   // (S47Marginalia::NamesKind; the self-test reads every title here).
+   {TEXT("roswell"),TEXT("small figure")},{TEXT("pale"),TEXT("low shape on the ground")},{TEXT("tall"),TEXT("tall figure")},
+   {TEXT("nordic"),TEXT("still figure")},{TEXT("cosmic"),TEXT("lit figure")},{TEXT("tallfigure"),TEXT("tall figure")},{TEXT("shadow"),TEXT("shadow figure")},
+   {TEXT("crawler"),TEXT("low shape on four legs")},{TEXT("shade"),TEXT("figure on the height")},{TEXT("cattle"),TEXT("dead cow")},{TEXT("scorch"),TEXT("scorched ring")},
    {TEXT("prints"),TEXT("prints on the shoulder")},{TEXT("cowlift"),TEXT("cow in the light")},{TEXT("bigglow"),TEXT("big light")},{TEXT("bigmark"),TEXT("big night marks")}};
   for(const auto& N:Names)if(G==N.Key)return N.Value;
   return G;
@@ -1858,10 +1894,20 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
  // Director's own is in the frame, the strange things out there are: each by the same rules (in the frame, large enough, in the
  // clear, lit enough to read in Photo), one claim a group a night, the best-paying one in the frame.
  FString StrangeKey,StrangeTitle;bool bStrangeLamps=false;
+ // ENLARGE-20261108: the largest strange thing in the clear that is too small to make out, for the darkroom's enlarger.
+ FString SmallKey;double SmallSize=0;FVector2D SmallAt(.5,.5);
  if(TaggedQuality<.025&&M->Freeform)
  {
   const int32 NightNo=FS47FreeformSession::NightOf(M->Freeform->Clock());
   double BestQ=0;int32 BestPay=0;FBox2D BestRegion(ForceInit);
+  auto Small=[&](const FString& Group,double Size,const FVector2D& At)
+  {
+   if(Size<SmallSubject||Size>=.025||Size<=SmallSize)return;
+   const FString Key=FString::Printf(TEXT("strange.%s.n%d"),*Group,NightNo);
+   const auto* Have=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==Key;});
+   if(PhotoReward(Key,.025)<=0||(Have&&Have->bPaid))return;
+   SmallKey=Key;SmallSize=Size;SmallAt=At;
+  };
   auto Offer=[&](const FString& Group,const FString& Title,bool bLamps,double Q,const FBox2D& Region,const FString& Extra=FString())
   {
    if(Q<.025)return;
@@ -1876,8 +1922,9 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
   auto Body=[&](const FString& Group,const FString& Title,const FVector& At,double Height,const UPrimitiveComponent* C)
   {
    TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);
-   const double Q=C?Qualify(At,Height,C):0.;
-   Offer(Group,Title,false,Q,TaggedRegion);
+   const double Q=C?Qualify(At,Height,C,SmallSubject):0.;
+   if(Q>=.025)Offer(Group,Title,false,Q,TaggedRegion);
+   else if(Q>0){const auto P=Camera->Project(At);Small(Group,Q,FVector2D(P.U,P.V));}
    TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);
   };
   // Boxes of drawn props (UE centimetres), any of whose parts may stand in the line.
@@ -1898,19 +1945,20 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
    if(!Front||!Bounds.bIsValid)return;
    // How large it is in the frame: its taller side, a ground mark counted by its width.
    const double Size=FMath::Clamp(FMath::Max(Bounds.Max.X-Bounds.Min.X,Bounds.Max.Y-Bounds.Min.Y),0.,1.);
-   if(Size<.025)return;
+   if(Size<SmallSubject)return;
    FHitResult Hit;FCollisionQueryParams Params(SCENE_QUERY_STAT(FreeformPhotoSight),true);if(M->Player)Params.AddIgnoredActor(M->Player);
    if(M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Camera->PhotoLoc,S47Three::ToUE(At),ECC_Visibility,Params)&&!Parts.Contains(Hit.Component.Get()))return;
+   if(Size<.025){Small(Group,Size,FVector2D(P.U,P.V));return;}
    Offer(Group,Title,bLamps,Size,Bounds);
   };
   // The small ones: the glimpses' bodies, wherever they came from (the base, the cabinets, a site's cover, a window).
   if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered)
-   Body(TEXT("roswell"),TEXT("grey visitor"),I.Eye-FVector(0,.5,0),1.2,M->Night->Glimpses->ControlledPhotoBody(I.Id));
+   Body(TEXT("roswell"),StrangeTitleOf(TEXT("roswell")),I.Eye-FVector(0,.5,0),1.2,M->Night->Glimpses->ControlledPhotoBody(I.Id));
   // The crab and the tall one in the open: their own skinned bodies (S47FarmSite).
   if(M->Freeform->FarmSite)if(const auto Eye=M->Freeform->FarmSite->VisitBodyEye())if(const UPrimitiveComponent* Mesh=M->Freeform->FarmSite->VisitPhotoBody())
   {
    const bool bCrab=M->Freeform->FarmSite->VisitKind()==1;
-   Body(bCrab?TEXT("pale"):TEXT("tall"),bCrab?TEXT("pale visitor"):TEXT("tall visitor"),*Eye-FVector(0,bCrab?.35:.95,0),bCrab?.55:1.9,Mesh);
+   Body(bCrab?TEXT("pale"):TEXT("tall"),StrangeTitleOf(bCrab?TEXT("pale"):TEXT("tall")),*Eye-FVector(0,bCrab?.35:.95,0),bCrab?.55:1.9,Mesh);
   }
   // PHOTO-02 (N1110): a cow lifted into the air. It pays only with the lift really up there to be seen: the craft and the beam drawn, the
   // cow clear of the grass, and the cow herself inside the frame. The craft is the body that must stand in the clear (Qualify).
@@ -1958,7 +2006,12 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
    Offer(TEXT("aftermath"),TEXT("what was left out there"),false,.08,FBox2D(FVector2D(.2,.2),FVector2D(.8,.8)));
   TaggedQuality=BestQ;TaggedRegion=BestRegion;
  }
- if(TaggedQuality<.025)return;
+ if(TaggedQuality<.025)
+ {
+  // Nothing to make out on the print; what is too small for it is kept with the frame (ENLARGE-20261108, EnlargedSubject).
+  if(!SmallKey.IsEmpty())Shot.Targets.Add({FString::Printf(TEXT("%s%d:%s"),SmallPrefix,FMath::RoundToInt(SmallSize*10000),*SmallKey),SmallAt});
+  return;
+ }
  TaggedShot=Shot.Id;TaggedIncident=!StrangeKey.IsEmpty()?StrangeKey:RoadPhoto?RoadIncident:IncidentId;
  TaggedTitle=!StrangeKey.IsEmpty()?StrangeTitle:RoadPhoto?FString(TEXT("highway light")):Event.Replace(TEXT("_"),TEXT(" "));
  bTaggedLamps=bStrangeLamps||(StrangeKey.IsEmpty()&&(RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights")||Event==TEXT("farm_lights")||Event==TEXT("town_lights")));
@@ -1993,6 +2046,8 @@ void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
  if(!Existing){FPhotoClaim C;C.Id=TaggedIncident;C.PhotoId=Shot.Id;C.Title=TaggedTitle;C.Quality=TaggedQuality;C.Reward=PhotoReward(C.Id,C.Quality);Claims.Add(C);Existing=&Claims.Last();}
  else if(!Existing->bPaid&&TaggedQuality>Existing->Quality){Existing->PhotoId=Shot.Id;Existing->Quality=TaggedQuality;Existing->Reward=PhotoReward(Existing->Id,Existing->Quality);}
  Changed();if(M&&M->UI)M->UI->Toast(Existing->bPaid?FString(TEXT("Already registered. The new photograph stays in the album; no extra credit.")):FString::Printf(TEXT("Photograph taken. Develop it in the PHOTO LAB, then register it at OPS for $%d."),Existing->Reward),5);
+ // EVIDENCE-DOSSIER-20261113: logged where it was taken, in the file of the one it shows (none for the shade or the sky); once a claim.
+ if(M&&M->Freeform)M->Freeform->TagPhotoClaim(Existing->Id);
 }
 bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
 {
@@ -2025,6 +2080,62 @@ bool FS47FreeformDirector::RegisterFieldRecord(const FString& Id)
  Changed();
  if(M->UI)M->UI->Toast(Paid>0?FString::Printf(TEXT("OPS registered the field record: $%d field allowance."),Paid):FString(TEXT("OPS registered the field record. This week's field allowance is used up: no payment.")),5);
  return true;
+}
+// ENLARGE-20261108 (-> M3, 13 Nov): what the print was too small for, made legible by the enlarger.
+FString FS47FreeformDirector::EnlargedSubject(const TArray<TPair<FString,FVector2D>>& Targets,double U,double V,int32 Power,double& OutSize,FVector2D& OutAt)
+{
+ OutSize=0;OutAt=FVector2D(.5,.5);
+ if(Power<2)return {};
+ // The window as FS47Enlarger::Crop takes it: a 1/Power of the frame each way, kept inside the frame.
+ const double Frac=1./Power,Cu=FMath::Clamp(U,Frac*.5,1-Frac*.5),Cv=FMath::Clamp(V,Frac*.5,1-Frac*.5);
+ FString Best;
+ for(const auto& T:Targets)
+ {
+  if(!T.Key.StartsWith(SmallPrefix))continue;
+  const FString Rest=T.Key.Mid(FCString::Strlen(SmallPrefix));int32 Colon=INDEX_NONE;
+  if(!Rest.FindChar(TEXT(':'),Colon)||Colon<1)continue;
+  const double Size=FCString::Atoi(*Rest.Left(Colon))/10000.;const FString Claim=Rest.Mid(Colon+1);
+  if(Claim.IsEmpty()||Size<SmallSubject||Size>=.025||Size*Power<.025)continue;
+  // Its middle well inside the enlarged part, not at its very edge.
+  const double Du=T.Value.X-(Cu-Frac*.5),Dv=T.Value.Y-(Cv-Frac*.5);
+  if(Du<Frac*.08||Du>Frac*.92||Dv<Frac*.08||Dv>Frac*.92)continue;
+  if(Size*Power>OutSize){OutSize=Size*Power;OutAt=FVector2D(Du/Frac,Dv/Frac);Best=Claim;}
+ }
+ return Best;
+}
+FString FS47FreeformDirector::EnlargedClaim(const FS47AlbumShot& Source,double U,double V,int32 Power,const TArray<FColor>& Pixels,int32 W,int32 H,FVector2D& OutAt,int32& OutReward)
+{
+ OutReward=0;OutAt=FVector2D(.5,.5);
+ if(!M||!M->Freeform||Source.bUnavailable||!Source.Enlarged.IsEmpty())return {};
+ double Size=0;const FString Key=EnlargedSubject(Source.Targets,U,V,Power,Size,OutAt);
+ if(Key.IsEmpty())return {};
+ const auto* Have=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==Key;});
+ if(Have&&Have->bPaid)return {};
+ const double Q=FMath::Clamp(Size,0.,1.);
+ // The light rule of any frame (Photo): a body or a mark must read against the night, lamps carry themselves.
+ if(!Key.StartsWith(TEXT("strange.bigglow.")))
+ {
+  const FVector2D Half(Q*.5*H/FMath::Max(1,W),Q*.5);
+  const double Mean=SubjectMean(Pixels,W,H,FBox2D(OutAt-Half,OutAt+Half));
+  if(Mean>=0&&Mean<(M->Freeform->HasKit(TEXT("film"))?8:15))return {};
+ }
+ if(Have&&Have->Quality>=Q)return {};
+ OutReward=PhotoReward(Key,Q);
+ return OutReward>0?Key:FString();
+}
+void FS47FreeformDirector::ClaimEnlargement(const FString& ClaimId,const FString& EnlargedId,double Quality)
+{
+ if(ClaimId.IsEmpty()||EnlargedId.IsEmpty())return;
+ auto* Existing=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==ClaimId;});
+ if(Existing&&Existing->bPaid)return;
+ FString G=ClaimId.Mid(8);int32 Dot=INDEX_NONE;if(G.FindChar('.',Dot))G.LeftInline(Dot);
+ // The bodies' and the ground's own words, as TagPhoto names them; the props' from their table.
+ const FString Title=G==TEXT("marks")?FString(TEXT("marks in the ground")):StrangeTitleOf(G);
+ if(!Existing){FPhotoClaim C;C.Id=ClaimId;C.Title=Title;Claims.Add(C);Existing=&Claims.Last();}
+ Existing->PhotoId=EnlargedId;Existing->Quality=Quality;Existing->Reward=PhotoReward(ClaimId,Quality);
+ UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: enlargement %s is the photograph of %s now ($%d)"),*EnlargedId,*ClaimId,Existing->Reward);
+ Changed();
+ if(M&&M->Freeform)M->Freeform->TagPhotoClaim(ClaimId,false); // EVIDENCE-DOSSIER-20261113: an enlargement that makes it out is its photograph (LOOP-DOSSIER-GIVES: made at the bench, so no hour or place of its own)
 }
 // Public declaration: bool PlanPhotoControl(const FString& Id);
 bool FS47FreeformDirector::PlanPhotoControl(const FString& Id)
@@ -2170,6 +2281,16 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   Check(SubjectMean(P,W,H,Region)<15,TEXT("bright margins inside component bounds cannot mask a dark subject centre"));
   Check(SubjectMean(P,W,H,FBox2D(ForceInit))<0&&SubjectMean(P,W,H,FBox2D(FVector2D(.5,.5),FVector2D(.501,.501)))<0,TEXT("missing or subpixel subject region cannot qualify"));
  }
+ {
+  // FELT-WEEK1-20261114: the lights tip never lands on the night watch's half hour; it waits to 02:20, or the next night.
+  const double Watch=25.5,Sug=26.;
+  Check(HoldLightsForWatch(25.,Watch,Sug)>=26.33&&HoldLightsForWatch(25.,Watch,Sug)<=LightsLatest&&HoldLightsForWatch(26.1,Watch,Sug)>=26.33,
+   TEXT("FELT-WEEK1: a lights tip at 01:00 or 02:06 with the night watch up at 01:30 waits until 02:20"));
+  Check(HoldLightsForWatch(24.5,Watch,Sug)==24.5&&HoldLightsForWatch(22.,Watch,Sug)==22.&&HoldLightsForWatch(26.4,Watch,Sug)==26.4,
+   TEXT("FELT-WEEK1: a tip at 00:30, 22:00 or after the watch keeps its own hour"));
+  Check(HoldLightsForWatch(26.,25.75,26.25)==LightsLatest&&HoldLightsForWatch(26.,25.75,26.4)<0,
+   TEXT("FELT-WEEK1: a late watch holds the tip to its latest hour, 02:30; past that it comes the next night"));
+ }
  Check(Catalog().Num()==22+S47SmallHints::Ids().Num()&&Definition(TEXT("roomlight_return"))&&Definition(TEXT("farm_lights"))&&Definition(TEXT("town_lights")),TEXT("authored catalogue, action-bound room light and two physical service-site encounters are embedded in runtime"));TSet<FString> Ids;
  for(const auto& D:Catalog()){Check(!Ids.Contains(D.Id)&&!D.Finding.IsEmpty()&&D.Day>=1&&D.Duration>0,TEXT("event ID, finding and finite duration"));Ids.Add(D.Id);}
  FS47FreeformDirector D(nullptr);D.Begin(nullptr);auto Saved=D.Save();FS47FreeformDirector R(nullptr);R.Begin(Saved);
@@ -2300,6 +2421,36 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   FPhotoClaim A;A.Id=TEXT("strange.tall.n2");A.PhotoId=TEXT("album9");A.Title=TEXT("tall visitor");A.Quality=.2;Wonder.Claims.Add(A);
   FS47FreeformDirector StrangeCopy(nullptr);StrangeCopy.Begin(S47J::Read(S47J::Write(Wonder.Save())));
   Check(StrangeCopy.Claims.Num()==1&&StrangeCopy.Claims[0].Reward==PhotoReward(A.Id,.2)&&StrangeCopy.Claims[0].Reward>StrangeCopy.PhotoReward(TEXT("strange.roswell.n2"),.2),TEXT("D48: a strange claim's pay follows its quality after Continue without a new save field; one claim a group a night keeps its id"));
+  // EVIDENCE-DOSSIER-20261113 (Tom): no photograph's title says what the thing is; a claim an older save titled that way reads by its look.
+  {
+   bool bNeutralTitles=true;FString NamingTitle;
+   for(const TCHAR* GroupId:{TEXT("roswell"),TEXT("pale"),TEXT("tall"),TEXT("nordic"),TEXT("cosmic"),TEXT("tallfigure"),TEXT("shadow"),TEXT("crawler"),TEXT("shade"),TEXT("cattle"),TEXT("scorch"),TEXT("prints"),TEXT("cowlift"),TEXT("bigglow"),TEXT("bigmark")})
+   {
+    const FString TitleNow=StrangeTitleOf(GroupId);
+    if(TitleNow.IsEmpty()||TitleNow==GroupId||S47Marginalia::NamesKind(TitleNow)||!S47Script::LintText(TitleNow).IsEmpty()||TitleNow.ToLower().Contains(TEXT("grey"))||TitleNow.ToLower().Contains(TEXT("roswell"))){bNeutralTitles=false;NamingTitle=TitleNow;}
+   }
+   for(const TCHAR* OldTitle:{TEXT("grey visitor"),TEXT("pale visitor"),TEXT("tall visitor"),TEXT("Nordic figure"),TEXT("Cosmic figure"),TEXT("low crawler")})bNeutralTitles&=S47Marginalia::NamesKind(OldTitle);
+   Check(bNeutralTitles&&StrangeCopy.Claims.Num()==1&&StrangeCopy.Claims[0].Title==TEXT("tall figure")&&StrangeTitleOf(TEXT("roswell"))==TEXT("small figure")&&StrangeTitleOf(TEXT("nordic"))==TEXT("still figure"),
+    TEXT("EVIDENCE-DOSSIER: a photograph is titled by what it looked like, never by what it is, and an older save's claim is renamed when read"));
+   if(!NamingTitle.IsEmpty())Lines.Add(TEXT("     ")+NamingTitle);
+  }
+  // ENLARGE-20261108 (-> M3, 13 Nov): a pale one 1.2% of the frame high in the upper right of the frame: too small for the print.
+  {
+   const TArray<TPair<FString,FVector2D>> Small={{FString::Printf(TEXT("%s%d:strange.pale.n3"),SmallPrefix,120),FVector2D(.82,.2)}};
+   double Sz=0;FVector2D In;
+   Check(EnlargedSubject(Small,5/6.,1/6.,2,Sz,In).IsEmpty(),TEXT("ENLARGE: at 2x a thing 1.2% of the frame is still too small to make out (2.4%)"));
+   const FString Got=EnlargedSubject(Small,5/6.,1/6.,4,Sz,In);
+   Check(Got==TEXT("strange.pale.n3")&&FMath::IsNearlyEqual(Sz,.048,1e-6)&&In.X>.08&&In.X<.92&&In.Y>.08&&In.Y<.92,TEXT("ENLARGE: at 4x its part of the frame shows it legible, at four times its size, inside the enlargement"));
+   Check(EnlargedSubject(Small,1/6.,5/6.,4,Sz,In).IsEmpty()&&EnlargedSubject(Small,.5,.5,4,Sz,In).IsEmpty(),TEXT("ENLARGE: another part of the frame does not show it"));
+   const TArray<TPair<FString,FVector2D>> Junk={{FString(SmallPrefix)+TEXT("x"),FVector2D(.82,.2)},{FString(SmallPrefix)+TEXT("40:"),FVector2D(.82,.2)},{FString(SmallPrefix)+TEXT("10:strange.pale.n3"),FVector2D(.82,.2)},{TEXT("freeform:strange.pale.n3"),FVector2D(.82,.2)}};
+   Check(EnlargedSubject(Junk,5/6.,1/6.,4,Sz,In).IsEmpty(),TEXT("ENLARGE: a broken, empty or too-tiny mark, or a legible claim, makes nothing of an enlargement"));
+   FS47FreeformDirector Lab(nullptr);Lab.Begin(nullptr);
+   Lab.ClaimEnlargement(TEXT("strange.pale.n3"),TEXT("enl7@9000"),.048);
+   FS47FreeformDirector LabCopy(nullptr);LabCopy.Begin(S47J::Read(S47J::Write(Lab.Save())));
+   Check(LabCopy.Claims.Num()==1&&LabCopy.Claims[0].PhotoId==TEXT("enl7@9000")&&LabCopy.Claims[0].Title==TEXT("low shape on the ground")&&!LabCopy.Claims[0].bPaid&&LabCopy.Claims[0].Reward==PhotoReward(TEXT("strange.pale.n3"),.048),TEXT("ENLARGE: the enlargement is the claim's photograph, due at OPS, and survives a Continue"));
+   Lab.Claims[0].bPaid=true;Lab.ClaimEnlargement(TEXT("strange.pale.n3"),TEXT("enl8@9000"),.09);
+   Check(Lab.Claims.Num()==1&&Lab.Claims[0].PhotoId==TEXT("enl7@9000"),TEXT("ENLARGE: a claim already paid is not paid again for a new enlargement"));
+  }
  }
  // Pure selection/serialization fixtures: not native image/render qualification.
  FS47FreeformDirector FocusModel(nullptr);FocusModel.Begin(nullptr);

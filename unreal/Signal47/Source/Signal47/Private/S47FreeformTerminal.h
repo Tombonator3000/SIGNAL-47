@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "InputCoreTypes.h"
 #include "Widgets/SWidget.h"
 #include "S47Rx.h"
 // SARO 1986 workstation kit, drawn on the physical CRT glass (1200 x 900 Slate units).
@@ -60,9 +61,46 @@ namespace S47FreeformTerminal
  bool SelfTest(TArray<FString>& Report);
 
  // --- Workstation layout (UI-03) ---
- struct FNav { FString Label; bool bSelected=false; TFunction<void()> Action; bool bAttention=false; };
+ // RX-TABS-DUE-20261113: Due (live; tabs only) marks the tab that holds the next step: an amber "*" stays beside its label while the
+ // label and its frame breathe amber at 1 Hz (DueLevel). Never on the selected tab. The label text itself is unchanged.
+ struct FNav { FString Label; bool bSelected=false; TFunction<void()> Action; bool bAttention=false; TFunction<bool()> Due; };
  FW Nav(const TArray<FNav>& Items);                 // vertical menu, selected item filled amber
  FW Tabs(const TArray<FNav>& Items);                // horizontal tabs, selected filled green
+ // RX-TABS-DUE-20261113: the calm-flash setting, asked while painting (the owner sets it; none: not calm). DueLevel is the due cue's
+ // brightness 0..1: a sine at 1 Hz (two changes of direction a second), held at 1 when calm. DueRing lays that breathing amber frame
+ // over a key while Due() says it is the one to press; it takes no clicks and moves no layout.
+ void SetCalm(TFunction<bool()> Calm);
+ bool CalmNow();
+ float DueLevel(double Seconds,bool bCalm);
+ FW DueRing(FW Inner,TFunction<bool()> Due);
+ // RX-LOOK-20261113 (-> M3, M6; Tom 13 November: «Få receiver til grafisk å se mer ut som bilde nr. to. Masse FX.»): the receiver PC's
+ // own frame, on every one of its tabs, after Tom's reference picture: the header (a dish emblem, SARO OPS, the station's name, the
+ // date and clock, the array's pointing), the tab row behind the page's title in an amber box (the same labels, selected look and due
+ // cue as Tabs), the state banner, the page in a body that must not need scrolling, the next step in words, and a row of the keys
+ // that work here. Header and Banner are painted widgets the owner makes (SS47RxLook); the frame only places them. The frame takes
+ // the keys OnKey answers true to (F1 to F5 for the tabs), tells BodyHeight every frame how high the body may be (units), and keeps
+ // the tube's own life as Frame has it (the hum bar, what is on the air, the set coming on).
+ struct FRxFrame
+ {
+  FString Title;
+  TArray<FNav> Tabs;
+  TSharedPtr<SWidget> Header,Banner,Body;
+  TAttribute<FString> Prompt;TAttribute<bool> Urgent=false;
+  TArray<FString> Keys;
+  TSharedPtr<float> BodyHeight;
+  TFunction<bool(const FKey&)> OnKey;
+ };
+ FW RxFrame(const FRxFrame& In);
+ // The body that frame leaves on a glass so high (units, the picture's own margin already taken off): for a page that has to know
+ // before the first frame, and for the self-test.
+ float RxBodyRoom(float High);
+ // A panel of the receiver's frame: a thin double line round the body, the title set into the line at the top left, and a live
+ // note set into it at the top right.
+ FW RxPanel(const FString& Title,FW Body,TAttribute<FString> Right=FString());
+ // A small key for the receiver's frame (as Button, lower: the frame has no room for the tall ones). RX-LOOK gjennomgang 14 Nov:
+ // bFocusable false for a key that must not take the keys from the page's own key target when clicked (the sky chart's step keys:
+ // a click on one gave it the keyboard, and the arrows then walked between keys while the key row said ARROWS STEER).
+ FW RxKey(const FString& Label,TFunction<void()> Action,bool Primary=false,TAttribute<bool> Enabled=true,int32 Size=22,bool bFocusable=true);
  FW Panel(const FString& Title,FW Body,bool bFilledHeader=false);
  FW Heading(const FString& Value,int32 Size=30);    // amber section title
  FW Banner(TAttribute<FString> Value,TAttribute<bool> Urgent=true); // amber framed status line, pulses when urgent
@@ -81,7 +119,7 @@ namespace S47FreeformTerminal
  FW FivePoint(TFunction<int32()> Done,TFunction<bool()> Running,TFunction<bool()> Required);
  // D48-20261110 (D46-14): the TUNE page's fine-tuning window (the spectrum zoomed on the target, the tuned marker moving as the dial turns,
  // the peak growing with the carrier lock) and the DATA page's spectrogram (Sample: time 0..1, frequency 0..1 to brightness 0..1; Has false: nothing yet).
- FW TuneZoom(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality);
+ FW TuneZoom(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality,float Height=190);
  FW Spectrogram(TFunction<float(float,float)> Sample,TFunction<bool()> Has,float Height);
  // State per element: 0 ready, 1 selected, 2 isolated/fault, 3 moving
  FW AntennaGrid(int32 Count,TFunction<FString(int32)> Label,TFunction<int32(int32)> State,TFunction<void(int32)> Pick);

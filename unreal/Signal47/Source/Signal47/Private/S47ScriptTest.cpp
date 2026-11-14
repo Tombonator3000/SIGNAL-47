@@ -57,6 +57,28 @@ bool S47Script::SelfTest(TArray<FString>& Lines)
  using namespace S47ScriptTestLocal;
  bool bAll=true;
  const auto Check=[&](bool bOk,const FString& What){bAll&=bOk;Lines.Add(FString(bOk?TEXT("PASS "):TEXT("FAIL "))+TEXT("scripts: ")+What);};
+ {
+  // REVIEW-20261113: tape seconds in player text never read 47, whatever the take or the marks; a counter shows the value before
+  bool bClean=true,bNear=true;
+  for(int32 I=0;I<=180;++I)
+  {
+   const double S=I/10.;
+   for(const bool bRun:{false,true})for(const bool bPad:{false,true})for(int32 Dec=0;Dec<=2;++Dec)
+   {
+    const FString Shown=TapeSeconds(S+(Dec==2?.003:0.),Dec,bRun,bPad);
+    bClean&=!SaysFortySeven(Shown);
+    bNear&=FMath::Abs(FCString::Atod(*Shown)-S)<=(Dec==0?1.:.35);
+   }
+   // the lines the tape's text is made of, with two marks and a counter
+   for(int32 J=0;J<=180;J+=7)
+   {
+    const FString Line=FString::Printf(TEXT("EXTRA TICKS %s TO %s SECONDS / MARK %s-%s s / REFERENCE %s / 8 s / Not heard yet (%s of 18 s) / %s/18"),*TapeSeconds(S),*TapeSeconds(J/10.),*TapeSeconds(S),*TapeSeconds(J/10.),*TapeSeconds(FMath::Min(S,8.),1,true),*TapeSeconds(S,1,true),*TapeSeconds(S,1,true,true));
+    bClean&=!SaysFortySeven(Line);
+   }
+  }
+  Check(bClean&&bNear&&TapeSeconds(4.7,1,true)==TEXT("4.6")&&TapeSeconds(4.8,1,true)==TEXT("4.8")&&TapeSeconds(14.7)==TEXT("14.6")&&TapeSeconds(4.66,1,true,true)==TEXT("04.6")&&TapeSeconds(9.3)==TEXT("9.3"),
+   TEXT("tape seconds 0.0 to 18.0 (and every formatted tape line) never read 47; a counter shows 4.6 then 4.8; only the shown value moves (REVIEW 13 Nov)"));
+ }
 
  // ---- the JSON both ways ----
  {

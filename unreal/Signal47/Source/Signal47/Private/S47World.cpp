@@ -53,9 +53,13 @@
 #include "S47RoadTerrain.h"
 #include "S47Story.h"
 #include "S47Three.h"
+#include "S47HighwayLandscape.h"
+#include "Engine/StaticMesh.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
+#include "S47StoryDrive.h"
 #include "TimerManager.h"
 #include "UnrealClient.h"
 
@@ -190,6 +194,8 @@ namespace
 	/** What the open land keeps from a building, a raised slab or a fence line besides the player's
 	 *  width: more than any step, so the way in is only by the zones and their gates. */
 	constexpr double LAND_KEEP = 0.4;
+	// HWY-WALL-20261113: a roadside rock whose top stands less than this over the ground is driven over in Freeform (US47World::ReconcileFarm).
+	constexpr double LowRockM = .45;
 	/** The area a place is in (the motel's lot is SARO's). */
 	FString AreaOf(const FString& L) { return L == TEXT("motel") ? FString(TEXT("saro")) : L; }
 	bool InBox(const TOptional<FS47Box2>& B, const FVector& P) { return B && P.X >= B->MinX && P.X <= B->MaxX && P.Z >= B->MinZ && P.Z <= B->MaxZ; }
@@ -237,6 +243,12 @@ void US47World::Init(US47Main* InM)
 	{
 		TruckChoice = [this](const FString& Place) -> FChoice
 		{
+			// STORY-DRIVE-OWN-CAR-20261113: on a Story night's drive the car left on the way is the player's own wagon (Story nights only).
+			if (bCommuteVehicle && M && M->IsFreeform())
+			{
+				FChoice Own;
+				if (FS47StoryDrive::Choice(M, Own.Label, Own.Use)) return Own;
+			}
 			// The two authored transports survive T01's removal of the feeder-trip exception.
 			// Horror still decides the escape; these choices grant no general pre-chapter drive.
 			if (M && M->IsFreeform())
@@ -1667,6 +1679,14 @@ void US47World::DriveOnOldRoad()
 	StartTrip(TEXT("roswell"), TEXT("roswell"), O);
 }
 
+bool US47World::OwnsTruck(const FS47Truck* T) const
+{
+	if (!T) return false;
+	if (T == SaroTruckP.Get() || T == TruckP.Get() || T == ParkedP.Get() || T == OldTruckP.Get()) return true;
+	for (const TPair<FString, FLegRec>& L : Legs) if (L.Value.Truck == T) return true;
+	return false;
+}
+
 FS47Truck* US47World::TruckHere() const
 {
 	if (Area == TEXT("roswell") || Leg == TEXT("roswell")) return nullptr;
@@ -2424,6 +2444,13 @@ void US47World::FinishCommute()
  RestoreTransport(nullptr);
 }
 
+void US47World::EndPersonalVehicle()
+{
+ bCommuteVehicle = false; bPersonalTransport = false; PersonalVehicle.Reset(); ServiceVehicle.Reset();
+ for (FS47Truck* T : {SaroTruckP.Get(),TruckP.Get(),ParkedP.Get()}) if (T) T->SetPersonalVehicle(false);
+ ShowTrucks();
+}
+
 void US47World::SetPersonalPark(const FVector& Position, double Heading, bool bVisible, const FString& WalkArea, bool bService)
 {
  if (!M || !M->Web || !M->Player) return;
@@ -2611,6 +2638,14 @@ bool US47World::HasHerdObstacle(const FString& HerdArea,const FVector& At,double
  return L->Area->Obstacles.ContainsByPredicate([&](const FS47Obstacle& O){return O.bCircle&&FMath::Abs(O.X-At.X)<.001&&FMath::Abs(O.Z-At.Z)<.001&&FMath::Abs(O.R-Radius)<.001;});
 }
 
+bool US47World::CopiesToTruck(const FS47Rect& C)
+{
+ // LAND-PLACES-FIXES-20261114: ReconcileFarm's test, on its own so that the self-test runs it (S47LandPlaceFixes::SelfTest)
+ if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar"))return false;
+ for(const TCHAR* Own:{TEXT("door:"),TEXT("eastwing:"),TEXT("temp:"),TEXT("townuse:"),TEXT("landplace:")})if(C.Id.StartsWith(Own))return false;
+ return !S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ);
+}
+
 void US47World::ReconcileFarm(bool bEnabled)
 {
  EnsureLegs();if(!bLegsMade)return;
@@ -2658,7 +2693,7 @@ void US47World::ReconcileFarm(bool bEnabled)
     };
     for(const FS47Rect& C:M->Web->CollidersMutable(Id))
     {
-     if(!C.bEnabled||C.MinX>=1e8||C.Id==TEXT("truck")||C.Id==TEXT("personalCar")||C.Id.StartsWith(TEXT("door:"))||C.Id.StartsWith(TEXT("eastwing:"))||C.Id.StartsWith(TEXT("temp:"))||C.Id.StartsWith(TEXT("townuse:"))||S47OpenLand::IsBoundaryLine(C.MinX,C.MaxX,C.MinZ,C.MaxZ))continue; // (temp:, townuse: M4's own, S47TownSites puts them in the truck's list itself)
+     if(!CopiesToTruck(C))continue; // (temp:, townuse: M4's own, S47TownSites puts them in the truck's list itself; landplace: the windmill's, S47LandWindmill puts its own in)
      // FENCES-INVISIBLE-20261108: a cow's walk box has its own circle in the truck's list, which goes with the cow (S47Herd); a copy
      // made here stayed where the cow stood when the farm opened, and held the truck in the empty pasture.
      const double CX=(C.MinX+C.MaxX)*.5,CZ=(C.MinZ+C.MaxZ)*.5,CR=(C.MaxX-C.MinX)*.5;
@@ -2677,6 +2712,53 @@ void US47World::ReconcileFarm(bool bEnabled)
    }
   }
   bFarmObstaclesReady=true;
+ }
+  // Measured in the area whose leg it is, once each (what is drawn is that area's): SARO's in SARO, the road's on the road.
+ {
+ const FString Id=Area==TEXT("diner")?FString(TEXT("road")):Area;
+ if(bEnabled&&bFarmObstaclesReady&&!S47OpenLand::Off()&&M&&M->Web&&M->Web->HighwayLandscapeReady()&&M->Web->Area()==Area&&(Id==TEXT("road")||Id==TEXT("saro"))&&!LowRocksMeasured.Contains(Id))
+ {
+  LowRocksMeasured.Add(Id);
+  // HWY-WALL-20261113 (Tom, d68: off the highway toward the Baca windmill, the truck stopped dead against nothing at road 28 859): the
+  // export's roadside rocks hold the truck with a circle each (roadPlaces.ts plants: "the big rocks the truck can hit"), but Freeform's
+  // ground has risen round many of them, and that one stands 0.31 m over it, under the bonnet and unseen from the cab, at night not at
+  // all. A rock that low is driven over: in Freeform its circle goes (Story keeps it). Measured here, once: each rock that is drawn,
+  // its top over the ground the leg drives on. Rocks in road-world terms (the shared highway's canonical frame, S47HighwayLandscape).
+  TArray<FVector> RockTops; // x, top y, z: road-world
+   for(int32 N=0;N<M->Web->PartCount();++N)
+   {
+    const FS47WebNode* Node=M->Web->Node(N);
+    // (any instanced thing small enough to be a rock: the export's rocks are one merged instance list per stretch, not named as such)
+    auto* C=Node?Cast<UInstancedStaticMeshComponent>(Node->Comp.Get()):nullptr;UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;if(!Mesh||!C->IsVisible())continue;
+    const FBox Local=Mesh->GetBoundingBox();if(Local.GetSize().GetMax()>300||C->GetInstanceCount()>5000)continue; // (not the grass)
+    for(int32 K=0;K<C->GetInstanceCount();++K)
+    {
+     FTransform T;if(!C->GetInstanceTransform(K,T,true)||T.GetScale3D().GetMin()<=.01)continue;
+     const FBox U=Local.TransformBy(T);
+     const FVector Mid=S47HighwayLandscape::ToCanonical(M->Web->Area(),S47Three::ToThree(T.GetLocation()));
+     const FVector Top=S47HighwayLandscape::ToCanonical(M->Web->Area(),S47Three::ToThree(FVector(U.GetCenter().X,U.GetCenter().Y,U.Max.Z)));
+     RockTops.Add(FVector(Mid.X,Top.Y,Mid.Z));
+    }
+   }
+  int32 LowRocks=0;
+  if(auto* L=Legs.Find(Id))
+  {
+   {
+    // (saro's world is the road-world less 8000 + SARO_IN_ROAD in x and less SARO_IN_ROAD in z: S47OpenLand::RoadOf)
+    auto& Obs=L->Area->Obstacles;auto& Controlled=FarmControlledObstacles.FindOrAdd(Id);
+    for(int32 I=0;I<Obs.Num();++I)
+    {
+     const FS47Obstacle& O=Obs[I];if(!O.bCircle||O.R<.25||O.R>.6)continue;
+     double Rx=0,Rz=0;if(!S47OpenLand::RoadOf(Id,O.X,O.Z,Rx,Rz))continue;
+     // the highest thing drawn on its middle: a pole or a post there keeps it
+     double Top=-1e9;for(const FVector& P:RockTops)if(FMath::Square(P.X-8000-Rx)+FMath::Square(P.Z-Rz)<.15*.15)Top=FMath::Max(Top,P.Y);
+     if(Top<-1e8||Top-L->Area->Height(O.X,O.Z)>=LowRockM)continue;
+     Controlled.Add({I,O});++LowRocks;
+    }
+   }
+  }
+  UE_LOG(LogS47World,Display,TEXT("S47: Freeform: %d roadside rocks in the %s leg lower than %.2f m over the ground no longer hold the truck (%d small instances measured; HWY-WALL-20261113)"),LowRocks,*Id,LowRockM,RockTops.Num());
+ }
  }
  const bool Changed=bFarmMode!=bEnabled;bFarmMode=bEnabled;
  // The road's walk has the same long fences as colliders of its own. Story needs them back.

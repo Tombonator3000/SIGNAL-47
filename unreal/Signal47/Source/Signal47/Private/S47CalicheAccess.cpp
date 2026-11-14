@@ -1,4 +1,6 @@
 #include "S47CalicheAccess.h"
+#include "S47GasBayDoor.h"
+#include "S47Convent.h"
 #include "S47CalicheNewHomes.h"
 #include <limits>
 #include "S47Main.h"
@@ -31,6 +33,7 @@ namespace
  struct FRoom {FString Id,Use;FVector Root,Hinge;double X0,X1,Y0,Y1,Floor,Front,DoorY,Width,Height,StepGround=0;int32 Steps=1;bool bOpen=true;TWeakObjectPtr<UStaticMeshComponent> Leaf;TWeakObjectPtr<UPointLightComponent> Lamp;};
  TArray<FRoom> Rooms;
  TArray<TWeakObjectPtr<UPrimitiveComponent>> Retired;
+ int32 OldChurch=0; // CHURCH-COLONIAL-20261113: parts of the white board church stood up in this world (none while the mission church stands)
  TArray<TWeakObjectPtr<UPointLightComponent>> Lamps;
  // NPC-DAY: the whole town's level (SetLampLevel: a blackout, a flicker) times each room's own (SetRoomLamp: whether anyone is home).
  double LampK=1;TMap<FString,double> RoomK;
@@ -166,6 +169,8 @@ void SetOpenQuietly(const FString& Id,bool bOpen)
  if(Main.IsValid())Main->RequestAutosave(false);
 }
 bool HasDoor(const FString& Id){return Find(Id)!=nullptr;}
+bool OldChurchStands(bool bConventPresent){return !bConventPresent;}
+int32 OldChurchParts(){return OldChurch;}
 bool SameDoor(const FString& A,const FString& B){const auto* R=Find(A);return R&&R==Find(B);}
 bool IsOpen(const FString& Id){const auto* R=Find(Id);return R&&R->bOpen;}
 bool UseDoor(const FString& Id)
@@ -191,7 +196,7 @@ bool UseDoor(const FString& Id)
 }
 void Init(US47Main* M)
 {
- Main=M;Rooms.Reset();Retired.Reset();Lamps.Reset();ExtraLamps.Reset();LampK=1;RoomK.Reset();ExteriorGlows.Reset();LastExteriorMask=-1.f;if(!M||!M->Web||!M->Inter)return;
+ Main=M;Rooms.Reset();Retired.Reset();OldChurch=0;Lamps.Reset();ExtraLamps.Reset();LampK=1;RoomK.Reset();ExteriorGlows.Reset();LastExteriorMask=-1.f;if(!M||!M->Web||!M->Inter)return;
  AS47Web* W=M->Web;FString Text;TSharedPtr<FJsonObject> J;
  if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("CalicheAccess/assembly.json")))||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),J)||!J)return;
  if(J->GetStringField(TEXT("status"))!=TEXT("NATIVE_READY"))return;
@@ -211,6 +216,11 @@ void Init(US47Main* M)
   const auto B=V->AsObject();FRoom R;R.Id=B->GetStringField(TEXT("id"));B->TryGetStringField(TEXT("interact"),R.Use);if(R.Use==TEXT("laundro"))R.Use=TEXT("laundromat");R.Root=Vec(B->GetArrayField(TEXT("root")));R.Hinge=Vec(B->GetArrayField(TEXT("hinge")));
   const auto& F=B->GetArrayField(TEXT("footprint"));R.X0=F[0]->AsNumber();R.X1=F[1]->AsNumber();R.Y0=F[2]->AsNumber();R.Y1=F[3]->AsNumber();R.Floor=B->GetNumberField(TEXT("floor"));R.Front=B->GetNumberField(TEXT("front"));
   const auto& D=B->GetArrayField(TEXT("door"));R.DoorY=D[1]->AsNumber();R.Width=D[2]->AsNumber();R.Height=D[3]->AsNumber();
+  // CHURCH-COLONIAL-20261113 (Tom: "bytt til kolonikirka"): with the bought pack here San Isidro is the mission church (S47Convent).
+  // The room, its root, floor, door, lamp and place for events stay; the old shell, glass, interior and fixtures, their walls and
+  // furniture are left out (never both), and the door leaf is made to fit the arch (hung on the same jamb).
+  const bool bConvent=!OldChurchStands(S47Convent::Present())&&R.Id==TEXT("Church");
+  if(bConvent){R.Width=S47Convent::Plan().DoorWidth;R.Height=S47Convent::Plan().DoorHeight;R.Hinge.Y=-R.Width*.5;}
   if(Unbuilt.Contains(R.Id)){UE_LOG(LogTemp,Warning,TEXT("S47: Caliche access: %s left out, a part of it did not load"),*R.Id);continue;}
   // CALICHE-HOMES: a house set down on another's model sits on the land where it stands (its highest corner, so no floor is under
   // the ground; the shell's foundation reaches a metre down), and every part of it with it.
@@ -232,6 +242,8 @@ void Init(US47Main* M)
   {
    const auto P=Pair.Value->AsObject();if(P->GetStringField(TEXT("family"))!=R.Id)continue;
    const FString Name(Pair.Key.ToView());const bool Door=P->GetStringField(TEXT("role"))==TEXT("door");
+   if(bConvent&&!Door)continue;
+   if(R.Id==TEXT("Church")&&!Door)++OldChurch;
    auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(ParentComp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Meshes[Name]);
    // CALICHE-HOMES: another colour of the same house, by its slot's name (the shells' own MI_Homes_ instances).
    const TSharedPtr<FJsonObject>* Over=nullptr;
@@ -241,6 +253,7 @@ void Init(US47Main* M)
     if(Slot!=INDEX_NONE&&O.Value->TryGetString(Path))if(auto* Mat=LoadObject<UMaterialInterface>(nullptr,*Path))C->SetMaterial(Slot,Mat);
    }
    const bool Glass=Name.EndsWith(TEXT("Glass"));C->SetCollisionEnabled(Glass?ECollisionEnabled::NoCollision:ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,Glass?ECR_Ignore:ECR_Block);C->SetCastShadow(!Glass);if(Door)C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();C->SetWorldLocation(S47Three::ToUE(Vec(P->GetArrayField(TEXT("root")))+FVector(0,Lift,0)));
+   if(bConvent&&Door){const FVector Size=Meshes[Name]->GetBounds().BoxExtent*2.;C->SetWorldScale3D(FVector(1,Size.Y>1?R.Width*100./Size.Y:1.,Size.Z>1?R.Height*100./Size.Z:1.));}
    const int32 Node=W->AdoptNode(C,Parent,TEXT("caliche-access:")+Name);
    BindExterior(C,Name);
    if(Door)
@@ -262,6 +275,8 @@ void Init(US47Main* M)
     M->Inter->Add(It);
    }
   }
+  if(bConvent)S47Convent::Build(M,R.Root+FVector(0,R.Floor,0),ParentComp.Get(),Parent,Meshes.FindRef(TEXT("SM_Access_Church_Door")));
+  else if(R.Id==TEXT("Church"))S47Convent::LevelGround(M,R.Root+FVector(0,R.Floor,0)); // (the ground mesh is level there whichever church stands)
   // Replace the former solid building rectangle with actual perimeter walls and an opening.
   const FS47Rect Foot=Rect(R.Root.X+R.X0,R.Root.X+R.X1,R.Root.Z-R.Y1,R.Root.Z-R.Y0,TEXT("access:room:")+R.Id);
   const double FX=R.Root.X+(R.Front>0?R.X1:R.X0),DZ=R.Root.Z-R.DoorY;
@@ -272,10 +287,11 @@ void Init(US47Main* M)
    // Former solid door stoop/blockers must no longer seal the actual aperture.
    for(auto& C:Cs)if(C.MinX>FX-1.1&&C.MaxX<FX+3.5&&C.MinZ<DZ&&C.MaxZ>DZ&&C.MaxZ-C.MinZ<FMath::Max(R.Width+1.2,12.)){C.bEnabled=false;C.MinX=C.MinZ=1e9;C.MaxX=C.MaxZ=1e9+.01;}
    const FString Prefix=TEXT("access:wall:")+R.Id;const double Back=R.Front>0?Foot.MinX:Foot.MaxX;
-   Cs.Add(Rect(Back-.12,Back+.12,Foot.MinZ,Foot.MaxZ,Prefix));Cs.Add(Rect(Foot.MinX,Foot.MaxX,Foot.MinZ-.12,Foot.MinZ+.12,Prefix));Cs.Add(Rect(Foot.MinX,Foot.MaxX,Foot.MaxZ-.12,Foot.MaxZ+.12,Prefix));
-   Cs.Add(Rect(FX-.12,FX+.12,Foot.MinZ,DZ-R.Width/2,Prefix));Cs.Add(Rect(FX-.12,FX+.12,DZ+R.Width/2,Foot.MaxZ,Prefix));
+   // (the mission church has its own walls and furniture, S47Convent; the door's piece is this room's as ever)
+   if(!bConvent){Cs.Add(Rect(Back-.12,Back+.12,Foot.MinZ,Foot.MaxZ,Prefix));Cs.Add(Rect(Foot.MinX,Foot.MaxX,Foot.MinZ-.12,Foot.MinZ+.12,Prefix));Cs.Add(Rect(Foot.MinX,Foot.MaxX,Foot.MaxZ-.12,Foot.MaxZ+.12,Prefix));
+   Cs.Add(Rect(FX-.12,FX+.12,Foot.MinZ,DZ-R.Width/2,Prefix));Cs.Add(Rect(FX-.12,FX+.12,DZ+R.Width/2,Foot.MaxZ,Prefix));}
    Cs.Add(Rect(FX-.11,FX+.11,DZ-R.Width/2+.04,DZ+R.Width/2-.04,TEXT("access:door:")+R.Id));
-   for(const auto& CV:B->GetArrayField(TEXT("furniture"))){const auto& A=CV->AsArray();Cs.Add(Rect(A[0]->AsNumber(),A[1]->AsNumber(),A[2]->AsNumber(),A[3]->AsNumber(),TEXT("access:furniture:")+R.Id));}
+   if(!bConvent)for(const auto& CV:B->GetArrayField(TEXT("furniture"))){const auto& A=CV->AsArray();Cs.Add(Rect(A[0]->AsNumber(),A[1]->AsNumber(),A[2]->AsNumber(),A[3]->AsNumber(),TEXT("access:furniture:")+R.Id));}
    W->ZonesMutable(Area).Add(Foot);
    W->ZonesMutable(Area).Add(Rect(FX-1.5,FX+1.5,DZ-R.Width/2-.4,DZ+R.Width/2+.4,TEXT("access:entry:")+R.Id));
   }
@@ -288,12 +304,16 @@ void Init(US47Main* M)
    const double Ground=O.Y+S47RoadTerrain::SurfaceY(FX-O.X+R.Front*3.,DZ-O.Z);
    const double Low=FMath::Min(Ground-.3,Platform-.4),High=R.Root.Y+R.Floor-.015;
    R.StepGround=Ground;R.Steps=FMath::Clamp(FMath::CeilToInt(FMath::Abs(Platform-Ground)/.15),1,16);
+   // (the mission church's yard is level with its floor where the ground has been made so: no plinth, no step)
+   const bool bLevel=bConvent&&FMath::Abs(Platform-Ground)<.08;
+   if(!bLevel){
    auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(ParentComp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();C->SetWorldLocation(S47Three::ToUE(FX+R.Front*.65,(Low+High)/2,DZ));C->SetWorldScale3D(FVector(1.5,R.Width+.7,High-Low));
    auto* Mid=UMaterialInstanceDynamic::Create(Mat,W);Mid->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(0x777366));Mid->SetScalarParameterValue(TEXT("Roughness"),.95f);C->SetMaterial(0,Mid);W->AdoptNode(C,Parent,TEXT("caliche-access:entry-plinth:")+R.Id);
    for(int32 K=1;K<=R.Steps;++K)
    {
     const double Top=FMath::Lerp(Platform,Ground,double(K)/R.Steps),Bottom=FMath::Min(Ground-.2,Top-.18),At=(R.Id==TEXT("Sheriff")?1.63:1.4)+.32*(K-.5);
     auto* Step=NewObject<UStaticMeshComponent>(W);Step->SetupAttachment(ParentComp.Get());Step->SetMobility(EComponentMobility::Movable);Step->SetStaticMesh(Cube);Step->SetMaterial(0,Mid);Step->SetCollisionEnabled(ECollisionEnabled::QueryOnly);Step->SetCollisionResponseToAllChannels(ECR_Ignore);Step->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);Step->RegisterComponent();Step->SetWorldLocation(S47Three::ToUE(FX+R.Front*At,(Top+Bottom)/2,DZ));Step->SetWorldScale3D(FVector(.32,R.Width+.7,Top-Bottom));W->AdoptNode(Step,Parent,TEXT("caliche-access:entry-step:")+R.Id);
+   }
    }
   }
   auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(ParentComp.Get());L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(650);L->SetLightColor(FLinearColor(1,.84,.63));L->SetAttenuationRadius(800);L->SetCastShadows(true);L->RegisterComponent();L->SetWorldLocation(S47Three::ToUE(R.Root+FVector((R.X0+R.X1)/2,2.6,-(R.Y0+R.Y1)/2)));Lamps.Add(L);R.Lamp=L;
@@ -314,18 +334,22 @@ void Update()
  for(const auto& C:Retired)Retire(C.Get());
  if(!Main.IsValid()||!Main->Web)return;
  S47CalicheNewHomes::Update(Main.Get());
+ S47GasBayDoor::Update(Main.Get()); // GAS-BAY-DOOR-20261113: the bay's roll-up door, by hand
+ S47Convent::Update(Main.Get()); // CHURCH-COLONIAL-20261113: the sacristy's back door, the night lamps
  const float Mask=Main->Web->ExteriorDaylightMask(Main->Web->FloodSet(TEXT("town")),1);
  if(Mask==LastExteriorMask)return;LastExteriorMask=Mask;
  for(const auto& G:ExteriorGlows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*Mask);
 }
 void Save(const S47J::FObj& State)
 {
- if(!State)return;auto Doors=S47J::New();for(const FRoom& R:Rooms)S47J::Set(Doors,*R.Id,R.bOpen);for(const TCHAR* Door:{TEXT("gasDoor"),TEXT("radioLobbyDoor")})S47J::Set(Doors,Door,AS47Props::IsDoorOpen(Door));S47J::Set(State,TEXT("calicheAccessDoors"),Doors);
+ if(!State)return;auto Doors=S47J::New();for(const FRoom& R:Rooms)S47J::Set(Doors,*R.Id,R.bOpen);for(const TCHAR* Door:{TEXT("gasDoor"),TEXT("radioLobbyDoor")})S47J::Set(Doors,Door,AS47Props::IsDoorOpen(Door));S47J::Set(Doors,TEXT("gasBay"),S47GasBayDoor::IsOpen());S47J::Set(Doors,TEXT("churchBack"),S47Convent::BackOpen());S47J::Set(State,TEXT("calicheAccessDoors"),Doors);
 }
 void Restore(const S47J::FObj& State)
 {
  const auto Doors=S47J::Obj(State,TEXT("calicheAccessDoors"));for(FRoom& R:Rooms){R.bOpen=S47J::Bool(Doors,*R.Id,true);Sync(R);}
  for(const TCHAR* Door:{TEXT("gasDoor"),TEXT("radioLobbyDoor")})if(AS47Props::IsDoorOpen(Door)!=S47J::Bool(Doors,Door,true))AS47Props::UseDoor(Door);
+ S47GasBayDoor::SetOpen(S47J::Bool(Doors,TEXT("gasBay"),false),true); // (a new game's, and an old save's: shut)
+ S47Convent::SetBackOpen(S47J::Bool(Doors,TEXT("churchBack"),false),true); // (CHURCH-COLONIAL-20261113: the sacristy's back door, shut in a new game)
 }
 
 double FloorAt(double X,double Z)

@@ -63,9 +63,21 @@ bool FS47AnimalWarn::Hold(const FString& Id, const FString& Variant, bool bOnFoo
 		FS47EventCtx Ctx;
 		S47EventScript::Play(M, ScriptOf(Kind), Ctx);
 		UE_LOG(LogS47AnimalWarn, Display, TEXT("S47: animals warn before %s: %s, %.0f s ahead"), *Id, Kind == EKind::Birds ? TEXT("a covey goes up") : TEXT("a coyote stands and stares"), Lead);
+		FS47Happenings::TellOther(M, TEXT("animal warning"), Id); // M1-MEASURE-20261113: out on foot, put near the player, and its script's thought says so
 		Why = TEXT("the animals first");
 		return false;
 	}
+	return true;
+}
+
+bool FS47AnimalWarn::WouldAsk(const FString& Id, int32 NightNo) const
+{
+	if (!Warned(Id)) return false;
+	// A new night: Hold starts it afresh.
+	if (NightNo != Night) return true;
+	if (bUsed || Asked.Contains(Id)) return false;
+	for (const FWait& W : Pending)
+		if (W.Id == Id) return false;
 	return true;
 }
 
@@ -107,6 +119,7 @@ void FS47AnimalWarn::Stray()
 		FS47EventCtx Ctx;
 		S47EventScript::Play(M, ScriptOf(Kind), Ctx);
 		UE_LOG(LogS47AnimalWarn, Display, TEXT("S47: animals warn: a false alarm on its own, no event follows (%s)"), Kind == EKind::Birds ? TEXT("a covey goes up") : TEXT("a coyote stands and stares"));
+		FS47Happenings::TellOther(M, TEXT("animal warning"), TEXT("stray")); // M1-MEASURE-20261113
 		return;
 	}
 }
@@ -144,6 +157,8 @@ bool FS47AnimalWarn::SelfTest(TArray<FString>& Lines)
 	}
 	Check(bSame && Birds > 60 && Birds < 140, TEXT("which animal comes first is seeded, the same each time that night is asked, and both come"));
 	Check(Other(EKind::Birds) == EKind::Coyote && Other(EKind::Coyote) == EKind::Birds, TEXT("the other animal is the fallback"));
+	Check(ForVisit(2) == EKind::Birds && ForVisit(1) == EKind::Coyote && ForVisit(0) == EKind::None && ForVisit(-1) == EKind::None && ForVisit(7) == EKind::None && *ScriptOf(ForVisit(2)) && *ScriptOf(ForVisit(1)) && !*ScriptOf(ForVisit(0)),
+		TEXT("EVIDENCE-DOSSIER slice 2: ahead of a visit the birds go up for the tall one, the coyote for the crab; for the small ones the dogs (no script)"));
 	int32 Strays = 0;
 	for (int32 N = 1; N <= 300; ++N) Strays += StrayNight(47, N) && StrayNight(47, N) == StrayNight(47, N);
 	Check(Strays > 70 && Strays < 130, TEXT("on about one night in three the warning comes alone, with no event after it (seeded)"));
@@ -152,6 +167,17 @@ bool FS47AnimalWarn::SelfTest(TArray<FString>& Lines)
 	FS47AnimalWarn Bare(nullptr);
 	FString Why;
 	Check(Bare.Hold(TEXT("beam_figure"), FString(), true, Why) && !Bare.Waiting() && Bare.Warnings() == 0, TEXT("without a game the event is never held"));
+	{
+		// M1-FLOOR-20261113: who may still be warned for tonight, so that the rhythm is asked before the animals go up.
+		FS47AnimalWarn W(nullptr);
+		W.Night = 5;
+		const bool bFresh = W.WouldAsk(TEXT("horizon_figure"), 5) && !W.WouldAsk(TEXT("array_burst"), 5);
+		FWait P; P.Id = TEXT("horizon_figure"); W.Pending.Add(P);
+		const bool bWaiting = !W.WouldAsk(TEXT("horizon_figure"), 5) && W.WouldAsk(TEXT("horizon_figure"), 6);
+		W.Pending.Reset(); W.bUsed = true;
+		const bool bUsedUp = !W.WouldAsk(TEXT("beam_figure"), 5) && W.WouldAsk(TEXT("beam_figure"), 6);
+		Check(bFresh && bWaiting && bUsedUp, TEXT("M1 floor: the animals may still go ahead only of a warned event not yet asked, none used and none waiting tonight; a new night starts afresh"));
+	}
 	// the two warning scripts: there, enabled, clean (the script lint also covers them), one thought and one finding each, nothing about the event
 	for (const EKind K : { EKind::Birds, EKind::Coyote })
 	{

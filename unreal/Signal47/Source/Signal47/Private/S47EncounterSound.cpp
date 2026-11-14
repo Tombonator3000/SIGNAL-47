@@ -332,6 +332,13 @@ bool FS47EncounterSound::Cue(US47Audio* A,EKind Kind,TOptional<FVector> At,doubl
 bool FS47EncounterSound::Hit(US47Audio* A,EScare Kind,double Strength,double Now)
 {
  const int32 S=int32(Kind);
+ // SIDEBAND-20261113: FLARES has the moment when it can (its own rules say whether anything sounds). The rests are set as for a
+ // bought hit, so that no cue lands on it and it is not asked again for the same sight.
+ if (Sink.Moment && Sink.Moment(S,Strength,false))
+ {
+  NextScare[S]=Now+Dread::Rest[S]; NextAny=Now+3.5; BoughtUntil=Now+Dread::Sounding; NextBought=Now+Dread::Apart; ++NSunk;
+  return true;
+ }
  if (Now<NextScare[S] || Now<NextBought) return false;
  // Never the same recording twice running, where there is more than one.
  TSharedPtr<FS47AudioBuffer> B;
@@ -360,8 +367,16 @@ bool FS47EncounterSound::Scare(US47Audio* A,EScare Kind,double Strength,bool bAu
 {
  if ((bHeld && !bAudition) || !FMath::IsFinite(Strength) || Strength<=0 || !Bind(A)) return false;
  const double Now=Context->CurrentTime();
- if (bAudition) { NextScare[int32(Kind)]=0; NextBought=0; }
- else if (Now<NextAny) return false;
+ if (bAudition)
+ {
+  // (F10 plays the bought recording itself, whoever has the moments in play)
+  NextScare[int32(Kind)]=0; NextBought=0;
+  FSink Kept=MoveTemp(Sink); Sink=FSink();
+  const bool bPlayed=Hit(A,Kind,Strength,Now);
+  Sink=MoveTemp(Kept);
+  return bPlayed;
+ }
+ if (Now<NextAny) return false;
  return Hit(A,Kind,Strength,Now);
 }
 
@@ -393,7 +408,9 @@ void FS47EncounterSound::Dread(US47Audio* A,double Low,double High)
 {
  if (!Bind(A) || !A->Music) return;
  const double Now=Context->CurrentTime();
- const double In[2]={Low,High};
+ // SIDEBAND-20261113: while FLARES has the ground, the bought beds here stay down (two beds on one bus was mud).
+ const bool bSunk=Sink.Ground && Sink.Ground(Low,High,bHeld);
+ const double In[2]={bSunk?0.:Low,bSunk?0.:High};
  for (int32 I=0;I<2;++I)
  {
   FVoice& V=Beds[I];

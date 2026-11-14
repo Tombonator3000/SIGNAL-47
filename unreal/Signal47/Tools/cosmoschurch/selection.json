@@ -1,0 +1,14 @@
+{
+ "_doc": "The Cosmos meshes taken out of the Demonic Village pack (extract.py) and moved to /Game/Licensed/CosmosChurch/Village in a throwaway 5.8 project (migrate.py). The pack's names say nothing (SM_Cemetery01 to 10), so they were chosen by their measures and triangle counts and then looked at in place in the game: plain grave markers only, and a bench. What was left out and why is in README.md.",
+ "packs": {
+  "demonic": {
+   "zip": "DemonicVillage.zip",
+   "root": "Demonic_Village",
+   "dest": "Village",
+   "meshes": [
+    "Meshes/Cemetery/SM_Cemetery01", "Meshes/Cemetery/SM_Cemetery04", "Meshes/Cemetery/SM_Cemetery08",
+    "Meshes/Cemetery/SM_Cemetery09", "Meshes/Cemetery/SM_Cemetery10", "Meshes/Props/SM_bench"
+   ]
+  }
+ }
+}

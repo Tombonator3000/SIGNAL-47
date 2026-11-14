@@ -16,7 +16,7 @@ class FS47DaleVoice;
 // the flat; and a board by the lockers where you can hang your keys and go. Everything is the outside of what happened: text in
 // S47PredecessorText.cpp, and its self-test refuses the far side. Saved under "predecessor"; a save from before it picks it up
 // on load, its own calendar untouched, with a letter that says so. Nothing here takes away an original or a photograph.
-namespace S47PredecessorText{struct FBark;}
+namespace S47PredecessorText{struct FBark;struct FBookStep;}
 class FS47Predecessor;
 // -S47Freeform -S47AssessMonthTest=routine|investigator|taken|taken-again|cases, with -UserDir=/tmp/...: thirty days through the real StepNews, the
 // post, the letter and the closing (S47AssessMonthTest.cpp). Does nothing without the flag.
@@ -36,7 +36,9 @@ public:
  // M7 (9 November): Concluded counts only a line with something behind it (FS47FreeformCases::Supported); a mystery filed on
  // nothing is Guessed, and counts for nothing. Photos: prints made in the camera, not enlargements of them. Reprieved: the times
  // taken when "Not yet" gave the nights back; only a taking after that sends somebody else.
- struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0,Guessed=0,Reprieved=0,Field=0;bool bWagon=false,bGap=false;};
+ // EVIDENCE-DOSSIER-20261113 slice 3: Archived, of the near three, how many are FILED each in a file of its own (FS47Dossier::KindsFiled):
+ // one point for two, two for all three (Tom, 13 November; S47Dossier::WardPoints). The threshold of PointsToStay is unchanged.
+ struct FTally{int32 Filed=0,Clean=0,Concluded=0,Dishes=27,Arrears=0,Originals=0,Photos=0,Known=0,Taken=0,Land=0,Logs=0,Tapes=0,Trust=0,Guessed=0,Reprieved=0,Field=0,Archived=0;bool bWagon=false,bGap=false;};
  // CHAIN-2-20261109: Field, of the cases carried through, those with something brought in from out there (FS47FreeformSession::
  // CaseFromField); FieldToStay of them, or the station is not kept, however good the rest. The Monday note has the line every week.
  static constexpr int32 FieldToStay=1;
@@ -47,7 +49,11 @@ public:
  // M7, weeks three and four (S47PredecessorLate.cpp): the late cases from LateCaseDay, somebody gone from a post in town between
  // PostFrom and PostUntil when nobody has gone since AwayRest days, the Sky Watch's bulletin from LateCaseDay (from BulletinBy
  // whatever the van saw), wagon 23's trip meter from LateTripDay, and the thermos's letter ThermosReplyDays after it went.
- static constexpr int32 LateCaseDay=12,PostFrom=15,PostUntil=20,AwayRest=7,BulletinBy=15,LateTripDay=15,ThermosReplyDays=3;
+ // M7-SPREAD-20261113 (M7): the bulletin by day 13 (its minute the night of day 15, not 17); and a late case nobody has gone to see
+ // opens at the rack, the receiver log printing by itself, from PostOpenBy (somebody gone since an earlier day) and from RakedOpenBy
+ // (the military in the last three nights, gone, and their ground not read): StepLateRack, LateRackDue.
+ static constexpr int32 LateCaseDay=12,PostFrom=15,PostUntil=20,AwayRest=7,BulletinBy=13,LateTripDay=15,ThermosReplyDays=3,PostOpenBy=12,RakedOpenBy=18;
+ static_assert(PostOpenBy>=LateCaseDay&&RakedOpenBy>=LateCaseDay&&BulletinBy>=LateCaseDay,"never before the late cases' own day");
  // What the station can show the county: cases carried through, the array mended, records that can be read, a few photographs,
  // and the work, which counts once it is there and no more for being piled up.
  static int32 Points(const FTally& T);
@@ -55,6 +61,9 @@ public:
  // M7: the third stretch of lost time is answered the morning after it is noticed (TakenWarning said so), not on the assessment day;
  // after "Not yet" only a further one does it. NoticedDay: the day it was first seen (0: not yet).
  static bool GoneDue(int32 Taken,int32 Reprieved,int32 NoticedDay,int32 Today){return Taken>=TakenTooOften&&Taken>Reprieved&&NoticedDay>0&&Today>NoticedDay;}
+ // LOOP-GONE-LEGIBLE-20261113 (→ M7): the letter of hers that says the rule (StepWarnings): "ward-hours" after the first stretch of lost
+ // time, "ward-taken" after the second; none once the third is in, and none after "Not yet". The rule and its rates are as they were.
+ static FString WarnLetter(int32 Taken,int32 Reprieved){return Taken>Reprieved&&Taken>=1&&Taken<TakenTooOften?FString(Taken<TakenTooOften-1?TEXT("ward-hours"):TEXT("ward-taken")):FString();}
  static const TCHAR* NameOf(EOutcome O);
  static EOutcome OutcomeOf(const FString& Name);
  FTally Count() const;
@@ -121,6 +130,16 @@ public:
  // The paper's word of something out on the land (the Ledger's search story: wagon 23).
  void HearOf(const FString& Id){Hear(Id);}
  void FillMap(FS47MapView& View) const;
+ // T16-17 (→ M3/M7, "the Reyes trail ends in a letter"): Reyes's own notebook through the month (S47PredecessorBook.cpp,
+ // S47PredecessorText::Book). PlaceRows: what a place's panel (FS47Places::Panel) shows of it there, a page due or one read before;
+ // PlaceNews: a page lies there unread now, so the panel does not say "nothing new". BookDue: that step can be had today.
+ void PlaceRows(const FString& Place,TArray<TSharedRef<SWidget>>& Rows);
+ bool PlaceNews(const FString& Place) const;
+ bool BookDue(const FString& Doc) const;
+ // Pure: whether a step is open, with what has been read (Have) on the trail's day (1 the day it opens).
+ static bool BookOpen(const S47PredecessorText::FBookStep& S,const TSet<FString>& Have,int32 TrailDay);
+ // How many of the notebook's pages have been read (the folder and the sign-out card are not pages).
+ int32 BookPages() const;
  // World position (x,z) of a thing out on the land or at the station, for the developer's menu and the tests.
  bool WorldSpot(const FString& Id,FString& OutArea,double& OutX,double& OutZ) const;
 
@@ -208,7 +227,15 @@ private:
  void StepLateMinute(int32 Today);
  void StepLateRaked(int32 Today);
  void StepLateRack();
+ // M7-SPREAD-20261113: whether the rack prints Line's receiver log for a case not yet open (PostOpenBy, RakedOpenBy). Static, for
+ // the tests: Today, how long somebody has been gone (GoneDay, 0: nobody), the military's last three nights and their ground read.
+ static bool LateRackDue(int32 Line,int32 Today,int32 GoneDay,bool bMilitaryGone,bool bGroundRead);
  void StepLateThermos(int32 Today);
+ // T16-17: what of the notebook comes by post (Reyes's folder, back from the sheriff's office), once its step is open; sent once
+ // ("<doc>_sent" among Seen, so a Continue does not post it again).
+ void StepBook();
+ // The day of the trail: 1 the day it opens (an older save's OpensDay), so a game under way gets its weeks too.
+ int32 TrailDay() const;
  // Keeps a late line's trace (its text from the case's seeded reading) with what the player saw or heard. False: kept already.
  bool LateKeep(int32 Line,int32 Clue,const FString& Toast);
  void LateSound(const FString& Name,const FVector& At,float Gain);

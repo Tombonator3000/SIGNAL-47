@@ -698,10 +698,13 @@ namespace
     const int32 Today=F.Day();const int32 Index=F.Jobs().IndexOfByPredicate([Today](const FS47FreeformSession::FJob& J){return J.Day==Today&&J.Slot==2;});
     if(Index==INDEX_NONE||!F.SelectJob(Index))return Fail(TEXT("the day has a third card"));
     if(F.PointSelected())return Fail(TEXT("the evening's source is not up in the morning"));
-    if(!F.JobNextAction(*F.CurrentJob()).Contains(TEXT("EVENING OBSERVATION")))return Fail(TEXT("it says when"));
+    // LOOP-NIGHT-WATCH-20261113: the third card is the night watch, up after 01:15 on the same shift day (at 23:00 it still waits)
+    if(!F.JobNextAction(*F.CurrentJob()).Contains(TEXT("NIGHT WATCH")))return Fail(TEXT("it says when"));
     if(F.PowerFault())F.SetPowerFault(false);
     if(!DreadToClock(M,23.))return Fail(TEXT("no clock"));
-    if(!F.PointSelected())return Fail(TEXT("in the evening it can be pointed at"));
+    if(F.PointSelected())return Fail(TEXT("the night watch is not up at 23:00"));
+    if(!DreadToClock(M,2.)||F.Day()!=Today)return Fail(TEXT("no clock, or 02:00 is not the same shift day"));
+    if(!F.PointSelected())return Fail(TEXT("at two in the morning the night watch can be pointed at"));
     UE_LOG(LogTemp,Display,TEXT("S47: planner PASS"));
     FPlatformMisc::RequestExitWithStatus(false,0);return false;
    }

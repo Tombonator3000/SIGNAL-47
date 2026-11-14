@@ -313,10 +313,25 @@ void SS47Settings::BuildRows()
 	case 2: // SOUND
 		AddSlider(TEXT("Volume"), &FS47PauseOpts::Volume, &FS47PauseOpts::OnVolume, 0.f, 1.f, 0.05f, 0.8f, [](float V) { return S47SettingsLocal::Percent(V); },
 			TEXT("Everything you hear. Headphones help: the night has a lot in it that is quiet and far away."));
+		// MUSIC-20261113: the piece heard now, in the slider's own help (nothing on screen in play), so Tom can name the one he hears
 		AddSlider(TEXT("Music"), &FS47PauseOpts::Music, &FS47PauseOpts::OnMusic, 0.f, 1.f, 0.05f, 0.7f, [](float V) { return S47SettingsLocal::Percent(V); },
-			TEXT("The music on the title and the score under the night."));
+			FString(TEXT("The music on the title and the score under the night.")) + (P->NowPlaying.IsEmpty() ? FString() : TEXT("\n\nNow playing: ") + P->NowPlaying));
 		AddSlider(TEXT("Radio"), &FS47PauseOpts::Radio, &FS47PauseOpts::OnRadio, 0.f, 1.f, 0.05f, 1.f, [](float V) { return S47SettingsLocal::Percent(V); },
 			TEXT("The radios: Night Line on AM 1420, the truck's radio, the diner's set."));
+		// SIDEBAND-20261113: how much the score itself changes with the night, and the one hit at a sight
+		{
+			static const TCHAR* const Reacts[3] = { TEXT("on"), TEXT("soft"), TEXT("off") };
+			static const TCHAR* const Sting[3] = { TEXT("full"), TEXT("soft"), TEXT("off") };
+			const auto IndexOf = [](const TCHAR* const* Ids, const FString& V) { for (int32 I = 0; I < 3; ++I) if (V == Ids[I]) return I; return 0; };
+			AddChoice(TEXT("Music reacts"), { TEXT("ON"), TEXT("SOFT"), TEXT("OFF") }, [P, IndexOf] { return IndexOf(Reacts, P->MusicReacts); },
+				[P](int32 I) { const FString V = Reacts[FMath::Clamp(I, 0, 2)]; if (P->MusicReacts == V) return; P->MusicReacts = V; if (P->OnMusicReacts) P->OnMusicReacts(V); }, 0,
+				Says(TEXT("Music reacts")),
+				Says(TEXT("How much the score changes with the night: worn when it is late and you are tired, breaking up when something is close, wide on open land, far off afterwards. Soft: less of each. Off: the score plays as it was recorded. Voices, the walkie, the phone, the receiver and the radios are never changed by it.")));
+			AddChoice(TEXT("Stingers"), { TEXT("FULL"), TEXT("SOFT"), TEXT("OFF") }, [P, IndexOf] { return IndexOf(Sting, P->Stingers); },
+				[P](int32 I) { const FString V = Sting[FMath::Clamp(I, 0, 2)]; if (P->Stingers == V) return; P->Stingers = V; if (P->OnStingers) P->OnStingers(V); }, 0,
+				Says(TEXT("Stingers")),
+				Says(TEXT("At most one short musical hit when something is seen, and not every time. Soft: quieter, with a slow start. Off: none; the music still drops away and comes back, and nothing you need to know is told by that sound alone.")));
+		}
 		break;
 	case 3: // VOICES (UI.pause's notes)
 		AddToggle(TEXT("Character voices"), &FS47PauseOpts::bCharacters, &FS47PauseOpts::OnCharacters, true,

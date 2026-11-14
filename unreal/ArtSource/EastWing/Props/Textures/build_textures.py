@@ -14,6 +14,7 @@ SOURCE=ROOT.parents[2]/'PhotoLab'/'surface_fields.py'
 spec=importlib.util.spec_from_file_location('photolab_surface',SOURCE)
 photo=importlib.util.module_from_spec(spec); spec.loader.exec_module(photo)
 RNG=np.random.default_rng(470311)
+import sys;sys.path.insert(0,str(ROOT.parents[2]));import photo_tex
 
 def noise(cells,seed):
     r=np.random.default_rng(seed).random((cells,cells)).astype(np.float32)
@@ -43,6 +44,10 @@ def emit(key,base,rough,metal,height,span,description,tile=True,opacity=None,ext
     h=np.asarray(height,dtype=np.float32)
     b=np.clip(np.asarray(base,dtype=np.float32),0,1)
     if b.ndim==1: b=np.broadcast_to(b,(N,N,3)).copy()
+    # TEXTURES-PHOTO-20261112: Tom's photo for this surface where there is one (ArtSource/photo_tex.py): albedo, roughness
+    # and relief from the picture, metallic as painted. Without the picture the procedural surface below is what is made.
+    P=photo_tex.surface(key,old=b,size=N) if tile and opacity is None else None
+    if P: b,rough,h=P['base'],P['rough'],P['height']
     if np.ndim(rough)==0: rough=np.full((N,N),rough,dtype=np.float32)
     if np.ndim(metal)==0: metal=np.full((N,N),metal,dtype=np.float32)
     ndx=normal(h,span); ngl=ndx.copy(); ngl[:,:,1]=1-ngl[:,:,1]
@@ -57,7 +62,8 @@ def emit(key,base,rough,metal,height,span,description,tile=True,opacity=None,ext
     entry={'key':key,'size':[N,N],'physical_tile_metres':list(span),'tileable':tile,'description':description,'maps':files,'normal_strength':1.0,'height_displacement_enabled_by_default':False,'license_manifest':key+'.license.json'}
     if extra:entry.update(extra)
     materials.append(entry)
-    license={'asset':key,'license':'Project-owned original procedural artwork; no third-party image assets','copyright':'SIGNAL / 47 project','redistribution':'May accompany the project; no external purchased/Tripo content','source':'build_textures.py','method':'Deterministic metric height, albedo, roughness and metallic fields; no baked lighting','reused_project_source':{'path':'unreal/ArtSource/PhotoLab/surface_fields.py','sha256':sha(SOURCE),'use':'surface_channels paint response' if key=='EW_GreenSteel' else 'metric periodic normal-map convention; implementation adapted for physical tile span'},'external_reference':{'name':'apekshik/anyscene','status':'UNVERIFIED workflow-only reference, no code or assets reused'},'files':files}
+    if P: entry.update({'photo_source':P['file'],'description':description+' Albedo from the project owner\'s generated photo texture (TEXTURES-PHOTO-20261112), made seamless and scaled by photo_tex.py.'})
+    license={'asset':key,'license':('Project-owned artwork: albedo from an image generated for the project by its owner (ChatGPT, 12 Nov 2026), processed by photo_tex.py; no third-party image assets' if P else 'Project-owned original procedural artwork; no third-party image assets'),'copyright':'SIGNAL / 47 project','redistribution':'May accompany the project; no external purchased/Tripo content','source':'build_textures.py','method':'Deterministic metric height, albedo, roughness and metallic fields; no baked lighting','reused_project_source':{'path':'unreal/ArtSource/PhotoLab/surface_fields.py','sha256':sha(SOURCE),'use':'surface_channels paint response' if key=='EW_GreenSteel' else 'metric periodic normal-map convention; implementation adapted for physical tile span'},'external_reference':{'name':'apekshik/anyscene','status':'UNVERIFIED workflow-only reference, no code or assets reused'},'files':files}
     (ROOT/(key+'.license.json')).write_text(json.dumps(license,indent=2)+'\n')
     print(key,flush=True)
 

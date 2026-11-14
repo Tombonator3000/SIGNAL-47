@@ -134,6 +134,8 @@ public:
  // Music reads only a nearby visible body, never a hidden encounter schedule.
  double ObservedThreat() const;
  double DreadNow() const { return Sound.DreadNow(); }
+ // SIDEBAND-20261113: who may take the ground and the hit from the encounter sound (FS47EncounterSound::FSink).
+ void SetEncounterSink(FS47EncounterSound::FSink In) { Sound.SetSink(MoveTemp(In)); }
  static double ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible);
  // D45-20261110 (Tom, d45: the town's saxophone played on while the tall one came at the feed store). In Freeform the music follows
  // the tells the player already has, never a hidden place: nothing near, the place's own piece; something the set hears within about

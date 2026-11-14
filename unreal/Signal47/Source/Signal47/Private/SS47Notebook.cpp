@@ -1,5 +1,6 @@
 #include "SS47Notebook.h"
 #include "S47Keys.h"
+#include "S47UiSound.h"
 #include "S47Gamepad.h"
 
 #include "Dom/JsonObject.h"
@@ -499,6 +500,257 @@ namespace
 		}
 		return L;
 	}
+	// EVIDENCE-DOSSIER-20261113: one evidence box of a file on THEM: a square drawn in pencil, shaded with pencil strokes once
+	// something is in it. No tick and no count (the design's rule: a file is not a checklist).
+	class SS47NbEvidenceBox : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SS47NbEvidenceBox) : _Filled(false) {}
+			SLATE_ARGUMENT(bool, Filled)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A) { bShaded = A._Filled; }
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(P(30), P(30)); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+		{
+			const FVector2f Sz = FVector2f(G.GetLocalSize());
+			const float Wd = FMath::Max(1.f, P(1.4f)), Edge = P(2), Wide = Sz.X - 2 * Edge, High = Sz.Y - 2 * Edge;
+			// the square by hand: its corners do not quite meet
+			FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Edge, Edge), FVector2f(Edge + Wide, Edge + P(1)), FVector2f(Edge + Wide - P(1), Edge + High), FVector2f(Edge + P(1), Edge + High - P(1)), FVector2f(Edge, Edge) },
+				ESlateDrawEffect::None, C(0x3a3a40, bShaded ? 0.9f : 0.5f), true, Wd);
+			if (!bShaded) return Layer + 1;
+			// shaded with the side of the lead: strokes from the lower left to the upper right, each the line x + y = Sum inside the square
+			const float Step = FMath::Max(2.f, P(4.5f));
+			for (float Sum = Step; Sum < Wide + High; Sum += Step)
+			{
+				const float From = FMath::Clamp(Sum - High, 0.f, Wide), To = FMath::Clamp(Sum, 0.f, Wide);
+				if (To - From < 1.f) continue;
+				FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), TArray<FVector2f>{ FVector2f(Edge + From, Edge + Sum - From), FVector2f(Edge + To, Edge + Sum - To) }, ESlateDrawEffect::None, C(0x3a3a40, 0.55f), true, Wd);
+			}
+			return Layer + 1;
+		}
+	private:
+		bool bShaded = false;
+	};
+	// EVIDENCE-DOSSIER slice 3: one small pencil sketch for each stage a file has reached, in the lead of the evidence boxes: OUTLINE a
+	// rough build from the SHAPE box (S47Dossier::ESketch: small with a big head, low on four limbs, tall; the far two a point of light
+	// and a bright outline; a dashed ring while nothing was seen), MARKS the prints from the GROUND box, HABITS a clock face with the
+	// hours it was logged at shaded. Schematic: no detail, nothing that explains. Each point a hair off true, the same every frame.
+	class SS47NbSketch : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SS47NbSketch) : _Kind(0), _Shape(0), _Prints(0) {}
+			SLATE_ARGUMENT(int32, Kind)   // 0 the build, 1 the prints, 2 the clock
+			SLATE_ARGUMENT(int32, Shape)  // S47Dossier::ESketch
+			SLATE_ARGUMENT(int32, Prints) // S47Dossier::PrintsOf
+			SLATE_ARGUMENT(TArray<int32>, Hours)
+		SLATE_END_ARGS()
+		void Construct(const FArguments& A) { Kind = A._Kind; Shape = A._Shape; Prints = A._Prints; Hours = A._Hours; }
+		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(P(66), P(66)); }
+		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+		{
+			const FVector2f Sz = FVector2f(G.GetLocalSize());
+			const float Wd = FMath::Max(1.f, P(1.3f)), Off = P(0.7f);
+			const FLinearColor Lead = C(0x3a3a40, 0.85f), Soft = C(0x3a3a40, 0.42f);
+			const auto Draw = [&](const TArray<FVector2f>& Unit, const FLinearColor& Ink)
+			{
+				TArray<FVector2f> Pts;
+				for (int32 I = 0; I < Unit.Num(); ++I)
+				{
+					const float H = FMath::Frac(FMath::Sin(Unit[I].X * 91.7f + Unit[I].Y * 37.3f + I * 3.1f) * 4375.85f) - 0.5f;
+					Pts.Add(FVector2f(Unit[I].X * Sz.X + H * Off, Unit[I].Y * Sz.Y - H * Off));
+				}
+				FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), Pts, ESlateDrawEffect::None, Ink, true, Wd);
+			};
+			const auto Ring = [&](float Cx, float Cy, float Rx, float Ry, const FLinearColor& Ink, bool bDashed)
+			{
+				constexpr int32 Steps = 16;
+				for (int32 S = 0; S < Steps; ++S)
+				{
+					if (bDashed && (S % 2) == 1) continue;
+					const float A0 = 2.f * PI * S / Steps, A1 = 2.f * PI * (S + 1) / Steps;
+					Draw({ FVector2f(Cx + Rx * FMath::Cos(A0), Cy + Ry * FMath::Sin(A0)), FVector2f(Cx + Rx * FMath::Cos(A1), Cy + Ry * FMath::Sin(A1)) }, Ink);
+				}
+			};
+			const auto Ground = [&] { Draw({ FVector2f(.12f, .92f), FVector2f(.88f, .91f) }, Soft); };
+			if (Kind == 0)
+			{
+				switch (Shape)
+				{
+				case 1: // small, the head too big for it
+					Ring(.5f, .3f, .17f, .19f, Lead, false);
+					Draw({ FVector2f(.5f, .49f), FVector2f(.5f, .7f) }, Lead);
+					Draw({ FVector2f(.37f, .6f), FVector2f(.5f, .56f), FVector2f(.63f, .6f) }, Lead);
+					Draw({ FVector2f(.42f, .9f), FVector2f(.5f, .7f), FVector2f(.58f, .9f) }, Lead);
+					Ground();
+					break;
+				case 2: // low, on four limbs
+					Draw({ FVector2f(.12f, .74f), FVector2f(.3f, .6f), FVector2f(.55f, .58f), FVector2f(.78f, .63f), FVector2f(.9f, .71f) }, Lead);
+					Draw({ FVector2f(.2f, .76f), FVector2f(.8f, .74f) }, Lead);
+					for (const float X : { .22f, .36f, .62f, .76f }) Draw({ FVector2f(X, .75f), FVector2f(X - .04f, .83f), FVector2f(X, .91f) }, Lead);
+					Ground();
+					break;
+				case 3: // tall and long
+					Ring(.5f, .1f, .05f, .06f, Lead, false);
+					Draw({ FVector2f(.5f, .16f), FVector2f(.49f, .6f) }, Lead);
+					Draw({ FVector2f(.5f, .22f), FVector2f(.41f, .45f), FVector2f(.39f, .7f) }, Lead);
+					Draw({ FVector2f(.5f, .22f), FVector2f(.59f, .45f), FVector2f(.61f, .7f) }, Lead);
+					Draw({ FVector2f(.49f, .6f), FVector2f(.44f, .91f) }, Lead);
+					Draw({ FVector2f(.49f, .6f), FVector2f(.55f, .91f) }, Lead);
+					Ground();
+					break;
+				case 4: // a point of light, far off
+					Ring(.5f, .38f, .045f, .045f, Lead, false);
+					for (int32 R = 0; R < 8; ++R)
+					{
+						const float A = 2.f * PI * R / 8.f;
+						Draw({ FVector2f(.5f + .09f * FMath::Cos(A), .38f + .09f * FMath::Sin(A)), FVector2f(.5f + .16f * FMath::Cos(A), .38f + .16f * FMath::Sin(A)) }, Soft);
+					}
+					Ground();
+					break;
+				case 5: // a bright outline: the shape gone over twice
+					for (const float D : { 0.f, .025f })
+					{
+						const FLinearColor Ink = D == 0.f ? Lead : Soft;
+						Ring(.5f, .2f + D, .08f + D, .09f + D, Ink, false);
+						Draw({ FVector2f(.38f - D, .33f), FVector2f(.62f + D, .33f), FVector2f(.6f + D, .6f), FVector2f(.56f + D, .9f), FVector2f(.44f - D, .9f), FVector2f(.4f - D, .6f), FVector2f(.38f - D, .33f) }, Ink);
+					}
+					break;
+				default: // nothing seen yet
+					Ring(.5f, .5f, .2f, .26f, Soft, true);
+					break;
+				}
+			}
+			else if (Kind == 1)
+			{
+				switch (Prints)
+				{
+				case 1: // small and bare, one foot then the other
+					for (int32 I = 0; I < 4; ++I) Ring(.2f + .2f * I + ((I % 2) ? .05f : -.05f), .78f - .17f * I, .035f, .055f, Lead, false);
+					break;
+				case 2: // in fours, close together
+					for (int32 I = 0; I < 3; ++I)
+						for (const FVector2f D : { FVector2f(-.04f, -.04f), FVector2f(.04f, -.04f), FVector2f(-.04f, .04f), FVector2f(.04f, .04f) })
+							Ring(.22f + .28f * I + D.X, .74f - .2f * I + D.Y, .018f, .018f, Lead, false);
+					break;
+				case 3: // long and narrow, a long stride apart
+					Ring(.28f, .72f, .03f, .1f, Lead, false);
+					Ring(.72f, .3f, .03f, .1f, Lead, false);
+					break;
+				default: break;
+				}
+			}
+			else
+			{
+				// the clock face, the hours it was logged at shaded with the side of the lead
+				Ring(.5f, .5f, .42f, .42f, Lead, false);
+				for (int32 T = 0; T < 12; ++T)
+				{
+					const float A = 2.f * PI * T / 12.f;
+					Draw({ FVector2f(.5f + .35f * FMath::Cos(A), .5f + .35f * FMath::Sin(A)), FVector2f(.5f + .41f * FMath::Cos(A), .5f + .41f * FMath::Sin(A)) }, Soft);
+				}
+				for (const int32 Hour : Hours)
+				{
+					const float From = 2.f * PI * (Hour % 12) / 12.f - .5f * PI;
+					for (int32 K = 0; K <= 4; ++K)
+					{
+						const float A = From + (PI / 6.f) * K / 4.f;
+						Draw({ FVector2f(.5f + .06f * FMath::Cos(A), .5f + .06f * FMath::Sin(A)), FVector2f(.5f + .34f * FMath::Cos(A), .5f + .34f * FMath::Sin(A)) }, Lead);
+					}
+				}
+				Ring(.5f, .5f, .02f, .02f, Lead, false);
+			}
+			return Layer + 1;
+		}
+	private:
+		int32 Kind = 0, Shape = 0, Prints = 0;
+		TArray<int32> Hours;
+	};
+	// One file of the unknown on THEM: its number in the pen and its stage typed, the six boxes in a row with what each is and how it
+	// was got, the pencil for what is in the filled ones, and how the file is kept from here. Said: what is read aloud of it.
+	TSharedRef<SWidget> UnknownFileBox(const FS47NbUnknown& File, TArray<FString>& Said)
+	{
+		using namespace S47Game;
+		const FLinearColor Lead = C(0x3a3a40);
+		TSharedRef<SHorizontalBox> BoxRow = SNew(SHorizontalBox);
+		FString Held;
+		for (const FS47NbUnknown::FBox& One : File.Boxes)
+		{
+			BoxRow->AddSlot().FillWidth(1.f).HAlign(HAlign_Center)
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SS47NbEvidenceBox).Filled(One.bFilled)]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(2), 0, 0)[SNew(STextBlock).Text(FText::FromString(One.Label)).Font(Term(15, 1)).ColorAndOpacity(One.bFilled ? Lead : C(0x3a3a40, 0.55f))]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromString(One.How)).Font(Hand(18)).ColorAndOpacity(C(0x3a3a40, 0.8f))]
+			];
+			if (One.bFilled) Held += (Held.IsEmpty() ? FString() : FString(TEXT(", "))) + One.Label.ToLower();
+		}
+		TSharedRef<SVerticalBox> Sheet = SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()
+			[
+				SNew(SHorizontalBox)
+				// slice 3: the player's own name in the pen, its number small beside it; the number alone while it has none
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom)[SNew(STextBlock).Text(FText::FromString(File.Name.IsEmpty() ? File.Title : File.Name)).Font(Hand(30)).ColorAndOpacity(InkBlue())]
+				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Bottom).Padding(P(8), 0, 0, P(5))[SNew(STextBlock).Text(FText::FromString(File.Name.IsEmpty() ? FString() : File.Title)).Font(Term(15, 1)).ColorAndOpacity(C(0x3a3a40, 0.7f))]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom).Padding(P(8), 0, 0, P(4))[SNew(STextBlock).Text(FText::FromString(File.bFiled ? File.Stage + TEXT(" / FILED") : File.Stage)).Font(Term(19, 1)).ColorAndOpacity(Ph2Red())]
+			];
+		// LOOP-DOSSIER-GIVES-20261113: what reaching the stage gave, one line under it, in the stage's red
+		if (!File.Gave.IsEmpty())
+			Sheet->AddSlot().AutoHeight().HAlign(HAlign_Right).Padding(0, P(1), 0, 0)[SNew(STextBlock).Text(FText::FromString(File.Gave)).Font(Hand(20)).ColorAndOpacity(Ph2Red()).AutoWrapText(true)];
+		// slice 3: a pencil sketch for each stage reached
+		if (File.StageN >= 1)
+		{
+			TSharedRef<SHorizontalBox> Sketches = SNew(SHorizontalBox);
+			Sketches->AddSlot().AutoWidth().Padding(0, 0, P(10), 0)[SNew(SS47NbSketch).Kind(0).Shape(File.Build)];
+			if (File.StageN >= 2 && File.Prints > 0) Sketches->AddSlot().AutoWidth().Padding(0, 0, P(10), 0)[SNew(SS47NbSketch).Kind(1).Prints(File.Prints)];
+			if (File.StageN >= 3) Sketches->AddSlot().AutoWidth()[SNew(SS47NbSketch).Kind(2).Hours(File.Hours)];
+			Sheet->AddSlot().AutoHeight().Padding(0, P(4), 0, 0)[Sketches];
+		}
+		Sheet->AddSlot().AutoHeight().Padding(0, P(4), 0, P(2))[BoxRow];
+		for (const FS47NbUnknown::FBox& One : File.Boxes)
+			if (One.bFilled && !One.Note.IsEmpty())
+			{
+				// EVIDENCE-DOSSIER slice 2: what a later find contradicted, struck through in pencil above what stands now
+				for (const FString& Was : One.Struck)
+				{
+					FS47NbScribble Gone; Gone.Text = Was; Gone.bStruck = true;
+					Sheet->AddSlot().AutoHeight().Padding(0, P(3), 0, 0)[ScribbleLine(Gone, 23.f, nullptr)];
+					Held += TEXT(". Struck: ") + Was.LeftChop(Was.EndsWith(TEXT(".")) ? 1 : 0).ToLower();
+				}
+				Sheet->AddSlot().AutoHeight().Padding(0, P(3), 0, 0)[SNew(STextBlock).Text(FText::FromString(One.Note)).Font(Hand(23)).ColorAndOpacity(Lead).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(23), 28))];
+			}
+		if (!File.Next.IsEmpty())
+			Sheet->AddSlot().AutoHeight().Padding(0, P(5), 0, 0)[SNew(STextBlock).Text(FText::FromString(File.Next)).Font(Hand(20)).ColorAndOpacity(C(0x3a3a40, 0.6f)).AutoWrapText(true)];
+		if (!File.Merged.IsEmpty()) // slice 3: what was filed in it as one
+			Sheet->AddSlot().AutoHeight().Padding(0, P(3), 0, 0)[SNew(STextBlock).Text(FText::FromString(File.Merged)).Font(Hand(20)).ColorAndOpacity(C(0x3a3a40, 0.6f)).AutoWrapText(true)];
+		const FString Called = File.Name.IsEmpty() ? File.Title : File.Name + TEXT(", ") + File.Title;
+		Said.Add(Called + TEXT(". ") + File.Stage + TEXT(".") + (File.Gave.IsEmpty() ? FString() : TEXT(" ") + File.Gave) + (Held.IsEmpty() ? FString() : TEXT(" Kept: ") + Held + TEXT(".")) + (File.Merged.IsEmpty() ? FString() : TEXT(" ") + File.Merged));
+		return SNew(SBorder).BorderImage(Box(C(0xf7f3e6, 0.55f), C(0x3a3a40, 0.55f), 1.5f, 2.f)).Padding(FMargin(P(12), P(6)))[Sheet];
+	}
+	// EVIDENCE-DOSSIER slice 2: two files a find showed to be one thing, side by side and never merged: the six boxes of the one over the
+	// other's, and between them an equals sign in red pencil where the two hold the same. No word for what it means.
+	TSharedRef<SWidget> UnknownPairBox(const FS47NbUnknownPair& Two, TArray<FString>& Said)
+	{
+		using namespace S47Game;
+		TSharedRef<SHorizontalBox> BoxColumns = SNew(SHorizontalBox);
+		for (int32 At = 0; At < Two.Labels.Num(); ++At)
+		{
+			const bool bAlike = Two.Marks.IsValidIndex(At) && Two.Marks[At] == 1;
+			BoxColumns->AddSlot().FillWidth(1.f).HAlign(HAlign_Center)
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SS47NbEvidenceBox).Filled(Two.LeftFilled.IsValidIndex(At) && Two.LeftFilled[At])]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromString(bAlike ? TEXT("=") : TEXT(" "))).Font(Hand(26)).ColorAndOpacity(Ph2Red())]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SS47NbEvidenceBox).Filled(Two.RightFilled.IsValidIndex(At) && Two.RightFilled[At])]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, P(2), 0, 0)[SNew(STextBlock).Text(FText::FromString(Two.Labels[At])).Font(Term(15, 1)).ColorAndOpacity(C(0x3a3a40, 0.7f))]
+			];
+		}
+		TSharedRef<SVerticalBox> Sheet = SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Two.Left)).Font(Hand(24)).ColorAndOpacity(InkBlue())]
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, P(2), 0, P(2))[BoxColumns]
+			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Two.Right)).Font(Hand(24)).ColorAndOpacity(InkBlue())];
+		Said.Add(Two.Said);
+		return SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, C(0x3a3a40, 0.45f), 1.2f, 2.f)).Padding(FMargin(P(12), P(6)))[Sheet];
+	}
 }
 
 FString SS47Notebook::Excerpt(const FS47Doc& D)
@@ -707,8 +959,11 @@ FString SS47Notebook::OpenOn(const FS47NbExtras& Ex, const FString& Last)
 FString SS47Notebook::NowHead(const FString& Group)
 {
 	// D45-20261110: by importance (S47TonightNote::RankOf); the older groups' words for a list made the old way
+	// TASKS-TEN-20261113 (changes 6 and 9): tonight's WORK, FOLLOW-UP, YOUR OWN TIME, and the second section, OPEN MATTERS by group
 	static const TMap<FString, FString> Heads = { { TEXT("first"), TEXT("DO FIRST") }, { TEXT("tonight"), TEXT("TONIGHT") }, { TEXT("later"), TEXT("WHEN YOU CAN") }, { TEXT("done"), TEXT("DONE TONIGHT") },
-		{ TEXT("clock"), TEXT("BY THE CLOCK") }, { TEXT("todo"), TEXT("TO DO") }, { TEXT("also"), TEXT("ALSO OPEN") } };
+		{ TEXT("clock"), TEXT("BY THE CLOCK") }, { TEXT("todo"), TEXT("TO DO") }, { TEXT("also"), TEXT("ALSO OPEN") },
+		{ TEXT("work"), TEXT("WORK") }, { TEXT("follow"), TEXT("FOLLOW-UP") }, { TEXT("own"), TEXT("YOUR OWN TIME") } };
+	if (Group.StartsWith(TEXT("matter:"))) return TEXT("OPEN MATTERS / ") + Group.Mid(7).ToUpper();
 	const FString* Hd = Heads.Find(Group);
 	return Hd ? *Hd : FString();
 }
@@ -774,7 +1029,7 @@ TSharedRef<SWidget> SS47Notebook::TabStack()
 									+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(SBox).Visibility_Lambda([this, T] { return MainTab() == T ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })[Word(Label, C(0x120c05), true)]]
 								]
 							], 4.f, FVector2D(-2, 2), 0.35f)
-					], [this, T] { Show(T); })
+					], [this, T] { if (MainTab() != T) S47UiSound::Play(nullptr, S47UiSound::EKind::Page); Show(T); }) // FIX10-7: a page turned
 			]
 		];
 	}
@@ -985,16 +1240,28 @@ void SS47Notebook::Build()
 			FTextBlockStyle St = FTextBlockStyle().SetFont(Hand(bNext ? Px + 3.f : Px)).SetColorAndOpacity(Ink);
 			if (bDone) St.SetStrikeBrush(StrikeBrush(Ink)); // (MARGINALIA-20261109: a brush Slate draws the strike with)
 			TSharedRef<SWidget> Mark = SNullWidget::NullWidget;
-			if (bNext) Mark = SNew(SNextArrow);
+			// D69-20261113: the pinned row that is also the next one keeps its star beside the arrow
+			if (bNext && N.bPinned) Mark = SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SNextArrow)]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(P(1), 0, 0, 0)[SNew(STextBlock).Text(FText::FromString(TEXT("*"))).Font(Term(22)).ColorAndOpacity(Ph2Red())];
+			else if (bNext) Mark = SNew(SNextArrow);
+			// TASKS-TEN-20261113 (change 10): the pinned row has the due tabs' star
+			else if (N.bPinned) Mark = SNew(STextBlock).Text(FText::FromString(TEXT("*"))).Font(Term(26)).ColorAndOpacity(Ph2Red());
 			else if (N.Group == TEXT("also") || N.bSummary) Mark = SNew(STextBlock).Text(FText::FromString(N.Fold.IsEmpty() ? TEXT("-") : OpenFolds.Contains(N.Fold) ? TEXT("v") : TEXT(">"))).Font(Term(22)).ColorAndOpacity(Ink);
 			else Mark = SNew(SBox).WidthOverride(P(16)).HeightOverride(P(16))[SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, Ink, 1.5f)).HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0)
-				[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : N.Group == TEXT("first") ? TEXT("!") : TEXT(" "))).Font(Term(16)).ColorAndOpacity(bDone ? Ink : N.Group == TEXT("first") ? Ph2Red() : Ink)]];
+				[SNew(STextBlock).Text(FText::FromString(bDone ? TEXT("x") : N.Group == TEXT("first") || (N.Rank == 0 && N.Group != TEXT("next")) ? TEXT("!") : TEXT(" "))).Font(Term(16)).ColorAndOpacity(bDone ? Ink : N.Group == TEXT("first") || N.Rank == 0 ? Ph2Red() : Ink)]];
 			const bool bFresh = N.bNew && !bDone;
 			L->AddSlot().AutoHeight().Padding(0, 0, 0, P(6))[Entry(I, SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(8), P(10), 0)[SNew(SBox).WidthOverride(P(26))[Mark]]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(8), P(10), 0)[SNew(SBox).WidthOverride(P(bNext && N.bPinned ? 40 : 26))[Mark]]
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0, P(9), bFresh ? P(8) : 0.f, 0)[SNew(STextBlock).Visibility(bFresh ? EVisibility::Visible : EVisibility::Collapsed).Text(FText::FromString(TEXT("NEW"))).Font(Term(16, 2)).ColorAndOpacity(Ph2Red())]
-				+ SHorizontalBox::Slot().FillWidth(1.f)[SNew(STextBlock).Text(FText::FromString(N.Text)).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Px), 32))])];
-			Read.Add(bFresh ? TEXT("New. ") + N.Text : N.Text);
+				+ SHorizontalBox::Slot().FillWidth(1.f)
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(N.Text)).TextStyle(&St).AutoWrapText(true).LineHeightPercentage(LinePercent(Hand(Px), 32))]
+					// TASKS-TEN-20261113 (change 9): who gives it, its window, what it is worth, in the fixed short form
+					+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Visibility(N.Tag.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible).Text(FText::FromString(N.Tag)).Font(Term(15, 1)).ColorAndOpacity(bDone ? Ink : StampRed())]
+				])];
+			Read.Add((bFresh ? TEXT("New. ") + N.Text : N.Text) + (N.Tag.IsEmpty() ? FString() : TEXT(". ") + N.Tag));
 		}
 		// D45-20261110: what has been shown is no longer new the next time the notebook opens
 		if (X.bFreeform) for (const FS47NbNowLine& N : X.Now) if (N.bNew && !N.Key.IsEmpty()) S47TonightNote::Seen().Keys.Add(N.Key);
@@ -1441,6 +1708,7 @@ void SS47Notebook::BuildRight()
 			Said.Add(FString(Word) + TEXT(". ") + Text);
 		};
 		Pg->AddSlot().AutoHeight()[Inked(Title, bLarge ? 34.f : 30.f)];
+		if (N && !N->Tag.IsEmpty()) Row(TEXT("WHO"), N->Tag); // TASKS-TEN-20261113 (change 9)
 		if (N && !N->When.IsEmpty()) Row(TEXT("WHEN"), N->When);
 		FString Where = N ? N->Where : FString();
 		if (W && !W->Location.IsEmpty()) Where = Where.IsEmpty() ? W->Location : Where + TEXT(" / ") + W->Location;
@@ -1451,7 +1719,7 @@ void SS47Notebook::BuildRight()
 		{
 			// CRIT9: the key as the player has it (the pad's A with a gamepad; the notebook's Enter on the keyboard), never a fixed one.
 			const FString Opens = S47Gamepad::UsingGamepad() && !S47Gamepad::Label(TEXT("use")).IsEmpty() ? S47Gamepad::Label(TEXT("use")) : FString(TEXT("Enter"));
-			Why = N->Why + TEXT("\n\n") + (OpenFolds.Contains(N->Fold) ? FString::Printf(TEXT("Open below. %s folds them away again."), *Opens) : (Opens + (N->Fold == TEXT("cards") ? TEXT(" opens the job cards.") : TEXT(" opens the cases."))));
+			Why = (N->Why.IsEmpty() ? FString() : N->Why + TEXT("\n\n")) + (OpenFolds.Contains(N->Fold) ? FString::Printf(TEXT("Open below. %s folds them away again."), *Opens) : (Opens + (N->Fold == TEXT("cards") ? TEXT(" opens the job cards.") : TEXT(" opens the cases."))));
 		}
 		Row(TEXT("WHY"), Why);
 		if (W)
@@ -1463,6 +1731,8 @@ void SS47Notebook::BuildRight()
 			if (OnBoard && (W->Id.StartsWith(TEXT("case/")) || W->Id.StartsWith(TEXT("field-plan/")))) Acts.Add(MakeTuple(S47Keys::Label(TEXT("board")), FString(TEXT("BOARD")), TFunction<void()>([this] { TFunction<void()> Fn = OnBoard; Close(); if (Fn) Fn(); })));
 		}
 		if (N && !N->Fold.IsEmpty()) Acts.Add(MakeTuple(FString(TEXT("ENTER")), FString(OpenFolds.Contains(N->Fold) ? TEXT("FOLD AWAY") : TEXT("OPEN")), TFunction<void()>([this] { Activate(); })));
+		// TASKS-TEN-20261113 (change 10): "this is what I am doing": the HUD then shows its next step
+		if (N && X.OnPin && !N->bDone && !N->Key.IsEmpty() && N->Group != TEXT("done")) Acts.Add(MakeTuple(FString(TEXT("F2 / RS")), FString(N->bPinned ? TEXT("UNPIN") : TEXT("PIN")), TFunction<void()>([this] { PinChosen(); })));
 		if (!X.NowClock.IsEmpty())
 		{
 			Pg->AddSlot().AutoHeight().Padding(0, P(26), 0, 0)[Turned(Inked(X.NowClock, bLarge ? 30.f : 27.f, StampRed()), -1.2f)];
@@ -1538,6 +1808,11 @@ void SS47Notebook::BuildRight()
 		TArray<FString> Boxes, Said;
 		for (const FS47NbScribble& S : X.Scribbles) if (S.Side == TEXT("them")) Boxes.AddUnique(S.Box);
 		TSharedRef<SVerticalBox> L = SNew(SVerticalBox);
+		// EVIDENCE-DOSSIER-20261113: first the files of the unknown, one for each thing the player has logged evidence of, numbered in the
+		// order they were first logged (S47Dossier): six boxes and a stage each, to be read at a glance, out in the field as anywhere.
+		for (const FS47NbUnknown& UnknownOne : X.Unknowns) L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[UnknownFileBox(UnknownOne, Said)];
+		for (const FS47NbUnknownPair& UnknownTwo : X.UnknownPairs) L->AddSlot().AutoHeight().Padding(0, 0, 0, P(12))[UnknownPairBox(UnknownTwo, Said)]; // slice 2
+		const bool bAnyOfThem = Boxes.Num() > 0 || X.Unknowns.Num() > 0;
 		for (const FString& Name : Boxes)
 		{
 			TSharedRef<SVerticalBox> Bx = SNew(SVerticalBox) + SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(Name)).Font(Hand(30)).ColorAndOpacity(InkBlue()).AutoWrapText(true)];
@@ -1551,14 +1826,14 @@ void SS47Notebook::BuildRight()
 			+ SOverlay::Slot()
 			[
 				SNew(SCanvas)
-				+ SCanvas::Slot().Position(P2(60, 40)).Size(P2(506, 100))[Head(TEXT("Them"), FString::Printf(TEXT("THEM · %d"), Boxes.Num()))]
+				+ SCanvas::Slot().Position(P2(60, 40)).Size(P2(506, 100))[Head(TEXT("Them"), X.Unknowns.Num() ? FString::Printf(TEXT("THEM · %d · ON FILE · %d"), Boxes.Num(), X.Unknowns.Num()) : FString::Printf(TEXT("THEM · %d"), Boxes.Num()))]
 				+ SCanvas::Slot().Position(P2(46, 146)).Size(P2(536, 734 - 146 - 92))
 				[
 					SAssignNew(RightScroll, SScrollBox).Style(S47Game::QuietScroll()).ScrollBarStyle(S47Game::QuietBar(C(0x233a7a, 0.22f))).ScrollBarThickness(FVector2D(P(3), P(3)))
-					+ SScrollBox::Slot().Padding(FMargin(P(14), 0, P(16), P(10)))[Boxes.Num() ? StaticCastSharedRef<SWidget>(L) : Empty(None)]
+					+ SScrollBox::Slot().Padding(FMargin(P(14), 0, P(16), P(10)))[bAnyOfThem ? StaticCastSharedRef<SWidget>(L) : Empty(None)]
 				]
 			]);
-		Readings(Boxes.Num() ? Said : TArray<FString>{ None });
+		Readings(bAnyOfThem ? Said : TArray<FString>{ None });
 	}
 	else if (Tab == TEXT("people") && X.People && X.People->IsValidIndex(I))
 	{
@@ -1662,7 +1937,9 @@ void SS47Notebook::Activate()
 			FilterNow(); Sel.FindOrAdd(TEXT("tasks")) = I; Build(); return;
 		}
 		const FS47NbWorkItem* W = ChosenWork();
-		if (W && X.OnFollow && W->bCanFollow && !W->bDone) { auto Fn = X.OnFollow; const FString Id = W->Id; Close(); Fn(Id); }
+		if (W && X.OnFollow && W->bCanFollow && !W->bDone) { auto Fn = X.OnFollow; const FString Id = W->Id; Close(); Fn(Id); return; }
+		// TASKS-TEN-20261113 (change 10): a row with nothing to follow or fold is pinned with Enter too
+		PinChosen();
 		return;
 	}
 	if (Tab == TEXT("events") && X.bEvents)
@@ -1681,8 +1958,7 @@ void SS47Notebook::Activate()
 	if (Tab == TEXT("guide") && X.GuideEntries.IsValidIndex(I))
 	{
 		if (X.MarkRead) X.MarkRead(X.GuideEntries[I].Id);
-		// D45-20261110: the field guide's first entry is tonight's list; Enter turns to it on NOW
-		if (X.GuideEntries[I].Id == TEXT("guide:tonight") && X.bNow) { Show(TEXT("tasks")); return; }
+		// (TASKS-TEN-20261113, change 5: the field guide has no "Tonight's list" of its own any more; NOW is the list)
 		Build(); return;
 	}
 
@@ -1773,7 +2049,23 @@ void SS47Notebook::Section(int32 Dir)
 	if (MainTab() == TEXT("findings")) Tabs = !X.bFreeform ? TArray<FString>{ TEXT("findings"), TEXT("notes"), TEXT("people") } : Notes.Num() ? TArray<FString>{ TEXT("findings"), TEXT("people"), TEXT("notes") } : TArray<FString>{ TEXT("findings"), TEXT("people") };
 	if (MainTab() == TEXT("papers") && !X.bFreeform) Tabs = { TEXT("papers"), TEXT("photos") };
 	if (MainTab() == TEXT("guide")) Tabs = { TEXT("guide"), TEXT("controls") };
+	if (Tabs.Num() > 1) S47UiSound::Play(nullptr, S47UiSound::EKind::Page); // FIX10-7
 	if (!Tabs.IsEmpty()) Show(Tabs[(FMath::Max(0, Tabs.IndexOfByKey(Tab)) + Dir + Tabs.Num()) % Tabs.Num()]);
+}
+
+bool SS47Notebook::PinChosen()
+{
+	if (!IsNow() || !X.OnPin) return false;
+	const int32 I = Chosen();
+	if (!NowRows.IsValidIndex(I) || !X.Now.IsValidIndex(NowRows[I].Line)) return false;
+	FS47NbNowLine& N = X.Now[NowRows[I].Line];
+	if (N.bDone || N.Key.IsEmpty() || N.Group == TEXT("done")) return false;
+	X.OnPin(N.Key, N.Why);
+	const bool bWas = N.bPinned;
+	for (FS47NbNowLine& Each : X.Now) Each.bPinned = false;
+	N.bPinned = !bWas;
+	Build();
+	return true;
 }
 
 void SS47Notebook::RevealHint()
@@ -1788,6 +2080,7 @@ void SS47Notebook::RevealHint()
 void SS47Notebook::Turn(int32 Dir)
 {
 	const int32 At = FMath::Max(0, Order.IndexOfByKey(MainTab()));
+	if (Order.Num() > 1) S47UiSound::Play(nullptr, S47UiSound::EKind::Page); // FIX10-7: a page turned
 	Show(Order[(At + Dir + Order.Num()) % Order.Num()]);
 }
 
@@ -1810,6 +2103,7 @@ void SS47Notebook::Show(const FString& T)
 {
 	// show(t): a page turned stops what was being read
 	if (UI.IsValid()) UI->StopSpeech();
+	if (T == TEXT("map") && Tab != T) ++S47TonightNote::MapLooks(); // TASKS-TEN-20261113 (change 7): what Dale's "put it on your map" waits for
 	Tab = T;
 	if (UI.IsValid())
 	{
@@ -1868,6 +2162,7 @@ FReply SS47Notebook::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 	if (K == EKeys::Escape || K == EKeys::Gamepad_FaceButton_Right || K == EKeys::Gamepad_Special_Left || K == EKeys::Gamepad_Special_Right || (bKeyboard && (S47Keys::Is(TEXT("notebook"), K) || S47Keys::Is(TEXT("map"), K) || S47Keys::Is(TEXT("kit"), K) || S47Keys::Is(TEXT("controls"), K) || S47Keys::Is(TEXT("pause"), K)))) { Close(); return FReply::Handled(); }
 	if (((bKeyboard && S47Keys::Is(TEXT("board"), K)) || K == EKeys::Gamepad_FaceButton_Top) && OnBoard) { TFunction<void()> Fn = OnBoard; Close(); Fn(); return FReply::Handled(); }
 	if (K == EKeys::F1 || K == EKeys::Gamepad_RightTrigger) { RevealHint(); return FReply::Handled(); }
+	if ((K == EKeys::F2 || K == EKeys::Gamepad_RightThumbstick) && PinChosen()) return FReply::Handled(); // TASKS-TEN-20261113 (change 10)
 	if (K == EKeys::Comma || K == EKeys::Gamepad_LeftTrigger) { Section(1); return FReply::Handled(); }
 	// Q and E turn the tabs; the arrows (or W A S D) choose on a page of entries, else scroll it
 	if (K == EKeys::Q || K == EKeys::Gamepad_LeftShoulder) { Turn(-1); return FReply::Handled(); }
@@ -2160,6 +2455,35 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 			const auto Scrib = [](const TCHAR* Side, const TCHAR* Box, const TCHAR* Text, bool bStruck) { FS47NbScribble S; S.Side = Side; S.Box = Box; S.Text = Text; S.bStruck = bStruck; return S; };
 			Mx.Scribbles = { Scrib(TEXT("people"), TEXT("THE DEPUTY"), TEXT("Writes everything down."), false), Scrib(TEXT("people"), TEXT("DALE"), TEXT("Never seen him."), false),
 				Scrib(TEXT("them"), TEXT("THE LOW ONE"), TEXT("Coyote. A big one."), true) };
+			// EVIDENCE-DOSSIER-20261113: a file of the unknown on THEM, two of its six boxes filled
+			{
+				FS47NbUnknown Sheet; Sheet.Title = TEXT("UNKNOWN 1"); Sheet.Stage = TEXT("OUTLINE"); Sheet.Next = TEXT("Three kinds of evidence from two nights make MARKS.");
+				for (const TCHAR* Label : { TEXT("SHAPE"), TEXT("TAPE"), TEXT("GROUND"), TEXT("LAMP"), TEXT("GEIGER"), TEXT("ANIMALS") }) Sheet.Boxes.Add({ Label, FString(), FString(), false });
+				Sheet.Boxes[0] = { TEXT("SHAPE"), TEXT("on film"), TEXT("Low and folded. Pale. Quick."), true }; Sheet.Boxes[2] = { TEXT("GROUND"), TEXT("noted"), TEXT("Prints in fours, close together, off the edge at a run."), true };
+				Mx.Unknowns.Add(Sheet);
+				TArray<FString> Spoken;
+				const TSharedRef<SWidget> Drawn = UnknownFileBox(Sheet, Spoken);
+				Check(TEXT("Freeform THEM: a file of the unknown is its number, its stage and six boxes; what is read of it names only the kinds of evidence kept"),
+					Drawn != SNullWidget::NullWidget && Spoken.Num() == 1 && Spoken[0] == TEXT("UNKNOWN 1. OUTLINE. Kept: shape, ground.") && S47Script::LintText(Spoken[0]).IsEmpty() && !S47Marginalia::NamesKind(Spoken[0]), Spoken.Num() ? Spoken[0] : FString());
+				// EVIDENCE-DOSSIER slice 2: a struck pencil in a box, and two files side by side
+				FS47NbUnknown Struck = Sheet; Struck.Boxes[2].Struck = { TEXT("Long narrow prints, a long stride apart.") };
+				FS47NbUnknownPair Two; Two.Left = TEXT("UNKNOWN 1"); Two.Right = TEXT("UNKNOWN 3"); Two.Said = TEXT("UNKNOWN 1 and UNKNOWN 3 side by side. The same in: shape.");
+				for (const FS47NbUnknown::FBox& One : Sheet.Boxes) { Two.Labels.Add(One.Label); Two.LeftFilled.Add(One.bFilled); Two.RightFilled.Add(One.Label == TEXT("SHAPE")); Two.Marks.Add(One.Label == TEXT("SHAPE") ? 1 : 0); }
+				TArray<FString> SpokenTwo;
+				const TSharedRef<SWidget> DrawnStruck = UnknownFileBox(Struck, SpokenTwo), DrawnPair = UnknownPairBox(Two, SpokenTwo);
+				Check(TEXT("Freeform THEM (slice 2): a contradicted pencil is struck through above what stands, and two files kept side by side are read as such"),
+					DrawnStruck != SNullWidget::NullWidget && DrawnPair != SNullWidget::NullWidget && SpokenTwo.Num() == 2 && SpokenTwo[0].Contains(TEXT("Struck: long narrow prints, a long stride apart")) && SpokenTwo[1] == Two.Said
+					&& S47Script::LintText(SpokenTwo[0] + TEXT(" ") + SpokenTwo[1]).IsEmpty() && !S47Marginalia::NamesKind(SpokenTwo[0] + TEXT(" ") + SpokenTwo[1]), SpokenTwo.Num() ? SpokenTwo[0] : FString());
+				Mx.UnknownPairs.Add(Two);
+				// EVIDENCE-DOSSIER slice 3: a named file at HABITS with its sketches, and what is filed in it as one, read with its name first
+				FS47NbUnknown Named = Sheet; Named.Name = TEXT("Folded one, in fours"); Named.Stage = TEXT("HABITS"); Named.bFiled = true; Named.StageN = 3; Named.Build = 2; Named.Prints = 2; Named.Hours = { 23, 2 };
+				Named.Merged = S47Dossier::MergedLine({ 3 });
+				TArray<FString> SpokenNamed;
+				const TSharedRef<SWidget> DrawnNamed = UnknownFileBox(Named, SpokenNamed);
+				Check(TEXT("Freeform THEM (slice 3): a named file shows its name with its number beside it, a sketch for each stage reached and what is filed in it as one"),
+					DrawnNamed != SNullWidget::NullWidget && SpokenNamed.Num() == 1 && SpokenNamed[0].StartsWith(TEXT("Folded one, in fours, UNKNOWN 1. HABITS.")) && SpokenNamed[0].EndsWith(TEXT("Filed in it as one: UNKNOWN 3."))
+					&& S47Script::LintText(SpokenNamed[0]).IsEmpty() && !S47Marginalia::NamesKind(SpokenNamed[0]), SpokenNamed.Num() ? SpokenNamed[0] : FString());
+			}
 			const auto Pencilled = SNew(SS47Notebook).Docs(All).Extras(Mx);
 			Pencilled->Show(TEXT("findings")); Pencilled->Section(1);
 			Check(TEXT("Freeform WHO & WHAT: PEOPLE and THEM on the two pages, and the scribbles change nothing of what can be chosen"),
@@ -2182,13 +2506,13 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 			Nx.Now = { Line(TEXT("first"), TEXT("FEEDER: Power is out.")), Line(TEXT("tonight"), TEXT("BEARING SLIP: New circle on your map.")), Line(TEXT("later"), TEXT("STATION GOAL: Array 19 of 27.")),
 				Line(TEXT("done"), TEXT("OPS: One job card registered and filed."), true) };
 			Nx.Now[1].bNew = true; Nx.Now[1].Key = TEXT("d45-selftest:slip");
-			Nx.GuideEntries = { { TEXT("guide:tonight"), TEXT("Tonight's list"), TEXT("TONIGHT\n- BEARING SLIP: New circle on your map.") }, { TEXT("guide:records"), TEXT("Records"), TEXT("Keep originals.") } };
+			Nx.GuideEntries = { { TEXT("guide:records"), TEXT("Records"), TEXT("Keep originals.") } };
 			FS47NbExtras Looked = Nx; Looked.Now[1].bNew = false;
 			Check(TEXT("Freeform: the notebook opens on NOW when something new is on it, even after the field guide; otherwise where it was left"),
 				OpenOn(Nx, TEXT("guide")) == TEXT("tasks") && OpenOn(Looked, TEXT("guide")) == TEXT("guide") && OpenOn(FS47NbExtras(), TEXT("map")) == TEXT("map"));
 			const auto Ranked = SNew(SS47Notebook).Docs(All).Extras(Nx);
 			Ranked->Show(TEXT("guide")); Ranked->Choose(0); Ranked->Activate();
-			Check(TEXT("Freeform field guide: its first entry is tonight's list, and it turns to NOW"), Ranked->Tab == TEXT("tasks") && Ranked->Count() == Nx.Now.Num(), Ranked->Tab);
+			Check(TEXT("Freeform field guide: no copy of tonight's list; its entries stay entries (TASKS-TEN change 5)"), Ranked->Tab == TEXT("guide"), Ranked->Tab);
 		}
 		bool bLint = true;
 		for (const FS47NbNowLine& N : Fx.Now) bLint &= S47Script::LintText(N.Text).IsEmpty();

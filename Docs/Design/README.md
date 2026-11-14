@@ -10,6 +10,14 @@ Den inneholder også et fullstendig kildekart til bevarte detaljplaner, historis
 
 [Start her](../README.md).
 
+## Mottaker-PC-en, 13. november 2026
+
+[Utseende og effekter](UI/RECEIVER_LOOK_20261113.md): ramme på alle faner, himmelkule på ACQUIRE, små skop og effekter etter Toms referansebilde. Kodet, ikke bygget og ikke sett i spill.
+
+## Musikk som reagerer, 13. november 2026
+
+[SIDEBAND](Audio/SIDEBAND_20261113.md): fargebussen, FLARES og kanalene. Godkjent av Tom 13. november; kodet, ikke bygget og ikke hørt i spill.
+
 ## Director og editor, forslag 7. november 2026
 
 [Oversikt over alle hendelser](Director/HENDELSER.md), [forslag til samlet director](Director/DIRECTOR-FORSLAG.md) og [forslag til visuell editor](Director/EDITOR-FORSLAG.md). Godkjent av Tom 7. november, se [beslutningene](../Active/DECISIONS.md).

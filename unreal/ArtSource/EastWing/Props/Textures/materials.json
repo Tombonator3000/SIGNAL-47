@@ -18,17 +18,17 @@
         2.4
       ],
       "tileable": true,
-      "description": "Cream painted cinderblock; 400x200mm running bond. Mortar shares paint with slightly rougher recessed joints.",
+      "description": "Cream painted cinderblock; 400x200mm running bond. Mortar shares paint with slightly rougher recessed joints. Albedo from the project owner's generated photo texture (TEXTURES-PHOTO-20261112), made seamless and scaled by photo_tex.py.",
       "maps": {
         "BaseColor": {
           "file": "EW_CinderblockCream_BaseColor.png",
-          "sha256": "6d082eb07700900b62a13ed18be0df6a714746a087f6fef2b1f21a47dff6ed52",
+          "sha256": "826b4caa492eca4c1df3182c65b072aa442f84c5484b35e7305f0a179e1b5227",
           "color_space": "sRGB",
           "bit_depth": 8
         },
         "Roughness": {
           "file": "EW_CinderblockCream_Roughness.png",
-          "sha256": "f110814f93976f8263dca57343fb0f67a958d1aef6bad05db9c04c4d38ddcc3b",
+          "sha256": "a1b675cc0e40d18bc6ea138e78f30d4e71d6d14ebd9d690a3f56605def7fe260",
           "color_space": "linear",
           "bit_depth": 8
         },
@@ -40,30 +40,31 @@
         },
         "NormalDX": {
           "file": "EW_CinderblockCream_NormalDX.png",
-          "sha256": "0949d439d8541e8a90b84a5a0de0b7061e7d007580d04b8552fa6885b089b768",
+          "sha256": "90e374e2321af1db542c4a6f5fbd9a30c8c44ed2e7225e4ac145feb3b8fc45d9",
           "color_space": "linear",
           "bit_depth": 8
         },
         "NormalGL": {
           "file": "EW_CinderblockCream_NormalGL.png",
-          "sha256": "0d54380d0ae3151fcca5c3b40e82a46d545c1c307f3d9f61ba0249ac610ca0fc",
+          "sha256": "4d91ad567692af18b70a2622f6e1026cdf5386f2fa17a92e6f78759e8383e4cc",
           "color_space": "linear",
           "bit_depth": 8
         },
         "Height": {
           "file": "EW_CinderblockCream_Height.png",
-          "sha256": "0a5b628ccf8530830f981f9d4d9595cec17eeb1513522f3bf6275dffd7e11ad9",
+          "sha256": "896bc6efe1a5c7eb59f57dbb77d7fd0d3a0ed0a505729ee6a6684651d6b66e45",
           "color_space": "linear",
           "bit_depth": 16,
           "decode_metres": {
-            "offset": -0.0030687409453094006,
-            "scale": 0.0033504477760288864
+            "offset": -0.023546390235424042,
+            "scale": 0.03593622613698244
           }
         }
       },
       "normal_strength": 1.0,
       "height_displacement_enabled_by_default": false,
-      "license_manifest": "EW_CinderblockCream.license.json"
+      "license_manifest": "EW_CinderblockCream.license.json",
+      "photo_source": "saro/block_int.png"
     },
     {
       "key": "EW_Stucco",
@@ -134,17 +135,17 @@
         4
       ],
       "tileable": true,
-      "description": "Stained concrete floor; no painted markings/drains baked into repeating material.",
+      "description": "Stained concrete floor; no painted markings/drains baked into repeating material. Albedo from the project owner's generated photo texture (TEXTURES-PHOTO-20261112), made seamless and scaled by photo_tex.py.",
       "maps": {
         "BaseColor": {
           "file": "EW_Concrete_BaseColor.png",
-          "sha256": "e0f90bd08d8ab85b2e983729aeac2f3b37689530e112d86719360267b53f6a4a",
+          "sha256": "6a1409a3dce19b7a8156ab37c1587fb231abec1b5d667b2fc844eb44b4d4c39a",
           "color_space": "sRGB",
           "bit_depth": 8
         },
         "Roughness": {
           "file": "EW_Concrete_Roughness.png",
-          "sha256": "bd8bdbdc377793a70d2e6cb708294e9322e2be583bd5e6c819c3a236b5cb859a",
+          "sha256": "01481c318d242129c7d9311a5ab57577c72489c9cfb6cbb2c4a0798ccfe1d538",
           "color_space": "linear",
           "bit_depth": 8
         },
@@ -156,30 +157,31 @@
         },
         "NormalDX": {
           "file": "EW_Concrete_NormalDX.png",
-          "sha256": "fb34f060a59ea66f0747fb88f219c9f4d28db908cf7491bda1c1db880f9c9d1c",
+          "sha256": "a48fc62ef85e7467a208745c5932de7ce307dcd2d64603c7256c4fa93e8eac66",
           "color_space": "linear",
           "bit_depth": 8
         },
         "NormalGL": {
           "file": "EW_Concrete_NormalGL.png",
-          "sha256": "eee0d7f1164dc367d6478ed42d9121546a0889750caf0037ba7b3d05de5ef938",
+          "sha256": "412a82b8a771975b62633242d4d75cc0de41f9bd5646498d6e882d53056645ef",
           "color_space": "linear",
           "bit_depth": 8
         },
         "Height": {
           "file": "EW_Concrete_Height.png",
-          "sha256": "c83cfec81c1d7777681377508edd47132badf5325a208479d46cd00e2e6fee73",
+          "sha256": "1bb75545da0b154c01b43892b05e9703b560087d699b5cb12605ee949df62ff9",
           "color_space": "linear",
           "bit_depth": 16,
           "decode_metres": {
-            "offset": -0.0005765921087004244,
-            "scale": 0.000847458781208843
+            "offset": -0.0023224439937621355,
+            "scale": 0.004388930043205619
           }
         }
       },
       "normal_strength": 1.0,
       "height_displacement_enabled_by_default": false,
-      "license_manifest": "EW_Concrete.license.json"
+      "license_manifest": "EW_Concrete.license.json",
+      "photo_source": "saro/concrete_floor.png"
     },
     {
       "key": "EW_GreenSteel",
@@ -192,17 +194,17 @@
         1
       ],
       "tileable": true,
-      "description": "Green lacquer on steel, dielectric paint; wear principally in roughness, no fake metallic green paint.",
+      "description": "Green lacquer on steel, dielectric paint; wear principally in roughness, no fake metallic green paint. Albedo from the project owner's generated photo texture (TEXTURES-PHOTO-20261112), made seamless and scaled by photo_tex.py.",
       "maps": {
         "BaseColor": {
           "file": "EW_GreenSteel_BaseColor.png",
-          "sha256": "051a7828719ec8180c95692470581f4022c99a26f405fe877bc09b347f05a6c2",
+          "sha256": "0b1b267aa9829be690c059dcb6577de1381dbd80df8f6b3628fd45e63d78088c",
           "color_space": "sRGB",
           "bit_depth": 8
         },
         "Roughness": {
           "file": "EW_GreenSteel_Roughness.png",
-          "sha256": "8b8368398e1e808b7c8cfef282915ee646bdc36e869ad2808a6a470185eb5070",
+          "sha256": "42e236eae762974f9addd5775119f9161759cd32784516c8e4289dfc080110b4",
           "color_space": "linear",
           "bit_depth": 8
         },
@@ -214,30 +216,31 @@
         },
         "NormalDX": {
           "file": "EW_GreenSteel_NormalDX.png",
-          "sha256": "6c5b002fa2bc6ec29989b4a58b2fe784a24060ba7208e27ac2eaa41098e3ace4",
+          "sha256": "c3552f5c1e8b5fb5c947b673a3ff4a71934b7b3ea30815cc5faebc2fbc9f6af4",
           "color_space": "linear",
           "bit_depth": 8
         },
         "NormalGL": {
           "file": "EW_GreenSteel_NormalGL.png",
-          "sha256": "4a4ea7ed85d976c5f6ad65bec30a24bf9fcad6440dad6743a718b012ba9b4f4c",
+          "sha256": "5719af15763c7efab9c16e14f4aecb6b822d5692fe2016f8e552d659f9579c04",
           "color_space": "linear",
           "bit_depth": 8
         },
         "Height": {
           "file": "EW_GreenSteel_Height.png",
-          "sha256": "991f977c5ec1b6599219991e61b285aa58d7aed9bcfbca809d34716625333782",
+          "sha256": "23402f4d328a4b6b4192b8470d34dac9c52e660166e8203130d7363d7cde154f",
           "color_space": "linear",
           "bit_depth": 16,
           "decode_metres": {
-            "offset": -4.691736648965161e-06,
-            "scale": 9.429898909729673e-06
+            "offset": -0.0002605356276035309,
+            "scale": 0.0009313271730206907
           }
         }
       },
       "normal_strength": 1.0,
       "height_displacement_enabled_by_default": false,
-      "license_manifest": "EW_GreenSteel.license.json"
+      "license_manifest": "EW_GreenSteel.license.json",
+      "photo_source": "saro/enamel_green.png"
     },
     {
       "key": "EW_Pegboard",
@@ -311,17 +314,17 @@
         1
       ],
       "tileable": true,
-      "description": "Galvanized zinc-coated steel; ~18mm spangles primarily roughness variation, metallic=0.98.",
+      "description": "Galvanized zinc-coated steel; ~18mm spangles primarily roughness variation, metallic=0.98. Albedo from the project owner's generated photo texture (TEXTURES-PHOTO-20261112), made seamless and scaled by photo_tex.py.",
       "maps": {
         "BaseColor": {
           "file": "EW_Galvanized_BaseColor.png",
-          "sha256": "5303fffed6ca8501a94cf64cbc3cd4a80135d2ed5719d99b8d786f95f3223194",
+          "sha256": "792d7035df0612bdec62bc15327ada555b91fa5a4843186d11d60f387a20c4df",
           "color_space": "sRGB",
           "bit_depth": 8
         },
         "Roughness": {
           "file": "EW_Galvanized_Roughness.png",
-          "sha256": "a7cd7eea1a984977b65b8c3264ef2b68a6cef7979505e111dd42a0f43a1b30c4",
+          "sha256": "f5523c69db4c33a7b4c83253b04a3e279ce6c26c71146c551837b7f67ee8c444",
           "color_space": "linear",
           "bit_depth": 8
         },
@@ -333,30 +336,31 @@
         },
         "NormalDX": {
           "file": "EW_Galvanized_NormalDX.png",
-          "sha256": "d08ccba937ff34e32e06c2d07ba88b4b8957bcd974b76dffbac58c6b805fc36b",
+          "sha256": "7bb966365d909c20bc5487dc91a56bc51ac447abc408e9cbe9e569d76640de2d",
           "color_space": "linear",
           "bit_depth": 8
         },
         "NormalGL": {
           "file": "EW_Galvanized_NormalGL.png",
-          "sha256": "b7a7cfc3826c8941daf51207ef89c08046c6cd4b7b991f00eaf00425408ac67e",
+          "sha256": "ae67dd4f56fcf7420e4e86438f39dd35b1feadf450864e6fcaae94801aecbd14",
           "color_space": "linear",
           "bit_depth": 8
         },
         "Height": {
           "file": "EW_Galvanized_Height.png",
-          "sha256": "1e23e9e585294699e24d2e1494609ae2ecb14d8df9c4eaedbc296e217ff2376a",
+          "sha256": "70cc8fe93000854112f9439736de8f027fc32f1a12c40c9d8ce4345d1a276fd6",
           "color_space": "linear",
           "bit_depth": 16,
           "decode_metres": {
-            "offset": -3.9971655496628955e-06,
-            "scale": 7.99472036305815e-06
+            "offset": -1.9467628590064123e-05,
+            "scale": 4.5338938434724696e-05
           }
         }
       },
       "normal_strength": 1.0,
       "height_displacement_enabled_by_default": false,
-      "license_manifest": "EW_Galvanized.license.json"
+      "license_manifest": "EW_Galvanized.license.json",
+      "photo_source": "saro/galvanized.png"
     },
     {
       "key": "EW_YellowLine",

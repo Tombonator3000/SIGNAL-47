@@ -5,6 +5,7 @@
 #include "S47Main.h"
 #include "S47Obj.h"
 #include "S47Three.h"
+#include "S47TownDay.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "Animation/AnimSequence.h"
@@ -209,7 +210,16 @@ namespace S47Waitress
   for (const TCHAR* Id : {TEXT("world.diner.proxies.window"), TEXT("world.diner.proxies.counter"), TEXT("world.diner.proxies.coffee")})
    if (const FS47Obj O = W->Obj(Id)) P->IdleSpots.Add(S47Three::ToUE(O.WorldPosition()));
   // Follow the diner's own visibility (closed variants, other areas).
-  P->Present = [Web, Room]() { return !Web.IsValid() || !Room || Room.Shown(); };
+  // NPC-DAY-FOLLOW-20261109: in a running Freeform day she is at the counter only on her shift (S47TownDay: about seven at night to
+  // five in the morning, never swapped in the player's sight); Story, and a day not running, as before.
+  P->Present = [Web, Room]()
+  {
+   const bool bRoom = !Web.IsValid() || !Room || Room.Shown();
+   const US47Main* Run = Web.IsValid() ? US47Main::Get(Web.Get()) : nullptr;
+   if (Run && Run->Evening && Run->Evening->Commute()) return bRoom; // the evening's own supper scene is hers
+   bool bShift = true;
+   return bRoom && (!S47TownDay::Present(TEXT("mesa_waitress"), bShift) || bShift);
+  };
   UE_LOG(LogS47Waitress, Display, TEXT("S47: waitress MetaHuman at %s yaw %.1f; %s"), *Feet.ToString(), A->GetActorRotation().Yaw, *P->Describe());
  }
 }

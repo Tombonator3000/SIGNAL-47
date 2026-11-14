@@ -71,9 +71,15 @@ TArray<TPair<FString, FString>> SS47Ending::CreditsRows(bool bBoughtSfx)
 		{ TEXT("Code, chapters and sound"), TEXT("Claude (Anthropic)") },
 		{ TEXT("Mesa Diner, Sierra Motor Court, room 6, art and textures"), TEXT("Codex and ChatGPT (OpenAI)") },
 		{ TEXT("Music"), TEXT("Scott Buckley, CC BY 4.0 (scottbuckley.com.au): \"Signal to Noise\", and from \"Shadows and Dust\", \"Decoherence\", \"The Old Ones\", \"In Search of Solitude\", \"Neon\" and \"Hymn to the Dawn\"") },
-		{ TEXT(""), TEXT("Chris Zabriskie, CC BY 4.0 (chriszabriskie.com): \"Cylinder One\", \"Cylinder Two\" and \"Cylinder Eight\" from Cylinders") },
-		{ TEXT(""), TEXT("Kevin MacLeod, CC BY 4.0 (incompetech.com): \"Floating Cities\", \"Ossuary 1 - A Beginning\", \"Ossuary 5 - Rest\", \"Long Note Four\", \"Lightless Dawn\", \"Phantom from Space\" and \"Night on the Docks - Sax\"; on the radio \"Drankin Song\", \"Bama Country\", \"Cattails\" and \"Anamalie\"") },
-		{ TEXT(""), TEXT("Shane Ivers, CC BY 4.0 (silvermansound.com): \"Signs To Nowhere\"") },
+		{ TEXT(""), TEXT("Chris Zabriskie, CC BY 4.0 (chriszabriskie.com): \"Cylinder Two\" and \"Cylinder Eight\" from Cylinders") },
+		{ TEXT(""), TEXT("Kevin MacLeod, CC BY 4.0 (incompetech.com): \"Floating Cities\", \"Ossuary 1 - A Beginning\", \"Ossuary 5 - Rest\", \"Long Note Four\", \"Lightless Dawn\" and \"Phantom from Space\"; on the radio \"Drankin Song\", \"Bama Country\", \"Cattails\" and \"Anamalie\"") },
+		// MUSIC-20261113: the steel guitar and the drones (links in CREDITS.txt), Tom's own piece and the game's own arrangements
+		// of the bought loops, and the old records on the AM dial. "Night on the Docks", "Signs To Nowhere" and "Cylinder One" are no longer played.
+		{ TEXT(""), TEXT("Lobo Loco, CC BY 4.0 (freemusicarchive.org): \"Look Back Steelguitar Organ (F 35)\" and \"Stumping Slow Deltablues - Guitar Steelguitar (F 30)\" from Completely FREE 2") },
+		{ TEXT(""), TEXT("Uuriter, CC BY 4.0 (freemusicarchive.org): \"Standby Mode\" and \"Routine Drone\" from Analog Fields") },
+		// (13 Nov: the five quiet ones are in the same row, so the row count and the bought credit's place in the self-test stand)
+		{ TEXT(""), TEXT("Tom: \"Intro Drive\". \"Night Freight\", \"Cold Dish\", \"Carrier Lock\", \"County Road\", \"Third Shift\", \"Dry Lake\", \"Vacancy\", \"Grey Hour\" and \"Standing Wave\": arranged for SIGNAL / 47 from licensed loops (Function Loops)") },
+		{ TEXT("Old records on the radio"), TEXT("Library of Congress National Jukebox, public domain: \"Hawaiian Hotel\", Frank Ferera and Anthony Franchini (1920); \"Roll On, Silver Moon\" (1906); \"Till the Sands of the Desert Grow Cold\", Victor Orchestra (1912)") },
 		{ TEXT("National anthem on the radio"), TEXT("The United States Air Force Band, \"The Star Spangled Banner\" (choral), public domain") },
 		{ TEXT("Radio observatory sounds"), TEXT("PSR B0329+54 data: Joseph W. Kania (WVU), Greenburst / Green Bank Telescope, doi:10.5281/zenodo.5570222 (CC BY 4.0), made audible for SIGNAL / 47. Felix Blume, satellite dish motor, New Mexico (CC0). awg, natural VLF radio reception (CC BY 4.0). Priwo, Star LC-10 printer (public domain)") },
 		{ TEXT("Space radio references"), TEXT("NASA/JPL/University of Iowa: Cassini RPWS at Jupiter, Saturn radio emissions PIA07966 and PIA07967; NASA/JPL-Caltech/University of Iowa: Saturn lightning PIA14310; NASA/Van Allen Probes EMFISIS (University of Iowa): Earth chorus. Radio and plasma measurements made audible; source links in CREDITS.txt.") },
@@ -424,7 +430,21 @@ bool SS47Ending::SelfTest(TArray<FString>& Lines)
 	E->Advance(100);
 	Check(E->Disposed() && Done == 4 && !E->Skip(), TEXT("dispose cancels pending callbacks and the overlay"));
 	const TArray<TPair<FString, FString>> Free = CreditsRows(false), Bought = CreditsRows(true);
-	Check(Free.Num() == 20 && Bought.Num() == 21 && Bought[13].Value == TEXT("Ultimate SFX for Games, Function Loops"), TEXT("bought SFX credit is conditional and follows the recording credits"));
+	Check(Free.Num() == 23 && Bought.Num() == 24 && Bought[16].Value == TEXT("Ultimate SFX for Games, Function Loops"), TEXT("bought SFX credit is conditional and follows the recording credits"));
+	{
+		// MUSIC-20261113
+		FString Music; for (const TPair<FString, FString>& Row : Free) Music += Row.Value + TEXT("\n");
+		Check(Music.Contains(TEXT("Lobo Loco, CC BY 4.0")) && Music.Contains(TEXT("Look Back Steelguitar Organ (F 35)")) && Music.Contains(TEXT("Stumping Slow Deltablues - Guitar Steelguitar (F 30)"))
+			&& Music.Contains(TEXT("Uuriter, CC BY 4.0")) && Music.Contains(TEXT("Standby Mode")) && Music.Contains(TEXT("Routine Drone"))
+			&& Music.Contains(TEXT("Hawaiian Hotel")) && Music.Contains(TEXT("Roll On, Silver Moon")) && Music.Contains(TEXT("Till the Sands of the Desert Grow Cold")) && Music.Contains(TEXT("Intro Drive")),
+			TEXT("the new pieces are credited: Lobo Loco and Uuriter with titles and licence, the public-domain records, Tom's own"));
+		bool bMixes = Music.Contains(TEXT("arranged for SIGNAL / 47 from licensed loops (Function Loops)"));
+		for (const TCHAR* Title : { TEXT("Night Freight"), TEXT("Cold Dish"), TEXT("Carrier Lock"), TEXT("County Road"), TEXT("Third Shift"), TEXT("Dry Lake"), TEXT("Vacancy"), TEXT("Grey Hour"), TEXT("Standing Wave") })
+			bMixes &= Music.Contains(FString::Printf(TEXT("\"%s\""), Title));
+		Check(bMixes, TEXT("the nine mixes of the bought loops are credited by title, with where the loops are from"));
+		Check(!Music.Contains(TEXT("Night on the Docks")) && !Music.Contains(TEXT("Cylinder One")) && Music.Contains(TEXT("Cylinder Two")) && Music.Contains(TEXT("Kevin MacLeod")),
+			TEXT("the removed pieces are no longer credited; their composers' other pieces still are"));
+	}
  const auto* Space = Free.FindByPredicate([](const TPair<FString,FString>& Row) { return Row.Key == TEXT("Space radio references"); });
  Check(Space && Space->Value.Contains(TEXT("NASA/JPL")) && Space->Value.Contains(TEXT("University of Iowa")) && Space->Value.Contains(TEXT("EMFISIS")), TEXT("space radio references retain their scientific source credits"));
  const auto* Observatory = Free.FindByPredicate([](const TPair<FString,FString>& Row) { return Row.Key == TEXT("Radio observatory sounds"); });

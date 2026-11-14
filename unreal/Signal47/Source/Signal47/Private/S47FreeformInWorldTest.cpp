@@ -292,10 +292,11 @@ void FS47FreeformInWorldTest::Step(double Dt)
  }
  if(Stage==22)
  {
-  // GAMEPLAY-LOOP-01: the unusual take is kept as it ends: no chart to fetch, no control to record, the reel deck next
+  // GAMEPLAY-LOOP-01: no chart to fetch. RX-ANOMALY-FLOW-20261113: the take is retained at the receiver (RECORD tab) with its reference
   if(F.CurrentJob()->Stage!=FS47FreeformSession::EJobStage::Recorded)return;
   M->UI->Close(true);
-  if(!Check(F.CurrentJob()->Elapsed==18&&F.CurrentJob()->bPrinted&&!F.CurrentJob()->OriginalPage.IsEmpty()&&!F.CanRecordControl()&&F.PrinterJobId()!=F.CurrentJob()->Id,TEXT("real eighteen-second pulsar acquisition keeps its original with no chart at the printer")))return;
+  if(!Check(F.CurrentJob()->Elapsed==18&&FS47FreeformSession::RetainWaits(*F.CurrentJob())&&!F.CanRecordControl()&&F.PrinterJobId()!=F.CurrentJob()->Id,TEXT("real eighteen-second pulsar acquisition waits to be retained, with no chart at the printer")))return;
+  if(!Check(F.RetainTake()&&F.CurrentJob()->bPrinted&&!F.CurrentJob()->OriginalPage.IsEmpty()&&F.CurrentJob()->bControl,TEXT("RETAIN TAKE keeps the original and starts its 8-second reference")))return;
   Go(23);return;
  }
  if(Stage==23)
@@ -308,7 +309,7 @@ void FS47FreeformInWorldTest::Step(double Dt)
   if(!Check(F.AudioDesk->ListeningPosition(),TEXT("native equipment approach is inside powered physical listening range")))return;
   F.OpenAudio();if(!Check(!M->ModalOpen()&&!F.Held(),TEXT("audio arming opens no overlay and leaves the world active")))return;
   F.SeekAudio(9.1);F.AudioDesk->Use(TEXT("ff:audio:mark_start"));F.SeekAudio(13);F.AudioDesk->Use(TEXT("ff:audio:mark_end"));F.SeekAudio(18);F.AudioDesk->Use(TEXT("ff:audio:retain"));
-  if(!Check(!F.CurrentJob()->bAudioReviewed&&F.CurrentJob()->OriginalCovered==0&&F.CurrentJob()->ControlCovered==0,TEXT("instant seek and valid-looking marks cannot fabricate heard comparison")))return;
+  if(!Check(!F.CurrentJob()->bAudioReviewed&&F.CurrentJob()->OriginalCovered==0&&F.CurrentJob()->ControlCovered==0&&F.FeedbackText().Contains(TEXT("Not heard yet")),TEXT("instant seek and valid-looking marks cannot fabricate heard comparison; RETAIN says why")))return;
   F.AudioDesk->Use(TEXT("ff:audio:rewind"));if(!Check(F.AudioPosition()==0&&!F.AudioPlaying(),TEXT("physical rewind returns transport to zero without granting coverage")))return;
   AimAt(F.AudioDesk->InteractionPoint(TEXT("ff:audio:original")));Go(25);return;
  }
@@ -331,10 +332,11 @@ void FS47FreeformInWorldTest::Step(double Dt)
   if(F.AudioPlaying())return;
   if(!Check(bMarkedIn&&bMarkedOut&&F.CurrentJob()->OriginalCovered==18&&F.CurrentJob()->MarkStart<=9.3&&F.CurrentJob()->MarkEnd>=12.6,TEXT("actual original playback covers eighteen seconds and physical keys retain measured marks")))return;
   if(!Check(F.Clock()>ClockBefore&&!M->ModalOpen(),TEXT("world time advances throughout physical listening")))return;
-  // GAMEPLAY-LOOP-01: the one listen has confirmed it; with no control on this take its key plays nothing
-  if(!Check(F.CurrentJob()->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.CurrentJob()->ControlCovered==0,TEXT("one listen to the original confirms the anomaly by itself")))return;
+  // RX-ANOMALY-FLOW-20261113: the listen leaves RETAIN to the operator; the reference is on its own key
+  if(!Check(!F.CurrentJob()->bAudioReviewed&&FS47FreeformSession::TapeHeard(*F.CurrentJob())&&F.CurrentJob()->ControlCovered==0,TEXT("one listen to the original leaves RETAIN to the operator")))return;
   F.AudioDesk->Use(TEXT("ff:audio:control"));
-  if(!Check(F.AudioSource()==0&&!F.AudioPlaying(),TEXT("physical CONTROL key selects nothing on a take with no control")))return;
+  if(!Check(F.AudioSource()==1&&!F.AudioPlaying(),TEXT("physical CONTROL key loads the take's 8-second reference")))return;
+  F.AudioDesk->Use(TEXT("ff:audio:original"));
   F.AudioDesk->Use(TEXT("ff:audio:retain"));
   if(!Check(F.CurrentJob()->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&!M->ModalOpen()&&F.Budget()==CashBefore-3,TEXT("physical RETAIN keeps the heard take without modal or payment")))return;
   const FVector P=F.AudioDesk->InteractionPoint(TEXT("ff:audio:retain"));AimAt(P+FVector(0,.17,0));Go(29);return;

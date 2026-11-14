@@ -84,6 +84,8 @@ public:
 	TSharedPtr<FJsonObject> GraphicsReadback() const;
 	float ExteriorDaylightMask(int32 Set, int32 Slot) const;
 	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f, float Twilight = 0.f); void SetMoonLight(float K) { SkyMoon = FMath::Clamp(K, .2f, 2.5f); }
+	/** MOON-20261108: the moon's light on the land now, as SetMoonLight was last given it (1 a half moon; the night as tuned off Freeform). */
+	float MoonLightNow() const { return SkyMoon; }
 	/** Rendering only: where the sun is under the horizon at dusk (west) or dawn (east), in degrees, for the colour and direction of the twilight. */
 	void SetTwilightSun(bool bWest, float DepthDeg) { bTwilightWest = bWest; TwilightDepth = DepthDeg; }
 	// View-based finale negative fill, not a physical cloud-shadow footprint. Native ground lights only.
@@ -236,6 +238,11 @@ public:
 	// Validated 0.35m relocation into the native Operations passing bay. False is read-only verification.
 	bool RecessSaroVending(bool bApply);
 	bool RehouseSaroCorridorLights(bool bApply);
+	// RECORDS-ROOM-LIFT-20261113: the records room's two tubes in the hung ceiling's troffers (S47RecordsRoom.cpp gives the ceiling).
+	// The exported nodes and flood slots keep power, dimming, flicker and the wall switch. False is read-only verification.
+	bool RehouseSaroRecordsLights(class UStaticMeshComponent* Ceiling, bool bApply);
+	// The records room's desk lamp (annex slot 5) as the banker's lamp's bulb at this Unreal point, shining down; its light, or nullptr.
+	class URectLightComponent* RehouseSaroRecordsLamp(const FVector& AtUE, bool bApply);
 
 	// ---------- interactable things ----------
 	const TArray<FS47WebItem>& Items() const { return ItemList; }
@@ -463,7 +470,7 @@ private:
 		FS47TubeFlicker Flicker; // fluorescent strike / die-off on switching (not desk lamps)
 		// PLAY-31-34: a control room tube seen breaking for good sputters (FS47TubeFlicker::BreakLevel) from BrokeAt;
 		// the first update only notes the state, so a load or a change of area shows broken tubes already dark.
-		bool bBreakSeen = false, bBroken = false; double BrokeAt = -100.0;
+		bool bBreakSeen = false, bBroken = false, bWorn = false; double BrokeAt = -100.0; // bWorn: PLAY-31-34 (14 Nov), burned out of age: one spark
 		FLinearColor Color = FLinearColor::White;
 		TWeakObjectPtr<URectLightComponent> Light;
 		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;

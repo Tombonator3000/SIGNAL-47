@@ -18,6 +18,14 @@ namespace S47PredecessorText
  const FDocDef* Doc(const FString& Id);
  const TArray<FTagDef>& Tags();
  const TArray<FCaseNote>& CaseNotes();
+ // T16-17 (→ M3/M7, "the Reyes trail ends in a letter"): Reyes's own pocket notebook, the pages left at places Reyes kept going back
+ // to, one leading to the next through the month (S47PredecessorBook.cpp). Doc: its paper in Docs(). Where: the place (FS47Places) whose
+ // panel has it, "binder" (April's binder in the records room) or "post" (by post, through Ward's office). After: the paper that has
+ // to be read first (null: none). FromDay: the first day of the game it can be found, counted from the day the trail opens. Find:
+ // what the place shows while it is there; Take: the button. The trail ends with the deputy (his talk "book"), never with what happened.
+ struct FBookStep{const TCHAR* Doc;const TCHAR* Where;const TCHAR* After;int32 FromDay;const TCHAR* Find;const TCHAR* Take;};
+ const TArray<FBookStep>& Book();
+ const FBookStep* BookStep(const FString& Doc);
  const TArray<FPerson>& People();
  // What Dale says over the walkie, unasked. Each once, at most one a day. Needs as for a topic; empty: from the day given.
  struct FBark{const TCHAR* Id;const TCHAR* Needs;int32 FromDay;const TCHAR* Line;};
@@ -45,11 +53,18 @@ namespace S47PredecessorText
  // One sentence of hers per thing the assessment reads besides the numbers on the sheet, no figures but money: the night sheets,
  // the tapes, the weekly reports, the photographs, a filing with nothing behind it, and the limit of the carried line.
  FString Levers(bool bLogsCount,bool bTapesCount,int32 TrustPoints,bool bPhotosCount,int32 Guessed,int32 Arrears,int32 Cap);
+ // EVIDENCE-DOSSIER-20261113: her one line on the operator's files of the unknown, from the first that reaches MARKS (Files: how many
+ // have; 0: nothing said). What she reads is that they are kept apart, never what any of them is. It follows Levers (a leading space).
+ FString Apart(int32 Files);
+ // EVIDENCE-DOSSIER slice 3: her line on the files filed, each to itself (Kinds: FS47Dossier::KindsFiled), when they count for a point
+ // (two and more); empty below. That the archive work counts, never what any of it is. A leading space.
+ FString Archived(int32 Kinds);
  // The Monday sheet after KEPT OPEN: shorter, and nothing to win.
  FString KeptNote(int32 Week,int32 Filed,int32 Dishes,int32 Arrears,const FString& FiscalEnd,int32 Taken,const FString& Levers);
  // What the Stays letter says of what was found (M7): wagon 23, the deputy's file, the routed pay, Ortiz's thermos sent on. Only the
  // outside; empty if none.
- FString Followed(bool bWagon,bool bDeputy,bool bPayReturned,bool bThermos=false);
+ // bBook: Reyes's notebook given to the deputy (T16-17).
+ FString Followed(bool bWagon,bool bDeputy,bool bPayReturned,bool bThermos=false,bool bBook=false);
  FString Stays(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,bool bKnowsMuch,const FString& FoundOut=FString());
  // Day 22: the county's inspector writes ahead of the assessment, about the one thing he will look at first.
  // Weakest: 0 cases, 1 the array, 2 the work, 3 the carried line, 4 readable records, 5 nothing he can find.
@@ -58,8 +73,11 @@ namespace S47PredecessorText
  FString WhatYouKnow();
  FString ClosedOriginals(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,int32 Originals,int32 Photos,const FString& CloseOn);
  FString ClosedNothing(const FString& Dated,int32 Filed,int32 Concluded,int32 Dishes,int32 Arrears,const FString& CloseOn);
- // After the second stretch of lost time: one more, and somebody else has the nights.
+ // After the second stretch of lost time: one more, and somebody else has the nights. LOOP-GONE-LEGIBLE-20261113 (→ M7): and after the
+ // first (Taken 1, the letter "ward-hours"): once, and what three times would do. HoursSaid: the same in one line of hers, for the phone
+ // and the notebook's DR. WARD box (Taken 1 or 2; empty otherwise, so nothing is said after the third).
  FString TakenWarning(const FString& Dated,int32 Taken);
+ FString HoursSaid(int32 Taken);
  // The morning the closing order takes effect.
  FString ClosedNow(const FString& Dated);
  FString NextOperator(const FString& Dated,const FString& YourLast,int32 Originals,int32 Photos,int32 Filed);

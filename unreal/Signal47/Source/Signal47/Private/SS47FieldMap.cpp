@@ -634,18 +634,19 @@ void S47FieldMap::GatherJobs(US47Main* M, FS47MapView& V)
 	}
 	// Observing work waiting at OPS, and Ward's paper in the tray.
 	{
-		int32 Waiting = 0;
-		for (const auto& J : Fs.Jobs()) Waiting += J.Stage != FS47FreeformSession::EJobStage::Filed && !J.bDuplicateRejected && J.CaseTest < 0 && !Fs.EveningGated(J) ? 1 : 0;
+		// TASKS-TEN-20261113 (change 4): the cards up now, as the HUD and the note count them (CardsUp)
+		const int32 Waiting = Fs.CardsUp();
 		FString Ops;
-		if (Waiting > 0) Ops = FString::Printf(TEXT("OPS: %d %s to do"), Waiting, Waiting == 1 ? TEXT("job") : TEXT("jobs"));
+		if (Waiting > 0) Ops = FString::Printf(TEXT("OPS: %d job %s up"), Waiting, Waiting == 1 ? TEXT("card") : TEXT("cards"));
 		if (Fs.Predecessor && !Fs.Predecessor->TaskLine().IsEmpty() && Fs.Predecessor->TaskLine().Contains(TEXT("tray"))) Ops += Ops.IsEmpty() ? FString(TEXT("OPS: letter in the tray")) : FString(TEXT(", letter in the tray"));
 		if (!Ops.IsEmpty()) Write(TEXT("ops"), TEXT("saro"), 0, 0, Ops);
 	}
 	// The mailbox's flag.
-	if (Fs.Mail && Fs.Mail->MailIn())
+	// TASKS-TEN-20261113 (change 3): and the post going out, its flag up for the carrier (no longer a row on tonight's list)
+	if (Fs.Mail && (Fs.Mail->MailIn() || Fs.Mail->TaskLine().EndsWith(TEXT("the flag up for the carrier."))))
 	{
 		FString Area; double X = 0, Z = 0;
-		if (Fs.Mail->WorldSpot(Area, X, Z)) Write(TEXT("mail"), Area, X, Z, TEXT("mail in the box"));
+		if (Fs.Mail->WorldSpot(Area, X, Z)) Write(TEXT("mail"), Area, X, Z, Fs.Mail->MailIn() ? TEXT("mail in the box") : TEXT("mailbox: flag up for the carrier"));
 	}
 	// D48-20261110 (Tom, D46-24: told to leave the trip camera where the last record was kept, and the sheet did not say where): the
 	// place to set it out while the land test is planned, then where it stands, until it is collected.
@@ -716,6 +717,23 @@ TArray<S47FieldMap::FSlipCircle> S47FieldMap::SlipCircles(const FS47MapView& V)
 	return Found;
 }
 
+// LOOP-DOSSIER-GIVES-20261113: a file's first logged place in the view's marks: Kind, the title, the point.
+void S47FieldMap::AddFirstLogged(FS47MapView& V, const FFirstLogged& Logged)
+{
+	if (!FMath::IsFinite(Logged.X) || !FMath::IsFinite(Logged.Z) || Logged.Label.IsEmpty()) return;
+	FS47MapMark Mk; Mk.Kind = TEXT("first_logged"); Mk.Line = Logged.Label;
+	FS47MapAt At; At.Spot = Logged.Label; At.T = Logged.X; At.M = Logged.Z; Mk.At = At;
+	V.Marks.Add(Mk);
+}
+
+TArray<S47FieldMap::FFirstLogged> S47FieldMap::FirstLogged(const FS47MapView& V)
+{
+	TArray<FFirstLogged> Found;
+	for (const FS47MapMark& Mk : V.Marks)
+		if (Mk.Kind == TEXT("first_logged") && Mk.At.IsSet()) { FFirstLogged Logged; Logged.X = Mk.At->T; Logged.Z = Mk.At->M; Logged.Label = Mk.Line; Found.Add(Logged); }
+	return Found;
+}
+
 double S47FieldMap::RimReach(const FVector2D& O, double Deg)
 {
 	// D45-20261110: a slab clip on the rim's box, z running south; a ray from outside it gets nothing.
@@ -783,6 +801,12 @@ TArray<FString> S47FieldMap::Description(const FS47MapView& V)
 	if (Fixes.Num()) Said.Add(TEXT("Bearings from SARO: ") + FString::Join(Fixes, TEXT("; ")) + TEXT("."));
 	// D45-20261110: each slip's circle said where it is, and whether it has been looked at
 	for (const FSlipCircle& Cc : SlipCircles(V)) Said.Add(FString::Printf(TEXT("A pencilled circle %s (%s), %s."), *Cc.Where, *Cc.Label, Cc.bChecked ? TEXT("looked at") : TEXT("not looked at yet")));
+	// LOOP-DOSSIER-GIVES-20261113: where each file of the unknown was first logged
+	{
+		TArray<FString> Files;
+		for (const FFirstLogged& Logged : FirstLogged(V)) Files.Add(Logged.Label);
+		if (Files.Num()) Said.Add(TEXT("Pencilled where each was first logged: ") + FString::Join(Files, TEXT(", ")) + TEXT("."));
+	}
 	if (FromTruck.Num()) Said.Add(TEXT("Bearings from the truck: ") + FString::Join(FromTruck, TEXT(", ")) + TEXT("."));
 	if (V.Crossings.Num()) Said.Add(FString::Printf(TEXT("%d place%s where two bearings cross, ringed."), V.Crossings.Num(), V.Crossings.Num() == 1 ? TEXT("") : TEXT("s")));
 	TArray<FString> Work;
@@ -1474,6 +1498,16 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 		const FVector2f Size = Pen.Text(Pin.Label, Ctr + FVector2f(Pin.bInSector ? 19.f : 13.f, 2), Pencil(24), Lead, LPencilWords, 0.f, .5f, true);
 		if (!Pin.bHeard) { const float By = Pin.bInSector ? 6.f : 0.f; Pen.Lines({ Ctr + FVector2f(12 + By, 3), Ctr + FVector2f(14 + By + Size.X, 1) }, Lead, 1.6f, LPencilWords + 2); }
 	}
+	// LOOP-DOSSIER-GIVES-20261113 (→ M3): where each file of the unknown was first logged, a small pencilled diamond and its title beside it,
+	// so that the sheet shows over the month where each one has been. Never struck: it is not work to be done.
+	for (const S47FieldMap::FFirstLogged& Logged : S47FieldMap::FirstLogged(View))
+	{
+		if (!Visible(Logged.X, Logged.Z, 40)) continue;
+		const FVector2f Ctr = OnPage(Logged.X, Logged.Z);
+		Pen.Lines({ Ctr + FVector2f(0, -7), Ctr + FVector2f(7, 0), Ctr + FVector2f(0, 7), Ctr + FVector2f(-7, 0), Ctr + FVector2f(0, -7) }, Lead, 1.7f, LPencil);
+		if (Sc < .15) continue;
+		Pen.Text(Logged.Label, Ctr + FVector2f(11, -9), Pencil(22), Lead, LPencilWords, 0.f, .5f, true);
+	}
 	// The work the player has now, written in ink by its place, with a line to it: where the words fit, clear of each other.
 	{
 		const FLinearColor Blue = Hue(0x24407f, .95f);
@@ -1671,19 +1705,23 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 			Y += 22;
 			for (const TCHAR* Line : { TEXT("Topography by photogrammetric methods from aerial"), TEXT("photographs taken 1977. Field checked 1979.") }) { Pen.Text(Line, FVector2f(Px, Y), Small(11), Ink(), LMargin, 0.f, .5f); Y += 15; }
 		}
-		// The night desk's stamp, in the same purple, a little crooked; and a ring where a cup stood on the sheet.
+		// The night desk's stamp, in the same purple, a little crooked (D69-20261113: only while it is true, DeskStampShows); and a ring
+		// where a cup stood on the sheet.
 		{
 			const FVector2f StampAt(Px + 150, 668);
-			// Its frame, turned with it: two rules round the words.
-			const float Tw = FMath::DegreesToRadians(-4.f);
-			const FVector2f Ux(FMath::Cos(Tw), FMath::Sin(Tw)), Uy(-FMath::Sin(Tw), FMath::Cos(Tw));
-			for (const float Grow : { 0.f, 4.f })
+			if (View.bDeskStamp)
 			{
-				const float Hw = 125 + Grow, Hh = 33 + Grow;
-				Pen.Lines({ StampAt - Ux * Hw - Uy * Hh, StampAt + Ux * Hw - Uy * Hh, StampAt + Ux * Hw + Uy * Hh, StampAt - Ux * Hw + Uy * Hh, StampAt - Ux * Hw - Uy * Hh }, Revised(.65f), Grow > 0 ? 2.2f : 1.2f, LMargin);
+				// Its frame, turned with it: two rules round the words.
+				const float Tw = FMath::DegreesToRadians(-4.f);
+				const FVector2f Ux(FMath::Cos(Tw), FMath::Sin(Tw)), Uy(-FMath::Sin(Tw), FMath::Cos(Tw));
+				for (const float Grow : { 0.f, 4.f })
+				{
+					const float Hw = 125 + Grow, Hh = 33 + Grow;
+					Pen.Lines({ StampAt - Ux * Hw - Uy * Hh, StampAt + Ux * Hw - Uy * Hh, StampAt + Ux * Hw + Uy * Hh, StampAt - Ux * Hw + Uy * Hh, StampAt - Ux * Hw - Uy * Hh }, Revised(.65f), Grow > 0 ? 2.2f : 1.2f, LMargin);
+				}
+				Pen.Text(TEXT("S A R O  /  N I G H T   D E S K"), StampAt - FVector2f(0, 12), Printed(16), Revised(.75f), LMargin, .5f, .5f, false, -4.f);
+				Pen.Text(TEXT("NOT TO LEAVE THE BUILDING"), StampAt + FVector2f(0, 13), Printed(13), Revised(.7f), LMargin, .5f, .5f, false, -4.f);
 			}
-			Pen.Text(TEXT("S A R O  /  N I G H T   D E S K"), StampAt - FVector2f(0, 12), Printed(16), Revised(.75f), LMargin, .5f, .5f, false, -4.f);
-			Pen.Text(TEXT("NOT TO LEAVE THE BUILDING"), StampAt + FVector2f(0, 13), Printed(13), Revised(.7f), LMargin, .5f, .5f, false, -4.f);
 			const FVector2f Cup(Px + 236, 548);
 			for (int32 Ring = 0; Ring < 3; ++Ring)
 			{
@@ -1715,11 +1753,18 @@ int32 SS47FieldMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FS
 	return LMargin + 4;
 }
 
+bool S47FieldMap::DeskStampShows(bool bFirstShift, bool bSlipLive, bool bDaleOut)
+{
+	return bFirstShift && !bSlipLive && !bDaleOut;
+}
 bool S47FieldMap::SelfTest(TArray<FString>& Lines)
 {
 	using namespace S47FieldMapLocal;
 	bool bAll = true;
 	const auto Check = [&](bool bOk, const FString& What) { bAll &= bOk; Lines.Add(FString(bOk ? TEXT("PASS ") : TEXT("FAIL ")) + TEXT("survey map: ") + What); };
+	// D69-20261113: the desk's stamp only while the sheet is the desk's: never beside a bearing to drive to, Dale's "get outside", or free time
+	Check(DeskStampShows(true, false, false) && !DeskStampShows(true, true, false) && !DeskStampShows(true, false, true) && !DeskStampShows(false, false, false),
+		TEXT("the NIGHT DESK / NOT TO LEAVE THE BUILDING stamp shows on the first shift only, and never while a live slip or Dale's ask to go out says go (D69)"));
 	// Every area's terms come to the same road-local point, and the heading with them (STATION 01's are turned a quarter round).
 	{
 		bool bSame = true, bHeading = true;

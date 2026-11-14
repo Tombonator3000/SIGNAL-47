@@ -4,6 +4,7 @@
 #include "S47EveningPack.h"
 class US47Main;
 class FS47DaleVoice;
+class FS47RecordedDialogue;
 
 // STORY-ON-FREEFORM-01, step 5 (Docs/Design/Story/STORY_PA_FREEFORM_2026-11-11.md): the story's scene beat. A story script's
 // {"do":"scene","scene":"D01_HANDOVER"} plays one scene of the authored EveningShift pack (FS47EveningPack, Narrative/EveningShift) on a
@@ -21,6 +22,12 @@ class FS47DaleVoice;
 // no panel is up, no panel of its own; out of the truck the rest plays on unheard and the scene is over (its effects hold). A physical
 // scene (the diner's counter, I02..I09) ends where it stands when the player drives off (FS47EveningPack::Abandon); its flags so far
 // and scene_<id> become story flags as usual.
+//
+// STORY-DRIVE-OWN-CAR-20261113 (Tom 13 Nov: the radio on the drive was heard before): on a Story night's drive in the wagon
+// (FS47StoryDrive) the radio scene is voiced again as the old drive had it (FS47Evening::RadioStep): each line from its recorded take
+// on the radio bus (channel car-radio) when character voices are on, the line as a subtitle from the moment the voice speaks; with
+// character voices off, or no take, the subtitle alone for the take's length (or a reading time). The radio turned off holds the line
+// (it starts again when the radio is back on); the host waits for the Intro Drive (FS47StoryDrive::HostMayTalk).
 //
 // Dale is heard with Freeform's own voice (FS47DaleVoice, the "dale" bank = dale_de_design, never a clone); a line with no take is text.
 // Everyone else is text. The save is {pack:<FS47EveningPack::Save>, ring:bool}; an active scene is taken up again (a phone scene rings).
@@ -65,6 +72,11 @@ private:
  bool bReady=false,bRing=false,bOpen=false,bWantOpen=false;
  double ReopenIn=0;
  double RadioHold=0;   // seconds the car radio's current caption has left
+ TSharedPtr<FS47RecordedDialogue> RadioVoice; // STORY-DRIVE-OWN-CAR-20261113: the host's takes on the wagon's radio
+ bool bRadioRecorded=false,bRadioCaption=false;
+ double RadioStartedAt=0;
+ TSharedPtr<bool> RadioCaptionAlive;
+ void StopRadioVoice();
  int8 TestCab=-1;      // the self-test's "in the truck" (1 or 0) in place of US47World::bDriving; -1: the world's
  bool InCab() const;
  void RadioStep(double Dt);

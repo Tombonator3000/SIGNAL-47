@@ -41,8 +41,18 @@ public:
  // The warning has no body yet: what a radio breaks up on is the place itself.
  TOptional<FVector> VisitWarningAt() const{return Visit==1?TOptional<FVector>(Middle+FVector(0,1,0)):TOptional<FVector>();}
  // Test: a visit now, past the dice. The player counts as noticed whatever they do, for the tests of what happens if it reaches them.
- void TestVisit(int32 Who=0){Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;bTestNoticed=true;}
+ void TestVisit(int32 Who=0){Visit=1;VisitAge=0;VisitUntil=0;bVisitSeen=false;bVisitTaken=false;VisitWho=Who;bTestNoticed=true;}
  int32 VisitKind() const{return VisitWho;}
+ // EVIDENCE-DOSSIER slice 2 (14 November): who came to these marks, when a visit's body was out at them (0 the small ones, 1 the
+ // crab, 2 the tall one; -1 nobody known, or marks laid since). The counter over them reads by it (S47Dossier::GeigerFactor), and by
+ // daylight its prints are among them (PrintsText). Saved with the marks ("marksBy", "marksByNight").
+ int32 MarksBy() const;
+ int32 MarksByNight() const{return MarksWhoNight;}
+ static FString PrintsText(int32 Who); // one sentence, a leading space; empty for nobody
+ // EVIDENCE-DOSSIER slice 3 (REVIEW 14 Nov): the lamp raised this frame (off the frame before, on now); Was is the lamp as it was, and
+ // is taken every frame (Step, before anything returns early), so that a lamp raised a while ago never reads as raised now.
+ static bool LampRaised(bool bOnNow,bool& bWas){const bool bUp=bOnNow&&!bWas;bWas=bOnNow;return bUp;}
+ bool BodyOut() const{return bBodyOut;}
  // Marks that will still be there at this clock, with a visit still to come.
  bool WillStandAt(double Clock) const{return (Visit==0||bFalseCall)&&ClearAt>Clock&&Clock>=CalmUntil;}
  // The second report, on the set if the player has it. False: no marks to report.
@@ -58,6 +68,12 @@ public:
  void TestRollWho(float Roll){TestRoll=Roll;}
  // No body before about two in the morning (Tom, 28 October: the evening is a normal job). Lights and sounds may.
  static bool TheirHours(double Clock);
+ // VISIT-DAWN-20261113 (play39 m1tour2: a field visit begun at 03:52 on night 9 held the ground through the day and took the
+ // player at 20:19 on day 10, so the big night planned for night 10 was slept through): a visit is over by the clock it began
+ // on, whatever its own real-second patience says: by the next six in the morning (FS47NightRhythm::EndHour), and never more
+ // than MaxVisitHours of the night's own time. A take already lifting or away runs on to its end; one not yet begun lets go.
+ static constexpr double MaxVisitHours=3;
+ static double VisitDeadline(double StartClock);
  // Who comes: 0 Roswell, 1 crab, 2 tall. The open pasture is where the crab comes; town is mostly the small ones;
  // the tall one keeps to the last of the night. Roll is 0 to 1.
  static int32 PickWho(const FString& InPlace,double Hour,float Roll);
@@ -156,6 +172,7 @@ private:
  // A visit: 0 may come, 1 the warning, 2 it sneaks toward the player, 3 it hunts, 4 over for this site.
  int32 Visit=4;
  double VisitAge=0,VisitDwell=0;
+ double VisitUntil=0; // VISIT-DAWN-20261113: the clock this visit is over by; 0 until its first step (not saved: a saved visit is over on Continue)
  bool bVisitSeen=false,bVisitTaken=false;
  int32 VisitRounds=0;
  double CalmUntil=0;
@@ -212,6 +229,11 @@ private:
  double LureRingFrom=0,LureNoiseIn=0,LureCoughIn=-1,FrostDriven=0;
  bool bLureLamp=false,bLureHeld=false;
  FS47Truck* FrostTruck=nullptr;
+ // Critic 12 Nov: the truck whose lamps the lure dimmed, so that they come back on it when the player gets in or the engine dies
+ // (IdleTruckNow is null then). Live: the kept truck while it is still one of the world's (US47World::OwnsTruck), else null.
+ FS47Truck* LureLampTruck=nullptr;
+ FS47Truck* LiveTruck(FS47Truck* T) const;
+ void RestoreLureLamp();
  void StepLure(double Dt);
  void EndLure();
  void StepFrost(double Dt);
@@ -224,12 +246,19 @@ private:
  double VisitHunt=0,VisitPatience=120,RadioIn=-1;
  FVector AttentionFeet=FVector::ZeroVector;
  bool bAttentionFeet=false,bWasDriving=false,bWasRunning=false,bTestHoldHunt=false,bTestNoticed=false,bSawTurn=false,bSawSetTurn=false;
+ bool bHabitLampWas=false,bHabitLampUp=false; // EVIDENCE-DOSSIER slice 3: the lamp as it was, and raised this frame (LampRaised, every frame)
  int32 RadioSeen=0;
  bool PutBody(const FVector& Near);
  void StepBody(double Dt,double Speed);
  void HideBody();
  void SayNudge();
  int32 BodyKind=0; // the kind whose body is out now, whatever VisitWho says
+ // EVIDENCE-DOSSIER slice 2: who came to the marks and the night; the animals before a visit, by who comes (FS47AnimalWarn::ForVisit),
+ // whether they went, and the dogs' quiet a moment after their barks.
+ int32 MarksWho=-1,MarksWhoNight=0,AnimalsWho=-1;
+ bool bAnimalsWent=false,bAnimalsTagged=false,bDogsHushed=true;
+ void WarnAnimals();
+ void StepAnimals(bool bAway);
  void StepVisit(double Dt,double Dist);
  void StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn);
  void LetAttentionGo();

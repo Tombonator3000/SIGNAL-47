@@ -3,6 +3,7 @@
 
 class US47Main;
 class FS47DevEvents;
+class FS47DevWaves;
 class FS47FreeformSession;
 class SWidget;
 struct FS47PlaceNeed;
@@ -32,6 +33,8 @@ public:
  double SpeedNow() const{return SpeedUsed;}
  // The text of the panel on the screen.
  FString PanelText() const;
+ // DEV TOY (Tom, 13 November): the F10 wave shooter at SARO (S47DevWaves.h). Its lines, its step and its stop go through here.
+ TSharedPtr<FS47DevWaves> Waves;
 private:
  US47Main* M=nullptr;
  FS47DevEvents* Menu=nullptr;
@@ -104,11 +107,14 @@ private:
  void AddFarmGate(FS47DevEvents& E);
  // DREAD-20261110: "Dread sound (T)": the bought ground and each hit by itself, to set their levels by ear (S47DreadDev.cpp).
  void AddDread(FS47DevEvents& E);
+ // SIDEBAND-20261113: "Sideband (music)": each band at a value, a flare of each tier, the 80 s night scene, the bus as a WAVE file (S47SidebandDev.cpp).
+ void AddSideband(FS47DevEvents& E);
  // TV-CHANNEL-20261110: "Television (T)": the sign-off at any hour, something on the air near the sets, Dale's switch (S47TvDev.cpp).
  void AddTv(FS47DevEvents& E);
  // WEEKLY-CASE-20261109: "Week case (T)": start now, way out A to the morning, stop and clean (S47WeekCaseDev.cpp).
  void AddWeekCase(FS47DevEvents& E);
  void AddTownDay(FS47DevEvents& E); // NPC-DAY: "Town day (T)" (S47TownDayDev.cpp)
+ void AddDossier(FS47DevEvents& E); // EVIDENCE-DOSSIER-20261113: "Evidence dossier (M3)": sample evidence for three files (S47DossierDev.cpp)
  // Every event at a place from the list (S47EventPlaces), the one chosen on the menu or the draw's own (Tom, 8 November).
  void AddAnywhere(FS47DevEvents& E);
  void ToPlace(const FString& Id,double Off,double From,double To,TFunction<void()> Then);

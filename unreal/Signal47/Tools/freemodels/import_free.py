@@ -111,6 +111,26 @@ def tris_of(sm):
 		return -1
 
 
+def trim_uses(folder):
+	"""The packages of the model's own folder, outside <folder>/Trim, that the kept trim meshes use (their materials, and those
+	materials' textures), followed through the asset registry: they stay when the rest of the folder is deleted, or the kept
+	trim meshes would point at nothing (PACKAGE-GAS-TRIM-20261114 review)."""
+	ar = unreal.AssetRegistryHelpers.get_asset_registry()
+	opts = unreal.AssetRegistryDependencyOptions()
+	todo = [p.split('.')[0] for p in eal.list_assets(folder + '/Trim', recursive=True, include_folder=False)]
+	seen, keep = set(todo), set()
+	while todo:
+		for dep in ar.get_dependencies(todo.pop(), opts) or []:
+			d = str(dep)
+			if d in seen or not d.startswith(folder + '/'):
+				continue
+			seen.add(d)
+			if not d.startswith(folder + '/Trim/'):
+				keep.add(d)
+			todo.append(d)
+	return keep
+
+
 plan = json.load(open(os.path.join(WORK, 'plan.json')))
 manifest_path = os.path.join(CONTENT, 'Free', 'free_models.json')
 old = {}
@@ -130,9 +150,28 @@ for entry in plan:
 		log('FAIL %s: %s' % (name, entry['error']))
 		continue
 	folder = '%s/%s/%s' % (ROOT, entry['category'], name)
-	# afresh: a model's assets are its own folder's
+	# afresh: a model's assets are its own folder's. S47_FREE_KEEP_TRIM=1 keeps the trim (its manifest entry above) and so
+	# its meshes under <folder>/Trim: deleting the whole folder took them and left the entry pointing at nothing
+	# (PACKAGE-GAS-TRIM-20261114: the gas station's 11 trim meshes, 13 November, asked for in vain in every package since)
+	keep_trim = os.environ.get('S47_FREE_KEEP_TRIM') == '1' and name in trims and not entry.get('trim')
 	if eal.does_directory_exist(folder):
-		eal.delete_directory(folder)
+		if keep_trim:
+			# what the kept trim meshes use outside Trim/ (materials, textures) stays too; the import below imports over it
+			uses = trim_uses(folder)
+			for path in eal.list_assets(folder, recursive=True, include_folder=False):
+				if not path.startswith(folder + '/Trim/') and path.split('.')[0] not in uses:
+					eal.delete_asset(path)
+			if uses:
+				log('KEEP %s: %d assets outside Trim/ that the kept trim meshes use: %s' % (name, len(uses), ', '.join(sorted(uses))))
+		else:
+			eal.delete_directory(folder)
+	if keep_trim:
+		gone = [g for g, r in trims[name]['meshes'].items() if r.get('asset') and not eal.does_asset_exist(r['asset'].split('.')[0])]
+		if gone:
+			# the trim is kept for its hidden rows (they need no mesh, and hide an old part with its collision even when the town
+			# patches are rejected); its cut rows whose meshes are not here are loaded only if present (AS47Props::ApplyTrim), and
+			# S47CookCoverage fails unless a composed town patch takes their part out
+			log('WARN %s: S47_FREE_KEEP_TRIM, but %d trim meshes are not here (%s): their rows stay, cut them again (trim_web.py)' % (name, len(gone), ', '.join(sorted(gone))))
 	for part in entry['parts']:
 		try:
 			paths = import_part(part['gltf'], folder, part['asset'])

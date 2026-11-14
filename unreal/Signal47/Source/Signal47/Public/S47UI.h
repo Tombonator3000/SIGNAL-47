@@ -39,7 +39,8 @@ struct FS47PauseOpts
 {
 	TFunction<void()> OnResume, OnTitle;
 	float Volume = 0.8f, Sens = 1.f, Music = 0.7f, Radio = 1.f;
-	TFunction<void(float)> OnVolume, OnSens, OnMusic, OnRadio;
+	FString NowPlaying; // MUSIC-20261113 (Tom: which piece is that?): "Floating Cities (Kevin MacLeod)", said under the Music slider's help; empty: none
+	TFunction<void(float)> OnVolume, OnSens, OnMusic, OnRadio; FString MusicReacts = TEXT("on"), Stingers = TEXT("full"); TFunction<void(const FString&)> OnMusicReacts, OnStingers; // SIDEBAND-20261113: on | soft | off, and full | soft | off
 	bool bCharacters = true, bSerling = true, bArtBell = true, bRadioCast = true;
 	TFunction<void(bool)> OnCharacters, OnSerling, OnArtBell, OnRadioCast;
 	TFunction<void()> OnSave, OnLoad;     // unset: not offered
@@ -99,13 +100,14 @@ struct FS47MapView
 	// Freeform: the survey sheet instead of the sketch. Where the player is and which way they face (degrees from north,
 	// clockwise), and where the truck stands, all road-local, whatever area each is in (S47FieldMap::Me).
 	bool bField = false, bMe = false, bTruck = false, bDriving = false;
+	bool bDeskStamp = false; // D69-20261113: the night desk's "not to leave the building" stamp is on the sheet (S47FieldMap::DeskStampShows)
 	double MeX = 0, MeZ = 0, MeHeading = 0, TruckX = 0, TruckZ = 0, TruckHeading = 0;
 	FString MeArea;
 	TArray<FS47MapNote> Notes;
 	TArray<FS47MapJob> Jobs;
 };
 struct FS47KitItem { FString Name, Note, State, Art, Tag; }; // Art: a kit drawing (ui/kitArt.ts), empty for none
-struct FS47PersonCard { FString Name, Role, Note, Portrait; }; struct FS47NbScribble { FString Side, Box, Role, Text, Follow, FollowText; bool bStruck = false; }; // Portrait: a picture's art name, empty while there is none. MARGINALIA-20261109: a scribble in WHO & WHAT (S47Marginalia): Side "people" or "them", the box it is in, the line, where it points (Follow "map" or "board"), struck when proved wrong
+struct FS47PersonCard { FString Name, Role, Note, Portrait; }; struct FS47NbScribble { FString Side, Box, Role, Text, Follow, FollowText; bool bStruck = false; }; struct FS47NbUnknown { FString Title, Stage, Next, Gave; struct FBox { FString Label, How, Note; bool bFilled = false; TArray<FString> Struck; }; TArray<FBox> Boxes; FString Name, Merged; int32 StageN = 0, Build = 0, Prints = 0; TArray<int32> Hours; bool bFiled = false; }; struct FS47NbUnknownPair { FString Left, Right, Said; TArray<FString> Labels; TArray<bool> LeftFilled, RightFilled; TArray<int32> Marks; }; // EVIDENCE-DOSSIER-20261113: a file of the unknown on THEM (S47Dossier::FFile). Slice 3: the player's Name (empty: none), what is filed in it as one (Merged, one line), FILED, and the pencil sketches: StageN (1 OUTLINE to 3 HABITS), Build (S47Dossier::ESketch), Prints (S47Dossier::PrintsOf), Hours (the clock face): "UNKNOWN 2", its stage, how it is kept from here, six boxes. LOOP-DOSSIER-GIVES-20261113: Gave, what reaching the stage gave, one line under it. Portrait: a picture's art name, empty while there is none. MARGINALIA-20261109: a scribble in WHO & WHAT (S47Marginalia): Side "people" or "them", the box it is in, the line, where it points (Follow "map" or "board"), struck when proved wrong
 // the album as the notebook shows it (core/album.ts AlbumView): the roll, and each free print as far
 // as it has come up (Dev, 0..1); Look is told each time a print is opened big
 struct FS47AlbumView
@@ -133,6 +135,7 @@ struct FS47NbExtras
 	TFunction<int32(const FString&)> HintLevel, RevealHint;
 	TFunction<bool(const FString&)> EntryRead;
 	TFunction<void(const FString&)> MarkRead, OnFollow;
+	TFunction<void(const FString&, const FString&)> OnPin; // TASKS-TEN-20261113 (change 10): NOW's row pinned (its key, its words)
 	TOptional<FS47MapView> Map;          // drawn by the notebook (areaMap)
 	// Freeform's sheet: a pencil mark put down or rubbed out at road-local x and z, or rubbed out within so many metres of one there; the marks after.
 	TFunction<TArray<FS47MapNote>(double, double, double)> OnMapNote;
@@ -141,7 +144,7 @@ struct FS47NbExtras
 	TOptional<TArray<FS47KitItem>> Kit;
 	TOptional<TArray<FS47PersonCard>> People;
 	bool bTouch = false;                 // a phone: its controls first
-	TOptional<FS47AlbumView> Album;      /* the free frames (core/album.ts) */ bool bNow = false; TArray<FS47NbNowLine> Now; FString NowClock; TArray<FString> Goals; TOptional<TArray<FS47Doc>> Papers; TArray<FS47NbScribble> Scribbles; bool bEvents = false; TArray<FS47NbEvent> Events; TArray<FString> EventKinds, EventPhrases; FString EventNow, EventPlace; TFunction<bool(int32, int32)> OnLogEvent; TFunction<TArray<FS47NbEvent>()> GetEvents; // D48-20261110 (D46-19): the EVENTS page, Freeform only. MARGINALIA-20261109: WHO & WHAT's pencil (Freeform). PT-NOTEBOOK-20261109 (Freeform): NOW as the note's lines (FS47NbNowLine), the clock's advice in red pencil, DOCUMENTS as the pinboard's tray (FS47PinBoard::Papers); unset: as before (Story)
+	TOptional<FS47AlbumView> Album;      /* the free frames (core/album.ts) */ bool bNow = false; TArray<FS47NbNowLine> Now; FString NowClock; TArray<FString> Goals; TOptional<TArray<FS47Doc>> Papers; TArray<FS47NbScribble> Scribbles; bool bEvents = false; TArray<FS47NbEvent> Events; TArray<FString> EventKinds, EventPhrases; FString EventNow, EventPlace; TFunction<bool(int32, int32)> OnLogEvent; TFunction<TArray<FS47NbEvent>()> GetEvents; TArray<FS47NbUnknown> Unknowns; TArray<FS47NbUnknownPair> UnknownPairs; // EVIDENCE-DOSSIER-20261113: THEM's files of the unknown (Freeform). Slice 2: a box's struck pencil (FBox::Struck), and the pairs a find showed to be one thing, side by side, box by box (Marks: 0 nothing to hold together, 1 alike, 2 not). D48-20261110 (D46-19): the EVENTS page, Freeform only. MARGINALIA-20261109: WHO & WHAT's pencil (Freeform). PT-NOTEBOOK-20261109 (Freeform): NOW as the note's lines (FS47NbNowLine), the clock's advice in red pencil, DOCUMENTS as the pinboard's tray (FS47PinBoard::Papers); unset: as before (Story)
 };
 
 // UI.viewfinder's options

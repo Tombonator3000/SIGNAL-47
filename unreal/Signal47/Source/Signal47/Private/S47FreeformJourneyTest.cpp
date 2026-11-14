@@ -169,6 +169,8 @@ void FS47FreeformJourneyTest::Step(double Dt)
  if(Stage==8)
  {
   if(M->World->bBusy||Age-At<.5)return;M->World->PlaceTruck(TEXT("saro"));PlaceAt(TEXT("ff:cargo"));W.Use(TEXT("ff:cargo"));
+  if(!Check(W.ParcelStage()==3&&M->UI->Modal(),TEXT("the loaded rack opens its panel at SARO")))return;
+  W.UnloadFromRack();M->UI->Close(true);
   if(!Check(W.ParcelStage()==2,TEXT("cargo unloaded before depot delivery")))return;
   PlaceAt(TEXT("ff:delivery"));W.Use(TEXT("ff:delivery"));
   if(!Check(W.ParcelStage()==0&&W.InventoryCount(TEXT("donor"))==1&&W.ServiceSupplyDeliveries()==DeliveryBefore+1,TEXT("transported donor delivered exactly once to SARO")))return;

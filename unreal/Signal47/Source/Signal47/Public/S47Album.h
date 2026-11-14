@@ -83,6 +83,9 @@ struct FS47AlbumShot
 	bool IsDeveloped() const { return LabStage < 0 || LabStage == 3; }
 	/** Where the things the story looks for are on the print (u, v from the top left), by target. */
 	TArray<TPair<FString, FVector2D>> Targets;
+	// What the game saw legibly in the frame. A "freeform-small:" mark (FS47FreeformDirector::SmallPrefix) is a thing too small to make out
+	// on the print: it must not raise the print's worth or keep it from being thrown away, or the print gives the secret away.
+	bool HasSeenTarget() const { for (const TPair<FString, FVector2D>& SeenT : Targets) { if (!SeenT.Key.StartsWith(TEXT("freeform-small:"))) { return true; } } return false; }
 };
 /** The print with the face: which one, whether the game has said it has come up, and whether it
  *  has been looked at closely since. */
@@ -131,7 +134,8 @@ public:
 	static constexpr int32 ROLL = 36, MostNegatives = 12;
 	/** The darkroom's enlarger: a new print made from part of an old one. It uses no film (it is printed on paper); it keeps the
 	 *  first print's time, place and pose. Its id, or empty. */
-	FString AddEnlargement(const FS47AlbumShot& From, const TArray<FColor>& Px, int32 W, int32 H, const FString& Text);
+	// Target: what the enlargement shows that the print could not (ENLARGE-20261108, FS47FreeformDirector::EnlargedClaim); empty: none.
+	FString AddEnlargement(const FS47AlbumShot& From, const TArray<FColor>& Px, int32 W, int32 H, const FString& Text, const TPair<FString, FVector2D>& Target = TPair<FString, FVector2D>());
 	static const TCHAR* NOBODY;
 	/** The caption on the print with the face: the words under the figures far off, now under a face at the lens. */
 	static const TCHAR* FACE_LINE;

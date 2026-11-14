@@ -1,4 +1,5 @@
 #include "S47GroundCover.h"
+#include "S47LandWindmill.h"
 #include "S47GroundEdits.h"
 #include "S47Relief.h"
 #include "S47FarmBuildings.h"
@@ -384,6 +385,8 @@ static FS47FloraRect FarmHouseRect(){FS47FloraRect B;B.MinX=91;B.MaxX=105;B.MinZ
 // The same for the four new farm buildings' plots, far off in Story too: no plant stands through a floor or a wall.
 static void AddFarmBuildingPlots(TArray<FS47FloraRect>& Blocks)
 {
+	// LAND-PLACES-WINDMILL-20261114: nor in the two windmills' feet, through their pump housings or out of the water of their tanks
+	for (const FBox2D& Plot : S47LandWindmill::Plots()) { FS47FloraRect B; B.MinX = Plot.Min.X; B.MaxX = Plot.Max.X; B.MinZ = Plot.Min.Y; B.MaxZ = Plot.Max.Y; Blocks.Add(B); }
 	if (!S47FarmBuildings::Available()) return;
 	for (const FBox2D& Plot : S47FarmBuildings::Plots()) { FS47FloraRect B; B.MinX = Plot.Min.X; B.MaxX = Plot.Max.X; B.MinZ = Plot.Min.Y; B.MaxZ = Plot.Max.Y; Blocks.Add(B); }
 }

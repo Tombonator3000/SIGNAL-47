@@ -35,3 +35,7 @@ python3 Tools/docs/check_docs.py --baseline Docs/Archive/link-baseline.json --ma
 ```
 
 Baselinen registrerer kjente historiske mangler fra før ryddingen; nye feil skal rettes. Ikke oppdater baseline bare for å skjule nye feil. `git diff --check`, relevante fil-/hashkontroller og lenkekontroll er riktig omfang for en dokumentleveranse. Ingen Unreal-, Blender- eller spillmatrise kreves av denne rutinen.
+
+## Lagring av design
+
+Tom bestemte 12. november 2026: Alle nye design, plansjer, konsepter og tilhørende byggegrunnlag skal lagres i spillrepoets `Docs/Design/World/`, i en tydelig navngitt undermappe. ChatGPT-output alene er ikke levering til repoet.

@@ -45,7 +45,7 @@ public:
  static FString RemarkFor(const FNight& N);
  // A field record's words, as the sheet has them: the first sentence, no longer than a line, its own time taken off the front.
  static FString Lead(const FString& Record,FString& OutAt);
- // CASES-OPS-20261109: a sheet's line about a case (the WORK line FS47FreeformSession::CaseRecordLine gives it, "Case 1, ...", or an
+ // CASES-OPS-20261109: a sheet's line about a case (the WORK line FS47FreeformSession::CaseRecordLine gives it, "THE REPEATED INTERVAL: ...", once "Case 1, ...", or an
  // older sheet's case record under SEEN AND HEARD): the station's own business. The weekly report leaves it off (FS47WardReport).
  static bool CaseLine(const FString& Text);
 
@@ -76,6 +76,8 @@ public:
  // "Log something you saw": the kind and the note by their number; the place is where the player stands and the time is now. False: not
  // possible now (no game, a number out of range, the same entry again within the minute).
  bool LogOwn(int32 Kind,int32 Phrase);
+ // TASKS-TEN-20261113 (change 7): a line under WORK on tonight's sheet, at the clock now ("Dale asked on the walkie: ..."); nothing outside a night
+ void Note(const FString& Text);
  int32 OwnCount() const{return Own.Num();}
  // FIX10-9 (→ M3): when each entry logged by hand was made (game clock), oldest first: OPS sets one a night against the array's own log
  // (FS47FreeformSession::AskWhatCameBack, OwnNoteFor).

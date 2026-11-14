@@ -4,6 +4,7 @@
 #include "S47FreeformDirector.h"
 #include "S47Aftermath.h"
 #include "S47FreeformTerminal.h"
+#include "S47Flow.h"
 #include "S47FreeformWorld.h"
 #include "S47Docs.h"
 #include "S47Inter.h"
@@ -19,6 +20,7 @@
 #include "S47UI.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "SS47ScreenView.h"
+#include "S47UiSound.h"
 
 bool FS47FreeformSession::TerminalOnGlass()const
 {const auto View=TerminalView.Pin();return ActiveTerminal>=0&&View.IsValid()&&View->OnGlass()&&M&&M->ModalOpen();}
@@ -33,8 +35,11 @@ namespace
  {
   if(!IsValid(A))return;
   if(Kind==4){A->Beep(1900.f,.012f,.025f,0,TEXT("square"));return;}                   // the cursor arrives on a control (critics, 10 Nov: 3.1 kHz for 4 ms was not heard at all)
-  if(Kind==3){A->Beep(2300.f,.007f,.028f,0,TEXT("square"));return;}                    // a knob's detent
-  A->Play(TEXT("click"),Kind==1?.42f:.30f,FVector::ZeroVector,Kind==2?1.25f:1.5f);
+  // FIX10-7 (14 Nov): the key's own click is the bundle's (S47UiSound) when it is staged; the chip's answer after it is kept. A
+  // knob's detent is mechanical then, not a beep. Without the files, as before.
+  namespace U=S47UiSound;
+  if(Kind==3){if(!U::Play(A,U::EKind::Detent))A->Beep(2300.f,.007f,.028f,0,TEXT("square"));return;} // a knob's detent
+  if(!U::Play(A,Kind==1?U::EKind::Action:Kind==2?U::EKind::Tab:U::EKind::Key))A->Play(TEXT("click"),Kind==1?.42f:.30f,FVector::ZeroVector,Kind==2?1.25f:1.5f);
   if(Kind==1){A->Beep(1320.f,.030f,.040f,.01f,TEXT("square"));A->Beep(1760.f,.045f,.040f,.055f,TEXT("square"));} // the action taken
   else if(Kind==2)A->Beep(990.f,.020f,.030f,.01f,TEXT("square"));                      // a menu line or tab
   else A->Beep(1480.f,.016f,.030f,.01f,TEXT("square"));                                // any other key
@@ -80,13 +85,24 @@ FS47FreeformSession::FTerminalIdle FS47FreeformSession::TerminalIdle(int32 Scree
  }
  return I;
 }
-void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool Live)
+void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool Live,TSharedPtr<SWidget> KeysTo)
 {
- if(!M||!M->UI||!M->Web||!M->Player||!RequirePower())return;
+ if(!TerminalBegin(Screen,Title))return;
+ S47FreeformTerminal::SetClock([this]{return TerminalClock();});S47FreeformTerminal::SetStation(TerminalStation(Screen));S47FreeformTerminal::SetHumScreen(Screen);
+ auto Content=S47FreeformTerminal::Frame(Title,Body);
+ S47FreeformTerminal::SetClock(nullptr);S47FreeformTerminal::SetStation(FString());S47FreeformTerminal::SetHumScreen(-1); // the frame keeps its own copy; Story screens show no stale Freeform clock
+ TerminalShow(Screen,Content,Live,KeysTo,false);
+}
+// RX-LOOK-20261113: OpenTerminal's two halves. Begin: the station's sinks, the relay's thump and the page's chatter; false when there
+// is no room to show a terminal in. Show: the framed content on the glass (bOwnKeyRow: the frame has its own row of keys).
+bool FS47FreeformSession::TerminalBegin(int32 Screen,const FString& Title)
+{
+ if(!M||!M->UI||!M->Web||!M->Player||!RequirePower())return false;
  const TWeakObjectPtr<US47Main> Main=M;
  const bool bSame=TerminalView.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen();
  S47FreeformTerminal::SetSound([Main](int32 Kind){if(Main.IsValid())TerminalKey(Main->Audio,Kind);});
  S47FreeformTerminal::SetInterference([Main]{return Main.IsValid()&&Main->Freeform?Main->Freeform->ScreenInterference():0.f;});
+ S47FreeformTerminal::SetCalm([Main]{return Main.IsValid()&&Main->Flow&&Main->Flow->bCalmFlash;}); // RX-TABS-DUE-20261113: the due tab is held, not pulsed
  S47FreeformTerminal::SetProbeSound([Main](float Near){if(Main.IsValid())TerminalProbe(Main->Audio,Near);});
  S47FreeformTerminal::SetNearness([Main](FVector2D AzEl){return Main.IsValid()&&Main->Freeform?Main->Freeform->AimNearness(AzEl):0.;});
  if(!bSame)
@@ -97,16 +113,18 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
  }
  if(Screen>=0&&Screen<4)LastPage[Screen]=Title; // N1110 PC-WORLD-DISPLAY-04
  if(Title!=TerminalTitle){TerminalPage(M->Audio,Title);TerminalTitle=Title;}
- S47FreeformTerminal::SetClock([this]{return TerminalClock();});S47FreeformTerminal::SetStation(TerminalStation(Screen));S47FreeformTerminal::SetHumScreen(Screen);
- auto Content=S47FreeformTerminal::Frame(Title,Body);
- S47FreeformTerminal::SetClock(nullptr);S47FreeformTerminal::SetStation(FString());S47FreeformTerminal::SetHumScreen(-1); // the frame keeps its own copy; Story screens show no stale Freeform clock
+ return true;
+}
+void FS47FreeformSession::TerminalShow(int32 Screen,TSharedRef<SWidget> Content,bool Live,TSharedPtr<SWidget> KeysTo,bool bOwnKeyRow)
+{
+ if(!M||!M->UI||!M->Web||!M->Player)return;
  if(const auto Current=TerminalView.Pin();Current.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen())
- {Current->SetScreen(Content,Content);bTelemetry=Live;return;}
+ {Current->SetScreen(Content,KeysTo.IsValid()?KeysTo:TSharedPtr<SWidget>(Content),bOwnKeyRow);bTelemetry=Live;return;} // (RX-ACQUIRE-SKY-20261113: the sky chart has the keys first)
  const TWeakObjectPtr<US47Main> Owner=M;
  const auto View=SNew(SS47ScreenView).Screen(Screen).Web(M->Web.Get()).Walker(M->Player.Get()).bUseLeaves(true).OnLeft([Owner,this]
  {if(Owner.IsValid()&&Owner->Freeform.Get()==this&&Owner->UI)Owner->UI->Close();});
  if(!View->OnGlass()){M->UI->Toast(TEXT("The physical workstation display is unavailable."),4);return;}
- View->SetScreen(Content,Content);
+ View->SetScreen(Content,KeysTo.IsValid()?KeysTo:TSharedPtr<SWidget>(Content),bOwnKeyRow);
  M->UI->Open(View,[Owner,this]
  {
   if(IsEngineExitRequested()||!Owner.IsValid()||Owner->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Owner->Freeform.Get()!=this)return;
@@ -200,6 +218,7 @@ FString FS47FreeformSession::TerminalNextLine(const FString& Text,int32 Screen)
  if(Where.IsEmpty()||Where.StartsWith(TEXT("PAUSE MENU")))return FString();
  if(Where.StartsWith(TEXT("ARRAY "))&&Where.Contains(TEXT("BLOCKED")))Where=TEXT("ARRAY STATUS (LEFT-HAND PC)");
  else if(Where.StartsWith(TEXT("EVENING OBSERVATION / ")))Where=Where.RightChop(22);
+ else if(Where.StartsWith(TEXT("NIGHT WATCH / ")))Where=Where.RightChop(14); // LOOP-NIGHT-WATCH-20261113
  static const TCHAR* const Own[4]={TEXT("ARRAY STATUS"),TEXT("RECEIVER (CENTRE PC)"),TEXT("TRACKING (RIGHT-HAND PC)"),TEXT("OPS")};
  if(Screen>=0&&Screen<4&&Where.StartsWith(Own[Screen]))return TEXT("NEXT / USE THIS PC");
  while(Where.Len()>MaxWhere)
@@ -235,10 +254,10 @@ FS47Doc FS47FreeformSession::SopCard()
  FS47Doc D;D.Id=TEXT("freeform-ops-sop");D.Title=TEXT("SOP card: the OPS terminal");D.Kind=TEXT("typed");D.Stamp=TEXT("SARO / SOP 4");
  D.Page=TEXT("SARO / STANDING OPERATING PROCEDURE\nOPS TERMINAL (TERM 1)\n\n")
   TEXT("1. 08:00 each morning the system issues three observing jobs for that evening. The third is a choice of two sources.\n")
-  TEXT("2. DAILY WORK: select the job. TRACKING (right-hand PC) points the array, RECEIVER (centre PC) tunes and records, the PRINTER gives the original. Register the result here.\n")
+  TEXT("2. DAILY WORK: select the job. TRACKING (right-hand PC) points the array, RECEIVER (centre PC) finds the source on its sky chart (ACQUIRE), tunes (TUNE) and records, the PRINTER gives the original. Register the result here; file its packet in the binder in the records room.\n") // RX-ACQUIRE-SKY-20261113
   TEXT("3. Finish a recording or a control before you switch jobs. Unfinished jobs keep. They pay in full on their day and the next, then less.\n")
   TEXT("4. EARLIER WORK shows what is done and what is carried over. RECORDS keeps originals, field findings, service and closed cases. Read only.\n")
-  TEXT("5. An unusual original is never registered on its own. It needs its control first and a comparison at the reel deck (wall table); the NEXT line gives each step. Registered, it opens a case on CASE BOARD. Payment follows the filing in the records-room binder.\n") // D45-20261110
+  TEXT("5. An unusual original is never registered on its own. Retain it on the receiver's RECORD tab with its 8-second station reference, compare the two at the reel deck (wall table), mark the extra ticks and RETAIN; the NEXT line gives each step. Registered, it opens a case on CASE BOARD; if the packet's last page is an OFF-BEAM BEARING, its circle is on your map. Payment follows the filing in the records-room binder.\n") // D45-20261110, RX-ANOMALY-FLOW-20261113
   TEXT("6. A quiet internal reference does not prove a sky source. Only a directional or independent control rules an explanation out.\n")
   TEXT("7. CASE BOARD. A trial case closes when your tests rule out all but one explanation; the records reply comes at once. An assessment can be filed when you choose; its reply prints on the telex next morning. Every test registered prints a result sheet: collect it at the printer.\n")
   TEXT("8. TELEX (by the corridor door). Replies and Dr. Ward's receipts print there. Tear them off at the machine; they go in the tray here. Send night logs from OVERVIEW.\n")

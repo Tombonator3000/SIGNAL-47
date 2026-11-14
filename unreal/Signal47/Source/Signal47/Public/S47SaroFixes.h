@@ -22,3 +22,13 @@ namespace S47RecordsDressing
  void Update(US47Main* M, double Dt);
  void Report(US47Main* M, TArray<FString>& Lines);
 }
+
+// RECORDS-ROOM-LIFT-20261113: the records room's realism lift after Tom's reference sheet (block walls and vinyl tile laid on the
+// export's own walls and floor, a hung ceiling with two troffers, the lights in their new fittings, the hero props), every part
+// load-if-present with the old look as its fallback. S47RecordsRoom.cpp; -S47RecordsRoomOff leaves the room as before.
+namespace S47RecordsRoom
+{
+ void Update(US47Main* M, double Dt);
+ void Report(US47Main* M, TArray<FString>& Lines);
+ bool SelfTest(TArray<FString>& Lines);
+}

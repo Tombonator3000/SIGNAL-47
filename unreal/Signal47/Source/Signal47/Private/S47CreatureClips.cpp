@@ -18,7 +18,7 @@ namespace
  const TCHAR* const ClipFile[int32(ES47Clip::Num)]={TEXT("idle"),TEXT("walk"),TEXT("climb"),TEXT("jump_down"),TEXT("angry"),TEXT("frustrated"),TEXT("sneak"),TEXT("listen"),TEXT("run"),TEXT("fall"),TEXT("afraid"),TEXT("observe"),TEXT("look_around"),TEXT("relax"),TEXT("shh"),TEXT("sit"),TEXT("jump"),TEXT("freeze")};
 }
 
-TSharedPtr<FS47ClipBank> FS47ClipBank::For(const USkeletalMesh* Mesh,const FS47TripoCreature& Creature,const TCHAR* Prefix)
+TSharedPtr<FS47ClipBank> FS47ClipBank::For(const USkeletalMesh* Mesh,const FS47TripoCreature& Creature,const TCHAR* Prefix,const TCHAR* PreferPrefix,const TArray<FString>* Prefer)
 {
  const USkeleton* Skeleton=Mesh?Mesh->GetSkeleton():nullptr;
  if(!Skeleton)return nullptr;
@@ -37,11 +37,19 @@ TSharedPtr<FS47ClipBank> FS47ClipBank::For(const USkeletalMesh* Mesh,const FS47T
   Bank->RestPelvis=At.GetLocation();
  }
  int32 Count=0;
- FString Missing;
+ FString Missing,Preferred;
  for(int32 I=0;I<int32(ES47Clip::Num);++I)
  {
   const FString Path=FString::Printf(TEXT("%s%s.%s"),Prefix,ClipFile[I],*(FPaths::GetBaseFilename(Prefix)+ClipFile[I]));
-  UAnimSequence* Seq=LoadObject<UAnimSequence>(nullptr,*Path,nullptr,LOAD_NoWarn|LOAD_Quiet);
+  UAnimSequence* Seq=nullptr;
+  if(PreferPrefix&&Prefer&&Prefer->Contains(ClipFile[I]))
+  {
+   const FString Try=FString::Printf(TEXT("%s%s.%s"),PreferPrefix,ClipFile[I],*(FPaths::GetBaseFilename(PreferPrefix)+ClipFile[I]));
+   Seq=LoadObject<UAnimSequence>(nullptr,*Try,nullptr,LOAD_NoWarn|LOAD_Quiet);
+   if(Seq&&(Seq->GetSkeleton()!=Skeleton||Seq->GetPlayLength()<=.01f))Seq=nullptr;
+   if(Seq)Preferred+=FString(ClipFile[I])+TEXT(" ");
+  }
+  if(!Seq)Seq=LoadObject<UAnimSequence>(nullptr,*Path,nullptr,LOAD_NoWarn|LOAD_Quiet);
   if(!Seq||Seq->GetSkeleton()!=Skeleton||Seq->GetPlayLength()<=.01f){Missing+=FString(ClipFile[I])+TEXT(" ");continue;}
   FClip& Clip=Bank->Clips[I];
   Clip.Seq=TStrongObjectPtr<UAnimSequence>(Seq);Clip.Length=Seq->GetPlayLength();
@@ -57,7 +65,7 @@ TSharedPtr<FS47ClipBank> FS47ClipBank::For(const USkeletalMesh* Mesh,const FS47T
  }
  for(const ES47Clip Gait:{ES47Clip::Walk,ES47Clip::Sneak,ES47Clip::Run})Bank->ReadGait(Gait);
  Live.Add(Mesh,Bank);
- UE_LOG(LogTemp,Display,TEXT("S47: creature clips: %d under %s, walk %.2f m/s, sneak %.2f m/s, run %.2f m/s, not found: %s"),Count,Prefix,Bank->GaitSpeedMps(ES47Clip::Walk),Bank->GaitSpeedMps(ES47Clip::Sneak),Bank->GaitSpeedMps(ES47Clip::Run),*Missing);
+ UE_LOG(LogTemp,Display,TEXT("S47: creature clips: %d under %s, walk %.2f m/s, sneak %.2f m/s, run %.2f m/s, not found: %s, from %s: %s"),Count,Prefix,Bank->GaitSpeedMps(ES47Clip::Walk),Bank->GaitSpeedMps(ES47Clip::Sneak),Bank->GaitSpeedMps(ES47Clip::Run),*Missing,PreferPrefix?PreferPrefix:TEXT("-"),*Preferred);
  return Bank;
 }
 

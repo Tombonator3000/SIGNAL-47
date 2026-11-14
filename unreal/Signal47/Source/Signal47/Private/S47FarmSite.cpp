@@ -1,4 +1,7 @@
 #include "S47FarmSite.h"
+#include "S47AnimalWarn.h"
+#include "S47Animals.h"
+#include "S47EventScript.h"
 #include "S47Noise.h"
 #include "S47EventPlaces.h"
 #include "S47Rhythm.h"
@@ -45,6 +48,7 @@
 #include "S47EngineSound.h"
 #include "S47WeekCase.h"
 #include "S47Happenings.h"
+#include "S47Script.h"
 #include "S47NightTiers.h"
 #include "Components/LocalFogVolumeComponent.h"
 #include "Components/PoseableMeshComponent.h"
@@ -67,6 +71,14 @@ bool FS47FarmSite::TheirHours(double Clock)
 {
  const double Hour=FMath::Fmod(FMath::Max(0.,Clock),86400.)/3600.;
  return S47NightTiers::Allows(ES47Allowed::Full,Hour,1)&&Hour<FS47NightRhythm::EndHour;
+}
+
+double FS47FarmSite::VisitDeadline(double StartClock)
+{
+ constexpr double Day=86400,Dawn=FS47NightRhythm::EndHour*3600;
+ const double Start=FMath::Max(0.,StartClock),Days=FMath::FloorToDouble(Start/Day);
+ const double NextDawn=Start-Days*Day<Dawn?Days*Day+Dawn:(Days+1)*Day+Dawn;
+ return FMath::Min(NextDawn,Start+MaxVisitHours*3600);
 }
 
 FString FS47FarmSite::FindingId() const
@@ -132,7 +144,7 @@ void FS47FarmSite::StepFieldDraw(double Dt)
   if(Near){Title=FString::Printf(TEXT("the open ground near %s"),*Near->Title);F.EventPlaces->Used(Near->Id,TEXT("field_visit"));}
   FS47EventPlaces::LogPick(TEXT("field_visit"),Near,TEXT("where the player is on foot"));
  }
- Visit=1;VisitAge=VisitDwell=0;bVisitSeen=false;bVisitTaken=false;
+ Visit=1;VisitUntil=0;VisitAge=VisitDwell=0;bVisitSeen=false;bVisitTaken=false;
  VisitWho=PickWho(GroundKind(),FMath::Fmod(Clock,86400.)/3600.,FMath::FRand());
  // D48-20261110 (D46-17): leaned toward the night's own kind (S47AlienKinds), as the take on the receiver sounded it.
  VisitWho=S47AlienKinds::LeanVisit(VisitWho,S47AlienKinds::NightLean(F.Seed(),Night),FMath::Fmod(Clock,86400.)/3600.,FS47NightRhythm::Roll(F.Seed(),Night,0x4c45414eu));
@@ -277,6 +289,9 @@ void FS47FarmSite::Begin(const S47J::FObj& Saved)
  ClearAt=Saved.IsValid()?S47J::Num(Saved,TEXT("clearAt")):0;SoundIn=20;
  Visit=Saved.IsValid()&&Saved->HasField(TEXT("visit"))?S47J::Int(Saved,TEXT("visit")):4;VisitAge=VisitDwell=0;bNudged=S47J::Bool(Saved,TEXT("nudged"));bFalseCall=S47J::Bool(Saved,TEXT("falseCall"));EmptyTipNight=Saved.IsValid()?FMath::Max(0,S47J::Int(Saved,TEXT("emptyTip"))):0;bStallSet=false;HushIn=0;
  bCheckedEmpty=S47J::Bool(Saved,TEXT("checkedEmpty"));bYielded=S47J::Bool(Saved,TEXT("yielded"));bFigureAsked=false;FigureIn=0;
+ // EVIDENCE-DOSSIER slice 2: who came to the marks (absent in an older save: nobody known)
+ MarksWho=Saved.IsValid()&&Saved->HasField(TEXT("marksBy"))?FMath::Clamp(S47J::Int(Saved,TEXT("marksBy")),-1,2):-1;MarksWhoNight=Saved.IsValid()?FMath::Max(0,S47J::Int(Saved,TEXT("marksByNight"))):0;
+ bAnimalsWent=bAnimalsTagged=false;bDogsHushed=true;AnimalsWho=-1;
  Place=Saved.IsValid()?S47J::Str(Saved,TEXT("place")):FString();if(Place.IsEmpty())Place=TEXT("farm");
  Title=Saved.IsValid()?S47J::Str(Saved,TEXT("title")):FString();if(Title.IsEmpty())Title=TEXT("the Alderete place");
  AreaId=Saved.IsValid()?S47J::Str(Saved,TEXT("area")):FString();if(AreaId.IsEmpty())AreaId=TEXT("saro");
@@ -305,11 +320,11 @@ void FS47FarmSite::Stop()
  if(bLive&&bStallSet&&M->World)M->World->bKeyStall=false;
  bStallSet=false;
  if(bLive)EndLure();
- FrostTruck=nullptr;Lure.Reset();
+ FrostTruck=nullptr;LureLampTruck=nullptr;Lure.Reset();
  if(bLive)HideBody();
  bBodyOut=false;
  RestoreHome();
- Visit=4;bActive=false;Life.Reset();Show(false);
+ Visit=4;VisitUntil=0;bActive=false;Life.Reset();Show(false);
 }
 
 S47J::FObj FS47FarmSite::Save() const
@@ -323,6 +338,7 @@ S47J::FObj FS47FarmSite::Save() const
  const FVector SavedAt=bField?Home.Middle:Middle;
  if(ClearAt>0&&bCheckedEmpty)S47J::Set(O,TEXT("checkedEmpty"),true);
  if(ClearAt>0&&bYielded)S47J::Set(O,TEXT("yielded"),true);
+ if(ClearAt>0&&MarksWho>=0){S47J::Set(O,TEXT("marksBy"),MarksWho);S47J::Set(O,TEXT("marksByNight"),MarksWhoNight);} // EVIDENCE-DOSSIER slice 2
  if(ClearAt>0){S47J::Set(O,TEXT("clearAt"),ClearAt);S47J::Set(O,TEXT("visit"),(bField?Home.Visit:Visit)==0?0:4);S47J::Set(O,TEXT("place"),bField?Home.Place:Place);S47J::Set(O,TEXT("title"),bField?Home.Title:Title);S47J::Set(O,TEXT("area"),bField?Home.Area:AreaId);S47J::Set(O,TEXT("at"),TArray<double>{SavedAt.X,SavedAt.Y,SavedAt.Z});S47J::Set(O,TEXT("nudged"),bNudged);}
  return O;
 }
@@ -384,7 +400,26 @@ bool FS47FarmSite::WakeCall()
 void FS47FarmSite::Step(double Dt)
 {
  StepFrost(Dt);
+ // EVIDENCE-DOSSIER slice 3 (REVIEW 14 Nov): the lamp's edge every frame, before anything below returns, for StepAttention's habit
+ bHabitLampUp=LampRaised(M&&M->Night&&M->Night->Flashlight&&M->Night->Flashlight->Intensity()>0,bHabitLampWas);
  if(!bActive||!M||!M->Freeform)return;
+ // VISIT-DAWN-20261113: by the clock, not by its own seconds. A natural night at speed (or a long stand-off) ran the visit's
+ // real-time patience across a whole day: begun 03:52, it still held the ground, and the take came, at 20:19 the next evening.
+ if(Visit>=1&&Visit<=3)
+ {
+  const double Now=M->Freeform->Clock();
+  if(VisitUntil<=0)VisitUntil=VisitDeadline(Now);
+  else if(Now>=VisitUntil)
+  {
+   const auto Tk=M->Freeform->Taken;
+   const bool bTaking=bVisitTaken||(Tk&&(Tk->Stage()==FS47Taken::EStage::Lift||Tk->Stage()==FS47Taken::EStage::Away));
+   if(!bTaking)
+   {
+    UE_LOG(LogTemp,Display,TEXT("S47: %s visit over by the clock at %s, day %d %02d:%02d: it does not outlast the night"),bField?TEXT("field"):TEXT("site"),*Place,M->Freeform->Day(),int32(FMath::Fmod(Now,86400.)/3600.),int32(FMath::Fmod(Now,3600.)/60.));
+    EndVisit(false);
+   }
+  }
+ }
  if(ClearAt>0&&M->Freeform->Clock()>=ClearAt){ClearAt=0;if(bField)Home.Visit=4;Show(false);UE_LOG(LogTemp,Display,TEXT("S47: lights site cleared by morning"));return;}
  // MILITARY-20261108: they went over this ground first (S47Visitors): the marks are gone, and the raked circle stands where they were.
  if(Raked())
@@ -532,6 +567,13 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
   {
    bFreezeTried=true;FreezeLeft=VisitBody->Creature.Clips->Seconds(ES47Clip::Freeze);
    UE_LOG(LogTemp,Display,TEXT("S47: site visit: the tall one freezes in the lamp, %.0f m off"),FVector::Dist(BodyAt,Feet));
+   // EVIDENCE-DOSSIER slice 2: what the lamp does to this one, once in the game, kept beside the two rules and tagged like them. Only
+   // when it was seen in the lamp (the attention's Watch, rendered): stopped dead in the first of the light.
+   if(M->Freeform)
+   {
+    if(!M->Freeform->HasFinding(TEXT("rule-tall-froze")))M->Freeform->RecordEvidence(TEXT("rule-tall-froze"),FString::Printf(TEXT("%s. Something tall, out past where I stood. The moment my lamp found it, it stopped dead in the middle of a step, and it stood like that while the light was on it."),*S47Script::PlayerClock(M->Freeform->Clock()))); // REVIEW (dossier slice 2): never a :47
+    M->Freeform->TagEvidence(TEXT("rule-tall-froze"),S47Dossier::EKind::Tall,S47Dossier::EType::Lamp);
+   }
   }
   ShhLeft=FMath::Max(0.,ShhLeft-Dt);
   if(!bShhTried&&FreezeLeft<=0&&Attention.Doing()==FS47VisitAttention::EDo::Watch&&FVector::Dist(BodyAt,Feet)<ShhWithin&&VisitBody->Rendered()&&VisitBody->Creature.Clips&&VisitBody->Creature.Clips->Has(ES47Clip::Shh))
@@ -560,7 +602,7 @@ void FS47FarmSite::StepBody(double Dt,double Speed)
  VisitBody->Act=ShhLeft>0?ES47Clip::Shh:FreezeLeft>0?ES47Clip::Freeze:ES47Clip::Num;
  if(VisitWho==1)VisitBody->ApplyCrab(true,BodyAt,BodyYaw,Face,BodyClock,BodyClock/1.6,Speed>2.);
  else VisitBody->Apply(true,BodyAt,BodyYaw,Face,Speed>0?.85:0.,BodyClock*3,BodyClock,FS47PaleBody::EPose::Walk);
- bVisitSeen|=VisitBody->Rendered();
+ {const bool bSeenBefore=bVisitSeen;bVisitSeen|=VisitBody->Rendered();if(!bSeenBefore&&bVisitSeen&&!bTestNoticed)FS47Happenings::TellOther(M,TEXT("visit"),Place);} // M1-MEASURE-20261113
 }
 
 void FS47FarmSite::HideBody()
@@ -596,7 +638,7 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   if(M->Rhythm&&!M->Rhythm->Allow(TEXT("site_visit")))return;
   if(M->Rhythm)M->Rhythm->Began(TEXT("site_visit"));
   const bool bNaturalWho=TestRoll<0;const float Roll=TestRoll>=0?TestRoll:FMath::FRand();TestRoll=-1;
-  Visit=1;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(GroundKind(),FMath::Fmod(Clock,86400.)/3600.,Roll);
+  Visit=1;VisitUntil=0;VisitAge=0;bVisitSeen=false;bVisitTaken=false;VisitWho=PickWho(GroundKind(),FMath::Fmod(Clock,86400.)/3600.,Roll);
   // D48-20261110 (D46-17): the night's own kind leans on it (S47AlienKinds); a test's set roll keeps the kind it asked for.
   if(bNaturalWho){const int32 WhoNight=FS47FreeformSession::NightOf(Clock);VisitWho=S47AlienKinds::LeanVisit(VisitWho,S47AlienKinds::NightLean(M->Freeform->Seed(),WhoNight),FMath::Fmod(Clock,86400.)/3600.,FS47NightRhythm::Roll(M->Freeform->Seed(),WhoNight,0x4c45414eu));}
   UE_LOG(LogTemp,Display,TEXT("S47: site visit begins at %s, kind %d"),*Place,VisitWho);
@@ -636,7 +678,9 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
    M->Audio->Sfx(TEXT("alienRadio"),FS47Sound{.Gain=.55f,.At=FVector(M->Player->Pos.X,M->Player->FloorY+1,M->Player->Pos.Z-8)});
    // The truck will not start now, the first time it is tried.
    M->World->bKeyStall=true;bStallSet=true;
+   WarnAnimals(); // EVIDENCE-DOSSIER slice 2: the animals first, by who comes
   }
+  StepAnimals(bAway);
   if(VisitAge<6)return;
   if(bAway||Dist>80){EndVisit(false);return;}
   // Out in the open there may be no cover for the small ones to come from. Something else comes instead.
@@ -674,12 +718,13 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
   if(StillHeld>=5.&&M->Freeform&&!M->Freeform->HasFinding(TEXT("rule-still-held")))
   {
    if(M->UI)M->UI->Thought(TEXT("It has lost me. The lamp is off, I am standing still, and it is looking past me."),5.f);
-   M->Freeform->RecordEvidence(TEXT("rule-still-held"),FString::Printf(TEXT("%s. A small one came near the place I stood. I had the lamp off and I kept still, and it looked past me. Lamp off, stand still, and the small ones pass."),*S47Text::ClockText(M->Freeform->Clock(),false)));
+   M->Freeform->RecordEvidence(TEXT("rule-still-held"),FString::Printf(TEXT("%s. A small one came near the place I stood. I had the lamp off and I kept still, and it looked past me. Lamp off, stand still, and the small ones pass."),*S47Script::PlayerClock(M->Freeform->Clock())));
+   M->Freeform->TagEvidence(TEXT("rule-still-held"),S47Dossier::EKind::Small,S47Dossier::EType::Lamp); // EVIDENCE-DOSSIER: what the lamp does, in its file
    UE_LOG(LogTemp,Display,TEXT("S47: rule taught: lamp off and still, the small one passed"));
   }
   for(const auto& I:G->Individuals())
   {
-   bVisitSeen|=I.bRendered;
+   {const bool bSeenBefore=bVisitSeen;bVisitSeen|=I.bRendered;if(!bSeenBefore&&bVisitSeen&&!bTestNoticed)FS47Happenings::TellOther(M,TEXT("visit"),Place);} // M1-MEASURE-20261113
    if(I.State==FS47RoswellBrain::EState::Contact&&!bDriving){G->DevClear();Tk->TakeNow(Who,Title);bVisitTaken=true;return;}
   }
  }
@@ -701,7 +746,9 @@ void FS47FarmSite::StepVisit(double Dt,double Dist)
     bRuleBrokenThisSession=true; // (spent for the session even if the finding cap refuses the record)
     if(M->UI)M->UI->Thought(TEXT("It has stopped. It is facing away."),3.f);
     // the record says what was done only if it was: still and dark, and the stop is the moment of the break
-    if(bNothingToGoOn)M->Freeform->RecordEvidence(TEXT("rule-pale-broken"),FString::Printf(TEXT("%s. I did what had worked: lamp off, standing still. This one was not small like the other. It stopped dead and turned to where I was. It did not pass. Standing still is not enough."),*S47Text::ClockText(Clock,false)));
+    if(bNothingToGoOn)M->Freeform->RecordEvidence(TEXT("rule-pale-broken"),FString::Printf(TEXT("%s. I did what had worked: lamp off, standing still. This one was not small like the other. It stopped dead and turned to where I was. It did not pass. Standing still is not enough."),*S47Script::PlayerClock(Clock)));
+    // EVIDENCE-DOSSIER: the low one's own answer to standing still. The tall one may break the rule as well (N1110), and that is not its mark.
+    if(bNothingToGoOn&&VisitWho==1)M->Freeform->TagEvidence(TEXT("rule-pale-broken"),S47Dossier::EKind::Low,S47Dossier::EType::Lamp);
     UE_LOG(LogTemp,Display,TEXT("S47: rule broken once: the %s stopped %.0f m off and turned (night %d)"),VisitWho==2?TEXT("Tall One"):TEXT("Pale One"),To,Rule.Night);
    }
    if(RuleBreak.TakeTurned()&&M->UI)M->UI->Thought(TEXT("It is looking at me. Move."),4.f);
@@ -748,6 +795,8 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
  // The body out now: the small one's own, or the moved one's.
  TOptional<FVector> Eye=VisitBodyEye();
  if(VisitWho==0){const auto V=G->Individuals();if(V.IsEmpty())Eye.Reset();else Eye=V[0].Eye;}
+ // EVIDENCE-DOSSIER slice 3: the lamp raised near one: a file at HABITS that holds its answer to the lamp comes to mind (once a night)
+ if(bHabitLampUp&&Eye.IsSet()&&FVector::Dist(*Eye,Feet)<=S47Dossier::HabitLampNearM&&M->Freeform)M->Freeform->DossierHabitLamp(S47Dossier::KindOfVisit(VisitWho));
  // No body now, nothing to hold: the lamp is not left flickering for it.
  if(!Eye.IsSet()){LetAttentionGo();return;}
  const bool bCalm=M->Flow&&M->Flow->bCalmFlash;
@@ -808,7 +857,7 @@ void FS47FarmSite::EndVisit(bool bTaken)
 {
  if(M&&M->Rhythm)M->Rhythm->Ended(bField?TEXT("field_visit"):TEXT("site_visit"));
  const bool bWas=Visit>=2;
- Visit=4;VisitDwell=0;bVisitTaken=false;
+ Visit=4;VisitDwell=0;VisitUntil=0;bVisitTaken=false;
  LetAttentionGo();
  EndLure();
  // Over: the lamp steadies, and a truck not yet tried starts again.
@@ -820,6 +869,8 @@ void FS47FarmSite::EndVisit(bool bTaken)
  if(M&&M->Night&&M->Night->Glimpses&&bWas)M->Night->Glimpses->DevClear();
  if(!M||!M->Freeform){RestoreHome();return;}
  UE_LOG(LogTemp,Display,TEXT("S47: site visit over at %s, taken %d, seen %d"),*Place,bTaken,bVisitSeen);
+ // EVIDENCE-DOSSIER slice 2: a body was out at these marks: by daylight its prints are among them, and the counter reads by it
+ if(bWas&&!bField&&Armed()){MarksWho=VisitWho;MarksWhoNight=FS47FreeformSession::NightOf(M->Freeform->Clock());}
  // Something really came, at the farm: the herd may be one short in the morning.
  if((bWas||bTaken)&&Place==TEXT("farm")&&M->Freeform->Aftermath)M->Freeform->Aftermath->AfterFarmVisit(M->Freeform->Clock());
  if(bVisitSeen&&!bTaken&&!M->Freeform->HasFinding(FindingId()+TEXT("_visit")))
@@ -834,6 +885,8 @@ void FS47FarmSite::EndVisit(bool bTaken)
   else if(Lure.bDidTouch)Did+=TEXT(" It went to my truck, where I had left it running with the lights on, and put its hand on the hood. The lights stuttered.");
   FString Page=FString::Printf(TEXT("%s, after dark%s. Something came toward me.%s Then it was gone."),*Title,bField?TEXT(""):TEXT(", the night of the lights"),*Did);Page[0]=FChar::ToUpper(Page[0]);
   M->Freeform->RecordEvidence(FindingId()+TEXT("_visit"),Page);
+  // EVIDENCE-DOSSIER: it was seen (bVisitSeen), and the visit knows which one came: its shape, in its file.
+  M->Freeform->TagEvidence(FindingId()+TEXT("_visit"),S47Dossier::KindOfVisit(VisitWho),S47Dossier::EType::Shape);
  }
  RestoreHome();
  M->RequestAutosave();
@@ -861,6 +914,68 @@ FString FS47FarmSite::DaylightText(int32 Read,bool bFarm)
   default:return TEXT("The marks by daylight. The surface in each has gone glassy and lifts in flakes. One flake is thinner than the rest, light as foil and cold. Kept for the test bench.");
  }
 }
+int32 FS47FarmSite::MarksBy() const
+{
+ // These marks: laid no later than the night it came (SiteNight), and not a field visit's open ground
+ return MarksWho>=0&&Armed()&&!bField&&MarksWhoNight>=SiteNight()?MarksWho:-1;
+}
+FString FS47FarmSite::PrintsText(int32 Who)
+{
+ // EVIDENCE-DOSSIER slice 2: the table's GROUND column, by daylight. The low one's and the tall one's as their prints on the road's
+ // shoulder are drawn (S47Hap::RoadTrackParts: fours a hand apart, about two and a half feet between them; single prints 1.15 m apart).
+ switch(Who)
+ {
+  case 0:return TEXT(" Between the marks, small bare prints, narrow, and here and there a stone turned over with its damp side up.");
+  case 1:return TEXT(" Across the ring, small prints in fours, close together, a hand apart, and at the edge they go off at a run.");
+  case 2:return TEXT(" Going away from the ring, long narrow prints, a long stride apart, nearly four feet.");
+  default:return FString();
+ }
+}
+void FS47FarmSite::WarnAnimals()
+{
+ // EVIDENCE-DOSSIER slice 2: the animals the game has, by who comes (FS47AnimalWarn::ForVisit): a covey goes up ahead of the tall one,
+ // a coyote stands and stares and then runs ahead of the crab, and ahead of the small ones the dogs bark and then all stop. Out on
+ // foot only, as the warnings for the night's events are; the coyote's and the covey's own scripts say what is thought and kept.
+ bAnimalsWent=false;bAnimalsTagged=false;bDogsHushed=true;AnimalsWho=VisitWho;
+ if(!M||!M->Player||!M->World||M->World->bDriving||!M->Freeform)return;
+ const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
+ FVector Way=Middle-Feet;Way.Y=0;
+ if(Way.SizeSquared()<4.)Way=FVector(FMath::FRandRange(-1.f,1.f),0,FMath::FRandRange(-1.f,1.f));
+ const FVector Threat=Feet+Way.GetSafeNormal()*60.;
+ const FS47AnimalWarn::EKind Ahead=FS47AnimalWarn::ForVisit(VisitWho);
+ FString Why;
+ if(Ahead!=FS47AnimalWarn::EKind::None)
+ {
+  if(!M->Animals||!M->Animals->Warn(Ahead==FS47AnimalWarn::EKind::Birds,Threat,FS47AnimalWarn::Lead,Why)){UE_LOG(LogTemp,Display,TEXT("S47: site visit: no animals ahead of it here (%s)"),*Why);return;}
+  FS47EventCtx Ctx;S47EventScript::Play(M,FS47AnimalWarn::ScriptOf(Ahead),Ctx);
+ }
+ else if(M->Audio)
+ {
+  // the dogs off that way: a few barks, then nothing (StepAnimals stops them and the night with them)
+  for(int32 K=0;K<4;++K){FS47Sound O;O.At=Threat+FVector(FMath::FRandRange(-30.f,30.f),2,FMath::FRandRange(-30.f,30.f));O.Gain=.3f;O.Rate=FMath::FRandRange(.9f,1.1f);O.When=.5f*K;M->Audio->Sfx(K%2?TEXT("dog1"):TEXT("dog0"),O);}
+  bDogsHushed=false;
+ }
+ else return;
+ bAnimalsWent=true;
+ FS47Happenings::TellOther(M,TEXT("animal warning"),Place); // M1-MEASURE-20261113: put near the player, heard or seen
+ UE_LOG(LogTemp,Display,TEXT("S47: site visit: the animals first (%s)"),Ahead==FS47AnimalWarn::EKind::Birds?TEXT("a covey goes up"):Ahead==FS47AnimalWarn::EKind::Coyote?TEXT("a coyote stands and stares"):TEXT("the dogs bark, then stop"));
+}
+void FS47FarmSite::StepAnimals(bool bAway)
+{
+ if(!bAnimalsWent||!M||!M->Freeform)return;
+ if(!bDogsHushed&&VisitAge>=2.2)
+ {
+  bDogsHushed=true;
+  if(M->Audio&&M->Audio->Night)M->Audio->Night->Hush(25,.03,.15,4.);
+  if(M->UI)M->UI->Thought(TEXT("Even the dogs went quiet."),4.f);
+ }
+ // Seen or heard by now, still there: it is the file's, by who came
+ if(!bAnimalsTagged&&VisitAge>=3.&&!bAway)
+ {
+  bAnimalsTagged=true;
+  M->Freeform->TagEvidence(FindingId()+FString::Printf(TEXT("_animals_d%d"),FS47FreeformSession::NightOf(M->Freeform->Clock())),S47Dossier::KindOfVisit(AnimalsWho),S47Dossier::EType::Animals);
+ }
+}
 FString FS47FarmSite::Label() const
 {
  if(!bActive||!Armed()||bField||Raked())return FString();
@@ -876,7 +991,10 @@ bool FS47FarmSite::Use()
  if(ByDaylight(M->Freeform->Clock()))
  {
   const FString Id=DaylightId();const int32 Read=DaylightRead(M->Freeform->Seed(),Place,M->Freeform->Day());
-  const bool bFirst=!M->Freeform->HasFinding(Id);const FString Page=DaylightText(Read,bFarm);
+  // EVIDENCE-DOSSIER slice 2: what came to the marks left its prints among them; read on the page, they are its file's GROUND
+  const int32 Who=MarksBy();
+  const bool bFirst=!M->Freeform->HasFinding(Id);const FString Page=DaylightText(Read,bFarm)+PrintsText(Who);
+  if(Who>=0)M->Freeform->TagEvidence(Id+TEXT("_prints"),S47Dossier::KindOfVisit(Who),S47Dossier::EType::Ground,MarksWhoNight);
   if(bFirst)
   {
    M->Freeform->RecordEvidence(Id,Page);
@@ -1002,7 +1120,7 @@ void FS47FarmSite::StepFigure(double Dt,double Dist)
 void FS47FarmSite::StepLure(double Dt)
 {
  LureGoal.Reset();LureFace.Reset();
- if(!M||!M->World||!M->Player||!M->Freeform||Lure.Over())return;
+ if(!M||!M->World||!M->Player||!M->Freeform||Lure.Over()){if(bLureLamp)RestoreLureLamp();return;}
  auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();
  FS47Truck* Truck=M->World->IdleTruckNow();
  // The body out now: the small one's own brain, or the moved one.
@@ -1057,6 +1175,7 @@ void FS47FarmSite::StepLure(double Dt)
   if(M->Audio)M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.3f,.Rate=.6f,.At=LureHood+FVector(0,1,0)});
   if(M->Freeform->Attention)M->Freeform->Attention->Add(3,TEXT("a visit's body at the idling truck"));
   if(M->UI&&Flat(Feet,Mid)<90)M->UI->Thought(TEXT("Something is at the truck. The lights just stuttered."),4.f);
+  if(Flat(Feet,Mid)<90&&!bTestNoticed)FS47Happenings::TellOther(M,TEXT("idle lure"),Place); // M1-MEASURE-20261113: told by the same thought
   UE_LOG(LogTemp,Display,TEXT("S47: idle lure: a hand on the hood, frost hand, the lamps falter"));
  }
  if(LureCoughIn>0)
@@ -1065,8 +1184,12 @@ void FS47FarmSite::StepLure(double Dt)
   if(LureCoughIn<=0&&Truck)if(FS47EngineSound* Eng=M->World->EngineSound())Eng->Cough(.6);
  }
  const bool bCalm=M->Flow&&M->Flow->bCalmFlash;
- if(Truck&&Lure.Part()==EL::Touch){Truck->SetLightLevel(Lure.LampLevel(bCalm));bLureLamp=true;}
- else if(bLureLamp){bLureLamp=false;if(Truck)Truck->SetLightLevel(1);}
+ if(Truck&&Lure.Part()==EL::Touch)
+ {
+  if(LureLampTruck&&LureLampTruck!=Truck)RestoreLureLamp();
+  Truck->SetLightLevel(Lure.LampLevel(bCalm));bLureLamp=true;LureLampTruck=Truck;
+ }
+ else if(bLureLamp)RestoreLureLamp();
  // Left alone at it: a heavy bang, a dent, and the engine stalls, dark. The key starts it again, not the first time (bKeyStall,
  // kept past the visit's end: bStallSet no longer clears it). Never more than that.
  if(Lure.TakeStruck()&&Truck)
@@ -1078,12 +1201,13 @@ void FS47FarmSite::StepLure(double Dt)
    M->Audio->Sfx(TEXT("metalTap"),FS47Sound{.Gain=.5f,.Rate=.45f,.At=Bang,.When=.04f});
    M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.8f,.Rate=.5f,.At=Bang,.When=.32f});
   }
-  if(bLureLamp){bLureLamp=false;Truck->SetLightLevel(1);}
+  if(bLureLamp)RestoreLureLamp();
   M->World->bKeyStall=true;bStallSet=false;
   M->World->EndIdle(true);
   if(M->Freeform->Attention)M->Freeform->Attention->Add(6,TEXT("a visit's body struck the idling truck"));
   if(M->UI&&Flat(Feet,Mid)<90)M->UI->Thought(TEXT("A bang from the truck. The engine has stopped, and the lights with it."),5.f);
-  M->Freeform->RecordEvidence(FindingId()+TEXT("_dent"),FString::Printf(TEXT("%s, %s. I had left the truck running with the lights on. Something came to it, went round it and stood in the lights, then struck the hood. The engine died. There is a dent in the hood the size of a hand, and a handprint in the frost on the glass."),*S47Text::ClockText(Clock,false),*Title));
+  if(Flat(Feet,Mid)<90&&!bTestNoticed)FS47Happenings::TellOther(M,TEXT("idle lure"),Place); // M1-MEASURE-20261113
+  M->Freeform->RecordEvidence(FindingId()+TEXT("_dent"),FString::Printf(TEXT("%s, %s. I had left the truck running with the lights on. Something came to it, went round it and stood in the lights, then struck the hood. The engine died. There is a dent in the hood the size of a hand, and a handprint in the frost on the glass."),*S47Script::PlayerClock(Clock),*Title));
   UE_LOG(LogTemp,Display,TEXT("S47: idle lure: it struck the hood, the engine stalled (the key wants turning)"));
  }
  if(Lure.TakeLetGo()){EndLure();UE_LOG(LogTemp,Display,TEXT("S47: idle lure: over, touched %d, struck %d"),Lure.bDidTouch,Lure.bDidStrike);return;}
@@ -1121,15 +1245,30 @@ void FS47FarmSite::StepLure(double Dt)
 
 void FS47FarmSite::EndLure()
 {
- if(bLureLamp){bLureLamp=false;if(M&&M->World)if(FS47Truck* Truck=M->World->IdleTruckNow())Truck->SetLightLevel(1);}
+ if(bLureLamp)RestoreLureLamp();
  if(bLureHeld){bLureHeld=false;if(M&&M->Night&&M->Night->Glimpses)M->Night->Glimpses->HoldAttention({},0,false);}
  LureGoal.Reset();LureFace.Reset();LureCoughIn=-1;
+}
+
+FS47Truck* FS47FarmSite::LiveTruck(FS47Truck* T) const
+{
+ return T&&M&&IsValid(M->World)&&M->World->OwnsTruck(T)?T:nullptr;
+}
+
+void FS47FarmSite::RestoreLureLamp()
+{
+ // On the truck that was dimmed, not on whatever idles now: got into, or died dark, IdleTruckNow is null (critic 12 Nov).
+ bLureLamp=false;
+ if(FS47Truck* T=LiveTruck(LureLampTruck))T->SetLightLevel(1);
+ LureLampTruck=nullptr;
 }
 
 // The hand stays in the frost until the truck is driven again; then the defroster takes it in a few seconds.
 void FS47FarmSite::StepFrost(double Dt)
 {
  if(!FrostTruck||!M||!IsValid(M->World)||!M->World->bDriving)return;
+ // Critic 12 Nov: a truck that is no longer the world's is let go, never touched.
+ if(!LiveTruck(FrostTruck)){FrostTruck=nullptr;return;}
  FrostDriven+=Dt;
  const double K=FMath::Clamp(.6*(1.-(FrostDriven-4.)/6.),0.,.6);
  if(M->World->CabTruck()==FrostTruck)FrostTruck->SetFrost(K);

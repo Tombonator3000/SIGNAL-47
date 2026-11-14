@@ -7,6 +7,7 @@
 #include "S47FarmHouse.h"
 #include "S47FarmBuildings.h"
 #include "S47FarmWindmill.h"
+#include "S47LandWindmill.h"
 #include "S47FarmLights.h"
 #include "S47Freeform.h"
 #include "S47Glow.h"
@@ -92,7 +93,7 @@ namespace
    {
     FTransform Local,World;if(!C->GetInstanceTransform(I,Local,false)||!C->GetInstanceTransform(I,World,true))continue;
     FVector Road=W->HighwayMapEye(S47Three::ToThree(World.GetLocation()));Road.X-=8000;
-    if(!S47FarmHouse::OnPad(Road.X,Road.Z,1.2)&&!S47FarmBuildings::OnPlot(Road.X,Road.Z,1.2))continue;
+    if(!S47FarmHouse::OnPad(Road.X,Road.Z,1.2)&&!S47FarmBuildings::OnPlot(Road.X,Road.Z,1.2)&&!S47LandWindmill::Covers(Road.X,Road.Z))continue;   // (LAND-PLACES-WINDMILL-20261114: nor under the two windmills' towers and tanks)
     PadPlants.Add({C,I,Local});
    }
    UE_LOG(LogTemp,Display,TEXT("S47 farmhouse pad: %d scattered instances inside its footprint and the four building plots"),PadPlants.Num());

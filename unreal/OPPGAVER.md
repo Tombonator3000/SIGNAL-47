@@ -2,6 +2,12 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## Nattskift 13.–14. november til 10:00, Claude Code
+
+Tom ca. 22:00: fortsett til kl. 10:00 med agenter og harness: fullfør, iterer, fiks TODO. Kopier: `~/SIGNAL-47` (Claude, `claude/freeform-20261112`, koordinator; motoren går på omgang, én tung jobb om gangen) og høyst tre agent-worktrees for skrivearbeid uten motor. Codex-kopien `~/SIGNAL-47-cosmic` ble avviklet 13. november (grenen pushet). Samlet diskkontroll før skiftet: 121 GB ledig, pakkene d69, d68 og d67 beholdt, to arbeidskopier. Sperre mot hvilemodus står til etter kl. 10 (`systemd-inhibit`).
+
+Motorrekkefølge: (1) Fable: arkivrommets realismeløft, med mottakerskjermen (RX-LOOK) flettet inn i første bygg; (2) fletteluke: skrivegrenene inn, bygg, selvtest, regresjon, d70; (3) Fable: vindmølla, linjehytta, gruva og varden etter Codex' referansepakker (`~/scratch-bm/refs/land-places-20261113/`), ett sted om gangen. Skrivearbeid uten motor i mellomtiden: bevismappene trinn 2, småfeil fra dagens skjermbilder og opptak, uavhengig gjennomlesing av dagens flettinger. PR #515 venter på Tom.
+
 ## Dagskift 12. november til 16:00, Claude Code
 
 Kopier: `~/SIGNAL-47` (Claude, `claude/story-on-freeform`, koordinator, bygg og prøver) og `~/SIGNAL-47-cosmic` (Codex). Skriveagenter i egne worktrees, én om gangen med motor. Lærdom: legg ikke en kommando i kø mens en vaktet kjøring går, og kjør Blender gjennom `q.py`; begge stopper prøver med «contention». Ferdig å rydde: ingen agent-worktrees står igjen.

@@ -28,6 +28,14 @@ namespace
    R.Add(TEXT("animals_flee"),{TEXT("What spooked them?"),TEXT("They felt it first."),TEXT("Whatever it was, they ran.")});
    R.Add(TEXT("car_light"),{TEXT("Headlights, but no engine."),TEXT("Is somebody following me?"),TEXT("Who's out here?")});
    R.Add(TEXT("dust_devil"),{TEXT("Wind. Just wind."),TEXT("Where did that come from?"),TEXT("Funny, there's no breeze.")});
+   // NIGHT31-PLACES-20261114 (S47NightPlaces.cpp): the nine at their places that hold the ground; the marks are found later.
+   R.Add(TEXT("windmill_knock"),{TEXT("Who's working that pump at this hour?"),TEXT("There's no wind for that."),TEXT("That's the rod. Has to be the rod.")});
+   R.Add(TEXT("school_swing"),{TEXT("Who's on the swings this late?"),TEXT("No wind. So what's moving it?"),TEXT("Kids. Has to be kids.")});
+   R.Add(TEXT("mine_knock"),{TEXT("That's coming from the shaft."),TEXT("Rocks settling. Just rocks."),TEXT("Somebody down there?")});
+   R.Add(TEXT("bay_door"),{TEXT("Who opened the bay?"),TEXT("The station's shut. Isn't it?"),TEXT("Wind caught it. Must have.")});
+   R.Add(TEXT("cemetery_lamp"),{TEXT("Who visits graves at this hour?"),TEXT("Somebody with a lantern."),TEXT("A mourner. This late?")});
+   R.Add(TEXT("shack_lamp"),{TEXT("Who's out at the line shack?"),TEXT("Somebody lit a lamp out there."),TEXT("A rider, maybe. This late?")});
+   R.Add(TEXT("road_flare"),{TEXT("Somebody broke down?"),TEXT("A flare, and no car."),TEXT("Who sets a flare and leaves?")});
    // Seen, far or near; the hours decide what comes (S47NightTiers), these only say what a tired man says.
    R.Add(TEXT("landing"),{TEXT("Those lights. What are those?"),TEXT("I swear I saw something."),TEXT("That's no plane."),TEXT("Did anybody else see that?")});
    R.Add(TEXT("horizon_figure"),{TEXT("I swear I saw something."),TEXT("Probably a post. Probably."),TEXT("Too far off to be anybody.")});
@@ -44,6 +52,10 @@ namespace
    R.Add(TEXT("two"),{TEXT("Two o'clock. Should be in bed."),TEXT("Past two. The long hours now."),TEXT("Two already. Where did the night go?"),TEXT("Two in the morning. Nobody up but me.")});
    R.Add(TEXT("anomaly"),{TEXT("That's not supposed to be there."),TEXT("Count them again. Same number."),TEXT("The gear checks out. So what is it?"),TEXT("That's not on any chart I know."),TEXT("Okay. That one's not routine.")});
    R.Add(TEXT("tired"),{TEXT("Read that line again. It did not go in."),TEXT("Coffee. There has to be a pot somewhere."),TEXT("Long night. Longer than most."),TEXT("Should have slept this afternoon.")});
+   // M5 (13 November): once a night out on foot, what the moon or the sand does to being seen (S47Weather::NightThoughtKey)
+   R.Add(TEXT("moonbright"),{TEXT("Moon's bright. My shadow's on the dirt."),TEXT("Bright out. Anyone could see me here."),TEXT("Full moon. Stay off the open ground."),TEXT("Light enough to read by. Too light.")});
+   R.Add(TEXT("moondark"),{TEXT("No moon. Can't see my own feet."),TEXT("Dark as a pocket out here."),TEXT("Black night. Nobody sees far in this."),TEXT("Nights like this, things move.")});
+   R.Add(TEXT("sandnight"),{TEXT("Sand in the air. Can't see ten yards."),TEXT("Wind's got the sand up. Nobody sees far."),TEXT("Can't see past the fence posts.")});
    R.Add(TEXT("exhausted"),{TEXT("Eyes keep closing on their own."),TEXT("Just rest them a second. No."),TEXT("A cot would do. Anything flat."),TEXT("Can't think straight anymore."),TEXT("Dead on my feet.")});
    return R;
   }();
@@ -101,6 +113,17 @@ namespace S47Thoughts
   UE_LOG(LogTemp,Display,TEXT("S47: thought (%s): %s"),*Key,*P[I]);
   return true;
  }
+ bool ThinkLine(US47Main* M,const FString& Line,const TCHAR* Tag)
+ {
+  // REVIEW (14 Nov): not while the night is held either (the queue in Step waits for the same)
+ if(!IsValid(M)||!M->UI||M->ModalOpen()||Line.IsEmpty()||M->Mode!=US47Main::EMode::Play||(M->IsFreeform()&&M->Freeform&&M->Freeform->Held()))return false;
+  const double Now=FPlatformTime::Seconds();
+  if(!May(Now,LastAt))return false;
+  LastAt=Now;
+  M->UI->Thought(Line,4.f);
+  UE_LOG(LogTemp,Display,TEXT("S47: thought (%s): %s"),Tag?Tag:TEXT("line"),*Line);
+  return true;
+ }
  const TCHAR* TiredKey(double Tired){return !FMath::IsFinite(Tired)||Tired<=TiredFrom?TEXT(""):Tired<ExhaustedFrom?TEXT("tired"):TEXT("exhausted");}
  const TCHAR* FindKey(const FString& Id)
  {
@@ -133,6 +156,7 @@ namespace S47Thoughts
     if(Night!=TwoNight){TwoNight=Night;Later(TEXT("two"),2.);}
    }
    PrevClock=Clock;
+   M->Freeform->DossierHabitStep(); // EVIDENCE-DOSSIER slice 3: a file's dark hour coming up, on a night out
   }
   else if(ClockOf){ClockOf=nullptr;Due.Reset();}
   if(Due.Num()==0||M->Mode!=US47Main::EMode::Play||M->ModalOpen()||(bFree&&M->Freeform->Held()))return;

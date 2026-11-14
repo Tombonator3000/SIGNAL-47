@@ -66,3 +66,18 @@ Kartet er tegnet av et engangsskript fra manifestet og C++-konstantene. Det er i
 | Hus H01 / H02 / H03 | 28,5, 2133 / 28,2, 2156,5 / 29,5, 2185 | 4,5, 2433 / 4,2, 2456,5 / 5,5, 2485 | data |
 
 Veiramme til verden: legg til 8000 på x. Saro-ramme for byen og gården er utledet med formelen over.
+
+## Byggdesign og plansjer
+
+Alle nye design lagres under `Docs/Design/World/` i egne undermapper.
+
+- [Caliche-skolen V2](CalicheSchool_V2/BYGGESPESIFIKASJON_V2.md).
+- [Plaza-kinoen – byggegrunnlag](PlazaCinema/02-claude-unreal-build-spec.md), [plansje](PlazaCinema/01-plaza-cinema-unreal-build-sheet.png) og [genereringsprompt](PlazaCinema/03-imagegen-prompt.txt). Designforslag, ikke implementert eller spilltestet.
+
+- [Fôrbutikk / Feed & Seed](FeedStore/BYGGESPESIFIKASJON.md), [plansje](FeedStore/unreal_build_sheet.png). Designforslag; Unreal-test gjenstår.
+
+- [1420 AM-radiostasjonen](Radio1420AM/BYGGESPESIFIKASJON.md), [plansje](Radio1420AM/unreal_build_sheet.png). Designforslag; Unreal-test gjenstår.
+
+- [Sheriffkontor og dispatch](SheriffDispatch/BYGGESPESIFIKASJON.md), [plansje](SheriffDispatch/unreal_build_sheet.png). Designforslag; Unreal-test gjenstår.
+
+- [Basefargeteksturer: alle fire grupper](Textures_20261112/README.md), med bestilte filnavn og genereringsprompter. Videre sømløshet og materialintegrasjon gjenstår.

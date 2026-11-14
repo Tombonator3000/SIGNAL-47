@@ -43,7 +43,11 @@ public:
 	void FillMap(FS47MapView& V) const;
 
 	// ---- the neighbor ----
-	void OpenBaca();
+	// NPC-DAY-FOLLOW-20261109: at noon he is in town (S47TownDay::EloyAt "feed"): his door does not answer, a card in it says where;
+	// bInTown: met at the Feed & Seed counter instead (S47TownUse), the same one thing a day.
+	void OpenBaca(bool bInTown = false);
+	// Pure: the card in his screen door while he is in town.
+	static FString BacaInTownCard();
 	bool BacaGone() const { return BacaBack > 0; }
 	// One thing he says (and whether it is true, for the tests): from what has gone on, by the game's seed and the day.
 	struct FTale { FString Key, Text, Place; bool bTrue = true; };
@@ -66,6 +70,9 @@ public:
 	// True: they came to this place after that night's event and went over the ground before the player looked (from the hour they
 	// came). Whatever left marks there for that night shows none.
 	bool Cleared(const FString& Place, int32 Night) const;
+	// M7-SPREAD-20261113: they have been and gone in the last Nights nights, and went over ground the player had not looked at first
+	// (FS47Predecessor::LateRackDue: the raked ground's morning log at the rack when nobody went out to it).
+	bool RakedRecently(int32 Nights) const;
 	// Where the marks at a cleared place were, road-local (S47FarmSite, S47Happenings): the raked circle is drawn there, not at the
 	// place's own point. Once per visit.
 	void RakeAt(const FString& Place, int32 Night, double RoadX, double RoadZ);

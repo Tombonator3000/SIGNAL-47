@@ -242,6 +242,8 @@ private:
 public:
  // Test: a work order at this dish, at this stage.
  FVector TruckPointForTest();
+ // The rack's parcel taken out into the player's hands (the cargo panel's button; critic 12 Nov). False: nothing loaded.
+ bool UnloadFromRack();
  void TestService(const FString& Dish,int32 Stage){ServiceTarget=Dish;Service=Stage;DoorK=0;bDoorOpen=false;ApplyServiceDoor();}
  double ServiceDoorOpen() const { return DoorK; }
  FVector ServiceDoorFace() const { return DoorFace; }

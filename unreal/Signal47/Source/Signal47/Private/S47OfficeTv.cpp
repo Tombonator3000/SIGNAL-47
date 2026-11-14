@@ -14,6 +14,7 @@
 #include "S47MotelTv.h"
 #include "S47Room6.h"
 #include "S47Story.h"
+#include "S47UiSound.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47WebAudio.h"
@@ -186,7 +187,10 @@ void FS47OfficeTv::Switch()
 	if (M && M->Audio)
 	{
 		US47Audio* A = M->Audio.Get();
-		FS47Sound O; O.At = Speaker(); O.Gain = 0.5f; O.Rate = *Off ? 0.9f : 1.05f;
+		// FIX10-7: the tube under the switch: its buzz swelling as the picture comes, running down as it goes (when there is one).
+		// Review 14 Nov: with the tube under it the switch is quieter, so that the pair is no louder than the switch was alone.
+		const bool bTube = (*Off ? Show != EShow::Off : Powered()) && S47UiSound::Tv(A, *Off ? S47UiSound::ETv::PowerOff : S47UiSound::ETv::PowerOn, Speaker(), S47UiSound::TubeWithSwitch);
+		FS47Sound O; O.At = Speaker(); O.Gain = bTube ? S47UiSound::SwitchWithTube : S47UiSound::SwitchAlone; O.Rate = *Off ? 0.9f : 1.05f;
 		A->Sfx(A->Or(TEXT("small_switch"), TEXT("click")), O);
 	}
 	UE_LOG(LogS47OfficeTv, Display, TEXT("S47: Operations television switched %s"), *Off ? TEXT("off") : TEXT("on"));
@@ -383,7 +387,9 @@ void FS47OfficeTv::Sound(double Dist, bool bThrough)
 {
 	US47Audio* A = M ? M->Audio.Get() : nullptr;
 	const auto Ctx = A ? A->Ctx : nullptr;
-	// (the hiss and the tone stay in the room: from the corridor and the control room only the programme comes through the wall)
+	// (the hiss and the tone stay in the room: from the corridor and the control room only the programme comes through the wall;
+	// FIX10-7: snow heard through the wall is a proposal put to Tom 14 Nov, not built in: the rule above stands)
+	const TSharedPtr<FS47AudioBuffer> Bed = S47UiSound::TvBed();
 	if (!Ctx || Show == EShow::Off || Dist > HEARD || (bThrough && Dist > NEAR_WALL)) { Hush(); return; }
 	FS47AudioContext::FBatch B(*Ctx);
 	if (!Snd)
@@ -395,13 +401,15 @@ void FS47OfficeTv::Sound(double Dist, bool bThrough)
 		const auto Tone = Gain(); const auto TOsc = Ctx->CreateOscillator(); TOsc->Frequency.SetValue(1000);
 		const auto Bp = Ctx->CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Frequency.SetValue(1300); Bp->Q.SetValue(0.5);
 		TOsc->Connect(Bp); Bp->Connect(Tone);
-		const auto Hiss = Gain(); const auto N = Ctx->CreateBufferSource(); N->Buffer = Noise; N->bLoop = true;
+		// FIX10-7: the hiss is the bought static bed when it is staged (lifted to the noise's own level through these filters), else noise
+		const auto Hiss = Gain(); const auto N = Ctx->CreateBufferSource(); N->Buffer = Bed ? Bed : Noise; N->bLoop = true;
 		const auto Hp = Ctx->CreateBiquadFilter(); Hp->SetType(TEXT("highpass")); Hp->Frequency.SetValue(450);
 		const auto Bh = Ctx->CreateBiquadFilter(); Bh->SetType(TEXT("bandpass")); Bh->Frequency.SetValue(2600); Bh->Q.SetValue(0.5);
 		N->Connect(Hp); Hp->Connect(Bh); Bh->Connect(Hiss);
 		const auto Whine = Gain(); const auto WOsc = Ctx->CreateOscillator(); WOsc->Frequency.SetValue(15734); WOsc->Connect(Whine);
-		TOsc->Start(); N->Start(); WOsc->Start();
-		Snd = FSnd{ Tone, Hiss, Whine, Wall, TOsc, [TOsc, N, WOsc, Spk] { TOsc->Stop(); N->Stop(); WOsc->Stop(); Spk->Disconnect(); } };
+		TOsc->Start(); N->Start(0, Bed ? FMath::FRand() * Bed->Duration() : 0.0); WOsc->Start();
+		Snd = FSnd{ Tone, Hiss, Whine, Wall, TOsc, [TOsc, N, WOsc, Spk] { TOsc->Stop(); N->Stop(); WOsc->Stop(); Spk->Disconnect(); },
+			Bed ? S47UiSound::TvBedLift(S47UiSound::EChain::Office) : 1.0 };
 		bOdd = false;
 	}
 	const double Now = Ctx->CurrentTime(), K = bThrough ? THROUGH : 1.0;
@@ -422,7 +430,7 @@ void FS47OfficeTv::Sound(double Dist, bool bThrough)
 		bOdd = false;
 	}
 	Ramp(Snd->Tone, ((Show == EShow::Card ? TONE : 0) + (bOdd ? ODD * FMath::Min(1.0, 0.4 + Jam) : 0)) * K);
-	Ramp(Snd->Hiss, ((Show == EShow::Snow ? SNOW_HISS : Show == EShow::Card ? CARD_HISS : 0) + JAM_HISS * Lost) * K);
+	Ramp(Snd->Hiss, ((Show == EShow::Snow ? SNOW_HISS : Show == EShow::Card ? CARD_HISS : 0) + JAM_HISS * Lost) * K * Snd->HissK);
 	Ramp(Snd->Whine, WHINE * K);
 	Snd->Wall->Frequency.SetTargetAtTime(bThrough ? WALL_LP : OPEN_LP, Now, 0.12);
 }

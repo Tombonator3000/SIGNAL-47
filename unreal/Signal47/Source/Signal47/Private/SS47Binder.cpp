@@ -1,13 +1,17 @@
 #include "SS47Binder.h"
+#include "S47Dossier.h"
 #include "S47GameStyle.h"
+#include "S47UiSound.h"
 #include "S47Gamepad.h"
 #include "S47Keys.h"
 #include "S47Kit.h"
 #include "S47Theme.h"
 
+#include "Framework/Application/SlateApplication.h"
 #include "Rendering/DrawElements.h"
 #include "Styling/CoreStyle.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SScaleBox.h"
@@ -34,10 +38,10 @@ namespace S47BinderUi
  FLinearColor RuleRed(){return C(0x8a3b2c);}
  FLinearColor FiledGreen(){return C(0x2f5d3a);}
  FLinearColor ToneInk(int32 Tone){return Tone>0?FiledGreen():Tone<0?S47Game::StampRed():InkDim();}
- // Each divider's card stock, faded: white for the index, then yellow, salmon, blue, green and buff.
+ // Each divider's card stock, faded: white for the index, then yellow, salmon, blue, green, lilac (UNKNOWNS) and buff.
  FLinearColor Stock(int32 Section)
  {
-  static const uint32 Tints[S47Binder::SecCount]={0xe9e3d2,0xe3d28a,0xdba892,0xa9bbc8,0xa8c09f,0xd6be8c};
+  static const uint32 Tints[S47Binder::SecCount]={0xe9e3d2,0xe3d28a,0xdba892,0xa9bbc8,0xa8c09f,0xc0b2cc,0xd6be8c};
   return C(Tints[FMath::Clamp(Section,0,int32(S47Binder::SecCount)-1)]);
  }
  const FButtonStyle* Bare(){return &FCoreStyle::Get().GetWidgetStyle<FButtonStyle>("NoBorder");}
@@ -99,7 +103,7 @@ namespace S47BinderUi
 void SS47Binder::Construct(const FArguments& Args)
 {
  Where=Args._View.IsValid()?Args._View:MakeShared<S47Binder::FView>();
- Source=Args._Source;OnFile=Args._OnFile;OnShown=Args._OnShown;OnOlder=Args._OnOlder;OnLeave=Args._OnLeave;
+ Source=Args._Source;OnFile=Args._OnFile;OnShown=Args._OnShown;OnOlder=Args._OnOlder;OnLeave=Args._OnLeave;OnDo=Args._OnDo;
  PadSeen=S47Gamepad::Changes();
  Refresh();
 }
@@ -108,7 +112,15 @@ void SS47Binder::Tick(const FGeometry& G,const double Time,const float Dt)
  SCompoundWidget::Tick(G,Time,Dt);
  S47Theme::KeepFocus(SharedThis(this));
  // The hints name the keys of whatever is in the hand now.
- if(const uint32 Pad=S47Gamepad::Changes();Pad!=PadSeen){PadSeen=Pad;Rebuild();}
+ if(const uint32 Pad=S47Gamepad::Changes();Pad!=PadSeen)
+ {
+  PadSeen=Pad;
+  // REVIEW (14 Nov): the name being written in the file's field, and the keys it has, outlast the hints drawn again
+  const bool bHad=NameBox.IsValid(),bTyping=bHad&&NameBox->HasAnyUserFocusOrFocusedDescendants();
+  const FText Typed=bHad?NameBox->GetText():FText();
+  Rebuild();
+  if(bHad&&NameBox.IsValid()){NameBox->SetText(Typed);if(bTyping)FSlateApplication::Get().SetAllUserFocus(NameBox,EFocusCause::SetDirectly);}
+ }
 }
 int32 SS47Binder::Section() const{return Where->Tab;}
 const S47Binder::FEntry* SS47Binder::Shown() const
@@ -137,7 +149,7 @@ void SS47Binder::Refresh()
 }
 void SS47Binder::Turn(int32 Dir)
 {
- Forget();Where->Tab=(Section()+Dir+S47Binder::SecCount)%S47Binder::SecCount;Where->Pick.Reset();Where->Page=0;Refresh();
+ S47UiSound::Play(nullptr,S47UiSound::EKind::Page);Forget();Where->Tab=(Section()+Dir+S47Binder::SecCount)%S47Binder::SecCount;Where->Pick.Reset();Where->Page=0;Refresh();
 }
 void SS47Binder::Move(int32 Dir)
 {
@@ -151,7 +163,7 @@ void SS47Binder::Leaf(int32 Dir,bool bRound)
  const S47Binder::FEntry* Page=Shown();const int32 Count=Page?Page->Pages.Num():0;if(Count<2)return;
  const int32 To=bRound?(Where->Page+Dir+Count)%Count:FMath::Clamp(Where->Page+Dir,0,Count-1);
  if(To==Where->Page)return;
- Where->Page=To;Rebuild();
+ S47UiSound::Play(nullptr,S47UiSound::EKind::Page);Where->Page=To;Rebuild(); // FIX10-7: a page turned (and a section, above)
 }
 void SS47Binder::Open(const FString& EntryKey)
 {
@@ -168,11 +180,25 @@ void SS47Binder::File()
  if(bFiled){Where->Tab=S47Binder::SecToday;Where->Pick=FString(TEXT("today:"))+Key;Where->Page=0;}
  Refresh();
 }
+void SS47Binder::Perform(const FString& Do)
+{
+ // EVIDENCE-DOSSIER slice 3: the session does it (at the binder only); the slip goes on the file's page, and that page stays open
+ if(!OnDo)return;
+ const S47Binder::FEntry* Page=Shown();
+ const FString Typed=NameBox.IsValid()?NameBox->GetText().ToString():(Page?Page->NameNow:FString());
+ FString Words;const bool bDone=OnDo(Do,Typed.IsEmpty()&&Page?Page->NameSuggest:Typed,Words);
+ // the file it is now: two filed as one stand in the lower number, from whichever page it was done (S47Binder::PageAfterDo)
+ const int32 Number=S47Binder::PageAfterDo(Do,bDone);
+ const FString Key=Number>0?S47Binder::UnknownKey(Number):(Page?Page->Key:FString());
+ Where->Pick=Key;Where->Page=0;Where->Note=Words;Where->NoteKey=Key;
+ Refresh();
+}
 void SS47Binder::Act()
 {
  if(!List.IsValidIndex(Chosen))return;
  const S47Binder::FRow Line=List[Chosen]; // a copy: what follows makes the list again
  if(Line.bFile){File();return;}
+ if(!Line.Do.IsEmpty()){Perform(Line.Do);return;}
  if(Line.bOlder){if(OnOlder)OnOlder();return;}
  if(!Line.Jump.IsEmpty()){Open(Line.Jump);return;}
  if(Line.Goto>=0){Forget();Where->Tab=Line.Goto;Where->Pick.Reset();Where->Page=0;Refresh();return;}
@@ -189,6 +215,12 @@ FReply SS47Binder::OnKeyDown(const FGeometry&,const FKeyEvent& E)
 {
  const TSharedRef<SWidget> Keep=AsShared(); // a key may close the binder under its own feet
  const FKey K=E.GetKey();const bool bBoard=!K.IsGamepadKey(),bFresh=!E.IsRepeat();
+ // EVIDENCE-DOSSIER slice 3: while the name field has the keys they are its own; Escape or Tab gives them back to the binder
+ if(NameBox.IsValid()&&NameBox->HasAnyUserFocusOrFocusedDescendants())
+ {
+  if(K==EKeys::Escape||K==EKeys::Tab||K==EKeys::Gamepad_FaceButton_Right){FSlateApplication::Get().SetAllUserFocus(SharedThis(this),EFocusCause::SetDirectly);return FReply::Handled();}
+  return FReply::Unhandled();
+ }
  if(K==EKeys::Escape||K==EKeys::Tab||K==EKeys::Gamepad_FaceButton_Right||K==EKeys::Gamepad_Special_Left||K==EKeys::Gamepad_Special_Right
   ||(bBoard&&bFresh&&(S47Keys::Is(TEXT("notebook"),K)||S47Keys::Is(TEXT("pause"),K))))
  {
@@ -232,7 +264,7 @@ TSharedRef<SWidget> SS47Binder::TabStrip()
   Strip->AddSlot().AutoWidth().VAlign(VAlign_Bottom).Padding(0,0,P(5),0)
   [
    Press(SNew(SBorder).BorderImage(S47Game::Box4(Card,FVector4(5,5,0,0))).Padding(FMargin(P(11),P(bOpen?9:6),P(11),P(bOpen?9:5)))[Label],
-    [this,S]{if(S==Section())return;Forget();Where->Tab=S;Where->Pick.Reset();Where->Page=0;Refresh();})
+    [this,S]{if(S==Section())return;S47UiSound::Play(nullptr,S47UiSound::EKind::Page);Forget();Where->Tab=S;Where->Pick.Reset();Where->Page=0;Refresh();})
   ];
  }
  return Strip;
@@ -299,7 +331,7 @@ TSharedRef<SWidget> SS47Binder::ListPage()
 TSharedRef<SWidget> SS47Binder::SheetPage()
 {
  using namespace S47BinderUi;
- SheetScroll.Reset();
+ SheetScroll.Reset();NameBox.Reset();
  const S47Binder::FEntry* Page=Shown();
  TSharedRef<SVerticalBox> Col=SNew(SVerticalBox);
  if(!Page)
@@ -335,6 +367,29 @@ TSharedRef<SWidget> SS47Binder::SheetPage()
  Field(TEXT("DATE"),E.When,Ink());
  if(E.Showed!=E.What)Field(TEXT("SHOWED"),E.Showed,Ink());
  Field(TEXT("STATUS"),E.StatusLine,ToneInk(E.Tone));
+ // EVIDENCE-DOSSIER slice 3: a file of the unknown: its working name, written here at the binder (filled with a plain suggestion
+ // until the player writes his own); a reading copy says where that is done
+ NameBox.Reset();
+ if(E.Unknown>0&&Model.bAtBinder)
+ {
+  const FString Do=FString::Printf(TEXT("name:%d"),E.Unknown);
+  Col->AddSlot().AutoHeight().Padding(0,P(6),0,0)
+  [
+   SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SBox).WidthOverride(P(92))[Typed(TEXT("NAME"),13,InkDim(),0,2)]]
+   +SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
+   [
+    SAssignNew(NameBox,SEditableTextBox).Text(FText::FromString(E.NameNow.IsEmpty()?E.NameSuggest:E.NameNow)).HintText(FText::FromString(S47Dossier::NameHint())).Font(S47Game::Type(16))
+    .OnTextCommitted_Lambda([this,Do](const FText&,ETextCommit::Type Commit)
+    {
+     if(Commit!=ETextCommit::OnEnter)return;
+     Perform(Do);
+     FSlateApplication::Get().SetAllUserFocus(SharedThis(this),EFocusCause::SetDirectly);
+    })
+   ]
+  ];
+ }
+ else if(E.Unknown>0)Col->AddSlot().AutoHeight().Padding(0,P(6),0,0)[Typed(S47Dossier::AwayWords(),15,S47Game::StampRed(),SheetText)];
  // the slip the last filing left on this page
  if(!Where->Note.IsEmpty()&&Where->NoteKey==E.Key)
   Col->AddSlot().AutoHeight().HAlign(HAlign_Left).Padding(0,P(10),0,0)

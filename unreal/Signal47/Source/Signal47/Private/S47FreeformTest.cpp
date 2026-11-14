@@ -108,11 +108,12 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  {S47J::Set(O,TEXT("scope"),TEXT("story-camera-after-freeform"));S47J::Set(O,TEXT("method"),TEXT("Explicit chapter1 start and approach fixtures; physical pickup ray/OnUse, native Story shutter. Quarantined case metadata enables WriteSave API then title Continue callback; not a native save-menu/button test. No Story progress injection."));S47J::Set(O,TEXT("sourceFreeformCamera"),FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraUnowned"))?TEXT("unowned"):TEXT("owned"));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47RescueJourneyTest"))){S47J::Set(O,TEXT("scope"),TEXT("rescue-journey-native"));S47J::Set(O,TEXT("method"),TEXT("New worn game with a declared saved-state fixture: empty account, debt, outage, no spares, closed garage, after hours. Production door, truck, shop, parcel, rack, roadside, receiving, feeder, recording, printer, registration and pump callbacks; actual button SimulateClick and eye-ray at the counter; two short real drives; disk/Flow restores. Explicit fixtures replace the long drives, the walking approaches and the receiver dials, and one fixture sets the near-empty tank. Not human input, route-finding or balance acceptance."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))){S47J::Set(O,TEXT("scope"),TEXT("array-wear-native"));S47J::Set(O,TEXT("method"),TEXT("New worn game with explicit stock and player-placement fixtures; physical eye-ray at branch junctions, actual repair button, disk/Flow restore. No drive to the antennas or shop trip."));}
- if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){S47J::Set(O,TEXT("scope"),TEXT("internal-control-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit discrepancy and tuning fixtures; real recording, printer, RECORD tab and SimulateClick; no OS mouse."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){S47J::Set(O,TEXT("scope"),TEXT("internal-control-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit discrepancy and tuning fixtures; real recording; receiver tabs and keys by SimulateClick (the glass is a virtual window); the reel deck by Slate pointer events through hit testing (move, down, up a frame later); no OS mouse."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))){S47J::Set(O,TEXT("scope"),TEXT("garage-start-native"));S47J::Set(O,TEXT("method"),TEXT("Real walking and driving input from the new-game start; door toggles and the wall control use production callbacks without aiming; the trip to the garage is a declared placement."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47StationFilesTest"))){S47J::Set(O,TEXT("scope"),TEXT("station-files-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room. The files are shown through the session's own records screen, on the OPS glass and as the binder's paper; the clock is advanced to the third morning."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TvChannelTest"))){S47J::Set(O,TEXT("scope"),TEXT("tv-channel-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room, the operator set down in front of Dale's set in Operations. The switch is used through the player's own use callback; the interference is asked for as F10 asks for it; the clock is advanced to half a minute before two and the sign-off then comes by itself, in real time."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47DevMenuTest"))){S47J::Set(O,TEXT("scope"),TEXT("dev-menu-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room. F10 is opened as the key opens it; the keys and the typed search go to the screen's own key handlers; a line is started from a search and its effect read back from the station's channel."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47TasksShotTest"))){S47J::Set(O,TEXT("scope"),TEXT("tasks-shots-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room. Night 2 at 20:30 and 01:40 and day 3 at 13:00 by clock jumps; a bearing as a save keeps it, Dale's words given to DaleSaid, the pin as F2 sets it; the pause menu and the notebook opened as their keys open them; screenshots for a look, no human acceptance."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47SkyCutTest"))){S47J::Set(O,TEXT("scope"),TEXT("sky-cut-native"));S47J::Set(O,TEXT("method"),TEXT("Developer start in the control room. A flyover forced with its sag (SkyCutNext, 6 s and 8 s instead of 45 and 75), the generator given a fuelled tank and started at its own control."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FirstStartTest"))){S47J::Set(O,TEXT("scope"),TEXT("first-start-native"));S47J::Set(O,TEXT("method"),TEXT("New game at the mailbox (-S47MailboxStart). Production door, mailbox and switch callbacks without aiming; real walking through the visitor entrance; the trips between the box and the door are declared placements."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47WorkshopTest"))){S47J::Set(O,TEXT("scope"),TEXT("workshop-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit stock, player-placement and tuning fixtures; physical bench ray, actual SButton callbacks, three disk/Flow restores. No shop trip, natural discovery or full two-hour tape."));}
@@ -240,6 +241,10 @@ void FS47FreeformTest::Step(double Dt)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47SkyCutTest"))){StepSkyCut(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TvChannelTest"))){StepTvChannel(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47DevMenuTest"))){StepDevMenu(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47TasksShotTest"))){StepTasksShots(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47RecordsShotTest"))){StepRecordsShots(Dt);return;}
+ {FString LandPlace;if(FParse::Value(FCommandLine::Get(),TEXT("S47LandPlaceShotTest="),LandPlace)){StepLandPlaceShots(Dt);return;}}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47HighwayWallTest"))){StepHighwayWall(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47StationFilesTest"))){StepStationFiles(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){StepInternalControl(Dt);return;}
  // D45-20261110 (-S47FreeformTest -S47SpineLeakTest): a Story night, then Freeform in the same run, as Tom played d45. The spine's
@@ -859,9 +864,12 @@ void FS47FreeformTest::Step(double Dt)
    Job.ControlAt=8;Job.DuplicateFeed=FS47FreeformSession::PrinterSeconds;
    if(!Hint(TEXT("PRINTER"),TEXT("WITHOUT ALTERING THE ORIGINAL"),TEXT("Printer")))return;
    Job.bDuplicateCollected=true;if(!Hint(TEXT("OPS"),TEXT("PRESS COMPARE AND REGISTER"),TEXT("OPS")))return;
-   // GAMEPLAY-LOOP-01: the extra-tick take asks for no control: the reel deck, then OPS's one button
-   Job.Phenomenon=TEXT("extra_pulse");Job.bControl=false;Job.ControlAt=0;Job.bDuplicateCollected=false;
-   if(!Hint(TEXT("REEL DECK"),TEXT("PLAY THE TAKE ONCE"),TEXT("Reel deck")))return;
+   // GAMEPLAY-LOOP-01, RX-ANOMALY-FLOW-20261113: the extra-tick take is retained on the receiver's RECORD tab with its reference, then
+   // the reel deck (play, mark, RETAIN), then OPS's one button
+   Job.Phenomenon=TEXT("extra_pulse");Job.bControl=false;Job.ControlAt=0;Job.bDuplicateCollected=false;Job.bPrinted=false;
+   if(!Hint(TEXT("RECEIVER"),TEXT("RECORD TAB, RETAIN THE TAKE"),TEXT("RECORD tab")))return;
+   Job.bPrinted=true;Job.bControl=true;Job.ControlAt=8;
+   if(!Hint(TEXT("REEL DECK"),TEXT("PRESS RETAIN"),TEXT("Reel deck")))return;
    Job.bAudioReviewed=true;if(!Hint(TEXT("OPS"),TEXT("CONFIRM THE ANOMALY"),TEXT("OPS")))return;
    Job.Stage=J::Registered;Job.PacketFeed=FS47FreeformSession::PrinterSeconds;if(!Hint(TEXT("PRINTER"),TEXT("COLLECT"),TEXT("Printer")))return;
    Job.Stage=J::Packet;if(!Hint(TEXT("RECORDS ROOM"),TEXT("BINDER"),TEXT("binder")))return;
@@ -1151,6 +1159,9 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==8707)
   {
    if(M->World->bBusy)return;M->World->PlaceTruck(TEXT("saro"));const FVector Cargo=F.Field->InteractionPoint(TEXT("ff:cargo"));Place(Cargo+FVector(1.4,0,0));F.Field->Use(TEXT("ff:cargo"));
+   // Critic 12 Nov: the loaded rack opens its panel; unloading is its button.
+   if(!Check(F.Field->ParcelStage()==3&&M->UI->Modal(),TEXT("the loaded rack opens its panel and keeps the parcel until its unload button")))return;
+   F.Field->UnloadFromRack();M->UI->Close(true);
    if(!Check(F.Field->ParcelStage()==2&&Contents()&&StockUnchanged(),TEXT("physical unloading keeps the same basket in hand before receiving")))return;
    const FVector Receiving=F.Field->InteractionPoint(TEXT("ff:delivery"));Place(Receiving+FVector(0,0,1.5));F.Field->Use(TEXT("ff:delivery"));
    if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.InventoryCount(TEXT("relay"))==ShopRelays+1&&F.Field->DeliveredParcels()==ShopDelivered+1&&F.Field->CargoDeliveries()==ShopCargo+1&&F.Budget()==ShopCash-35,TEXT("one garage delivery credits exact basket contents and one cargo transaction")))return;
@@ -1667,7 +1678,9 @@ void FS47FreeformTest::Step(double Dt)
   if(JobIndex==1)
   {
    if(F.CurrentJob()->Stage!=J::Recorded)return;
-   if(!Check(F.CurrentJob()->bAnomaly&&F.CurrentJob()->bPrinted&&!F.CurrentJob()->OriginalPage.IsEmpty()&&!F.CanRecordControl()&&F.JobNextAction(*F.CurrentJob()).StartsWith(TEXT("REEL DECK")),TEXT("the unusual take is kept at once and sends the player to the reel deck: ")+F.JobNextAction(*F.CurrentJob())))return;
+   // RX-ANOMALY-FLOW-20261113: it waits on the receiver's RECORD tab; RETAIN TAKE keeps the page and records the 8-second reference
+   if(!Check(F.CurrentJob()->bAnomaly&&!F.CurrentJob()->bPrinted&&FS47FreeformSession::RetainWaits(*F.CurrentJob())&&!F.CanRecordControl()&&F.JobNextAction(*F.CurrentJob()).Contains(TEXT("RECORD TAB, RETAIN THE TAKE")),TEXT("the unusual take waits on the receiver's RECORD tab: ")+F.JobNextAction(*F.CurrentJob())))return;
+   if(!Check(F.RetainTake()&&F.CurrentJob()->bPrinted&&!F.CurrentJob()->OriginalPage.IsEmpty()&&F.CurrentJob()->bControl&&F.JobNextAction(*F.CurrentJob()).StartsWith(TEXT("REEL DECK")),TEXT("RETAIN TAKE keeps the original and records its reference; the reel deck is next: ")+F.JobNextAction(*F.CurrentJob())))return;
    M->UI->Close(true);Go(5);return;
   }
   if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
@@ -1685,8 +1698,8 @@ void FS47FreeformTest::Step(double Dt)
  {
   if(F.AudioPlaying())return;
   if(!Check(F.CurrentJob()->OriginalCovered>=18,TEXT("original recording really played through")))return;
-  // GAMEPLAY-LOOP-01: one listen confirms it; the marks come by themselves, and no control is asked for
-  if(!Check(F.CurrentJob()->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.CurrentJob()->ControlCovered==0&&F.CurrentJob()->MarkStart>=0&&F.CurrentJob()->MarkEnd>F.CurrentJob()->MarkStart,TEXT("one listen at the reel deck confirms the anomaly")))return;
+  // RX-ANOMALY-FLOW-20261113: one listen no longer confirms it by itself; RETAIN does (Stage 8), the marks filled in when none are set
+  if(!Check(!F.CurrentJob()->bAudioReviewed&&FS47FreeformSession::TapeHeard(*F.CurrentJob())&&F.CurrentJob()->ControlCovered==0,TEXT("one listen at the reel deck leaves RETAIN to the operator")))return;
   F.AudioAction(TEXT("original"));Shot(TEXT("audio-comparison"));Go(FParse::Param(FCommandLine::Get(),TEXT("S47ReelShots"))?71:8,.3);return;
  }
  // FIX-20261110: -S47ReelShots stops here with the reel deck panel open, still and then running (pictures only).
@@ -1696,7 +1709,7 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==74){Finish(true,TEXT("Reel deck panel pictures taken; the journey was not continued."));return;}
  if(Stage==8)
  {
-  if(!Check(F.AudioAction(TEXT("confirm"))&&F.CurrentJob()->bAudioReviewed&&F.FeedbackText().Contains(TEXT("Confirm anomaly")),TEXT("RETAIN after the one listen keeps it and names OPS")))return;
+  if(!Check(F.AudioAction(TEXT("confirm"))&&F.CurrentJob()->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.CurrentJob()->MarkStart>=0&&F.CurrentJob()->MarkEnd>F.CurrentJob()->MarkStart&&F.FeedbackText().Contains(TEXT("Confirm anomaly")),TEXT("RETAIN after the one listen confirms it, marks the ticks and names OPS")))return;
   M->UI->Close(true);if(!Restore(TEXT("reviewed-recordings")))return;F.Director->Stop();Go(9);return;
  }
  if(Stage==9)
@@ -1773,6 +1786,8 @@ void FS47FreeformTest::Step(double Dt)
   if(M->World->bBusy)return;M->World->PlaceTruck(TEXT("saro"));
   const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X+1.4,P.Z,0);
   F.Field->Use(TEXT("ff:cargo"));
+  if(!Check(F.Field->ParcelStage()==3&&M->UI->Modal(),TEXT("the loaded rack opens its panel instead of emptying itself")))return;
+  F.Field->UnloadFromRack();M->UI->Close(true);
   if(!Check(F.Field->ParcelStage()==2,TEXT("truck cargo must be unloaded before physical bench delivery")))return;
   Go(43,.3);return;
  }

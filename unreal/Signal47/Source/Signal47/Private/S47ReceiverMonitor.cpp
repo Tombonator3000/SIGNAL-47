@@ -1,6 +1,7 @@
 #include "S47Audio.h"
 #include "S47Rx.h"
 #include "S47ReceiverTexture.h"
+#include "S47RxSearch.h"
 
 void US47Audio::ReceiverTextureStop(FReceiverTextureGraph& G)
 {
@@ -122,5 +123,8 @@ bool US47Audio::ReceiverMonitorSelfTest(TArray<FString>& Lines)
  A->ReceiverRecordingOff();Check(Render()<1e-5,TEXT("tape stop releases its graph"));
  A->StartCarrier();A->SetCarrier(.04,0,0);A->ReceiverMonitorOff();
  Check(Render()>.005,TEXT("inactive monitor does not mute the Story-owned carrier"));
+ { // RX-SEARCH-SOUND-20261113: Tom's search layer, on a context of its own (the carrier above keeps playing on this one)
+  auto* B=NewObject<US47Audio>();B->Unlock(false,false);Good&=FS47RxSearch::SelfTest(B,Lines);
+ }
  return Good;
 }

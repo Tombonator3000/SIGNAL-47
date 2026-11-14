@@ -49,6 +49,10 @@ private:
  void StepStationFiles(double Dt); // -S47StationFilesTest (S47StationFilesTest.cpp)
  void StepTvChannel(double Dt); // -S47TvChannelTest (S47TvChannelTest.cpp)
  void StepDevMenu(double Dt); // -S47DevMenuTest (S47DevMenuTest.cpp)
+ void StepTasksShots(double Dt); // -S47TasksShotTest (S47TasksShotTest.cpp): TASKS-TEN-20261113's surfaces shot for a look
+ void StepHighwayWall(double Dt); // -S47HighwayWallTest (S47HighwayWallTest.cpp): HWY-WALL-20261113, what holds anyone on the old highway fence lines
+ void StepRecordsShots(double Dt); // -S47RecordsShotTest (S47RecordsShotTest.cpp): the records room for reference pictures
+ void StepLandPlaceShots(double Dt); // -S47LandPlaceShotTest=windmill (S47LandPlaceShotTest.cpp): LAND-PLACES-20261114, a land place from four distances and close up
  double BoxX=0,BoxZ=0,BoxYaw=0;
  void StepInternalControl(double Dt);
  TSharedPtr<struct FS47WorkshopJourneyState> WorkshopJourney;

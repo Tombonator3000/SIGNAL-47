@@ -137,7 +137,22 @@ public:
  bool DevUnease(int32 I,FString& Why);
  bool UneaseLive() const{return Uneasy.I>=0;}
  int32 UneaseDoneTonight() const{return UneaseDone.Num();}
+ // UNEASE-20261114 (URO.md's rules, pure): «høyst to til tre uroting per natt»: three at most, two on a calm night (its quiet is the
+ // night's own); never the same piece two nights running; never two within three quarters of an hour of the night's clock, so that
+ // one is not heard on top of the last. Asked of every piece that is not F10's: the night's own, the reserve at midnight and the floor.
+ static constexpr int32 UneaseMost=3,UneaseMostCalm=2;
+ static constexpr double UneaseGapS=45*60.;
+ // How many tonight wants: one in the first week, two in the second, then up to the cap. Many: the night's own roll, 0 to 1.
+ static int32 UneaseWantFor(int32 Night,float Many,bool bCalm);
+ // LastNightOfIt: the night this piece last came (0 never); LastClock: the clock the last piece of any kind came (-1e9 none).
+ static bool UneaseMayCome(int32 Night,int32 DoneTonight,bool bCalm,int32 LastNightOfIt,double LastClock,double Clock,FString* Why=nullptr);
+ static bool UneaseRulesSelfTest(TArray<FString>& Lines);
  static bool SelfTest(TArray<FString>& Lines);
+ // M1-MEASURE-20261113: another system's encounter, perceived by the player (its own seen/heard/told), into tonight's summary line
+ // ("other noticed"). Kind is the summary's word for it; Key makes it once a night (a place, a serial). Measurement only.
+ void OtherNoticed(const TCHAR* Kind,const FString& Key);
+ // The same from anywhere with a game: Freeform with happenings only, nothing otherwise.
+ static void TellOther(US47Main* M,const TCHAR* Kind,const FString& Key);
 
  // LOOP-4-20261109 (HELHETLIG_LOKKE step 4). The night's one pointing-out at the land (FS47FreeformDirector::MayPointOut) is taken by
  // the array's own burst and by a landing the array logs with nobody watching, as by the bearing slip: true when this one may point
@@ -152,6 +167,24 @@ public:
  static double FirstBurstHour(int32 Seed);
  static double FirstUneaseHour(int32 Seed);
  bool FirstBurstOwed(int32 Night) const;
+ // M1-FLOOR-20261112 (TODO «Milepæler for Freeform», M1: something every night that the player notices). If by two on the night's
+ // clock (M1-FLOOR-20261113: was three; the full tier's first hour, so that two hours are left for it before four) nothing the player
+ // noticed has happened tonight (Noticed, the night's tally), the rhythm loosens (FS47Rhythm::Loosens) for one
+ // small thing where the player is now: one of FloorOrder's events or a piece of unease (FloorUneaseFits), each asked by its own
+ // conditions as the night would ask them, tiers and hours included. Never a danger, never on a Story night, the big night's night or
+ // the first night (each is authored). Once a night at most, saved ("floorNight"; and "noticedNight", so that a Continue knows
+ // something was noticed already). Until half past five; after that nothing more is made up for.
+ static constexpr double FloorFrom=26.,FloorUntil=29.5;
+ static bool FloorOpen(double Hour,int32 Night,bool bNoticedTonight,int32 FloorDone,bool bAuthored);
+ // The events the floor may offer where the player is (SituationNow's bits), in tonight's order (the seed's): those heard or felt at
+ // the player as they start first (FloorHeard), then those that must be seen. A calm night: only the small ones.
+ static TArray<FString> FloorOrder(uint32 Sit,bool bQuiet,int32 Seed,int32 Night);
+ static bool FloorHeard(const FString& Id);
+ // The unease the floor may offer: heard or seen at the player at once (not the strong once-a-game ones, nor those that wait for a moment).
+ static bool FloorUneaseFits(int32 I);
+ // M1-FLOOR-20261113: where each of them can be had (SituationNow's bits, all of them; 0: not the floor's), as FireUnease asks it.
+ static uint32 FloorUneaseWhere(int32 I);
+ static bool FloorSelfTest(TArray<FString>& Lines);
  // The magnetometer's history (FS47Places::Use): something has happened near a place in the last two nights, whether or not anyone
  // saw it (what stands out there now, and what stood there and has gone). Road-local metres; Day as FS47FreeformSession::Day. Not a
  // bearing's sector: a needle that swung wherever a bearing points would be a metal detector.
@@ -200,7 +233,8 @@ public:
  static FBigPlan BigPlanFor(int32 Seed);
  // CHAIN-4-20261109 (SAMMENFLETTING step 4): the same night again in week two (Round 1, nights 9 to 12) and week three (Round 2, 16 to
  // 19), each in a shape the player has not had (Had: the shapes that came) and somewhere it has not stood. Round 0 is BigPlanFor.
- static constexpr int32 BigRounds=3;
+ // M7-SPREAD-20261113: and week four (Round 3, nights 23 to 26), in any shape but the last one's once all three have come.
+ static constexpr int32 BigRounds=4;
  static FBigPlan BigPlanAt(int32 Seed,int32 Round,const TArray<int32>& Had);
  static const TCHAR* BigVariantName(int32 Variant);
  static int32 BigVariantOf(const FString& Name);
@@ -257,6 +291,45 @@ public:
  // Real minutes from 08:00 on day 1 to Hour on an unheld clock (daylight 13 h in 30 minutes, the dark 11 h in 45).
  static double FirstRealMinutes(double Hour);
  static bool FirstDaySelfTest(TArray<FString>& Lines);
+
+ // NIGHT31-PLACES-20261114 (S47NightPlaces.cpp; TODO NIGHT31-20261108 and ANYWHERE-20261108, Tom 8 November: «hendelser ved gården
+ // kan komme hvor som helst i verdenen»). Nine more of the night's happenings, each at one place of the catalogue beyond the farm and
+ // made of what the world already has: its sounds, its lamps, the gas station's bay door, the needle's history, the night log.
+ //   Heard  windmill_knock (the Baca windmill), school_swing (the school's playground), mine_knock (the old mine), bay_door (the gas
+ //          station's service bay): heard from within a band of the place, stopped when the player comes up to it.
+ //   Lit    cemetery_lamp (a lamp among the graves), shack_lamp (a lamp in the line shack), road_flare (a flare on the shoulder ahead):
+ //          seen by their own light, out when the player comes up.
+ //   Mark   cairn_stones (stones laid in a ring round the cairn), trough_birds (dead birds round the trough): left out there unseen,
+ //          found close to in light, by day or by the lamp; they stir the needle while they stand.
+ // Each one noticed leaves a night record (OUT ON THE LAND, the night log's SEEN AND HEARD, Dr. Ward's remark), something the
+ // cb_echo voice can say back, and its place on the needle's history; the bay door stays up (a way into the station through the
+ // bay, saved by the town's doors); the birds nobody found are talked of the next evening. Tiers, weeks and hours are director.json's.
+ enum class EPlaceShape:uint8{Heard,Lit,Mark};
+ struct FPlaceDef{const TCHAR* Id;const TCHAR* Place;EPlaceShape Shape;int32 FromDay;float Usual;double From,Span;bool bCalm;const TCHAR* Key;};
+ static const TArray<FPlaceDef>& PlaceDefs();
+ static const FPlaceDef* PlaceDef(const FString& Id);
+ // The record one leaves (its key: Key followed by the night). Outcome 0: heard or seen from off; 1: walked up to it; 2: a mark found
+ // after it was heard. Pure.
+ static FString PlaceRecord(const FString& Id,const FString& Clock,int32 Outcome,const FString& Title);
+ // The clock as a record says it, never on the minute that reads as Story's number.
+ static FString PlaceClock(double Clock);
+ static uint32 PlaceSalt(const FString& Id);
+ // NIGHT31-PLACES review (14 November, «felt, not fired»), the rules by themselves:
+ //  a light starts only with its place in front of the player (PlaceStartDeg, the cab's nose or the eye) and counts as seen within
+ //  PlaceSeenDeg; a sound counts as heard within half of its reach, the cairn's stones within CairnHeardM; the windmill and the swing
+ //  only below PlaceStillMph (the records say there was no wind); none on a Story night but F10's; whatever holds the ground ends at
+ //  half past five or when the day turns (after a sleep nothing burns on into the morning); the marks are talked of from 19:30 to
+ //  01:00 any evening after, until they are said or found. One never noticed spends neither the night's start nor its cooldown.
+ static constexpr double PlaceStartDeg=35.,PlaceSeenDeg=22.,PlaceStillMph=5.,CairnHeardM=400.,PlaceTalkFrom=19.5,PlaceTalkUntil=25.;
+ static bool PlaceInView(double OffDeg,double DistM,double MaxM){return OffDeg>=0&&OffDeg<=PlaceStartDeg&&DistM>=0&&DistM<=MaxM;}
+ static bool PlaceHeardAt(double DistM,double MaxM){return DistM>=0&&DistM<=MaxM*.5;}
+ static bool PlaceStill(double Mph){return Mph<PlaceStillMph;}
+ static bool PlaceMayRun(bool bForced,bool bStoryNight){return bForced||!bStoryNight;}
+ static bool PlaceOver(double StartClock,double Clock);
+ static bool PlaceTalkNow(double HourOfNight,int32 SiteNight,int32 Today){return SiteNight<Today&&HourOfNight>=PlaceTalkFrom&&HourOfNight<PlaceTalkUntil;}
+ // What a driver on the CB says of one heard far off (Id a heard one) or of a mark the next evening; bPassed: as Dale passes it on.
+ static FString PlaceWord(const FString& Id,const FString& Named,bool bPassed);
+ static bool PlaceSelfTest(TArray<FString>& Lines);
 
  // A place for one of these, with what it needs: the catalogue's, or the land's own.
  struct FSpot{FString Place,Title;double X=0,Z=0;bool bSet=false;};
@@ -317,7 +390,7 @@ private:
  // The counter.
  // D45-20261110: no tick debt any more (the counts are a Poisson process, S47Hap::PoissonCount): GmMeter is the dial's own count rate,
  // counts a second through its time constant, and bGmRoar whether the dense loop of counts is playing where it pegs.
- float Dose=0,Needle=0;double GmMeter=0,GeigerUpFor=0,GeigerNoteIn=0;bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false,bGeigerAway=false,bGmRoar=false;
+ float Dose=0,Needle=0;double GmMeter=0,GeigerUpFor=0,GeigerNoteIn=0,GeigerReadFor=0; /* GeigerReadFor: EVIDENCE-DOSSIER slice 2, seconds out and near what came */ bool bGeigerUp=false,bGeigerHeld=false,bDevGeiger=false,bGeigerAway=false,bGmRoar=false;
  TSet<FString> GeigerNoted;
  // ---- the night ----
  void PlanTonight(int32 Night);
@@ -334,8 +407,11 @@ private:
  double NearK=1,DangerAt=-1;
  static constexpr double DangerUntil=29.;
  // Measured for the log (Tom's critics: the run must say what the player met, how far off, and whether they noticed it).
- struct FTally{int32 Night=0,NStarted=0,NNoticed=0,NNear=0,NMet=0,NRefused=0;double Nearest=1e9;};
+ // M1-MEASURE-20261113: what the player met tonight from the other systems (a visit, a taking, the director's events, the highway's
+ // light, the animals, the idle lure, the visitors), each told once a night by its own key. Only for the log; never saved.
+ struct FTally{int32 Night=0,NStarted=0,NNoticed=0,NNear=0,NMet=0,NRefused=0;double Nearest=1e9;TArray<TPair<FString,int32>> Other;TSet<FString> OtherKeys;int32 NOther=0;};
  FTally Tally;
+ FString SummaryText() const;
  TSet<int32> NoticedSerials;
  TMap<FString,FString> RefusedSaid;
  mutable TSet<FString> LateDrawSaid;
@@ -360,6 +436,13 @@ private:
  void StepEvent(double Dt);
  void StepSites(double Dt);
  void StepLate();
+ // M1-FLOOR-20261112: the night's floor (FloorOpen). FloorNight: the night it offered (saved); NoticedNight: the last night something
+ // was noticed (saved); FloorWarned: the event the animals went ahead of for it, let through loosened when it comes; bFloorTry: the
+ // rhythm is asked loosened (MayStart) while the floor tries.
+ void StepFloor();
+ // The floor's event or unease has started: the night has had its floor (saved, and an autosave asked for).
+ void FloorStarted(int32 Night);
+ int32 FloorNight=0,NoticedNight=0,FloorNoneNight=0;double FloorTryClock=0;bool bFloorTry=false;FString FloorWarned;
  // Drawing to where the player is (coordinator, 8 November): a draw that cannot happen there gives its place to one that can.
  uint32 SituationNow() const;
  static uint32 NeedMask(const FString& Id);
@@ -439,6 +522,20 @@ private:
  bool BeginMore(const FString& Id,const FString& Variant,bool bForced,FString& Why);
  bool StepMore(double Dt);
  void UsePhone();
+ // NIGHT31-PLACES-20261114 (S47NightPlaces.cpp): the nine at their places, what each does while it holds the ground, and the marks.
+ bool BeginPlace(const FString& Id,bool bForced,FString& Why);
+ bool StepPlace(double Dt);
+ void EndPlace(int32 Outcome);
+ // Its record, its deed and its place on the needle's history, once (Now.bDone marks it kept: the bay door keeps it as it goes up).
+ void KeepPlace(int32 Outcome);
+ void StepPlaceMarks();
+ // The far-off word for a heard one drawn tonight, said once a night (id -> night; not saved: a Continue may say it once more).
+ void StepPlaceWords();
+ TMap<FString,int32> PlaceWordNight;
+ // Every lamp of a prop at K of its strength (S47Happenings.cpp, where a prop's insides are known).
+ void PropLamps(FProp& P,float K);
+ // The clock the last piece of unease came (UNEASE-20261114; saved "uneaseClock", an older save has none).
+ double UneaseClock=-1e9;
  int32 HoodNight=0; // the truck's hood was warm tonight: the counter finds it too
  void UseSite(const FString& Kind);
  void UseCattle();

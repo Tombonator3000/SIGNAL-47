@@ -10,6 +10,7 @@
 // FS47Predecessor, FS47Mail and FS47DayRound's TaskLine), the HUD's objective card (S47HudGauges::CardLine) and the case windows
 // (FS47FreeformSession::CaseTestWindow). Nothing is saved. In Freeform every line keeps to the spoiler limits (S47Script::LintText):
 // a line that does not is left off the note.
+struct FS47NbNowLine;
 namespace S47TonightNote
 {
  enum class EMark : uint8 { Open, Next, Done };
@@ -23,13 +24,26 @@ namespace S47TonightNote
   FString Key;    // the same thing on the note and on NOW, and in what is remembered done tonight
   FString Source; // the task's own words as the list has them: what FOLLOW and the details look up (US47Flow::NotebookExtras)
   uint8 Rank = 1; // D45-20261110: 0 do first, 1 tonight, 2 when you can (RankOf); Freeform's note and NOW are ordered by it
+  // TASKS-TEN-20261113 (Tom 13 November, «Godtar ti endringene»). Change 6: the group the row stands in tonight: 0 WORK (the cards, case
+  // windows, result sheets), 1 FOLLOW-UP (the bearing, worth a look, reported lights, the dossier's extra bearing, what Dale asked),
+  // 2 YOUR OWN TIME (the camera, a repair with the parts, the round, the post). Matter: not tonight's but an open matter on NOW
+  // ("Cases", "Station", "Post", "Unknowns", "Ward"), no ticks, until it is closed. Change 9: who gives it (only "STATION", "WARD"
+  // or "THE LAND"), its window ("01:45-02:15", "until noon", "by Monday") and what it is worth ("$19", "counts for the review"; for
+  // THE LAND always "unknown"): TagText. Change 10: bPinned, the row the player pinned (FIn::Pinned).
+  uint8 Kind = 0;
+  FString Matter;
+  FString Giver, Span, Worth;
+  bool bPinned = false;
  };
  struct FNote
  {
   TArray<FLine> Lines;  // at most MostLines, in the night's order: done, the next step, the rest, the dated windows by time
+  // TASKS-TEN-20261113 (change 6): Freeform: by group (FLine::Kind), at most MostLines on the card, the next step always among them;
+  // More is "+N open matters": tonight's rows with no room on the card and every one of Matters, which NOW has in full
   int32 More = 0;       // open lines with no room on the note: "+N more in the notebook"
   TArray<FString> Also; // what else is open: "Job cards: ...", "Cases waiting on evidence: ...", "Post: ..."
   TArray<FString> AlsoKeys; // beside each of Also: "cards", "cases" or "post"
+  TArray<FLine> Matters; // TASKS-TEN-20261113 (change 6 and 9): NOW's OPEN MATTERS, by group: Cases, Station, Post, Unknowns, Ward
   FString Clock;        // what the clock allows now: "Too early: the window opens at 01:30. Do a job or rest until then."
   bool IsEmpty() const { return Lines.IsEmpty() && Also.IsEmpty() && Clock.IsEmpty(); }
  };
@@ -41,13 +55,28 @@ namespace S47TonightNote
  {
   TArray<FItem> Tasks;          // the task list, in its order
   FString Next;                 // the objective as the HUD's card has it ("PLACE // WHAT"), or the chapter's objective
+  // TASKS-TEN-20261113 (change 2, one arbiter): Freeform: which row the HUD's ladder chose (FS47FreeformSession::ObjectiveRow): the
+  // note marks that one Next, whatever its own order would say. Empty: the row the HUD's card names, or a line of its own.
+  FString NextRow;
   double Clock = -1;            // Freeform: the world clock; Story: seconds after midnight; negative: none
   bool bFreeform = false;
   TArray<FWindow> Windows;      // Freeform: the planned case tests' windows
   TArray<FString> WaitingCases; // Freeform: the titles of open cases with no test planned
   double EveningUp = -1;        // Freeform: when the next evening card's source is up (world clock); negative: none waiting
-  bool bAntennasWait = false;   // Freeform: the station goal waits for daylight (FS47FreeformSession::GoalWaits)
+  // TASKS-TEN-20261113 (change 4): the night's job cards, counted one way (FS47FreeformSession::CardsUp): those up now on one row
+  // ("OPS: 2 job cards up.", key "cards"); each not up yet named with its window ("card:<id>"), never counted as open. Filed ones
+  // are counted from the list's own lines, as before.
+  struct FCard { FString Id, Source; double Up = -1, Shut = -1; int32 Pay = 0; bool bUp = false, bNightWatch = false; };
+  TArray<FCard> Cards;
+  bool bNightWatch = false;     // LOOP-NIGHT-WATCH-20261113: that card is the night watch (after midnight); the hours till then are his own
+  bool bSlip = false;           // a live bearing slip whose circle on the map is still to be stood in
+  bool bAntennasWait = false;   // Freeform: the station goal waits for daylight (FS47FreeformSession::GoalWaits); TASKS-TEN-20261113: no clock line of its own
   struct FDone* Done = nullptr; // Freeform: what is remembered done tonight (Tonight()); none: only what the list says now
+  // TASKS-TEN-20261113 (change 9): the open matters the list has no line for: the station's one row (the array chain with the work
+  // order's next step inside), Ward's (the weekly report, the assessment); StationRows: the list's lines that row stands for
+  TArray<FLine> Matters;
+  TArray<FString> StationRows;
+  FString Pinned;               // TASKS-TEN-20261113 (change 10): the key of the row the player pinned; empty: none
   uint64 Game = 0;              // which game it is (the case and its seed): another one forgets what was remembered
  };
  // PT-NOTEBOOK-20261109: the lines done tonight, kept struck through until 08:00 even when the list lets them go (the feeder looked at,
@@ -72,7 +101,9 @@ namespace S47TonightNote
  // NOW instead of the page used last; the notebook takes it back as it opens.
  struct FSeen { TSet<FString> Keys; uint64 Game = 0; bool bBegun = false, bPlain = false; };
  SIGNAL47_API FSeen& Seen();
- constexpr int32 MostLines = 6, MostDone = 2, MostChars = 60;
+ // TASKS-TEN-20261113 (change 7): how many times the notebook's map has been turned to (in memory): what "put it on your map" waits for
+ SIGNAL47_API uint32& MapLooks();
+ constexpr int32 MostLines = 4, MostDone = 1, MostChars = 60; // TASKS-TEN-20261113 (change 6): the card has room for four (Story's six)
  // PT-NOTEBOOK-20261109: the night's lines, one source for the pause menu's note and the notebook's NOW. bAll: no limit (NOW): every
  // line done tonight, every open line, and More 0; otherwise the note's six lines and the rest counted in More, which NOW has all of.
  SIGNAL47_API FNote Gather(const FIn& In, bool bAll = false);
@@ -81,7 +112,19 @@ namespace S47TonightNote
  SIGNAL47_API FString Plain(const FNote& Note);
  // One line as the card types it: "01:30-04:30  CONTROL ROOM: Return to listen under the fastened roof."
  SIGNAL47_API FString LineText(const FLine& Line);
+ // TASKS-TEN-20261113 (change 9): "STATION / 01:45-02:15 / $19", "WARD / by Monday / counts for the review", "THE LAND / until noon /
+ // unknown"; empty for a line with no giver (Story)
+ SIGNAL47_API FString TagText(const FLine& Line);
+ // D69-20261113: where the row is, for NOW's WHERE: the place, not the paper: a bearing slip's row gives the circle's (or the line's)
+ // place words it already has ("1.2 miles south-southwest of SARO"); any other row its Where
+ SIGNAL47_API FString PlaceText(const FLine& Line);
+ // REVIEW-20261113: one of NOW's rows from a note's line, in Group, with its work item (empty: none); done lines are struck (bDone)
+ SIGNAL47_API FS47NbNowLine NowLine(const FString& Group, const FLine& Line, const FString& Item);
+ // The group's head as the card and NOW print it: "WORK", "FOLLOW-UP", "YOUR OWN TIME"
+ SIGNAL47_API const TCHAR* KindHead(uint8 Kind);
  SIGNAL47_API FString HourMinute(double Clock);
+ // TASKS-TEN-20261113: the key a task's words have on the note (and on NOW), as the HUD's card would write it: what the tests compare.
+ SIGNAL47_API FString KeyOf(const FString& Text);
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }
 
@@ -95,6 +138,8 @@ struct FS47NbNowLine
  FString Why;                     // the task's own words, said in full on the right page
  FString Item;                    // the work item with its details, hints and FOLLOW (FS47NbWorkItem::Id); empty: none
  FString Fold;                    // "cards": the job cards open under it; "cases": the cases waiting on evidence
+ FString Tag;                     // TASKS-TEN-20261113 (change 9): giver / window / worth (S47TonightNote::TagText)
+ bool bPinned = false;            // TASKS-TEN-20261113 (change 10): the row pinned ("this is what I am doing"), starred
  bool bDone = false;
  // D45-20261110: Group is now "next", "first" (DO FIRST), "tonight", "later" (WHEN YOU CAN), "done"; "clock", "todo" and "also" still
  // read as before. Rank as the note's line has it; bNew: not shown on NOW before (S47TonightNote::Seen); bSummary: a line that sums

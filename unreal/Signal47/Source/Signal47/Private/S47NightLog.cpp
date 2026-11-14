@@ -1,4 +1,5 @@
 #include "S47NightLog.h"
+#include "S47Script.h"
 #include "S47Audio.h"
 #include "S47Docs.h"
 #include "S47EventPlaces.h"
@@ -62,6 +63,9 @@ namespace S47NightLogLocal
 
 bool FS47NightLog::CaseLine(const FString& Text)
 {
+	// Tom 13 Nov: the line now starts with the case's title only; an older sheet's line has "Case 1, " in front
+	for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
+		if (Text.StartsWith(FString(FS47FreeformCases::Def(Line).Title) + TEXT(": "), ESearchCase::CaseSensitive)) return true;
 	if (Text.Len() > 6 && Text.StartsWith(TEXT("Case "), ESearchCase::CaseSensitive) && FChar::IsDigit(Text[5])) return true;
 	// an older sheet's lines from the field records the case file used to write
 	for (const TCHAR* Old : { TEXT("CASE / "), TEXT("CASE CONCLUDED / "), TEXT("ASSESSMENT FILED / ") })
@@ -280,6 +284,12 @@ int32 FS47NightLog::ReadCount() const
 }
 
 FS47NightLog::FSheet* FS47NightLog::Find(int32 Nt) { return Logs.FindByPredicate([Nt](const FSheet& Sh) { return Sh.Night == Nt; }); }
+
+void FS47NightLog::Note(const FString& Text)
+{
+	if (!M || !M->Freeform || S47Script::LintText(Text).Len() > 0) return;
+	Add(M->Freeform->Clock(), EPart::Work, Text);
+}
 
 void FS47NightLog::Add(double Clock, EPart Part, const FString& Text, const FString& At)
 {
