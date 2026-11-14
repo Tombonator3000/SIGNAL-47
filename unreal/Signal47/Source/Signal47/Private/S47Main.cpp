@@ -39,6 +39,7 @@
 #include "S47T02Test.h"
 #include "S47GraphicsTest.h"
 #include "S47SkyVisitors.h"
+#include "S47LandPlaceFixes.h"
 #include "S47DaleDocumentsTest.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
@@ -125,6 +126,7 @@ void US47Main::Step(double Dt)
 	}
 	const bool bFree = IsFreeform();
 	if (Freeform && bFree) Freeform->Step(Dt);
+	S47LandPlaceFixes::Update(this, Dt); // LAND-PLACES-FIXES-20261114: the shack's and the cairn's walk boxes and truck obstacles, where they stand
 	S47Thoughts::Step(this, Dt); S47LocationCards::Step(this, Dt); // UI-20261112 (Tom): the thoughts that wait and 02:00; the location card of a place just come to
 	if (bFree && StoryDirector && Flow && Flow->StoryNight() && StoryDirector->Active()) StoryDirector->Tick(Dt); // STORY-ON-FREEFORM-01: nothing outside a Story night
 	if (!bFree && Evening) Evening->Step(Dt);
