@@ -184,7 +184,7 @@ public:
  // EVIDENCE-DOSSIER slice 3 (14 November). At the binder in the records room (bAt: NearBinder; a test passes it): the player's own
  // name written on a file, two filed as one, one taken out again (until 08:00); the slip's words either way. DossierAct: a binder
  // line's Do ("name:2", "merge:1:3", "out:1:3"). A file FILED (named, at HABITS) is paid FiledAllowance once, under the week's cap
- // (DossierPayFiled). The habits as the player's own thoughts, once a night a file (HabitThought, by number; not saved): the hour
+ // (DossierPayFiled). The habits as the player's own thoughts, once a night a file (HabitThought, by number; tonight's saved as "habitCame"): the hour
  // coming up on a night out (DossierHabitStep, every frame from S47Thoughts::Step) and the lamp raised near one (DossierHabitLamp,
  // FS47FarmSite). Dr. Ward's count is Unknowns.KindsFiled (FS47Predecessor::Count).
  bool DossierName(int32 Number,const FString& Typed,FString& Words,bool bAt);

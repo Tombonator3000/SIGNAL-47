@@ -125,9 +125,16 @@ void FS47FreeformSession::DossierTasks(TArray<FS47Task>& Out) const
 }
 void FS47FreeformSession::LoadDossier(const S47J::FObj& Saved)
 {
- Unknowns.Reset();HabitThought.Reset();HabitLastCheck=-1e9; // slice 3: the habits come to mind afresh after a Continue
+ Unknowns.Reset();HabitThought.Reset();HabitLastCheck=-1e9;
  Unknowns.SetHabitsFrom(M&&M->Rhythm?DossierHabitsFrom(M->Rhythm->Data()):1); // slice 2: not saved; the rhythm's curve
  if(!Saved.IsValid())return;
+ // slice 3 (REVIEW 14 Nov): the habits that came to mind tonight, so that a Continue the same night does not bring them again
+ // ("habitCame": number, night, ...; absent in an older save: none)
+ {
+  const TArray<double> Came=S47J::Nums(Saved,TEXT("habitCame"));
+  for(int32 At=0;At+1<Came.Num()&&HabitThought.Num()<64;At+=2)
+   if(FMath::IsFinite(Came[At])&&FMath::IsFinite(Came[At+1])&&Came[At]>=1&&Came[At]<=64)HabitThought.Add(int32(Came[At]),int32(Came[At+1]));
+ }
  // LOOP-DOSSIER-GIVES-20261113: a file at MARKS from before the extra bearing was kept gets its one now, from the save's own night
  if(const S47J::FObj Record=S47J::Obj(Saved,TEXT("dossier"));Record.IsValid()){Unknowns.Load(Record);Unknowns.GrantMissing(DayNumber);return;}
  // A save from before the dossier: what it kept says which one it was for some of it (FS47Dossier::Rebuild). The same every time.
@@ -143,6 +150,11 @@ void FS47FreeformSession::SaveDossier(const S47J::FObj& Record) const
 {
  // Nothing tagged writes nothing: an older save reads the same, and is rebuilt the same the next time.
  if(!Unknowns.IsEmpty())S47J::Set(Record,TEXT("dossier"),Unknowns.Save());
+ // slice 3 (REVIEW 14 Nov): tonight's habits that have come to mind (LoadDossier)
+ TArray<double> Came;
+ const int32 Tonight=NightOf(Clock());
+ for(const TPair<int32,int32>& One:HabitThought)if(One.Value==Tonight){Came.Add(One.Key);Came.Add(One.Value);}
+ if(!Came.IsEmpty())S47J::Set(Record,TEXT("habitCame"),Came);
 }
 void FS47FreeformSession::BinderUnknowns(S47Binder::FSource& Src) const
 {
@@ -485,6 +497,15 @@ bool FS47FreeformSession::DossierSelfTest(TArray<FString>& Lines)
   bool bWas=false;
   const bool bFirst=FS47FarmSite::LampRaised(true,bWas),bLater=FS47FarmSite::LampRaised(true,bWas),bOff=FS47FarmSite::LampRaised(false,bWas),bAgain=FS47FarmSite::LampRaised(true,bWas);
   Check(bFirst&&!bLater&&!bOff&&bAgain,TEXT("slice 3 (review): the lamp counts as raised near one only on the frame it went on, whatever frames the visit skipped"));
+ }
+ { // the habits that came to mind tonight do not come again after a Continue the same night; an older night's are let go
+  FS47FreeformSession Was(nullptr);Was.Begin(nullptr);
+  Was.Unknowns.Tag(TEXT("hc-a"),S47Dossier::EKind::Small,S47Dossier::EType::Shape,1);
+  const int32 Tonight=NightOf(Was.Clock());Was.HabitThought.Add(1,Tonight);Was.HabitThought.Add(2,Tonight-1);
+  const S47J::FObj Kept=S47J::Read(S47J::Write(Was.Save()));Was.Stop();
+  FS47FreeformSession Back(nullptr);Back.Begin(Kept);
+  Check(Back.HabitThought.Num()==1&&Back.HabitThought.FindRef(1)==Tonight,TEXT("slice 3 (review): a habit that came to mind tonight is kept through a Continue the same night"));
+  Back.Stop();
  }
  Check(HabitHourMay(false,false,false,false)&&!HabitHourMay(true,false,false,false)&&!HabitHourMay(false,true,false,false)&&!HabitHourMay(false,false,true,false)&&!HabitHourMay(false,false,false,true),
   TEXT("slice 3 (review): the hour's habit never comes to mind while the night is held, a visit is on, something hunts on the set or a light is taking someone"));
