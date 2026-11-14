@@ -286,8 +286,9 @@ public:
  // Taken out again, as it was, only on the night it was filed as one (until the next 08:00).
  bool CanTakeOut(int32 Into,int32 From,int32 Night) const;
  bool TakeOut(int32 Into,int32 From,int32 Night);
- // What the game knows and never shows: the one kind everything in a file is of (None when it holds more than one, or nothing);
- // a file filed as one that holds more than one (WrongMerge).
+ // What the game knows and never shows: the kind a file stands for (REVIEW 14 Nov: for each number in it, what most of its own finds
+ // are of, so that a find that joined it by place and night does not change it; None when two numbers filed in it as one by the
+ // player are of different kinds, or it holds nothing); a file filed as one that holds more than one (WrongMerge).
  S47Dossier::EKind KindOfFile(int32 Number) const;
  bool WrongMerge(int32 Number) const;
  bool Filed(int32 Number) const; // named, and at HABITS
@@ -324,5 +325,6 @@ private:
  bool IsIn(const FTag& One,int32 File) const{return Root(One.File)==File;}
  bool HasMembers(int32 File) const{return Merges.ContainsByPredicate([File](const FMerge& One){return One.Into==File;});}
  bool Apply(const FMerge& One);   // the merge itself (Merge, and Load as saved)
+ S47Dossier::EKind PartKind(int32 Part) const; // REVIEW (14 Nov): what most of the finds under that number (0-based) are of
  S47Dossier::EStage StageConsistent(int32 File) const; // a file filed as one: from the boxes where all in it agree
 };

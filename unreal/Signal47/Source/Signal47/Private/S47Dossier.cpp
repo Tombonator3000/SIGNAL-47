@@ -961,15 +961,30 @@ S47Dossier::EStage FS47Dossier::StageConsistent(int32 File) const
  const S47Dossier::EStage Stage=S47Dossier::StageFor(Kind,Types.Num(),Nights.Num(),Types.Contains(int32(S47Dossier::EType::Lamp)),Latest,HabitsFrom);
  return Stage==S47Dossier::EStage::NoFile?S47Dossier::EStage::Outline:Stage; // a file it stays, whatever it holds
 }
+S47Dossier::EKind FS47Dossier::PartKind(int32 Part) const
+{
+ // REVIEW (14 Nov): what most of the finds that went in under this number are of; a tie, the one that opened it. By place and
+ // night a find of another of the near three can join a file without the player doing anything (Tag): that is no wrong filing.
+ namespace Tb=S47Dossier::Tables;
+ int32 Count[Tb::KindN]={};
+ for(const FTag& One:Kept)if(One.File==Part&&Tb::Valid(One.Kind))++Count[int32(One.Kind)];
+ S47Dossier::EKind Best=Sequence.IsValidIndex(Part)?Sequence[Part]:S47Dossier::EKind::None;
+ int32 Most=Tb::Valid(Best)?Count[int32(Best)]:0;
+ for(int32 K=0;K<Tb::KindN;++K)if(Count[K]>Most){Most=Count[K];Best=S47Dossier::EKind(K);}
+ return Most>0?Best:S47Dossier::EKind::None;
+}
 S47Dossier::EKind FS47Dossier::KindOfFile(int32 Number) const
 {
+ // the kind of each number in it as it was got (PartKind); two filed as one by the player that are of different kinds: none
  if(!IsFile(Number))return S47Dossier::EKind::None;
  S47Dossier::EKind Only=S47Dossier::EKind::None;
- for(const FTag& One:Kept)
+ for(int32 Part=0;Part<Sequence.Num();++Part)
  {
-  if(!IsIn(One,Number-1))continue;
-  if(Only==S47Dossier::EKind::None)Only=One.Kind;
-  else if(Only!=One.Kind)return S47Dossier::EKind::None;
+  if(Root(Part)!=Number-1)continue;
+  const S47Dossier::EKind Kind=PartKind(Part);
+  if(Kind==S47Dossier::EKind::None)continue;
+  if(Only==S47Dossier::EKind::None)Only=Kind;
+  else if(Only!=Kind)return S47Dossier::EKind::None;
  }
  return Only;
 }
@@ -1540,6 +1555,15 @@ bool SelfTest(TArray<FString>& Lines)
   Far.SetName(1,TEXT("Too still"),7);
   Check(bFourth&&bWrong&&D.TakeOut(1,4,9)&&D.KindsFiled()==3&&WardPoints(D.KindsFiled())==2&&Far.StageOfFile(1)==EStage::Marks&&!Far.Filed(1)&&Far.KindsFiled()==0,
    TEXT("slice 3: a wrong one filed as one gives no point for the kinds in it until it is out again; the far two are never filed"));
+ }
+ { // REVIEW (14 Nov): a find of another of the near three that joins a file by place and night, with nothing the player did, does
+   // not take the file from Dr. Ward's count: the file stands for what most of it is
+  FS47Dossier J;const FVector2D Site(300,-500);
+  for(int32 Night=2;Night<=4;++Night)for(const EType T:{Shape,Night==2?Ground:Night==3?Tape:Lamp})J.Tag(FString::Printf(TEXT("join-%d-%d"),Night,int32(T)),Small,T,Night,2,&Site);
+  const bool bJoined=J.Tag(TEXT("join-low"),Low,Animals,4,2,&Site)&&J.FileOf(TEXT("join-low"))==1&&J.Order().Num()==1;
+  J.SetName(1,TEXT("Big head"),5);
+  Check(bJoined&&J.Filed(1)&&J.KindOfFile(1)==Small&&!J.WrongMerge(1)&&J.KindsFiled()==1,
+   TEXT("slice 3: a near one's find that joined a file by place and night alone leaves it counting for what most of it is, and it is no wrong filing"));
  }
  { // slice 3: the habits as thoughts, once a night a file, only at HABITS
   FS47Dossier D;
