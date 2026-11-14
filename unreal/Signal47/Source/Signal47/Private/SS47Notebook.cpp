@@ -1,5 +1,6 @@
 #include "SS47Notebook.h"
 #include "S47Keys.h"
+#include "S47UiSound.h"
 #include "S47Gamepad.h"
 
 #include "Dom/JsonObject.h"
@@ -1028,7 +1029,7 @@ TSharedRef<SWidget> SS47Notebook::TabStack()
 									+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(SBox).Visibility_Lambda([this, T] { return MainTab() == T ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })[Word(Label, C(0x120c05), true)]]
 								]
 							], 4.f, FVector2D(-2, 2), 0.35f)
-					], [this, T] { Show(T); })
+					], [this, T] { if (MainTab() != T) S47UiSound::Play(nullptr, S47UiSound::EKind::Page); Show(T); }) // FIX10-7: a page turned
 			]
 		];
 	}
@@ -2048,6 +2049,7 @@ void SS47Notebook::Section(int32 Dir)
 	if (MainTab() == TEXT("findings")) Tabs = !X.bFreeform ? TArray<FString>{ TEXT("findings"), TEXT("notes"), TEXT("people") } : Notes.Num() ? TArray<FString>{ TEXT("findings"), TEXT("people"), TEXT("notes") } : TArray<FString>{ TEXT("findings"), TEXT("people") };
 	if (MainTab() == TEXT("papers") && !X.bFreeform) Tabs = { TEXT("papers"), TEXT("photos") };
 	if (MainTab() == TEXT("guide")) Tabs = { TEXT("guide"), TEXT("controls") };
+	if (Tabs.Num() > 1) S47UiSound::Play(nullptr, S47UiSound::EKind::Page); // FIX10-7
 	if (!Tabs.IsEmpty()) Show(Tabs[(FMath::Max(0, Tabs.IndexOfByKey(Tab)) + Dir + Tabs.Num()) % Tabs.Num()]);
 }
 
@@ -2078,6 +2080,7 @@ void SS47Notebook::RevealHint()
 void SS47Notebook::Turn(int32 Dir)
 {
 	const int32 At = FMath::Max(0, Order.IndexOfByKey(MainTab()));
+	if (Order.Num() > 1) S47UiSound::Play(nullptr, S47UiSound::EKind::Page); // FIX10-7: a page turned
 	Show(Order[(At + Dir + Order.Num()) % Order.Num()]);
 }
 

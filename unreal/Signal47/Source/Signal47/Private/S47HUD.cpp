@@ -207,6 +207,7 @@
 #include "S47TripoNew.h"
 #include "SS47ScreenView.h"
 #include "SS47Widgets.h"
+#include "S47UiSound.h"
 #include "Slate/WidgetRenderer.h"
 #include "TimerManager.h"
 #include "UnrealClient.h"
@@ -314,6 +315,7 @@ void AS47HUD::Start()
 		bOk &= FS47Omen::SelfTest(Lines) & FS47GearFlicker::SelfTest(Lines) & FS47Soundscape::SelfTest(Lines) & FS47Animals::SelfTest(Lines);
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
+		bOk &= S47UiSound::SelfTest(Lines); // (FIX10-7: the UI clicks and the TV static from the bundle: fallback, variants, rate, pause, levels)
 		bOk &= FS47Sideband::SelfTest(Lines); // SIDEBAND-20261113 (the stems' own test with it)
 		bOk &= FS47Taken::SelfTest(Lines);
 		bOk &= FS47NightRhythm::SelfTest(Lines);

@@ -65,7 +65,7 @@ private:
 	bool bShowing = false;   // the programme shown last frame (its clock is set to the station's when it comes back on)
 	int32 PaintedFrame = -1;
 	double PaintT = 0, Lum = 0, Light = 0;
-	struct FSnd { TSharedPtr<FS47GainNode> Tone, Hiss, Whine; TSharedPtr<FS47BiquadFilterNode> Wall; TSharedPtr<FS47OscillatorNode> Osc; TFunction<void()> Stop; };
+	struct FSnd { TSharedPtr<FS47GainNode> Tone, Hiss, Whine; TSharedPtr<FS47BiquadFilterNode> Wall; TSharedPtr<FS47OscillatorNode> Osc; TFunction<void()> Stop; double HissK = 1; }; // (HissK: FIX10-7, the bed's lift)
 	TOptional<FSnd> Snd;
 	// TV-CHANNEL-20261110: the switch (the office's, saved with it), the tube coming up and going down, what is on the air
 	bool* Off = nullptr;

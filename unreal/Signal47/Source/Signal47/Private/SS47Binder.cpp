@@ -1,6 +1,7 @@
 #include "SS47Binder.h"
 #include "S47Dossier.h"
 #include "S47GameStyle.h"
+#include "S47UiSound.h"
 #include "S47Gamepad.h"
 #include "S47Keys.h"
 #include "S47Kit.h"
@@ -140,7 +141,7 @@ void SS47Binder::Refresh()
 }
 void SS47Binder::Turn(int32 Dir)
 {
- Forget();Where->Tab=(Section()+Dir+S47Binder::SecCount)%S47Binder::SecCount;Where->Pick.Reset();Where->Page=0;Refresh();
+ S47UiSound::Play(nullptr,S47UiSound::EKind::Page);Forget();Where->Tab=(Section()+Dir+S47Binder::SecCount)%S47Binder::SecCount;Where->Pick.Reset();Where->Page=0;Refresh();
 }
 void SS47Binder::Move(int32 Dir)
 {
@@ -154,7 +155,7 @@ void SS47Binder::Leaf(int32 Dir,bool bRound)
  const S47Binder::FEntry* Page=Shown();const int32 Count=Page?Page->Pages.Num():0;if(Count<2)return;
  const int32 To=bRound?(Where->Page+Dir+Count)%Count:FMath::Clamp(Where->Page+Dir,0,Count-1);
  if(To==Where->Page)return;
- Where->Page=To;Rebuild();
+ S47UiSound::Play(nullptr,S47UiSound::EKind::Page);Where->Page=To;Rebuild(); // FIX10-7: a page turned (and a section, above)
 }
 void SS47Binder::Open(const FString& EntryKey)
 {
@@ -255,7 +256,7 @@ TSharedRef<SWidget> SS47Binder::TabStrip()
   Strip->AddSlot().AutoWidth().VAlign(VAlign_Bottom).Padding(0,0,P(5),0)
   [
    Press(SNew(SBorder).BorderImage(S47Game::Box4(Card,FVector4(5,5,0,0))).Padding(FMargin(P(11),P(bOpen?9:6),P(11),P(bOpen?9:5)))[Label],
-    [this,S]{if(S==Section())return;Forget();Where->Tab=S;Where->Pick.Reset();Where->Page=0;Refresh();})
+    [this,S]{if(S==Section())return;S47UiSound::Play(nullptr,S47UiSound::EKind::Page);Forget();Where->Tab=S;Where->Pick.Reset();Where->Page=0;Refresh();})
   ];
  }
  return Strip;

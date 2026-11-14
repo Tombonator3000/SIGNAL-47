@@ -19,6 +19,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "S47Audio.h"
+#include "S47UiSound.h"
 #include "S47Geo.h"
 #include "S47Image.h"
 #include "S47Inter.h"
@@ -477,11 +478,14 @@ void FS47MotelTv::Sound(double InDist)
 		if (Hb) { const auto S = Ctx->CreateBufferSource(); S->Buffer = Hb; S->bLoop = true; HOsc = S; }
 		else { const auto O = Ctx->CreateOscillator(); O->SetType(TEXT("sawtooth")); O->Frequency.SetValue(60); HOsc = O; }
 		const auto Lp = Ctx->CreateBiquadFilter(); Lp->SetType(TEXT("lowpass")); Lp->Frequency.SetValue(380); HOsc->Connect(Lp); Lp->Connect(HumGain);
-		const auto Hiss = Gain(); const auto N = Ctx->CreateBufferSource(); N->Buffer = Noise; N->bLoop = true;
+		// FIX10-7: the hiss is the bought static bed when it is staged (lifted to the noise's own level through this high-pass), else noise
+		const TSharedPtr<FS47AudioBuffer> Bed = S47UiSound::TvBed();
+		const auto Hiss = Gain(); const auto N = Ctx->CreateBufferSource(); N->Buffer = Bed ? Bed : Noise; N->bLoop = true;
 		const auto Hp = Ctx->CreateBiquadFilter(); Hp->SetType(TEXT("highpass")); Hp->Frequency.SetValue(900); N->Connect(Hp); Hp->Connect(Hiss);
 		const auto Whine = Gain(); const auto WOsc = Ctx->CreateOscillator(); WOsc->Frequency.SetValue(15734); WOsc->Connect(Whine);
-		TOsc->Start(); HOsc->Start(); N->Start(); WOsc->Start();
-		Snd = FSnd{ Tone, HumGain, Hb ? 1.8 : 1, Hiss, Whine, [TOsc, HOsc, N, WOsc, Spk] { TOsc->Stop(); HOsc->Stop(); N->Stop(); WOsc->Stop(); Spk->Disconnect(); } };
+		TOsc->Start(); HOsc->Start(); N->Start(0, Bed ? FMath::FRand() * Bed->Duration() : 0.0); WOsc->Start();
+		Snd = FSnd{ Tone, HumGain, Hb ? 1.8 : 1, Hiss, Whine, [TOsc, HOsc, N, WOsc, Spk] { TOsc->Stop(); HOsc->Stop(); N->Stop(); WOsc->Stop(); Spk->Disconnect(); },
+			Bed ? S47UiSound::TvBedLift(S47UiSound::EChain::Motel) : 1.0 };
 	}
 	const double Now = Ctx->CurrentTime();
 	auto Set = [Now](const TSharedPtr<FS47GainNode>& G, double V) { G->Gain.SetTargetAtTime(V, Now, 0.04); };
@@ -489,7 +493,7 @@ void FS47MotelTv::Sound(double InDist)
 	Set(Snd->Tone, Mode == TEXT("card") && !ShowsFilm() && !Snowing() ? 0.03 * (Roll ? 0.3 : Waver) : 0);
 	Set(Snd->Hum, Mode == TEXT("carrier") ? 0.11 * Snd->HumK : 0.05 * U * U * Snd->HumK);
 	// (TV-CHANNEL-20261110: the snow's hiss off the air; in Freeform the hiss comes up under what is on the air, bChannel)
-	Set(Snd->Hiss, Mode == TEXT("carrier") ? 0.014 : Snowing() ? 0.09 : Mode == TEXT("card") ? 0.006 + (bChannel ? 0.07 * U * U : 0.0) : 0);
+	Set(Snd->Hiss, (Mode == TEXT("carrier") ? 0.014 : Snowing() ? 0.09 : Mode == TEXT("card") ? 0.006 + (bChannel ? 0.07 * U * U : 0.0) : 0) * Snd->HissK);
 	Set(Snd->Whine, Mode == TEXT("frame") ? 0 : 0.0016);
 }
 
@@ -510,6 +514,8 @@ void FS47MotelTv::Broadcast(double Dt, const FS47MotelTvIn& S, double InDist)
 void FS47MotelTv::Click()
 {
 	if (!M || !M->Audio) return;
+	// FIX10-7: the set changing what it shows is the bought thunk (a relay and the picture dropping) when it is staged
+	if (S47UiSound::Tv(M->Audio, S47UiSound::ETv::Thunk, TvAt, 0.35f, 2400.f)) return;
 	FS47Sound O; O.At = TvAt; O.Gain = 0.22; O.Rate = 1.3; O.Lp = 2400; M->Audio->Sfx(TEXT("click"), O);
 }
 

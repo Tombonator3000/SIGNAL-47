@@ -20,6 +20,7 @@
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "S47UiSound.h"
 
 namespace
 {
@@ -182,6 +183,7 @@ bool FS47FreeformAudioDesk::Use(const FString& Id)
 {
  if(Id==StationId){if(!Ready()||!M->IsFreeform())return false;M->Freeform->OpenTapePanel();return true;}
  const int32 I=ActionIndex(Id);if(I==INDEX_NONE||!Ready())return false;
+ S47UiSound::Retag(M->Audio,I==4||I==5?S47UiSound::EKind::Mark:I==6?S47UiSound::EKind::Retain:S47UiSound::EKind::Transport); // FIX10-7: the panel's key just pressed, named
  if(!ListeningPosition()){if(IsValid(M->UI))M->UI->Toast(TEXT("Use the powered tape comparator at the radio table."),3);return true;}
  const bool Free=M->IsFreeform();bool Accepted=true;
  if(I>=7)

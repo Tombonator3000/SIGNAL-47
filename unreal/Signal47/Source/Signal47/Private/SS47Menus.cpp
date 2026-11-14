@@ -2,6 +2,7 @@
 // (UI.pause). Declared in SS47Screens.h with the web version's other screens; the settings are
 // SS47Settings and the case menus SS47SaveMenu.
 #include "SS47Screens.h"
+#include "S47UiSound.h"
 
 #include "Framework/Application/SlateApplication.h"
 #include "Brushes/SlateRoundedBoxBrush.h"
@@ -448,7 +449,7 @@ void SS47Pause::Construct(const FArguments& InArgs)
 			.Color(Items[i].bQuit ? Mute() : Paper(0.84f))
 			.Selected_Lambda([this, i] { return Sel == i; })
 			.OnHover([this, i] { Sel = i; })
-			.OnClick([this, i] { Sel = i; const TFunction<void()> Fn = Items[i].Fn; if (Fn) Fn(); })
+			.OnClick([this, i] { Sel = i; S47UiSound::Play(nullptr, S47UiSound::EKind::MenuOk); const TFunction<void()> Fn = Items[i].Fn; if (Fn) Fn(); })
 		];
 	}
 
@@ -587,9 +588,9 @@ void SS47Pause::Construct(const FArguments& InArgs)
 					+ SOverlay::Slot().VAlign(VAlign_Bottom).Padding(Pad(98, 0, 0, 26))
 					[
 						S47MenusLocal::InputHints(
-							{ { TEXT("ENTER"), TEXT("CHOOSE"), [this] { if (Items.IsValidIndex(Sel)) { const TFunction<void()> Fn = Items[Sel].Fn; if (Fn) Fn(); } } },
+							{ { TEXT("ENTER"), TEXT("CHOOSE"), [this] { if (Items.IsValidIndex(Sel)) { S47UiSound::Play(nullptr, S47UiSound::EKind::MenuOk); const TFunction<void()> Fn = Items[Sel].Fn; if (Fn) Fn(); } } },
 							  { TEXT("ESC"), TEXT("RESUME"), [this] { if (OnClose) OnClose(false); } } },
-							{ { TEXT("D-PAD"), TEXT("SELECT"), nullptr }, { TEXT("A"), TEXT("CHOOSE"), [this] { if (Items.IsValidIndex(Sel)) { const TFunction<void()> Fn = Items[Sel].Fn; if (Fn) Fn(); } } },
+							{ { TEXT("D-PAD"), TEXT("SELECT"), nullptr }, { TEXT("A"), TEXT("CHOOSE"), [this] { if (Items.IsValidIndex(Sel)) { S47UiSound::Play(nullptr, S47UiSound::EKind::MenuOk); const TFunction<void()> Fn = Items[Sel].Fn; if (Fn) Fn(); } } },
 							  { TEXT("B / MENU"), TEXT("RESUME"), [this] { if (OnClose) OnClose(false); } } })
 					]
 				]
@@ -607,6 +608,7 @@ void SS47Pause::Tick(const FGeometry& G, const double InCurrentTime, const float
 
 void SS47Pause::Move(int32 Dir)
 {
+	if (Items.Num() > 1) S47UiSound::Play(nullptr, S47UiSound::EKind::MenuMove); // FIX10-7: the pause menu moves and chooses with a soft key
 	Sel = (Sel + Dir + Items.Num()) % Items.Num();
 }
 
@@ -617,7 +619,7 @@ FReply SS47Pause::OnKeyDown(const FGeometry& G, const FKeyEvent& E)
 	if (K == EKeys::Down || K == EKeys::S || K == EKeys::Gamepad_DPad_Down) { Move(1); return FReply::Handled(); }
 	if (K == EKeys::Enter || K == EKeys::SpaceBar || K == EKeys::Gamepad_FaceButton_Bottom)
 	{
-		if (Items.IsValidIndex(Sel)) { const TFunction<void()> Fn = Items[Sel].Fn; if (Fn) Fn(); }
+		if (Items.IsValidIndex(Sel)) { S47UiSound::Play(nullptr, S47UiSound::EKind::MenuOk); const TFunction<void()> Fn = Items[Sel].Fn; if (Fn) Fn(); }
 		return FReply::Handled();
 	}
 	// main.ts: Escape or P with the menu open closes it (and resumes); P is the pause's key as bound

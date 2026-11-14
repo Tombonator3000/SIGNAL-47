@@ -20,6 +20,7 @@
 #include "S47UI.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "SS47ScreenView.h"
+#include "S47UiSound.h"
 
 bool FS47FreeformSession::TerminalOnGlass()const
 {const auto View=TerminalView.Pin();return ActiveTerminal>=0&&View.IsValid()&&View->OnGlass()&&M&&M->ModalOpen();}
@@ -34,8 +35,11 @@ namespace
  {
   if(!IsValid(A))return;
   if(Kind==4){A->Beep(1900.f,.012f,.025f,0,TEXT("square"));return;}                   // the cursor arrives on a control (critics, 10 Nov: 3.1 kHz for 4 ms was not heard at all)
-  if(Kind==3){A->Beep(2300.f,.007f,.028f,0,TEXT("square"));return;}                    // a knob's detent
-  A->Play(TEXT("click"),Kind==1?.42f:.30f,FVector::ZeroVector,Kind==2?1.25f:1.5f);
+  // FIX10-7 (14 Nov): the key's own click is the bundle's (S47UiSound) when it is staged; the chip's answer after it is kept. A
+  // knob's detent is mechanical then, not a beep. Without the files, as before.
+  namespace U=S47UiSound;
+  if(Kind==3){if(!U::Play(A,U::EKind::Detent))A->Beep(2300.f,.007f,.028f,0,TEXT("square"));return;} // a knob's detent
+  if(!U::Play(A,Kind==1?U::EKind::Action:Kind==2?U::EKind::Tab:U::EKind::Key))A->Play(TEXT("click"),Kind==1?.42f:.30f,FVector::ZeroVector,Kind==2?1.25f:1.5f);
   if(Kind==1){A->Beep(1320.f,.030f,.040f,.01f,TEXT("square"));A->Beep(1760.f,.045f,.040f,.055f,TEXT("square"));} // the action taken
   else if(Kind==2)A->Beep(990.f,.020f,.030f,.01f,TEXT("square"));                      // a menu line or tab
   else A->Beep(1480.f,.016f,.030f,.01f,TEXT("square"));                                // any other key

@@ -82,7 +82,7 @@ private:
 	FVector TvAt = FVector::ZeroVector;
 	double FrameClock = 0;
 	bool bCanWitness = false;
-	struct FSnd { TSharedPtr<FS47GainNode> Tone, Hum; double HumK = 1; TSharedPtr<FS47GainNode> Hiss, Whine; TFunction<void()> Stop; };
+	struct FSnd { TSharedPtr<FS47GainNode> Tone, Hum; double HumK = 1; TSharedPtr<FS47GainNode> Hiss, Whine; TFunction<void()> Stop; double HissK = 1; }; // (HissK: FIX10-7, the bed's lift)
 	TOptional<FSnd> Snd;
 	FLinearColor Light;
 	TWeakObjectPtr<ASceneCapture2D> Capture;
