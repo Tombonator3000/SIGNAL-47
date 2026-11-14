@@ -2,6 +2,7 @@
 // offline through the real nodes: the bus is the score to the sample at zero, each band moves a known signal by what the offline
 // prototype says it should (Tools/sideband/s47dsp.py on the same signal; the numbers are in the comments), the room's impulse
 // dies away as designed, the hit and the duck are where they should be on the clock, missing files are silence and no error.
+#include "S47Adpcm.h"
 #include "S47Sideband.h"
 
 #include "S47ScoreStems.h"
@@ -79,6 +80,7 @@ bool FS47Sideband::SelfTest(TArray<FString>& Lines)
 	using namespace S47Sideband;
 	using namespace S47SbTest;
 	bool bOk = S47Stems::SelfTest(Lines);
+	bOk &= S47Adpcm::SelfTest(Lines); // SIDEBAND-STEMS-ADPCM: the decoder
 	const auto Check = [&Lines, &bOk](bool bPass, const TCHAR* What) { Lines.Add(FString::Printf(TEXT("%s sideband: %s"), bPass ? TEXT("PASS") : TEXT("FAIL"), What)); bOk &= bPass; };
 	const auto Near = [](double A, double B, double Tol = 1e-6) { return FMath::Abs(A - B) <= Tol; };
 
