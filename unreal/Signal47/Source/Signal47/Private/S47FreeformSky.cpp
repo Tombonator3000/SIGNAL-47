@@ -42,6 +42,17 @@ namespace
 	FString S47SkySoundKey(const TCHAR* Name) { return FString(TEXT("rxa:")) + Name; }
 }
 
+namespace
+{
+	// RX-LOOK gjennomgang 14 Nov: the receiver chart's sidereal time: the card's own (S47SkySphere::CardLst) for the job in hand, else
+	// the station's (from the game's clock). It never touches the real sky.
+	double S47SkyChartSidereal(const FS47SkyAcquire* Chart, double Station)
+	{
+		const double Card = Chart && Chart->CardRun() >= 0 ? S47SkySphere::CardLst(Chart->CardRun()) : -1.;
+		return Card >= 0 ? Card : Station;
+	}
+}
+
 bool FS47FreeformSession::SkyRuleLive() const { return bTestSky || LiveFlow(); }
 
 bool FS47FreeformSession::SkyAcquired() const
@@ -272,7 +283,9 @@ FS47RxLive FS47FreeformSession::RxLive() const
 	Look.Term = TerminalStation(1);
 	Look.Term.RemoveFromStart(TEXT("SARO OPS "));
 	Look.bCalm = M && M->Flow && M->Flow->bCalmFlash;
-	Look.LstDeg = SiderealDeg();
+	// RX-LOOK gjennomgang 14 Nov: the chart's sidereal time, held at the card's (S47SkySphere::CardLst), so that the card's label, the
+	// readout and the stars agree whenever the player looks; with no card the station's own. The real sky outside is not this.
+	Look.LstDeg = S47SkyChartSidereal(SkyFix.Get(), SiderealDeg());
 	Look.Dishes = AvailableDishCount(); Look.Rate = ArrayMeasurementRate();
 	const bool bWornArray = Field && Field->ArrayWear().bActive;
 	// (the idle picture's own words for it, TerminalLines)
@@ -342,7 +355,7 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 		.OnStep([this](double Dt) { SkyChartStep(Dt); })
 		.OnKey([this](int32 Kind) { SkySound(0, Kind); })
 		.Calm([this] { return M && M->Flow && M->Flow->bCalmFlash; })
-		.Sidereal([this] { return SiderealDeg(); })
+		.Sidereal([this] { return S47SkyChartSidereal(SkyFix.Get(), SiderealDeg()); })
 		.Source(Name);
 	// The chart has the keys first while there is a search to steer (the arrow keys, the walk keys, a d-pad).
 	if (SkyFix.IsValid() && !SkyFix->Locked()) KeysTo = Chart;
@@ -504,6 +517,14 @@ bool FS47FreeformSession::SkySelfTest(TArray<FString>& Lines)
 		S.WorldClock = ClockWas;
 		const bool bClock = Terminal47.EndsWith(TEXT("23:47")) && At47 == Terminal47.LeftChop(5) + TEXT("23:48") && !S47Script::SaysFortySeven(At47) && At14 == Terminal14 && At14.EndsWith(TEXT("21:14"))
 			&& S47RxLook::ClockLine(TEXT("28-APR-86 08:15")) == TEXT("28-APR-86 08:16") && S47RxLook::ClockLine(TEXT("NO CLOCK")) == TEXT("NO CLOCK");
+		// RX-LOOK gjennomgang 14 Nov: the chart's sidereal time is the card's and does not follow the clock
+		S.SyncSkyFix();
+		const double ChartAt = S.RxLive().LstDeg;
+		S.WorldClock = ClockWas + 3. * 3600.;
+		const double ChartLater = S.RxLive().LstDeg, StationLater = S.SiderealDeg();
+		S.WorldClock = ClockWas;
+		const bool bHeld = S.SkyFix.IsValid() && S.SkyFix->CardRun() >= 0 && ChartAt == S47SkySphere::CardLst(S.SkyFix->CardRun()) && ChartLater == ChartAt && FMath::Abs(S47SkySphere::Wrap180(StationLater - S.SiderealDeg())) > 40.;
+		Check(bHeld, *FString::Printf(TEXT("the receiver's chart stands at the card's sidereal time (%.2f h) whatever the clock; the station's own moves on (%.2f h three hours later)"), ChartAt / 15., StationLater / 15.));
 		Check(bClock, *FString::Printf(TEXT("the receiver's header clock never reads 47: the terminal's %s is drawn %s, its %s as it is"), *Terminal47, *At47, *Terminal14));
 		const bool bSky = FMath::IsFinite(S.SiderealDeg()) && S.SiderealDeg() >= 0 && S.SiderealDeg() < 360;
 		// the first morning at 08:00, the session's own first date (28 April 1986: a little after 22 h 18 min of sidereal time)

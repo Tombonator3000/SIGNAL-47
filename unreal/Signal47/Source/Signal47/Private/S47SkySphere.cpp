@@ -1,7 +1,23 @@
 #include "S47SkySphere.h"
 #include "S47Observing.h"
 
-// RX-LOOK-20261113 (-> M3, M6): see S47SkySphere.h. Only the self-test lives here; the table and the arithmetic are in the header.
+// RX-LOOK-20261113 (-> M3, M6): see S47SkySphere.h. Only the self-test lives here (and CardLst); the table and the arithmetic are in the header.
+double S47SkySphere::CardLst(int32 Run)
+{
+	const TArray<FS47Observing::FRun>& RunList = FS47Observing::Runs();
+	if (!RunList.IsValidIndex(Run)) return -1.;
+	double Ha = 0, Dec = 0;
+	AzElToHaDec(FS47SkyAcquire::CataloguePlace(Run), Ha, Dec);
+	for (const FKnown& Src : Known)
+	{
+		if (Src.Run != Run) continue;
+		double Ra = Src.RaDeg, DecNow = Src.DecDeg;
+		FromJ2000(Ra, DecNow);
+		return Wrap360(Ra + Ha);
+	}
+	return LstOf(1986, 4, 13, 86400. + RunList[Run].Slot);
+}
+
 bool S47SkySphere::SelfTest(TArray<FString>& Lines)
 {
 	using FSky = FS47SkyAcquire;
@@ -65,6 +81,28 @@ bool S47SkySphere::SelfTest(TArray<FString>& Lines)
 			bCards &= Off < 6.;
 		}
 		Check(bCards, FString::Printf(TEXT("3C 286, the pulsar and Virgo A stand where their cards point at their scheduled hours on 13 April 1986 (farthest %.1f degrees in azimuth and elevation)"), Worst));
+		{
+			// RX-LOOK gjennomgang 14 Nov: the receiver's chart stands at each card's own sidereal time: the readout at the catalogued
+			// place is the source's right ascension, and the source's real place is beside the label; three hours later (the clock
+			// the chart used to follow) it is not
+			bool bFrozen = true; double Beside = 0, Later = 1e9;
+			for (const FKnown& Src : Known)
+			{
+				const double Lst = CardLst(Src.Run);
+				double Ra = Src.RaDeg, DecNow = Src.DecDeg;
+				FromJ2000(Ra, DecNow);
+				const FVector2D Place = FS47SkyAcquire::CataloguePlace(Src.Run);
+				double ReadRa = 0, ReadDec = 0;
+				AzElToRaDec(Place, Lst, ReadRa, ReadDec);
+				bFrozen &= Lst >= 0 && Lst < 360 && FMath::Abs(Wrap180(ReadRa - Ra)) < 1e-6;
+				Beside = FMath::Max(Beside, Apart(ReadRa, ReadDec, Ra, DecNow));
+				double LateRa = 0, LateDec = 0;
+				AzElToRaDec(Place, Lst + 45., LateRa, LateDec);
+				Later = FMath::Min(Later, Apart(LateRa, LateDec, Ra, DecNow));
+			}
+			Check(bFrozen && Beside < 8. && Later > 30. && CardLst(2) >= 0 && CardLst(2) < 360 && CardLst(-1) < 0 && CardLst(99) < 0,
+				FString::Printf(TEXT("the receiver's chart stands at each card's sidereal time: the readout at the card's place is its source's right ascension, the source %.1f degrees from its label at most (three hours on it was %.0f off)"), Beside, Later));
+		}
 		// a star crosses the meridian when the sidereal time is its right ascension; the pole star hardly moves
 		const FStar& Vega = Stars[Star::AlpLyr]; const FStar& Polaris = Stars[Star::AlpUMi];
 		const FVector2D Transit = RaDecToAzEl(Vega.RaHours * 15., Vega.Dec, Vega.RaHours * 15.);

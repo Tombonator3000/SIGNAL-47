@@ -356,7 +356,7 @@ struct FS47RxLive
 	double Elapsed = 0., Seconds = 18.;
 	TArray<double> Ticks;          // the take's extra ticks (seconds), empty for an ordinary take
 	bool bCalm = false;
-	double LstDeg = 0.;            // the station's sidereal time, from the game's clock
+	double LstDeg = 0.;            // the chart's sidereal time: the card's (S47SkySphere::CardLst), else the station's
 };
 
 // One reading a frame for every part of the frame that asks.

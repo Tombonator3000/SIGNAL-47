@@ -16,7 +16,8 @@ class FS47SkyAcquire;
 // with their stick figures, the galactic plane as a stippled band, the array's window as a dashed outline, each arm's bearings as
 // a fan from the rim that closes on the fix, and the readouts in the panel's corners (epoch, projection, mode, the reticle's place
 // in the sky). The rule is untouched and still works in azimuth and elevation; the sphere is only where things stand on the
-// glass. The stars and the hours of right ascension drift west as the game's clock runs.
+// glass. The stars and the hours of right ascension stand at the card's own sidereal time (RX-LOOK gjennomgang 14 Nov:
+// S47SkySphere::CardLst; they drifted with the game's clock, and the card's label and the stars then disagreed).
 //
 // The picture closes in: as the pointer (or, with the keys, the reticle) nears the crossing, the sphere swells about the crossing,
 // up to ZoomMost. On a sphere a degree of azimuth is fewer units across high up than it was on the old flat chart; closed in, the
@@ -58,7 +59,7 @@ public:
 		SLATE_ARGUMENT(TFunction<bool()>, Calm)
 		// The operator's hand on the chart, for its sound: 0 a steering key or a click taken, 1 a click refused (no bearings yet).
 		SLATE_ARGUMENT(TFunction<void(int32)>, OnKey)
-		// RX-LOOK-20261113: the station's sidereal time in degrees, from the game's clock (none: the sky stands), and the card's
+		// RX-LOOK-20261113: the chart's sidereal time in degrees (the card's, S47SkySphere::CardLst; none: the sky stands), and the card's
 		// source for the corner readout.
 		SLATE_ARGUMENT(TFunction<double()>, Sidereal)
 		SLATE_ARGUMENT(FString, Source)
