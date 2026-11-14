@@ -132,6 +132,7 @@
 #include "S47StationInsects.h"
 #include "S47StationDressing.h"
 #include "S47PropCatalogue.h"
+#include "S47CookCoverage.h"
 #include "S47SaroFixes.h"
 #include "S47Ops.h"
 #include "S47Rx.h"
@@ -362,6 +363,7 @@ void AS47HUD::Start()
 		bOk &= FS47Anomaly::SelfTest(Lines);
 		bOk &= FS47AnomalyWorld::SelfTest(Lines);
 		bOk &= AS47Props::SelfTest(Lines); // (Unreal only: the free models' data files, Config/Props)
+		bOk &= S47CookCoverage::SelfTest(Lines); // (PACKAGE-GAS-TRIM-20261114: every /Game path the tables name has a cook rule; trims and patch meshes are here)
 		bOk &= SS47ScreenView::SelfTest(Lines); // (the station's screens in use: the camera's aim, the glass's pixels; the board's cursor)
 		// Several modules prefix their failures ("props: FAIL ...") or put FAIL
 		// after the check name. Keep those diagnostics when the overall test fails.

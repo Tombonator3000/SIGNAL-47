@@ -921,7 +921,7 @@ void AS47Props::ApplyTrim(const FString& Model)
 	const int32 Group = W->Handle(Str(*M, TEXT("group")));
 	const TSharedPtr<FJsonObject>* Meshes = nullptr;
 	if (Group < 0 || !(*M)->TryGetObjectField(TEXT("meshes"), Meshes)) return;
-	int32 Swapped = 0, Hidden = 0, Stale = 0;
+	int32 Swapped = 0, Hidden = 0, Stale = 0, Missing = 0;
 	for (int32 I = 0; I < W->PartCount(); ++I)
 	{
 		const FS47WebNode* N = W->Node(I);
@@ -933,10 +933,14 @@ void AS47Props::ApplyTrim(const FString& Model)
 		const int32 Tris = Old && Old->GetRenderData() && Old->GetRenderData()->LODResources.Num() ? Old->GetRenderData()->LODResources[0].GetNumTriangles() : -1;
 		if (!C || Tris != int32(Num(*G, TEXT("tris"), -2))) { ++Stale; continue; }
 		if (Bool(*G, TEXT("hidden"), false)) { C->SetHiddenInGame(true); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); ++Hidden; continue; }
-		if (UStaticMesh* Cut = LoadObject<UStaticMesh>(nullptr, *Str(*G, TEXT("asset")))) { C->SetStaticMesh(Cut); ++Swapped; }
-		else ++Stale;
+		// PACKAGE-GAS-TRIM-20261114: a cut mesh that is not here (deleted by a re-import, or not cooked) is MISSING, not STALE,
+		// and is not asked for (no load warning per mesh); S47CookCoverage's self-test fails on it
+		if (UStaticMesh* Cut = S47PropCatalogue::LoadIfHere(Str(*G, TEXT("asset")))) { C->SetStaticMesh(Cut); ++Swapped; }
+		else ++Missing;
 	}
-	UE_LOG(LogS47Props, Display, TEXT("S47: props: %s cut out of the export: %d meshes trimmed, %d hidden%s"), *Model, Swapped, Hidden, Stale ? *FString::Printf(TEXT(", %d STALE (a new export needs Tools/freemodels/import_free.sh again)"), Stale) : TEXT(""));
+	const FString Stales = Stale ? FString::Printf(TEXT(", %d STALE (a new export needs Tools/freemodels/import_free.sh again)"), Stale) : FString();
+	const FString Missings = Missing ? FString::Printf(TEXT(", %d MISSING (the cut meshes are not here: import_free.sh with the trim again)"), Missing) : FString();
+	UE_LOG(LogS47Props, Display, TEXT("S47: props: %s cut out of the export: %d meshes trimmed, %d hidden%s%s"), *Model, Swapped, Hidden, *Stales, *Missings);
 }
 
 UStaticMeshComponent* AS47Props::PlacedMesh(const FString& Id)
