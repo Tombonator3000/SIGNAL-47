@@ -45,7 +45,8 @@ class FS47SkyAcquire;
 // - The reticle is amber and the brightest thing on the glass at every stage, larger, with corner brackets, three rings and
 //   hairs. Being on the crossing is said by shape (the filled centre, the bar that fills), no longer by the colour.
 // - No word under the next step's size (S47RxLook::TextFloor): the corner blocks are three short lines, the minor catalogue's
-//   names stand only near the reticle or closed in, and each arm is a letter at its fan.
+//   names stand only near the reticle or closed in, and each arm is its number at its fan (RX-LOOK gjennomgang 14 Nov: 1, 2
+//   and 3, as the tracking panel's DELAY 1 to 3: the letters A to C had a lone capital C, which is not Freeform's).
 class SS47SkyChart : public SLeafWidget
 {
 public:

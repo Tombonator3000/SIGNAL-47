@@ -120,6 +120,15 @@ namespace S47RxLook
 		return Shown;
 	}
 
+	// ---- the words on the glass (RX-LOOK gjennomgang 14 Nov) ----
+	// The array's three arms by number, as the sky chart writes them by their fans and the tracking panel's DELAY rows (the game
+	// has no other names for them; the letters A to C had a lone capital C, which the Freeform text rule bans).
+	inline const TCHAR* ArmLabel(int32 Arm) { static const TCHAR* const Label[3] = { TEXT("1"), TEXT("2"), TEXT("3") }; return Label[FMath::Clamp(Arm, 0, 2)]; }
+	// Empty when a line the receiver shows keeps to Freeform's text rule; otherwise what it touches: a number that reads 47 (the
+	// point taken out: S47Script::SaysFortySeven), what S47Script::LintText finds (a lone capital C, 1947, Tomas, 8.15, the third
+	// silhouette, how anyone was taken), and the words it lets by alone: «taken», «the cable».
+	SIGNAL47_API FString TextFault(const FString& Shown);
+
 	// ---- the tube's effects: all of them stand still with Calm flashes ----
 	constexpr double SweepSeconds = 7.;   // the search sweep once round
 	constexpr double BloomSeconds = .9;   // the picture's one soft pulse at the lock

@@ -43,6 +43,21 @@ FString S47RxLook::ClockLine(const FString& DateAndClock)
 	return DateAndClock.Left(Len - 5) + S47Script::PlayerClock(double(Hours * 3600 + Minutes * 60));
 }
 
+FString S47RxLook::TextFault(const FString& Shown)
+{
+	if (S47Script::SaysFortySeven(Shown)) return TEXT("a number that reads 47");
+	const FString Lint = S47Script::LintText(Shown);
+	if (!Lint.IsEmpty()) return Lint;
+	const FString Low = Shown.ToLower();
+	if (Low.Contains(TEXT("the cable"))) return TEXT("the cable is Story's");
+	for (int32 At = Low.Find(TEXT("taken")); At != INDEX_NONE; At = Low.Find(TEXT("taken"), ESearchCase::CaseSensitive, ESearchDir::FromStart, At + 1))
+	{
+		const bool bOpenBefore = At == 0 || !FChar::IsAlpha(Low[At - 1]), bOpenAfter = At + 5 >= Low.Len() || !FChar::IsAlpha(Low[At + 5]);
+		if (bOpenBefore && bOpenAfter) return TEXT("the word taken is not Freeform's");
+	}
+	return FString();
+}
+
 const FS47RxLive& FS47RxFeed::Now()
 {
 	if (Frame != GFrameCounter || !Read)
@@ -242,6 +257,19 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 		int32 Counted = 0;
 		const FString Sixties = Clean47(47, [&Counted](int32 N) { ++Counted; return FString::Printf(TEXT("%02dm"), N); });
 		Check(Sixties == TEXT("48m") && Counted == 2 && Clean47(12, [](int32 N) { return FString::Printf(TEXT("%02dm"), N); }) == TEXT("12m"), TEXT("a readout in sixties that would show a 47 stands a step off; a clean one is written once, as it is"));
+	}
+	{ // RX-LOOK gjennomgang 14 Nov: the arms by number (the chart's labels by the fans, the tracking panel's DELAY rows), and the
+		// text rule's own check, which every line the receiver shows is held to
+		bool bArms = true;
+		for (int32 Arm = 0; Arm < 3; ++Arm)
+		{
+			const FString Label = ArmLabel(Arm);
+			bArms &= Label.Len() == 1 && TextFault(Label).IsEmpty() && TextFault(TEXT("DELAY ") + Label + TEXT(" +12.5 ns")).IsEmpty() && TextFault(TEXT("ARM ") + Label).IsEmpty() && (Arm == 0 || Label != ArmLabel(Arm - 1));
+		}
+		const bool bCatches = !TextFault(TEXT("DELAY C")).IsEmpty() && !TextFault(TEXT("ARM C")).IsEmpty() && !TextFault(TEXT("C")).IsEmpty() && !TextFault(TEXT("1419.647 MHz")).IsEmpty() && !TextFault(TEXT("+0.047")).IsEmpty()
+			&& !TextFault(TEXT("23:47")).IsEmpty() && !TextFault(TEXT("THE SOURCE WAS TAKEN")).IsEmpty() && !TextFault(TEXT("CHECK THE CABLE")).IsEmpty() && !TextFault(TEXT("1947")).IsEmpty();
+		const bool bLets = TextFault(TEXT("3C 286 / CARD")).IsEmpty() && TextFault(TEXT("TAKE ON TAPE")).IsEmpty() && TextFault(TEXT("RECORDING 7/18 s")).IsEmpty() && TextFault(TEXT("SC 104+70")).IsEmpty() && TextFault(TEXT("PSR B1133+16")).IsEmpty();
+		Check(bArms && bCatches && bLets, TEXT("the arms are 1, 2 and 3 (DELAY 1 to 3, one letter each as A to C were); the text check catches a lone C, a 47, «taken» and «the cable», and lets the card names by"));
 	}
 	{ // round 2: the letters. Nothing under the next step's line, and a letter's width as the glass draws it
 		Check(TextFloor == 22 && FMath::Abs(GlyphWide(22) - 8.4375f) < 1e-4f && GlyphWide(20) == GlyphWide(22) && GlyphWide(18) > 18 * .4f && FMath::Abs(TextWide(10, 54) - 215.625f) < 1e-3f && GlyphWide(1) > 0.f,

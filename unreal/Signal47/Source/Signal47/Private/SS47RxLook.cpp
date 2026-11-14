@@ -486,8 +486,9 @@ int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRe
 	const bool bAllArms = Sz.Y >= 8 * 20.f;
 	const float Pitch = FMath::Min(float(S47RxLSmall), (Sz.Y - 2) / (bAllArms ? 8.f : 6.f));
 	float Y = 0;
-	auto Row = [&](const TCHAR* Name, const FString& Value, const FLinearColor& C) { Pen.Text(FString(Name).RightPad(8) + Value, 2, Y, S47RxLSmall, C); Y += Pitch; };
-	static const TCHAR* const ArmName[FSky::ArmCount] = { TEXT("DELAY A"), TEXT("DELAY B"), TEXT("DELAY C") };
+	auto Row = [&](const FString& Name, const FString& Value, const FLinearColor& C) { Pen.Text(Name.RightPad(8) + Value, 2, Y, S47RxLSmall, C); Y += Pitch; };
+	// (RX-LOOK gjennomgang 14 Nov: the arms by number, S47RxLook::ArmLabel; a lone capital C is not Freeform's)
+	const FString ArmName[FSky::ArmCount] = { FString(TEXT("DELAY ")) + S47RxLook::ArmLabel(0), FString(TEXT("DELAY ")) + S47RxLook::ArmLabel(1), FString(TEXT("DELAY ")) + S47RxLook::ArmLabel(2) };
 	const FLinearColor Quiet = S47RxLFade(S47RxLGreen, .6f);
 	if (Sky.IsValid() && (bLocking || bLocked))
 	{

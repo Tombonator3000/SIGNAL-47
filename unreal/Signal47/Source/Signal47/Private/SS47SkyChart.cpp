@@ -650,7 +650,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	// ---- the bearings: one line an antenna, each arm's a fan from the rim that closes on the fix: solid where the arm has
 	// locked, fainter with a dashed middle where it still sweeps. Round 2: thin lines at every stage, never a wedge (no glow;
 	// every other line starts further out; with the fix taken or held all of them stop short of the reticle's rings), with
-	// rungs across each fan and the arm's letter by the rim ----
+	// rungs across each fan and the arm's number by the rim (RX-LOOK gjennomgang 14 Nov: numbers, not letters) ----
 	if (bBearings)
 	{
 		// which way each arm's fan comes in from: three ways a third of a turn apart on the rule's chart (headings 205, 85 and
@@ -660,7 +660,6 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 		// the sphere squeezes the rule's seven degrees to a strip: its lines are turned further out of the arm's middle, about
 		// the points of the band they pass through. The middle line of every arm is the rule's own.
 		static const double FanWiden[FSky::ArmCount] = { 1., 2.6, 1.3 };
-		static const TCHAR* const ArmName[FSky::ArmCount] = { TEXT("A"), TEXT("B"), TEXT("C") };
 		const int32 PerArm = FSky::DishCount / FSky::ArmCount;
 		TArray<FVector2f> Rays; Rays.Reserve(FSky::DishCount * 64);
 		int32 RayFrom[FSky::DishCount], RayCount[FSky::DishCount];
@@ -719,7 +718,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			if (Ln.bSolid) Path(Ray, S47SkyFade(S47SkyGreen, (bMiddle ? .9f : .5f) * Gain), bMiddle ? 1.6f : 1.f, L + 3, 0, nullptr);
 			else Path(Ray, S47SkyFade(S47SkyGreen, bMiddle ? .7f : .3f), 1.f, L + 3, bMiddle ? 2 : 0, nullptr);
 		}
-		// the rungs: across each arm's fan at set lengths along its lines, and the arm's letter where its middle line nears the rim
+		// the rungs: across each arm's fan at set lengths along its lines, and the arm's number where its middle line nears the rim
 		static const float RungAt[] = { 70.f, 115.f, 165.f, 220.f, 280.f, 345.f, 415.f };
 		TArray<FVector2f> Rung;
 		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm)
@@ -744,7 +743,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 				if (S47SkyAlong(Rays, RayFrom[Mid], RayCount[Mid], Length, Spot) && InRim(Spot, .88)) continue;
 				if (S47SkyAlong(Rays, RayFrom[Mid], RayCount[Mid], FMath::Max(30.f, Length - 34.f), Spot) && InRim(Spot, .95))
 				{
-					S47SkyText(Out, L + 6, G, ArmName[Arm], Spot.X - 4, Spot.Y - 11, Letters, K.ArmSolid(Arm) ? S47SkyGreen : S47SkyGreen * .7f);
+					S47SkyText(Out, L + 6, G, S47RxLook::ArmLabel(Arm), Spot.X - 4, Spot.Y - 11, Letters, K.ArmSolid(Arm) ? S47SkyGreen : S47SkyGreen * .7f);
 				}
 				break;
 			}
