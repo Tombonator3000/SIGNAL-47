@@ -11,7 +11,9 @@
 namespace S47RxLook
 {
 	// ---- the state banner ----
-	enum class EState : uint8 { NoJob, NoPower, NotUp, Point, Blocked, Slewing, Settling, Searching, TakingFix, FixHeld, SourceLock, Anomaly, Recording, RecordingHeld, Reference, OnTape, Done };
+	// (RX-LOOK gjennomgang 14 Nov: CaseWaits, a case test whose physical precondition is not met; Scan, the automatic reference scan
+	// during a take, while the take goes on)
+	enum class EState : uint8 { NoJob, NoPower, NotUp, Point, Blocked, Slewing, Settling, Searching, TakingFix, FixHeld, SourceLock, Anomaly, Recording, RecordingHeld, Reference, OnTape, Done, CaseWaits, Scan };
 	// The job's stage as FS47FreeformSession::EJobStage counts it (0 new, 1 pointed, 2 recording, 3 at the printer, 4 recorded, 5 and on: registered).
 	struct FStateIn
 	{
@@ -22,11 +24,17 @@ namespace S47RxLook
 		bool bAnomalyAhead = false;              // tuned and ready, the take would be an unusual one (the screens already say ANOMALY DETECTED)
 		bool bPlainOnTape = false;               // an unusual take on tape that the reel deck has not heard yet (the screens still say it)
 		bool bReference = false;                 // its 8-second reference is being recorded
+		bool bCaseWaits = false;                 // a case test's physical precondition is not met (FS47FreeformSession::CasePrecondition)
+		bool bCrossRunning = false;              // the automatic reference scan is moving the array during the take
 		int32 Stage = 0;
 		double Elapsed = 0, Seconds = 18, ReferenceAt = 0;
 	};
 	struct FState { EState Id = EState::NoJob; FString Text; bool bAmber = false; };
 	SIGNAL47_API FState StateOf(const FStateIn& In);
+	// RX-LOOK gjennomgang 14 Nov: whether the receiver's own line (ReceiverNextAction, or the sky chart's on ACQUIRE) says the same
+	// as a banner state: the words of that state's step are in it (a state whose line is free text, as the evening's plan or a
+	// case test's precondition, agrees with any).
+	SIGNAL47_API bool Agrees(EState Banner, const FString& Prompt);
 
 	// ---- the line and its wavelength ----
 	constexpr double HydrogenMhz = 1420.40575;
@@ -100,6 +108,18 @@ namespace S47RxLook
 		for (int32 I = SignLen + Digits.Len(); bZeros && I < Width; ++I) Out.AppendChar(TEXT('0'));
 		return Out + Digits;
 	}
+	// RX-LOOK gjennomgang 14 Nov: the take's seconds as every readout of the receiver counts them ("7 / 18 s"): the whole seconds
+	// written (cut down, never rounded up, as the banner counts them), of the take's length.
+	inline FString TakeCount(double Elapsed, double Seconds)
+	{
+		return Num(FMath::FloorToDouble(FMath::Max(0., FMath::IsFinite(Elapsed) ? Elapsed : 0.))) + TEXT(" / ") + Num(FMath::RoundToDouble(Seconds)) + TEXT(" s");
+	}
+	// The banner while the array comes round: how far it has to go ("SLEWING 12.5° TO GO").
+	inline FString SlewWords(double DegreesToGo) { return TEXT("SLEWING ") + Num(DegreesToGo, 1) + TEXT("° TO GO"); }
+	// The header's date and clock ("28-APR-86 23:47") as the glass shows it: the clock by the project's rule for a clock in player
+	// text (S47Script::PlayerClock: never a minute or digits that read 47, nor 08:15 or 20:15; a minute on). The date is as given
+	// (a day or a year of the game's calendar cannot read 47). Anything that does not end in HH:MM is given back as it is.
+	SIGNAL47_API FString ClockLine(const FString& DateAndClock);
 	// For a readout written in sixties (hours, minutes and seconds; degrees and minutes): the words of the count nearest Exact
 	// that show no 47, a step up, a step down, two up, two down and on. Words writes a count as the glass shows it.
 	template <typename TWords>
@@ -109,6 +129,15 @@ namespace S47RxLook
 		for (int32 Away = 1; Away <= Reach && Shows47(Shown); ++Away) Shown = Words(Exact + (Away % 2 ? (Away + 1) / 2 : -(Away / 2)));
 		return Shown;
 	}
+
+	// ---- the words on the glass (RX-LOOK gjennomgang 14 Nov) ----
+	// The array's three arms by number, as the sky chart writes them by their fans and the tracking panel's DELAY rows (the game
+	// has no other names for them; the letters A to C had a lone capital C, which the Freeform text rule bans).
+	inline const TCHAR* ArmLabel(int32 Arm) { static const TCHAR* const Label[3] = { TEXT("1"), TEXT("2"), TEXT("3") }; return Label[FMath::Clamp(Arm, 0, 2)]; }
+	// Empty when a line the receiver shows keeps to Freeform's text rule; otherwise what it touches: a number that reads 47 (the
+	// point taken out: S47Script::SaysFortySeven), what S47Script::LintText finds (a lone capital C, 1947, Tomas, 8.15, the third
+	// silhouette, how anyone was taken), and the words it lets by alone: «taken», «the cable».
+	SIGNAL47_API FString TextFault(const FString& Shown);
 
 	// ---- the tube's effects: all of them stand still with Calm flashes ----
 	constexpr double SweepSeconds = 7.;   // the search sweep once round
@@ -158,6 +187,31 @@ namespace S47RxLook
 		if (T - Index * Slot > .11 || Hash01(uint32(Index) * 2654435761u) > .55) return 0.f;
 		const float Band = float(Hash01(uint32(Index) * 40503u + 7u)) * 420.f;
 		return FMath::Abs(Y - Band) < 46.f ? 1.f : 0.f;
+	}
+	// RX-LOOK gjennomgang 14 Nov: what is on the air makes the whole picture lose its hold and jump sideways (S47FreeformTerminal's
+	// frames). Never with Calm flashes, and never more than three times a second (the project's flash rule): a jump can only
+	// start at the beginning of a slot of TearSlot seconds and lasts a thirteenth of one, so two jumps stand at least a slot
+	// apart. Jam is the interference 0..1 (under .15: none). Returns the sideways shift in units, 0 while there is none.
+	constexpr double TearSlot = .35;
+	inline float TearShift(double T, float Jam, bool bCalm)
+	{
+		if (bCalm || !FMath::IsFinite(T) || T < 0 || !(Jam >= .15f)) return 0.f;
+		const double Slot = FMath::FloorToDouble(T / TearSlot);
+		if (T - Slot * TearSlot >= 1. / 13.) return 0.f;
+		const uint32 Key = uint32(int64(Slot) & 0xffffffff) * 2654435761u;
+		if (Hash01(Key ^ 0x3c6ef372u) >= FMath::Min(1.f, FMath::Min(Jam, 1.f) * .4f * 13.f * float(TearSlot))) return 0.f;
+		const float Shift = (float(Hash01(Key ^ 0xa54ff53au)) - .5f) * 36.f * FMath::Min(Jam, 1.f);
+		return FMath::Abs(Shift) < .5f ? (Shift < 0 ? -.5f : .5f) : Shift;
+	}
+	// The same rule for the frame going dark for a moment on a bad beat (S47FreeformTerminal's glass): its veil's alpha, 0 while none.
+	inline float TearDark(double T, float Jam, bool bCalm)
+	{
+		if (bCalm || !FMath::IsFinite(T) || T < 0 || !(Jam > .03f)) return 0.f;
+		const double Slot = FMath::FloorToDouble(T / TearSlot);
+		if (T - Slot * TearSlot >= 1. / 17.) return 0.f;
+		const uint32 Key = uint32(int64(Slot) & 0xffffffff) * 40503u + 17u;
+		const float J = FMath::Min(Jam, 1.f);
+		return Hash01(Key) < FMath::Min(1.f, J * .35f * 17.f * float(TearSlot)) ? .25f + .4f * J : 0.f;
 	}
 	// The beam is a little wider where it is brighter.
 	inline float Beam(float Width, float Bright) { return Width * (.8f + .45f * FMath::Clamp(Bright, 0.f, 1.f)); }
@@ -232,9 +286,11 @@ namespace S47RxLook
 		return true;
 	}
 	// The spectrum across the card's window (0..1 across, the card's line in the middle), 0..1 up: the TUNE page's zoom, small.
-	inline float FftLevel(const FScope& In, float U, double T)
+	// RX-LOOK gjennomgang 14 Nov: with Calm flashes the trace stands (its noise at one moment), as every other effect does.
+	inline float FftLevel(const FScope& In, float U, double Now, bool bCalm)
 	{
 		if (!In.bPowered) return 0.f;
+		const double T = bCalm || !FMath::IsFinite(Now) ? 0. : Now;
 		const double X = U * 240.;
 		const double Noise = (FMath::Sin(X * 1.3 + T * 5.) * 2. + FMath::Sin(X * 4.1 + T * 9.) * 3. + FMath::Sin(X * 12.9898 + T * 13.) * 1.5) * (In.Bandwidth / 35. + .2) / 220.;
 		const double Sigma = FMath::Max(.014, In.FTol / (2. * HalfSpan(In.FTol)) * .8);
@@ -249,6 +305,9 @@ namespace S47RxLook
 	// carrier's, each with its own phase from the job's seed, and the fine grain). The same for the same clock; with Calm
 	// flashes the whole trace stands, noise and all.
 	constexpr double RideShare = .13;
+	// RX-LOOK gjennomgang 14 Nov: the receiver's noise on the traces drifts: each point's grain passes from one value to the next
+	// over a third of a second (it was drawn afresh 14 times a second, the whole trace re-scribbled at some 0.57 of full scale).
+	constexpr double GrainRate = 3.;
 	inline void Quadrature(const FScope& In, float U, double T, bool bCalm, float& OutI, float& OutQ)
 	{
 		OutI = OutQ = 0.f;
@@ -257,16 +316,30 @@ namespace S47RxLook
 		const double Cycles = 7. + 10. * FMath::Clamp(FMath::Abs(In.Tuned - In.Card) / FMath::Max(In.FTol, 1e-3), 0., 4.);
 		const double Clock = bCalm || !FMath::IsFinite(T) ? 0. : T;
 		const double Along = double(U) * 2. * UE_DOUBLE_PI, Turn = Cycles * Along - Clock * 1.1 * 2. * UE_DOUBLE_PI;
-		const uint32 Key = In.Seed ^ (uint32(FMath::Clamp(U, 0.f, 1.f) * 4096.f) * 0x9e3779b9u) ^ (bCalm ? 0u : uint32(FMath::Max(Clock, 0.) * 14.) * 0x85ebca6bu);
+		const uint32 Place = In.Seed ^ (uint32(FMath::Clamp(U, 0.f, 1.f) * 4096.f) * 0x9e3779b9u);
+		const double Beat = FMath::Max(Clock, 0.) * GrainRate, Slot = FMath::FloorToDouble(Beat), Into = Beat - Slot, Blend = Into * Into * (3. - 2. * Into);
+		const uint32 From = Place ^ (uint32(int64(Slot) & 0xffffffff) * 0x85ebca6bu), To = Place ^ (uint32((int64(Slot) + 1) & 0xffffffff) * 0x85ebca6bu);
+		auto Grain = [&](uint32 Salt) { return FMath::Lerp(2. * Hash01(From ^ Salt) - 1., 2. * Hash01(To ^ Salt) - 1., Blend); };
 		const double Rough = .07 + .5 * (1. - Lock);
 		const double PhaseA = 2. * UE_DOUBLE_PI * Hash01(In.Seed ^ 0x1b873593u), PhaseB = 2. * UE_DOUBLE_PI * Hash01(In.Seed ^ 0xcc9e2d51u), PhaseC = 2. * UE_DOUBLE_PI * Hash01(In.Seed ^ 0xe6546b64u);
 		const double RideI = .5 * FMath::Sin(Along * 23.3 + PhaseA + Clock * 2.3) + .3 * FMath::Sin(Along * 41.7 + PhaseB - Clock * 3.1) + .2 * FMath::Sin(Along * 67.1 + PhaseC + Clock * 1.7);
 		const double RideQ = .5 * FMath::Sin(Along * 23.3 + PhaseB + Clock * 2.3) + .3 * FMath::Sin(Along * 41.7 + PhaseC - Clock * 3.1) + .2 * FMath::Sin(Along * 67.1 + PhaseA + Clock * 1.7);
-		OutI = float(FMath::Clamp(.8 * Lock * FMath::Cos(Turn) + RideShare * Lock * RideI + Rough * (2. * Hash01(Key) - 1.), -1., 1.));
-		OutQ = float(FMath::Clamp(.8 * Lock * FMath::Sin(Turn) + RideShare * Lock * RideQ + Rough * (2. * Hash01(Key ^ 0x5bd1e995u) - 1.), -1., 1.));
+		OutI = float(FMath::Clamp(.8 * Lock * FMath::Cos(Turn) + RideShare * Lock * RideI + Rough * Grain(0u), -1., 1.));
+		OutQ = float(FMath::Clamp(.8 * Lock * FMath::Sin(Turn) + RideShare * Lock * RideQ + Rough * Grain(0x5bd1e995u), -1., 1.));
 	}
 
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
+}
+
+struct FS47RxLive;
+namespace S47RxLook
+{
+	// RX-LOOK gjennomgang 14 Nov: what of the receiver's picture moves with time, as numbers, for a receiver so and a moment: the
+	// small spectrum and the I and Q traces at their points, the search sweep, the stars' shimmer, the bands that slip, the
+	// picture's jump and dark beat on interference (at full interference), a mark's breath and the banner's letters. With Calm
+	// flashes the same for every moment (the test compares two frames by it). The waterfall is not in it: its rows are the
+	// receiver's history and scroll as time passes, calm or not.
+	SIGNAL47_API TArray<float> MovingPicture(const FS47RxLive& Live, double T);
 }
 
 // What the receiver's frame shows this frame: every number the session's own (FS47FreeformSession::RxLive).
@@ -291,7 +364,7 @@ struct FS47RxLive
 	double Elapsed = 0., Seconds = 18.;
 	TArray<double> Ticks;          // the take's extra ticks (seconds), empty for an ordinary take
 	bool bCalm = false;
-	double LstDeg = 0.;            // the station's sidereal time, from the game's clock
+	double LstDeg = 0.;            // the chart's sidereal time: the card's (S47SkySphere::CardLst), else the station's
 };
 
 // One reading a frame for every part of the frame that asks.

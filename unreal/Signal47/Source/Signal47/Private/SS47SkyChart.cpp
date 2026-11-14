@@ -215,6 +215,62 @@ float SS47SkyChart::ZoomFor(double DegreesOff)
 	return 1.f + (ZoomMost - 1.f) * float(1. - X * X * (3. - 2. * X));
 }
 
+float SS47SkyChart::ZoomForTrue(double TrueOff)
+{
+	if (!FMath::IsFinite(TrueOff)) return 1.f;
+	TrueOff = FMath::Max(TrueOff, 0.);
+	// the open distance whose zoom puts it this far off in truth: open / ZoomFor(open) only grows (the self-test), so it is found
+	// by halving, within a thousandth of a degree
+	double Lo = TrueOff, Hi = TrueOff * ZoomMost + 1e-6;
+	for (int32 I = 0; I < 40 && Hi - Lo > 1e-4; ++I)
+	{
+		const double Mid = (Lo + Hi) * .5;
+		if (Mid / ZoomFor(Mid) < TrueOff) Lo = Mid; else Hi = Mid;
+	}
+	return ZoomFor((Lo + Hi) * .5);
+}
+
+void SS47SkyChart::LockMark(const FPlot& P, const FVector2D& Reticle, float Ring, TArray<FVector2f>& Out)
+{
+	Out.Reset();
+	constexpr int32 Steps = 40;
+	FVector2f Mid;
+	if (!Place(P, Reticle, Mid)) return;
+	FVector2f Edge[Steps];
+	float Sum = 0.f;
+	for (int32 I = 0; I < Steps; ++I)
+	{
+		const double A = 2. * UE_DOUBLE_PI * I / Steps;
+		if (!Place(P, Reticle + FVector2D(FMath::Cos(A), FMath::Sin(A)) * FS47SkyAcquire::LockRadius, Edge[I])) return;
+		Sum += FVector2f::Distance(Edge[I], Mid);
+	}
+	const float Mean = FMath::Max(Sum / Steps, 1e-3f), Close = FMath::Clamp((P.Zoom - 1.f) / (ZoomMost - 1.f), 0.f, 1.f);
+	Out.Reserve(Steps + 1);
+	for (int32 I = 0; I <= Steps; ++I)
+	{
+		const FVector2f Way = Edge[I % Steps] - Mid;
+		Out.Add(Mid + Way * FMath::Lerp(Ring / Mean, 1.f, Close));
+	}
+}
+
+float SS47SkyChart::ZoomAtStart(const FS47SkyAcquire& K)
+{
+	if (K.State() == FS47SkyAcquire::EPhase::Locking) return ZoomMost;
+	return K.HasBearings() && K.State() == FS47SkyAcquire::EPhase::Search ? ZoomForTrue(K.Distance()) : 1.f;
+}
+
+float SS47SkyChart::ZoomStep(float Was, float Want, double Dt, double OffWas, double OffNow)
+{
+	float Zoom = FMath::Clamp(Was + (Want - Was) * float(FMath::Min(1., FMath::Max(Dt, 0.) * (Want > Was ? 5. : 1.6))), 1.f, ZoomMost);
+	if (OffWas >= 0 && OffNow > 1e-6 && FMath::IsFinite(OffNow))
+	{
+		const double Glass = OffWas * Was; // where it stood on the glass last frame
+		if (OffNow < OffWas) Zoom = FMath::Min(Zoom, float(Glass / OffNow));
+		else if (OffNow > OffWas) Zoom = FMath::Max(Zoom, float(Glass / OffNow));
+	}
+	return FMath::Clamp(Zoom, 1.f, ZoomMost);
+}
+
 FVector2D SS47SkyChart::SteerOf(const FKey& Key)
 {
 	if (Key == EKeys::Left || Key == EKeys::Gamepad_DPad_Left || S47Keys::Is(TEXT("left"), Key)) return FVector2D(-1, 0);
@@ -310,7 +366,8 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	const double Now = FPlatformTime::Seconds();
 	const double Dt = LastPaint > 0 ? FMath::Clamp(Now - LastPaint, 0., .1) : 0.;
 	LastPaint = Now;
-	if (ShownSize.X <= 0 || !Sz.Equals(ShownSize, .5f)) { Shown = PlotFor(Sz); ShownSize = Sz; ZoomNow = 1.f; Trail.Reset(); TrailAt.Reset(); }
+	// (RX-LOOK gjennomgang 14 Nov: a chart made anew, as the page is on every tab and key, stands as closed in as the search is, ZoomAtStart)
+	if (ShownSize.X <= 0 || !Sz.Equals(ShownSize, .5f)) { Shown = PlotFor(Sz); ShownSize = Sz; ZoomNow = Sky.IsValid() ? ZoomAtStart(*Sky) : 1.f; ZoomOffWas = -1.; Trail.Reset(); TrailAt.Reset(); }
 	FPlot Pl = Shown;
 	Pl.Zoom = 1.f;
 	const FVector2f Rim(Pl.View.Rim), Semi(Pl.View.Semi);
@@ -330,13 +387,18 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	// the picture closes in about the crossing as the pointer nears it (with the keys: as the reticle does), all the way while the
 	// fix is taken, and opens again once it is held. The pointer is then read through the picture as it stands.
 	{
+		// (RX-LOOK gjennomgang 14 Nov: the pointer's distance is an open one, read through the open picture; the reticle's, with the
+		// keys or the assist, is a true one, and is closed in by ZoomForTrue, never faster than its place on the glass allows)
 		double Off = -1.;
+		bool bTrueOff = false;
 		if (K.HasBearings() && K.State() == FSky::EPhase::Search)
 		{
-			Off = bHover && K.HasPointer() ? FVector2D::Distance(FSky::ClampToChart(Sph::UnprojectAzEl(Pl.View, FVector2D(HoverLocal))), K.Cross()) : K.Distance();
+			bTrueOff = !(bHover && K.HasPointer());
+			Off = bTrueOff ? K.Distance() : FVector2D::Distance(FSky::ClampToChart(Sph::UnprojectAzEl(Pl.View, FVector2D(HoverLocal))), K.Cross());
 		}
-		const float Want = K.State() == FSky::EPhase::Locking ? ZoomMost : Off >= 0 ? ZoomFor(Off) : 1.f;
-		ZoomNow = FMath::Clamp(ZoomNow + (Want - ZoomNow) * float(FMath::Min(1., Dt * (Want > ZoomNow ? 5. : 1.6))), 1.f, ZoomMost);
+		const float Want = K.State() == FSky::EPhase::Locking ? ZoomMost : Off >= 0 ? (bTrueOff ? ZoomForTrue(Off) : ZoomFor(Off)) : 1.f;
+		ZoomNow = ZoomStep(ZoomNow, Want, Dt, bTrueOff ? ZoomOffWas : -1., Off);
+		ZoomOffWas = bTrueOff ? Off : -1.;
 		FVector2D Crossing;
 		Pl.Focus = Sph::ProjectAzEl(Pl.View, K.Cross(), Crossing) ? FVector2f(Crossing) : Rim;
 		Pl.Zoom = ZoomNow;
@@ -424,16 +486,11 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	constexpr int32 Letters = S47SkyLetters;
 	constexpr float Pitch = 21.f;
 	const FLinearColor Quiet = S47SkyGreen * .85f, LabelTone = S47SkyGreen * .85f;
-	const TCHAR* Word = State == FSky::EPhase::NoBearings ? TEXT("NO BEARINGS") : bLocked ? TEXT("FIX HELD") : bLocking ? TEXT("LOCKING") : !K.Steady() ? TEXT("ARRAY TURNING")
-		: K.HoldProgress() > 0 ? TEXT("ON THE CROSSING") : TEXT("SEARCHING");
-	const FVector2D Aim = K.ReticleAt();
-	double AimRa = 0, AimDec = 0;
-	Sph::AzElToRaDec(Aim, Lst, AimRa, AimDec);
-	Sph::ToB1950(AimRa, AimDec);
-	const FString TopLeft[3] = { FString(TEXT("EPOCH B1950.0")), FString(TEXT("MODE ")) + (bLocking ? FString::Printf(TEXT("LOCKING %s %%"), *Num(K.LockProgress() * 100., 0, 2)) : FString(Word)), FString(TEXT("SRC ")) + SourceName.Left(14) };
-	const FString TopRight[2] = { bBearings ? FString::Printf(TEXT("BEARINGS %s/%s"), *Num(K.InCount(), 0, 2, false, true), *Num(K.OnCount(), 0, 2, false, true)) : FString(TEXT("BEARINGS --/--")),
-		bBearings ? FString::Printf(TEXT("SPREAD %s\u00b0"), *Num(K.MeanOff(), 1)) : FString(TEXT("SPREAD --")) };
-	const FString Foot[3] = { FString::Printf(TEXT("AZ %s EL %s"), *Num(Aim.X, 1, 5, false, true), *Num(Aim.Y, 1, 4, false, true)), FString(TEXT("RA ")) + Sph::RaText(AimRa), FString(TEXT("DEC ")) + Sph::DecText(AimDec) };
+	// (RX-LOOK gjennomgang 14 Nov: the corner blocks as CornerWords writes them, the same the tests read)
+	const FCorners Corners = CornerWords(K, Lst, SourceName);
+	const FString (&TopLeft)[3] = Corners.TopLeft;
+	const FString (&TopRight)[2] = Corners.TopRight;
+	const FString (&Foot)[3] = Corners.Foot;
 	TArray<FSlateRect, TInlineAllocator<48>> Taken;
 	auto Free = [&](const FSlateRect& Area)
 	{
@@ -484,7 +541,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			// its declination round the rim, where the circle leaves the picture on the right
 			const FVector2f* Best = nullptr;
 			for (const FVector2f& Hit : RimHits) if (Hit.X > Rim.X + 4 && (!Best || Hit.X > Best->X)) Best = &Hit;
-			if (Best) RimLabel(*Best, Circle == 0 ? FString(TEXT("0\u00b0")) : Num(double(Circle), 0, 0, true) + TEXT("\u00b0"));
+			if (Best) RimLabel(*Best, DecWords(Circle));
 		}
 	}
 	{
@@ -522,7 +579,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			const FSlateRect Area(CrossX - HourWide * .5f - 5, Rim.Y + Semi.Y + 6, CrossX + HourWide * .5f + 5, Rim.Y + Semi.Y + 22);
 			if (!Free(Area)) continue;
 			Taken.Add(Area);
-			S47SkyText(Out, L + 6, G, Num(double(Hour), 0, 2, false, true) + TEXT("h"), CrossX - HourWide * .5f, Rim.Y + Semi.Y + 2, Letters, LabelTone);
+			S47SkyText(Out, L + 6, G, HourWords(Hour), CrossX - HourWide * .5f, Rim.Y + Semi.Y + 2, Letters, LabelTone);
 		}
 	}
 	// ---- the galactic plane, a stippled band, and the faint field under the table's stars (more of it closed in) ----
@@ -650,7 +707,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	// ---- the bearings: one line an antenna, each arm's a fan from the rim that closes on the fix: solid where the arm has
 	// locked, fainter with a dashed middle where it still sweeps. Round 2: thin lines at every stage, never a wedge (no glow;
 	// every other line starts further out; with the fix taken or held all of them stop short of the reticle's rings), with
-	// rungs across each fan and the arm's letter by the rim ----
+	// rungs across each fan and the arm's number by the rim (RX-LOOK gjennomgang 14 Nov: numbers, not letters) ----
 	if (bBearings)
 	{
 		// which way each arm's fan comes in from: three ways a third of a turn apart on the rule's chart (headings 205, 85 and
@@ -660,7 +717,6 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 		// the sphere squeezes the rule's seven degrees to a strip: its lines are turned further out of the arm's middle, about
 		// the points of the band they pass through. The middle line of every arm is the rule's own.
 		static const double FanWiden[FSky::ArmCount] = { 1., 2.6, 1.3 };
-		static const TCHAR* const ArmName[FSky::ArmCount] = { TEXT("A"), TEXT("B"), TEXT("C") };
 		const int32 PerArm = FSky::DishCount / FSky::ArmCount;
 		TArray<FVector2f> Rays; Rays.Reserve(FSky::DishCount * 64);
 		int32 RayFrom[FSky::DishCount], RayCount[FSky::DishCount];
@@ -719,7 +775,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			if (Ln.bSolid) Path(Ray, S47SkyFade(S47SkyGreen, (bMiddle ? .9f : .5f) * Gain), bMiddle ? 1.6f : 1.f, L + 3, 0, nullptr);
 			else Path(Ray, S47SkyFade(S47SkyGreen, bMiddle ? .7f : .3f), 1.f, L + 3, bMiddle ? 2 : 0, nullptr);
 		}
-		// the rungs: across each arm's fan at set lengths along its lines, and the arm's letter where its middle line nears the rim
+		// the rungs: across each arm's fan at set lengths along its lines, and the arm's number where its middle line nears the rim
 		static const float RungAt[] = { 70.f, 115.f, 165.f, 220.f, 280.f, 345.f, 415.f };
 		TArray<FVector2f> Rung;
 		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm)
@@ -744,7 +800,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 				if (S47SkyAlong(Rays, RayFrom[Mid], RayCount[Mid], Length, Spot) && InRim(Spot, .88)) continue;
 				if (S47SkyAlong(Rays, RayFrom[Mid], RayCount[Mid], FMath::Max(30.f, Length - 34.f), Spot) && InRim(Spot, .95))
 				{
-					S47SkyText(Out, L + 6, G, ArmName[Arm], Spot.X - 4, Spot.Y - 11, Letters, K.ArmSolid(Arm) ? S47SkyGreen : S47SkyGreen * .7f);
+					S47SkyText(Out, L + 6, G, S47RxLook::ArmLabel(Arm), Spot.X - 4, Spot.Y - 11, Letters, K.ArmSolid(Arm) ? S47SkyGreen : S47SkyGreen * .7f);
 				}
 				break;
 			}
@@ -849,7 +905,11 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 		// three rings inside the corners (with the fix taken or held they are the lock sequence's own), and the hairs
 		if (!bLocking && !bLocked)
 		{
-			S47SkyGlowHot(Out, L + 5, G, S47SkyRingPath(Ret, Gap * .3f), Col, 1.5f);
+			// (RX-LOOK gjennomgang 14 Nov: the inner one is the rule's lock circle on the glass, LockMark: the crossing inside it is on the lock)
+			TArray<FVector2f> Inner;
+			LockMark(Pl, K.ReticleAt(), Gap * .3f, Inner);
+			for (FVector2f& Spot : Inner) Spot = Slip(Spot);
+			S47SkyGlowHot(Out, L + 5, G, Inner.Num() >= 3 ? Inner : S47SkyRingPath(Ret, Gap * .3f), Col, 1.5f);
 			S47SkyRing(Out, L + 5, G, Ret, Gap * .5f, S47SkyFade(Col, .8f), 1.3f);
 			S47SkyRing(Out, L + 5, G, Ret, Gap * .72f, S47SkyFade(Col, .6f), 1.1f);
 		}
@@ -921,6 +981,51 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	return L + 8;
 }
 
+SS47SkyChart::FCorners SS47SkyChart::CornerWords(const FS47SkyAcquire& K, double Lst, const FString& Source)
+{
+	using FSky = FS47SkyAcquire;
+	namespace Sph = S47SkySphere;
+	using S47RxLook::Num;
+	const FSky::EPhase State = K.State();
+	const bool bLocked = State == FSky::EPhase::Locked, bLocking = State == FSky::EPhase::Locking, bBearings = K.HasBearings();
+	const TCHAR* Word = State == FSky::EPhase::NoBearings ? TEXT("NO BEARINGS") : bLocked ? TEXT("FIX HELD") : bLocking ? TEXT("LOCKING") : !K.Steady() ? TEXT("ARRAY TURNING")
+		: K.HoldProgress() > 0 ? TEXT("ON THE CROSSING") : TEXT("SEARCHING");
+	const FVector2D Aim = K.ReticleAt();
+	double AimRa = 0, AimDec = 0;
+	Sph::AzElToRaDec(Aim, Lst, AimRa, AimDec);
+	Sph::ToB1950(AimRa, AimDec);
+	FCorners C;
+	C.TopLeft[0] = TEXT("EPOCH B1950.0");
+	C.TopLeft[1] = FString(TEXT("MODE ")) + (bLocking ? FString::Printf(TEXT("LOCKING %s %%"), *Num(K.LockProgress() * 100., 0, 2)) : FString(Word));
+	C.TopLeft[2] = FString(TEXT("SRC ")) + Source.Left(14);
+	C.TopRight[0] = bBearings ? FString::Printf(TEXT("BEARINGS %s/%s"), *Num(K.InCount(), 0, 2, false, true), *Num(K.OnCount(), 0, 2, false, true)) : FString(TEXT("BEARINGS --/--"));
+	C.TopRight[1] = bBearings ? FString::Printf(TEXT("SPREAD %s\u00b0"), *Num(K.MeanOff(), 1)) : FString(TEXT("SPREAD --"));
+	C.Foot[0] = FString::Printf(TEXT("AZ %s EL %s"), *Num(Aim.X, 1, 5, false, true), *Num(Aim.Y, 1, 4, false, true));
+	C.Foot[1] = FString(TEXT("RA ")) + Sph::RaText(AimRa);
+	C.Foot[2] = FString(TEXT("DEC ")) + Sph::DecText(AimDec);
+	return C;
+}
+
+FString SS47SkyChart::DecWords(int32 Circle) { return Circle == 0 ? FString(TEXT("0\u00b0")) : S47RxLook::Num(double(Circle), 0, 0, true) + TEXT("\u00b0"); }
+FString SS47SkyChart::HourWords(int32 Hour) { return S47RxLook::Num(double(Hour), 0, 2, false, true) + TEXT("h"); }
+
+TArray<FString> SS47SkyChart::AllWords(const FS47SkyAcquire& K, double Lst, const FString& Source)
+{
+	using FSky = FS47SkyAcquire;
+	TArray<FString> Out;
+	const FCorners C = CornerWords(K, Lst, Source);
+	for (const FString& Each : C.TopLeft) Out.Add(Each);
+	for (const FString& Each : C.TopRight) Out.Add(Each);
+	for (const FString& Each : C.Foot) Out.Add(Each);
+	for (int32 Hour = 0; Hour < 24; ++Hour) Out.Add(HourWords(Hour));
+	for (int32 Circle = -75; Circle <= 75; Circle += 5) Out.Add(DecWords(Circle));
+	Out.Add(TEXT("+90\u00b0"));
+	for (const FSky::FSource& Src : FSky::Catalogue()) { Out.Add(Src.Name); if (Src.bMajor) Out.Add(Src.Name + TEXT(" / CARD")); }
+	for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm) Out.Add(S47RxLook::ArmLabel(Arm));
+	Out.Append({ FString(TEXT("NCP")), FString(TEXT("E")), FString(TEXT("W")) });
+	return Out;
+}
+
 bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 {
 	using FSky = FS47SkyAcquire;
@@ -971,9 +1076,101 @@ bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 		Was = InSky;
 	}
 	Check(bZoom && bOrder && 5. / ZoomFor(5.) < 2.3, FString::Printf(TEXT("the picture closes in %.1f times near the crossing: a pointer five degrees off on the open picture stands %.1f off once it has, and a nearer pointer is always nearer"), ZoomMost, 5. / ZoomFor(5.)));
+	{
+		// RX-LOOK gjennomgang 14 Nov: with the keys (or the assist) the reticle's distance on the glass, true degrees times the zoom,
+		// never grows while it nears the crossing: as the picture stands for each distance (swept from 60 degrees to none), and frame
+		// by frame as the zoom eases in behind a reticle steered in at the keys' own rate from 60 degrees off, and out again. The old
+		// curve (the true distance read as an open one) is measured beside it: steered from 24 to 13 degrees the reticle went out.
+		bool bSettled = true, bIn = true, bOut = true;
+		double GlassBefore = -1., OldAt24 = 24. * ZoomFor(24.), OldMost = 0.;
+		for (int32 I = 0; I <= 6000; ++I)
+		{
+			const double Off = I * .01, OnGlass = Off * ZoomForTrue(Off);
+			bSettled &= OnGlass >= GlassBefore - 1e-3 && ZoomForTrue(Off) >= 1.f && ZoomForTrue(Off) <= ZoomMost;
+			GlassBefore = OnGlass;
+			if (Off < 24.) OldMost = FMath::Max(OldMost, Off * ZoomFor(Off));
+		}
+		const double Tick = 1. / 60.;
+		float Zoom = 1.f;
+		double Off = 60., OffWas = -1., GlassWas = 1e9, Grew = 0.;
+		while (Off > 0.)
+		{
+			Zoom = ZoomStep(Zoom, ZoomForTrue(Off), Tick, OffWas, Off);
+			OffWas = Off;
+			Grew = FMath::Max(Grew, Off * Zoom - GlassWas);
+			bIn &= Off * Zoom <= GlassWas + 1e-4;
+			GlassWas = Off * Zoom;
+			Off -= FSky::KeyRate * Tick;
+		}
+		// standing on the crossing, the picture closes in all the way
+		for (int32 I = 0; I < 120; ++I) Zoom = ZoomStep(Zoom, ZoomForTrue(.2), Tick, .2, .2);
+		const float Closed = Zoom;
+		OffWas = -1.; GlassWas = -1.;
+		for (Off = .5; Off < 60.; Off += FSky::KeyRate * Tick)
+		{
+			Zoom = ZoomStep(Zoom, ZoomForTrue(Off), Tick, OffWas, Off);
+			OffWas = Off;
+			bOut &= Off * Zoom >= GlassWas - 1e-4;
+			GlassWas = Off * Zoom;
+		}
+		// the pointer: its distance is read on the open picture, and the zoom follows it as before (no cap on it)
+		const bool bPointer = ZoomStep(1.f, ZoomMost, Tick, -1., 3.) > 1.f && ZoomStep(2.f, 2.f, Tick, -1., 3.) == 2.f;
+		Check(bSettled && bIn && bOut && bPointer && FMath::IsNearlyEqual(ZoomForTrue(FSky::LockRadius), ZoomMost, 1e-3f) && ZoomForTrue(30.) == 1.f && FMath::IsNearlyEqual(Closed, ZoomMost, 1e-2f) && OldMost > OldAt24 + 5.,
+			FString::Printf(TEXT("steered in by the keys the reticle never backs off the crossing on the glass (swept from 60 degrees, frame by frame at %.0f a second: it grew by %.4f at most; the old curve took it from %.0f to %.1f open degrees off), the whole lock circle stands closed in all the way (%.1f times), and the pointer's zoom is as before"), FSky::KeyRate, Grew, OldAt24, OldMost, ZoomForTrue(FSky::LockRadius)));
+	}
 	Check(SteerOf(EKeys::Up) == FVector2D(0, 1) && SteerOf(EKeys::Down) == FVector2D(0, -1) && SteerOf(EKeys::Left) == FVector2D(-1, 0) && SteerOf(EKeys::Right) == FVector2D(1, 0)
 		&& SteerOf(EKeys::Gamepad_DPad_Up) == FVector2D(0, 1) && SteerOf(EKeys::Gamepad_DPad_Left) == FVector2D(-1, 0) && SteerOf(EKeys::Escape).IsZero(),
 		TEXT("the arrow keys and the d-pad steer; Escape stays the way out"));
+	{
+		// RX-LOOK gjennomgang 14 Nov: closed in, the reticle's inner mark is the rule's lock circle on the glass. At each card source,
+		// a crossing a tenth inside the lock radius in any direction stands inside the mark, one a tenth outside stands outside it;
+		// a round ring of the mark's mean size (the old inner ring's shape) is measured beside it.
+		const FPlot Open = PlotFor(FVector2f(716, 440));
+		int32 Right = 0, Wrong = 0, RoundWrong = 0, Sources = 0;
+		float Narrowest = 1e9f, Widest = 0.f;
+		for (const FSky::FSource& Src : FSky::Catalogue())
+		{
+			if (!Src.bMajor) continue;
+			++Sources;
+			FPlot Z = Open;
+			Z.Zoom = ZoomMost; Z.Focus = ToLocal(Open, Src.At);
+			const FVector2D Reticle = Src.At + FVector2D(.8, -.5);
+			TArray<FVector2f> Mark;
+			LockMark(Z, Reticle, 10.f, Mark);
+			if (Mark.Num() < 3) { ++Wrong; continue; }
+			const FVector2f Mid = ToLocal(Z, Reticle);
+			float Mean = 0.f;
+			for (int32 I = 0; I + 1 < Mark.Num(); ++I) { const float R = FVector2f::Distance(Mark[I], Mid); Mean += R; Narrowest = FMath::Min(Narrowest, R); Widest = FMath::Max(Widest, R); }
+			Mean /= float(Mark.Num() - 1);
+			// how far out the mark stands the way a place on the glass lies from the reticle
+			auto Reach = [&](const FVector2f& Toward)
+			{
+				const float Want = FMath::Atan2(Toward.Y - Mid.Y, Toward.X - Mid.X);
+				for (int32 I = 0; I + 1 < Mark.Num(); ++I)
+				{
+					const FVector2f A = Mark[I] - Mid, B = Mark[I + 1] - Mid;
+					const float Ta = FMath::Atan2(A.Y, A.X), Span = FMath::FindDeltaAngleRadians(Ta, FMath::Atan2(B.Y, B.X)), Into = FMath::FindDeltaAngleRadians(Ta, Want);
+					if (FMath::Abs(Span) < 1e-6f) continue;
+					const float Part = Into / Span;
+					if (Part >= -1e-4f && Part <= 1.0001f) return FMath::Lerp(A.Size(), B.Size(), FMath::Clamp(Part, 0.f, 1.f));
+				}
+				return 0.f;
+			};
+			for (int32 Turn = 0; Turn < 24; ++Turn)
+			{
+				const FVector2D Way(FMath::Cos(Turn * UE_DOUBLE_PI / 12.), FMath::Sin(Turn * UE_DOUBLE_PI / 12.));
+				for (const double Share : { .9, 1.1 })
+				{
+					const FVector2f At = ToLocal(Z, Reticle + Way * (FSky::LockRadius * Share));
+					const bool bInside = FVector2f::Distance(At, Mid) < Reach(At), bRoundInside = FVector2f::Distance(At, Mid) < Mean;
+					((bInside == (Share < 1.)) ? Right : Wrong) += 1;
+					RoundWrong += bRoundInside != (Share < 1.) ? 1 : 0;
+				}
+			}
+		}
+		Check(Sources >= 3 && Wrong == 0 && Right == Sources * 48 && RoundWrong > 0 && Widest > Narrowest * 1.3f,
+			FString::Printf(TEXT("closed in, the reticle's inner mark is the lock circle on the glass (%.1f to %.1f units out): at %d card sources a crossing just inside the lock radius stands inside it and one just outside stands outside, %d of %d (a round ring of its size misjudged %d)"), Narrowest, Widest, Sources, Right, Right + Wrong, RoundWrong));
+	}
 	// the tables as the picture uses them: every place a direction, and a path's lengths as the bearings' rungs count them
 	bool bUnit = S47SkyStarPlaces().Num() == int32(S47SkySphere::Star::Count) && S47SkyDustPlaces().Num() == S47SkySphere::DustCount && S47SkyFaintPlaces().Num() == S47SkySphere::FieldCount;
 	for (const FS47ChartPlace& Each : S47SkyStarPlaces()) bUnit &= FMath::Abs(Each.Unit.Size() - 1.) < 1e-9;
@@ -983,5 +1180,56 @@ bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 	FVector2f OnIt, PastIt;
 	const bool bAlong = S47SkyAlong(Bent, 0, 3, 15.f, OnIt) && OnIt.Equals(FVector2f(10, 5), 1e-4f) && !S47SkyAlong(Bent, 0, 3, 25.f, PastIt) && S47SkyAlong(Bent, 1, 2, 4.f, OnIt) && OnIt.Equals(FVector2f(10, 4), 1e-4f);
 	Check(bUnit && bAlong && S47SkyLetters >= 22, TEXT("every star of the table, every speck of the galactic plane and every star of the faint field has its place of date; a rung stands a set length along its bearing; no word on the chart is smaller than the next step's"));
+	{
+		// RX-LOOK gjennomgang 14 Nov: every word the chart writes, read through the functions it draws with: the corner blocks with
+		// the reticle anywhere in the array's window, at every quarter degree of sidereal time, while the rule has no bearings,
+		// searches, takes the fix and holds it; every hour, declination and name it can write. None reads 47 or has a lone C.
+		int32 Read = 0;
+		FString Bad;
+		auto Hold = [&](const FString& Shown) { ++Read; if (Bad.IsEmpty() && !S47RxLook::TextFault(Shown).IsEmpty()) Bad = Shown + TEXT(" (") + S47RxLook::TextFault(Shown) + TEXT(")"); };
+		const FString Source = TEXT("PSR B1133+16");
+		FS47SkyAcquire K;
+		K.Begin(4711u, FVector2D(112, 54), 1, false);
+		for (const FString& Each : AllWords(K, 120., Source)) Hold(Each);
+		for (double Az = FSky::AzMin; Az <= FSky::AzMax; Az += .7) for (double El = FSky::ElMin; El <= FSky::ElMax; El += .7)
+		{
+			K.Nudge(FVector2D(Az, El) - K.ReticleAt());
+			Hold(CornerWords(K, 120., Source).Foot[0]);
+		}
+		for (const FVector2D Aim : { FVector2D(70, 25), FVector2D(112, 54), FVector2D(146, 64) })
+		{
+			K.Nudge(Aim - K.ReticleAt());
+			for (int32 Quarter = 0; Quarter < 1440; ++Quarter) { const FCorners C = CornerWords(K, Quarter * .25, Source); Hold(C.Foot[1]); Hold(C.Foot[2]); }
+		}
+		TArray<FS47SkyAcquire::FDish> Dishes;
+		for (int32 I = 0; I < FSky::DishCount; ++I)
+		{
+			FS47SkyAcquire::FDish D; D.bOn = true; D.Point = FVector2D(112, 54);
+			const double Arm = FMath::DegreesToRadians(120. * FSky::ArmOf(I)), Reach = 40. * (1 + I % (FSky::DishCount / FSky::ArmCount));
+			D.Ground = FVector2D(FMath::Sin(Arm) * Reach, FMath::Cos(Arm) * Reach);
+			Dishes.Add(D);
+		}
+		for (int32 Frame = 0; Frame < 60 * 45 && !K.Locked(); ++Frame)
+		{
+			K.SetArray(Dishes, Frame > 30, true);
+			K.Steer(K.Distance() > 1. ? (K.Cross() - K.ReticleAt()).GetSafeNormal() : FVector2D::ZeroVector);
+			K.Step(1. / 60.);
+			const FCorners C = CornerWords(K, 120. + Frame * .01, Source);
+			for (const FString& Each : C.TopLeft) Hold(Each);
+			for (const FString& Each : C.TopRight) Hold(Each);
+		}
+		for (const FString& Each : AllWords(K, 120., Source)) Hold(Each);
+		// RX-LOOK gjennomgang 14 Nov: a chart made anew mid-search stands where the old one had closed in to (it began open and snapped in)
+		const bool bStart = ZoomAtStart(K) == 1.f;
+		FS47SkyAcquire Mid;
+		Mid.Begin(4711u, FVector2D(112, 54), 1, false);
+		const float Before = ZoomAtStart(Mid);
+		Mid.SetArray(Dishes, true, true); Mid.Step(1. / 60.);
+		Mid.Nudge(Mid.Cross() + FVector2D(2.5, 1.) - Mid.ReticleAt());
+		const float Kept = ZoomAtStart(Mid), Eased = [&] { float Z = 1.f; for (int32 I = 0; I < 600; ++I) Z = ZoomStep(Z, ZoomForTrue(Mid.Distance()), 1. / 60., Mid.Distance(), Mid.Distance()); return Z; }();
+		Check(bStart && Before == 1.f && Mid.State() == FS47SkyAcquire::EPhase::Search && Kept > 2.f && FMath::IsNearlyEqual(Kept, Eased, 1e-3f),
+			FString::Printf(TEXT("a chart made anew mid-search stands closed in as far as the search had gone (%.2f times, where the old one had eased to %.2f), open with the fix held or no bearings"), Kept, Eased));
+		Check(Bad.IsEmpty() && Read > 10000 && K.Locked(), FString::Printf(TEXT("%d words the chart writes, read through the functions it draws with, keep to the text rule (the arms are 1, 2 and 3)%s"), Read, Bad.IsEmpty() ? TEXT("") : *(TEXT(": NOT ") + Bad)));
+	}
 	return bOk;
 }

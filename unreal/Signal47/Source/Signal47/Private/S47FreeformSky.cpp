@@ -10,6 +10,7 @@
 #include "S47Observing.h"
 #include "S47RxLook.h"
 #include "S47RxSearch.h"
+#include "S47Script.h"
 #include "S47SkyAcquire.h"
 #include "S47SkySphere.h"
 #include "S47Story.h"
@@ -39,6 +40,17 @@ namespace
 	const TCHAR* const S47SkySoundNames[] = { TEXT("sweep_tick"), TEXT("converge"), TEXT("line_lock"), TEXT("lock_ring"), TEXT("lock_confirm"), TEXT("lock_confirm_open"), TEXT("blurt"), TEXT("key_blip"), TEXT("hint") };
 	const TCHAR* const S47SkySoundDir = TEXT("RxAcquire/Audio");
 	FString S47SkySoundKey(const TCHAR* Name) { return FString(TEXT("rxa:")) + Name; }
+}
+
+namespace
+{
+	// RX-LOOK gjennomgang 14 Nov: the receiver chart's sidereal time: the card's own (S47SkySphere::CardLst) for the job in hand, else
+	// the station's (from the game's clock). It never touches the real sky.
+	double S47SkyChartSidereal(const FS47SkyAcquire* Chart, double Station)
+	{
+		const double Card = Chart && Chart->CardRun() >= 0 ? S47SkySphere::CardLst(Chart->CardRun()) : -1.;
+		return Card >= 0 ? Card : Station;
+	}
 }
 
 bool FS47FreeformSession::SkyRuleLive() const { return bTestSky || LiveFlow(); }
@@ -265,12 +277,15 @@ FS47RxLive FS47FreeformSession::RxLive() const
 {
 	// RX-LOOK-20261113: see S47Freeform.h. Read every frame by the receiver's frame; nothing is decided or changed here.
 	FS47RxLive Look;
-	Look.Clock = TerminalClock();
+	// (RX-LOOK gjennomgang 14 Nov: the clock by the rule for a clock in player text, S47RxLook::ClockLine; the other terminals keep theirs)
+	Look.Clock = S47RxLook::ClockLine(TerminalClock());
 	// "SARO OPS V4.2  TERM 3  OPR NIGHT", less the name the header draws large
 	Look.Term = TerminalStation(1);
 	Look.Term.RemoveFromStart(TEXT("SARO OPS "));
 	Look.bCalm = M && M->Flow && M->Flow->bCalmFlash;
-	Look.LstDeg = SiderealDeg();
+	// RX-LOOK gjennomgang 14 Nov: the chart's sidereal time, held at the card's (S47SkySphere::CardLst), so that the card's label, the
+	// readout and the stars agree whenever the player looks; with no card the station's own. The real sky outside is not this.
+	Look.LstDeg = S47SkyChartSidereal(SkyFix.Get(), SiderealDeg());
 	Look.Dishes = AvailableDishCount(); Look.Rate = ArrayMeasurementRate();
 	const bool bWornArray = Field && Field->ArrayWear().bActive;
 	// (the idle picture's own words for it, TerminalLines)
@@ -320,6 +335,9 @@ FS47RxLive FS47FreeformSession::RxLive() const
 		In.bPlainOnTape = PlainAnomaly(*LookJob) && LookJob->Stage >= EJobStage::Integrating && LookJob->Stage <= EJobStage::Recorded && !LookJob->bAudioReviewed;
 		In.bReference = LookJob->bControl && LookJob->ControlAt < 8 && LookJob->Phenomenon != TEXT("wrong_source");
 		In.Elapsed = LookJob->Elapsed; In.Seconds = SourceSeconds(); In.ReferenceAt = LookJob->ControlAt;
+		// (RX-LOOK gjennomgang 14 Nov: ReceiverNextAction's two other conditions)
+		In.bCaseWaits = LookJob->CaseTest >= 0 && LookJob->Stage <= EJobStage::Pointed && !CasePrecondition(*LookJob).IsEmpty();
+		In.bCrossRunning = bCrossRunning;
 		// the waterfall marks a tick only as the tape passes it, while the take is being written (as the tape strip shows it)
 		Look.bRecording = LookJob->Stage == EJobStage::Integrating && bTunedNow && In.bPointReady && In.bSettled;
 		Look.Elapsed = LookJob->Elapsed; Look.Seconds = SourceSeconds();
@@ -327,7 +345,7 @@ FS47RxLive FS47FreeformSession::RxLive() const
 	}
 	Look.State = S47RxLook::StateOf(In);
 	// (D45-20261110: while the array comes round the receiver says how far it has to go, as its old line beside the tabs did)
-	if (Look.State.Id == S47RxLook::EState::Slewing) Look.State.Text = FString::Printf(TEXT("SLEWING %s\u00b0 TO GO"), *S47RxLook::Num(ArrayErrorDeg(), 1));
+	if (Look.State.Id == S47RxLook::EState::Slewing) Look.State.Text = S47RxLook::SlewWords(ArrayErrorDeg());
 	return Look;
 }
 
@@ -340,12 +358,14 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 		.OnStep([this](double Dt) { SkyChartStep(Dt); })
 		.OnKey([this](int32 Kind) { SkySound(0, Kind); })
 		.Calm([this] { return M && M->Flow && M->Flow->bCalmFlash; })
-		.Sidereal([this] { return SiderealDeg(); })
+		.Sidereal([this] { return S47SkyChartSidereal(SkyFix.Get(), SiderealDeg()); })
 		.Source(Name);
 	// The chart has the keys first while there is a search to steer (the arrow keys, the walk keys, a d-pad).
 	if (SkyFix.IsValid() && !SkyFix->Locked()) KeysTo = Chart;
 	// Without a pointer: five-degree steps, the way the key points on the glass, always land near enough to be eased in
-	// (FS47SkyAcquire::CaptureRadius).
+	// (FS47SkyAcquire::CaptureRadius). RX-LOOK gjennomgang 14 Nov: the step keys take no keyboard focus, so a click on one leaves the
+	// arrow keys with the chart. (The tabs and TUNE > build the page again, and the screen gives the keys to the new page's target;
+	// on TUNE there is nothing to steer, and the arrows walking between its dial keys is the screen's ordinary way round it.)
 	auto Nudge = [this, Chart](double Across, double Up) { return [this, Chart, Across, Up] { SyncSkyFix(); if (SkyFix.IsValid()) SkyFix->Nudge(Chart->SkyStep(FVector2D(Across, Up)) * 5.); }; };
 	const TAttribute<bool> CanSteer = TAttribute<bool>::CreateLambda([this] { return SkyFix.IsValid() && SkyFix->State() == FS47SkyAcquire::EPhase::Search; });
 	// RX-LOOK-20261113 (Tom's reference): the sphere as the main panel, the waterfall, the spectrum and the tracking readouts in a
@@ -372,7 +392,7 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 				[SkyT::RxPanel(TEXT("FFT SPECTRUM"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxFft).Feed(Feed)],
 					TAttribute<FString>::CreateLambda([Feed] { return FString::Printf(TEXT("BW %s kHz"), *S47RxLook::Num(Feed->Now().Scope.Bandwidth)); }))]
 				+ SVerticalBox::Slot().FillHeight(.43f)
-				[SkyT::RxPanel(TEXT("ACQUISITION / TRACKING"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxTrack).Feed(Feed).Model(SkyFix)])]
+				[SkyT::RxPanel(TEXT("ACQUISITION / TRACKING"), SNew(SBox).Clipping(EWidgetClipping::ClipToBounds)[SNew(SS47RxTrack).Feed(Feed).Model(SkyFix).View([Weak = TWeakPtr<SS47SkyChart>(Chart)] { const TSharedPtr<SS47SkyChart> Pinned = Weak.Pin(); return Pinned.IsValid() ? Pinned->OpenView() : SS47SkyChart::PlotFor(FVector2f(716, 440)).View; })])]
 			]
 		];
 	const TSharedRef<SWidget> SkyStrip = SNew(SHorizontalBox)
@@ -390,15 +410,15 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 				[
 					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot().FillWidth(1)
-					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("UP 5\u00b0"), Nudge(0, 1), false, CanSteer)]
+					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("UP 5\u00b0"), Nudge(0, 1), false, CanSteer, 22, false)]
 					+ SHorizontalBox::Slot().FillWidth(1)
 				]
 				+ SVerticalBox::Slot().FillHeight(1)
 				[
 					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("LEFT 5\u00b0"), Nudge(-1, 0), false, CanSteer)]
-					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("DOWN 5\u00b0"), Nudge(0, -1), false, CanSteer)]
-					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("RIGHT 5\u00b0"), Nudge(1, 0), false, CanSteer)]
+					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("LEFT 5\u00b0"), Nudge(-1, 0), false, CanSteer, 22, false)]
+					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("DOWN 5\u00b0"), Nudge(0, -1), false, CanSteer, 22, false)]
+					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("RIGHT 5\u00b0"), Nudge(1, 0), false, CanSteer, 22, false)]
 				]
 			]
 		]
@@ -490,13 +510,32 @@ bool FS47FreeformSession::SkySelfTest(TArray<FString>& Lines)
 	Check(!S.SkyPrompt().IsEmpty() && !S.SkyOdd(), TEXT("the page has a line to say with no chart open, and an ordinary card is ordinary"));
 	{ // RX-LOOK-20261113: the frame's reading, as far as it goes without a station round it
 		const FS47RxLive Bare = S.RxLive();
+		// RX-LOOK gjennomgang 14 Nov: the header's clock as the frame draws it, at a minute that would read 47 and one that would not
+		// (it used to be compared with the terminal's own clock, which it was a copy of)
+		const double ClockWas = S.WorldClock;
+		S.WorldClock = FMath::FloorToDouble(ClockWas / 86400.) * 86400. + 23. * 3600. + 47. * 60. + 12.;
+		const FString At47 = S.RxLive().Clock, Terminal47 = S.TerminalClock();
+		S.WorldClock = FMath::FloorToDouble(ClockWas / 86400.) * 86400. + 21. * 3600. + 14. * 60.;
+		const FString At14 = S.RxLive().Clock, Terminal14 = S.TerminalClock();
+		S.WorldClock = ClockWas;
+		const bool bClock = Terminal47.EndsWith(TEXT("23:47")) && At47 == Terminal47.LeftChop(5) + TEXT("23:48") && !S47Script::SaysFortySeven(At47) && At14 == Terminal14 && At14.EndsWith(TEXT("21:14"))
+			&& S47RxLook::ClockLine(TEXT("28-APR-86 08:15")) == TEXT("28-APR-86 08:16") && S47RxLook::ClockLine(TEXT("NO CLOCK")) == TEXT("NO CLOCK");
+		// RX-LOOK gjennomgang 14 Nov: the chart's sidereal time is the card's and does not follow the clock
+		S.SyncSkyFix();
+		const double ChartAt = S.RxLive().LstDeg;
+		S.WorldClock = ClockWas + 3. * 3600.;
+		const double ChartLater = S.RxLive().LstDeg, StationLater = S.SiderealDeg();
+		S.WorldClock = ClockWas;
+		const bool bHeld = S.SkyFix.IsValid() && S.SkyFix->CardRun() >= 0 && ChartAt == S47SkySphere::CardLst(S.SkyFix->CardRun()) && ChartLater == ChartAt && FMath::Abs(S47SkySphere::Wrap180(StationLater - S.SiderealDeg())) > 40.;
+		Check(bHeld, *FString::Printf(TEXT("the receiver's chart stands at the card's sidereal time (%.2f h) whatever the clock; the station's own moves on (%.2f h three hours later)"), ChartAt / 15., StationLater / 15.));
+		Check(bClock, *FString::Printf(TEXT("the receiver's header clock never reads 47: the terminal's %s is drawn %s, its %s as it is"), *Terminal47, *At47, *Terminal14));
 		const bool bSky = FMath::IsFinite(S.SiderealDeg()) && S.SiderealDeg() >= 0 && S.SiderealDeg() < 360;
 		// the first morning at 08:00, the session's own first date (28 April 1986: a little after 22 h 18 min of sidereal time)
 		FS47FreeformSession Fresh(nullptr); Fresh.Begin(nullptr);
 		const FDateTime FirstDate = Fresh.DateOfDay(1);
 		const double Morning = Fresh.SiderealDeg() / 15., Almanac = S47SkySphere::LstOf(FirstDate.GetYear(), FirstDate.GetMonth(), FirstDate.GetDay(), Fresh.Clock()) / 15.;
 		Fresh.Stop();
-		Check(Bare.bJob && Bare.CardMhz > 1419. && Bare.CardMhz < 1421. && !Bare.Source.IsEmpty() && Bare.Clock == S.TerminalClock() && Bare.Term.StartsWith(TEXT("V4.2")) && !Bare.bPointing && !Bare.bRecording && Bare.Ticks.IsEmpty() && Bare.Scope.Strength == 0.,
+		Check(Bare.bJob && Bare.CardMhz > 1419. && Bare.CardMhz < 1421. && !Bare.Source.IsEmpty() && Bare.Clock == S47RxLook::ClockLine(S.TerminalClock()) && Bare.Term.StartsWith(TEXT("V4.2")) && !Bare.bPointing && !Bare.bRecording && Bare.Ticks.IsEmpty() && Bare.Scope.Strength == 0.,
 			TEXT("the receiver's frame reads the job's card, the terminal's clock and name; with no station round it there is no pointing, no source on the scopes and nothing recorded"));
 		Check(bSky && FMath::Abs(Morning - Almanac) < 1e-6 && Morning > 21. && Morning < 23., *FString::Printf(TEXT("the station's sidereal time follows the world's clock and date (the first morning: %.2f h)"), Morning));
 		// the frame on the glass: with its own row of keys the screen has no second one, and what the frame's rows leave is the
@@ -505,6 +544,24 @@ bool FS47FreeformSession::SkySelfTest(TArray<FString>& Lines)
 		Check(Glass > SS47ScreenView::ContentHigh(false) + 20.f && Body >= 560.f && Body < Glass - 200.f, *FString::Printf(TEXT("the receiver's frame leaves %.0f of the glass's %.0f units for the page"), Body, Glass));
 		// the banner never says more than the receiver's own line: with the job back at the start it asks for the pointing
 		Check(Bare.State.Id == S47RxLook::EState::Point || Bare.State.Id == S47RxLook::EState::NotUp || Bare.State.Id == S47RxLook::EState::NoPower, TEXT("a job that is not pointed: the banner asks for the array, or says why not"));
+		{
+			// RX-LOOK gjennomgang 14 Nov: the banner and the receiver's own line agree over every stage of the job, with the power on
+			// and off and the reference scan running or not (S47RxLook::Agrees); the job and the session as they were after
+			const EJobStage StageWas = S.Work[0].Stage;
+			const bool bFaultWas = S.bPowerFault, bCrossWas = S.bCrossRunning;
+			int32 Pairs = 0;
+			FString Disagree;
+			for (int32 Stage = 0; Stage <= int32(EJobStage::Filed); ++Stage) for (const bool bFault : { false, true }) for (const bool bCross : { false, true })
+			{
+				S.Work[0].Stage = EJobStage(Stage); S.bPowerFault = bFault; S.bCrossRunning = bCross;
+				const S47RxLook::FState Shown = S.RxLive().State;
+				const FString Line = S.ReceiverNextAction();
+				++Pairs;
+				if (Disagree.IsEmpty() && !S47RxLook::Agrees(Shown.Id, Line)) Disagree = FString::Printf(TEXT("stage %d%s%s: %s / %s"), Stage, bFault ? TEXT(", no power") : TEXT(""), bCross ? TEXT(", scan") : TEXT(""), *Shown.Text, *Line);
+			}
+			S.Work[0].Stage = StageWas; S.bPowerFault = bFaultWas; S.bCrossRunning = bCrossWas;
+			Check(Disagree.IsEmpty(), *FString::Printf(TEXT("the banner and the receiver's own line agree at every stage of a job, with the power on and off and the scan running or not (%d pairs)%s"), Pairs, Disagree.IsEmpty() ? TEXT("") : *(TEXT(": NOT ") + Disagree)));
+		}
 	}
 	Before.Stop(); Again.Stop(); S.Stop();
 	return bOk;

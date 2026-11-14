@@ -1,35 +1,112 @@
 #include "S47RxLook.h"
+#include "S47Script.h"
 
 // RX-LOOK-20261113 (-> M3, M6): see S47RxLook.h.
 S47RxLook::FState S47RxLook::StateOf(const FStateIn& In)
 {
 	// The order is FS47FreeformSession::ReceiverNextAction's: the banner never says more than the receiver's own line does.
+	// RX-LOOK gjennomgang 14 Nov: exactly its order: the evening's gate first; at the printer, in the packet or filed the job's own
+	// next step before the power; a case test's precondition and too few antennas before the pointing; the reference scan during a
+	// take (the take goes on) apart from a take held.
 	auto Say = [](EState Id, const FString& Text, bool bAmber) { FState S; S.Id = Id; S.Text = Text; S.bAmber = bAmber; return S; };
+	auto AfterTake = [&]
+	{
+		if (In.Stage <= 4)
+		{
+			if (In.bReference) return Say(EState::Reference, FString::Printf(TEXT("REFERENCE %s/8 s"), *Num(FMath::Clamp(int32(In.ReferenceAt), 0, 8))), true);
+			if (In.bPlainOnTape) return Say(EState::Anomaly, TEXT("ANOMALY DETECTED"), true);
+			return Say(EState::OnTape, TEXT("TAKE ON TAPE"), false);
+		}
+		return Say(EState::Done, TEXT("TAKE REGISTERED"), false);
+	};
 	if (!In.bJob) return Say(EState::NoJob, TEXT("NO JOB"), false);
+	if (In.bNotUp) return Say(EState::NotUp, TEXT("SOURCE NOT UP"), false);
+	if (In.Stage == 3 || In.Stage >= 6) return AfterTake(); // at the printer, in the packet, filed
 	if (!In.bPower) return Say(EState::NoPower, TEXT("NO POWER"), false);
-	if (In.bNotUp && In.Stage <= 1) return Say(EState::NotUp, TEXT("SOURCE NOT UP"), false);
+	if (In.Stage >= 3) return AfterTake();
+	if (In.bCaseWaits && In.Stage <= 1) return Say(EState::CaseWaits, TEXT("TEST NOT READY"), false);
+	if (In.bBlocked) return Say(EState::Blocked, TEXT("ARRAY BLOCKED"), false);
 	if (In.Stage <= 0) return Say(EState::Point, TEXT("POINT THE ARRAY"), false);
 	if (In.Stage == 1)
 	{
-		if (In.bBlocked) return Say(EState::Blocked, TEXT("ARRAY BLOCKED"), false);
 		if (!In.bPointReady) return Say(EState::Slewing, TEXT("ARRAY SLEWING"), false);
 		if (!In.bSettled) return Say(EState::Settling, TEXT("ARRAY SETTLING"), false);
 		if (!In.bSky) return In.bSkyLocking ? Say(EState::TakingFix, TEXT("TAKING THE FIX"), true) : Say(EState::Searching, TEXT("SEARCHING"), false);
 		if (!In.bTuned) return Say(EState::FixHeld, TEXT("FIX HELD"), true);
 		return In.bAnomalyAhead ? Say(EState::Anomaly, TEXT("ANOMALY DETECTED"), true) : Say(EState::SourceLock, TEXT("SOURCE LOCK"), true);
 	}
-	if (In.Stage == 2)
+	// the take (stage 2)
+	if (!In.bTuned) return Say(EState::RecordingHeld, TEXT("RECORDING HELD"), false);
+	if (!In.bPointReady || !In.bSettled) return In.bCrossRunning ? Say(EState::Scan, TEXT("REFERENCE SCAN"), true) : Say(EState::RecordingHeld, TEXT("RECORDING HELD"), false);
+	return Say(EState::Recording, FString::Printf(TEXT("RECORDING %s/%s s"), *Num(FMath::Clamp(int32(In.Elapsed), 0, 999)), *Num(FMath::Clamp(FMath::RoundToInt32(In.Seconds), 0, 999))), true);
+}
+
+bool S47RxLook::Agrees(EState Banner, const FString& Prompt)
+{
+	auto Says = [&Prompt](std::initializer_list<const TCHAR*> Words) { for (const TCHAR* Word : Words) if (Prompt.Contains(Word)) return true; return false; };
+	switch (Banner)
 	{
-		if (In.bBlocked || !In.bTuned || !In.bPointReady || !In.bSettled) return Say(EState::RecordingHeld, TEXT("RECORDING HELD"), false);
-		return Say(EState::Recording, FString::Printf(TEXT("RECORDING %s/%s s"), *Num(FMath::Clamp(int32(In.Elapsed), 0, 999)), *Num(FMath::Clamp(FMath::RoundToInt32(In.Seconds), 0, 999))), true);
+	case EState::NoJob: return Says({ TEXT("Select an observation") });
+	case EState::NoPower: return Says({ TEXT("generator"), TEXT("feeder"), TEXT("MAINS"), TEXT("PRINTER") });
+	case EState::Blocked: return Says({ TEXT("BLOCKED") });
+	case EState::Point: return Says({ TEXT("Point the array"), TEXT("POINT THE ARRAY") });
+	case EState::Slewing: return Says({ TEXT("commanded direction") });
+	case EState::Settling: return Says({ TEXT("settle") });
+	case EState::Searching: case EState::TakingFix: return Says({ TEXT("ACQUIRE"), TEXT("STEER"), TEXT("HINT"), TEXT("ASSIST"), TEXT("CROSSING"), TEXT("TURNING"), TEXT("BEARINGS") });
+	case EState::FixHeld: return Says({ TEXT("Tune"), TEXT("TUNE"), TEXT("GAIN"), TEXT("BANDWIDTH"), TEXT("Fine-tune") });
+	case EState::SourceLock: return Says({ TEXT("START RECORDING") });
+	case EState::Anomaly: return Says({ TEXT("ANOMALY"), TEXT("RETAIN"), TEXT("REEL DECK") });
+	case EState::Recording: return Says({ TEXT("Recording at the receiver"), TEXT("Let the take run") });
+	case EState::RecordingHeld: return Says({ TEXT("Restore") });
+	case EState::Scan: return Says({ TEXT("reference scan") });
+	case EState::Reference: return Says({ TEXT("CONTROL"), TEXT("REFERENCE"), TEXT("RECEIVER RACK") });
+	default: return true; // NotUp, CaseWaits, OnTape, Done: the line is the plan's, the case's or the job's own
 	}
-	if (In.Stage <= 4)
+}
+
+FString S47RxLook::ClockLine(const FString& DateAndClock)
+{
+	// RX-LOOK gjennomgang 14 Nov: the header's clock showed xx:47 one minute every hour
+	const int32 Len = DateAndClock.Len();
+	auto Digit = [&](int32 At) { return At >= 0 && At < Len && FChar::IsDigit(DateAndClock[At]); };
+	if (Len < 5 || DateAndClock[Len - 3] != TEXT(':') || !Digit(Len - 5) || !Digit(Len - 4) || !Digit(Len - 2) || !Digit(Len - 1) || Digit(Len - 6)) return DateAndClock;
+	const int32 Hours = FCString::Atoi(*DateAndClock.Mid(Len - 5, 2)), Minutes = FCString::Atoi(*DateAndClock.Mid(Len - 2, 2));
+	return DateAndClock.Left(Len - 5) + S47Script::PlayerClock(double(Hours * 3600 + Minutes * 60));
+}
+
+FString S47RxLook::TextFault(const FString& Shown)
+{
+	if (S47Script::SaysFortySeven(Shown)) return TEXT("a number that reads 47");
+	const FString Lint = S47Script::LintText(Shown);
+	if (!Lint.IsEmpty()) return Lint;
+	const FString Low = Shown.ToLower();
+	if (Low.Contains(TEXT("the cable"))) return TEXT("the cable is Story's");
+	for (int32 At = Low.Find(TEXT("taken")); At != INDEX_NONE; At = Low.Find(TEXT("taken"), ESearchCase::CaseSensitive, ESearchDir::FromStart, At + 1))
 	{
-		if (In.bReference) return Say(EState::Reference, FString::Printf(TEXT("REFERENCE %s/8 s"), *Num(FMath::Clamp(int32(In.ReferenceAt), 0, 8))), true);
-		if (In.bPlainOnTape) return Say(EState::Anomaly, TEXT("ANOMALY DETECTED"), true);
-		return Say(EState::OnTape, TEXT("TAKE ON TAPE"), false);
+		const bool bOpenBefore = At == 0 || !FChar::IsAlpha(Low[At - 1]), bOpenAfter = At + 5 >= Low.Len() || !FChar::IsAlpha(Low[At + 5]);
+		if (bOpenBefore && bOpenAfter) return TEXT("the word taken is not Freeform's");
 	}
-	return Say(EState::Done, TEXT("TAKE REGISTERED"), false);
+	return FString();
+}
+
+TArray<float> S47RxLook::MovingPicture(const FS47RxLive& Live, double T)
+{
+	TArray<float> Out;
+	const bool bCalm = Live.bCalm;
+	for (int32 I = 0; I <= 48; ++I)
+	{
+		const float U = I / 48.f;
+		float InPhase = 0, Quad = 0;
+		Quadrature(Live.Scope, U, T, bCalm, InPhase, Quad);
+		Out.Add(FftLevel(Live.Scope, U, T, bCalm)); Out.Add(InPhase); Out.Add(Quad);
+		Out.Add(Jitter(T, float(I * 9), bCalm));
+	}
+	for (int32 Star = 0; Star < 24; ++Star) Out.Add(Twinkle(Star, T, bCalm));
+	float Grow = 0, Alpha = 0;
+	Out.Add(float(Sweep(T, bCalm))); Out.Add(Breath(T, 1.1, bCalm)); Out.Add(float(Typed(16, FMath::Fmod(T, 1.), bCalm)));
+	Out.Add(Bloom(FMath::Fmod(T, 1.), bCalm)); Out.Add(Pulse(FMath::Fmod(T, 2.), 0, bCalm, Grow, Alpha) ? Grow + Alpha : -1.f);
+	Out.Add(TearShift(T, 1.f, bCalm)); Out.Add(TearDark(T, 1.f, bCalm));
+	return Out;
 }
 
 const FS47RxLive& FS47RxFeed::Now()
@@ -73,6 +150,35 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 		Check(bNone && bDark && bPoint && bSlew && bBlocked && bSettle && bSearch && bTaking && bFix && bLock && bRec && bHeld && bTape && bRef && bDone,
 			TEXT("the banner: NO JOB, NO POWER, POINT THE ARRAY, ARRAY SLEWING, SETTLING, SEARCHING, TAKING THE FIX, FIX HELD, SOURCE LOCK, RECORDING n/N s, REFERENCE n/8 s, each from its own state"));
 		Check(bNotYet && bUntuned && bOdd && bStill, TEXT("the banner says ANOMALY DETECTED only where the receiver's own line does: fix held and tuned, or the take on tape before the reel deck has heard it"));
+		// RX-LOOK gjennomgang 14 Nov: ReceiverNextAction's order exactly. The evening's gate before the power; at the printer, in the
+		// packet or filed the job's own step before the power, recorded after it; a case test's precondition, then too few antennas,
+		// before the pointing (also when not yet pointed, and during the take); the reference scan during a take apart from a take held.
+		FStateIn Order; Order.bJob = true; Order.Stage = 0;
+		auto Is = [&](EState Want) { return StateOf(Order).Id == Want; };
+		Order.bPower = false; Order.bNotUp = true; const bool bGateFirst = Is(EState::NotUp); Order.bNotUp = false;
+		Order.Stage = 3; const bool bPrinter = Is(EState::OnTape); Order.Stage = 6; const bool bPacket = Is(EState::Done); Order.Stage = 7; const bool bFiled = Is(EState::Done);
+		Order.Stage = 4; const bool bRecordedDark = Is(EState::NoPower); Order.Stage = 5; const bool bRegisteredDark = Is(EState::NoPower);
+		Order.bPower = true; Order.Stage = 0; Order.bCaseWaits = true; Order.bBlocked = true; const bool bCase = Is(EState::CaseWaits);
+		Order.Stage = 1; const bool bCasePointed = Is(EState::CaseWaits); Order.bCaseWaits = false;
+		Order.Stage = 0; const bool bBlockedNew = Is(EState::Blocked); Order.Stage = 2; const bool bBlockedTake = Is(EState::Blocked); Order.bBlocked = false;
+		Order.bTuned = true; Order.bPointReady = false; Order.bSettled = true; Order.bCrossRunning = true; const bool bScan = Is(EState::Scan) && StateOf(Order).Text == TEXT("REFERENCE SCAN");
+		Order.bCrossRunning = false; const bool bHeldTake = Is(EState::RecordingHeld);
+		Order.bCrossRunning = true; Order.bTuned = false; const bool bUntunedScan = Is(EState::RecordingHeld);
+		Check(bGateFirst && bPrinter && bPacket && bFiled && bRecordedDark && bRegisteredDark && bCase && bCasePointed && bBlockedNew && bBlockedTake && bScan && bHeldTake && bUntunedScan,
+			TEXT("the banner follows the receiver's line in its order: the evening's gate, the printer, packet and file before the power, a case test's precondition and the blocked array before the pointing, the reference scan apart from a held take"));
+		// and the banner's words are the line's: each state's step is in the receiver's own words for it
+		Check(Agrees(EState::Scan, TEXT("TRACKING (right-hand PC): Automatic reference scan in progress. Wait for the samples; the take goes on, then RETAIN TAKE on the RECORD tab.")) && !Agrees(EState::RecordingHeld, TEXT("TRACKING (right-hand PC): Automatic reference scan in progress."))
+			&& Agrees(EState::Blocked, TEXT("ARRAY 20/27 / MEASUREMENT RATE 74% / BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24")) && !Agrees(EState::Point, TEXT("ARRAY 20/27 / BLOCKED"))
+			&& Agrees(EState::NoPower, TEXT("Restore the SARO feeder, or start the fuelled standby generator outside behind the control room.")) && !Agrees(EState::NoPower, TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT")),
+			TEXT("the banner's states and the receiver's own lines: a reference scan is not a held take, a blocked array is not a pointing to do"));
+	}
+	{ // RX-LOOK gjennomgang 14 Nov: with Calm flashes the receiver's moving picture is the same at every moment (the receiver test
+		// compares two frames by it); without them it moves
+		FS47RxLive Calm; Calm.bCalm = true; Calm.Scope.bPowered = true; Calm.Scope.Strength = .3; Calm.Scope.Tuned = Calm.Scope.Card + .01;
+		FS47RxLive Moving = Calm; Moving.bCalm = false;
+		const TArray<float> First = MovingPicture(Calm, 100.), Later = MovingPicture(Calm, 100.37), Much = MovingPicture(Calm, 2031.9);
+		Check(First.Num() > 100 && First == Later && First == Much && MovingPicture(Moving, 100.) != MovingPicture(Moving, 100.37),
+			FString::Printf(TEXT("with Calm flashes the receiver's moving picture (%d numbers: the spectrum, I and Q, the sweep, the stars, the slips, the jump, the breath, the letters) is the same frame after frame; without them it moves"), First.Num()));
 	}
 	{ // the line and its wavelength
 		Check(FMath::Abs(WavelengthCm(1420.405) - 21.106) < .001 && FMath::Abs(WavelengthCm(1419.6) - 21.118) < .001 && WavelengthCm(0) == 0 && OnHydrogenLine(1420.38) && !OnHydrogenLine(1419.9) && FString(LineName(1419.6)) == TEXT("CONT"),
@@ -157,9 +263,39 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 			&& bTick && FallRuns(FallRow(FScope(), 3u, false), 1u, Unlit) == 0 && !FallLine(FallRow(FScope(), 3u, false), 1u, 0, EdgeHalf, EdgeLevel) && !FallLine(A0(On), On.Seed, FallLineSteps, EdgeHalf, EdgeLevel),
 			FString::Printf(TEXT("the waterfall is the same for the same seed and row: a row is %d to %d runs of grain end to end (%.1f a row), the line a bright core with two fainter steps when the dial is on the card, off to the side when it is off, gone with no lock; a tick is a short wide dash"), RunsLeast, RunsMost, RunCount / 60.));
 		// the spectrum: a peak over the floor at the card's line, none without the source; the dial's mark follows the dial
-		const float PeakOn = FftLevel(On, .5f, 12.3), FloorOn = FftLevel(On, .1f, 12.3), PeakOff = FftLevel(Off, .5f, 12.3);
-		Check(PeakOn > FloorOn + .3f && PeakOff < FloorOn + .25f && FftLevel(On, .5f, 12.3) == PeakOn && FftLevel(FScope(), .5f, 1.) == 0.f && FMath::Abs(FftTuned(On) - .5f) < 1e-6f && FftTuned(Low) > .5f,
-			TEXT("the small spectrum: a peak at the card's line when the source is heard, the floor without it, the dial's mark where the dial is"));
+		const float PeakOn = FftLevel(On, .5f, 12.3, false), FloorOn = FftLevel(On, .1f, 12.3, false), PeakOff = FftLevel(Off, .5f, 12.3, false);
+		// RX-LOOK gjennomgang 14 Nov: with Calm flashes the trace stands at every moment; without it, it moves
+		bool bFftStill = true, bFftMoves = false;
+		for (int32 I = 0; I <= 60; ++I) for (const double At : { 3.1, 47.9, 301.25 })
+		{
+			bFftStill &= FftLevel(On, I / 60.f, At, true) == FftLevel(On, I / 60.f, 12.3, true);
+			bFftMoves |= FftLevel(On, I / 60.f, At, false) != FftLevel(On, I / 60.f, 12.3, false);
+		}
+		Check(PeakOn > FloorOn + .3f && PeakOff < FloorOn + .25f && FftLevel(On, .5f, 12.3, false) == PeakOn && FftLevel(FScope(), .5f, 1., false) == 0.f && FMath::Abs(FftTuned(On) - .5f) < 1e-6f && FftTuned(Low) > .5f && bFftStill && bFftMoves,
+			TEXT("the small spectrum: a peak at the card's line when the source is heard, the floor without it, the dial's mark where the dial is; with Calm flashes the trace stands"));
+		// RX-LOOK gjennomgang 14 Nov: the whole picture's jump and its dark beat on interference: none with Calm flashes, never more
+		// than three a second in any second, and still there without it
+		int32 MostTears = 0, MostDarks = 0, Tears = 0, Darks = 0;
+		bool bCalmTear = true;
+		for (const float Jam : { .2f, .5f, 1.f })
+		{
+			TArray<double> TearAt, DarkAt;
+			float TearWas = 0.f, DarkWas = 0.f;
+			for (int32 I = 0; I < 60 * 480; ++I)
+			{
+				const double T = 1000. + I / 480.;
+				const float Tear = TearShift(T, Jam, false), Dark = TearDark(T, Jam, false);
+				if (Tear != 0.f && Tear != TearWas) TearAt.Add(T);
+				if (Dark != 0.f && DarkWas == 0.f) DarkAt.Add(T);
+				TearWas = Tear; DarkWas = Dark;
+				bCalmTear &= TearShift(T, Jam, true) == 0.f && TearDark(T, Jam, true) == 0.f;
+			}
+			for (int32 I = 0; I < TearAt.Num(); ++I) { int32 InSecond = 0; for (int32 K = I; K < TearAt.Num() && TearAt[K] < TearAt[I] + 1.; ++K) ++InSecond; MostTears = FMath::Max(MostTears, InSecond); }
+			for (int32 I = 0; I < DarkAt.Num(); ++I) { int32 InSecond = 0; for (int32 K = I; K < DarkAt.Num() && DarkAt[K] < DarkAt[I] + 1.; ++K) ++InSecond; MostDarks = FMath::Max(MostDarks, InSecond); }
+			Tears += TearAt.Num(); Darks += DarkAt.Num();
+		}
+		Check(bCalmTear && MostTears <= 3 && MostDarks <= 3 && Tears > 20 && Darks > 20 && TearShift(5., .1f, false) == 0.f,
+			FString::Printf(TEXT("on interference the whole picture jumps (%d times in three minutes) and darkens (%d), at most %d and %d times in any second, never with Calm flashes"), Tears, Darks, MostTears, MostDarks));
 		// I and Q: locked, two clean traces a quarter turn apart (the two squared sum to one size); unlocked, noise
 		double Least = 1e9, Most = 0, Wild = 0; bool bQuad = true;
 		for (int32 I = 0; I <= 200; ++I)
@@ -181,6 +317,18 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 			const double Turn = (7. * (I / 200.) - 33.3 * 1.1) * 2. * UE_DOUBLE_PI;
 			Ride = FMath::Max(Ride, FMath::Abs(double(Ti) - .8 * FMath::Cos(Turn)));
 		}
+		// RX-LOOK gjennomgang 14 Nov: unlocked, the noise drifts: from one frame to the next (120 a second) no point of the trace moves
+		// more than a little of full scale, while over a second it has moved
+		double FrameStep = 0, SecondStep = 0;
+		for (int32 Frame = 0; Frame < 240; ++Frame) for (int32 I = 0; I <= 60; ++I)
+		{
+			float Ai = 0, Aq = 0, Bi = 0, Bq = 0, Ci = 0, Cq = 0;
+			const double T = 50. + Frame / 120.;
+			Quadrature(Off, I / 60.f, T, false, Ai, Aq); Quadrature(Off, I / 60.f, T + 1. / 120., false, Bi, Bq); Quadrature(Off, I / 60.f, T + 1., false, Ci, Cq);
+			FrameStep = FMath::Max(FrameStep, double(FMath::Max(FMath::Abs(Bi - Ai), FMath::Abs(Bq - Aq))));
+			SecondStep = FMath::Max(SecondStep, double(FMath::Max(FMath::Abs(Ci - Ai), FMath::Abs(Cq - Aq))));
+		}
+		Check(FrameStep < .06 && SecondStep > .2, FString::Printf(TEXT("the unlocked I and Q noise drifts: at most %.3f of full scale from one frame to the next (it was drawn afresh 14 times a second), %.2f over a second"), FrameStep, SecondStep));
 		Check(bQuad && Least > .5 && Most < 1.05 && Wild < .6 && Wild > .2 && CalmA == CalmC && CalmB == CalmD && Ride > .08 && Ride < RideShare + .08,
 			FString::Printf(TEXT("I and Q: a circle when locked (%.2f to %.2f) with a little noise riding on the sines (%.2f of full scale at most), noise within %.2f when not, the same for the same clock, and standing with Calm flashes"), Least, Most, Ride, Wild));
 	}
@@ -211,9 +359,39 @@ bool S47RxLook::SelfTest(TArray<FString>& Lines)
 			&& Num(4.7, 1) == TEXT("4.8") && Num(47.) == TEXT("48") && Num(14.7, 1) == TEXT("14.8") && Num(.47, 2) == TEXT("0.48") && Num(147.) == TEXT("148") && Num(-4.7, 1, 6, true) == TEXT("  -4.8") && Num(47.5, 1) == TEXT("48.0") && Num(1419.647, 3) == TEXT("1419.648")
 			&& Shows47(TEXT("14h47m02s")) && Shows47(TEXT("+4.7")) && !Shows47(TEXT("04h07m")) && !Shows47(TEXT("74")),
 			FString::Printf(TEXT("no number the frame draws shows a 47: %d readouts swept from -2600 to 2600 at nought to three decimals, signed and padded, %d of them moved to the nearest number without one (never more than %.2f away), every other written as it is"), Swept * 3, Moved, Farthest));
+		// RX-LOOK gjennomgang 14 Nov: the TUNE page's readouts as the page writes them (the frequency dial, gain, bandwidth, the carrier
+		// lock, the dial's distance off the card, the take's seconds), swept over every value the dials and the take reach: none shows
+		// a 47, and a readout that climbs never shows a value out of order (47 % is 48 % every time, after 46 % and before 49 %)
+		{
+			bool bDials = true, bOrder = true;
+			int32 Dial = 0;
+			double Was = -1e9;
+			auto Climb = [&](const FString& Shown, double Back) { bDials &= !Shows47(Shown); bOrder &= Back >= Was - 1e-9; Was = Back; ++Dial; };
+			for (int32 Step = 0; Step <= 1200; ++Step) { const FString S = Num(1419.5 + Step * .001, 3) + TEXT(" MHz"); Climb(S, FCString::Atod(*S)); }
+			Was = -1e9; for (int32 V = 0; V <= 100; ++V) { const FString S = Num(double(V)); Climb(S, FCString::Atod(*S)); }
+			Was = -1e9; for (int32 V = 1; V <= 100; ++V) { const FString S = Num(double(V)) + TEXT(" kHz"); Climb(S, FCString::Atod(*S)); }
+			Was = -1e9; for (int32 V = 0; V <= 100; ++V) { const FString S = Num(double(V)) + TEXT(" % CLOSE"); Climb(S, FCString::Atod(*S)); }
+			Was = -1e9; for (int32 Step = -400; Step <= 400; ++Step) { const FString S = Num(Step * .0005, 3, 0, true) + TEXT(" MHz"); Climb(S, FCString::Atod(*S)); }
+			Was = -1e9; for (int32 Step = 0; Step <= 1800; ++Step) { const FString S = TakeCount(Step * .01, 18.); Climb(S, FCString::Atod(*S)); }
+			Check(bDials && bOrder && Num(47.) == TEXT("48") && Num(46.) == TEXT("46") && TakeCount(7.9, 18.) == TEXT("7 / 18 s") && Num(1419.647, 3) + TEXT(" MHz") == TEXT("1419.648 MHz") && Num(-.047, 3, 0, true) == TEXT("-0.048"),
+				FString::Printf(TEXT("the TUNE page's dials and readouts, %d values swept as the page writes them: none shows a 47, and none climbs out of order"), Dial));
+		}
 		int32 Counted = 0;
 		const FString Sixties = Clean47(47, [&Counted](int32 N) { ++Counted; return FString::Printf(TEXT("%02dm"), N); });
 		Check(Sixties == TEXT("48m") && Counted == 2 && Clean47(12, [](int32 N) { return FString::Printf(TEXT("%02dm"), N); }) == TEXT("12m"), TEXT("a readout in sixties that would show a 47 stands a step off; a clean one is written once, as it is"));
+	}
+	{ // RX-LOOK gjennomgang 14 Nov: the arms by number (the chart's labels by the fans, the tracking panel's DELAY rows), and the
+		// text rule's own check, which every line the receiver shows is held to
+		bool bArms = true;
+		for (int32 Arm = 0; Arm < 3; ++Arm)
+		{
+			const FString Label = ArmLabel(Arm);
+			bArms &= Label.Len() == 1 && TextFault(Label).IsEmpty() && TextFault(TEXT("DELAY ") + Label + TEXT(" +12.5 ns")).IsEmpty() && TextFault(TEXT("ARM ") + Label).IsEmpty() && (Arm == 0 || Label != ArmLabel(Arm - 1));
+		}
+		const bool bCatches = !TextFault(TEXT("DELAY C")).IsEmpty() && !TextFault(TEXT("ARM C")).IsEmpty() && !TextFault(TEXT("C")).IsEmpty() && !TextFault(TEXT("1419.647 MHz")).IsEmpty() && !TextFault(TEXT("+0.047")).IsEmpty()
+			&& !TextFault(TEXT("23:47")).IsEmpty() && !TextFault(TEXT("THE SOURCE WAS TAKEN")).IsEmpty() && !TextFault(TEXT("CHECK THE CABLE")).IsEmpty() && !TextFault(TEXT("1947")).IsEmpty();
+		const bool bLets = TextFault(TEXT("3C 286 / CARD")).IsEmpty() && TextFault(TEXT("TAKE ON TAPE")).IsEmpty() && TextFault(TEXT("RECORDING 7/18 s")).IsEmpty() && TextFault(TEXT("SC 104+70")).IsEmpty() && TextFault(TEXT("PSR B1133+16")).IsEmpty();
+		Check(bArms && bCatches && bLets, TEXT("the arms are 1, 2 and 3 (DELAY 1 to 3, one letter each as A to C were); the text check catches a lone C, a 47, «taken» and «the cable», and lets the card names by"));
 	}
 	{ // round 2: the letters. Nothing under the next step's line, and a letter's width as the glass draws it
 		Check(TextFloor == 22 && FMath::Abs(GlyphWide(22) - 8.4375f) < 1e-4f && GlyphWide(20) == GlyphWide(22) && GlyphWide(18) > 18 * .4f && FMath::Abs(TextWide(10, 54) - 215.625f) < 1e-3f && GlyphWide(1) > 0.f,

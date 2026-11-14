@@ -440,5 +440,13 @@ namespace S47SkySphere
 		});
 	}
 
+	// RX-LOOK gjennomgang 14 Nov: the sidereal time the receiver's chart stands at for a card (FS47Observing::Runs' index): the
+	// moment its source stands where the catalogue has it (FS47SkyAcquire::CataloguePlace), so that the card's label, the reticle's
+	// RA and DEC readout there and the stars round it agree whenever the player looks. The card sources and the crossing stand
+	// fixed in azimuth and elevation (the rule), while the stars turned with the game's clock: at another hour the readout under
+	// "<source> / CARD" was hours of right ascension off. A card with no catalogued source (the hydrogen strip) stands at its
+	// scheduled hour on the evening the cards were written. Below zero: no such card. The chart is a schematic on the terminal;
+	// the game's real sky is not this and is never changed by it.
+	SIGNAL47_API double CardLst(int32 Run);
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Widgets/SLeafWidget.h"
+#include "S47SkySphere.h"
 
 class FS47RxFeed;
 class FS47SkyAcquire;
@@ -93,13 +94,18 @@ private:
 
 // Acquisition and tracking: the sky rule's own readouts (signal to noise, residual, each arm's delay and the rate it changes at
 // as the sky turns, the nearest catalogued source and how far off it the bearings cross), a name and its number a line, and a
-// bull's-eye of how far the reticle stands off the crossing, in the rule's own degrees of azimuth and elevation.
+// bull's-eye of how far the reticle stands off the crossing: as far out as the rule's own distance, the way it lies on the glass.
+// RX-LOOK gjennomgang 14 Nov: it was drawn azimuth across and elevation up, while the keys steer the way they point on the upright
+// equatorial chart; the two differ by the parallactic angle (some -64 degrees at 3C 286), so UP on the keys moved the mark
+// diagonally. Now its direction is the chart's own (EyeAt), so UP on the keys is up on the bull's-eye.
 class SS47RxTrack : public SLeafWidget
 {
 public:
 	SLATE_BEGIN_ARGS(SS47RxTrack) {}
 		SLATE_ARGUMENT(TSharedPtr<FS47RxFeed>, Feed)
 		SLATE_ARGUMENT(TSharedPtr<FS47SkyAcquire>, Model)
+		// The chart's open picture as it was last painted (none: the chart's picture at its usual size).
+		SLATE_ARGUMENT(TFunction<S47SkySphere::FView()>, View)
 	SLATE_END_ARGS()
 	void Construct(const FArguments& Args);
 	virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(300, 150); }
@@ -107,12 +113,38 @@ public:
 	// Where an offset of so many degrees stands from the bull's-eye's middle, as a share of its radius (the lock radius a third out).
 	static float EyeShare(double Degrees);
 	static constexpr double EyeFull = 14.;
+	// The reticle's mark on the bull's-eye (x to the right, y up, a share of its radius): the way from the crossing to the reticle
+	// on the chart's picture, as far out as EyeShare of the rule's distance.
+	static FVector2D EyeAt(const S47SkySphere::FView& View, const FVector2D& Reticle, const FVector2D& Cross);
+	// RX-LOOK gjennomgang 14 Nov: the lines the panel writes for the rule's state, as it writes them (the self-test and the receiver
+	// test read the same): a name and its value, and whether it is a quiet one. bAllArms: every arm's delay, else the longest only.
+	struct FRow { FString Name, Value; bool bQuiet = false; FString Line() const { return Name.RightPad(8) + Value; } };
+	static TArray<FRow> Rows(const FS47SkyAcquire* Sky, double CardMhz, bool bAllArms);
+	static FString OffWords(const FS47SkyAcquire* Sky);
+	// RX-LOOK gjennomgang 14 Nov: how the rows stand in a panel so high: whether every arm's delay has a row (else the longest
+	// only), and the pitch, so that the last row (OFFSET) stands whole above the panel's foot. RowHigh is what a row of the next
+	// step's size takes on the glass; the pitch is never more than the old 22 and never less than a letter's height (19).
+	static constexpr float RowHigh = 24.f, RowPitchMost = 22.f, RowPitchLeast = 19.f;
+	static bool AllArms(float High);
+	static float RowPitch(float High, int32 Count);
 private:
 	TSharedPtr<FS47RxFeed> Live;
 	TSharedPtr<FS47SkyAcquire> Sky;
+	TFunction<S47SkySphere::FView()> ViewFn;
 };
 
 namespace S47RxLookPaint
 {
+	// RX-LOOK gjennomgang 14 Nov: the words the painted parts write for a state, as they write them. Each painter takes its lines
+	// from here, so that the self-test and the receiver test read exactly what is drawn.
+	FString StationLine(const FS47RxLive& Now);                    // the header's "STN SARO  EL ..  AZ .." line
+	struct FBannerWords { FString State, Array, Rate, Mhz, Band, Length, Source; };
+	FBannerWords BannerWords(const FS47RxLive& Now);
+	FString FallSeconds(double Back);                               // the waterfall's "-4 s"
+	FString FftDecibels(int32 Level);                               // the spectrum's "-90"
+	FString FftMhz(const FS47RxLive& Now, int32 Tick);              // the spectrum's foot, ticks 0, 2 and 4
+	// Every line the header, the banner, the waterfall, the spectrum and the tracking panel can write for this state (with the
+	// tracking panel's rows for every arm and for the longest).
+	TArray<FString> FrameWords(const FS47RxLive& Now, const FS47SkyAcquire* Sky);
 	bool SelfTest(TArray<FString>& Lines);
 }

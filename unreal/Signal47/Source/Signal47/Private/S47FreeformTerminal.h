@@ -97,8 +97,10 @@ namespace S47FreeformTerminal
  // A panel of the receiver's frame: a thin double line round the body, the title set into the line at the top left, and a live
  // note set into it at the top right.
  FW RxPanel(const FString& Title,FW Body,TAttribute<FString> Right=FString());
- // A small key for the receiver's frame (as Button, lower: the frame has no room for the tall ones).
- FW RxKey(const FString& Label,TFunction<void()> Action,bool Primary=false,TAttribute<bool> Enabled=true,int32 Size=22);
+ // A small key for the receiver's frame (as Button, lower: the frame has no room for the tall ones). RX-LOOK gjennomgang 14 Nov:
+ // bFocusable false for a key that must not take the keys from the page's own key target when clicked (the sky chart's step keys:
+ // a click on one gave it the keyboard, and the arrows then walked between keys while the key row said ARROWS STEER).
+ FW RxKey(const FString& Label,TFunction<void()> Action,bool Primary=false,TAttribute<bool> Enabled=true,int32 Size=22,bool bFocusable=true);
  FW Panel(const FString& Title,FW Body,bool bFilledHeader=false);
  FW Heading(const FString& Value,int32 Size=30);    // amber section title
  FW Banner(TAttribute<FString> Value,TAttribute<bool> Urgent=true); // amber framed status line, pulses when urgent

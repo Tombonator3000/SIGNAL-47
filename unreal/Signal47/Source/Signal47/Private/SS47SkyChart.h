@@ -16,7 +16,8 @@ class FS47SkyAcquire;
 // with their stick figures, the galactic plane as a stippled band, the array's window as a dashed outline, each arm's bearings as
 // a fan from the rim that closes on the fix, and the readouts in the panel's corners (epoch, projection, mode, the reticle's place
 // in the sky). The rule is untouched and still works in azimuth and elevation; the sphere is only where things stand on the
-// glass. The stars and the hours of right ascension drift west as the game's clock runs.
+// glass. The stars and the hours of right ascension stand at the card's own sidereal time (RX-LOOK gjennomgang 14 Nov:
+// S47SkySphere::CardLst; they drifted with the game's clock, and the card's label and the stars then disagreed).
 //
 // The picture closes in: as the pointer (or, with the keys, the reticle) nears the crossing, the sphere swells about the crossing,
 // up to ZoomMost. On a sphere a degree of azimuth is fewer units across high up than it was on the old flat chart; closed in, the
@@ -45,7 +46,8 @@ class FS47SkyAcquire;
 // - The reticle is amber and the brightest thing on the glass at every stage, larger, with corner brackets, three rings and
 //   hairs. Being on the crossing is said by shape (the filled centre, the bar that fills), no longer by the colour.
 // - No word under the next step's size (S47RxLook::TextFloor): the corner blocks are three short lines, the minor catalogue's
-//   names stand only near the reticle or closed in, and each arm is a letter at its fan.
+//   names stand only near the reticle or closed in, and each arm is its number at its fan (RX-LOOK gjennomgang 14 Nov: 1, 2
+//   and 3, as the tracking panel's DELAY 1 to 3: the letters A to C had a lone capital C, which is not Freeform's).
 class SS47SkyChart : public SLeafWidget
 {
 public:
@@ -57,7 +59,7 @@ public:
 		SLATE_ARGUMENT(TFunction<bool()>, Calm)
 		// The operator's hand on the chart, for its sound: 0 a steering key or a click taken, 1 a click refused (no bearings yet).
 		SLATE_ARGUMENT(TFunction<void(int32)>, OnKey)
-		// RX-LOOK-20261113: the station's sidereal time in degrees, from the game's clock (none: the sky stands), and the card's
+		// RX-LOOK-20261113: the chart's sidereal time in degrees (the card's, S47SkySphere::CardLst; none: the sky stands), and the card's
 		// source for the corner readout.
 		SLATE_ARGUMENT(TFunction<double()>, Sidereal)
 		SLATE_ARGUMENT(FString, Source)
@@ -80,7 +82,9 @@ public:
 	struct FPlot { S47SkySphere::FView View; FVector2f Focus = FVector2f::ZeroVector; float Zoom = 1.f; };
 	static constexpr float SideRoom = 58.f, FootRoom = 26.f, TopRoom = 24.f;
 	static constexpr float ZoomMost = 3.6f;
-	static constexpr double ZoomNear = 4., ZoomFar = 24.; // degrees off the crossing: closed in all the way, and not at all
+	// Degrees off the crossing on the open picture: closed in all the way, and not at all. (RX-LOOK gjennomgang 14 Nov: 6, was 4, so
+	// that a reticle anywhere inside the rule's lock circle stands on a picture closed in all the way; see ZoomForTrue.)
+	static constexpr double ZoomNear = 6., ZoomFar = 24.;
 	static FPlot PlotFor(const FVector2f& Size);
 	// False when the direction is behind the picture (Out is then far off the glass).
 	static bool Place(const FPlot& P, const FVector2D& AzEl, FVector2f& Out);
@@ -89,11 +93,40 @@ public:
 	static bool Contains(const FPlot& P, const FVector2f& Local);
 	// How far the picture closes in for a pointer or a reticle so many of the rule's degrees off the crossing.
 	static float ZoomFor(double DegreesOff);
+	// RX-LOOK gjennomgang 14 Nov: the same curve for a reticle so many of the rule's degrees off the crossing (the keys, the assist):
+	// the zoom at which the reticle stands where a pointer would have put it, so that its distance on the glass (true degrees times
+	// the zoom) grows with the true distance and a reticle steered toward the crossing never seems to back off it. (The old curve
+	// read the true distance as an open one: steering from 24 to 13 degrees took the reticle from 24 to some 32 open degrees off.)
+	static float ZoomForTrue(double TrueOff);
+	// One frame of the picture closing in or opening: eased toward Want as before; with the reticle moved by the keys or the assist
+	// (OffWas, OffNow: its true distance last frame and now, OffWas below zero: none), never so fast that its distance on the glass
+	// grows while it nears the crossing, nor shrinks while it goes away.
+	static float ZoomStep(float Was, float Want, double Dt, double OffWas, double OffNow);
+	// RX-LOOK gjennomgang 14 Nov: the reticle's inner mark, the rule's lock circle as it lies on the glass (an ellipse: a degree of
+	// azimuth is cos(elevation) degrees of arc), so that the crossing is inside it exactly when the fix can be taken. Open, it is
+	// drawn at the inner ring's old size (Ring, its mean radius) in the ellipse's shape; it comes to its true size as the picture
+	// closes in (all of it at ZoomMost, which the picture is whenever the crossing can be that near). Out: the closed path.
+	static void LockMark(const FPlot& P, const FVector2D& Reticle, float Ring, TArray<FVector2f>& Out);
+	// RX-LOOK gjennomgang 14 Nov: how far closed in a chart made anew stands at its first frame, for the rule's state as it is (the
+	// page is built again on every tab and key; each new chart began open and snapped in again): all the way while the fix is
+	// taken, as the reticle's distance has it while searching, open otherwise. The model keeps the search; this keeps the picture.
+	static float ZoomAtStart(const FS47SkyAcquire& K);
 	// The four ways a key can steer on the glass (-1, 0 or 1 across and up).
 	static FVector2D SteerOf(const FKey& Key);
 	// The step in azimuth and elevation (a unit vector) that moves the reticle that way on the glass, where it stands now: for
 	// the page's own step keys.
 	FVector2D SkyStep(const FVector2D& GlassDir) const;
+	// The open picture as last painted (before the first frame: the picture at the chart's usual size), for the tracking panel's
+	// bull's-eye, which lies the way the chart does.
+	S47SkySphere::FView OpenView() const { return (ShownSize.X > 0 ? Shown : PlotFor(FVector2f(716, 440))).View; }
+	// RX-LOOK gjennomgang 14 Nov: the words the chart writes for the rule's state, as it writes them (the self-test and the
+	// receiver test read the same): the corner blocks, a declination round the rim, an hour under it, and every word it can
+	// write at all for this state (the corners, every hour and declination, the pole, the catalogue's names, the arms, the rose).
+	struct FCorners { FString TopLeft[3], TopRight[2], Foot[3]; };
+	static FCorners CornerWords(const FS47SkyAcquire& K, double Lst, const FString& Source);
+	static FString DecWords(int32 Circle);
+	static FString HourWords(int32 Hour);
+	static TArray<FString> AllWords(const FS47SkyAcquire& K, double Lst, const FString& Source);
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
@@ -111,6 +144,7 @@ private:
 	mutable FPlot Shown;
 	mutable FVector2f ShownSize = FVector2f::ZeroVector;
 	mutable float ZoomNow = 1.f;
+	mutable double ZoomOffWas = -1.; // the reticle's true distance last frame while the keys or the assist moved it (else below zero)
 	// the lock moment (for the rings going out and the picture's one swell), and the reticle's fading trail
 	mutable int32 PhaseSeen = -1;
 	mutable double LockedAt = -1e9;

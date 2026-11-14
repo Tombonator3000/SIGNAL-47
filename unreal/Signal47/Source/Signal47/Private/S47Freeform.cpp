@@ -691,7 +691,8 @@ double FS47FreeformSession::ArrayErrorDeg()const
 FString FS47FreeformSession::ArrayMeasurementStatus()const
 {
  const int32 N=AvailableDishCount();const bool Worn=Field&&Field->ArrayWear().bActive;const int32 Least=Worn?FS47ArrayWear::MinDishes:24;
- return FString::Printf(TEXT("ARRAY %d/27 / MEASUREMENT RATE %.0f%% / %s"),N,100*ArrayMeasurementRate(),N<Least?*FString::Printf(TEXT("BLOCKED: inspect ARRAY STATUS (left-hand PC); need %d"),Least):N<27?(Worn&&Field->ArrayWear().DownCount()>0?TEXT("WORN: restore the outer branches to speed up measuring"):TEXT("DEGRADED: repair restores rate")):TEXT("FULL RATE"));
+ // (RX-LOOK gjennomgang 14 Nov: the receiver's prompt says this while the array is blocked; its numbers by the glass's formatter)
+ return FString::Printf(TEXT("ARRAY %s/27 / MEASUREMENT RATE %s%% / %s"),*S47RxLook::Num(double(N)),*S47RxLook::Num(100*ArrayMeasurementRate()),N<Least?*FString::Printf(TEXT("BLOCKED: inspect ARRAY STATUS (left-hand PC); need %s"),*S47RxLook::Num(double(Least))):N<27?(Worn&&Field->ArrayWear().DownCount()>0?TEXT("WORN: restore the outer branches to speed up measuring"):TEXT("DEGRADED: repair restores rate")):TEXT("FULL RATE"));
 }
 FVector2D FS47FreeformSession::AimAzEl()
 {
@@ -1205,7 +1206,7 @@ FString FS47FreeformSession::ReceiverNextAction() const
  // GAMEPLAY-LOOP-01: the unusual take says so for as long as it is written
  if(J->Stage==EJobStage::Integrating&&PlainAnomaly(*J))return TEXT("RECEIVER (centre PC): ANOMALY DETECTED. Let the take run to the end; then RETAIN TAKE on the RECORD tab.");
  // D45-20261110 (Tom: the task card flickered with the count): the line names the step, the receiver's own readout counts.
- if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECEIVER (centre PC): Recording at the receiver (%d/27 antennas). Keep the tuning, pointing and power valid until the take ends."),AvailableDishCount());
+ if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECEIVER (centre PC): Recording at the receiver (%s/27 antennas). Keep the tuning, pointing and power valid until the take ends."),*S47RxLook::Num(double(AvailableDishCount())));
  if(J->Stage!=EJobStage::Pointed)return JobNextAction(*J);
  if(!PointReady())return TEXT("TRACKING (right-hand PC): Wait for the commanded direction. If movement stops, inspect isolated elements at ARRAY STATUS (left-hand PC).");
  if(Settle<1)return SkyAcquired()?TEXT("RECEIVER (centre PC): Wait one second for the array to settle, then tune the work card."):TEXT("RECEIVER (centre PC): Wait one second for the array to settle, then find the source on the ACQUIRE sky chart.");
@@ -1213,9 +1214,9 @@ FString FS47FreeformSession::ReceiverNextAction() const
  if(!SkyAcquired())return TEXT("RECEIVER (centre PC): ACQUIRE. Steer the reticle to where the bearings cross.");
  const auto P=EffectiveProfile(*J);const auto& R=M->Story->Rx;
  if(R.Pass(P))return AnomalyAhead()?TEXT("RECEIVER (centre PC): ANOMALY DETECTED. RECORD tab: press START RECORDING, then RETAIN TAKE."):TEXT("RECEIVER (centre PC): TUNE tab: press START RECORDING to record this source.");
- if(FMath::Abs(R.Frequency-P.F)>P.FTol)return FString::Printf(TEXT("RECEIVER (centre PC): Tune FREQUENCY to %.3f MHz (now %.3f). Watch the carrier peak and received percentage."),P.F,R.Frequency);
- if(R.Gain<P.Gain[0]||R.Gain>P.Gain[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set GAIN between %.0f and %.0f (now %.0f)."),P.Gain[0],P.Gain[1],R.Gain);
- if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set BANDWIDTH between %.0f and %.0f kHz (now %.0f)."),P.Bw[0],P.Bw[1],R.Bandwidth);
+ if(FMath::Abs(R.Frequency-P.F)>P.FTol)return FString::Printf(TEXT("RECEIVER (centre PC): Tune FREQUENCY to %s MHz (now %s). Watch the carrier peak and received percentage."),*S47RxLook::Num(P.F,3),*S47RxLook::Num(R.Frequency,3));
+ if(R.Gain<P.Gain[0]||R.Gain>P.Gain[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set GAIN between %s and %s (now %s)."),*S47RxLook::Num(P.Gain[0]),*S47RxLook::Num(P.Gain[1]),*S47RxLook::Num(R.Gain));
+ if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set BANDWIDTH between %s and %s kHz (now %s)."),*S47RxLook::Num(P.Bw[0]),*S47RxLook::Num(P.Bw[1]),*S47RxLook::Num(R.Bandwidth));
  return TEXT("RECEIVER (centre PC): Fine-tune until the received carrier reaches 100%.");
 }
 // RX-TABS-DUE-20261113 (Tom 13 Nov: «På receiver: tab som Tuning etc. må blinke når de skal brukes»): ReceiverNextAction's steps, in its
@@ -2827,9 +2828,11 @@ void FS47FreeformSession::OpenReceiver()
  TArray<S47Kit::FW> Rows;
  auto Quality=[this]{const auto* J=CurrentJob();return J?M->Story->Rx.Quality(EffectiveProfile(*J)):0.;};
  auto Controls=[this]{return T::Columns({
-  {1.f,T::Control(TEXT("FREQUENCY"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f MHz"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;})},
-  {1.f,T::Control(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;})},
-  {1.f,T::Control(TEXT("BANDWIDTH"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f kHz"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})}},10);};
+  // RX-LOOK gjennomgang 14 Nov: the dials' readouts through the glass's own formatter (S47RxLook::Num: no number shows a 47, a dial
+  // swept across one steps past it the same way each time); the stored values are untouched.
+  {1.f,T::Control(TEXT("FREQUENCY"),TAttribute<FString>::CreateLambda([this]{return S47RxLook::Num(M->Story->Rx.Frequency,3)+TEXT(" MHz");}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;})},
+  {1.f,T::Control(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return S47RxLook::Num(M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;})},
+  {1.f,T::Control(TEXT("BANDWIDTH"),TAttribute<FString>::CreateLambda([this]{return S47RxLook::Num(M->Story->Rx.Bandwidth)+TEXT(" kHz");}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})}},10);};
  if(ReceiverTab==0)
  {
   // RX-ACQUIRE-SKY-20261113: the sky chart (S47FreeformSky.cpp). It has the keys first while there is a search to steer.
@@ -2862,9 +2865,9 @@ void FS47FreeformSession::OpenReceiver()
   }),[this]{if(CanRecordControl())StartControl();else StartAcquisition();},1,TAttribute<bool>::CreateLambda([this]{return ReceiverReady()||CanRecordControl();}));
   Start=T::DueRing(Start,[this]{return (ReceiverReady()&&!AnomalyAhead())||CanRecordControl();}); // RX-TABS-DUE-20261113: the key the TUNE page is due for (RX-ANOMALY-FLOW-20261113: an anomaly is RECORD's)
   Rows.Add(T::Split({
-   {1.15f,T::Readout(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{const int32 Percent=S47Signal::CarrierPercent(Quality());return FString::Printf(TEXT("%d %% %s"),Percent,Percent>=100?TEXT("LOCKED"):Percent>=70?TEXT("CLOSE"):TEXT("SEARCHING"));}))},
-   {.9f,T::Readout(TEXT("OFF TARGET"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("%+.3f MHz"),M->Story->Rx.Frequency-EffectiveProfile(*J).F):FString();}))},
-   {.85f,T::Readout(TEXT("RECORDING"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.0f / %.0f s"),J?J->Elapsed:0.,SourceSeconds());}))},
+   {1.15f,T::Readout(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{const int32 Percent=S47Signal::CarrierPercent(Quality());return FString::Printf(TEXT("%s %% %s"),*S47RxLook::Num(double(Percent)),Percent>=100?TEXT("LOCKED"):Percent>=70?TEXT("CLOSE"):TEXT("SEARCHING"));}))},
+   {.9f,T::Readout(TEXT("OFF TARGET"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?S47RxLook::Num(M->Story->Rx.Frequency-EffectiveProfile(*J).F,3,0,true)+TEXT(" MHz"):FString();}))},
+   {.85f,T::Readout(TEXT("RECORDING"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return S47RxLook::TakeCount(J?J->Elapsed:0.,SourceSeconds());}))},
    {1.1f,Start}}));
   // D45-20261110 (Tom: cooler animations when you record): the receiver's own tape, seen while the take or its control is written and
   // while an unusual take waits for its control: REC lamp, reels, needles and the pen. Collapsed otherwise; an idle page stays still.
@@ -2911,10 +2914,10 @@ void FS47FreeformSession::OpenReceiver()
   auto DishState=[this,DishOff](int32 I){if(DishOff(I))return 2;return FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),TargetAz()))>.1||FMath::Abs(M->Web->DishEl(I)-TargetEl())>.1?3:0;};
   auto Short=[this](int32 I){return M->Web->DishId(I).Replace(TEXT("-"),TEXT(""));};
   auto Slew=[this]{return PointReady()?1.f:float(FMath::Clamp(1.-ArrayErrorDeg()/90.,0.,1.));};
-  Rows.Add(T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("ARRAY / ANTENNAS ON THIS TARGET"),FString::Printf(TEXT("%s  |  AZ %.1f EL %.1f"),*Name,TargetAz(),TargetEl())),T::AntennaGrid(Dishes,Short,DishState,nullptr)})));
+  Rows.Add(T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("ARRAY / ANTENNAS ON THIS TARGET"),FString::Printf(TEXT("%s  |  AZ %s EL %s"),*Name,*S47RxLook::Num(TargetAz(),1),*S47RxLook::Num(TargetEl(),1))),T::AntennaGrid(Dishes,Short,DishState,nullptr)})));
   Rows.Add(T::Columns({
-   {1.3f,T::Meter(TEXT("SLEW PROGRESS"),TAttribute<FString>::CreateLambda([this]{return PointReady()?FString(Settle>=1?TEXT("ON TARGET / STEADY"):TEXT("ON TARGET / SETTLING")):FString::Printf(TEXT("%.1f\u00b0 TO GO"),ArrayErrorDeg());}),TAttribute<float>::CreateLambda(Slew))},
-   {1.f,T::Value(TEXT("POINTING / OFF"),TAttribute<FString>::CreateLambda([this,Dishes,DishState]{int32 On=0,Off=0;for(int32 I=0;I<Dishes;++I){const int32 St=DishState(I);On+=St==0;Off+=St==2;}return FString::Printf(TEXT("%d / %d"),On,Off);}),true)}},10));
+   {1.3f,T::Meter(TEXT("SLEW PROGRESS"),TAttribute<FString>::CreateLambda([this]{return PointReady()?FString(Settle>=1?TEXT("ON TARGET / STEADY"):TEXT("ON TARGET / SETTLING")):FString::Printf(TEXT("%s\u00b0 TO GO"),*S47RxLook::Num(ArrayErrorDeg(),1));}),TAttribute<float>::CreateLambda(Slew))},
+   {1.f,T::Value(TEXT("POINTING / OFF"),TAttribute<FString>::CreateLambda([this,Dishes,DishState]{int32 On=0,Off=0;for(int32 I=0;I<Dishes;++I){const int32 St=DishState(I);On+=St==0;Off+=St==2;}return FString::Printf(TEXT("%s / %s"),*S47RxLook::Num(double(On)),*S47RxLook::Num(double(Off)));}),true)}},10));
   Rows.Add(T::Small(TEXT("Steady = on remote and on target. Pulsing = still moving. Red = off remote. Antennas are commanded from the right-hand tracking PC; this receiver records only while pointing, tuning and power are all valid.")));
  }
  else if(ReceiverTab==3)
@@ -2947,7 +2950,7 @@ void FS47FreeformSession::OpenReceiver()
    {
     const auto* X=CurrentJob();if(!X)return FString();
     if(X->Stage==EJobStage::Pointed)return FString(TEXT("START RECORDING"));
-    if(X->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECORDING %.0f / %.0f s"),X->Elapsed,SourceSeconds());
+    if(X->Stage==EJobStage::Integrating)return TEXT("RECORDING ")+S47RxLook::TakeCount(X->Elapsed,SourceSeconds());
     if(RetainWaits(*X))return FString(TEXT("RETAIN TAKE / RECORD REFERENCE 8 s"));
     if(X->bControl&&X->ControlAt<8)return FString::Printf(TEXT("REFERENCE %s / 8 s"),*S47Script::TapeSeconds(RefTenths(*X),1,true));
     return FString(TEXT("RETAINED / REEL DECK NEXT"));
@@ -2956,7 +2959,7 @@ void FS47FreeformSession::OpenReceiver()
    Key=T::DueRing(Key,[this]{const auto* X=CurrentJob();return X&&((X->Stage==EJobStage::Pointed&&ReceiverReady()&&AnomalyAhead())||RetainWaits(*X));});
    auto TakeState=[this]{const auto* X=CurrentJob();if(!X)return FString();
     if(X->Stage<=EJobStage::Pointed)return FString(TEXT("NOT RECORDED"));
-    if(X->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECORDING %.0f / %.0f s"),X->Elapsed,SourceSeconds());
+    if(X->Stage==EJobStage::Integrating)return TEXT("RECORDING ")+S47RxLook::TakeCount(X->Elapsed,SourceSeconds());
     return FString(X->bPrinted?TEXT("RETAINED / IN NOTEBOOK"):TEXT("ON TAPE / NOT RETAINED"));};
    auto RefState=[this,RefTenths]{const auto* X=CurrentJob();if(!X||!X->bControl)return FString(TEXT("NOT RECORDED"));return X->ControlAt<8?FString::Printf(TEXT("RECORDING %s / 8 s"),*S47Script::TapeSeconds(RefTenths(*X),1,true)):FString(TEXT("ON TAPE"));};
    // D69-20261113: TAKE and REFERENCE read as one phrase side by side; each column has its title above its status, a rule between
@@ -2977,14 +2980,14 @@ void FS47FreeformSession::OpenReceiver()
    }
    Rows.Add(SNew(SBox).Visibility_Lambda([AnomalyHere]{return AnomalyHere()?EVisibility::Collapsed:EVisibility::Visible;})[T::Columns({
     {.9f,T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("LEVELS"),FString()),
-      T::Meter(TEXT("SIGNAL LEVEL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%.0f %%"),100*FMath::Clamp(X?X->ReceivedLevel:0.,0.,1.));}),TAttribute<float>::CreateLambda([this]{const auto* X=CurrentJob();return float(FMath::Clamp(X?X->ReceivedLevel:0.,0.,1.));})),
-      T::Meter(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{return FString::Printf(TEXT("%d %%"),S47Signal::CarrierPercent(Quality()));}),TAttribute<float>::CreateLambda([Quality]{return float(Quality());})),
-      T::Meter(TEXT("TAPE USED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%.0f / %.0f s"),X?X->Elapsed:0.,SourceSeconds());}),TAttribute<float>::CreateLambda([this]{const auto* X=CurrentJob();return X?float(FMath::Clamp(X->Elapsed/FMath::Max(1.,SourceSeconds()),0.,1.)):0.f;}))}))},
+      T::Meter(TEXT("SIGNAL LEVEL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return S47RxLook::Num(100*FMath::Clamp(X?X->ReceivedLevel:0.,0.,1.))+TEXT(" %");}),TAttribute<float>::CreateLambda([this]{const auto* X=CurrentJob();return float(FMath::Clamp(X?X->ReceivedLevel:0.,0.,1.));})),
+      T::Meter(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{return S47RxLook::Num(double(S47Signal::CarrierPercent(Quality())))+TEXT(" %");}),TAttribute<float>::CreateLambda([Quality]{return float(Quality());})),
+      T::Meter(TEXT("TAPE USED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return S47RxLook::TakeCount(X?X->Elapsed:0.,SourceSeconds());}),TAttribute<float>::CreateLambda([this]{const auto* X=CurrentJob();return X?float(FMath::Clamp(X->Elapsed/FMath::Max(1.,SourceSeconds()),0.,1.)):0.f;}))}))},
     {1.1f,T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("TAKE LIST"),FString()),T::Table({TEXT("TAKE"),TEXT("SOURCE"),TEXT("STAGE")},{.8f,1.f,1.4f},Takes)}))}},10)]);
   }
   TArray<S47Kit::FW> JobRows={
    T::Columns({{1.f,T::Value(TEXT("JOB"),J->Id,true)},{1.4f,T::Value(TEXT("STAGE"),TAttribute<FString>::CreateLambda([this]{return CurrentJob()?StageText(CurrentJob()->Stage):FString();}),true)}},10),
-   T::Columns({{1.f,T::Value(TEXT("RECORDED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%s / %.0f s"),*S47Script::TapeSeconds(X?X->Elapsed:0.,1,true),SourceSeconds());}),true)},
+   T::Columns({{1.f,T::Value(TEXT("RECORDED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%s / %s s"),*S47Script::TapeSeconds(X?X->Elapsed:0.,1,true),*S47RxLook::Num(SourceSeconds()));}),true)},
     {1.4f,T::Value(TEXT("ORIGINAL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();if(!X)return FString(); // RX-ANOMALY-FLOW-20261113: live, it changes on this page
      return X->bPrinted?FString(PlainAnomaly(*X)?TEXT("KEPT / IN NOTEBOOK"):TEXT("COLLECTED / IN NOTEBOOK")):RetainWaits(*X)?FString(TEXT("ON TAPE / RETAIN IT HERE")):X->Stage==EJobStage::Chart?FString(TEXT("WAITING AT PRINTER")):FString(TEXT("NOT YET RECORDED"));}),true)}},10)};
   if(!ControlPanel)JobRows.Add(SNew(SBox).Visibility_Lambda([AnomalyHere]{return AnomalyHere()?EVisibility::Collapsed:EVisibility::Visible;})[T::Small(TEXT("Originals print at the table by the service-yard door. Valid recorded seconds are retained if tuning or pointing is lost."))]);
@@ -3037,13 +3040,13 @@ void FS47FreeformSession::OpenReceiver()
   Rows.Add(T::Columns({
    {.8f,T::Panel(TEXT("WORK CARD"),S47Kit::Col(Left))},
    {1.2f,T::Panel(FString(),S47Kit::Col({
-    T::TitleRow(TEXT("LAST TAKE / FREQUENCY OVER TIME"),FString::Printf(TEXT("%.0f s"),SourceSeconds())),T::Spectrogram(TakeLook,HasTake,128), // RX-LOOK-20261113: 150 and 110, lower for the frame's body (round 2: 128 and 92, the body is 8 lower)
+    T::TitleRow(TEXT("LAST TAKE / FREQUENCY OVER TIME"),S47RxLook::Num(SourceSeconds())+TEXT(" s")),T::Spectrogram(TakeLook,HasTake,128), // RX-LOOK-20261113: 150 and 110, lower for the frame's body (round 2: 128 and 92, the body is 8 lower)
     T::TitleRow(TEXT("KNOWN SOURCE FOR COMPARISON"),TAttribute<FString>::CreateLambda(RefShown)),T::Spectrogram(RefLook,[]{return true;},92)}))}},10));
   Rows.Add(T::Note(TAttribute<FString>::CreateLambda([this]{return FString(FS47ReceiverSound::BlurbOf(DataRef));}),20,TAttribute<FLinearColor>(S47Kit::Css(0x8cffa4))));
   Rows.Add(T::Columns({
    {1.f,T::Button(TEXT("< PREVIOUS"),[this,Refs]{DataRef=(DataRef+Refs-1)%Refs;OpenReceiver();})},
    {1.f,T::Button(TEXT("NEXT >"),[this,Refs]{DataRef=(DataRef+1)%Refs;OpenReceiver();})},
-   {1.6f,T::Big(TAttribute<FString>::CreateLambda([this,Odd]{const auto* C=Cases.Get(0);return Odd()?FString::Printf(TEXT("THE TAKE SOUNDS LIKE THIS / %d LEFT"),C?Cases.RefTriesLeft(0):0):FString(TEXT("MATCH: AN UNUSUAL TAKE IS NEEDED"));}),[this]{MarkReference(DataRef);OpenReceiver();},1,TAttribute<bool>::CreateLambda(Odd))}},10));
+   {1.6f,T::Big(TAttribute<FString>::CreateLambda([this,Odd]{const auto* C=Cases.Get(0);return Odd()?FString::Printf(TEXT("THE TAKE SOUNDS LIKE THIS / %s LEFT"),*S47RxLook::Num(double(C?Cases.RefTriesLeft(0):0))):FString(TEXT("MATCH: AN UNUSUAL TAKE IS NEEDED"));}),[this]{MarkReference(DataRef);OpenReceiver();},1,TAttribute<bool>::CreateLambda(Odd))}},10));
   Rows.Add(T::Small(TEXT("Listen to each source at the reel deck on the wall table (NEXT REFERENCE, PLAY REFERENCE). A match that is right rules an explanation out on the OPS case board; a take of something new matches none.")));
  }
  // RX-LOOK-20261113: the frame round the page. The next step in words is the frame's line on every tab (the chart's own on ACQUIRE);
