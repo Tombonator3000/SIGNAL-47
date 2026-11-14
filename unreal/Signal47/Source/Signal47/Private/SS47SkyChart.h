@@ -107,6 +107,10 @@ public:
 	// drawn at the inner ring's old size (Ring, its mean radius) in the ellipse's shape; it comes to its true size as the picture
 	// closes in (all of it at ZoomMost, which the picture is whenever the crossing can be that near). Out: the closed path.
 	static void LockMark(const FPlot& P, const FVector2D& Reticle, float Ring, TArray<FVector2f>& Out);
+	// RX-LOOK gjennomgang 14 Nov: how far closed in a chart made anew stands at its first frame, for the rule's state as it is (the
+	// page is built again on every tab and key; each new chart began open and snapped in again): all the way while the fix is
+	// taken, as the reticle's distance has it while searching, open otherwise. The model keeps the search; this keeps the picture.
+	static float ZoomAtStart(const FS47SkyAcquire& K);
 	// The four ways a key can steer on the glass (-1, 0 or 1 across and up).
 	static FVector2D SteerOf(const FKey& Key);
 	// The step in azimuth and elevation (a unit vector) that moves the reticle that way on the glass, where it stands now: for

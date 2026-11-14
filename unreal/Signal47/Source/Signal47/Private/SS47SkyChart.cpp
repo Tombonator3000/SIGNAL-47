@@ -253,6 +253,12 @@ void SS47SkyChart::LockMark(const FPlot& P, const FVector2D& Reticle, float Ring
 	}
 }
 
+float SS47SkyChart::ZoomAtStart(const FS47SkyAcquire& K)
+{
+	if (K.State() == FS47SkyAcquire::EPhase::Locking) return ZoomMost;
+	return K.HasBearings() && K.State() == FS47SkyAcquire::EPhase::Search ? ZoomForTrue(K.Distance()) : 1.f;
+}
+
 float SS47SkyChart::ZoomStep(float Was, float Want, double Dt, double OffWas, double OffNow)
 {
 	float Zoom = FMath::Clamp(Was + (Want - Was) * float(FMath::Min(1., FMath::Max(Dt, 0.) * (Want > Was ? 5. : 1.6))), 1.f, ZoomMost);
@@ -360,7 +366,8 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	const double Now = FPlatformTime::Seconds();
 	const double Dt = LastPaint > 0 ? FMath::Clamp(Now - LastPaint, 0., .1) : 0.;
 	LastPaint = Now;
-	if (ShownSize.X <= 0 || !Sz.Equals(ShownSize, .5f)) { Shown = PlotFor(Sz); ShownSize = Sz; ZoomNow = 1.f; Trail.Reset(); TrailAt.Reset(); }
+	// (RX-LOOK gjennomgang 14 Nov: a chart made anew, as the page is on every tab and key, stands as closed in as the search is, ZoomAtStart)
+	if (ShownSize.X <= 0 || !Sz.Equals(ShownSize, .5f)) { Shown = PlotFor(Sz); ShownSize = Sz; ZoomNow = Sky.IsValid() ? ZoomAtStart(*Sky) : 1.f; ZoomOffWas = -1.; Trail.Reset(); TrailAt.Reset(); }
 	FPlot Pl = Shown;
 	Pl.Zoom = 1.f;
 	const FVector2f Rim(Pl.View.Rim), Semi(Pl.View.Semi);
@@ -1212,6 +1219,16 @@ bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 			for (const FString& Each : C.TopRight) Hold(Each);
 		}
 		for (const FString& Each : AllWords(K, 120., Source)) Hold(Each);
+		// RX-LOOK gjennomgang 14 Nov: a chart made anew mid-search stands where the old one had closed in to (it began open and snapped in)
+		const bool bStart = ZoomAtStart(K) == 1.f;
+		FS47SkyAcquire Mid;
+		Mid.Begin(4711u, FVector2D(112, 54), 1, false);
+		const float Before = ZoomAtStart(Mid);
+		Mid.SetArray(Dishes, true, true); Mid.Step(1. / 60.);
+		Mid.Nudge(Mid.Cross() + FVector2D(2.5, 1.) - Mid.ReticleAt());
+		const float Kept = ZoomAtStart(Mid), Eased = [&] { float Z = 1.f; for (int32 I = 0; I < 600; ++I) Z = ZoomStep(Z, ZoomForTrue(Mid.Distance()), 1. / 60., Mid.Distance(), Mid.Distance()); return Z; }();
+		Check(bStart && Before == 1.f && Mid.State() == FS47SkyAcquire::EPhase::Search && Kept > 2.f && FMath::IsNearlyEqual(Kept, Eased, 1e-3f),
+			FString::Printf(TEXT("a chart made anew mid-search stands closed in as far as the search had gone (%.2f times, where the old one had eased to %.2f), open with the fix held or no bearings"), Kept, Eased));
 		Check(Bad.IsEmpty() && Read > 10000 && K.Locked(), FString::Printf(TEXT("%d words the chart writes, read through the functions it draws with, keep to the text rule (the arms are 1, 2 and 3)%s"), Read, Bad.IsEmpty() ? TEXT("") : *(TEXT(": NOT ") + Bad)));
 	}
 	return bOk;
