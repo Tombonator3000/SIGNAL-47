@@ -549,8 +549,16 @@ TArray<S47Dossier::FFile> FS47Dossier::Files() const
   File.bAtMarks=int32(Stage)>=int32(S47Dossier::EStage::Marks);
   {
    // The extra bearing is the kind's, once: its first file says what became of it; another of its files only that it listens.
+   // REVIEW (14 Nov): a kind's first file filed as one in a lower file of another kind takes it along: the survivor says it (one
+   // still to come first)
    double WhereX=0,WhereZ=0;
-   const int32 Extra=FirstFileOf(Kind)==At?ExtraState(Kind):0;
+   int32 Extra=0;
+   for(int32 Part=0;Part<Sequence.Num();++Part)
+   {
+    if(Root(Part)!=At||FirstFileOf(Sequence[Part])!=Part)continue;
+    const int32 State=ExtraState(Sequence[Part]);
+    if(State==1)Extra=1;else if(State==2&&Extra==0)Extra=2;
+   }
    File.Gave=S47Dossier::Gave(Kind,Stage,FirstWhereOfFile(At+1,WhereX,WhereZ),Extra,!HoursOfFile(At+1).IsEmpty());
   }
   File.Boxes.SetNum(Tb::TypeN);
@@ -1580,6 +1588,14 @@ bool SelfTest(TArray<FString>& Lines)
   Far.SetName(1,TEXT("Too still"),7);
   Check(bFourth&&bWrong&&D.TakeOut(1,4,9)&&D.KindsFiled()==3&&WardPoints(D.KindsFiled())==2&&Far.StageOfFile(1)==EStage::Marks&&!Far.Filed(1)&&Far.KindsFiled()==0,
    TEXT("slice 3: a wrong one filed as one counts for nothing until it is out again, and holds back no kind that has a file of its own; the far two are never filed"));
+ }
+ { // REVIEW (14 Nov): MARKS's extra bearing goes with its file when that is filed as one in a lower file of another kind
+  FS47Dossier X;
+  X.Tag(TEXT("x-counter"),Small,Geiger,3);                                                              // file 1
+  X.Tag(TEXT("x-shape"),Low,Shape,3);X.Tag(TEXT("x-ground"),Low,Ground,3);X.Tag(TEXT("x-shape2"),Low,Shape,4);X.Tag(TEXT("x-lamp"),Low,Lamp,4); // file 2: MARKS
+  const bool bOwn=X.Order().Num()==2&&X.StageOfFile(2)==EStage::Marks&&X.Grant(Low,4)&&X.Files()[1].Gave==GaveExtraOpen;
+  Check(bOwn&&X.Merge(1,2,5)&&X.StageOfFile(1)==EStage::Marks&&X.Files().Num()==1&&X.Files()[0].Gave==GaveExtraOpen,
+   TEXT("slice 3: the extra bearing MARKS gave a file is still said on the sheet of the file it was filed in as one"));
  }
  { // REVIEW (14 Nov): the field allowance is paid once for the same work: filing a named, paid file in a lower unnamed one, taking it
    // out and doing it again never pays the survivor
