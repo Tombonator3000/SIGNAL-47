@@ -16,6 +16,7 @@
 #include "S47GameStyle.h"
 #include "S47Inter.h"
 #include "S47Kit.h"
+#include "S47LandPlaceFixes.h"
 #include "S47Legs.h"
 #include "S47Mail.h"
 #include "S47Main.h"
@@ -322,6 +323,8 @@ void FS47Predecessor::Step(double Dt)
   // Placed once when built, and measured again only near the player, when there is ground there to measure.
   const FVector Road=S47Legs::ORIGINS(TEXT("road"));
   const auto Close=[&](const FSpot& P){return M->Player&&FVector2D(M->Player->Pos.X-(Road.X+P.X),M->Player->Pos.Z-(Road.Z+P.Z)).Size()<300;};
+  // LAND-PLACES-FIXES-20261114: a tag at a place that drifts (the cairn) goes with it, to the same offset from where it stands today
+  for(FSpot& P:Land)for(const S47PredecessorText::FTagDef& D:S47PredecessorText::Tags())if(P.Id==D.Doc&&S47LandPlaceFixes::Follow(M,D.Place,P.X,P.Z,D.OffX,D.OffZ))Seat(P);
   for(FSpot& P:Land)if(!P.bSeated&&Close(P))Seat(P);
   if(!WagonSpot.bSeated&&!WagonSpot.Parts.IsEmpty()&&Close(WagonSpot))SeatWagon();
  }

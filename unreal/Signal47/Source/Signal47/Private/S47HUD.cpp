@@ -42,6 +42,7 @@
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
+#include "S47LandPlaceFixes.h"
 #include "S47FreeformDirector.h"
 #include "S47CaseFieldTests.h"
 #include "S47HighwayUfo.h"
@@ -327,6 +328,7 @@ void AS47HUD::Start()
 		bOk &= FS47DeputyRound::SelfTest(Lines);
 		bOk &= FS47LeftGear::SelfTest(Lines);
 		bOk &= FS47Places::SelfTest(Lines);
+		bOk &= S47LandPlaceFixes::SelfTest(Lines); // (LAND-PLACES-FIXES-20261114: the shack's lamp in its window, lights and marks outside, the cairn's tag and ring, the walk boxes)
 		bOk &= FS47Balloon::SelfTest(Lines); // (D48-20261110: the balloon find, its beacon and its instrument box)
 		bOk &= FS47EventPlaces::SelfTest(Lines);
 		bOk &= FS47Predecessor::SelfTest(Lines);
