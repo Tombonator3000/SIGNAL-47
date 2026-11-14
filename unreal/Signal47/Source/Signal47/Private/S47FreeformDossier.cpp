@@ -480,6 +480,12 @@ bool FS47FreeformSession::DossierSelfTest(TArray<FString>& Lines)
   Check(bMerged&&bBack&&bOut,TEXT("slice 3: two filed as one at the binder (a wrong one too, never said), kept through a Continue, out again that night; Dr. Ward's count follows"));
   Back.Stop();
  }
+ {
+  // the lamp's edge is taken every frame: raised on a frame the visit did not reach, it is not "raised" on the next that does
+  bool bWas=false;
+  const bool bFirst=FS47FarmSite::LampRaised(true,bWas),bLater=FS47FarmSite::LampRaised(true,bWas),bOff=FS47FarmSite::LampRaised(false,bWas),bAgain=FS47FarmSite::LampRaised(true,bWas);
+  Check(bFirst&&!bLater&&!bOff&&bAgain,TEXT("slice 3 (review): the lamp counts as raised near one only on the frame it went on, whatever frames the visit skipped"));
+ }
  Check(HabitHourMay(false,false,false,false)&&!HabitHourMay(true,false,false,false)&&!HabitHourMay(false,true,false,false)&&!HabitHourMay(false,false,true,false)&&!HabitHourMay(false,false,false,true),
   TEXT("slice 3 (review): the hour's habit never comes to mind while the night is held, a visit is on, something hunts on the set or a light is taking someone"));
  { // EVIDENCE-DOSSIER slice 2 (M7): the pacing against the week gates and the tiers, from director.json itself
