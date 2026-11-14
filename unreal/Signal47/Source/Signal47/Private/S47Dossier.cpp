@@ -921,6 +921,9 @@ bool FS47Dossier::Merge(int32 A,int32 B,int32 Night)
  if(!Apply(One))return false;
  // the survivor keeps its own name, or takes the other's when it had none
  if(!One.bHadName){if(const FNamed* Other=Names.Find(One.From)){const FNamed Took=*Other;Names.Add(One.Into,Took);}}
+ // REVIEW (14 Nov): the allowance paid for the one filed in it is paid for the survivor too: filing a paid file in an unpaid one,
+ // taking it out and doing it again with the next is no way to be paid twice for the same work
+ if(PaidFiles.Contains(One.From))PaidFiles.Add(One.Into);
  return true;
 }
 bool FS47Dossier::CanTakeOut(int32 Into,int32 From,int32 Night) const
@@ -938,6 +941,8 @@ bool FS47Dossier::TakeOut(int32 Into,int32 From,int32 Night)
  if(Reached.Num()<Sequence.Num())Reached.SetNumZeroed(Sequence.Num());
  Reached[Was.Into]=FMath::Max(Was.ReachedWas,int32(StageNow(Was.Into)));
  if(Reached.IsValidIndex(Was.From))Reached[Was.From]=FMath::Max(Reached[Was.From],int32(StageNow(Was.From)));
+ // REVIEW (14 Nov): paid while they were one, both have been paid for
+ if(PaidFiles.Contains(Was.Into))PaidFiles.Add(Was.From);
  return true;
 }
 S47Dossier::EStage FS47Dossier::StageConsistent(int32 File) const
@@ -1555,6 +1560,18 @@ bool SelfTest(TArray<FString>& Lines)
   Far.SetName(1,TEXT("Too still"),7);
   Check(bFourth&&bWrong&&D.TakeOut(1,4,9)&&D.KindsFiled()==3&&WardPoints(D.KindsFiled())==2&&Far.StageOfFile(1)==EStage::Marks&&!Far.Filed(1)&&Far.KindsFiled()==0,
    TEXT("slice 3: a wrong one filed as one counts for nothing until it is out again, and holds back no kind that has a file of its own; the far two are never filed"));
+ }
+ { // REVIEW (14 Nov): the field allowance is paid once for the same work: filing a named, paid file in a lower unnamed one, taking it
+   // out and doing it again never pays the survivor
+  FS47Dossier P;
+  P.Tag(TEXT("pay-shape"),Small,Shape,2);P.Tag(TEXT("pay-ground"),Small,Ground,2);                            // file 1, unnamed
+  P.Tag(TEXT("pay-tape"),Small,Tape,3);P.Tag(TEXT("pay-lamp"),Small,Lamp,3);P.Tag(TEXT("pay-tape2"),Small,Tape,4);
+  P.Tag(TEXT("pay-geiger"),Small,Geiger,4);P.Tag(TEXT("pay-tape3"),Small,Tape,5);P.Tag(TEXT("pay-dogs"),Small,Animals,5); // file 2: HABITS
+  P.SetName(2,TEXT("Ladder notes"),5);
+  const bool bTwo=P.Order().Num()==2&&P.Filed(2)&&!P.Filed(1);
+  P.MarkPaid(2); // as FS47FreeformSession::DossierPayFiled does
+  const bool bCarried=P.Merge(1,2,6)&&P.Filed(1)&&P.Paid(1);
+  Check(bTwo&&bCarried&&P.TakeOut(1,2,6)&&P.Paid(1)&&P.Paid(2),TEXT("slice 3: a file filed in another as one carries its paid allowance there, and out again both are paid: the same work is paid once"));
  }
  { // REVIEW (14 Nov): a find of another of the near three that joins a file by place and night, with nothing the player did, does
    // not take the file from Dr. Ward's count: the file stands for what most of it is
