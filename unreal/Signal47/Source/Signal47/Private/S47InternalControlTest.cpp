@@ -211,6 +211,17 @@ void FS47FreeformTest::StepInternalControl(double Dt)
    if(!Check(StepKeys==4&&bKeysFree&&HasKeys.Contains(TEXT("SS47SkyChart")),TEXT("RX-LOOK: the chart's four step keys take no keyboard focus, and the chart has the keys (focus: ")+HasKeys+TEXT(")")))return;
   }
   if(!Words(TEXT("ACQUIRE while it searches"))||!Agree(TEXT("ACQUIRE while it searches")))return;
+  {
+   // RX-LOOK gjennomgang 14 Nov: the tracking panel's rows stand whole at the height the page gives it (its last row, OFFSET, was cut)
+   TSharedPtr<SWidget> Panel;
+   TFunction<void(TSharedRef<SWidget>)> Find=[&](TSharedRef<SWidget> X){if(Panel.IsValid())return;if(X->GetTypeAsString()==TEXT("SS47RxTrack")){Panel=X;return;}FChildren* Ch=X->GetChildren();for(int32 I=0;Ch&&I<Ch->Num();++I)Find(Ch->GetChildAt(I));};
+   FSlateApplication::Get().ForEachUser([&](FSlateUser& User){auto W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;Find(W.ToSharedRef());},true);
+   const float High=Panel.IsValid()?float(Panel->GetTickSpaceGeometry().GetLocalSize().Y):0.f;
+   const int32 Count=SS47RxTrack::Rows(F.SkyFix.Get(),F.RxLive().CardMhz,SS47RxTrack::AllArms(High)).Num();
+   const float Foot=(Count-1)*SS47RxTrack::RowPitch(High,Count)+SS47RxTrack::RowHigh;
+   UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: tracking panel %.1f high, %d rows, the last one ends at %.1f"),High,Count,Foot);
+   if(!Check(High>100.f&&Foot<=High+.5f,FString::Printf(TEXT("RX-LOOK: the tracking panel's %d rows stand whole in its %.0f units (the last ends at %.1f)"),Count,High,Foot)))return;
+  }
   UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: sky chart state %d, reticle %.1f degrees off the crossing"),int32(F.SkyFix->State()),F.SkyFix->Distance());
   Shot(TEXT("acquire-searching.png"));bLookCalmWas=M->Flow->bCalmFlash;M->Flow->bCalmFlash=true;Go(102,.6);return;
  }

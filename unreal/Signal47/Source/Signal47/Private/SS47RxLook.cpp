@@ -500,6 +500,18 @@ TArray<SS47RxTrack::FRow> SS47RxTrack::Rows(const FS47SkyAcquire* Sky, double Ca
 	return Out;
 }
 
+bool SS47RxTrack::AllArms(float High)
+{
+	// eight rows: S/N, RESID, three delays, RATE, CAT, OFFSET; at a letter's height apart they need this much
+	return High >= RowHigh + 7.f * RowPitchLeast;
+}
+
+float SS47RxTrack::RowPitch(float High, int32 Count)
+{
+	if (Count <= 1) return RowPitchMost;
+	return FMath::Clamp((High - RowHigh) / float(Count - 1), RowPitchLeast, RowPitchMost);
+}
+
 FString SS47RxTrack::OffWords(const FS47SkyAcquire* Sky)
 {
 	return Sky && Sky->HasBearings() ? FString::Printf(TEXT("OFF %s\u00b0"), *S47RxLook::Num(Sky->Distance(), 1)) : FString(TEXT("OFF --"));
@@ -543,12 +555,14 @@ int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRe
 	if (EyeTextY + 22 <= Sz.Y) Pen.Text(OffD, FMath::Min(Eye.X - S47RxLWide(OffD.Len(), S47RxLSmall) * .5f, Sz.X - S47RxLWide(OffD.Len(), S47RxLSmall) - 2), EyeTextY, S47RxLSmall, S47RxLGreen);
 	// ---- the readouts, as the sky rule gives them: they count up over the lock sequence and stand once the fix is held. A
 	// name and its number a line, in the next step's size; on a low panel only the longest delay of the three ----
-	const bool bAllArms = Sz.Y >= 8 * 20.f;
-	const float Pitch = FMath::Min(float(S47RxLSmall), (Sz.Y - 2) / (bAllArms ? 8.f : 6.f));
+	// (RX-LOOK gjennomgang 14 Nov: the pitch leaves the last row whole, RowPitch; it was min(22, (h - 2) / 8), which cut OFFSET)
+	const bool bAllArms = AllArms(Sz.Y);
+	const TArray<FRow> Lines = Rows(Sky.Get(), Now.CardMhz, bAllArms);
+	const float Pitch = RowPitch(Sz.Y, Lines.Num());
 	float Y = 0;
 	const FLinearColor Quiet = S47RxLFade(S47RxLGreen, .6f);
 	// (RX-LOOK gjennomgang 14 Nov: the rows as Rows writes them for the rule's state, the same the tests read)
-	for (const FRow& Each : Rows(Sky.Get(), Now.CardMhz, bAllArms)) { Pen.Text(Each.Line(), 2, Y, S47RxLSmall, Each.bQuiet ? Quiet : S47RxLGreen); Y += Pitch; }
+	for (const FRow& Each : Lines) { Pen.Text(Each.Line(), 2, Y, S47RxLSmall, Each.bQuiet ? Quiet : S47RxLGreen); Y += Pitch; }
 	// taking the fix: a small mark walks along under the readouts (still with Calm flashes)
 	if (bLocking && !Now.bCalm) Pen.Box(FVector2f(2 + float(FMath::Fmod(T * 60., double(FMath::Max(40.f, Sz.X * .5f)))), FMath::Min(Y + 1, Sz.Y - 2)), FVector2f(10, 2), S47RxLAmber, 1);
 	return L + 2;
@@ -614,6 +628,24 @@ bool S47RxLookPaint::SelfTest(TArray<FString>& Lines)
 	for (double D = .25; D <= 30; D += .25) bGrows &= SS47RxTrack::EyeShare(D) >= SS47RxTrack::EyeShare(D - .25) && SS47RxTrack::EyeShare(D) <= 1.f;
 	Check(bGrows && SS47RxTrack::EyeShare(0) == 0.f && SS47RxTrack::EyeShare(FSky::LockRadius) > .25f && SS47RxTrack::EyeShare(FSky::LockRadius) < SS47RxTrack::EyeShare(FSky::CaptureRadius) - .2f && SS47RxTrack::EyeShare(SS47RxTrack::EyeFull) == 1.f,
 		TEXT("the bull's-eye: the lock ring a third of the way out, the capture ring two thirds, an offset past the rim pinned to it"));
+	{
+		// RX-LOOK gjennomgang 14 Nov: the tracking panel's rows stand whole in every panel from the lowest the page gives it to the
+		// tallest: the last row (OFFSET) above the foot, the rows a letter's height apart at least, every arm where there is room.
+		// The old pitch, min(22, (h - 2) / 8), is measured beside it.
+		bool bWhole = true; int32 Cut = 0;
+		for (float High = 120.f; High <= 400.f; High += .5f)
+		{
+			const bool bAll = SS47RxTrack::AllArms(High);
+			const int32 Count = bAll ? 8 : 6;
+			const float Pitch = SS47RxTrack::RowPitch(High, Count);
+			bWhole &= (Count - 1) * Pitch + SS47RxTrack::RowHigh <= High + 1e-3f && Pitch >= SS47RxTrack::RowPitchLeast && Pitch <= SS47RxTrack::RowPitchMost;
+			const bool bOldAll = High >= 160.f;
+			const float OldPitch = FMath::Min(22.f, (High - 2) / (bOldAll ? 8.f : 6.f));
+			Cut += (bOldAll ? 7 : 5) * OldPitch + SS47RxTrack::RowHigh > High ? 1 : 0;
+		}
+		Check(bWhole && Cut > 0 && SS47RxTrack::Rows(nullptr, 1419.6, true).Num() == 8 && SS47RxTrack::Rows(nullptr, 1419.6, false).Num() == 6 && SS47RxTrack::AllArms(181.f),
+			FString::Printf(TEXT("the tracking panel's rows stand whole in every panel 120 to 400 units high (the old pitch cut the last row in %d of them); at the page's own height every arm has its row"), Cut));
+	}
 	{
 		// RX-LOOK gjennomgang 14 Nov: the bull's-eye lies the way the chart does. At each card source, a reticle a step off the
 		// crossing the way a key points on the glass (S47SkySphere::SteerOnGlass) stands that way on the bull's-eye, and UP held

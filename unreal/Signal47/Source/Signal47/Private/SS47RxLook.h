@@ -121,6 +121,12 @@ public:
 	struct FRow { FString Name, Value; bool bQuiet = false; FString Line() const { return Name.RightPad(8) + Value; } };
 	static TArray<FRow> Rows(const FS47SkyAcquire* Sky, double CardMhz, bool bAllArms);
 	static FString OffWords(const FS47SkyAcquire* Sky);
+	// RX-LOOK gjennomgang 14 Nov: how the rows stand in a panel so high: whether every arm's delay has a row (else the longest
+	// only), and the pitch, so that the last row (OFFSET) stands whole above the panel's foot. RowHigh is what a row of the next
+	// step's size takes on the glass; the pitch is never more than the old 22 and never less than a letter's height (19).
+	static constexpr float RowHigh = 24.f, RowPitchMost = 22.f, RowPitchLeast = 19.f;
+	static bool AllArms(float High);
+	static float RowPitch(float High, int32 Count);
 private:
 	TSharedPtr<FS47RxFeed> Live;
 	TSharedPtr<FS47SkyAcquire> Sky;
