@@ -174,7 +174,7 @@ void FS47FreeformSession::BinderUnknowns(S47Binder::FSource& Src) const
     :FString::Printf(TEXT("DAY %02d / THE FRAME IS NOT IN THE ALBUM"),S47Dossier::ShownNight(Night)));
   }
   S47Binder::FUnknownIn Sheet;Sheet.Number=File.Number;Sheet.Title=File.Title;Sheet.Stage=File.Stage;Sheet.Opened=File.Opened;Sheet.Latest=File.Latest;Sheet.bAtMarks=File.bAtMarks;
-  Sheet.Body=S47Dossier::Sheet(File,PhotoLines);
+  Sheet.Body=S47Dossier::Sheet(File,PhotoLines,Src.bAtBinder); // REVIEW (14 Nov): the reading copy says where a name is written
   // slice 3: its name and the suggestion; the files it could be filed as one with (those kept beside it first); what can come out again
   Sheet.Name=File.Name;Sheet.Suggest=S47Dossier::Suggest(File);Sheet.bFiled=File.bFiled;
   for(const bool bBeside:{true,false})for(const S47Dossier::FFile& Other:All)

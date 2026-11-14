@@ -165,7 +165,8 @@ namespace S47Dossier
  // is shown moves.
  SIGNAL47_API int32 ShownNight(int32 Night);
  // The file typed for the binder: the stage, the six boxes, the photographs as the session names them, the pencil notes.
- SIGNAL47_API FString Sheet(const FFile& File,const TArray<FString>& PhotoLines);
+ // bAtBinder: typed at the binder in the records room; false, the reading copy away from it (REVIEW 14 Nov: says where a name is written).
+ SIGNAL47_API FString Sheet(const FFile& File,const TArray<FString>& PhotoLines,bool bAtBinder=true);
  // Every word the dossier can show, and what is wrong with any of it (empty: nothing): Freeform's spoiler limits
  // (S47Script::LintText), no word for what they are (S47Marginalia::NamesKind), none of Freeform's banned words.
  SIGNAL47_API TArray<FString> Words();

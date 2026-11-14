@@ -125,6 +125,7 @@ namespace Slice3
  const TCHAR* const SheetName=TEXT("WORKING NAME  ");
  const TCHAR* const SheetFiled=TEXT("FILED UNDER ITS NAME AT HABITS.");
  const TCHAR* const SheetUnnamed=TEXT("AT HABITS. A NAME WRITTEN ON IT HERE FILES IT.");
+ const TCHAR* const SheetUnnamedAway=TEXT("AT HABITS. A NAME WRITTEN ON IT AT THE BINDER IN THE RECORDS ROOM FILES IT."); // the reading copy
 }
 const TCHAR* KindId(EKind Kind){return Tables::Valid(Kind)?Tables::KindIds[int32(Kind)]:TEXT("");}
 const TCHAR* TypeId(EType Type){return Tables::Valid(Type)?Tables::TypeIds[int32(Type)]:TEXT("");}
@@ -293,13 +294,13 @@ int32 ShownNight(int32 Night)
  while(FString::FromInt(N).Contains(TEXT("47")))++N;
  return N;
 }
-FString Sheet(const FFile& File,const TArray<FString>& PhotoLines)
+FString Sheet(const FFile& File,const TArray<FString>& PhotoLines,bool bAtBinder)
 {
  // slice 3: the player's own name for it, typed as he wrote it, and whether that files it
  FString Out=File.Name.IsEmpty()?FString():FString(Slice3::SheetName)+File.Name.ToUpper()+TEXT("\n");
  Out+=FString::Printf(TEXT("STAGE     %s\n"),*File.Stage);
  if(!File.Gave.IsEmpty())Out+=TEXT("          ")+File.Gave+TEXT("\n"); // LOOP-DOSSIER-GIVES-20261113: what the stage gave, under it
- if(File.Stage==StageWord(EStage::Habits))Out+=FString(TEXT("          "))+(File.bFiled?Slice3::SheetFiled:Slice3::SheetUnnamed)+TEXT("\n");
+ if(File.Stage==StageWord(EStage::Habits))Out+=FString(TEXT("          "))+(File.bFiled?Slice3::SheetFiled:bAtBinder?Slice3::SheetUnnamed:Slice3::SheetUnnamedAway)+TEXT("\n");
  Out+=FString::Printf(TEXT("NIGHTS    %d / FIRST DAY %02d / LAST DAY %02d\n"),ShownNight(File.Nights),ShownNight(File.Opened),ShownNight(File.Latest));
  for(const FBox& One:File.Boxes)
  {
@@ -362,7 +363,7 @@ TArray<FString> Words()
  for(const FString& W:SuggestWords())Out.Add(W);
  for(int32 H=0;H<24;++H)Out.Add(HabitHourThought(H));
  for(const Slice3::FWord& W:Slice3::LampThoughts)Out.Add(W.Said);
- for(const TCHAR* W:{Slice3::NameRowWords,Slice3::Away,Slice3::Hint,Slice3::WhyShort,Slice3::WhyLetters,Slice3::WhyWords,Slice3::SheetName,Slice3::SheetFiled,Slice3::SheetUnnamed})Out.Add(W);
+ for(const TCHAR* W:{Slice3::NameRowWords,Slice3::Away,Slice3::Hint,Slice3::WhyShort,Slice3::WhyLetters,Slice3::WhyWords,Slice3::SheetName,Slice3::SheetFiled,Slice3::SheetUnnamed,Slice3::SheetUnnamedAway})Out.Add(W);
  for(int32 N=1;N<=MaxFiles;++N){Out.Add(MergeRow(N,true));Out.Add(MergeRow(N,false));Out.Add(TakeOutRow(N));Out.Add(MergeSlip(1,N));Out.Add(TakeOutSlip(1,N));}
  Out.Add(NameSlip(Titled(3,TEXT("Bare feet"))));Out.Add(MergedLine(TArray<int32>{2,MaxFiles}));
  {
@@ -370,7 +371,7 @@ TArray<FString> Words()
   Filed.Merged={3};Filed.MergedNight={12};Filed.Boxes.SetNum(TypeN);
   Out.Add(Sheet(Filed,TArray<FString>()));
   Out.Add(StampOf(Filed.Named,EType::Ground,false,false,EStage::Habits));Out.Add(HoursLineOf(Filed.Named,TArray<int32>{23,1}));
-  Filed.bFiled=false;Out.Add(Sheet(Filed,TArray<FString>()));
+  Filed.bFiled=false;Out.Add(Sheet(Filed,TArray<FString>()));Out.Add(Sheet(Filed,TArray<FString>(),false));
   // REVIEW (14 Nov): a long game's nights, every way the sheet prints one (Lint: no number reads 47)
   Filed.Nights=47;Filed.Opened=47;Filed.Latest=147;Filed.MergedNight={470};Filed.Boxes[0].bFilled=true;Filed.Boxes[0].How=HowSeen;Filed.Boxes[0].Day=247;
   Out.Add(Sheet(Filed,TArray<FString>()));
@@ -1504,6 +1505,12 @@ bool SelfTest(TArray<FString>& Lines)
   }
   bool bWeek4=true;for(const EKind Near:{Small,Low,Tall}){const int32 H=Earliest(Near,EStage::Habits,G);bWeek4&=H>7&&H<=30;}
   Check(bWeek1&&bWeek4&&bFar&&FirstMarks<=14&&Earliest(EKind::None,EStage::Outline,G)==0,*FString::Printf(TEXT("slice 2: pacing (standard gates): no HABITS in week 1, the near three can by week 4, the far two stop at MARKS, the first MARKS by night %d"),FirstMarks));
+ }
+ {
+  FFile Unnamed;Unnamed.Stage=StageWord(EStage::Habits);Unnamed.Boxes.SetNum(TypeN);
+  const FString Here=Sheet(Unnamed,TArray<FString>()),Away=Sheet(Unnamed,TArray<FString>(),false);
+  Check(Here.Contains(TEXT(" HERE FILES IT."))&&!Away.Contains(TEXT(" HERE "))&&Away.Contains(TEXT("AT THE BINDER IN THE RECORDS ROOM")),
+   TEXT("review: a file at HABITS with no name says where a name files it: here at the binder, or on the reading copy, at the binder in the records room"));
  }
  Check(ShownNight(46)==46&&ShownNight(47)==48&&ShownNight(147)==148&&ShownNight(471)==480&&ShownNight(9)==9&&ShownNight(-3)==0,
   TEXT("review: a night the dossier prints steps past any number that reads 47"));
