@@ -34,6 +34,7 @@
 #include "S47Audio.h"
 #include "S47UI.h"
 #include "S47Inter.h"
+#include "S47LandPlaceFixes.h"
 #include "S47Walker.h"
 #include "S47Story.h"
 #include "S47Album.h"
@@ -576,6 +577,7 @@ FVector FS47FreeformDirector::LightPlacePoint(const FString& Place)const
  const FS47EventPlaces* Places=PlacesOf(M);const FS47EventPlace* P=Places?Places->Find(Place):nullptr;
  if(!P)return FVector::ZeroVector;
  // A place with a front of its own (a door, a find) is measured off it, as it always was; the rest off the land itself.
+ {FVector Outside;if(S47LandPlaceFixes::LightPoint(M,Place,Outside))return Outside;} // LAND-PLACES-FIXES-20261114: the shack and the cairn: on the ground outside the solid, not in its middle
  if(!P->Prop.IsEmpty()&&M->Inter)if(auto* It=M->Inter->Get(P->Prop))if(It->Object)return It->Object.WorldBox().GetCenter();
  FVector At;Places->AtNow(Place,At);
  return At;
