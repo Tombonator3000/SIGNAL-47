@@ -121,6 +121,9 @@ namespace S47Binder
  SIGNAL47_API FString CaseKey(int32 Line);
  SIGNAL47_API FString FileKey(const FString& Key);
  SIGNAL47_API FString UnknownKey(int32 Number);
+ // EVIDENCE-DOSSIER slice 3 (REVIEW 14 Nov): the file whose page the slip of a Do ("name:2", "merge:3:1", "out:1:3") goes on: the
+ // number it was done from, and for two filed as one (bDone) the lower, which is the one that stands; 0 for none.
+ SIGNAL47_API int32 PageAfterDo(const FString& Do,bool bDone);
  // The binder's own words keep to Freeform's spoiler limits (S47Script::LintText). Empty when all is well.
  SIGNAL47_API FString Lint();
  SIGNAL47_API bool SelfTest(TArray<FString>& Lines);

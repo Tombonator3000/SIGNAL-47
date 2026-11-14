@@ -55,6 +55,15 @@ FString RecordKey(const FString& FindingKey){return TEXT("rec:")+FindingKey;}
 FString CaseKey(int32 Line){return FString::Printf(TEXT("case:%d"),Line);}
 FString FileKey(const FString& Key){return TEXT("file:")+Key;}
 FString UnknownKey(int32 Number){return FString::Printf(TEXT("unk:%d"),Number);}
+int32 PageAfterDo(const FString& Do,bool bDone)
+{
+ TArray<FString> Parts;Do.ParseIntoArray(Parts,TEXT(":"),true);
+ const int32 First=Parts.Num()>=2?FMath::Max(0,FCString::Atoi(*Parts[1])):0;
+ // filed as one: the higher number is gone from the lists, the slip goes on the one that stands (REVIEW 14 Nov: from UNKNOWN 3's
+ // page "merge:3:1" sent the binder to a page that no longer was, and the slip and its line were never seen)
+ if(bDone&&Parts.Num()==3&&Parts[0]==TEXT("merge")){const int32 Second=FMath::Max(0,FCString::Atoi(*Parts[2]));return First>0&&Second>0?FMath::Min(First,Second):First;}
+ return First;
+}
 FString DateOf(const FSource& In,int32 Day)
 {
  return Day<=0?FString(TEXT("UNDATED")):S47Game::DateLine(In.Day1+FTimespan::FromDays(FMath::Min(Day,36500)-1));
@@ -467,6 +476,8 @@ bool SelfTest(TArray<FString>& Lines)
    &&Open[3].Mid==TEXT("UNKNOWN 2")&&Inside.Num()==4&&Second.Num()==4&&Second[2].Do==TEXT("name:2")&&Second[3].Do==TEXT("out:2:3")&&Far.Num()==2&&Far[0].Do.IsEmpty()&&At.Entries[Open[1].Entry].NameSuggest==TEXT("Big head, bare feet"),
    TEXT("slice 3: at the binder a file chosen shows its name and what it can be filed as one with, and what can come out again; away from it nothing can be done"));
  }
+ Check(PageAfterDo(TEXT("merge:3:1"),true)==1&&PageAfterDo(TEXT("merge:1:3"),true)==1&&PageAfterDo(TEXT("merge:3:1"),false)==3&&PageAfterDo(TEXT("name:2"),true)==2&&PageAfterDo(TEXT("out:1:3"),true)==1
+  &&PageAfterDo(TEXT("nothing"),true)==0,TEXT("slice 3: the slip of a filing as one goes on the page of the file that stands (the lower number), from either page; a name's on its own"));
  Check(Lint().IsEmpty(),TEXT("the binder's own words keep to Freeform's spoiler limits"));
  if(const FString Why=Lint();!Why.IsEmpty())Lines.Add(TEXT("     ")+Why);
  return bOk;

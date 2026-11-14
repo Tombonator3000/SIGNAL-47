@@ -177,9 +177,9 @@ void SS47Binder::Perform(const FString& Do)
  if(!OnDo)return;
  const S47Binder::FEntry* Page=Shown();
  const FString Typed=NameBox.IsValid()?NameBox->GetText().ToString():(Page?Page->NameNow:FString());
- FString Words;OnDo(Do,Typed.IsEmpty()&&Page?Page->NameSuggest:Typed,Words);
- // the file it is now (a number filed in another is in the lower one): the first number in the Do
- int32 Number=0;{FString Rest;if(Do.Split(TEXT(":"),nullptr,&Rest)){FString First=Rest;Rest.Split(TEXT(":"),&First,nullptr);Number=FCString::Atoi(*First);}}
+ FString Words;const bool bDone=OnDo(Do,Typed.IsEmpty()&&Page?Page->NameSuggest:Typed,Words);
+ // the file it is now: two filed as one stand in the lower number, from whichever page it was done (S47Binder::PageAfterDo)
+ const int32 Number=S47Binder::PageAfterDo(Do,bDone);
  const FString Key=Number>0?S47Binder::UnknownKey(Number):(Page?Page->Key:FString());
  Where->Pick=Key;Where->Page=0;Where->Note=Words;Where->NoteKey=Key;
  Refresh();
