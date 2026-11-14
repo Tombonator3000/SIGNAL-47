@@ -34,6 +34,7 @@
 #include "S47Omen.h"
 #include "S47OpenLand.h"
 #include "S47Places.h"
+#include "S47LandPlaceFixes.h"
 #include "S47Radio.h"
 #include "S47Rhythm.h"
 #include "S47WeekCase.h"
@@ -3079,6 +3080,8 @@ void FS47Happenings::PlaceSites()
  const FString Area=M->Web->Area();
  const bool bLand=Area==TEXT("road")||Area==TEXT("diner");
  TSet<FString> Want;
+ // LAND-PLACES-FIXES-20261114: a ring laid round the cairn is where the cairn stands today, if it has drifted since
+ for(FSite& S:Sites)if(S.Kind==TEXT("cairnring"))S47LandPlaceFixes::Follow(M,S.Place,S.X,S.Z);
  for(const FSite& S:Sites)
  {
   FVector At;if(!WorldOf(S.X,S.Z,At))continue;
@@ -3132,7 +3135,16 @@ void FS47Happenings::PlaceSites()
   else if(S.Kind==TEXT("missing"))Show(TEXT("pickup"),At,S.Yaw);
   else if(S.Kind==TEXT("tracks"))Show(TEXT("tracks"),At,S.Yaw);
   // NIGHT31-PLACES-20261114: stones laid in a ring round the cairn, dead birds round the trough.
-  else if(S.Kind==TEXT("cairnring"))Show(TEXT("cairnring"),At,S.Yaw);
+  else if(S.Kind==TEXT("cairnring"))
+  {
+   Show(TEXT("cairnring"),At,S.Yaw);
+   // LAND-PLACES-FIXES-20261114: each stone on the ground under itself, not on the middle's height (on a slope they floated or sank)
+   if(FProp* Ring=Prop(TEXT("cairnring")))for(FProp::FPart& Pt:Ring->Parts)if(UStaticMeshComponent* C=Pt.C.Get())
+   {
+    const FVector2D On=S47LandPlaceFixes::StoneAt(FVector2D(S.X,S.Z),S.Yaw,Pt.At);FVector Under;
+    if(WorldOf(On.X,On.Y,Under))C->SetWorldLocation(S47Three::ToUE(Under+FVector(0,Pt.At.Y,0)));
+   }
+  }
   else if(S.Kind==TEXT("deadbirds"))Show(TEXT("deadbirds"),At,S.Yaw);
   // GLIMPSE-ROAD-20261109: the prints going off the shoulder where something crossed (S.Yaw: along them, away from the road).
   else if(S.Kind==TEXT("roadtracks"))Show(S.Variant==TEXT("low")?TEXT("roadtracks_low"):TEXT("roadtracks_tall"),At,S.Yaw);
