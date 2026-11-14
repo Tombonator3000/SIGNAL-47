@@ -266,15 +266,20 @@ bool FS47Calm::SelfTest(TArray<FString>& Lines)
 		Check(!TubeWearMay(7, 0, true, true, false) && TubeWearMay(8, 0, true, true, false) && !TubeWearMay(1, 0, true, true, false) && !TubeWearMay(9, 1, true, true, false)
 			&& !TubeWearMay(9, 0, false, true, false) && !TubeWearMay(9, 0, true, false, false) && !TubeWearMay(9, 0, true, true, true),
 			TEXT("a tube burns out only from week 2 (never night 1), one at a time, with one left to go, in the player's sight, never on a Story night"));
-		int32 Flashes = 0; float Prev = 0; bool bCalm = true; float CalmPrev = 2;
+		// REVIEW (14 Nov): the level curve against the lit tube it was (1 before T 0): a flash is a rise from under half to full, so a
+		// tube that only holds full and goes out shows none; the dip before it, the flash's length, and never more than three a second
+		int32 Flashes = 0; float Prev = 1.f; bool bCalm = true; float CalmPrev = 2; double FlashFrom = -1, FlashFor = 0, LastFlash = -9, MinGap = 9; float Dip = 1.f;
 		for (double T = 0; T < 2.; T += .005)
 		{
 			const float L = FS47TubeFlicker::SparkLevel(T, false);
-			Flashes += L > 0 && Prev <= 0; Prev = L;
+			if (L >= .9f && Prev < .5f) { ++Flashes; FlashFrom = T; MinGap = FMath::Min(MinGap, T - LastFlash); LastFlash = T; }
+			if (L >= .9f && FlashFrom >= 0) FlashFor = T - FlashFrom + .005;
+			if (T < .04) Dip = FMath::Min(Dip, L);
+			Prev = L;
 			const float C = FS47TubeFlicker::SparkLevel(T, true); bCalm &= C <= CalmPrev; CalmPrev = C;
 		}
-		Check(Flashes == 1 && bCalm && FS47TubeFlicker::SparkLevel(FS47TubeFlicker::SparkSecs(false), false) == 0 && FS47TubeFlicker::SparkLevel(FS47TubeFlicker::SparkSecs(true), true) == 0,
-			TEXT("the burned-out tube sparks once (one flash, under the three a second limit), fades only with calm flashes, then stays dark"));
+		Check(Flashes == 1 && MinGap >= 1. / 3. && Dip <= .15f && FlashFor > .06 && FlashFor < .1 && bCalm && FS47TubeFlicker::SparkLevel(FS47TubeFlicker::SparkSecs(false), false) == 0 && FS47TubeFlicker::SparkLevel(FS47TubeFlicker::SparkSecs(true), true) == 0,
+			TEXT("the burned-out tube dips, then flashes once to full for about 80 ms against its own light (one flash, under the three a second limit), fades only with calm flashes, then stays dark"));
 		Check(TubeRemarkHour(19.5) && TubeRemarkHour(22.9) && !TubeRemarkHour(18.9) && !TubeRemarkHour(23.5), TEXT("Dale's word on the new tube comes between 19:00 and 23:00"));
 	}
 	FS47Calm Bare(nullptr);
