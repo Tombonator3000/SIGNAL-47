@@ -41,7 +41,7 @@
 // takes its stage from what in it is consistent: a box where the two held different things counts for nothing, and the pencil there
 // is struck as any contradiction is. Only here can a stage drop. A file is FILED once it has a name and stands at HABITS; Dr. Ward
 // counts the near three filed each in a file of its own (correctly kept apart or correctly filed as one): one point for two, two for
-// all three (Tom, 13 November); a wrong one filed as one gives none for the kinds in it until it is taken out again. Saved, all
+// all three (Tom, 13 November); a wrong one filed as one gives none until it is taken out again (REVIEW 14 Nov: that file; a kind's own file elsewhere still counts). Saved, all
 // optional: "names": { "<number>": { "n": "...", "d": day } }; "merged": [ { "into": n, "from": n, "night": k, "was": stage,
 // "name": "...", "nameDay": d, "had": b } ]; "paid": [numbers]. A save from slices 1 and 2 has neither and reads as it was.
 namespace S47Dossier
@@ -292,7 +292,8 @@ public:
  S47Dossier::EKind KindOfFile(int32 Number) const;
  bool WrongMerge(int32 Number) const;
  bool Filed(int32 Number) const; // named, and at HABITS
- // Dr. Ward's count: of the near three, each with a file FILED that holds it alone, and none of it in a wrong one filed as one.
+ // Dr. Ward's count: of the near three, each with a file FILED that stands for it (KindOfFile); a wrong one filed as one counts for
+ // nothing itself, and holds back no kind that has a file of its own elsewhere (REVIEW 14 Nov).
  int32 KindsFiled() const;
  bool Paid(int32 Number) const; // the field allowance for a file FILED, once (FS47FreeformSession::DossierPayFiled)
  void MarkPaid(int32 Number);

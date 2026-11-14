@@ -1000,16 +1000,15 @@ bool FS47Dossier::Filed(int32 Number) const
 int32 FS47Dossier::KindsFiled() const
 {
  // Tom, 13 November: the near three, each FILED in a file of its own; a wrong one filed as one counts for none of the kinds in it.
- TSet<int32> Blocked,Got;
+ // REVIEW (14 Nov): only that file counts for nothing (KindOfFile is None for it): a kind with a file of its own, correctly kept,
+ // still counts. After 08:00 a wrong filing can no longer be taken out, and it must not hold the kinds back for the rest of the game.
+ TSet<int32> Got;
  for(int32 Number=1;Number<=Sequence.Num();++Number)
  {
-  if(WrongMerge(Number))for(const FTag& One:Kept)if(IsIn(One,Number-1))Blocked.Add(int32(One.Kind));
   const S47Dossier::EKind Kind=KindOfFile(Number);
   if(Filed(Number)&&Kind!=S47Dossier::EKind::None&&!S47Dossier::StopsAtMarks(Kind))Got.Add(int32(Kind));
  }
- int32 Count=0;
- for(const int32 Kind:Got)Count+=Blocked.Contains(Kind)?0:1;
- return Count;
+ return Got.Num();
 }
 bool FS47Dossier::Paid(int32 Number) const{return PaidFiles.Contains(Number-1);}
 void FS47Dossier::MarkPaid(int32 Number){if(Sequence.IsValidIndex(Number-1))PaidFiles.Add(Number-1);}
@@ -1549,12 +1548,13 @@ bool SelfTest(TArray<FString>& Lines)
   // a fourth file, of the low one, filed as one with the small ones' (it holds nothing their boxes contradict: HABITS stands, nothing says so)
   D.Tag(TEXT("ward-low-counter"),Low,Geiger,9,1);
   const bool bFourth=D.Order().Num()==4&&D.FileOf(TEXT("ward-low-counter"))==4;
-  const bool bWrong=D.Merge(1,4,9)&&D.WrongMerge(1)&&D.StageOfFile(1)==EStage::Habits&&D.Filed(1)&&D.KindsFiled()==1&&WardPoints(D.KindsFiled())==0;
+  // (REVIEW 14 Nov: the wrong one counts for nothing; the low one's own file, kept apart, still counts: two, one point, also after 08:00)
+  const bool bWrong=D.Merge(1,4,9)&&D.WrongMerge(1)&&D.StageOfFile(1)==EStage::Habits&&D.Filed(1)&&D.KindsFiled()==2&&WardPoints(D.KindsFiled())==1&&!D.CanTakeOut(1,4,10);
   // the far two never count
   FS47Dossier Far;for(int32 Night=2;Night<=6;++Night)for(const EType T:{Shape,Tape,Lamp})Far.Tag(FString::Printf(TEXT("far-%d-%d"),Night,int32(T)),Silver,T,Night);
   Far.SetName(1,TEXT("Too still"),7);
   Check(bFourth&&bWrong&&D.TakeOut(1,4,9)&&D.KindsFiled()==3&&WardPoints(D.KindsFiled())==2&&Far.StageOfFile(1)==EStage::Marks&&!Far.Filed(1)&&Far.KindsFiled()==0,
-   TEXT("slice 3: a wrong one filed as one gives no point for the kinds in it until it is out again; the far two are never filed"));
+   TEXT("slice 3: a wrong one filed as one counts for nothing until it is out again, and holds back no kind that has a file of its own; the far two are never filed"));
  }
  { // REVIEW (14 Nov): a find of another of the near three that joins a file by place and night, with nothing the player did, does
    // not take the file from Dr. Ward's count: the file stands for what most of it is
