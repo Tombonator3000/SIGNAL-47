@@ -212,6 +212,12 @@ namespace S47TownDayLocal
   Rows = MoveTemp(Out);
  }
  uint32 Key(int32 Seed, int32 Day, const FString& Who) { return FCrc::StrCrc32(*Who) ^ (uint32(Seed) * 2654435761u) ^ (uint32(Day + 7) * 40503u) ^ 0x54444159u; }
+ // REVIEW (14 Nov): the cook pours through the hatch only once there: at the range or the hatch (a diner spot, not out the back),
+ // arrived and not on the way (Counter), and not away
+ bool CookPours(const FString& Target, const FString& Arrived, bool bOnTheWay, bool bAway)
+ {
+  return !bAway && S47TownDay::PlaceOf(Target) == TEXT("diner") && Target != TEXT("diner.back") && Arrived == Target && !bOnTheWay;
+ }
 
  // ---- the running game ----
  struct FWalker
@@ -456,7 +462,7 @@ FString S47TownDay::Counter()
  if (bWaitress) return TEXT("waitress");
  const FWalker* Cook = Walkers.Find(TEXT("cook"));
  // The cook at the range or the hatch pours through it; out the back on her break, or not in yet, nobody does.
- return Cook && PlaceOf(Cook->Target) == TEXT("diner") && Cook->Target != TEXT("diner.back") && !FS47Townsfolk::AwayNow(TEXT("cook")) ? TEXT("cook") : TEXT("");
+ return Cook && CookPours(Cook->Target, Cook->Arrived, !Cook->Path.IsEmpty(), FS47Townsfolk::AwayNow(TEXT("cook"))) ? TEXT("cook") : TEXT("");
 }
 const TArray<S47TownDay::FSpot>& S47TownDay::Spots() { return S47TownDayLocal::AllSpots; }
 FString S47TownDay::HomeOf(const FString& Who) { return S47TownDayLocal::HouseOf(S47TownDayLocal::DayKey(Who)); }
@@ -983,7 +989,25 @@ bool S47TownDay::SelfTest(TArray<FString>& Lines)
   }
   bEloy &= EloyAt(10) == TEXT("baca") && EloyAt(12.5) == TEXT("feed") && EloyAt(23) == TEXT("baca") && EloyAt(3) == TEXT("baca");
   Check(bEvery, TEXT("Earl, the bench woman, the waitress, the cook, Eloy Baca and Dale (a voice) have a place for every quarter hour 06 to 24") + (Bad.IsEmpty() ? FString() : TEXT(" (") + Bad + TEXT(")")));
-  Check(bOne && bEarl, TEXT("never two places at once: a body drawn where its plan has it is never at home too; Earl in the studio's chair only midnight to four"));
+  // REVIEW (14 Nov, B5): falsifiable: every spot a body can be drawn at, of every spot there is, is no home spot; and the plans do
+  // draw each of the two who have a body and do put each at home awake, so the check above has something to hold
+  for (const FSpot& Sp : AllSpots) for (const TCHAR* Who : { TEXT("bench_woman"), TEXT("mesa_waitress"), TEXT("earl") })
+   if (BodyAt(Who, Sp.Id) && (HomeAwake(Sp.Id) || FString(Sp.Place) == TEXT("home"))) bOne = false;
+  for (const TCHAR* Who : { TEXT("bench_woman"), TEXT("mesa_waitress") })
+  {
+   bool bDrawn = false, bHome = false;
+   for (int32 Seed : Seeds) for (int32 Day = 0; Day < 14; ++Day)
+   {
+    const TArray<FRow> Rows = Plan(Seed, Day, Day % 7, Who);
+    for (double H = 0; H < 24; H += .25) { const FString S = SpotIn(Rows, H); bDrawn |= BodyAt(Who, S); bHome |= HomeAwake(S); }
+   }
+   if (!bDrawn || !bHome) { bOne = false; Bad = FString::Printf(TEXT("%s never %s"), Who, bDrawn ? TEXT("at home awake") : TEXT("drawn")); }
+  }
+  Check(bOne && bEarl, TEXT("never two places at once: a body drawn where its plan has it is never at home too (and each is both, at their hours); Earl in the studio's chair only midnight to four"));
+  // REVIEW (14 Nov): coffee through the hatch only once the cook is there, not while he walks in
+  Check(CookPours(TEXT("diner.range"), TEXT("diner.range"), false, false) && !CookPours(TEXT("diner.range"), TEXT("home.cook"), true, false) && !CookPours(TEXT("diner.range"), TEXT("diner.range"), true, false)
+   && !CookPours(TEXT("diner.back"), TEXT("diner.back"), false, false) && !CookPours(TEXT("diner.range"), TEXT("diner.range"), false, true),
+   TEXT("the cook pours at the hatch only when he has got there: not on the way in, not out the back, not away"));
   Check(bEloy, TEXT("Eloy Baca on his porch in the morning and at the Feed & Seed counter at noon, inside its hours, home again by half past one"));
   Check(bWeather && bDry && bWet, TEXT("the bench woman is on her bench on a dry evening and at home in a shower or blowing sand (both seen in these seeds)"));
   Check(HeldShow(true, false, true) && !HeldShow(false, true, true) && !HeldShow(true, false, false) && HeldShow(false, true, false),

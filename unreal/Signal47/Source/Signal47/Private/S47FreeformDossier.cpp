@@ -1,6 +1,9 @@
 #include "S47Freeform.h"
 #include "S47AlienKinds.h"
 #include "S47AnimalWarn.h"
+#include "S47Attention.h"
+#include "S47FieldRadio.h"
+#include "S47Taken.h"
 #include "S47FarmSite.h"
 #include "S47RuleBreak.h"
 #include "S47Tape.h"
@@ -122,9 +125,16 @@ void FS47FreeformSession::DossierTasks(TArray<FS47Task>& Out) const
 }
 void FS47FreeformSession::LoadDossier(const S47J::FObj& Saved)
 {
- Unknowns.Reset();HabitThought.Reset();HabitLastCheck=-1e9; // slice 3: the habits come to mind afresh after a Continue
+ Unknowns.Reset();HabitThought.Reset();HabitLastCheck=-1e9;
  Unknowns.SetHabitsFrom(M&&M->Rhythm?DossierHabitsFrom(M->Rhythm->Data()):1); // slice 2: not saved; the rhythm's curve
  if(!Saved.IsValid())return;
+ // slice 3 (REVIEW 14 Nov): the habits that came to mind tonight, so that a Continue the same night does not bring them again
+ // ("habitCame": number, night, ...; absent in an older save: none)
+ {
+  const TArray<double> Came=S47J::Nums(Saved,TEXT("habitCame"));
+  for(int32 At=0;At+1<Came.Num()&&HabitThought.Num()<64;At+=2)
+   if(FMath::IsFinite(Came[At])&&FMath::IsFinite(Came[At+1])&&Came[At]>=1&&Came[At]<=64)HabitThought.Add(int32(Came[At]),int32(Came[At+1]));
+ }
  // LOOP-DOSSIER-GIVES-20261113: a file at MARKS from before the extra bearing was kept gets its one now, from the save's own night
  if(const S47J::FObj Record=S47J::Obj(Saved,TEXT("dossier"));Record.IsValid()){Unknowns.Load(Record);Unknowns.GrantMissing(DayNumber);return;}
  // A save from before the dossier: what it kept says which one it was for some of it (FS47Dossier::Rebuild). The same every time.
@@ -140,6 +150,11 @@ void FS47FreeformSession::SaveDossier(const S47J::FObj& Record) const
 {
  // Nothing tagged writes nothing: an older save reads the same, and is rebuilt the same the next time.
  if(!Unknowns.IsEmpty())S47J::Set(Record,TEXT("dossier"),Unknowns.Save());
+ // slice 3 (REVIEW 14 Nov): tonight's habits that have come to mind (LoadDossier)
+ TArray<double> Came;
+ const int32 Tonight=NightOf(Clock());
+ for(const TPair<int32,int32>& One:HabitThought)if(One.Value==Tonight){Came.Add(One.Key);Came.Add(One.Value);}
+ if(!Came.IsEmpty())S47J::Set(Record,TEXT("habitCame"),Came);
 }
 void FS47FreeformSession::BinderUnknowns(S47Binder::FSource& Src) const
 {
@@ -155,11 +170,11 @@ void FS47FreeformSession::BinderUnknowns(S47Binder::FSource& Src) const
    S47Dossier::EKind Kind=S47Dossier::EKind::None;int32 Night=0;S47Dossier::ClaimKind(ClaimId,Kind,Night);
    const FS47FreeformDirector::FPhotoClaim* Claim=Director?Director->PhotoClaims().FindByPredicate([&ClaimId](const FS47FreeformDirector::FPhotoClaim& One){return One.Id==ClaimId;}):nullptr;
    PhotoLines.Add(Claim&&!Claim->PhotoId.IsEmpty()
-    ?FString::Printf(TEXT("DAY %02d / ORIGINAL %s / %s"),Night,*Claim->PhotoId,Claim->bPaid?TEXT("REGISTERED AT OPS"):TEXT("NOT YET REGISTERED AT OPS"))
-    :FString::Printf(TEXT("DAY %02d / THE FRAME IS NOT IN THE ALBUM"),Night));
+    ?FString::Printf(TEXT("DAY %02d / ORIGINAL %s / %s"),S47Dossier::ShownNight(Night),*Claim->PhotoId,Claim->bPaid?TEXT("REGISTERED AT OPS"):TEXT("NOT YET REGISTERED AT OPS"))
+    :FString::Printf(TEXT("DAY %02d / THE FRAME IS NOT IN THE ALBUM"),S47Dossier::ShownNight(Night)));
   }
   S47Binder::FUnknownIn Sheet;Sheet.Number=File.Number;Sheet.Title=File.Title;Sheet.Stage=File.Stage;Sheet.Opened=File.Opened;Sheet.Latest=File.Latest;Sheet.bAtMarks=File.bAtMarks;
-  Sheet.Body=S47Dossier::Sheet(File,PhotoLines);
+  Sheet.Body=S47Dossier::Sheet(File,PhotoLines,Src.bAtBinder); // REVIEW (14 Nov): the reading copy says where a name is written
   // slice 3: its name and the suggestion; the files it could be filed as one with (those kept beside it first); what can come out again
   Sheet.Name=File.Name;Sheet.Suggest=S47Dossier::Suggest(File);Sheet.bFiled=File.bFiled;
   for(const bool bBeside:{true,false})for(const S47Dossier::FFile& Other:All)
@@ -183,8 +198,8 @@ bool FS47FreeformSession::DossierName(int32 Number,const FString& Typed,FString&
  Unknowns.SetName(Number,Clean,DayNumber);
  Words=S47Dossier::NameSlip(Unknowns.TitleOf(Number));
  const int32 Paid=DossierPayFiled();
- if(Paid>0)Words+=FString::Printf(TEXT(" FILED UNDER ITS NAME. $%d CREDITED."),Paid);
- else if(Unknowns.Filed(Number))Words+=TEXT(" FILED UNDER ITS NAME.");
+ if(Unknowns.Filed(Number))Words+=TEXT(" ")+S47Dossier::FiledWords(); // REVIEW (14 Nov, felt): it goes to Dr. Ward's review
+ if(Paid>0)Words+=FString::Printf(TEXT(" $%d CREDITED."),Paid);
  UE_LOG(LogTemp,Display,TEXT("S47: dossier: file %d named '%s' (filed %d, paid %d)"),Number,*Clean,Unknowns.Filed(Number)?1:0,Paid);
  return true;
 }
@@ -198,7 +213,8 @@ bool FS47FreeformSession::DossierFileAsOne(int32 A,int32 B,FString& Words,bool b
  UE_LOG(LogTemp,Display,TEXT("S47: dossier: file %d filed in file %d as one, night %d (%s; stage %s)"),From,Into,Night,Unknowns.WrongMerge(Into)?TEXT("not one kind"):TEXT("one kind"),S47Dossier::StageWord(Unknowns.StageOfFile(Into)));
  Words=S47Dossier::MergeSlip(Into,From);
  const int32 Paid=DossierPayFiled();
- if(Paid>0)Words+=FString::Printf(TEXT(" FILED UNDER ITS NAME. $%d CREDITED."),Paid);
+ if(Unknowns.Filed(Into))Words+=TEXT(" ")+S47Dossier::FiledWords();
+ if(Paid>0)Words+=FString::Printf(TEXT(" $%d CREDITED."),Paid);
  return true;
 }
 bool FS47FreeformSession::DossierTakeOut(int32 Into,int32 From,FString& Words,bool bAt)
@@ -236,6 +252,7 @@ void FS47FreeformSession::DossierHabitStep()
  if(!M||!RulesLive()||Unknowns.IsEmpty()||FMath::Abs(Clock()-HabitLastCheck)<60.)return;
  HabitLastCheck=Clock();
  if(S47SaroSave::InStation(M))return;
+ if(!HabitHourMay(Held(),(FarmSite&&FarmSite->VisitWantsGround())||(Attention&&Attention->Visiting()),M->FieldRadio.IsValid()&&M->FieldRadio->PresenceHunting(),Taken&&Taken->Busy()))return;
  const int32 Night=NightOf(Clock());int32 Hour=-1;
  const int32 Number=Unknowns.HabitHourFile(Clock(),HabitThought,Night,Hour);
  if(Number>0&&S47Thoughts::ThinkLine(M,S47Dossier::HabitHourThought(Hour),TEXT("habit-hour")))HabitThought.Add(Number,Night);
@@ -458,7 +475,7 @@ bool FS47FreeformSession::DossierSelfTest(TArray<FString>& Lines)
    &&!At.DossierAct(TEXT("merge:1:2"),FString(),Words)&&At.Unknowns.IsFile(2);
   const bool bRefused=!At.DossierName(1,TEXT("Grey one"),Words,true)&&At.Unknowns.NameOf(1).IsEmpty()&&!Words.IsEmpty();
   const bool bNamed=At.DossierName(1,TEXT(" Big   head "),Words,true)&&At.Unknowns.NameOf(1)==TEXT("Big head")&&Words.StartsWith(TEXT("WRITTEN ON THE FILE: UNKNOWN 1 (BIG HEAD)."))
-   &&Words.Contains(FString::Printf(TEXT("$%d CREDITED"),int32(FiledAllowance)))&&At.Unknowns.Paid(1)&&At.Unknowns.Filed(1);
+   &&Words.Contains(FString::Printf(TEXT("$%d CREDITED"),int32(FiledAllowance)))&&Words.Contains(S47Dossier::FiledWords())&&At.Unknowns.Paid(1)&&At.Unknowns.Filed(1);
   const bool bOnce=At.DossierName(1,TEXT("Big head again"),Words,true)&&!Words.Contains(TEXT("CREDITED"))&&At.DossierPayFiled()==0;
   const S47Binder::FSource Src=At.BinderSource();
   TArray<FS47Task> NoteLines;At.DossierTasks(NoteLines);
@@ -476,6 +493,23 @@ bool FS47FreeformSession::DossierSelfTest(TArray<FString>& Lines)
   Check(bMerged&&bBack&&bOut,TEXT("slice 3: two filed as one at the binder (a wrong one too, never said), kept through a Continue, out again that night; Dr. Ward's count follows"));
   Back.Stop();
  }
+ {
+  // the lamp's edge is taken every frame: raised on a frame the visit did not reach, it is not "raised" on the next that does
+  bool bWas=false;
+  const bool bFirst=FS47FarmSite::LampRaised(true,bWas),bLater=FS47FarmSite::LampRaised(true,bWas),bOff=FS47FarmSite::LampRaised(false,bWas),bAgain=FS47FarmSite::LampRaised(true,bWas);
+  Check(bFirst&&!bLater&&!bOff&&bAgain,TEXT("slice 3 (review): the lamp counts as raised near one only on the frame it went on, whatever frames the visit skipped"));
+ }
+ { // the habits that came to mind tonight do not come again after a Continue the same night; an older night's are let go
+  FS47FreeformSession Was(nullptr);Was.Begin(nullptr);
+  Was.Unknowns.Tag(TEXT("hc-a"),S47Dossier::EKind::Small,S47Dossier::EType::Shape,1);
+  const int32 Tonight=NightOf(Was.Clock());Was.HabitThought.Add(1,Tonight);Was.HabitThought.Add(2,Tonight-1);
+  const S47J::FObj Kept=S47J::Read(S47J::Write(Was.Save()));Was.Stop();
+  FS47FreeformSession Back(nullptr);Back.Begin(Kept);
+  Check(Back.HabitThought.Num()==1&&Back.HabitThought.FindRef(1)==Tonight,TEXT("slice 3 (review): a habit that came to mind tonight is kept through a Continue the same night"));
+  Back.Stop();
+ }
+ Check(HabitHourMay(false,false,false,false)&&!HabitHourMay(true,false,false,false)&&!HabitHourMay(false,true,false,false)&&!HabitHourMay(false,false,true,false)&&!HabitHourMay(false,false,false,true),
+  TEXT("slice 3 (review): the hour's habit never comes to mind while the night is held, a visit is on, something hunts on the set or a light is taking someone"));
  { // EVIDENCE-DOSSIER slice 2 (M7): the pacing against the week gates and the tiers, from director.json itself
   FS47Rhythm Rules(nullptr);Rules.LoadRules();
   const FS47RhythmData& R=Rules.Data();

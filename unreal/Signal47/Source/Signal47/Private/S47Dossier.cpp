@@ -123,8 +123,11 @@ namespace Slice3
  const TCHAR* const WhyWords=TEXT("NOT WRITTEN: THE BINDER KEEPS PLAIN WORKING NAMES. TRY OTHER WORDS.");
  // the sheet's lines (Sheet)
  const TCHAR* const SheetName=TEXT("WORKING NAME  ");
- const TCHAR* const SheetFiled=TEXT("FILED UNDER ITS NAME AT HABITS.");
+ // REVIEW (14 Nov, felt): that a file filed goes to Dr. Ward's review, and nothing more (never whether it counts)
+ const TCHAR* const SheetFiled=TEXT("FILED UNDER ITS NAME AT HABITS. IT GOES TO DR. WARD'S REVIEW.");
+ const TCHAR* const FiledSlip=TEXT("FILED UNDER ITS NAME. IT GOES TO DR. WARD'S REVIEW.");
  const TCHAR* const SheetUnnamed=TEXT("AT HABITS. A NAME WRITTEN ON IT HERE FILES IT.");
+ const TCHAR* const SheetUnnamedAway=TEXT("AT HABITS. A NAME WRITTEN ON IT AT THE BINDER IN THE RECORDS ROOM FILES IT."); // the reading copy
 }
 const TCHAR* KindId(EKind Kind){return Tables::Valid(Kind)?Tables::KindIds[int32(Kind)]:TEXT("");}
 const TCHAR* TypeId(EType Type){return Tables::Valid(Type)?Tables::TypeIds[int32(Type)]:TEXT("");}
@@ -287,18 +290,24 @@ FString BesideWords(const FFile& A,const FFile& B)
  return Out;
 }
 FString BesideLine(int32 Number){return FString::Printf(TEXT("KEPT BESIDE UNKNOWN %d."),Number);}
-FString Sheet(const FFile& File,const TArray<FString>& PhotoLines)
+int32 ShownNight(int32 Night)
+{
+ int32 N=FMath::Clamp(Night,0,Tables::MaxDay*2);
+ while(FString::FromInt(N).Contains(TEXT("47")))++N;
+ return N;
+}
+FString Sheet(const FFile& File,const TArray<FString>& PhotoLines,bool bAtBinder)
 {
  // slice 3: the player's own name for it, typed as he wrote it, and whether that files it
  FString Out=File.Name.IsEmpty()?FString():FString(Slice3::SheetName)+File.Name.ToUpper()+TEXT("\n");
  Out+=FString::Printf(TEXT("STAGE     %s\n"),*File.Stage);
  if(!File.Gave.IsEmpty())Out+=TEXT("          ")+File.Gave+TEXT("\n"); // LOOP-DOSSIER-GIVES-20261113: what the stage gave, under it
- if(File.Stage==StageWord(EStage::Habits))Out+=FString(TEXT("          "))+(File.bFiled?Slice3::SheetFiled:Slice3::SheetUnnamed)+TEXT("\n");
- Out+=FString::Printf(TEXT("NIGHTS    %d / FIRST DAY %02d / LAST DAY %02d\n"),File.Nights,File.Opened,File.Latest);
+ if(File.Stage==StageWord(EStage::Habits))Out+=FString(TEXT("          "))+(File.bFiled?Slice3::SheetFiled:bAtBinder?Slice3::SheetUnnamed:Slice3::SheetUnnamedAway)+TEXT("\n");
+ Out+=FString::Printf(TEXT("NIGHTS    %d / FIRST DAY %02d / LAST DAY %02d\n"),ShownNight(File.Nights),ShownNight(File.Opened),ShownNight(File.Latest));
  for(const FBox& One:File.Boxes)
  {
   const FString Label=One.Label+FString::ChrN(FMath::Max(1,10-One.Label.Len()),TEXT(' '));
-  Out+=TEXT("\n")+Label+(One.bFilled?FString::Printf(TEXT("%s / DAY %02d"),*One.How.ToUpper(),One.Day):FString(TEXT("NOTHING KEPT")));
+  Out+=TEXT("\n")+Label+(One.bFilled?FString::Printf(TEXT("%s / DAY %02d"),*One.How.ToUpper(),ShownNight(One.Day)):FString(TEXT("NOTHING KEPT")));
  }
  Out+=TEXT("\n\nPHOTOGRAPHS");
  if(PhotoLines.IsEmpty())Out+=TEXT("\nNONE IN THE ALBUM.");
@@ -315,7 +324,7 @@ FString Sheet(const FFile& File,const TArray<FString>& PhotoLines)
  for(const int32 Other:File.Beside)Out+=TEXT("\n")+BesideLine(Other);
  // slice 3: what was filed in it as one, and on which night
  if(!File.Merged.IsEmpty())Out+=TEXT("\n");
- for(int32 At=0;At<File.Merged.Num();++At)Out+=TEXT("\n")+FString::Printf(TEXT("FILED AS ONE WITH IT: UNKNOWN %d / NIGHT %02d"),File.Merged[At],File.MergedNight.IsValidIndex(At)?File.MergedNight[At]:0);
+ for(int32 At=0;At<File.Merged.Num();++At)Out+=TEXT("\n")+FString::Printf(TEXT("FILED AS ONE WITH IT: UNKNOWN %d / NIGHT %02d"),File.Merged[At],ShownNight(File.MergedNight.IsValidIndex(At)?File.MergedNight[At]:0));
  if(!File.Next.IsEmpty())Out+=TEXT("\n\n")+File.Next;
  Out+=TEXT("\n\nKEPT AS THE NOTEBOOK HAS IT.");
  return Out;
@@ -356,7 +365,7 @@ TArray<FString> Words()
  for(const FString& W:SuggestWords())Out.Add(W);
  for(int32 H=0;H<24;++H)Out.Add(HabitHourThought(H));
  for(const Slice3::FWord& W:Slice3::LampThoughts)Out.Add(W.Said);
- for(const TCHAR* W:{Slice3::NameRowWords,Slice3::Away,Slice3::Hint,Slice3::WhyShort,Slice3::WhyLetters,Slice3::WhyWords,Slice3::SheetName,Slice3::SheetFiled,Slice3::SheetUnnamed})Out.Add(W);
+ for(const TCHAR* W:{Slice3::NameRowWords,Slice3::Away,Slice3::Hint,Slice3::WhyShort,Slice3::WhyLetters,Slice3::WhyWords,Slice3::SheetName,Slice3::SheetFiled,Slice3::SheetUnnamed,Slice3::SheetUnnamedAway,Slice3::FiledSlip})Out.Add(W);
  for(int32 N=1;N<=MaxFiles;++N){Out.Add(MergeRow(N,true));Out.Add(MergeRow(N,false));Out.Add(TakeOutRow(N));Out.Add(MergeSlip(1,N));Out.Add(TakeOutSlip(1,N));}
  Out.Add(NameSlip(Titled(3,TEXT("Bare feet"))));Out.Add(MergedLine(TArray<int32>{2,MaxFiles}));
  {
@@ -364,7 +373,10 @@ TArray<FString> Words()
   Filed.Merged={3};Filed.MergedNight={12};Filed.Boxes.SetNum(TypeN);
   Out.Add(Sheet(Filed,TArray<FString>()));
   Out.Add(StampOf(Filed.Named,EType::Ground,false,false,EStage::Habits));Out.Add(HoursLineOf(Filed.Named,TArray<int32>{23,1}));
-  Filed.bFiled=false;Out.Add(Sheet(Filed,TArray<FString>()));
+  Filed.bFiled=false;Out.Add(Sheet(Filed,TArray<FString>()));Out.Add(Sheet(Filed,TArray<FString>(),false));
+  // REVIEW (14 Nov): a long game's nights, every way the sheet prints one (Lint: no number reads 47)
+  Filed.Nights=47;Filed.Opened=47;Filed.Latest=147;Filed.MergedNight={470};Filed.Boxes[0].bFilled=true;Filed.Boxes[0].How=HowSeen;Filed.Boxes[0].Day=247;
+  Out.Add(Sheet(Filed,TArray<FString>()));
  }
  return Out;
 }
@@ -540,8 +552,16 @@ TArray<S47Dossier::FFile> FS47Dossier::Files() const
   File.bAtMarks=int32(Stage)>=int32(S47Dossier::EStage::Marks);
   {
    // The extra bearing is the kind's, once: its first file says what became of it; another of its files only that it listens.
+   // REVIEW (14 Nov): a kind's first file filed as one in a lower file of another kind takes it along: the survivor says it (one
+   // still to come first)
    double WhereX=0,WhereZ=0;
-   const int32 Extra=FirstFileOf(Kind)==At?ExtraState(Kind):0;
+   int32 Extra=0;
+   for(int32 Part=0;Part<Sequence.Num();++Part)
+   {
+    if(Root(Part)!=At||FirstFileOf(Sequence[Part])!=Part)continue;
+    const int32 State=ExtraState(Sequence[Part]);
+    if(State==1)Extra=1;else if(State==2&&Extra==0)Extra=2;
+   }
    File.Gave=S47Dossier::Gave(Kind,Stage,FirstWhereOfFile(At+1,WhereX,WhereZ),Extra,!HoursOfFile(At+1).IsEmpty());
   }
   File.Boxes.SetNum(Tb::TypeN);
@@ -921,6 +941,9 @@ bool FS47Dossier::Merge(int32 A,int32 B,int32 Night)
  if(!Apply(One))return false;
  // the survivor keeps its own name, or takes the other's when it had none
  if(!One.bHadName){if(const FNamed* Other=Names.Find(One.From)){const FNamed Took=*Other;Names.Add(One.Into,Took);}}
+ // REVIEW (14 Nov): the allowance paid for the one filed in it is paid for the survivor too: filing a paid file in an unpaid one,
+ // taking it out and doing it again with the next is no way to be paid twice for the same work
+ if(PaidFiles.Contains(One.From))PaidFiles.Add(One.Into);
  return true;
 }
 bool FS47Dossier::CanTakeOut(int32 Into,int32 From,int32 Night) const
@@ -933,11 +956,19 @@ bool FS47Dossier::TakeOut(int32 Into,int32 From,int32 Night)
  if(At==INDEX_NONE)return false;
  const FMerge Was=Merges[At];
  Merges.RemoveAt(At);
- if(Was.bHadName)Names.Add(Was.Into,Was.NameWas);else Names.Remove(Was.Into);
+ // REVIEW (14 Nov): the name the survivor took from the other goes back with it, but only while it is still that one: a name the
+ // player wrote on it after they were filed as one is his and stays (a file that had its own name kept it, and keeps what it has)
+ if(!Was.bHadName)
+ {
+  const FNamed* Now=Names.Find(Was.Into);const FNamed* Carried=Names.Find(Was.From);
+  if(Now&&Carried&&Now->Text==Carried->Text&&Now->Day==Carried->Day)Names.Remove(Was.Into);
+ }
  // what went in after it stays with the survivor; its stage is its own again, never below what it had before
  if(Reached.Num()<Sequence.Num())Reached.SetNumZeroed(Sequence.Num());
  Reached[Was.Into]=FMath::Max(Was.ReachedWas,int32(StageNow(Was.Into)));
  if(Reached.IsValidIndex(Was.From))Reached[Was.From]=FMath::Max(Reached[Was.From],int32(StageNow(Was.From)));
+ // REVIEW (14 Nov): paid while they were one, both have been paid for
+ if(PaidFiles.Contains(Was.Into))PaidFiles.Add(Was.From);
  return true;
 }
 S47Dossier::EStage FS47Dossier::StageConsistent(int32 File) const
@@ -961,15 +992,30 @@ S47Dossier::EStage FS47Dossier::StageConsistent(int32 File) const
  const S47Dossier::EStage Stage=S47Dossier::StageFor(Kind,Types.Num(),Nights.Num(),Types.Contains(int32(S47Dossier::EType::Lamp)),Latest,HabitsFrom);
  return Stage==S47Dossier::EStage::NoFile?S47Dossier::EStage::Outline:Stage; // a file it stays, whatever it holds
 }
+S47Dossier::EKind FS47Dossier::PartKind(int32 Part) const
+{
+ // REVIEW (14 Nov): what most of the finds that went in under this number are of; a tie, the one that opened it. By place and
+ // night a find of another of the near three can join a file without the player doing anything (Tag): that is no wrong filing.
+ namespace Tb=S47Dossier::Tables;
+ int32 Count[Tb::KindN]={};
+ for(const FTag& One:Kept)if(One.File==Part&&Tb::Valid(One.Kind))++Count[int32(One.Kind)];
+ S47Dossier::EKind Best=Sequence.IsValidIndex(Part)?Sequence[Part]:S47Dossier::EKind::None;
+ int32 Most=Tb::Valid(Best)?Count[int32(Best)]:0;
+ for(int32 K=0;K<Tb::KindN;++K)if(Count[K]>Most){Most=Count[K];Best=S47Dossier::EKind(K);}
+ return Most>0?Best:S47Dossier::EKind::None;
+}
 S47Dossier::EKind FS47Dossier::KindOfFile(int32 Number) const
 {
+ // the kind of each number in it as it was got (PartKind); two filed as one by the player that are of different kinds: none
  if(!IsFile(Number))return S47Dossier::EKind::None;
  S47Dossier::EKind Only=S47Dossier::EKind::None;
- for(const FTag& One:Kept)
+ for(int32 Part=0;Part<Sequence.Num();++Part)
  {
-  if(!IsIn(One,Number-1))continue;
-  if(Only==S47Dossier::EKind::None)Only=One.Kind;
-  else if(Only!=One.Kind)return S47Dossier::EKind::None;
+  if(Root(Part)!=Number-1)continue;
+  const S47Dossier::EKind Kind=PartKind(Part);
+  if(Kind==S47Dossier::EKind::None)continue;
+  if(Only==S47Dossier::EKind::None)Only=Kind;
+  else if(Only!=Kind)return S47Dossier::EKind::None;
  }
  return Only;
 }
@@ -985,16 +1031,15 @@ bool FS47Dossier::Filed(int32 Number) const
 int32 FS47Dossier::KindsFiled() const
 {
  // Tom, 13 November: the near three, each FILED in a file of its own; a wrong one filed as one counts for none of the kinds in it.
- TSet<int32> Blocked,Got;
+ // REVIEW (14 Nov): only that file counts for nothing (KindOfFile is None for it): a kind with a file of its own, correctly kept,
+ // still counts. After 08:00 a wrong filing can no longer be taken out, and it must not hold the kinds back for the rest of the game.
+ TSet<int32> Got;
  for(int32 Number=1;Number<=Sequence.Num();++Number)
  {
-  if(WrongMerge(Number))for(const FTag& One:Kept)if(IsIn(One,Number-1))Blocked.Add(int32(One.Kind));
   const S47Dossier::EKind Kind=KindOfFile(Number);
   if(Filed(Number)&&Kind!=S47Dossier::EKind::None&&!S47Dossier::StopsAtMarks(Kind))Got.Add(int32(Kind));
  }
- int32 Count=0;
- for(const int32 Kind:Got)Count+=Blocked.Contains(Kind)?0:1;
- return Count;
+ return Got.Num();
 }
 bool FS47Dossier::Paid(int32 Number) const{return PaidFiles.Contains(Number-1);}
 void FS47Dossier::MarkPaid(int32 Number){if(Sequence.IsValidIndex(Number-1))PaidFiles.Add(Number-1);}
@@ -1040,8 +1085,9 @@ bool CleanName(const FString& Typed,FString& Out,FString& Why)
  bool bAnyLetter=false;
  for(const TCHAR Ch:Out)bAnyLetter|=FChar::IsAlpha(Ch);
  if(!bAnyLetter){Why=WhyShort;Out.Reset();return false;}
- // the design's word check (Freeform's limits, no word for what they are)
- if(!LintWords(TArray<FString>{Out}).IsEmpty()){Why=WhyWords;Out.Reset();return false;}
+ // the design's word check (Freeform's limits, no word for what they are), on the name as typed and as the sheet and the slip print
+ // it, in capitals (REVIEW 14 Nov: "Mr c" printed "MR C", a standalone capital C)
+ if(!LintWords(TArray<FString>{Out,Out.ToUpper()}).IsEmpty()){Why=WhyWords;Out.Reset();return false;}
  return true;
 }
 FString Suggest(const FFile& File)
@@ -1128,6 +1174,7 @@ FString NameSlip(const FString& Title){return FString::Printf(TEXT("WRITTEN ON T
 FString MergeSlip(int32 Into,int32 From){return FString::Printf(TEXT("FILED AS ONE: UNKNOWN %d GOES IN UNKNOWN %d. IT CAN COME OUT AGAIN UNTIL 08:00."),From,Into);}
 FString TakeOutSlip(int32 Into,int32 From){return FString::Printf(TEXT("OUT AGAIN: UNKNOWN %d STANDS ON ITS OWN, BESIDE UNKNOWN %d."),From,Into);}
 FString AwayWords(){return Slice3::Away;}
+FString FiledWords(){return Slice3::FiledSlip;}
 FString NameHint(){return Slice3::Hint;}
 FString MergedLine(const TArray<int32>& Numbers)
 {
@@ -1462,11 +1509,22 @@ bool SelfTest(TArray<FString>& Lines)
   bool bWeek4=true;for(const EKind Near:{Small,Low,Tall}){const int32 H=Earliest(Near,EStage::Habits,G);bWeek4&=H>7&&H<=30;}
   Check(bWeek1&&bWeek4&&bFar&&FirstMarks<=14&&Earliest(EKind::None,EStage::Outline,G)==0,*FString::Printf(TEXT("slice 2: pacing (standard gates): no HABITS in week 1, the near three can by week 4, the far two stop at MARKS, the first MARKS by night %d"),FirstMarks));
  }
+ {
+  FFile Unnamed;Unnamed.Stage=StageWord(EStage::Habits);Unnamed.Boxes.SetNum(TypeN);
+  const FString Here=Sheet(Unnamed,TArray<FString>()),Away=Sheet(Unnamed,TArray<FString>(),false);
+  FFile Done=Unnamed;Done.bFiled=true;
+  Check(Sheet(Done,TArray<FString>()).Contains(TEXT("FILED UNDER ITS NAME AT HABITS. IT GOES TO DR. WARD'S REVIEW."))&&FiledWords().Contains(TEXT("DR. WARD'S REVIEW"))&&!FiledWords().Contains(TEXT("COUNT")),
+   TEXT("review (felt): a file filed says, on its sheet and on the slip, that it goes to Dr. Ward's review, and never whether it counts"));
+  Check(Here.Contains(TEXT(" HERE FILES IT."))&&!Away.Contains(TEXT(" HERE "))&&Away.Contains(TEXT("AT THE BINDER IN THE RECORDS ROOM")),
+   TEXT("review: a file at HABITS with no name says where a name files it: here at the binder, or on the reading copy, at the binder in the records room"));
+ }
+ Check(ShownNight(46)==46&&ShownNight(47)==48&&ShownNight(147)==148&&ShownNight(471)==480&&ShownNight(9)==9&&ShownNight(-3)==0,
+  TEXT("review: a night the dossier prints steps past any number that reads 47"));
  { // slice 3: the player's name, its rules, the suggestion, and the fallback
   FString Got,Why;
   const bool bWritten=CleanName(TEXT("  Bare   feet "),Got,Why)&&Got==TEXT("Bare feet")&&Why.IsEmpty()&&CleanName(TEXT("Long-legs"),Got,Why)&&CleanName(TEXT("O'Hara's dog, maybe."),Got,Why);
   const bool bRefused=!CleanName(TEXT(""),Got,Why)&&!Why.IsEmpty()&&Got.IsEmpty()&&!CleanName(TEXT("   "),Got,Why)&&!CleanName(FString::ChrN(NameMost+1,TEXT('a')),Got,Why)&&CleanName(FString::ChrN(NameMost,TEXT('a')),Got,Why)
-   &&!CleanName(TEXT("Thing 47"),Got,Why)&&!CleanName(TEXT("Thing 8.15"),Got,Why)&&!CleanName(TEXT("Grey one"),Got,Why)&&!CleanName(TEXT("the alien"),Got,Why)&&!CleanName(TEXT("Big C"),Got,Why)
+   &&!CleanName(TEXT("Thing 47"),Got,Why)&&!CleanName(TEXT("Thing 8.15"),Got,Why)&&!CleanName(TEXT("Grey one"),Got,Why)&&!CleanName(TEXT("the alien"),Got,Why)&&!CleanName(TEXT("Big C"),Got,Why)&&!CleanName(TEXT("Mr c"),Got,Why)&&!CleanName(TEXT("c and d"),Got,Why)&&CleanName(TEXT("Cactus legs"),Got,Why)
    &&!CleanName(TEXT("Taken one"),Got,Why)&&!CleanName(TEXT("Tomas"),Got,Why)&&!CleanName(TEXT("--"),Got,Why)&&!CleanName(TEXT("Bare\x00e9"),Got,Why);
   bool bSuggest=true;
   for(const FString& W:SuggestWords())bSuggest&=CleanName(W,Got,Why)&&Got==W&&!S47Marginalia::NamesKind(W)&&LintWords(TArray<FString>{W}).IsEmpty()&&!W.ToLower().Contains(TEXT("tall"))&&!W.ToLower().Contains(TEXT("pale"));
@@ -1505,8 +1563,11 @@ bool SelfTest(TArray<FString>& Lines)
   const bool bKept=S47J::Write(Back.Save())==S47J::Write(D.Save())&&!Back.IsFile(2)&&Back.StageOfFile(1)==EStage::Habits&&Back.CanTakeOut(1,2,5)&&Back.NameOf(1)==TEXT("Ladder notes")&&S47J::Arr(Record,TEXT("merged")).Num()==1;
   const bool bOut=!Back.TakeOut(1,2,6)&&Back.TakeOut(1,2,5)&&Back.IsFile(2)&&Back.Files().Num()==2&&Back.NameOf(1).IsEmpty()&&Back.NameOf(2)==TEXT("Ladder notes")&&Back.FileOf(TEXT("m-later"))==1
    &&Back.FileOf(TEXT("m-tape"))==2&&!Back.Filed(1)&&!Back.TakeOut(1,2,5);
+  // a name written on the survivor after the filing is the player's and stays when the other comes out again
+  FS47Dossier Renamed;Renamed.Load(Record);
+  const bool bOwnName=Renamed.SetName(1,TEXT("Lamp shy"),5)&&Renamed.TakeOut(1,2,5)&&Renamed.NameOf(1)==TEXT("Lamp shy")&&Renamed.NameOf(2)==TEXT("Ladder notes");
   FS47Dossier Again;Again.Load(S47J::Read(S47J::Write(Back.Save())));
-  Check(bApart&&bMerged&&bLater&&bKept&&bOut&&Again.IsFile(2)&&Again.Files().Num()==2&&!Again.Save()->HasField(TEXT("merged"))&&S47J::Write(Again.Save())==S47J::Write(Back.Save()),
+  Check(bApart&&bMerged&&bLater&&bKept&&bOut&&bOwnName&&Again.IsFile(2)&&Again.Files().Num()==2&&!Again.Save()->HasField(TEXT("merged"))&&S47J::Write(Again.Save())==S47J::Write(Back.Save()),
    TEXT("slice 3: two filed as one: the lower number survives with both, the name kept or carried over, the stage from both; out again only that night; both ways survive a Continue"));
   // two the game knows are not the same: nothing says so, the contradictions are struck, the stage is what is consistent
   FS47Dossier W;
@@ -1533,12 +1594,42 @@ bool SelfTest(TArray<FString>& Lines)
   // a fourth file, of the low one, filed as one with the small ones' (it holds nothing their boxes contradict: HABITS stands, nothing says so)
   D.Tag(TEXT("ward-low-counter"),Low,Geiger,9,1);
   const bool bFourth=D.Order().Num()==4&&D.FileOf(TEXT("ward-low-counter"))==4;
-  const bool bWrong=D.Merge(1,4,9)&&D.WrongMerge(1)&&D.StageOfFile(1)==EStage::Habits&&D.Filed(1)&&D.KindsFiled()==1&&WardPoints(D.KindsFiled())==0;
+  // (REVIEW 14 Nov: the wrong one counts for nothing; the low one's own file, kept apart, still counts: two, one point, also after 08:00)
+  const bool bWrong=D.Merge(1,4,9)&&D.WrongMerge(1)&&D.StageOfFile(1)==EStage::Habits&&D.Filed(1)&&D.KindsFiled()==2&&WardPoints(D.KindsFiled())==1&&!D.CanTakeOut(1,4,10);
   // the far two never count
   FS47Dossier Far;for(int32 Night=2;Night<=6;++Night)for(const EType T:{Shape,Tape,Lamp})Far.Tag(FString::Printf(TEXT("far-%d-%d"),Night,int32(T)),Silver,T,Night);
   Far.SetName(1,TEXT("Too still"),7);
   Check(bFourth&&bWrong&&D.TakeOut(1,4,9)&&D.KindsFiled()==3&&WardPoints(D.KindsFiled())==2&&Far.StageOfFile(1)==EStage::Marks&&!Far.Filed(1)&&Far.KindsFiled()==0,
-   TEXT("slice 3: a wrong one filed as one gives no point for the kinds in it until it is out again; the far two are never filed"));
+   TEXT("slice 3: a wrong one filed as one counts for nothing until it is out again, and holds back no kind that has a file of its own; the far two are never filed"));
+ }
+ { // REVIEW (14 Nov): MARKS's extra bearing goes with its file when that is filed as one in a lower file of another kind
+  FS47Dossier X;
+  X.Tag(TEXT("x-counter"),Small,Geiger,3);                                                              // file 1
+  X.Tag(TEXT("x-shape"),Low,Shape,3);X.Tag(TEXT("x-ground"),Low,Ground,3);X.Tag(TEXT("x-shape2"),Low,Shape,4);X.Tag(TEXT("x-lamp"),Low,Lamp,4); // file 2: MARKS
+  const bool bOwn=X.Order().Num()==2&&X.StageOfFile(2)==EStage::Marks&&X.Grant(Low,4)&&X.Files()[1].Gave==GaveExtraOpen;
+  Check(bOwn&&X.Merge(1,2,5)&&X.StageOfFile(1)==EStage::Marks&&X.Files().Num()==1&&X.Files()[0].Gave==GaveExtraOpen,
+   TEXT("slice 3: the extra bearing MARKS gave a file is still said on the sheet of the file it was filed in as one"));
+ }
+ { // REVIEW (14 Nov): the field allowance is paid once for the same work: filing a named, paid file in a lower unnamed one, taking it
+   // out and doing it again never pays the survivor
+  FS47Dossier P;
+  P.Tag(TEXT("pay-shape"),Small,Shape,2);P.Tag(TEXT("pay-ground"),Small,Ground,2);                            // file 1, unnamed
+  P.Tag(TEXT("pay-tape"),Small,Tape,3);P.Tag(TEXT("pay-lamp"),Small,Lamp,3);P.Tag(TEXT("pay-tape2"),Small,Tape,4);
+  P.Tag(TEXT("pay-geiger"),Small,Geiger,4);P.Tag(TEXT("pay-tape3"),Small,Tape,5);P.Tag(TEXT("pay-dogs"),Small,Animals,5); // file 2: HABITS
+  P.SetName(2,TEXT("Ladder notes"),5);
+  const bool bTwo=P.Order().Num()==2&&P.Filed(2)&&!P.Filed(1);
+  P.MarkPaid(2); // as FS47FreeformSession::DossierPayFiled does
+  const bool bCarried=P.Merge(1,2,6)&&P.Filed(1)&&P.Paid(1);
+  Check(bTwo&&bCarried&&P.TakeOut(1,2,6)&&P.Paid(1)&&P.Paid(2),TEXT("slice 3: a file filed in another as one carries its paid allowance there, and out again both are paid: the same work is paid once"));
+ }
+ { // REVIEW (14 Nov): a find of another of the near three that joins a file by place and night, with nothing the player did, does
+   // not take the file from Dr. Ward's count: the file stands for what most of it is
+  FS47Dossier J;const FVector2D Site(300,-500);
+  for(int32 Night=2;Night<=4;++Night)for(const EType T:{Shape,Night==2?Ground:Night==3?Tape:Lamp})J.Tag(FString::Printf(TEXT("join-%d-%d"),Night,int32(T)),Small,T,Night,2,&Site);
+  const bool bJoined=J.Tag(TEXT("join-low"),Low,Animals,4,2,&Site)&&J.FileOf(TEXT("join-low"))==1&&J.Order().Num()==1;
+  J.SetName(1,TEXT("Big head"),5);
+  Check(bJoined&&J.Filed(1)&&J.KindOfFile(1)==Small&&!J.WrongMerge(1)&&J.KindsFiled()==1,
+   TEXT("slice 3: a near one's find that joined a file by place and night alone leaves it counting for what most of it is, and it is no wrong filing"));
  }
  { // slice 3: the habits as thoughts, once a night a file, only at HABITS
   FS47Dossier D;

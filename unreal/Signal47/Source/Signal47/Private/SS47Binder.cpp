@@ -112,7 +112,15 @@ void SS47Binder::Tick(const FGeometry& G,const double Time,const float Dt)
  SCompoundWidget::Tick(G,Time,Dt);
  S47Theme::KeepFocus(SharedThis(this));
  // The hints name the keys of whatever is in the hand now.
- if(const uint32 Pad=S47Gamepad::Changes();Pad!=PadSeen){PadSeen=Pad;Rebuild();}
+ if(const uint32 Pad=S47Gamepad::Changes();Pad!=PadSeen)
+ {
+  PadSeen=Pad;
+  // REVIEW (14 Nov): the name being written in the file's field, and the keys it has, outlast the hints drawn again
+  const bool bHad=NameBox.IsValid(),bTyping=bHad&&NameBox->HasAnyUserFocusOrFocusedDescendants();
+  const FText Typed=bHad?NameBox->GetText():FText();
+  Rebuild();
+  if(bHad&&NameBox.IsValid()){NameBox->SetText(Typed);if(bTyping)FSlateApplication::Get().SetAllUserFocus(NameBox,EFocusCause::SetDirectly);}
+ }
 }
 int32 SS47Binder::Section() const{return Where->Tab;}
 const S47Binder::FEntry* SS47Binder::Shown() const
@@ -178,9 +186,9 @@ void SS47Binder::Perform(const FString& Do)
  if(!OnDo)return;
  const S47Binder::FEntry* Page=Shown();
  const FString Typed=NameBox.IsValid()?NameBox->GetText().ToString():(Page?Page->NameNow:FString());
- FString Words;OnDo(Do,Typed.IsEmpty()&&Page?Page->NameSuggest:Typed,Words);
- // the file it is now (a number filed in another is in the lower one): the first number in the Do
- int32 Number=0;{FString Rest;if(Do.Split(TEXT(":"),nullptr,&Rest)){FString First=Rest;Rest.Split(TEXT(":"),&First,nullptr);Number=FCString::Atoi(*First);}}
+ FString Words;const bool bDone=OnDo(Do,Typed.IsEmpty()&&Page?Page->NameSuggest:Typed,Words);
+ // the file it is now: two filed as one stand in the lower number, from whichever page it was done (S47Binder::PageAfterDo)
+ const int32 Number=S47Binder::PageAfterDo(Do,bDone);
  const FString Key=Number>0?S47Binder::UnknownKey(Number):(Page?Page->Key:FString());
  Where->Pick=Key;Where->Page=0;Where->Note=Words;Where->NoteKey=Key;
  Refresh();

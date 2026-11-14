@@ -184,7 +184,7 @@ public:
  // EVIDENCE-DOSSIER slice 3 (14 November). At the binder in the records room (bAt: NearBinder; a test passes it): the player's own
  // name written on a file, two filed as one, one taken out again (until 08:00); the slip's words either way. DossierAct: a binder
  // line's Do ("name:2", "merge:1:3", "out:1:3"). A file FILED (named, at HABITS) is paid FiledAllowance once, under the week's cap
- // (DossierPayFiled). The habits as the player's own thoughts, once a night a file (HabitThought, by number; not saved): the hour
+ // (DossierPayFiled). The habits as the player's own thoughts, once a night a file (HabitThought, by number; tonight's saved as "habitCame"): the hour
  // coming up on a night out (DossierHabitStep, every frame from S47Thoughts::Step) and the lamp raised near one (DossierHabitLamp,
  // FS47FarmSite). Dr. Ward's count is Unknowns.KindsFiled (FS47Predecessor::Count).
  bool DossierName(int32 Number,const FString& Typed,FString& Words,bool bAt);
@@ -194,6 +194,9 @@ public:
  int32 DossierPayFiled();
  void DossierHabitStep();
  bool DossierHabitLamp(S47Dossier::EKind Near);
+ // REVIEW (14 Nov): the hour's habit is a quiet thought: never while the night is held, a visit is on (at the site or at SARO), the
+ // carried set hears something hunting, or a light is taking someone
+ static bool HabitHourMay(bool bHeld,bool bVisit,bool bHunted,bool bTaking){return !bHeld&&!bVisit&&!bHunted&&!bTaking;}
  TMap<int32,int32> HabitThought;double HabitLastCheck=-1e9;
  static constexpr int32 FiledAllowance=5;
  FString TestNameDossier();   // F10: every file named by its suggestion, as at the binder
@@ -919,8 +922,11 @@ public:
  bool TubeWorn(int32 K) const{return WornTubes.Contains(K);}
  int32 WornTubeCount() const{return WornTubes.Num();}
  // At the turn to shift day Day (08:00): the day shift replaces what burned out before it; returns how many. Dale remarks that evening.
- int32 DayShiftTubes(int32 Day){if(WornTubes.IsEmpty()||Day<=TubeWornDay)return 0;const int32 N=WornTubes.Num();for(const int32 K:WornTubes)BrokenTubes.Remove(K);WornTubes.Reset();TubeWornDay=0;TubeRemarkDay=Day;return N;}
+ // REVIEW (14 Nov): bWatched, the player in the control room: nobody comes in while he is there, so a tube never relights by itself
+ // in front of him; it waits until he has gone out (Step asks again; TubeWatched).
+ int32 DayShiftTubes(int32 Day,bool bWatched=false){if(bWatched||WornTubes.IsEmpty()||Day<=TubeWornDay)return 0;const int32 N=WornTubes.Num();for(const int32 K:WornTubes)BrokenTubes.Remove(K);WornTubes.Reset();TubeWornDay=0;TubeRemarkDay=Day;return N;}
  bool TubeRemarkDue(int32 Day) const{return TubeRemarkDay>0&&TubeRemarkDay==Day;}
+ bool TubeWatched() const; // the player in the control room (US47Audio::InControlRoom); false without a world
  void TubeRemarkSaid(){TubeRemarkDay=0;}
  static TSet<int32> TubesFrom(const TArray<double>& Saved);
  static TArray<double> TubesToSave(const TSet<int32>& Broken);

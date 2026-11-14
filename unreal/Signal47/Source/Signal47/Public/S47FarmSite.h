@@ -49,6 +49,9 @@ public:
  int32 MarksBy() const;
  int32 MarksByNight() const{return MarksWhoNight;}
  static FString PrintsText(int32 Who); // one sentence, a leading space; empty for nobody
+ // EVIDENCE-DOSSIER slice 3 (REVIEW 14 Nov): the lamp raised this frame (off the frame before, on now); Was is the lamp as it was, and
+ // is taken every frame (Step, before anything returns early), so that a lamp raised a while ago never reads as raised now.
+ static bool LampRaised(bool bOnNow,bool& bWas){const bool bUp=bOnNow&&!bWas;bWas=bOnNow;return bUp;}
  bool BodyOut() const{return bBodyOut;}
  // Marks that will still be there at this clock, with a visit still to come.
  bool WillStandAt(double Clock) const{return (Visit==0||bFalseCall)&&ClearAt>Clock&&Clock>=CalmUntil;}
@@ -243,7 +246,7 @@ private:
  double VisitHunt=0,VisitPatience=120,RadioIn=-1;
  FVector AttentionFeet=FVector::ZeroVector;
  bool bAttentionFeet=false,bWasDriving=false,bWasRunning=false,bTestHoldHunt=false,bTestNoticed=false,bSawTurn=false,bSawSetTurn=false;
- bool bHabitLampWas=false; // EVIDENCE-DOSSIER slice 3: the lamp as it was, so that raising it near one is seen once
+ bool bHabitLampWas=false,bHabitLampUp=false; // EVIDENCE-DOSSIER slice 3: the lamp as it was, and raised this frame (LampRaised, every frame)
  int32 RadioSeen=0;
  bool PutBody(const FVector& Near);
  void StepBody(double Dt,double Speed);

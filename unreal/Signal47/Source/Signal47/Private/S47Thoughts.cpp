@@ -115,7 +115,8 @@ namespace S47Thoughts
  }
  bool ThinkLine(US47Main* M,const FString& Line,const TCHAR* Tag)
  {
-  if(!IsValid(M)||!M->UI||M->ModalOpen()||Line.IsEmpty()||M->Mode!=US47Main::EMode::Play)return false;
+  // REVIEW (14 Nov): not while the night is held either (the queue in Step waits for the same)
+ if(!IsValid(M)||!M->UI||M->ModalOpen()||Line.IsEmpty()||M->Mode!=US47Main::EMode::Play||(M->IsFreeform()&&M->Freeform&&M->Freeform->Held()))return false;
   const double Now=FPlatformTime::Seconds();
   if(!May(Now,LastAt))return false;
   LastAt=Now;

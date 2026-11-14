@@ -120,7 +120,8 @@ void FS47Calm::Step(double Dt)
 	// walkie when it can be heard; not on a Story night, not over a panel or anything the Director holds).
 	const bool bStory = FS47StoryDirector::Of(M) != nullptr;
 	if (!bStory && F->TubeRemarkDue(F->Day()) && !bDriving && TubeRemarkHour(NightHourOf(Clock)) && M->T >= NextTry
-		&& M->FieldRadio && M->FieldRadio->HearsDale() && !F->Held() && !M->ModalOpen() && !M->OneAtATime())
+		&& M->FieldRadio && DaleMayRemark(M->FieldRadio->HearsDale(), M->FieldRadio->Hailing(), M->FieldRadio->DaleSpeaking(), M->FieldRadio->PresenceLevel(), F->Taken && F->Taken->Busy())
+		&& !F->Held() && !M->ModalOpen() && !M->OneAtATime())
 	{
 		NextTry = M->T + 5.;
 		FS47EventCtx Ctx;
@@ -128,16 +129,22 @@ void FS47Calm::Step(double Dt)
 	}
 
 	// False alarms: evening only, not the first shift, in the dark, nothing else near.
-	if (F->Day() < 2 || bDriving || Played >= AlarmsFor(F->Seed(), Night)) return;
+	if (F->Day() < 2 || bDriving) return;
+	const double H = NightHourOf(Clock);
+	const bool bAlarmLeft = Played < AlarmsFor(F->Seed(), Night);
+	// PLAY-31-34 (REVIEW 14 Nov): the night's tube wear waits for the player to be in the control room, from the night's first slot
+	// to the end of its hours, instead of only at the moment of a slot (asked once he is there: its odds are the night's)
+	const bool bTubeWaits = LastTubeNight != Night && TubeWearWindow(H, SlotHour(F->Seed(), Night, 0));
+	if (!bAlarmLeft && !bTubeWaits) return;
 	if (M->T < NextTry) return;
 	// N1110: not on top of a reader, a repair or any other open panel, nor a pause, a visit or anything the Director holds
 	if (F->Held() || M->ModalOpen() || M->OneAtATime() || (F->Taken && F->Taken->Busy()) || (F->FarmSite && F->FarmSite->VisitWantsGround())) { NextTry = M->T + 5.; return; }
 	if (!GapOK(LastAlarm, Clock)) return;  // N1110: two alarms are at least twenty minutes of the clock apart
 	NextTry = M->T + 5.;
-	const double H = NightHourOf(Clock);
-	if (H < SlotHour(F->Seed(), Night, Played) || H > 25.5) return;
+	if (H > 25.5) return;
 	if (N.DangerTonight > 0 || N.SinceStart < 600. || !Quiet(Clock)) return;
-	// PLAY-31-34 (14 Nov): from week 2, now and then, the slot is a ceiling tube burning out over the player's head (tube_wear).
+	// PLAY-31-34 (14 Nov): from week 2, now and then, a ceiling tube burns out over the player's head (tube_wear).
+	if (bTubeWaits)
 	{
 		const TArray<int32> Next = F->NextTubes(1);
 		const bool bLeft = Next.Num() > 0 && M->Web && Next[0] < M->Web->TubeCount(); // (the scene has tubes 0 to 3: 2 and 3 can go)
@@ -157,6 +164,7 @@ void FS47Calm::Step(double Dt)
 			}
 		}
 	}
+	if (!bAlarmLeft || H < SlotHour(F->Seed(), Night, Played)) return;
 	for (const FString& Id : AlarmOrder(F->Seed(), Night))
 	{
 		// N1110 (pace): where each fits is the script's own gate (indoors / outdoors); the refrigerator is once a week at most
@@ -266,15 +274,25 @@ bool FS47Calm::SelfTest(TArray<FString>& Lines)
 		Check(!TubeWearMay(7, 0, true, true, false) && TubeWearMay(8, 0, true, true, false) && !TubeWearMay(1, 0, true, true, false) && !TubeWearMay(9, 1, true, true, false)
 			&& !TubeWearMay(9, 0, false, true, false) && !TubeWearMay(9, 0, true, false, false) && !TubeWearMay(9, 0, true, true, true),
 			TEXT("a tube burns out only from week 2 (never night 1), one at a time, with one left to go, in the player's sight, never on a Story night"));
-		int32 Flashes = 0; float Prev = 0; bool bCalm = true; float CalmPrev = 2;
+		// REVIEW (14 Nov): the level curve against the lit tube it was (1 before T 0): a flash is a rise from under half to full, so a
+		// tube that only holds full and goes out shows none; the dip before it, the flash's length, and never more than three a second
+		int32 Flashes = 0; float Prev = 1.f; bool bCalm = true; float CalmPrev = 2; double FlashFrom = -1, FlashFor = 0, LastFlash = -9, MinGap = 9; float Dip = 1.f;
 		for (double T = 0; T < 2.; T += .005)
 		{
 			const float L = FS47TubeFlicker::SparkLevel(T, false);
-			Flashes += L > 0 && Prev <= 0; Prev = L;
+			if (L >= .9f && Prev < .5f) { ++Flashes; FlashFrom = T; MinGap = FMath::Min(MinGap, T - LastFlash); LastFlash = T; }
+			if (L >= .9f && FlashFrom >= 0) FlashFor = T - FlashFrom + .005;
+			if (T < .04) Dip = FMath::Min(Dip, L);
+			Prev = L;
 			const float C = FS47TubeFlicker::SparkLevel(T, true); bCalm &= C <= CalmPrev; CalmPrev = C;
 		}
-		Check(Flashes == 1 && bCalm && FS47TubeFlicker::SparkLevel(FS47TubeFlicker::SparkSecs(false), false) == 0 && FS47TubeFlicker::SparkLevel(FS47TubeFlicker::SparkSecs(true), true) == 0,
-			TEXT("the burned-out tube sparks once (one flash, under the three a second limit), fades only with calm flashes, then stays dark"));
+		Check(Flashes == 1 && MinGap >= 1. / 3. && Dip <= .15f && FlashFor > .06 && FlashFor < .1 && bCalm && FS47TubeFlicker::SparkLevel(FS47TubeFlicker::SparkSecs(false), false) == 0 && FS47TubeFlicker::SparkLevel(FS47TubeFlicker::SparkSecs(true), true) == 0,
+			TEXT("the burned-out tube dips, then flashes once to full for about 80 ms against its own light (one flash, under the three a second limit), fades only with calm flashes, then stays dark"));
+		Check(TubeWearWindow(24.5, 21.) && TubeWearWindow(21., 21.) && !TubeWearWindow(20.9, 21.) && !TubeWearWindow(25.6, 21.),
+			TEXT("the night's tube wear waits for the player in the control room from the first slot to the end of its hours, not only at the slot"));
+		Check(DaleMayRemark(true, false, false, 0., false) && !DaleMayRemark(false, false, false, 0., false) && !DaleMayRemark(true, true, false, 0., false) && !DaleMayRemark(true, false, true, 0., false)
+			&& !DaleMayRemark(true, false, false, .3, false) && !DaleMayRemark(true, false, false, 0., true),
+			TEXT("Dale's word on the new tube keeps his other lines' rules: heard, not over a hail or another line of his, nothing near, nobody being taken"));
 		Check(TubeRemarkHour(19.5) && TubeRemarkHour(22.9) && !TubeRemarkHour(18.9) && !TubeRemarkHour(23.5), TEXT("Dale's word on the new tube comes between 19:00 and 23:00"));
 	}
 	FS47Calm Bare(nullptr);

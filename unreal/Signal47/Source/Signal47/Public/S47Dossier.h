@@ -41,7 +41,7 @@
 // takes its stage from what in it is consistent: a box where the two held different things counts for nothing, and the pencil there
 // is struck as any contradiction is. Only here can a stage drop. A file is FILED once it has a name and stands at HABITS; Dr. Ward
 // counts the near three filed each in a file of its own (correctly kept apart or correctly filed as one): one point for two, two for
-// all three (Tom, 13 November); a wrong one filed as one gives none for the kinds in it until it is taken out again. Saved, all
+// all three (Tom, 13 November); a wrong one filed as one gives none until it is taken out again (REVIEW 14 Nov: that file; a kind's own file elsewhere still counts). Saved, all
 // optional: "names": { "<number>": { "n": "...", "d": day } }; "merged": [ { "into": n, "from": n, "night": k, "was": stage,
 // "name": "...", "nameDay": d, "had": b } ]; "paid": [numbers]. A save from slices 1 and 2 has neither and reads as it was.
 namespace S47Dossier
@@ -160,8 +160,13 @@ namespace S47Dossier
  // What is read aloud of a pair, and the binder's line for it.
  SIGNAL47_API FString BesideWords(const FFile& A,const FFile& B);
  SIGNAL47_API FString BesideLine(int32 Number);
+ // REVIEW (14 Nov): a night (or a count of nights) as the dossier prints it: stepped past any number whose digits read 47 (47 shows
+ // 48, 147 148, 470 to 479 480), as the cassettes are counted (S47Tape) and the clock is shown (S47Script::PlayerClock). Only what
+ // is shown moves.
+ SIGNAL47_API int32 ShownNight(int32 Night);
  // The file typed for the binder: the stage, the six boxes, the photographs as the session names them, the pencil notes.
- SIGNAL47_API FString Sheet(const FFile& File,const TArray<FString>& PhotoLines);
+ // bAtBinder: typed at the binder in the records room; false, the reading copy away from it (REVIEW 14 Nov: says where a name is written).
+ SIGNAL47_API FString Sheet(const FFile& File,const TArray<FString>& PhotoLines,bool bAtBinder=true);
  // Every word the dossier can show, and what is wrong with any of it (empty: nothing): Freeform's spoiler limits
  // (S47Script::LintText), no word for what they are (S47Marginalia::NamesKind), none of Freeform's banned words.
  SIGNAL47_API TArray<FString> Words();
@@ -204,6 +209,7 @@ namespace S47Dossier
  SIGNAL47_API FString MergeSlip(int32 Into,int32 From);
  SIGNAL47_API FString TakeOutSlip(int32 Into,int32 From);
  SIGNAL47_API FString AwayWords();                       // the reading copy: where naming and filing as one are done
+ SIGNAL47_API FString FiledWords();                      // the slip's line when a file is FILED: it goes to Dr. Ward's review
  SIGNAL47_API FString NameHint();                        // the empty field's hint
  SIGNAL47_API FString MergedLine(const TArray<int32>& Numbers); // THEM: "Filed in it as one: UNKNOWN 3."; empty for none
 }
@@ -286,12 +292,14 @@ public:
  // Taken out again, as it was, only on the night it was filed as one (until the next 08:00).
  bool CanTakeOut(int32 Into,int32 From,int32 Night) const;
  bool TakeOut(int32 Into,int32 From,int32 Night);
- // What the game knows and never shows: the one kind everything in a file is of (None when it holds more than one, or nothing);
- // a file filed as one that holds more than one (WrongMerge).
+ // What the game knows and never shows: the kind a file stands for (REVIEW 14 Nov: for each number in it, what most of its own finds
+ // are of, so that a find that joined it by place and night does not change it; None when two numbers filed in it as one by the
+ // player are of different kinds, or it holds nothing); a file filed as one that holds more than one (WrongMerge).
  S47Dossier::EKind KindOfFile(int32 Number) const;
  bool WrongMerge(int32 Number) const;
  bool Filed(int32 Number) const; // named, and at HABITS
- // Dr. Ward's count: of the near three, each with a file FILED that holds it alone, and none of it in a wrong one filed as one.
+ // Dr. Ward's count: of the near three, each with a file FILED that stands for it (KindOfFile); a wrong one filed as one counts for
+ // nothing itself, and holds back no kind that has a file of its own elsewhere (REVIEW 14 Nov).
  int32 KindsFiled() const;
  bool Paid(int32 Number) const; // the field allowance for a file FILED, once (FS47FreeformSession::DossierPayFiled)
  void MarkPaid(int32 Number);
@@ -324,5 +332,6 @@ private:
  bool IsIn(const FTag& One,int32 File) const{return Root(One.File)==File;}
  bool HasMembers(int32 File) const{return Merges.ContainsByPredicate([File](const FMerge& One){return One.Into==File;});}
  bool Apply(const FMerge& One);   // the merge itself (Merge, and Load as saved)
+ S47Dossier::EKind PartKind(int32 Part) const; // REVIEW (14 Nov): what most of the finds under that number (0-based) are of
  S47Dossier::EStage StageConsistent(int32 File) const; // a file filed as one: from the boxes where all in it agree
 };

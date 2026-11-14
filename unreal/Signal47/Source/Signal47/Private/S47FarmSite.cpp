@@ -400,6 +400,8 @@ bool FS47FarmSite::WakeCall()
 void FS47FarmSite::Step(double Dt)
 {
  StepFrost(Dt);
+ // EVIDENCE-DOSSIER slice 3 (REVIEW 14 Nov): the lamp's edge every frame, before anything below returns, for StepAttention's habit
+ bHabitLampUp=LampRaised(M&&M->Night&&M->Night->Flashlight&&M->Night->Flashlight->Intensity()>0,bHabitLampWas);
  if(!bActive||!M||!M->Freeform)return;
  // VISIT-DAWN-20261113: by the clock, not by its own seconds. A natural night at speed (or a long stand-off) ran the visit's
  // real-time patience across a whole day: begun 03:52, it still held the ground, and the take came, at 20:19 the next evening.
@@ -794,8 +796,7 @@ void FS47FarmSite::StepAttention(double Dt,bool bDriving,bool& bNothingToGoOn)
  TOptional<FVector> Eye=VisitBodyEye();
  if(VisitWho==0){const auto V=G->Individuals();if(V.IsEmpty())Eye.Reset();else Eye=V[0].Eye;}
  // EVIDENCE-DOSSIER slice 3: the lamp raised near one: a file at HABITS that holds its answer to the lamp comes to mind (once a night)
- const bool bRaised=bLampOn&&!bHabitLampWas;bHabitLampWas=bLampOn;
- if(bRaised&&Eye.IsSet()&&FVector::Dist(*Eye,Feet)<=S47Dossier::HabitLampNearM&&M->Freeform)M->Freeform->DossierHabitLamp(S47Dossier::KindOfVisit(VisitWho));
+ if(bHabitLampUp&&Eye.IsSet()&&FVector::Dist(*Eye,Feet)<=S47Dossier::HabitLampNearM&&M->Freeform)M->Freeform->DossierHabitLamp(S47Dossier::KindOfVisit(VisitWho));
  // No body now, nothing to hold: the lamp is not left flickering for it.
  if(!Eye.IsSet()){LetAttentionGo();return;}
  const bool bCalm=M->Flow&&M->Flow->bCalmFlash;
