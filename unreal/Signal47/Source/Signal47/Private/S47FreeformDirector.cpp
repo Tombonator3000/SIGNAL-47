@@ -415,7 +415,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
  Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));bCarLight=bCarTaken=false;CarStage=0;CarLightClock=-1;bForcedEvent=bOwedArray=bOwedFeeder=false;SkyLeft=0;ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;bEveningTold=false;Event.Empty();PhotoId.Empty();PlaceId.Empty();NextPlace.Empty();bTracePlaced=false;Scene=TEXT("saro");DangerNight=DangerCount=SlotNight=PeekNight=0;PointNight=PointCount=0;Stage=Variant=SeenDay=MinorLeft=MinorBudget=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  MysteryRollDay=PendingMysteryNight=MysterySeen=0;MysteryClue=-1;MysteryAfter=MysteryClearAt=MysteryAge=0;
- PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
+ PendingThreatNight=PendingMajorNight=LightRollDay=PendingLightNight=0;LightAfter=0;bLightOwed=false;ObserverRollDay=PendingObserverNight=SiteRollDay=PendingSiteNight=0;SiteCheckAt=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();PhotoControlFocus.Empty();FieldObservations.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;bWasFirstShift=false;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
  {
@@ -455,6 +455,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   LightRollDay=FMath::Max(0,S47J::Int(O,TEXT("lightRollDay")));PendingLightNight=FMath::Max(0,S47J::Int(O,TEXT("pendingLightNight")));
   // An older save has no hour for them: they come as soon as they can, as before.
   LightAfter=FMath::Clamp(S47J::Num(O,TEXT("lightAfter")),0.,26.5);
+  bLightOwed=S47J::Bool(O,TEXT("lightOwed")); // FELT-WEEK1-20261114: older saves owe none
   // Older saves: a night not yet drawn, nothing waiting.
   ObserverRollDay=FMath::Max(0,S47J::Int(O,TEXT("observerRollDay")));PendingObserverNight=FMath::Max(0,S47J::Int(O,TEXT("pendingObserverNight")));
   SiteRollDay=FMath::Max(0,S47J::Int(O,TEXT("siteRollDay")));PendingSiteNight=FMath::Max(0,S47J::Int(O,TEXT("pendingSiteNight")));
@@ -517,7 +518,7 @@ S47J::FObj FS47FreeformDirector::Save()const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("duskOrb"),DuskOrb.Save());if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);if(!LightPlace.IsEmpty())S47J::Set(O,TEXT("lightPlace"),LightPlace);if(!PlaceId.IsEmpty())S47J::Set(O,TEXT("place"),PlaceId);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
  S47J::Set(O,TEXT("seenDay"),SeenDay);if(DangerNight>0){S47J::Set(O,TEXT("dangerNight"),DangerNight);S47J::Set(O,TEXT("danger"),DangerCount);}if(SlotNight>0)S47J::Set(O,TEXT("slotNight"),SlotNight);if(PeekNight>0)S47J::Set(O,TEXT("peekNight"),PeekNight);if(PointNight>0){S47J::Set(O,TEXT("pointNight"),PointNight);S47J::Set(O,TEXT("pointOut"),PointCount);}S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("minorBudget"),MinorBudget);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
- S47J::Set(O,TEXT("lightRollDay"),LightRollDay);S47J::Set(O,TEXT("pendingLightNight"),PendingLightNight);if(LightAfter>0)S47J::Set(O,TEXT("lightAfter"),LightAfter);if(ObserverRollDay>0)S47J::Set(O,TEXT("observerRollDay"),ObserverRollDay);if(PendingObserverNight>0)S47J::Set(O,TEXT("pendingObserverNight"),PendingObserverNight);if(SiteRollDay>0)S47J::Set(O,TEXT("siteRollDay"),SiteRollDay);if(PendingSiteNight>0)S47J::Set(O,TEXT("pendingSiteNight"),PendingSiteNight);S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
+ S47J::Set(O,TEXT("lightRollDay"),LightRollDay);S47J::Set(O,TEXT("pendingLightNight"),PendingLightNight);if(LightAfter>0)S47J::Set(O,TEXT("lightAfter"),LightAfter);if(bLightOwed)S47J::Set(O,TEXT("lightOwed"),true);if(ObserverRollDay>0)S47J::Set(O,TEXT("observerRollDay"),ObserverRollDay);if(PendingObserverNight>0)S47J::Set(O,TEXT("pendingObserverNight"),PendingObserverNight);if(SiteRollDay>0)S47J::Set(O,TEXT("siteRollDay"),SiteRollDay);if(PendingSiteNight>0)S47J::Set(O,TEXT("pendingSiteNight"),PendingSiteNight);S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
  if(bCarLight){S47J::Set(O,TEXT("carLight"),true);if(CarLightClock>=0)S47J::Set(O,TEXT("carLightClock"),CarLightClock);}
  if(SkyLeft>0)S47J::Set(O,TEXT("skyLeft"),SkyLeft);if(bOwedArray)S47J::Set(O,TEXT("owedArray"),true);if(bOwedFeeder)S47J::Set(O,TEXT("owedFeeder"),true);if(bForcedEvent)S47J::Set(O,TEXT("forced"),true);
  if(MysteryRollDay>0)
@@ -1172,6 +1173,25 @@ bool FS47FreeformDirector::StartPendingNightChoice(const FString& Id,int32 Day,i
  if(PendingNight!=Day||!Eligible(Id,false)||!Start(Id,false))return false;
  PendingNight=0;Changed();return true;
 }
+double FS47FreeformDirector::HoldLightsForWatch(double At,double WatchUp,double WatchSuggested)
+{
+ // FELT-WEEK1-20261114 (→ M1, M3; the critic, 14 November): «go and look» and «be back in the control room» on the same half hour.
+ const double From=WatchUp-45./60.,Until=WatchSuggested+10./60.;
+ if(At<From||At>Until)return At;
+ const double Held=FMath::Max(26.+20./60.,Until+5./60.);
+ return Held>LightsLatest+1e-6?-1.:FMath::Min(Held,LightsLatest);
+}
+bool FS47FreeformDirector::HoldLightsTonight()
+{
+ double Up=0,Suggested=0;
+ if(!M||!M->Freeform||!M->Freeform->NightWatchOpen(Up,Suggested))return false;
+ const double Hour=FMath::Fmod(M->Freeform->Clock(),86400.)/3600.,At=Hour<12?Hour+24:Hour;
+ const double Held=HoldLightsForWatch(At,Up,Suggested);
+ if(Held==At)return false;
+ if(Held<0){PendingLightNight=0;bLightOwed=true;}else LightAfter=Held;
+ UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: the lights tip at %.2f h waits for the night watch (up %.2f h): %s"),At,Up,Held<0?TEXT("the next night"):*FString::Printf(TEXT("%.2f h"),Held));
+ Changed();return true;
+}
 void FS47FreeformDirector::RollTonight(int32 Day)
 {
  // A calm night draws nothing at all. The rest grow slowly with the nights played; lights stay as they were.
@@ -1181,8 +1201,10 @@ void FS47FreeformDirector::RollTonight(int32 Day)
  const auto Per=[this](const TCHAR* Id,float Usual){return M&&M->Rhythm?M->Rhythm->PerNight(Id,Usual):Usual;};
  bool bAny=RollNightChoice(Day,2,Chance(Per(TEXT("service_presence"),.35f)*float(Growing)),ThreatRollDay,PendingThreatNight);
  bAny|=RollNightChoice(Day,4,Chance(Per(TEXT("close_pass"),.10f)*float(Growing)),MajorRollDay,PendingMajorNight);
- if(RollNightChoice(Day,2,TestLightAfter>=0?1.f:Chance(Per(TEXT("farm_lights"),.45f)),LightRollDay,PendingLightNight))
+ // FELT-WEEK1-20261114: lights held past their hour for the night watch come on the next night that can have them (never a calm one).
+ if(RollNightChoice(Day,2,TestLightAfter>=0?1.f:bLightOwed&&!bCalm?1.f:Chance(Per(TEXT("farm_lights"),.45f)),LightRollDay,PendingLightNight))
  {
+  if(PendingLightNight==Day)bLightOwed=false;
   // Some nights while there is still work on, most nights late, when going out to them can come to something. Never
   // later than half past two, so that there is a night left to go out in.
   if(PendingLightNight==Day)LightAfter=TestLightAfter>=0?TestLightAfter:Random.FRand()<.35f?Random.FRandRange(21.f,23.5f):Random.FRandRange(24.5f,26.5f);
@@ -1423,7 +1445,7 @@ void FS47FreeformDirector::Step(double Dt)
    // Lights are a night's own draw, not left to what the day's instruments use up. Seen from where the player is:
    // over the farm or in town, from SARO; in town, from the road.
    const double LightHour=FMath::Fmod(M->Freeform->Clock(),86400.)/3600.;
-   if(PendingLightNight==Day&&(LightHour<12?LightHour+24:LightHour)>=LightAfter)
+   if(PendingLightNight==Day&&(LightHour<12?LightHour+24:LightHour)>=LightAfter&&!HoldLightsTonight())
    {
     // Seen from here or heard of: either, wherever the player is on the land.
     const FString First=FMath::RandBool()?TEXT("farm_lights"):TEXT("town_lights");
@@ -2258,6 +2280,16 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   P.Init(FColor(180,180,180),W*H);for(int32 Y=45;Y<55;++Y)for(int32 X=45;X<55;++X)P[Y*W+X]=FColor(3,3,3);
   Check(SubjectMean(P,W,H,Region)<15,TEXT("bright margins inside component bounds cannot mask a dark subject centre"));
   Check(SubjectMean(P,W,H,FBox2D(ForceInit))<0&&SubjectMean(P,W,H,FBox2D(FVector2D(.5,.5),FVector2D(.501,.501)))<0,TEXT("missing or subpixel subject region cannot qualify"));
+ }
+ {
+  // FELT-WEEK1-20261114: the lights tip never lands on the night watch's half hour; it waits to 02:20, or the next night.
+  const double Watch=25.5,Sug=26.;
+  Check(HoldLightsForWatch(25.,Watch,Sug)>=26.33&&HoldLightsForWatch(25.,Watch,Sug)<=LightsLatest&&HoldLightsForWatch(26.1,Watch,Sug)>=26.33,
+   TEXT("FELT-WEEK1: a lights tip at 01:00 or 02:06 with the night watch up at 01:30 waits until 02:20"));
+  Check(HoldLightsForWatch(24.5,Watch,Sug)==24.5&&HoldLightsForWatch(22.,Watch,Sug)==22.&&HoldLightsForWatch(26.4,Watch,Sug)==26.4,
+   TEXT("FELT-WEEK1: a tip at 00:30, 22:00 or after the watch keeps its own hour"));
+  Check(HoldLightsForWatch(26.,25.75,26.25)==LightsLatest&&HoldLightsForWatch(26.,25.75,26.4)<0,
+   TEXT("FELT-WEEK1: a late watch holds the tip to its latest hour, 02:30; past that it comes the next night"));
  }
  Check(Catalog().Num()==22+S47SmallHints::Ids().Num()&&Definition(TEXT("roomlight_return"))&&Definition(TEXT("farm_lights"))&&Definition(TEXT("town_lights")),TEXT("authored catalogue, action-bound room light and two physical service-site encounters are embedded in runtime"));TSet<FString> Ids;
  for(const auto& D:Catalog()){Check(!Ids.Contains(D.Id)&&!D.Finding.IsEmpty()&&D.Day>=1&&D.Duration>0,TEXT("event ID, finding and finite duration"));Ids.Add(D.Id);}

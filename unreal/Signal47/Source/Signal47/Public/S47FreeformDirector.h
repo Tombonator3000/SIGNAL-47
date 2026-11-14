@@ -207,6 +207,12 @@ public:
  static TArray<FString> EventIds();
  static TArray<FString> CatalogIds() { return EventIds(); }
  static bool SelfTest(TArray<FString>& Lines);
+ // FELT-WEEK1-20261114 (→ M1, M3): the lights tip and the night watch on one night. Hours on the shift's clock (25.5 is 01:30).
+ // A tip that would come at At inside [watch up - 45 min, suggested + 10 min] waits until five minutes after that (02:20 at the
+ // earliest); one that would then pass its own latest hour (LightsLatest) returns -1: it comes the next night lights can. Outside the
+ // window At comes back unchanged. Pure: only called while the night's watch is still to be worked.
+ static constexpr double LightsLatest=26.5;
+ static double HoldLightsForWatch(double At,double WatchUp,double WatchSuggested);
 private:
  struct FEffects;
  FS47DuskOrb DuskOrb;
@@ -247,6 +253,9 @@ private:
  int32 DangerNight=0,DangerCount=0;
  // When tonight's lights are due, in hours from the night's own midday (25.5 is 01:30). 0: as soon as they can.
  double LightAfter=0;
+ // FELT-WEEK1-20261114: a lights tip held past its latest hour for the night watch: the next night that can draw lights has them.
+ bool bLightOwed=false;
+ bool HoldLightsTonight();
  // A figure at the base, and one at the remote feeder or array cabinet: each its own night's draw. The second waits for
  // the player to come to that place, however long the night lasts.
  int32 ObserverRollDay=0,PendingObserverNight=0,SiteRollDay=0,PendingSiteNight=0;

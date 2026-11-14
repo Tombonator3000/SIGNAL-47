@@ -261,6 +261,9 @@ public:
  bool NightBeforeGoal() const;
  // A live bearing slip whose circle on the map has not been stood in yet (FS47Places::SlipRows).
  bool SlipToFollow() const;
+ // FELT-WEEK1-20261114 (→ M1, M3): tonight's night watch, not yet worked (before REGISTER): its source's hour (EveningUp, the «be
+ // back by» time) and its suggested time, in hours on the shift's clock (25.5 is 01:30). False on a night with none, or done.
+ bool NightWatchOpen(double& UpHours,double& SuggestedHours) const;
  // TASKS-TEN-20261113 (Tom 13 November, «Godtar ti endringene»; change 2, one arbiter): the HUD's ladder (Objective, NextAction,
  // AvailableActivities, WorkActivities) is the one ordering every surface reads: the HUD card, the pause menu's TONIGHT Next, the
  // notebook's arrow and the workstations' NEXT line. Blocking now (paper on the printer, the power, a take under way, RETAIN) > a
