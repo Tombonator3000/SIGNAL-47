@@ -1040,8 +1040,9 @@ bool CleanName(const FString& Typed,FString& Out,FString& Why)
  bool bAnyLetter=false;
  for(const TCHAR Ch:Out)bAnyLetter|=FChar::IsAlpha(Ch);
  if(!bAnyLetter){Why=WhyShort;Out.Reset();return false;}
- // the design's word check (Freeform's limits, no word for what they are)
- if(!LintWords(TArray<FString>{Out}).IsEmpty()){Why=WhyWords;Out.Reset();return false;}
+ // the design's word check (Freeform's limits, no word for what they are), on the name as typed and as the sheet and the slip print
+ // it, in capitals (REVIEW 14 Nov: "Mr c" printed "MR C", a standalone capital C)
+ if(!LintWords(TArray<FString>{Out,Out.ToUpper()}).IsEmpty()){Why=WhyWords;Out.Reset();return false;}
  return true;
 }
 FString Suggest(const FFile& File)
@@ -1466,7 +1467,7 @@ bool SelfTest(TArray<FString>& Lines)
   FString Got,Why;
   const bool bWritten=CleanName(TEXT("  Bare   feet "),Got,Why)&&Got==TEXT("Bare feet")&&Why.IsEmpty()&&CleanName(TEXT("Long-legs"),Got,Why)&&CleanName(TEXT("O'Hara's dog, maybe."),Got,Why);
   const bool bRefused=!CleanName(TEXT(""),Got,Why)&&!Why.IsEmpty()&&Got.IsEmpty()&&!CleanName(TEXT("   "),Got,Why)&&!CleanName(FString::ChrN(NameMost+1,TEXT('a')),Got,Why)&&CleanName(FString::ChrN(NameMost,TEXT('a')),Got,Why)
-   &&!CleanName(TEXT("Thing 47"),Got,Why)&&!CleanName(TEXT("Thing 8.15"),Got,Why)&&!CleanName(TEXT("Grey one"),Got,Why)&&!CleanName(TEXT("the alien"),Got,Why)&&!CleanName(TEXT("Big C"),Got,Why)
+   &&!CleanName(TEXT("Thing 47"),Got,Why)&&!CleanName(TEXT("Thing 8.15"),Got,Why)&&!CleanName(TEXT("Grey one"),Got,Why)&&!CleanName(TEXT("the alien"),Got,Why)&&!CleanName(TEXT("Big C"),Got,Why)&&!CleanName(TEXT("Mr c"),Got,Why)&&!CleanName(TEXT("c and d"),Got,Why)&&CleanName(TEXT("Cactus legs"),Got,Why)
    &&!CleanName(TEXT("Taken one"),Got,Why)&&!CleanName(TEXT("Tomas"),Got,Why)&&!CleanName(TEXT("--"),Got,Why)&&!CleanName(TEXT("Bare\x00e9"),Got,Why);
   bool bSuggest=true;
   for(const FString& W:SuggestWords())bSuggest&=CleanName(W,Got,Why)&&Got==W&&!S47Marginalia::NamesKind(W)&&LintWords(TArray<FString>{W}).IsEmpty()&&!W.ToLower().Contains(TEXT("tall"))&&!W.ToLower().Contains(TEXT("pale"));
