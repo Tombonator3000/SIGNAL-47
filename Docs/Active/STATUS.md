@@ -4,7 +4,19 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Installert 14. november kl. 00:48 (d70): versjon 0.9.70, `b9e4b91a` på `claude/freeform-20261112`
+## Installert 14. november kl. 10:40 (d71): versjon 0.9.71, `27755a47` på `claude/freeform-20261112` (flettet i main, PR #515)
+
+Editor BUILD 0, selvtest OK (5652 kontroller), pakket, røyktestet som kandidat og installert (selvtest og røyktest OK i installasjonen, Saved urørt: 158 filer). Regresjonen og mottakerprøven er ikke kjørt på denne kandidaten. Tilbakerulling: d70 (`b9e4b91a`). Ledig disk etterpå: 114 GB. Ikke spilt av Tom.
+
+- **Vindmølla på Baca-leasen og gårdens vindmølle (→ M6, M1):** egen modell med gittermast, hjul med 18 blader, girhode, pumpehus med lokk som spilleren åpner, tank med vann; Baca-mølla står surret og går bare under bankingen. De gamle boksene er reserve (`-S47LandMillOff`).
+- **Landstedene (→ M1, M6):** linjehytta og varden virker mens de ennå er kodebokser; Reyes' lapp i skapet har en uferdig linje om lykta (FELT-WEEK1).
+- **Bevismappene trinn 3 (→ M3, M4)** og bydagens gjennomgang (lysrør, kokken, Dales walkie-linjer).
+- **Mottakerskjermen:** 15 av 16 funn fra en uavhengig leser rettet.
+- **UI-klikk og TV-snø fra lydbiblioteket** (FIX10-7), syv hinttekster rettet, seks korte 1986-notiser i Ledgeren.
+- **ADPCM-stammer:** dekoderen er med, men settet er ikke pakket; spillet spiller PCM som før til Tom har lyttet.
+- **Kjent:** ingen av de nye lydene, vindmølla eller natthendelsene er sett eller hørt av Tom.
+
+## Tidligere: installert 14. november kl. 00:48 (d70): versjon 0.9.70, `b9e4b91a` på `claude/freeform-20261112`
 
 Editor BUILD 0, selvtest OK (5535 kontroller), regresjon PASS 252, mottakerprøven PASS 321, oppgavebildeprøven PASS 7, pakket, røyktestet og installert. Tilbakerulling: d69 (`8fd3a2fb`). Ledig disk etterpå: 129 GB (pakkene d67 og d68 fjernet, kvitteringene beholdt). Ikke spilt av Tom.
 
