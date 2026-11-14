@@ -934,7 +934,8 @@ void AS47Props::ApplyTrim(const FString& Model)
 		if (!C || Tris != int32(Num(*G, TEXT("tris"), -2))) { ++Stale; continue; }
 		if (Bool(*G, TEXT("hidden"), false)) { C->SetHiddenInGame(true); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); ++Hidden; continue; }
 		// PACKAGE-GAS-TRIM-20261114: a cut mesh that is not here (deleted by a re-import, or not cooked) is MISSING, not STALE,
-		// and is not asked for (no load warning per mesh); S47CookCoverage's self-test fails on it
+		// and is not asked for (no load warning per mesh); S47CookCoverage's self-test fails on it unless a composed town patch takes
+		// its part out. The hidden rows above need no mesh and keep working (the gas station's when the town patches are rejected)
 		if (UStaticMesh* Cut = S47PropCatalogue::LoadIfHere(Str(*G, TEXT("asset")))) { C->SetStaticMesh(Cut); ++Swapped; }
 		else ++Missing;
 	}
