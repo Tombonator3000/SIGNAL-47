@@ -81,7 +81,9 @@ public:
 	struct FPlot { S47SkySphere::FView View; FVector2f Focus = FVector2f::ZeroVector; float Zoom = 1.f; };
 	static constexpr float SideRoom = 58.f, FootRoom = 26.f, TopRoom = 24.f;
 	static constexpr float ZoomMost = 3.6f;
-	static constexpr double ZoomNear = 4., ZoomFar = 24.; // degrees off the crossing: closed in all the way, and not at all
+	// Degrees off the crossing on the open picture: closed in all the way, and not at all. (RX-LOOK gjennomgang 14 Nov: 6, was 4, so
+	// that a reticle anywhere inside the rule's lock circle stands on a picture closed in all the way; see ZoomForTrue.)
+	static constexpr double ZoomNear = 6., ZoomFar = 24.;
 	static FPlot PlotFor(const FVector2f& Size);
 	// False when the direction is behind the picture (Out is then far off the glass).
 	static bool Place(const FPlot& P, const FVector2D& AzEl, FVector2f& Out);
@@ -90,6 +92,15 @@ public:
 	static bool Contains(const FPlot& P, const FVector2f& Local);
 	// How far the picture closes in for a pointer or a reticle so many of the rule's degrees off the crossing.
 	static float ZoomFor(double DegreesOff);
+	// RX-LOOK gjennomgang 14 Nov: the same curve for a reticle so many of the rule's degrees off the crossing (the keys, the assist):
+	// the zoom at which the reticle stands where a pointer would have put it, so that its distance on the glass (true degrees times
+	// the zoom) grows with the true distance and a reticle steered toward the crossing never seems to back off it. (The old curve
+	// read the true distance as an open one: steering from 24 to 13 degrees took the reticle from 24 to some 32 open degrees off.)
+	static float ZoomForTrue(double TrueOff);
+	// One frame of the picture closing in or opening: eased toward Want as before; with the reticle moved by the keys or the assist
+	// (OffWas, OffNow: its true distance last frame and now, OffWas below zero: none), never so fast that its distance on the glass
+	// grows while it nears the crossing, nor shrinks while it goes away.
+	static float ZoomStep(float Was, float Want, double Dt, double OffWas, double OffNow);
 	// The four ways a key can steer on the glass (-1, 0 or 1 across and up).
 	static FVector2D SteerOf(const FKey& Key);
 	// The step in azimuth and elevation (a unit vector) that moves the reticle that way on the glass, where it stands now: for
@@ -115,6 +126,7 @@ private:
 	mutable FPlot Shown;
 	mutable FVector2f ShownSize = FVector2f::ZeroVector;
 	mutable float ZoomNow = 1.f;
+	mutable double ZoomOffWas = -1.; // the reticle's true distance last frame while the keys or the assist moved it (else below zero)
 	// the lock moment (for the rings going out and the picture's one swell), and the reticle's fading trail
 	mutable int32 PhaseSeen = -1;
 	mutable double LockedAt = -1e9;

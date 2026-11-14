@@ -215,6 +215,33 @@ float SS47SkyChart::ZoomFor(double DegreesOff)
 	return 1.f + (ZoomMost - 1.f) * float(1. - X * X * (3. - 2. * X));
 }
 
+float SS47SkyChart::ZoomForTrue(double TrueOff)
+{
+	if (!FMath::IsFinite(TrueOff)) return 1.f;
+	TrueOff = FMath::Max(TrueOff, 0.);
+	// the open distance whose zoom puts it this far off in truth: open / ZoomFor(open) only grows (the self-test), so it is found
+	// by halving, within a thousandth of a degree
+	double Lo = TrueOff, Hi = TrueOff * ZoomMost + 1e-6;
+	for (int32 I = 0; I < 40 && Hi - Lo > 1e-4; ++I)
+	{
+		const double Mid = (Lo + Hi) * .5;
+		if (Mid / ZoomFor(Mid) < TrueOff) Lo = Mid; else Hi = Mid;
+	}
+	return ZoomFor((Lo + Hi) * .5);
+}
+
+float SS47SkyChart::ZoomStep(float Was, float Want, double Dt, double OffWas, double OffNow)
+{
+	float Zoom = FMath::Clamp(Was + (Want - Was) * float(FMath::Min(1., FMath::Max(Dt, 0.) * (Want > Was ? 5. : 1.6))), 1.f, ZoomMost);
+	if (OffWas >= 0 && OffNow > 1e-6 && FMath::IsFinite(OffNow))
+	{
+		const double Glass = OffWas * Was; // where it stood on the glass last frame
+		if (OffNow < OffWas) Zoom = FMath::Min(Zoom, float(Glass / OffNow));
+		else if (OffNow > OffWas) Zoom = FMath::Max(Zoom, float(Glass / OffNow));
+	}
+	return FMath::Clamp(Zoom, 1.f, ZoomMost);
+}
+
 FVector2D SS47SkyChart::SteerOf(const FKey& Key)
 {
 	if (Key == EKeys::Left || Key == EKeys::Gamepad_DPad_Left || S47Keys::Is(TEXT("left"), Key)) return FVector2D(-1, 0);
@@ -330,13 +357,18 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	// the picture closes in about the crossing as the pointer nears it (with the keys: as the reticle does), all the way while the
 	// fix is taken, and opens again once it is held. The pointer is then read through the picture as it stands.
 	{
+		// (RX-LOOK gjennomgang 14 Nov: the pointer's distance is an open one, read through the open picture; the reticle's, with the
+		// keys or the assist, is a true one, and is closed in by ZoomForTrue, never faster than its place on the glass allows)
 		double Off = -1.;
+		bool bTrueOff = false;
 		if (K.HasBearings() && K.State() == FSky::EPhase::Search)
 		{
-			Off = bHover && K.HasPointer() ? FVector2D::Distance(FSky::ClampToChart(Sph::UnprojectAzEl(Pl.View, FVector2D(HoverLocal))), K.Cross()) : K.Distance();
+			bTrueOff = !(bHover && K.HasPointer());
+			Off = bTrueOff ? K.Distance() : FVector2D::Distance(FSky::ClampToChart(Sph::UnprojectAzEl(Pl.View, FVector2D(HoverLocal))), K.Cross());
 		}
-		const float Want = K.State() == FSky::EPhase::Locking ? ZoomMost : Off >= 0 ? ZoomFor(Off) : 1.f;
-		ZoomNow = FMath::Clamp(ZoomNow + (Want - ZoomNow) * float(FMath::Min(1., Dt * (Want > ZoomNow ? 5. : 1.6))), 1.f, ZoomMost);
+		const float Want = K.State() == FSky::EPhase::Locking ? ZoomMost : Off >= 0 ? (bTrueOff ? ZoomForTrue(Off) : ZoomFor(Off)) : 1.f;
+		ZoomNow = ZoomStep(ZoomNow, Want, Dt, bTrueOff ? ZoomOffWas : -1., Off);
+		ZoomOffWas = bTrueOff ? Off : -1.;
 		FVector2D Crossing;
 		Pl.Focus = Sph::ProjectAzEl(Pl.View, K.Cross(), Crossing) ? FVector2f(Crossing) : Rim;
 		Pl.Zoom = ZoomNow;
@@ -970,6 +1002,48 @@ bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 		Was = InSky;
 	}
 	Check(bZoom && bOrder && 5. / ZoomFor(5.) < 2.3, FString::Printf(TEXT("the picture closes in %.1f times near the crossing: a pointer five degrees off on the open picture stands %.1f off once it has, and a nearer pointer is always nearer"), ZoomMost, 5. / ZoomFor(5.)));
+	{
+		// RX-LOOK gjennomgang 14 Nov: with the keys (or the assist) the reticle's distance on the glass, true degrees times the zoom,
+		// never grows while it nears the crossing: as the picture stands for each distance (swept from 60 degrees to none), and frame
+		// by frame as the zoom eases in behind a reticle steered in at the keys' own rate from 60 degrees off, and out again. The old
+		// curve (the true distance read as an open one) is measured beside it: steered from 24 to 13 degrees the reticle went out.
+		bool bSettled = true, bIn = true, bOut = true;
+		double GlassBefore = -1., OldAt24 = 24. * ZoomFor(24.), OldMost = 0.;
+		for (int32 I = 0; I <= 6000; ++I)
+		{
+			const double Off = I * .01, OnGlass = Off * ZoomForTrue(Off);
+			bSettled &= OnGlass >= GlassBefore - 1e-3 && ZoomForTrue(Off) >= 1.f && ZoomForTrue(Off) <= ZoomMost;
+			GlassBefore = OnGlass;
+			if (Off < 24.) OldMost = FMath::Max(OldMost, Off * ZoomFor(Off));
+		}
+		const double Tick = 1. / 60.;
+		float Zoom = 1.f;
+		double Off = 60., OffWas = -1., GlassWas = 1e9, Grew = 0.;
+		while (Off > 0.)
+		{
+			Zoom = ZoomStep(Zoom, ZoomForTrue(Off), Tick, OffWas, Off);
+			OffWas = Off;
+			Grew = FMath::Max(Grew, Off * Zoom - GlassWas);
+			bIn &= Off * Zoom <= GlassWas + 1e-4;
+			GlassWas = Off * Zoom;
+			Off -= FSky::KeyRate * Tick;
+		}
+		// standing on the crossing, the picture closes in all the way
+		for (int32 I = 0; I < 120; ++I) Zoom = ZoomStep(Zoom, ZoomForTrue(.2), Tick, .2, .2);
+		const float Closed = Zoom;
+		OffWas = -1.; GlassWas = -1.;
+		for (Off = .5; Off < 60.; Off += FSky::KeyRate * Tick)
+		{
+			Zoom = ZoomStep(Zoom, ZoomForTrue(Off), Tick, OffWas, Off);
+			OffWas = Off;
+			bOut &= Off * Zoom >= GlassWas - 1e-4;
+			GlassWas = Off * Zoom;
+		}
+		// the pointer: its distance is read on the open picture, and the zoom follows it as before (no cap on it)
+		const bool bPointer = ZoomStep(1.f, ZoomMost, Tick, -1., 3.) > 1.f && ZoomStep(2.f, 2.f, Tick, -1., 3.) == 2.f;
+		Check(bSettled && bIn && bOut && bPointer && FMath::IsNearlyEqual(ZoomForTrue(FSky::LockRadius), ZoomMost, 1e-3f) && ZoomForTrue(30.) == 1.f && FMath::IsNearlyEqual(Closed, ZoomMost, 1e-2f) && OldMost > OldAt24 + 5.,
+			FString::Printf(TEXT("steered in by the keys the reticle never backs off the crossing on the glass (swept from 60 degrees, frame by frame at %.0f a second: it grew by %.4f at most; the old curve took it from %.0f to %.1f open degrees off), the whole lock circle stands closed in all the way (%.1f times), and the pointer's zoom is as before"), FSky::KeyRate, Grew, OldAt24, OldMost, ZoomForTrue(FSky::LockRadius)));
+	}
 	Check(SteerOf(EKeys::Up) == FVector2D(0, 1) && SteerOf(EKeys::Down) == FVector2D(0, -1) && SteerOf(EKeys::Left) == FVector2D(-1, 0) && SteerOf(EKeys::Right) == FVector2D(1, 0)
 		&& SteerOf(EKeys::Gamepad_DPad_Up) == FVector2D(0, 1) && SteerOf(EKeys::Gamepad_DPad_Left) == FVector2D(-1, 0) && SteerOf(EKeys::Escape).IsZero(),
 		TEXT("the arrow keys and the d-pad steer; Escape stays the way out"));
