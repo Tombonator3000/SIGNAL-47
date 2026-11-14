@@ -87,11 +87,12 @@ void FS47FreeformAudioDesk::Show(bool bShow)
  for(const auto& T:Texts)if(T.IsValid()){T->SetVisibility(Keys);T->SetHiddenInGame(!Keys);}
  for(const auto& T:SignTexts)if(T.IsValid()){T->SetVisibility(Sign);T->SetHiddenInGame(!Sign);}
  if(SignBoard.IsValid()){SignBoard->SetVisibility(Sign);SignBoard->SetHiddenInGame(!Sign);}
+ if(DueLamp.IsValid()){DueLamp->SetVisibility(Sign);DueLamp->SetHiddenInGame(!Sign);}
 }
 void FS47FreeformAudioDesk::Begin()
 {
  Stop();if(!IsValid(M)||!IsValid(M->Web))return;
- if(Scene.Get()!=M->Web){bBuilt=false;Controls.Reset();Texts.Reset();SignTexts.Reset();SignBoard.Reset();Readout.Reset();Deck={};StackHome.Reset();}
+ if(Scene.Get()!=M->Web){bBuilt=false;Controls.Reset();Texts.Reset();SignTexts.Reset();SignBoard.Reset();DueLamp.Reset();DueMat.Reset();Readout.Reset();Deck={};StackHome.Reset();}
  Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;LastReadout.Empty();
  if(Build()){BindControls();Show(Ready());}
  PlaceStack(M->IsFreeform());
@@ -156,6 +157,14 @@ bool FS47FreeformAudioDesk::Build()
  };
  SignLine(TEXT("FreeformTapeSign1"),TEXT("REEL DECK"),.028,7.);
  SignLine(TEXT("FreeformTapeSign2"),TEXT("COMPARE RECORDINGS"),-.05,3.8);
+ {
+  // REEL-DIRECT-20261114: the due lamp, a small square at the sign's end, dark until the take waits here
+  auto* LampMat=UMaterialInstanceDynamic::Create(Base,M->Web);LampMat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.08,.06,.03));LampMat->SetScalarParameterValue(TEXT("Roughness"),.4);
+  LampMat->SetScalarParameterValue(TEXT("NativeLighting"),1);LampMat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor::Black);
+  auto* Lamp=NewObject<UStaticMeshComponent>(M->Web,TEXT("FreeformTapeDueLamp"));Lamp->SetMobility(EComponentMobility::Movable);Lamp->SetupAttachment(N->Comp.Get());Lamp->SetStaticMesh(Cube);Lamp->SetMaterial(0,LampMat);
+  Lamp->SetCollisionEnabled(ECollisionEnabled::NoCollision);Lamp->RegisterComponent();
+  Lamp->SetWorldLocation(S47Three::ToUE(SignAt+FVector(-.25,0,-.012)));Lamp->SetWorldScale3D(S47Three::DirToUE(FVector(.045,.045,.016)));DueLamp=Lamp;DueMat=LampMat;
+ }
  bBuilt=true;return true;
 }
 void FS47FreeformAudioDesk::BindControls()
@@ -228,7 +237,7 @@ bool FS47FreeformAudioDesk::Use(const FString& Id)
  {
   const FString Feedback=Free?M->Freeform->FeedbackText():M->Observing->AudioFeedbackText();
   if(!Accepted)M->UI->Toast(Feedback.IsEmpty()?(Free?TEXT("Nothing unusual on tape yet. An unusual take is recorded at the receiver first."):TEXT("Retain an anomalous original and complete its independent control before comparing.")):Feedback,4);
-  // (Freeform's RETAIN says its one next step itself, FS47FreeformSession::AudioAction: Tom, 9 November, the case opens at OPS)
+  // (Freeform's RETAIN says its one next step itself, FS47FreeformSession::AudioAction; REEL-DIRECT-20261114: it registers a plain anomaly there)
  }
  return true;
 }
@@ -239,6 +248,16 @@ void FS47FreeformAudioDesk::Step(double Dt)
  const bool EvidencePlaying=M->IsFreeform()?M->Freeform&&M->Freeform->AudioPlaying():M->Observing&&M->Observing->AudioPlaying();
  if(Reference)Reference->Step(ListeningPosition()&&!EvidencePlaying&&!M->bPausedByMenu&&(!M->ModalOpen()||(M->IsFreeform()&&M->Freeform&&M->Freeform->TapePanelOpen()))&&M->Story&&!M->Story->IsCinematic(),M->Audio&&M->Audio->Ctx?M->Audio->Ctx->CurrentTime():0);
  const bool Shown=Ready()&&M->Web->Area()==TEXT("saro");Show(Shown);if(!Shown)return;
+ if(DueMat.IsValid())
+ {
+  // REEL-DIRECT-20261114: amber, breathing slowly, while the take waits for the deck; dark otherwise (and with the power out)
+  const auto* DJ=M->IsFreeform()&&M->Freeform?M->Freeform->CurrentJob():nullptr;
+  const bool bDue=DJ&&Powered()&&FS47FreeformSession::TapeWaits(*DJ);
+  bDueLit=bDue;
+  DuePhase=bDue?FMath::Fmod(DuePhase+Dt,2.4):0.;
+  const float Glow=bDue?.55f+.45f*FMath::Sin(float(DuePhase/2.4*UE_DOUBLE_TWO_PI)):0.f;
+  DueMat->SetVectorParameterValue(TEXT("Emissive"),FLinearColor(1.f,.48f,.08f)*(Glow*1.8f));
+ }
  int32 Source=0;double Cursor=0,HeardO=0,HeardC=0,MarkIn=-1,MarkOut=-1,Control=0;bool Playing=false,Reviewed=false,Original=false;
  if(M->IsFreeform())
  {

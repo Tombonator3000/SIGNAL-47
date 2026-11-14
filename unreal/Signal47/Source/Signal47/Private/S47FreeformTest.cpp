@@ -1709,12 +1709,15 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==74){Finish(true,TEXT("Reel deck panel pictures taken; the journey was not continued."));return;}
  if(Stage==8)
  {
-  if(!Check(F.AudioAction(TEXT("confirm"))&&F.CurrentJob()->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.CurrentJob()->MarkStart>=0&&F.CurrentJob()->MarkEnd>F.CurrentJob()->MarkStart&&F.FeedbackText().Contains(TEXT("Confirm anomaly")),TEXT("RETAIN after the one listen confirms it, marks the ticks and names OPS")))return;
+  if(!Check(F.AudioAction(TEXT("confirm"))&&F.CurrentJob()->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.CurrentJob()->MarkStart>=0&&F.CurrentJob()->MarkEnd>F.CurrentJob()->MarkStart&&F.CurrentJob()->Stage==FS47FreeformSession::EJobStage::Registered&&!F.FeedbackText().Contains(TEXT("Confirm anomaly")),TEXT("RETAIN after the one listen confirms it, marks the ticks and registers it at the deck (REEL-DIRECT-20261114)")))return;
   M->UI->Close(true);if(!Restore(TEXT("reviewed-recordings")))return;F.Director->Stop();Go(9);return;
  }
  if(Stage==9)
  {
-  WorkBudget=F.Budget();if(!Check(F.RegisterComparison(JobIndex==1?TEXT("unresolved"):TEXT("normal")),TEXT("production registration accepts the supported finding")))return;
+  WorkBudget=F.Budget();
+  // REEL-DIRECT-20261114: the extra-tick take was registered by RETAIN at the deck; OPS has nothing more to register for it
+  if(JobIndex==1){if(!Check(F.CurrentJob()&&F.CurrentJob()->Stage>=FS47FreeformSession::EJobStage::Registered&&!F.RegisterComparison(TEXT("unresolved")),TEXT("the deck's RETAIN registered the supported finding; no second registration")))return;}
+  else if(!Check(F.RegisterComparison(TEXT("normal")),TEXT("production registration accepts the supported finding")))return;
   Go(9011);return;
  }
  if(Stage==9011)

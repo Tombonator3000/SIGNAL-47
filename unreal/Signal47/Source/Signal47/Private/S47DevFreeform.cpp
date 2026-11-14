@@ -1095,7 +1095,9 @@ void FS47DevFreeform::StepCards()
   CardsConclusion.Empty();
   const bool bWasAnomaly=Card.bAnomaly;
   // (Card is not read after this: registering a spoiled case test plans it again, which adds to the work list)
-  const bool bOk=F->RegisterComparison(Conclusion);
+  // REEL-DIRECT-20261114: a plain anomaly is registered by RETAIN at the deck already; registering again would be refused
+  const auto* Was=F->Jobs().FindByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==CardsId;});
+  const bool bOk=(Was&&Was->Stage>=J::Registered)||F->RegisterComparison(Conclusion);
   const auto* Now=F->Jobs().FindByPredicate([&](const FS47FreeformSession::FJob& X){return X.Id==CardsId;});
   const auto* B=F->Places&&F->Places->Bearings().Num()>Before?&F->Places->Bearings().Last():nullptr;
   // LOOP-SLIP-IN-PACKET-20261113: a discrepancy's bearing waits for its packet (on the map once the packet is collected)

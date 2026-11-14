@@ -1452,12 +1452,16 @@ bool FS47FreeformSession::ConfirmOnTape(FJob& J)
   J.MarkStart=In;J.MarkEnd=Out;
  }
  const bool bFirstTime=!J.bAudioReviewed;J.bAudioReviewed=true;
- Feedback=TEXT("ANOMALY CONFIRMED ON TAPE. NEXT: OPS (corner PC) / DAILY WORK, Confirm anomaly: source unresolved.");
- if(!bFirstTime)return true;
- RecordEvidence(TEXT("pulse-review"),TEXT("Original heard at the reel deck. Extra ticks outside the reference period; source unresolved."));
- // Tom, 9 November: the check says the next step, nothing more. The case opens when the job is confirmed at OPS (FirstCaseHeld,
- // OpenFirstCase), and its SOURCE line keeps this original's own clock. The reel stands in for the old control here.
- if(Director){Director->Use(TEXT("ff:control"));Director->Use(TEXT("ff:compare"));}
+ if(bFirstTime)
+ {
+  RecordEvidence(TEXT("pulse-review"),TEXT("Original heard at the reel deck. Extra ticks outside the reference period; source unresolved."));
+  if(Director){Director->Use(TEXT("ff:control"));Director->Use(TEXT("ff:compare"));}
+ }
+ // REEL-DIRECT-20261114 (Tom 14 Nov: no needless walk back and forth; critics: the OPS step for a plain anomaly had one valid answer,
+ // «source unresolved»): RETAIN at the deck registers it here. The case still opens at the registration (OpenFirstCase, its SOURCE
+ // line keeps this original's clock), the packet prints as before. If registering cannot happen now (no power), OPS still can.
+ if(RegisterComparison(TEXT("unresolved")))return true;
+ Feedback=TEXT("ANOMALY CONFIRMED ON TAPE. It could not be registered from the deck now: OPS (corner PC) / DAILY WORK, Confirm anomaly: source unresolved.");
  Changed(Feedback);return true;
 }
 void FS47FreeformSession::PrintJob(bool bPacket,bool bShow)
@@ -1616,7 +1620,7 @@ bool FS47FreeformSession::MarkAudioAt(double At)
  if(J->Stage>=EJobStage::Registered){Feedback=TEXT("Registered comparison is sealed. Playback is available; its marks cannot be changed.");return false;}
  if(Specialized(J->Phenomenon)){Feedback=TEXT("This is an instrument comparison. Use its measured control at OPS; no extra-tick marks are required.");return false;}
  if(AudioSourceIndex!=0){Feedback=TEXT("REEL DECK: The reference is loaded. Press ORIGINAL, then mark the take.");return false;}
- if(J->bAudioReviewed&&PlainAnomaly(*J)){Feedback=TEXT("REEL DECK: This take is retained with its marks. NEXT: OPS (corner PC), DAILY WORK.");return false;}
+ if(J->bAudioReviewed&&PlainAnomaly(*J)){Feedback=TEXT("REEL DECK: This take is retained with its marks. Press RETAIN to register it.");return false;}
  At=FMath::Clamp(At,0.,18.);
  // RX-ANOMALY-FLOW-20261113: a click on the trace sets the next mark there (MARK IN, then MARK OUT, then a new MARK IN), in order,
  // and says what it set; the tape stays where it is.
@@ -1655,7 +1659,7 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
   if(J->Stage>=EJobStage::Registered){Feedback=TEXT("Registered comparison is sealed. Playback is available; its marks cannot be changed.");return false;}
   if(Specialized(J->Phenomenon)){Feedback=TEXT("This is an instrument comparison. Use its measured control at OPS; no extra-tick marks are required.");return false;}
   if(AudioSourceIndex!=0){Feedback=PlainAnomaly(*J)?TEXT("REEL DECK: The reference is loaded. Press ORIGINAL, then mark the take."):TEXT("Mark the original recording, not the quiet internal control.");return false;}
-  if(PlainAnomaly(*J)&&J->bAudioReviewed){Feedback=TEXT("REEL DECK: This take is retained with its marks. NEXT: OPS (corner PC), DAILY WORK.");return false;}
+  if(PlainAnomaly(*J)&&J->bAudioReviewed){Feedback=TEXT("REEL DECK: This take is retained with its marks. Press RETAIN to register it.");return false;}
   // RX-ANOMALY-FLOW-20261113 (Tom: MARK IN and MARK OUT must work): each key sets its end at the tape head and says so; an end on
   // the wrong side of the other is refused with the reason (MARK IN after MARK OUT clears the old MARK OUT instead).
   if(Action==TEXT("mark_start"))
@@ -1758,6 +1762,19 @@ void FS47FreeformSession::StepAudio(double Dt)
   else M->Audio->ReceiverRecordingOff(); // Legacy evidence keeps its original beep-only reconstruction.
   if(!Captured)for(double At=PulsarPeriod;At<=Duration;At+=PulsarPeriod)if(Was<At&&AudioCursor>=At)M->Audio->Beep(820,.012f,.16f,0,TEXT("square"));
   if(!Captured&&AudioSourceIndex==0)for(double At:J->TraceTicks)if(Was<At&&AudioCursor>=At)M->Audio->Beep(1240,.008f,.1f,0,TEXT("square"));
+  // REEL-GHOST-20261114 (critics, Tom «spenning slår faste regler»; it bends «a modal panel is a quiet room», S47HorrorVisual.cpp):
+  // on the second pass of a plain anomaly's original, three dull knocks on the tape that were not there the first time, and are not
+  // there the third. Once per take; never evidence, never a mark, never a stop, nothing the comparison reads.
+  if(AudioSourceIndex==0&&PlainAnomaly(*J))
+  {
+   if(Was<.5&&AudioCursor>=.5)TapePasses.FindOrAdd(J->Id)++;
+   if(TapePasses.FindRef(J->Id)==2&&!TapeGhostDone.Contains(J->Id))
+    for(double At:{14.2,14.75,15.4})if(Was<At&&AudioCursor>=At)
+    {
+     M->Audio->Play(TEXT("thud_soft"),At>15.?.16f:.2f,FVector::ZeroVector,At>15.?.7f:.8f);
+     if(At>15.){TapeGhostDone.Add(J->Id);UE_LOG(LogTemp,Display,TEXT("S47: reel ghost: three knocks on the second pass of %s"),*J->Id);}
+    }
+  }
  }
  if(AudioCursor>=Duration){bAudioPlaying=false;Changed();}
 }
@@ -3153,7 +3170,7 @@ void FS47FreeformSession::OpenTapePanel()
  const S47Kit::FW Lamps=T::Columns({
   {1.25f,StepCell(1,[this]{const auto* J=CurrentJob();return FString::Printf(TEXT("1 PLAY THE TAKE %02.0f/18"),J?FMath::Min(18.,J->OriginalCovered):0.);})},
   {1.25f,StepCell(2,[this]{const auto* J=CurrentJob();if(!J||!J->bControl)return FString(TEXT("2 NO REFERENCE TAPE"));return J->ControlAt<8?FString::Printf(TEXT("2 REFERENCE RECORDING %.0f/8"),J->ControlAt):FString::Printf(TEXT("2 PLAY THE REFERENCE %01.0f/8"),FMath::Min(8.,J->ControlCovered));})},
-  {1.3f,StepCell(3,[this]{const auto* J=CurrentJob();return FString(J&&J->Stage>=EJobStage::Registered?TEXT("3 CONFIRMED AT OPS"):J&&J->bAudioReviewed?TEXT("3 RETAINED: TO OPS"):TEXT("3 MARK THE TICKS, RETAIN"));})}});
+  {1.3f,StepCell(3,[this]{const auto* J=CurrentJob();return FString(J&&J->Stage>=EJobStage::Registered?TEXT("3 RETAINED AND REGISTERED"):J&&J->bAudioReviewed?TEXT("3 PRESS RETAIN TO REGISTER"):TEXT("3 MARK THE TICKS, RETAIN"));})}});
  const S47Kit::FW Why=T::Note(TAttribute<FString>::CreateLambda([this]
  {
   const auto* J=CurrentJob();
@@ -5833,9 +5850,9 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
    // RX-ANOMALY-FLOW-20261113: marks set by hand are the operator's: missing the ticks, RETAIN refuses and says where they are
    LJ.OriginalCovered=13;LJ.MarkStart=10.;LJ.MarkEnd=11.;LoopOrder&=!Loop.AudioAction(TEXT("confirm"))&&!LJ.bAudioReviewed&&Loop.FeedbackText().Contains(TEXT("miss the extra ticks"))&&LJ.MarkStart==10.;
    LJ.MarkStart=9.1;LJ.MarkEnd=-1;LoopOrder&=Loop.AudioAction(TEXT("confirm"))&&LJ.bAudioReviewed&&FMath::IsNearlyEqual(LJ.MarkStart,9.1)&&LJ.MarkEnd>=12.6&&LJ.ControlCovered==0&&MarkCoversTicks(LJ.MarkStart,LJ.MarkEnd)&&Loop.HasFinding(TEXT("pulse-review"))
-    &&Loop.FeedbackText().Contains(TEXT("Confirm anomaly: source unresolved"));
-   LoopOrder&=TerminalNextLine(Loop.JobNextAction(LJ),1)==TEXT("NEXT / OPS (CORNER PC)")&&TerminalNextLine(Loop.JobNextAction(LJ),3)==TEXT("NEXT / USE THIS PC")&&StatusWord(LJ,true)==TEXT("CONFIRM");
-   LoopOrder&=Loop.RegisterComparison(TEXT("unresolved"))&&LJ.Stage==EJobStage::Registered&&TerminalNextLine(Loop.JobNextAction(LJ),3)==TEXT("NEXT / PRINTER");
+    &&Loop.FeedbackText().Contains(TEXT("Registered"))&&!Loop.FeedbackText().Contains(TEXT("Confirm anomaly"));
+   // REEL-DIRECT-20261114: RETAIN at the deck registered it; no walk to OPS
+   LoopOrder&=LJ.Stage==EJobStage::Registered&&TerminalNextLine(Loop.JobNextAction(LJ),3)==TEXT("NEXT / PRINTER")&&!Loop.RegisterComparison(TEXT("unresolved"));
    LJ.PacketFeed=PrinterSeconds;LoopOrder&=Loop.JobNextAction(LJ).Contains(TEXT("COLLECT THE ANOMALY PACKET"));
    LJ.Stage=EJobStage::Packet;LoopOrder&=Loop.JobNextAction(LJ).Contains(TEXT("BINDER"));
   }
@@ -5867,7 +5884,7 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
     MJ.OriginalCovered=18.;Retain&=!MJ.bAudioReviewed; // heard: nothing confirms itself
     MJ.MarkStart=10.;MJ.MarkEnd=11.;Retain&=!Mk.AudioAction(TEXT("confirm"))&&!MJ.bAudioReviewed&&Mk.FeedbackText().Contains(TEXT("miss the extra ticks"));
     MJ.MarkStart=9.;MJ.MarkEnd=13.;Retain&=Mk.AudioAction(TEXT("confirm"))&&MJ.bAudioReviewed&&FMath::IsNearlyEqual(MJ.MarkStart,9.)&&FMath::IsNearlyEqual(MJ.MarkEnd,13.)
-     &&!Mk.MarkAudioAt(5.)&&Mk.FeedbackText().Contains(TEXT("retained with its marks"))&&Mk.JobNextAction(MJ).StartsWith(TEXT("OPS"));
+     &&MJ.Stage==EJobStage::Registered&&!Mk.MarkAudioAt(5.)&&Mk.FeedbackText().Contains(TEXT("sealed"))&&Mk.JobNextAction(MJ).Contains(TEXT("PRINTER")); // REEL-DIRECT-20261114: registered at the deck
    }
    Check(Keys,TEXT("RX-ANOMALY-FLOW-20261113: reel deck marks by MARK IN / MARK OUT at the tape head, in order, each saying what it set or why not"));
    Check(Clicks,TEXT("RX-ANOMALY-FLOW-20261113: reel deck marks by two clicks on the trace, in either order, without moving the tape"));
@@ -6323,21 +6340,22 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
     FJob& FcJ=Fc.Work[FcI];FcJ.Stage=EJobStage::Recorded;FcJ.bPrinted=true;FcJ.bAnomaly=true;FcJ.bControl=false;FcJ.ControlAt=0;
     FcJ.OriginalCovered=18;FcJ.ControlCovered=0;FcJ.ReferenceClock=21.5*3600.;
    }
+   const auto Before=Fc.Save();
    const bool bRetained=Fc.AudioAction(TEXT("confirm"));
    Fc.RecordEvidence(TEXT("extra_pulse"),TEXT("An extra pulse group survives a separate receiver check. The source is unresolved.")); // the event's own, as the Director keeps it
-   Check(bRetained&&Fc.Work[FcI].bAudioReviewed&&Fc.HasFinding(TEXT("pulse-review"))&&!Fc.CaseFile().Get(0)->bOpen&&Fc.CaseStep(0).Step==ECaseStep::Closed&&Fc.CaseAwaitingChoice()<0
-    &&Fc.FeedbackText().Contains(TEXT("Confirm anomaly: source unresolved"))&&!Fc.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("First case: one listen at the reel deck keeps the take, opens no case and says only the next step, the confirmation at OPS"));
+   // REEL-DIRECT-20261114: RETAIN at the reel deck registers the plain anomaly, and the registration opens the case as it did at OPS
+   Check(bRetained&&Fc.Work[FcI].bAudioReviewed&&Fc.HasFinding(TEXT("pulse-review"))&&Fc.Work[FcI].Stage==EJobStage::Registered&&Fc.CaseFile().Get(0)->bOpen&&Fc.CaseStep(0).Step==ECaseStep::ChooseTest
+    &&Fc.FeedbackText().StartsWith(TEXT("CASE OPENED: THE REPEATED INTERVAL"))&&Fc.CaseFile().Get(0)->RefDay==1&&FMath::IsNearlyEqual(Fc.CaseFile().Get(0)->RefClock,21.5*3600.),
+    TEXT("First case: RETAIN at the reel deck registers the take, opens the case, says CASE OPENED, and keeps the original's clock for its SOURCE line"));
    const auto Between=S47J::Read(S47J::Write(Fc.Save()));
-   FS47FreeformSession Fc2(nullptr);Fc2.Begin(Between);Fc2.Tutorial=0;
-   Check(!Fc2.CaseFile().Get(0)->bOpen&&Fc2.Work[FcI].bAudioReviewed&&Fc2.Work[FcI].Stage==EJobStage::Recorded,TEXT("First case: a Continue between RETAIN and the registration opens no case either"));
-   Fc2.Selected=FcI;
-   Check(Fc2.RegisterComparison(TEXT("unresolved"))&&Fc2.Work[FcI].Stage==EJobStage::Registered&&Fc2.CaseFile().Get(0)->bOpen&&Fc2.CaseStep(0).Step==ECaseStep::ChooseTest
-    &&Fc2.FeedbackText().StartsWith(TEXT("CASE OPENED: THE REPEATED INTERVAL"))&&Fc2.CaseFile().Get(0)->RefDay==1&&FMath::IsNearlyEqual(Fc2.CaseFile().Get(0)->RefClock,21.5*3600.),TEXT("First case: registering the comparison at OPS opens it, says CASE OPENED, and keeps the original's clock for its SOURCE line"));
-   // An older save: the case was opened at RETAIN, the comparison not registered yet.
-   auto Older=S47J::Read(S47J::Write(Fc.Save()));
+   FS47FreeformSession Fc2(nullptr);Fc2.Begin(Between);Fc2.Tutorial=0;Fc2.Selected=FcI;
+   Check(Fc2.CaseFile().Get(0)->bOpen&&Fc2.Work[FcI].Stage==EJobStage::Registered&&!Fc2.RegisterComparison(TEXT("unresolved")),TEXT("First case: Continue keeps it registered with the case open; nothing more to register"));
+   // An older save: the take retained on the deck (as before 14 Nov), the case opened at RETAIN, the comparison not registered yet;
+   // RETAIN again on the deck registers it.
+   auto Older=S47J::Read(S47J::Write(Before));
    {const auto List=S47J::Arr(S47J::Obj(Older,TEXT("cases")),TEXT("cases"));if(List.Num()>0){auto O0=List[0]->AsObject();S47J::Set(O0,TEXT("open"),true);S47J::Set(O0,TEXT("openDay"),1);S47J::Set(O0,TEXT("openClock"),21.75*3600.);}}
-   FS47FreeformSession Fc3(nullptr);Fc3.Begin(Older);Fc3.Tutorial=0;Fc3.Selected=FcI;
-   Check(Fc3.CaseFile().Get(0)->bOpen&&Fc3.RegisterComparison(TEXT("unresolved"))&&Fc3.CaseFile().Get(0)->bOpen&&Fc3.CaseFile().Get(0)->OpenDay==1&&!Fc3.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("First case: an older save with the case open at RETAIN goes on as before"));
+   FS47FreeformSession Fc3(nullptr);Fc3.Begin(Older);Fc3.Tutorial=0;Fc3.Selected=FcI;Fc3.Work[FcI].bAudioReviewed=true;
+   Check(Fc3.CaseFile().Get(0)->bOpen&&Fc3.AudioAction(TEXT("confirm"))&&Fc3.Work[FcI].Stage==EJobStage::Registered&&Fc3.CaseFile().Get(0)->bOpen&&Fc3.CaseFile().Get(0)->OpenDay==1&&!Fc3.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("First case: an older save with the case open at RETAIN goes on as before"));
    Fc2.Stop();Fc3.Stop();
   }
   Fc.Stop();

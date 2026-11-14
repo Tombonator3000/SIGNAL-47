@@ -59,7 +59,7 @@ namespace
 // på reel ... MARK IN og MARK OUT og også trykke på stedet der lyden har avvik ... referanselyd»): one unusual observation along its
 // steps, each one thing at one place, through the keys a player uses: ANOMALY DETECTED on the receiver, its RECORD tab due; START
 // RECORDING there; RETAIN TAKE / RECORD REFERENCE 8 s there; the reel deck: PLAY the take, MARK IN and MARK OUT at the tape head,
-// the reference on its own key, marks by clicks on the trace, RETAIN (refused while the marks miss the ticks); confirm at OPS; the
+// the reference on its own key, marks by clicks on the trace, RETAIN (refused while the marks miss the ticks) registers it there; the
 // packet at the printer (the binder is walked in the card player, S47DevFreeform). The receiver is clicked by SimulateClick (its
 // glass is a virtual window reached by the camera's ray); the reel deck panel by real Slate pointer events. (The name is the old
 // internal-control test's.)
@@ -374,7 +374,12 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   M->UI->Close(true);const FVector T=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original"));
   M->Player->Place(T.X-.5,T.Z-1.45,UE_DOUBLE_PI);M->Player->Pitch=-.12;Go(71,6.);return; // the toast has gone
  }
- if(Stage==71){Shot(TEXT("deck-sign.png"));Go(710,.6);return;}
+ if(Stage==71)
+ {
+  // REEL-DIRECT-20261114: the take waits for the deck, and the sign's lamp says so across the room
+  if(!Check(F.CurrentJob()&&FS47FreeformSession::TapeWaits(*F.CurrentJob())&&F.AudioDesk->DueLit(),TEXT("the reel deck's due lamp is lit while the take waits for the deck")))return;
+  Shot(TEXT("deck-sign.png"));Go(710,.6);return;
+ }
  if(Stage==710)
  {
   // The receiver stack now stands on the table; looking at it leads to the same panel.
@@ -493,8 +498,8 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  if(Stage==81)
  {
   const auto* Take=F.CurrentJob();
-  if(!Check(Take->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&FMath::IsNearlyEqual(Take->MarkStart,9.,.1)&&FMath::IsNearlyEqual(Take->MarkEnd,13.,.1)&&F.FeedbackText().Contains(TEXT("Confirm anomaly")),TEXT("RETAIN confirms the anomaly, keeps the hand marks and names OPS")))return;
-  if(!Check(F.JobNextAction(*Take).StartsWith(TEXT("OPS"))&&Shows(TEXT("3 RETAINED: TO OPS")),TEXT("then OPS: ")+F.JobNextAction(*Take)))return;
+  if(!Check(Take->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&FMath::IsNearlyEqual(Take->MarkStart,9.,.1)&&FMath::IsNearlyEqual(Take->MarkEnd,13.,.1)&&Take->Stage==J::Registered&&!F.FeedbackText().Contains(TEXT("Confirm anomaly")),TEXT("RETAIN confirms the anomaly, keeps the hand marks and registers it at the deck (REEL-DIRECT-20261114): ")+F.FeedbackText()))return;
+  if(!Check(F.JobNextAction(*Take).Contains(TEXT("PRINTER"))&&Shows(TEXT("3 RETAINED AND REGISTERED"))&&!F.AudioDesk->DueLit(),TEXT("then the printer, the deck's third lamp says registered, and the due lamp is out: ")+F.JobNextAction(*Take)))return;
   Shot(TEXT("deck-panel-retained.png"));Go(82,.3);return;
  }
  if(Stage==82)
@@ -509,9 +514,8 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   FSlateApplication& App=FSlateApplication::Get();const FKeyEvent Esc(EKeys::Escape,FModifierKeysState(),0,false,0,0);
   App.ProcessKeyDownEvent(Esc);App.ProcessKeyUpEvent(Esc);
   if(!Check(!F.TapePanelOpen()&&!M->ModalOpen()&&!M->bPausedByMenu,TEXT("a real Escape press leaves the panel without opening the pause menu")))return;
-  // 9: confirm at OPS, one button
-  if(!Check(!F.RegisterComparison(TEXT("sky"))&&F.CurrentJob()->Stage==J::Recorded,TEXT("OPS takes no origin it cannot show")))return;
-  if(!Check(F.RegisterComparison(TEXT("unresolved"))&&F.CurrentJob()->Stage==J::Registered,TEXT("Confirm anomaly registers it")))return;
+  // 9: nothing to confirm at OPS any more (REEL-DIRECT-20261114): the deck's RETAIN registered it; OPS takes no second registration
+  if(!Check(!F.RegisterComparison(TEXT("sky"))&&!F.RegisterComparison(TEXT("unresolved"))&&F.CurrentJob()->Stage==J::Registered,TEXT("OPS has nothing more to register and takes no origin it cannot show")))return;
   Go(84);return;
  }
  if(Stage==84)
@@ -522,6 +526,6 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   // LOOP-SLIP-IN-PACKET-20261113: no separate bearing slip waits behind the anomaly's packet (its bearing, where there is one, is the packet's last page)
   if(!Check(!F.ResultSheets().ContainsByPredicate([](const FS47FreeformSession::FResultSheet& Sh){return FS47FreeformSession::IsBearingSlip(Sh);})&&!F.NextAction().Contains(TEXT("BEARING SLIP")),TEXT("no separate bearing slip after the anomaly's packet")))return;
   M->UI->Close(true);
-  Finish(true,TEXT("Unusual take: ANOMALY DETECTED, RECORD tab due, recorded and retained there with its 8-second reference, reel deck by the pointer (play, MARK IN / OUT, reference, marks by clicks, RETAIN), confirmed at OPS, packet printed; the binder is next."));return;
+  Finish(true,TEXT("Unusual take: ANOMALY DETECTED, RECORD tab due, recorded and retained there with its 8-second reference, reel deck by the pointer (play, MARK IN / OUT, reference, marks by clicks, RETAIN registers it at the deck), packet printed; the binder is next."));return;
  }
 }

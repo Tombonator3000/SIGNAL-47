@@ -657,6 +657,7 @@ public:
  // thing at one place: ANOMALY DETECTED on the receiver, record it there, one listen at the reel deck, confirm at OPS, the packet at
  // the printer, the binder. No control to record, no second reel, no chart to fetch: the original is kept as the take ends.
  static bool PlainAnomaly(const FJob& J);
+ static bool TapeWaits(const FJob& J); // the retained take waits for the reel deck (REEL-DIRECT-20261114: public for the deck's due lamp)
  // One listen at the reel deck: the original heard from the start past its last extra tick.
  static bool TapeHeard(const FJob& J);
  // RX-ANOMALY-FLOW-20261113 (-> M3, Tom 13 November: from RECORD on the receiver to the sound confirmed at the reel deck, with a
@@ -841,6 +842,8 @@ private:
  FString ArrayJob; // D48-20261110: the job whose pointing the array and receiver last held (saved "arrayJob"; an older save has none)
  void ReleaseForNewJob(); // D48-20261110: a new job on the same target as the last starts from a released array and a stood-down receiver
  TSharedPtr<FS47CapturePlayer> LiveCapture,TapeCapture;
+ // REEL-GHOST-20261114: passes of each take's original played from its start, and the takes whose knocks have come (not saved)
+ TMap<FString,int32> TapePasses;TSet<FString> TapeGhostDone;
  bool UsesCapturedAudio() const;
  int32 CaptureStartStage=0; // 1 prepare; 2 discard build frame; 3 start on stable frame
  FString AudioStopWhy;
@@ -1096,10 +1099,9 @@ private:
  void DecideTake(FJob& J);
  bool DecidedTake(const FJob& J,FString& Phen,bool& bOutThere) const;
  void RetainOriginal(FJob& J); // the original page kept as the take ends, with no chart to fetch
- bool ConfirmOnTape(FJob& J); // the reel deck's one listen: marks the ticks if they are not, keeps the review, names OPS
+ bool ConfirmOnTape(FJob& J); // the reel deck's one listen: marks the ticks if they are not, keeps the review, registers a plain anomaly (REEL-DIRECT-20261114)
  // Critic 12 Nov: an extra-tick take waiting for its one listen at the deck; and the deck threading the oldest of them when the
  // selected job is not one (OpenAudio, OpenTapePanel).
- static bool TapeWaits(const FJob& J);
  void FollowTapeJob();
  FString DetectedJob; // the job whose ANOMALY DETECTED was last said aloud (once a take; not saved)
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);

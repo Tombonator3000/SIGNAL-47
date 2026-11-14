@@ -23,6 +23,7 @@ public:
  FString Label(const FString& Id) const;
  bool Ready() const;
  bool ListeningPosition() const;
+	bool DueLit() const { return bDueLit; } // REEL-DIRECT-20261114: the sign's due lamp is lit (the take waits for the deck)
  FString ReferenceLabel() const;
  bool ReferencePlaying() const;
  int32 ReferenceIndex() const; // D48-20261110: the reference loaded on the deck, -1 before NEXT or PLAY has loaded one
@@ -55,6 +56,8 @@ private:
  // Freeform marks the station with a wall sign and opens one screen panel instead of the small keys.
  TArray<TWeakObjectPtr<UTextRenderComponent>> SignTexts;
  TWeakObjectPtr<UStaticMeshComponent> SignBoard;
+ // REEL-DIRECT-20261114: a lamp on the sign that glows amber while the take waits for the deck (FS47FreeformSession::TapeWaits)
+ TWeakObjectPtr<UStaticMeshComponent> DueLamp;TWeakObjectPtr<UMaterialInstanceDynamic> DueMat;double DuePhase=0;bool bDueLit=false;
  bool Build();
  void BindControls();
  bool Live() const;

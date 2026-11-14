@@ -376,7 +376,7 @@ namespace S47FreeformEvidenceTest
   }
   if(S.Stage==20){if(!Check(M,F.AudioDesk->ListeningPosition(),TEXT("actual walking reaches the powered physical tape listening position")))return;Aim(M,Target(M,TEXT("ff:audio:original")));Go(21);return;}
   if(S.Stage==21){if(!Use(M,TEXT("ff:audio:original")))return;Aim(M,Target(M,TEXT("ff:audio:play")));Go(22);return;}
-  if(S.Stage==22){if(!Use(M,TEXT("ff:audio:play"))||!Check(M,F.AudioPlaying()&&!M->ModalOpen(),TEXT("physical PLAY begins the original recording while world remains active")))return;Go(23,0);return;}
+  if(S.Stage==22){if(!Use(M,TEXT("ff:audio:play"))||!Check(M,(F.AudioPlaying()||F.AudioDisplay().Contains(TEXT("LOADING TAPE")))&&!M->ModalOpen(),TEXT("physical PLAY begins the original recording (the captured tape loads first, since 5 Nov) while world remains active")))return;Go(23,0);return;}
   // RX-ANOMALY-FLOW-20261113: the listen leaves RETAIN to the operator; RETAIN marks the ticks where no marks are set
   if(S.Stage==23)
   {if(F.AudioPlaying()||F.AudioPreparing())return;if(!Check(M,J->OriginalCovered==18&&J->ControlCovered==0,TEXT("original is actually heard in full; no seek/coverage injection")))return;
@@ -384,8 +384,8 @@ namespace S47FreeformEvidenceTest
    Aim(M,Target(M,TEXT("ff:audio:retain")));Go(291);return;}
   if(S.Stage==291)
   {if(!Use(M,TEXT("ff:audio:retain"))||!Check(M,J->bAudioReviewed&&F.HasFinding(TEXT("pulse-review"))&&F.Budget()==S.InitialCash+20&&J->MarkStart<=9.3&&J->MarkEnd>=12.6,TEXT("physical RETAIN after the listen confirms it and marks the ticks, without payment")))return;
-   // Tom, 9 November: the check opens no case; it says the next step, the confirmation at OPS.
-   if(!Check(M,!(F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen)&&F.FeedbackText().Contains(TEXT("Confirm anomaly: source unresolved"))&&!F.FeedbackText().Contains(TEXT("CASE OPENED")),TEXT("the tape check opens no case and says only the next step: confirm at OPS")))return;Photo(TEXT("03-physical-original-control"));Go(292);return;}
+   // REEL-DIRECT-20261114: RETAIN on the deck registers the plain anomaly; the registration opens the case and says so.
+   if(!Check(M,J->Stage==EJob::Registered&&F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen&&F.FeedbackText().StartsWith(TEXT("CASE OPENED: THE REPEATED INTERVAL")),TEXT("RETAIN on the deck registers the take and opens THE REPEATED INTERVAL: CASE OPENED")))return;Photo(TEXT("03-physical-original-control"));Go(292);return;}
   if(S.Stage==292){WalkTo(M,{{.42,1.2},{-4.2,1.2},{-4.2,2.49}},30);return;}
   if(S.Stage==30){Aim(M,Target(M,TEXT("opsTerminal")));Go(31);return;}
   if(S.Stage==31){if(!Use(M,TEXT("opsTerminal")))return;Go(32,.6);return;}
@@ -396,7 +396,7 @@ namespace S47FreeformEvidenceTest
     if(!Click(M,TEXT("Register routine result / $20"))||!Check(M,J->Stage==EJob::Filed&&!J->bAnomaly&&F.Budget()==S.InitialCash+20&&!F.HasFinding(TEXT("pulse-review")),TEXT("normal reference files once, pays20 and creates no false discrepancy")))return;
     S.Job=1;Go(2);return;
    }
-   if(!Check(M,!F.RegisterComparison(TEXT("sky"))&&J->Stage==EJob::Recorded&&F.Budget()==S.InitialCash+20,TEXT("unsupported sky-origin interpretation remains refused without a misleading menu choice, credit or stage advance")))return;Go(33);return;
+   if(!Check(M,!F.RegisterComparison(TEXT("sky"))&&J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("registered at the deck: OPS has nothing more to register, no sky-origin interpretation, no credit")))return;Go(330,.6);return;
   }
   if(S.Stage==33)
   {
