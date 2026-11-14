@@ -123,7 +123,9 @@ namespace Slice3
  const TCHAR* const WhyWords=TEXT("NOT WRITTEN: THE BINDER KEEPS PLAIN WORKING NAMES. TRY OTHER WORDS.");
  // the sheet's lines (Sheet)
  const TCHAR* const SheetName=TEXT("WORKING NAME  ");
- const TCHAR* const SheetFiled=TEXT("FILED UNDER ITS NAME AT HABITS.");
+ // REVIEW (14 Nov, felt): that a file filed goes to Dr. Ward's review, and nothing more (never whether it counts)
+ const TCHAR* const SheetFiled=TEXT("FILED UNDER ITS NAME AT HABITS. IT GOES TO DR. WARD'S REVIEW.");
+ const TCHAR* const FiledSlip=TEXT("FILED UNDER ITS NAME. IT GOES TO DR. WARD'S REVIEW.");
  const TCHAR* const SheetUnnamed=TEXT("AT HABITS. A NAME WRITTEN ON IT HERE FILES IT.");
  const TCHAR* const SheetUnnamedAway=TEXT("AT HABITS. A NAME WRITTEN ON IT AT THE BINDER IN THE RECORDS ROOM FILES IT."); // the reading copy
 }
@@ -363,7 +365,7 @@ TArray<FString> Words()
  for(const FString& W:SuggestWords())Out.Add(W);
  for(int32 H=0;H<24;++H)Out.Add(HabitHourThought(H));
  for(const Slice3::FWord& W:Slice3::LampThoughts)Out.Add(W.Said);
- for(const TCHAR* W:{Slice3::NameRowWords,Slice3::Away,Slice3::Hint,Slice3::WhyShort,Slice3::WhyLetters,Slice3::WhyWords,Slice3::SheetName,Slice3::SheetFiled,Slice3::SheetUnnamed,Slice3::SheetUnnamedAway})Out.Add(W);
+ for(const TCHAR* W:{Slice3::NameRowWords,Slice3::Away,Slice3::Hint,Slice3::WhyShort,Slice3::WhyLetters,Slice3::WhyWords,Slice3::SheetName,Slice3::SheetFiled,Slice3::SheetUnnamed,Slice3::SheetUnnamedAway,Slice3::FiledSlip})Out.Add(W);
  for(int32 N=1;N<=MaxFiles;++N){Out.Add(MergeRow(N,true));Out.Add(MergeRow(N,false));Out.Add(TakeOutRow(N));Out.Add(MergeSlip(1,N));Out.Add(TakeOutSlip(1,N));}
  Out.Add(NameSlip(Titled(3,TEXT("Bare feet"))));Out.Add(MergedLine(TArray<int32>{2,MaxFiles}));
  {
@@ -1172,6 +1174,7 @@ FString NameSlip(const FString& Title){return FString::Printf(TEXT("WRITTEN ON T
 FString MergeSlip(int32 Into,int32 From){return FString::Printf(TEXT("FILED AS ONE: UNKNOWN %d GOES IN UNKNOWN %d. IT CAN COME OUT AGAIN UNTIL 08:00."),From,Into);}
 FString TakeOutSlip(int32 Into,int32 From){return FString::Printf(TEXT("OUT AGAIN: UNKNOWN %d STANDS ON ITS OWN, BESIDE UNKNOWN %d."),From,Into);}
 FString AwayWords(){return Slice3::Away;}
+FString FiledWords(){return Slice3::FiledSlip;}
 FString NameHint(){return Slice3::Hint;}
 FString MergedLine(const TArray<int32>& Numbers)
 {
@@ -1509,6 +1512,9 @@ bool SelfTest(TArray<FString>& Lines)
  {
   FFile Unnamed;Unnamed.Stage=StageWord(EStage::Habits);Unnamed.Boxes.SetNum(TypeN);
   const FString Here=Sheet(Unnamed,TArray<FString>()),Away=Sheet(Unnamed,TArray<FString>(),false);
+  FFile Done=Unnamed;Done.bFiled=true;
+  Check(Sheet(Done,TArray<FString>()).Contains(TEXT("FILED UNDER ITS NAME AT HABITS. IT GOES TO DR. WARD'S REVIEW."))&&FiledWords().Contains(TEXT("DR. WARD'S REVIEW"))&&!FiledWords().Contains(TEXT("COUNT")),
+   TEXT("review (felt): a file filed says, on its sheet and on the slip, that it goes to Dr. Ward's review, and never whether it counts"));
   Check(Here.Contains(TEXT(" HERE FILES IT."))&&!Away.Contains(TEXT(" HERE "))&&Away.Contains(TEXT("AT THE BINDER IN THE RECORDS ROOM")),
    TEXT("review: a file at HABITS with no name says where a name files it: here at the binder, or on the reading copy, at the binder in the records room"));
  }

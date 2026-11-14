@@ -198,8 +198,8 @@ bool FS47FreeformSession::DossierName(int32 Number,const FString& Typed,FString&
  Unknowns.SetName(Number,Clean,DayNumber);
  Words=S47Dossier::NameSlip(Unknowns.TitleOf(Number));
  const int32 Paid=DossierPayFiled();
- if(Paid>0)Words+=FString::Printf(TEXT(" FILED UNDER ITS NAME. $%d CREDITED."),Paid);
- else if(Unknowns.Filed(Number))Words+=TEXT(" FILED UNDER ITS NAME.");
+ if(Unknowns.Filed(Number))Words+=TEXT(" ")+S47Dossier::FiledWords(); // REVIEW (14 Nov, felt): it goes to Dr. Ward's review
+ if(Paid>0)Words+=FString::Printf(TEXT(" $%d CREDITED."),Paid);
  UE_LOG(LogTemp,Display,TEXT("S47: dossier: file %d named '%s' (filed %d, paid %d)"),Number,*Clean,Unknowns.Filed(Number)?1:0,Paid);
  return true;
 }
@@ -213,7 +213,8 @@ bool FS47FreeformSession::DossierFileAsOne(int32 A,int32 B,FString& Words,bool b
  UE_LOG(LogTemp,Display,TEXT("S47: dossier: file %d filed in file %d as one, night %d (%s; stage %s)"),From,Into,Night,Unknowns.WrongMerge(Into)?TEXT("not one kind"):TEXT("one kind"),S47Dossier::StageWord(Unknowns.StageOfFile(Into)));
  Words=S47Dossier::MergeSlip(Into,From);
  const int32 Paid=DossierPayFiled();
- if(Paid>0)Words+=FString::Printf(TEXT(" FILED UNDER ITS NAME. $%d CREDITED."),Paid);
+ if(Unknowns.Filed(Into))Words+=TEXT(" ")+S47Dossier::FiledWords();
+ if(Paid>0)Words+=FString::Printf(TEXT(" $%d CREDITED."),Paid);
  return true;
 }
 bool FS47FreeformSession::DossierTakeOut(int32 Into,int32 From,FString& Words,bool bAt)
@@ -474,7 +475,7 @@ bool FS47FreeformSession::DossierSelfTest(TArray<FString>& Lines)
    &&!At.DossierAct(TEXT("merge:1:2"),FString(),Words)&&At.Unknowns.IsFile(2);
   const bool bRefused=!At.DossierName(1,TEXT("Grey one"),Words,true)&&At.Unknowns.NameOf(1).IsEmpty()&&!Words.IsEmpty();
   const bool bNamed=At.DossierName(1,TEXT(" Big   head "),Words,true)&&At.Unknowns.NameOf(1)==TEXT("Big head")&&Words.StartsWith(TEXT("WRITTEN ON THE FILE: UNKNOWN 1 (BIG HEAD)."))
-   &&Words.Contains(FString::Printf(TEXT("$%d CREDITED"),int32(FiledAllowance)))&&At.Unknowns.Paid(1)&&At.Unknowns.Filed(1);
+   &&Words.Contains(FString::Printf(TEXT("$%d CREDITED"),int32(FiledAllowance)))&&Words.Contains(S47Dossier::FiledWords())&&At.Unknowns.Paid(1)&&At.Unknowns.Filed(1);
   const bool bOnce=At.DossierName(1,TEXT("Big head again"),Words,true)&&!Words.Contains(TEXT("CREDITED"))&&At.DossierPayFiled()==0;
   const S47Binder::FSource Src=At.BinderSource();
   TArray<FS47Task> NoteLines;At.DossierTasks(NoteLines);

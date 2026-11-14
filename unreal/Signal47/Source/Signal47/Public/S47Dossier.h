@@ -209,6 +209,7 @@ namespace S47Dossier
  SIGNAL47_API FString MergeSlip(int32 Into,int32 From);
  SIGNAL47_API FString TakeOutSlip(int32 Into,int32 From);
  SIGNAL47_API FString AwayWords();                       // the reading copy: where naming and filing as one are done
+ SIGNAL47_API FString FiledWords();                      // the slip's line when a file is FILED: it goes to Dr. Ward's review
  SIGNAL47_API FString NameHint();                        // the empty field's hint
  SIGNAL47_API FString MergedLine(const TArray<int32>& Numbers); // THEM: "Filed in it as one: UNKNOWN 3."; empty for none
 }
