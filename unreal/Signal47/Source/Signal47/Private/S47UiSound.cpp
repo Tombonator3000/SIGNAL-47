@@ -1,6 +1,7 @@
 #include "S47UiSound.h"
 #include "S47Audio.h"
 #include "S47Main.h"
+#include "S47Sideband.h"
 #include "S47Story.h"
 #include "S47WebAudio.h"
 #include "CoreGlobals.h"
@@ -51,6 +52,7 @@ namespace S47UiSoundImpl
 		TSharedPtr<FS47AudioBuffer> Tv[int32(ETv::Count)];
 		TSharedPtr<FS47AudioBuffer> Bed;
 		double LiftDb[2] = { 0, 0 };
+		bool bLift[2] = { false, false }; // the manifest says this chain's lift (no lift: no bed on that chain)
 		int32 Last[Kinds] = {};
 	};
 	struct FLimiter
@@ -100,12 +102,10 @@ namespace S47UiSoundImpl
 		return B;
 	}
 
-	void Load()
+	// The bank from a folder: its manifest (uisound.json) and the files it names (the self-test runs this on a folder of its own).
+	void LoadFrom(const FString& Folder)
 	{
 		FBank& K = Bank();
-		if (K.bTried) return;
-		K.bTried = true;
-		const FString Folder = FPaths::ProjectContentDir() / TEXT("Audio/Raw/media/uisound");
 		FString Text;
 		TSharedPtr<FJsonObject> J;
 		if (!FFileHelper::LoadFileToString(Text, *(Folder / TEXT("uisound.json")), FFileHelper::EHashOptions::None, FILEREAD_Silent)
@@ -127,14 +127,28 @@ namespace S47UiSoundImpl
 		for (int32 I = 0; I < int32(ETv::Count); ++I) K.Tv[I] = Read(Folder, TvFiles[I], BakedPeak, 1.5);
 		K.Bed = Read(Folder, TEXT("tv_static"), -1.0, 20.0);
 		const TSharedPtr<FJsonObject>* Lift = nullptr;
+		// (each chain's lift on its own: a chain whose lift is not said gets no bed, as the bed would be quieter than the hiss it
+		// stands in for there; its noise stays. Review 14 Nov: a missing field is not asked for, so it logs no error.)
+		K.bLift[0] = K.bLift[1] = false;
 		if (K.Bed.IsValid() && J->TryGetObjectField(TEXT("tv_lift_db"), Lift))
 		{
-			K.LiftDb[0] = FMath::Clamp((*Lift)->GetNumberField(TEXT("office")), 0.0, 12.0);
-			K.LiftDb[1] = FMath::Clamp((*Lift)->GetNumberField(TEXT("motel")), 0.0, 12.0);
+			const TCHAR* const Chains[2] = { TEXT("office"), TEXT("motel") };
+			for (int32 C = 0; C < 2; ++C)
+			{
+				double Lifted = 0;
+				if ((*Lift)->TryGetNumberField(Chains[C], Lifted) && FMath::IsFinite(Lifted)) { K.LiftDb[C] = FMath::Clamp(Lifted, 0.0, 12.0); K.bLift[C] = true; }
+			}
 		}
-		else K.Bed.Reset(); // (no lift said: the bed would be quieter than the hiss it stands in for; the noise stays)
+		if (!K.bLift[0] && !K.bLift[1]) K.Bed.Reset();
 		UE_LOG(LogS47UiSound, Display, TEXT("S47: %d UI clicks, %d TV one-shots and %s in %s"), Got, int32(K.Tv[0].IsValid()) + K.Tv[1].IsValid() + K.Tv[2].IsValid(),
-			K.Bed.IsValid() ? TEXT("the static bed") : TEXT("no static bed"), *Folder);
+			!K.Bed.IsValid() ? TEXT("no static bed") : K.bLift[0] && K.bLift[1] ? TEXT("the static bed") : K.bLift[0] ? TEXT("the static bed (office only: no motel lift)") : TEXT("the static bed (motel only: no office lift)"), *Folder);
+	}
+	void Load()
+	{
+		FBank& K = Bank();
+		if (K.bTried) return;
+		K.bTried = true;
+		LoadFrom(FPaths::ProjectContentDir() / TEXT("Audio/Raw/media/uisound"));
 	}
 
 	// Quiet: the pause menu lets only its own kinds through; a cinematic lets nothing through.
@@ -195,7 +209,7 @@ namespace S47UiSound
 	}
 	void Retag(US47Audio* Audio, EKind Kind) { S47UiSoundImpl::RetagAt(Audio, Kind); }
 	bool Has(EKind Kind) { S47UiSoundImpl::Load(); return S47UiSoundImpl::Bank().Files[FMath::Clamp(int32(Kind), 0, S47UiSoundImpl::Kinds - 1)].Num() > 0; }
-	TSharedPtr<FS47AudioBuffer> TvBed() { S47UiSoundImpl::Load(); return S47UiSoundImpl::Bank().Bed; }
+	TSharedPtr<FS47AudioBuffer> TvBed(EChain Chain) { S47UiSoundImpl::Load(); const S47UiSoundImpl::FBank& K = S47UiSoundImpl::Bank(); return K.bLift[Chain == EChain::Motel ? 1 : 0] ? K.Bed : TSharedPtr<FS47AudioBuffer>(); }
 	double TvBedLift(EChain Chain) { S47UiSoundImpl::Load(); return S47UiSoundImpl::Db(S47UiSoundImpl::Bank().LiftDb[Chain == EChain::Motel ? 1 : 0]); }
 	bool Tv(US47Audio* Audio, ETv What, const FVector& AtThree, float Gain, float Lp)
 	{
@@ -215,7 +229,7 @@ namespace S47UiSound
 		return true;
 	}
 
-	// Pure: made buffers, an offline context, no files and no engine audio.
+	// Made buffers, an offline context, no engine audio; the loading path on a folder of made files under Saved/ (removed after).
 	bool SelfTest(TArray<FString>& Lines)
 	{
 		namespace Ui = S47UiSoundImpl;
@@ -280,6 +294,35 @@ namespace S47UiSound
 		double Top = 0; for (const float V : Out) Top = FMath::Max(Top, double(FMath::Abs(V)));
 		const double Want = Ui::Peak(*Src->Buffer) * Ui::Db(Ui::Rows[int32(EKind::Mark)].GainDb);
 		Check(bDeck && bRenamed && Top > Want * .7 && Top < Want * 1.3, TEXT("the deck's key, named MARK in its frame, sounds as MARK at MARK's gain"));
+		// Review 14 Nov: the real loading path (LoadFrom, Read, the manifest) on a folder of made files, and the TV calls on what it
+		// loaded: kinds and their variants, a file too loud left out, the TV one-shots, the bed and each chain's lift (one not said)
+		{
+			const FString Dir = FPaths::ProjectSavedDir() / TEXT("S47UiSoundSelfTest");
+			IFileManager::Get().DeleteDirectory(*Dir, false, true);
+			const auto Wav = [&Dir](const TCHAR* Name, float Level, int32 Frames)
+			{
+				TArray<float> Stereo; Stereo.SetNumZeroed(Frames * 2);
+				for (int32 S = 0; S < Frames; ++S) Stereo[S * 2] = Stereo[S * 2 + 1] = Level * FMath::Sin(S * .2f);
+				return FS47Sideband::WriteWav(Dir / (FString(Name) + TEXT(".wav")), Stereo, 48000);
+			};
+			// baked at or under -6 dBFS (.5): .4 is taken, .9 is not; the bed may reach -1 dBFS
+			bool bMade = Wav(TEXT("k1"), .4f, 2400) && Wav(TEXT("k2"), .35f, 2400) && Wav(TEXT("k3"), .3f, 2400) && Wav(TEXT("k_loud"), .9f, 2400)
+				&& Wav(TEXT("a1"), .4f, 2400) && Wav(TEXT("tv_power_on"), .4f, 9600) && Wav(TEXT("tv_static"), .5f, 48000);
+			bMade &= FFileHelper::SaveStringToFile(TEXT("{\"kinds\": {\"key\": [\"k1\", \"k2\", \"k3\", \"k_loud\"], \"action\": [\"a1\"], \"page\": [\"nothing_here\"]}, \"tv_lift_db\": {\"office\": 6.0}}"), *(Dir / TEXT("uisound.json")));
+			Ui::Bank() = Ui::FBank(); Ui::Bank().bTried = true;
+			Ui::LoadFrom(Dir);
+			const Ui::FBank& K = Ui::Bank();
+			const bool bKinds = K.Files[int32(EKind::Key)].Num() == 3 && K.Files[int32(EKind::Action)].Num() == 1 && K.Files[int32(EKind::Retain)].Num() == 1
+				&& K.Files[int32(EKind::Page)].Num() == 0 && K.Files[int32(EKind::Tab)].Num() == 0 && Has(EKind::Key) && !Has(EKind::Tab);
+			const bool bTvFiles = K.Tv[int32(ETv::PowerOn)].IsValid() && !K.Tv[int32(ETv::Thunk)].IsValid() && !K.Tv[int32(ETv::PowerOff)].IsValid();
+			const bool bLift = TvBed(EChain::Office).IsValid() && FMath::IsNearlyEqual(TvBedLift(EChain::Office), Ui::Db(6.0), 1e-6) && !TvBed(EChain::Motel).IsValid() && TvBed().IsValid();
+			const bool bCalls = Tv(A, ETv::PowerOn, FVector::ZeroVector, TubeWithSwitch) && !Tv(A, ETv::Thunk, FVector::ZeroVector, .35f) && !Tv(nullptr, ETv::PowerOn, FVector::ZeroVector, .4f);
+			Check(bMade && bKinds && bTvFiles && bLift && bCalls,
+				TEXT("loaded from a folder through the manifest: three keys (the loud one left out), RETAIN on ACTION's file, no page, the power-on one-shot played and no thunk; the bed on the office chain at its 6 dB lift, none on the motel's (its lift not said)"));
+			IFileManager::Get().DeleteDirectory(*Dir, false, true);
+		}
+		Check(SwitchWithTube + TubeWithSwitch <= SwitchAlone + 1e-6f && SwitchWithTube > 0 && TubeWithSwitch > 0,
+			TEXT("the office TV's switch and the tube's one-shot under it are together no louder than the switch alone"));
 		A->Ctx->Close(); A->RemoveFromRoot();
 		return Ok;
 	}

@@ -41,8 +41,11 @@ namespace S47UiSound
 	 *  with bDeferred, not yet sounding, is given this kind's sound instead. Nothing otherwise. */
 	SIGNAL47_API void Retag(US47Audio* Audio, EKind Kind);
 	SIGNAL47_API bool Has(EKind Kind);
-	/** The static bed (a loop), to stand in for the white noise a TV's hiss is made of, or null. */
-	SIGNAL47_API TSharedPtr<FS47AudioBuffer> TvBed();
+	/** The static bed (a loop), to stand in for the white noise a TV's hiss is made of on that chain, or null (no files, or the manifest
+	 *  says no lift for that chain). */
+	SIGNAL47_API TSharedPtr<FS47AudioBuffer> TvBed(EChain Chain = EChain::Office);
+	/** The office TV's switch, alone and with the tube's power one-shot under it: the pair's peak stays at the switch's alone (review 14 Nov). */
+	inline constexpr float SwitchAlone = 0.5f, SwitchWithTube = 0.28f, TubeWithSwitch = 0.22f;
 	/** The gain the bed needs on that chain to be exactly as loud as the noise it stands in for (from the manifest; 1 to 4). */
 	SIGNAL47_API double TvBedLift(EChain Chain);
 	/** A TV's channel change or its power going on or off, at the set (three.js metres), through a low-pass (0: none). */
