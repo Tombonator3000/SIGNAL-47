@@ -423,9 +423,9 @@ namespace S47FreeformTerminal
    [Set(SNew(STextBlock).Text_Lambda([Right]{return FText::FromString(Right.Get());}).Font(S47Style::Mono(RxSmall)).ColorAndOpacity(Green*.85f))];
   return O;
  }
- FW RxKey(const FString& Text,TFunction<void()> Action,bool Primary,TAttribute<bool> Enabled,int32 Size)
+ FW RxKey(const FString& Text,TFunction<void()> Action,bool Primary,TAttribute<bool> Enabled,int32 Size,bool bFocusable)
  {
-  return SNew(SButton).ButtonStyle(Primary?&RxKeyPrimary():&RxKeyOutline()).ContentPadding(FMargin(2,0)).HAlign(HAlign_Center).VAlign(VAlign_Center).IsEnabled(Enabled).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Action,Primary]{Key(Primary?1:0);if(Action)Action();return FReply::Handled();})
+  return SNew(SButton).ButtonStyle(Primary?&RxKeyPrimary():&RxKeyOutline()).ContentPadding(FMargin(2,0)).HAlign(HAlign_Center).VAlign(VAlign_Center).IsEnabled(Enabled).IsFocusable(bFocusable).OnHovered_Lambda([]{Hover();}).OnClicked_Lambda([Action,Primary]{Key(Primary?1:0);if(Action)Action();return FReply::Handled();})
    [SNew(STextBlock).Text(FText::FromString(Text)).Font(S47Style::Mono(Size)).ColorAndOpacity_Lambda([Primary,Enabled,AmberNow=Amber,GreenNow=Green,DimNow=Dim]{return FSlateColor(!Enabled.Get()?DimNow*1.6f:Primary?AmberNow:GreenNow);})];
  }
  class SRxFrame:public SCompoundWidget

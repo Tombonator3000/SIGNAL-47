@@ -347,7 +347,9 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 	// The chart has the keys first while there is a search to steer (the arrow keys, the walk keys, a d-pad).
 	if (SkyFix.IsValid() && !SkyFix->Locked()) KeysTo = Chart;
 	// Without a pointer: five-degree steps, the way the key points on the glass, always land near enough to be eased in
-	// (FS47SkyAcquire::CaptureRadius).
+	// (FS47SkyAcquire::CaptureRadius). RX-LOOK gjennomgang 14 Nov: the step keys take no keyboard focus, so a click on one leaves the
+	// arrow keys with the chart. (The tabs and TUNE > build the page again, and the screen gives the keys to the new page's target;
+	// on TUNE there is nothing to steer, and the arrows walking between its dial keys is the screen's ordinary way round it.)
 	auto Nudge = [this, Chart](double Across, double Up) { return [this, Chart, Across, Up] { SyncSkyFix(); if (SkyFix.IsValid()) SkyFix->Nudge(Chart->SkyStep(FVector2D(Across, Up)) * 5.); }; };
 	const TAttribute<bool> CanSteer = TAttribute<bool>::CreateLambda([this] { return SkyFix.IsValid() && SkyFix->State() == FS47SkyAcquire::EPhase::Search; });
 	// RX-LOOK-20261113 (Tom's reference): the sphere as the main panel, the waterfall, the spectrum and the tracking readouts in a
@@ -392,15 +394,15 @@ TSharedRef<SWidget> FS47FreeformSession::SkyPage(TSharedPtr<SWidget>& KeysTo, TS
 				[
 					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot().FillWidth(1)
-					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("UP 5\u00b0"), Nudge(0, 1), false, CanSteer)]
+					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("UP 5\u00b0"), Nudge(0, 1), false, CanSteer, 22, false)]
 					+ SHorizontalBox::Slot().FillWidth(1)
 				]
 				+ SVerticalBox::Slot().FillHeight(1)
 				[
 					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("LEFT 5\u00b0"), Nudge(-1, 0), false, CanSteer)]
-					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("DOWN 5\u00b0"), Nudge(0, -1), false, CanSteer)]
-					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("RIGHT 5\u00b0"), Nudge(1, 0), false, CanSteer)]
+					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("LEFT 5\u00b0"), Nudge(-1, 0), false, CanSteer, 22, false)]
+					+ SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)[SkyT::RxKey(TEXT("DOWN 5\u00b0"), Nudge(0, -1), false, CanSteer, 22, false)]
+					+ SHorizontalBox::Slot().FillWidth(1)[SkyT::RxKey(TEXT("RIGHT 5\u00b0"), Nudge(1, 0), false, CanSteer, 22, false)]
 				]
 			]
 		]

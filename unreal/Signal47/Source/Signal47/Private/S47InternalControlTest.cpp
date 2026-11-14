@@ -160,6 +160,13 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   if(!Check(F.ReceiverPage()==0&&Shows(TEXT("EQUATORIAL CELESTIAL SPHERE"))&&Shows(TEXT("SIGNAL WATERFALL"))&&Shows(TEXT("ACQUISITION / TRACKING"))&&F.SkyFix.IsValid(),TEXT("RX-LOOK: ACQUIRE shows the celestial sphere, the waterfall and the tracking panel in the receiver's frame")))return;
   if(!Fits(TEXT("TUNE >"),TEXT("the sky chart while it searches")))return;
+  {
+   // RX-LOOK gjennomgang 14 Nov: the step keys take no keyboard focus (a click on one took the arrows from the chart), and the chart has the keys
+   bool bKeysFree=true;int32 StepKeys=0;
+   for(const TCHAR* StepKey:{TEXT("UP 5°"),TEXT("LEFT 5°"),TEXT("DOWN 5°"),TEXT("RIGHT 5°")}){TArray<TSharedRef<SButton>> Keys;bool KeySeen=false;Scan(StepKey,Keys,KeySeen);StepKeys+=Keys.Num();for(const TSharedRef<SButton>& Key:Keys)bKeysFree&=!Key->SupportsKeyboardFocus();}
+   FString HasKeys;FSlateApplication::Get().ForEachUser([&](FSlateUser& User){if(const TSharedPtr<SWidget> W=User.GetFocusedWidget())HasKeys+=W->GetTypeAsString()+TEXT(" ");});
+   if(!Check(StepKeys==4&&bKeysFree&&HasKeys.Contains(TEXT("SS47SkyChart")),TEXT("RX-LOOK: the chart's four step keys take no keyboard focus, and the chart has the keys (focus: ")+HasKeys+TEXT(")")))return;
+  }
   UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: sky chart state %d, reticle %.1f degrees off the crossing"),int32(F.SkyFix->State()),F.SkyFix->Distance());
   Shot(TEXT("acquire-searching.png"));bLookCalmWas=M->Flow->bCalmFlash;M->Flow->bCalmFlash=true;Go(102,.6);return;
  }
