@@ -43,6 +43,9 @@ public:
 	static constexpr const TCHAR* TubeDaleScript = TEXT("tube_wear_dale");
 	static bool TubeWearMay(int32 Day, int32 WornNow, bool bTubeLeft, bool bInControlRoom, bool bStoryNight)
 	{ return Day >= 8 && WornNow == 0 && bTubeLeft && bInControlRoom && !bStoryNight; }
+	// REVIEW (14 Nov): when it may come (night hours): from the night's first false-alarm slot to 01:30, whenever the player is in the
+	// control room then, not only at the moment of a slot.
+	static bool TubeWearWindow(double NightHour, double FirstSlot) { return NightHour >= FirstSlot && NightHour <= 25.5; }
 	// Dale's word the evening after the day shift's new tube (FS47FreeformSession::TubeRemarkDue): 19:00 to 23:00 (night hours 19 to 23).
 	static bool TubeRemarkHour(double NightHour) { return NightHour >= 19. && NightHour < 23.; }
 	// REVIEW (14 Nov): Dale's word goes by the rules his other walkie lines keep (FS47Predecessor's hail): a set that hears him, no
