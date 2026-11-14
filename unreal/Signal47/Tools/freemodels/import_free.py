@@ -130,9 +130,24 @@ for entry in plan:
 		log('FAIL %s: %s' % (name, entry['error']))
 		continue
 	folder = '%s/%s/%s' % (ROOT, entry['category'], name)
-	# afresh: a model's assets are its own folder's
+	# afresh: a model's assets are its own folder's. S47_FREE_KEEP_TRIM=1 keeps the trim (its manifest entry above) and so
+	# its meshes under <folder>/Trim: deleting the whole folder took them and left the entry pointing at nothing
+	# (PACKAGE-GAS-TRIM-20261114: the gas station's 11 trim meshes, 13 November, asked for in vain in every package since)
+	keep_trim = os.environ.get('S47_FREE_KEEP_TRIM') == '1' and name in trims and not entry.get('trim')
 	if eal.does_directory_exist(folder):
-		eal.delete_directory(folder)
+		if keep_trim:
+			for path in eal.list_assets(folder, recursive=True, include_folder=False):
+				if not path.startswith(folder + '/Trim/'):
+					eal.delete_asset(path)
+		else:
+			eal.delete_directory(folder)
+	if keep_trim:
+		gone = [g for g, r in trims[name]['meshes'].items() if r.get('asset') and not eal.does_asset_exist(r['asset'].split('.')[0])]
+		if gone:
+			# a kept trim whose meshes are not here is dropped, not written back as a promise
+			log('FAIL %s: S47_FREE_KEEP_TRIM, but %d trim meshes are not here (%s): trim dropped, cut it again (trim_web.py)' % (name, len(gone), ', '.join(sorted(gone))))
+			failed.append(name + ' trim')
+			del trims[name]
 	for part in entry['parts']:
 		try:
 			paths = import_part(part['gltf'], folder, part['asset'])
