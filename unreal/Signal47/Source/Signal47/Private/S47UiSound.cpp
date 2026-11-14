@@ -75,7 +75,7 @@ namespace S47UiSoundImpl
 	FBank& Bank() { static FBank B; return B; }
 	FLimiter& Limiter() { static FLimiter L; return L; }
 	FPending& Pending() { static FPending P; return P; }
-	FRandomStream& Dice() { static FRandomStream R(int32(FPlatformTime::Cycles())); return R; }
+	FRandomStream& Dice() { static FRandomStream R(static_cast<int32>(FPlatformTime::Cycles())); return R; }
 
 	double Peak(const FS47AudioBuffer& B)
 	{
@@ -272,6 +272,9 @@ namespace S47UiSound
 		const TSharedPtr<FS47BufferSourceNode> Src = Ui::Pending().Src.Pin();
 		Ui::RetagAt(A, EKind::Mark);
 		const bool bRenamed = Src.IsValid() && Ui::Bank().Files[int32(EKind::Mark)].Contains(Src->Buffer);
+		// (the clicks of the checks above were started in this same context and have not been rendered: let their 0.5 ms pass
+		// first, 10 ms in all, well before the deferred key's 30 ms; then measure)
+		{ TArray<float> Past; Past.SetNumZeroed(480 * 2); A->Ctx->Render(Past.GetData(), 480, 2); }
 		TArray<float> Out; Out.SetNumZeroed(4800 * 2);
 		A->Ctx->Render(Out.GetData(), 4800, 2);
 		double Top = 0; for (const float V : Out) Top = FMath::Max(Top, double(FMath::Abs(V)));

@@ -387,9 +387,9 @@ void FS47OfficeTv::Sound(double Dist, bool bThrough)
 	US47Audio* A = M ? M->Audio.Get() : nullptr;
 	const auto Ctx = A ? A->Ctx : nullptr;
 	// (the hiss and the tone stay in the room: from the corridor and the control room only the programme comes through the wall;
-	// FIX10-7: but snow on the bought static bed is heard through it, dull and low, as a set left on in the next room is)
+	// FIX10-7: snow heard through the wall is a proposal put to Tom 14 Nov, not built in: the rule above stands)
 	const TSharedPtr<FS47AudioBuffer> Bed = S47UiSound::TvBed();
-	if (!Ctx || Show == EShow::Off || Dist > HEARD || (bThrough && Dist > NEAR_WALL && !(Bed && Show == EShow::Snow))) { Hush(); return; }
+	if (!Ctx || Show == EShow::Off || Dist > HEARD || (bThrough && Dist > NEAR_WALL)) { Hush(); return; }
 	FS47AudioContext::FBatch B(*Ctx);
 	if (!Snd)
 	{
