@@ -329,7 +329,7 @@ FS47RxLive FS47FreeformSession::RxLive() const
 	}
 	Look.State = S47RxLook::StateOf(In);
 	// (D45-20261110: while the array comes round the receiver says how far it has to go, as its old line beside the tabs did)
-	if (Look.State.Id == S47RxLook::EState::Slewing) Look.State.Text = FString::Printf(TEXT("SLEWING %s\u00b0 TO GO"), *S47RxLook::Num(ArrayErrorDeg(), 1));
+	if (Look.State.Id == S47RxLook::EState::Slewing) Look.State.Text = S47RxLook::SlewWords(ArrayErrorDeg());
 	return Look;
 }
 

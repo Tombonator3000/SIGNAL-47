@@ -479,16 +479,11 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	constexpr int32 Letters = S47SkyLetters;
 	constexpr float Pitch = 21.f;
 	const FLinearColor Quiet = S47SkyGreen * .85f, LabelTone = S47SkyGreen * .85f;
-	const TCHAR* Word = State == FSky::EPhase::NoBearings ? TEXT("NO BEARINGS") : bLocked ? TEXT("FIX HELD") : bLocking ? TEXT("LOCKING") : !K.Steady() ? TEXT("ARRAY TURNING")
-		: K.HoldProgress() > 0 ? TEXT("ON THE CROSSING") : TEXT("SEARCHING");
-	const FVector2D Aim = K.ReticleAt();
-	double AimRa = 0, AimDec = 0;
-	Sph::AzElToRaDec(Aim, Lst, AimRa, AimDec);
-	Sph::ToB1950(AimRa, AimDec);
-	const FString TopLeft[3] = { FString(TEXT("EPOCH B1950.0")), FString(TEXT("MODE ")) + (bLocking ? FString::Printf(TEXT("LOCKING %s %%"), *Num(K.LockProgress() * 100., 0, 2)) : FString(Word)), FString(TEXT("SRC ")) + SourceName.Left(14) };
-	const FString TopRight[2] = { bBearings ? FString::Printf(TEXT("BEARINGS %s/%s"), *Num(K.InCount(), 0, 2, false, true), *Num(K.OnCount(), 0, 2, false, true)) : FString(TEXT("BEARINGS --/--")),
-		bBearings ? FString::Printf(TEXT("SPREAD %s\u00b0"), *Num(K.MeanOff(), 1)) : FString(TEXT("SPREAD --")) };
-	const FString Foot[3] = { FString::Printf(TEXT("AZ %s EL %s"), *Num(Aim.X, 1, 5, false, true), *Num(Aim.Y, 1, 4, false, true)), FString(TEXT("RA ")) + Sph::RaText(AimRa), FString(TEXT("DEC ")) + Sph::DecText(AimDec) };
+	// (RX-LOOK gjennomgang 14 Nov: the corner blocks as CornerWords writes them, the same the tests read)
+	const FCorners Corners = CornerWords(K, Lst, SourceName);
+	const FString (&TopLeft)[3] = Corners.TopLeft;
+	const FString (&TopRight)[2] = Corners.TopRight;
+	const FString (&Foot)[3] = Corners.Foot;
 	TArray<FSlateRect, TInlineAllocator<48>> Taken;
 	auto Free = [&](const FSlateRect& Area)
 	{
@@ -539,7 +534,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			// its declination round the rim, where the circle leaves the picture on the right
 			const FVector2f* Best = nullptr;
 			for (const FVector2f& Hit : RimHits) if (Hit.X > Rim.X + 4 && (!Best || Hit.X > Best->X)) Best = &Hit;
-			if (Best) RimLabel(*Best, Circle == 0 ? FString(TEXT("0\u00b0")) : Num(double(Circle), 0, 0, true) + TEXT("\u00b0"));
+			if (Best) RimLabel(*Best, DecWords(Circle));
 		}
 	}
 	{
@@ -577,7 +572,7 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 			const FSlateRect Area(CrossX - HourWide * .5f - 5, Rim.Y + Semi.Y + 6, CrossX + HourWide * .5f + 5, Rim.Y + Semi.Y + 22);
 			if (!Free(Area)) continue;
 			Taken.Add(Area);
-			S47SkyText(Out, L + 6, G, Num(double(Hour), 0, 2, false, true) + TEXT("h"), CrossX - HourWide * .5f, Rim.Y + Semi.Y + 2, Letters, LabelTone);
+			S47SkyText(Out, L + 6, G, HourWords(Hour), CrossX - HourWide * .5f, Rim.Y + Semi.Y + 2, Letters, LabelTone);
 		}
 	}
 	// ---- the galactic plane, a stippled band, and the faint field under the table's stars (more of it closed in) ----
@@ -979,6 +974,51 @@ int32 SS47SkyChart::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	return L + 8;
 }
 
+SS47SkyChart::FCorners SS47SkyChart::CornerWords(const FS47SkyAcquire& K, double Lst, const FString& Source)
+{
+	using FSky = FS47SkyAcquire;
+	namespace Sph = S47SkySphere;
+	using S47RxLook::Num;
+	const FSky::EPhase State = K.State();
+	const bool bLocked = State == FSky::EPhase::Locked, bLocking = State == FSky::EPhase::Locking, bBearings = K.HasBearings();
+	const TCHAR* Word = State == FSky::EPhase::NoBearings ? TEXT("NO BEARINGS") : bLocked ? TEXT("FIX HELD") : bLocking ? TEXT("LOCKING") : !K.Steady() ? TEXT("ARRAY TURNING")
+		: K.HoldProgress() > 0 ? TEXT("ON THE CROSSING") : TEXT("SEARCHING");
+	const FVector2D Aim = K.ReticleAt();
+	double AimRa = 0, AimDec = 0;
+	Sph::AzElToRaDec(Aim, Lst, AimRa, AimDec);
+	Sph::ToB1950(AimRa, AimDec);
+	FCorners C;
+	C.TopLeft[0] = TEXT("EPOCH B1950.0");
+	C.TopLeft[1] = FString(TEXT("MODE ")) + (bLocking ? FString::Printf(TEXT("LOCKING %s %%"), *Num(K.LockProgress() * 100., 0, 2)) : FString(Word));
+	C.TopLeft[2] = FString(TEXT("SRC ")) + Source.Left(14);
+	C.TopRight[0] = bBearings ? FString::Printf(TEXT("BEARINGS %s/%s"), *Num(K.InCount(), 0, 2, false, true), *Num(K.OnCount(), 0, 2, false, true)) : FString(TEXT("BEARINGS --/--"));
+	C.TopRight[1] = bBearings ? FString::Printf(TEXT("SPREAD %s\u00b0"), *Num(K.MeanOff(), 1)) : FString(TEXT("SPREAD --"));
+	C.Foot[0] = FString::Printf(TEXT("AZ %s EL %s"), *Num(Aim.X, 1, 5, false, true), *Num(Aim.Y, 1, 4, false, true));
+	C.Foot[1] = FString(TEXT("RA ")) + Sph::RaText(AimRa);
+	C.Foot[2] = FString(TEXT("DEC ")) + Sph::DecText(AimDec);
+	return C;
+}
+
+FString SS47SkyChart::DecWords(int32 Circle) { return Circle == 0 ? FString(TEXT("0\u00b0")) : S47RxLook::Num(double(Circle), 0, 0, true) + TEXT("\u00b0"); }
+FString SS47SkyChart::HourWords(int32 Hour) { return S47RxLook::Num(double(Hour), 0, 2, false, true) + TEXT("h"); }
+
+TArray<FString> SS47SkyChart::AllWords(const FS47SkyAcquire& K, double Lst, const FString& Source)
+{
+	using FSky = FS47SkyAcquire;
+	TArray<FString> Out;
+	const FCorners C = CornerWords(K, Lst, Source);
+	for (const FString& Each : C.TopLeft) Out.Add(Each);
+	for (const FString& Each : C.TopRight) Out.Add(Each);
+	for (const FString& Each : C.Foot) Out.Add(Each);
+	for (int32 Hour = 0; Hour < 24; ++Hour) Out.Add(HourWords(Hour));
+	for (int32 Circle = -75; Circle <= 75; Circle += 5) Out.Add(DecWords(Circle));
+	Out.Add(TEXT("+90\u00b0"));
+	for (const FSky::FSource& Src : FSky::Catalogue()) { Out.Add(Src.Name); if (Src.bMajor) Out.Add(Src.Name + TEXT(" / CARD")); }
+	for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm) Out.Add(S47RxLook::ArmLabel(Arm));
+	Out.Append({ FString(TEXT("NCP")), FString(TEXT("E")), FString(TEXT("W")) });
+	return Out;
+}
+
 bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 {
 	using FSky = FS47SkyAcquire;
@@ -1133,5 +1173,46 @@ bool SS47SkyChart::SelfTest(TArray<FString>& Lines)
 	FVector2f OnIt, PastIt;
 	const bool bAlong = S47SkyAlong(Bent, 0, 3, 15.f, OnIt) && OnIt.Equals(FVector2f(10, 5), 1e-4f) && !S47SkyAlong(Bent, 0, 3, 25.f, PastIt) && S47SkyAlong(Bent, 1, 2, 4.f, OnIt) && OnIt.Equals(FVector2f(10, 4), 1e-4f);
 	Check(bUnit && bAlong && S47SkyLetters >= 22, TEXT("every star of the table, every speck of the galactic plane and every star of the faint field has its place of date; a rung stands a set length along its bearing; no word on the chart is smaller than the next step's"));
+	{
+		// RX-LOOK gjennomgang 14 Nov: every word the chart writes, read through the functions it draws with: the corner blocks with
+		// the reticle anywhere in the array's window, at every quarter degree of sidereal time, while the rule has no bearings,
+		// searches, takes the fix and holds it; every hour, declination and name it can write. None reads 47 or has a lone C.
+		int32 Read = 0;
+		FString Bad;
+		auto Hold = [&](const FString& Shown) { ++Read; if (Bad.IsEmpty() && !S47RxLook::TextFault(Shown).IsEmpty()) Bad = Shown + TEXT(" (") + S47RxLook::TextFault(Shown) + TEXT(")"); };
+		const FString Source = TEXT("PSR B1133+16");
+		FS47SkyAcquire K;
+		K.Begin(4711u, FVector2D(112, 54), 1, false);
+		for (const FString& Each : AllWords(K, 120., Source)) Hold(Each);
+		for (double Az = FSky::AzMin; Az <= FSky::AzMax; Az += .7) for (double El = FSky::ElMin; El <= FSky::ElMax; El += .7)
+		{
+			K.Nudge(FVector2D(Az, El) - K.ReticleAt());
+			Hold(CornerWords(K, 120., Source).Foot[0]);
+		}
+		for (const FVector2D Aim : { FVector2D(70, 25), FVector2D(112, 54), FVector2D(146, 64) })
+		{
+			K.Nudge(Aim - K.ReticleAt());
+			for (int32 Quarter = 0; Quarter < 1440; ++Quarter) { const FCorners C = CornerWords(K, Quarter * .25, Source); Hold(C.Foot[1]); Hold(C.Foot[2]); }
+		}
+		TArray<FS47SkyAcquire::FDish> Dishes;
+		for (int32 I = 0; I < FSky::DishCount; ++I)
+		{
+			FS47SkyAcquire::FDish D; D.bOn = true; D.Point = FVector2D(112, 54);
+			const double Arm = FMath::DegreesToRadians(120. * FSky::ArmOf(I)), Reach = 40. * (1 + I % (FSky::DishCount / FSky::ArmCount));
+			D.Ground = FVector2D(FMath::Sin(Arm) * Reach, FMath::Cos(Arm) * Reach);
+			Dishes.Add(D);
+		}
+		for (int32 Frame = 0; Frame < 60 * 45 && !K.Locked(); ++Frame)
+		{
+			K.SetArray(Dishes, Frame > 30, true);
+			K.Steer(K.Distance() > 1. ? (K.Cross() - K.ReticleAt()).GetSafeNormal() : FVector2D::ZeroVector);
+			K.Step(1. / 60.);
+			const FCorners C = CornerWords(K, 120. + Frame * .01, Source);
+			for (const FString& Each : C.TopLeft) Hold(Each);
+			for (const FString& Each : C.TopRight) Hold(Each);
+		}
+		for (const FString& Each : AllWords(K, 120., Source)) Hold(Each);
+		Check(Bad.IsEmpty() && Read > 10000 && K.Locked(), FString::Printf(TEXT("%d words the chart writes, read through the functions it draws with, keep to the text rule (the arms are 1, 2 and 3)%s"), Read, Bad.IsEmpty() ? TEXT("") : *(TEXT(": NOT ") + Bad)));
+	}
 	return bOk;
 }

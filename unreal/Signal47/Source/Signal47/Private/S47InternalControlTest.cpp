@@ -13,6 +13,8 @@
 #include "S47SkyAcquire.h"
 #include "S47RxLook.h"
 #include "SS47TapeScope.h"
+#include "SS47RxLook.h"
+#include "SS47SkyChart.h"
 #include "UnrealClient.h"
 #include "Containers/Ticker.h"
 #include "Framework/Application/SlateApplication.h"
@@ -120,6 +122,25 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(!Check(IcUnderPointer(Scope.ToSharedRef(),Mid),FString::Printf(TEXT("reel deck: the trace is under the pointer at %.1f s"),Seconds)))return false;
   IcPointerAt(Mid);return true;
  };
+ // RX-LOOK gjennomgang 14 Nov: every line on the receiver's glass keeps to the text rule (S47RxLook::TextFault: no number that reads
+ // 47, no lone capital C, none of the other words): every visible text of the page and the frame, read as Slate reads it (a live
+ // line is asked again), and every line the painted parts write for this state, read through the functions they draw with.
+ // (bLog: a check line when it passes too; a sweep logs once, at its end, and fails at the first fault)
+ auto Words=[&](const TCHAR* Where,bool bLog=true)
+ {
+  TArray<FString> Seen;
+  TFunction<void(TSharedRef<SWidget>)> Visit=[&](TSharedRef<SWidget> X){if(!X->GetVisibility().IsVisible())return;if(X->GetTypeAsString()==TEXT("STextBlock"))Seen.Add(StaticCastSharedRef<STextBlock>(X)->GetText().ToString());FChildren* Ch=X->GetChildren();for(int32 I=0;Ch&&I<Ch->Num();++I)Visit(Ch->GetChildAt(I));};
+  TSet<const SWidget*> Roots;
+  FSlateApplication::Get().ForEachUser([&](FSlateUser& User){auto W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;if(!Roots.Contains(W.Get())){Roots.Add(W.Get());Visit(W.ToSharedRef());}},true);
+  const int32 OnGlass=Seen.Num();
+  const FS47RxLive Live=F.RxLive();
+  Seen.Append(S47RxLookPaint::FrameWords(Live,F.SkyFix.Get()));
+  if(F.SkyFix.IsValid())Seen.Append(SS47SkyChart::AllWords(*F.SkyFix,Live.LstDeg,Live.Source));
+  FString Faults;int32 Count=0;
+  for(const FString& Line:Seen){const FString Why=S47RxLook::TextFault(Line);if(Why.IsEmpty())continue;if(++Count<=4)Faults+=FString::Printf(TEXT(" «%s» (%s)"),*Line,*Why);}
+  if(!bLog&&OnGlass>20&&Count==0)return true;
+  return Check(OnGlass>20&&Count==0,FString::Printf(TEXT("RX-LOOK: %s: %d lines on the glass and %d painted keep to the text rule%s"),Where,OnGlass,Seen.Num()-OnGlass,Count?*(FString::Printf(TEXT(", NOT %d:"),Count)+Faults):TEXT("")));
+ };
  // RX-LOOK gjennomgang 14 Nov: the same for a page with no key of its own (ARRAY): found by a line of its text
  auto FitsText=[&](const FString& Label,const TCHAR* What)
  {
@@ -180,6 +201,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
    FString HasKeys;FSlateApplication::Get().ForEachUser([&](FSlateUser& User){if(const TSharedPtr<SWidget> W=User.GetFocusedWidget())HasKeys+=W->GetTypeAsString()+TEXT(" ");});
    if(!Check(StepKeys==4&&bKeysFree&&HasKeys.Contains(TEXT("SS47SkyChart")),TEXT("RX-LOOK: the chart's four step keys take no keyboard focus, and the chart has the keys (focus: ")+HasKeys+TEXT(")")))return;
   }
+  if(!Words(TEXT("ACQUIRE while it searches")))return;
   UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: sky chart state %d, reticle %.1f degrees off the crossing"),int32(F.SkyFix->State()),F.SkyFix->Distance());
   Shot(TEXT("acquire-searching.png"));bLookCalmWas=M->Flow->bCalmFlash;M->Flow->bCalmFlash=true;Go(102,.6);return;
  }
@@ -215,6 +237,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   // (taken by hand, the page goes over to TUNE a moment after the fix; either way RECORD is next)
   UE_LOG(LogTemp,Display,TEXT("S47 RX-LOOK: after the fix the receiver is on page %d"),F.ReceiverPage());
+  if(!Words(TEXT("the receiver with the fix held")))return;
   // RX-LOOK round 2: first TUNE as it stands before the take (the pictures had it only with the banner's first line and after
   // the take): the zoomed spectrum and the waterfall fill the body now
   if(F.ReceiverPage()!=1){if(!Click(TEXT("TUNE")))return;}
@@ -224,6 +247,18 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   if(!Check(F.ReceiverPage()==1&&Shows(TEXT("FINE TUNING (MHz)"))&&Shows(TEXT("SIGNAL WATERFALL")),TEXT("RX-LOOK: TUNE before the take shows the zoomed spectrum and the waterfall beside it")))return;
   if(!Fits(TEXT("START RECORDING"),TEXT("TUNE before the take")))return;
+  {
+   // RX-LOOK gjennomgang 14 Nov: the dials swept across every value they take (the frequency by its own step), the page read at
+   // each: the readouts, the prompt's "now" and the carrier lock follow the dial; then the work card's tuning back as it was
+   auto& Rx=M->Story->Rx;const double FreqWas=Rx.Frequency,GainWas=Rx.Gain,BwWas=Rx.Bandwidth;bool bClean=true;
+   for(int32 Step=0;Step<=1200&&bClean;Step+=1){Rx.Frequency=1419.5+Step*.001;bClean&=Words(TEXT("TUNE, the frequency dial swept"),false);}
+   Rx.Frequency=FreqWas;
+   for(int32 V=0;V<=100&&bClean;++V){Rx.Gain=V;bClean&=Words(TEXT("TUNE, the gain swept"),false);}
+   Rx.Gain=GainWas;
+   for(int32 V=1;V<=100&&bClean;++V){Rx.Bandwidth=V;bClean&=Words(TEXT("TUNE, the bandwidth swept"),false);}
+   Rx.Bandwidth=BwWas;
+   if(!bClean||!Words(TEXT("TUNE with the dials swept across 1419.500 to 1420.700 MHz, gain 0 to 100, bandwidth 1 to 100, and back")))return;
+  }
   Shot(TEXT("tune-before-take.png"));
   if(!Click(TEXT("RECORD")))return;Go(11,1.);return;
  }
@@ -231,6 +266,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   if(!Check(F.ReceiverPage()==3&&F.ReceiverDuePage()==-1&&Shows(TEXT("ANOMALY / RECORD IT, THEN RETAIN IT"))&&!Shows(TEXT("TAKE LIST")),TEXT("RECORD holds the anomaly (its panel in the take list's place) and is no longer due once open")))return;
   if(!Fits(TEXT("START RECORDING"),TEXT("RECORD with the anomaly before the take")))return;
+  if(!Words(TEXT("RECORD before the take")))return;
   Shot(TEXT("record-before-take.png"));
   // 2: record it there
   if(!Click(TEXT("START RECORDING")))return;Go(12,.5);return;
@@ -242,7 +278,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  }
  if(Stage==13)
  {
-  if(F.CurrentJob()->Stage==J::Integrating)return;
+  if(F.CurrentJob()->Stage==J::Integrating){Words(TEXT("RECORD while the take is written"),false);return;} // RX-LOOK gjennomgang 14 Nov: every frame of the take
   // (a beat for the panel: Slate refreshes a key's enabled state on its next frame, not in the tick the take ends)
   Go(131,.5);return;
  }
@@ -265,6 +301,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(Take->ControlAt<8)return;
   if(!Check(Shows(TEXT("RETAINED / REEL DECK NEXT"))&&F.ReceiverDuePage()==-1,TEXT("RECORD says the take is retained and the reel deck is next; no receiver tab is due")))return;
   if(!FitsText(TEXT("RETAINED / REEL DECK NEXT"),TEXT("RECORD with the take retained")))return; // RX-LOOK gjennomgang 14 Nov
+  if(!Words(TEXT("RECORD with the take retained")))return;
   Shot(TEXT("record-retained.png"));Go(20,.3);return;
  }
  if(Stage==20){if(!Click(TEXT("TUNE")))return;Go(21,1.);return;} // RX-ACQUIRE-SKY-20261113: the recording key and the tape strip are TUNE's too
@@ -295,6 +332,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  {
   if(!Check(F.ReceiverPage()==2&&Shows(TEXT("ARRAY / ANTENNAS ON THIS TARGET")),TEXT("RX-LOOK: the ARRAY tab opens in the receiver's frame")))return;
   if(!FitsText(TEXT("ARRAY / ANTENNAS ON THIS TARGET"),TEXT("the ARRAY tab")))return; // RX-LOOK gjennomgang 14 Nov
+  if(!Words(TEXT("the ARRAY tab")))return;
   Shot(TEXT("array-tab.png"));
   if(!Click(TEXT("DATA")))return;Go(26,1.);return;
  }
@@ -303,6 +341,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
   if(!Check(F.ReceiverPage()==4&&Shows(TEXT("WORK CARD")),TEXT("RX-LOOK: the DATA tab opens in the receiver's frame")))return;
   // RX-LOOK gjennomgang 14 Nov: DATA fits the glass like the other tabs (it was only logged)
   if(!Fits(TEXT("NEXT >"),TEXT("the DATA tab")))return;
+  if(!Words(TEXT("the DATA tab")))return;
   Shot(TEXT("data-tab.png"));Go(70,1.);return;
  }
  if(Stage==70)

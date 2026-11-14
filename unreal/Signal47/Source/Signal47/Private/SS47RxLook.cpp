@@ -19,6 +19,8 @@ namespace
 	// Round 2: nothing the frame draws is written smaller than the next step's line.
 	constexpr int32 S47RxLSmall = S47RxLook::TextFloor;
 	const FS47RxLive& S47RxLRead(const TSharedPtr<FS47RxFeed>& Feed) { static const FS47RxLive Empty; return Feed.IsValid() ? Feed->Now() : Empty; }
+	// the station's name as the gate sign has it, three lines of the header
+	const TCHAR* const S47RxLHeaderName[3] = { TEXT("SOUTHWEST ASTRONOMICAL"), TEXT("RESEARCH OBSERVATORY"), TEXT("NEW MEXICO") };
 
 	// The tube's pen for one widget's paint. A bright stroke is drawn as the beam leaves it: a wide faint pass, a middle one and
 	// the thin bright core; a bright word has the same word faintly round it.
@@ -180,9 +182,8 @@ int32 SS47RxHeader::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	Pen.Headline(TEXT("SARO OPS"), 72, 2, 54, S47RxLGreen, 1);
 	const float BarA = 72 + S47RxLWide(8, 54) + 12, RuleFoot = Sz.Y - 12;
 	Pen.Line({ FVector2f(BarA, 6), FVector2f(BarA, RuleFoot) }, S47RxLLine, 1.5f);
-	static const TCHAR* const Name[3] = { TEXT("SOUTHWEST ASTRONOMICAL"), TEXT("RESEARCH OBSERVATORY"), TEXT("NEW MEXICO") };
 	constexpr float Pitch = 20.f;
-	for (int32 I = 0; I < 3; ++I) Pen.Text(Name[I], BarA + 12, 1 + Pitch * I, S47RxLSmall, S47RxLFade(S47RxLGreen, .92f));
+	for (int32 I = 0; I < 3; ++I) Pen.Text(S47RxLHeaderName[I], BarA + 12, 1 + Pitch * I, S47RxLSmall, S47RxLFade(S47RxLGreen, .92f));
 	const float BarB = BarA + 12 + S47RxLWide(22, S47RxLSmall) + 12;
 	Pen.Line({ FVector2f(BarB, 6), FVector2f(BarB, RuleFoot) }, S47RxLLine, 1.5f);
 	float TermEnd = BarB + 12;
@@ -200,7 +201,7 @@ int32 SS47RxHeader::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	// ---- the date and clock, and the array's own pointing. Round 2: the block stands in from the glass's rounded corner
 	// (it was cut there), and its width is counted as the glass draws the letters ----
 	constexpr float CornerClear = 26.f;
-	const FString Stn = Now.bPointing ? FString::Printf(TEXT("STN SARO  EL %s\u00b0  AZ %s\u00b0"), *Num(Now.El, 1), *Num(Now.Az, 1, 5, false, true)) : FString(TEXT("STN SARO  EL --.-  AZ ---.-"));
+	const FString Stn = S47RxLookPaint::StationLine(Now);
 	const float Edge = Sz.X - CornerClear, RightWide = FMath::Max(S47RxLWide(Now.Clock.Len(), 28), S47RxLWide(Stn.Len(), S47RxLSmall));
 	Pen.Halo(Now.Clock, Edge - S47RxLWide(Now.Clock.Len(), 28), 4, 28, S47RxLGreen, 1, .12f);
 	Pen.Text(Stn, Edge - S47RxLWide(Stn.Len(), S47RxLSmall), 34, S47RxLSmall, S47RxLFade(S47RxLGreen, .9f));
@@ -251,21 +252,23 @@ int32 SS47RxBanner::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateR
 	// ---- the array ----
 	float X = StateWide + 22;
 	Pen.Line({ FVector2f(X - 8, 9), FVector2f(X - 8, Sz.Y - 9) }, S47RxLLine, 1.2f);
-	const FString Array = FString::Printf(TEXT("ARRAY %s/27"), *Num(Now.Dishes)), Rate = FString::Printf(TEXT("RATE %s %% %s"), *Num(100. * Now.Rate), *Now.RateWord);
+	const S47RxLookPaint::FBannerWords Words = S47RxLookPaint::BannerWords(Now);
+	const FString& Array = Words.Array;
+	const FString& Rate = Words.Rate;
 	Pen.Text(Array, X + 4, RowA - 1, 24, S47RxLGreen);
 	Pen.Text(Rate, X + 4, RowB, S47RxLSmall, S47RxLFade(Now.Rate > 0 ? S47RxLGreen : S47RxLAmber, .9f));
 	X += FMath::Max(S47RxLWide(Array.Len(), 24), S47RxLWide(Rate.Len(), S47RxLSmall)) + 22;
 	// ---- the card's frequency, the line it belongs to and its wavelength ----
 	Pen.Line({ FVector2f(X - 8, 9), FVector2f(X - 8, Sz.Y - 9) }, S47RxLLine, 1.2f);
-	const FString Mhz = Now.bJob ? Num(Now.CardMhz, 3) + TEXT(" MHz") : FString(TEXT("----.--- MHz"));
+	const FString& Mhz = Words.Mhz;
 	if (Now.bJob) Pen.Headline(Mhz, X + 4, (Sz.Y - 38) * .5f - 1, 38, S47RxLAmber, 1);
 	else Pen.Text(Mhz, X + 4, (Sz.Y - 38) * .5f - 1, 38, S47RxLLine);
 	X += S47RxLWide(Mhz.Len(), 38) + 22;
 	Pen.Line({ FVector2f(X - 8, 9), FVector2f(X - 8, Sz.Y - 9) }, S47RxLLine, 1.2f);
 	if (Now.bJob && X + 130 < Sz.X)
 	{
-		const double Wave = S47RxLook::WavelengthCm(Now.CardMhz);
-		const FString Band = FString::Printf(TEXT("%s  %s cm"), S47RxLook::LineName(Now.CardMhz), *Num(FMath::RoundToDouble(Wave))), Length = FString::Printf(TEXT("= %s cm"), *Num(Wave, 3));
+		const FString& Band = Words.Band;
+		const FString& Length = Words.Length;
 		Pen.Text(Band, X + 4, RowA, S47RxLSmall, S47RxLGreen);
 		// (the font has no Greek: the lambda is two strokes of the beam)
 		const FVector2f Lam(X + 5, RowB + 4);
@@ -327,7 +330,7 @@ int32 SS47RxFall::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRec
 	const double Span = Rows * S47RxLFallSeconds;
 	auto Seconds = [&](double Back)
 	{
-		const FString Label = (Back > 0 ? TEXT("-") : TEXT("")) + Num(Back) + TEXT(" s");
+		const FString Label = S47RxLookPaint::FallSeconds(Back);
 		const float LabelY = FMath::Clamp(P0.Y + Plot.Y * float(Back / FMath::Max(Span, 1e-6)) - 12.f, P0.Y - 5.f, P0.Y + Plot.Y - 21.f);
 		Pen.Text(Label, P0.X - 5 - S47RxLWide(Label.Len(), S47RxLSmall), LabelY, S47RxLSmall, Quiet, 1);
 	};
@@ -362,7 +365,7 @@ int32 SS47RxFft::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect
 	}
 	auto Decibels = [&](int32 Level, float Y)
 	{
-		const FString Label = Num(double(Level));
+		const FString Label = S47RxLookPaint::FftDecibels(Level);
 		Pen.Text(Label, P0.X - 4 - S47RxLWide(Label.Len(), S47RxLSmall), Y, S47RxLSmall, Quiet);
 	};
 	Decibels(-60, P0.Y - 5);
@@ -374,7 +377,7 @@ int32 SS47RxFft::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect
 		const float X = P0.X + Plot.X * I / 4.f;
 		Pen.Line({ FVector2f(X, P0.Y), FVector2f(X, P0.Y + Plot.Y) }, I == 2 ? S47RxLLine : S47RxLDim, 1.f);
 		if (I % 2 != 0 || !Now.bJob) continue;
-		const FString Label = Num(Now.Scope.Card + Half * (I - 2) / 2., 3);
+		const FString Label = S47RxLookPaint::FftMhz(Now, I);
 		const float Wide = S47RxLWide(Label.Len(), S47RxLSmall);
 		// (the outer two only where the three do not stand on each other)
 		if (I != 2 && Plot.X < Wide * 3 + 24) continue;
@@ -456,6 +459,52 @@ FVector2D SS47RxTrack::EyeAt(const S47SkySphere::FView& View, const FVector2D& R
 	return Way.GetSafeNormal() * double(EyeShare(Far));
 }
 
+TArray<SS47RxTrack::FRow> SS47RxTrack::Rows(const FS47SkyAcquire* Sky, double CardMhz, bool bAllArms)
+{
+	using FSky = FS47SkyAcquire;
+	using S47RxLook::Num;
+	TArray<FRow> Out;
+	auto Row = [&Out](const FString& Name, const FString& Value, bool bQuiet) { FRow R; R.Name = Name; R.Value = Value; R.bQuiet = bQuiet; Out.Add(R); };
+	// (the arms by number, S47RxLook::ArmLabel; a lone capital C is not Freeform's)
+	auto ArmName = [](int32 Arm) { return FString(TEXT("DELAY ")) + S47RxLook::ArmLabel(Arm); };
+	const bool bLocked = Sky && Sky->Locked(), bLocking = Sky && Sky->State() == FSky::EPhase::Locking;
+	if (Sky && (bLocking || bLocked))
+	{
+		const double Part = Sky->LockProgress();
+		Row(TEXT("S/N"), Num(Sky->SignalToNoise() * Part, 1) + TEXT(" dB"), false);
+		Row(TEXT("RESID"), Num(Sky->MeanOff(), 2) + TEXT("\u00b0"), false);
+		// the rate the longest delay changes at as the sky turns, as a fringe rate at the card's frequency
+		double Rate = 0; int32 Longest = 0;
+		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm)
+		{
+			const double ArmRate = Sky->ArmDelayRate(Arm) * CardMhz * 1e-3;
+			if (FMath::Abs(ArmRate) > FMath::Abs(Rate)) Rate = ArmRate;
+			if (FMath::Abs(Sky->ArmDelayNs(Arm)) > FMath::Abs(Sky->ArmDelayNs(Longest))) Longest = Arm;
+		}
+		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm) if (bAllArms || Arm == Longest) Row(ArmName(Arm), Num(Sky->ArmDelayNs(Arm) * Part, 1, 0, true) + TEXT(" ns"), false);
+		Row(TEXT("RATE"), Num(Rate * Part, 3, 0, true) + TEXT(" Hz"), false);
+		if (Part > .75)
+		{
+			const FSky::FSource* Listed = Sky->NearestCatalogued(Sky->Cross(), true);
+			Row(TEXT("CAT"), Listed ? Listed->Name : FString(TEXT("--")), false);
+			Row(TEXT("OFFSET"), Num(Sky->CatalogueOffset(), 1) + TEXT("\u00b0"), false);
+		}
+		else { Row(TEXT("CAT"), TEXT("...."), true); Row(TEXT("OFFSET"), TEXT("...."), true); }
+	}
+	else
+	{
+		Row(TEXT("S/N"), TEXT("-- dB"), true); Row(TEXT("RESID"), TEXT("--"), true);
+		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm) if (bAllArms || Arm == 0) Row(ArmName(Arm), TEXT("-- ns"), true);
+		Row(TEXT("RATE"), TEXT("-- Hz"), true); Row(TEXT("CAT"), TEXT("--"), true); Row(TEXT("OFFSET"), TEXT("--"), true);
+	}
+	return Out;
+}
+
+FString SS47RxTrack::OffWords(const FS47SkyAcquire* Sky)
+{
+	return Sky && Sky->HasBearings() ? FString::Printf(TEXT("OFF %s\u00b0"), *S47RxLook::Num(Sky->Distance(), 1)) : FString(TEXT("OFF --"));
+}
+
 int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 L, const FWidgetStyle&, bool) const
 {
 	using FSky = FS47SkyAcquire;
@@ -475,7 +524,7 @@ int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRe
 	Pen.Line({ Eye - FVector2f(EyeR, 0), Eye + FVector2f(EyeR, 0) }, S47RxLDim, 1.f);
 	Pen.Line({ Eye - FVector2f(0, EyeR), Eye + FVector2f(0, EyeR) }, S47RxLDim, 1.f);
 	// (round 2: one line under it, how far off, in the next step's size; which way is the mark's own place)
-	FString OffD = TEXT("OFF --");
+	const FString OffD = OffWords(Sky.Get());
 	if (bHave)
 	{
 		const double Far = Sky->Distance();
@@ -489,7 +538,6 @@ int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRe
 		else Pen.Rect(Dot - FVector2f(3.5f, 3.5f), FVector2f(7, 7), Tone, 1.6f, 1);
 		Pen.Glow({ Dot - FVector2f(7, 0), Dot + FVector2f(7, 0) }, S47RxLFade(Tone, .9f), 1.2f, 1);
 		Pen.Glow({ Dot - FVector2f(0, 7), Dot + FVector2f(0, 7) }, S47RxLFade(Tone, .9f), 1.2f, 1);
-		OffD = FString::Printf(TEXT("OFF %s\u00b0"), *Num(Far, 1));
 	}
 	const float EyeTextY = Eye.Y + EyeR + 2;
 	if (EyeTextY + 22 <= Sz.Y) Pen.Text(OffD, FMath::Min(Eye.X - S47RxLWide(OffD.Len(), S47RxLSmall) * .5f, Sz.X - S47RxLWide(OffD.Len(), S47RxLSmall) - 2), EyeTextY, S47RxLSmall, S47RxLGreen);
@@ -498,45 +546,63 @@ int32 SS47RxTrack::OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRe
 	const bool bAllArms = Sz.Y >= 8 * 20.f;
 	const float Pitch = FMath::Min(float(S47RxLSmall), (Sz.Y - 2) / (bAllArms ? 8.f : 6.f));
 	float Y = 0;
-	auto Row = [&](const FString& Name, const FString& Value, const FLinearColor& C) { Pen.Text(Name.RightPad(8) + Value, 2, Y, S47RxLSmall, C); Y += Pitch; };
-	// (RX-LOOK gjennomgang 14 Nov: the arms by number, S47RxLook::ArmLabel; a lone capital C is not Freeform's)
-	const FString ArmName[FSky::ArmCount] = { FString(TEXT("DELAY ")) + S47RxLook::ArmLabel(0), FString(TEXT("DELAY ")) + S47RxLook::ArmLabel(1), FString(TEXT("DELAY ")) + S47RxLook::ArmLabel(2) };
 	const FLinearColor Quiet = S47RxLFade(S47RxLGreen, .6f);
-	if (Sky.IsValid() && (bLocking || bLocked))
-	{
-		const double Part = Sky->LockProgress();
-		Row(TEXT("S/N"), Num(Sky->SignalToNoise() * Part, 1) + TEXT(" dB"), S47RxLGreen);
-		Row(TEXT("RESID"), Num(Sky->MeanOff(), 2) + TEXT("\u00b0"), S47RxLGreen);
-		// the rate the longest delay changes at as the sky turns, as a fringe rate at the card's frequency
-		double Rate = 0; int32 Longest = 0;
-		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm)
-		{
-			const double ArmRate = Sky->ArmDelayRate(Arm) * Now.CardMhz * 1e-3;
-			if (FMath::Abs(ArmRate) > FMath::Abs(Rate)) Rate = ArmRate;
-			if (FMath::Abs(Sky->ArmDelayNs(Arm)) > FMath::Abs(Sky->ArmDelayNs(Longest))) Longest = Arm;
-		}
-		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm) if (bAllArms || Arm == Longest) Row(ArmName[Arm], Num(Sky->ArmDelayNs(Arm) * Part, 1, 0, true) + TEXT(" ns"), S47RxLGreen);
-		Row(TEXT("RATE"), Num(Rate * Part, 3, 0, true) + TEXT(" Hz"), S47RxLGreen);
-		if (Part > .75)
-		{
-			const FSky::FSource* Listed = Sky->NearestCatalogued(Sky->Cross(), true);
-			Row(TEXT("CAT"), Listed ? Listed->Name : FString(TEXT("--")), S47RxLGreen);
-			Row(TEXT("OFFSET"), Num(Sky->CatalogueOffset(), 1) + TEXT("\u00b0"), S47RxLGreen);
-		}
-		else { Row(TEXT("CAT"), TEXT("...."), Quiet); Row(TEXT("OFFSET"), TEXT("...."), Quiet); }
-	}
-	else
-	{
-		Row(TEXT("S/N"), TEXT("-- dB"), Quiet); Row(TEXT("RESID"), TEXT("--"), Quiet);
-		for (int32 Arm = 0; Arm < FSky::ArmCount; ++Arm) if (bAllArms || Arm == 0) Row(ArmName[Arm], TEXT("-- ns"), Quiet);
-		Row(TEXT("RATE"), TEXT("-- Hz"), Quiet); Row(TEXT("CAT"), TEXT("--"), Quiet); Row(TEXT("OFFSET"), TEXT("--"), Quiet);
-	}
+	// (RX-LOOK gjennomgang 14 Nov: the rows as Rows writes them for the rule's state, the same the tests read)
+	for (const FRow& Each : Rows(Sky.Get(), Now.CardMhz, bAllArms)) { Pen.Text(Each.Line(), 2, Y, S47RxLSmall, Each.bQuiet ? Quiet : S47RxLGreen); Y += Pitch; }
 	// taking the fix: a small mark walks along under the readouts (still with Calm flashes)
 	if (bLocking && !Now.bCalm) Pen.Box(FVector2f(2 + float(FMath::Fmod(T * 60., double(FMath::Max(40.f, Sz.X * .5f)))), FMath::Min(Y + 1, Sz.Y - 2)), FVector2f(10, 2), S47RxLAmber, 1);
 	return L + 2;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------
+
+FString S47RxLookPaint::StationLine(const FS47RxLive& Now)
+{
+	using S47RxLook::Num;
+	return Now.bPointing ? FString::Printf(TEXT("STN SARO  EL %s\u00b0  AZ %s\u00b0"), *Num(Now.El, 1), *Num(Now.Az, 1, 5, false, true)) : FString(TEXT("STN SARO  EL --.-  AZ ---.-"));
+}
+
+S47RxLookPaint::FBannerWords S47RxLookPaint::BannerWords(const FS47RxLive& Now)
+{
+	using S47RxLook::Num;
+	FBannerWords W;
+	W.State = Now.State.Text;
+	W.Array = FString::Printf(TEXT("ARRAY %s/27"), *Num(Now.Dishes));
+	W.Rate = FString::Printf(TEXT("RATE %s %% %s"), *Num(100. * Now.Rate), *Now.RateWord);
+	W.Mhz = Now.bJob ? Num(Now.CardMhz, 3) + TEXT(" MHz") : FString(TEXT("----.--- MHz"));
+	const double Wave = S47RxLook::WavelengthCm(Now.CardMhz);
+	W.Band = FString::Printf(TEXT("%s  %s cm"), S47RxLook::LineName(Now.CardMhz), *Num(FMath::RoundToDouble(Wave)));
+	W.Length = FString::Printf(TEXT("= %s cm"), *Num(Wave, 3));
+	W.Source = Now.Source;
+	return W;
+}
+
+FString S47RxLookPaint::FallSeconds(double Back) { return (Back > 0 ? TEXT("-") : TEXT("")) + S47RxLook::Num(Back) + TEXT(" s"); }
+FString S47RxLookPaint::FftDecibels(int32 Level) { return S47RxLook::Num(double(Level)); }
+FString S47RxLookPaint::FftMhz(const FS47RxLive& Now, int32 Tick) { return S47RxLook::Num(Now.Scope.Card + S47RxLook::HalfSpan(Now.Scope.FTol) * (Tick - 2) / 2., 3); }
+
+TArray<FString> S47RxLookPaint::FrameWords(const FS47RxLive& Now, const FS47SkyAcquire* Sky)
+{
+	TArray<FString> Out;
+	// the header
+	for (const TCHAR* Line : S47RxLHeaderName) Out.Add(Line);
+	TArray<FString> Parts;
+	Now.Term.ParseIntoArray(Parts, TEXT("  "), true);
+	for (const FString& Part : Parts) Out.Add(Part.TrimStartAndEnd());
+	Out.Add(Now.Clock); Out.Add(StationLine(Now)); Out.Add(TEXT("SARO OPS"));
+	// the banner
+	const FBannerWords B = BannerWords(Now);
+	Out.Append({ B.State, B.Array, B.Rate, B.Mhz, B.Band, B.Length, FString(TEXT("SOURCE")), B.Source });
+	// the waterfall's seconds (for every height of panel) and the spectrum's foot and side
+	for (int32 Rows = 8; Rows <= S47RxLFallMost; ++Rows) { const double Span = Rows * S47RxLFallSeconds; Out.Add(FallSeconds(0.)); Out.Add(FallSeconds(FMath::FloorToDouble(Span * .5))); Out.Add(FallSeconds(FMath::FloorToDouble(Span))); }
+	for (const int32 Level : { -60, -90, -120 }) Out.Add(FftDecibels(Level));
+	for (const int32 Tick : { 0, 2, 4 }) Out.Add(FftMhz(Now, Tick));
+	Out.Append({ FString(TEXT("RECEIVER OFF")), FString(TEXT("< DIAL")), FString(TEXT("DIAL >")) });
+	// the tracking panel
+	Out.Add(SS47RxTrack::OffWords(Sky));
+	for (const bool bAll : { true, false }) for (const SS47RxTrack::FRow& Row : SS47RxTrack::Rows(Sky, Now.CardMhz, bAll)) Out.Add(Row.Line());
+	return Out;
+}
 
 bool S47RxLookPaint::SelfTest(TArray<FString>& Lines)
 {
@@ -626,6 +692,70 @@ bool S47RxLookPaint::SelfTest(TArray<FString>& Lines)
 		const int32 Before = FMath::Clamp(int32(100.f / 4.f), 8, 44) * 40, BeforeTall = 44 * 40;
 		Check(bInside && SmallRows == 50 && TallRows == S47RxLFallMost && Lines3 == TallRows && Tick == 1 && Small <= 1200 && Tall <= 1700 && Small >= SmallRows * 8,
 			FString::Printf(TEXT("the waterfall's picture: %d rows of grain two units high beside the sphere (%d boxes a frame; it was %d square cells in 25 rows), %d rows on TUNE (%d boxes; it was %d), the line a narrow core in two wider steps in every row"), SmallRows, Small, Before, TallRows, Tall, BeforeTall));
+	}
+	{
+		// RX-LOOK gjennomgang 14 Nov: every line the painted parts write, read through the same functions they draw with, for the
+		// states the frame goes through: the header's clock through every minute of a day, the array's pointing through every
+		// tenth of a degree, the banner's state while recording 0 to 18 s, the reference 0 to 8 s and slewing through 0 to 180
+		// degrees, the dishes and the rate, the card's frequency across the dial, and the tracking panel while the sky rule
+		// searches, takes the fix and holds it. None reads 47, has a lone C or another of the text rule's words.
+		int32 Read = 0;
+		FString Bad;
+		auto Hold = [&](const FString& Shown) { ++Read; if (Bad.IsEmpty() && !S47RxLook::TextFault(Shown).IsEmpty()) Bad = Shown + TEXT(" (") + S47RxLook::TextFault(Shown) + TEXT(")"); };
+		FS47RxLive Base; Base.bJob = true; Base.Term = TEXT("V4.2  TERM 3  OPR NIGHT"); Base.Source = TEXT("PSR B1133+16"); Base.CardMhz = Base.Scope.Card = 1419.6; Base.Scope.FTol = .03;
+		Base.Scope.bPowered = true; Base.Dishes = 27; Base.Rate = 1.; Base.RateWord = TEXT("FULL"); Base.bPointing = true; Base.El = 54.3; Base.Az = 112.;
+		Base.Clock = S47RxLook::ClockLine(TEXT("28-APR-86 21:14"));
+		for (const FString& Each : FrameWords(Base, nullptr)) Hold(Each);
+		for (int32 Minute = 0; Minute < 24 * 60; ++Minute) Hold(S47RxLook::ClockLine(FString::Printf(TEXT("28-APR-86 %02d:%02d"), Minute / 60, Minute % 60)));
+		FS47RxLive Turning = Base;
+		for (int32 Tenth = 0; Tenth <= 3600; ++Tenth) { Turning.Az = Tenth * .1; Turning.El = FMath::Fmod(Tenth * .1, 90.); Hold(StationLine(Turning)); }
+		S47RxLook::FStateIn In; In.bJob = true; In.Stage = 2; In.bTuned = In.bPointReady = In.bSettled = true; In.Seconds = 18;
+		for (int32 Step = 0; Step <= 18 * 20; ++Step) { In.Elapsed = Step * .05; Hold(S47RxLook::StateOf(In).Text); }
+		In.Stage = 4; In.bReference = true;
+		for (int32 Step = 0; Step <= 8 * 20; ++Step) { In.ReferenceAt = Step * .05; Hold(S47RxLook::StateOf(In).Text); }
+		for (int32 Step = 0; Step <= 3600; ++Step) Hold(S47RxLook::SlewWords(Step * .05));
+		FS47RxLive Counting = Base;
+		for (int32 Dishes = 0; Dishes <= 27; ++Dishes) { Counting.Dishes = Dishes; Hold(BannerWords(Counting).Array); }
+		for (int32 Share = 0; Share <= 1000; ++Share) { Counting.Rate = Share * .001; Hold(BannerWords(Counting).Rate); }
+		for (int32 Step = 0; Step <= 1200; ++Step)
+		{
+			Counting.CardMhz = Counting.Scope.Card = 1419.5 + Step * .001;
+			const FBannerWords Words = BannerWords(Counting);
+			Hold(Words.Mhz); Hold(Words.Band); Hold(Words.Length);
+			for (const int32 Tick : { 0, 2, 4 }) Hold(FftMhz(Counting, Tick));
+		}
+		// the tracking panel while the rule searches, takes the fix and holds it, for each card source and the unusual kind
+		for (const FS47SkyAcquire::FSource& Src : FS47SkyAcquire::Catalogue())
+		{
+			if (!Src.bMajor) continue;
+			for (const bool bOdd : { false, true })
+			{
+				FS47SkyAcquire Sky;
+				Sky.Begin(7u + uint32(Src.Run) * 31u, Src.At, Src.Run, bOdd);
+				TArray<FS47SkyAcquire::FDish> Dishes;
+				for (int32 I = 0; I < FS47SkyAcquire::DishCount; ++I)
+				{
+					FS47SkyAcquire::FDish D; D.bOn = true; D.Point = Src.At;
+					const double Arm = FMath::DegreesToRadians(120. * FS47SkyAcquire::ArmOf(I)), Reach = 40. * (1 + I % (FS47SkyAcquire::DishCount / FS47SkyAcquire::ArmCount));
+					D.Ground = FVector2D(FMath::Sin(Arm) * Reach, FMath::Cos(Arm) * Reach);
+					Dishes.Add(D);
+				}
+				for (const FString& Each : FrameWords(Base, &Sky)) Hold(Each);
+				for (int32 Frame = 0; Frame < 60 * 45 && !Sky.Locked(); ++Frame)
+				{
+					Sky.SetArray(Dishes, true, true);
+					Sky.Steer(Sky.Distance() > 1. ? (Sky.Cross() - Sky.ReticleAt()).GetSafeNormal() : FVector2D::ZeroVector);
+					Sky.Step(1. / 60.);
+					if (Frame % 6 == 0 || Sky.State() == FS47SkyAcquire::EPhase::Locking)
+					{
+						Hold(SS47RxTrack::OffWords(&Sky));
+						for (const bool bAll : { true, false }) for (const SS47RxTrack::FRow& Row : SS47RxTrack::Rows(&Sky, Base.CardMhz, bAll)) Hold(Row.Line());
+					}
+				}
+				for (const FString& Each : FrameWords(Base, &Sky)) Hold(Each);
+			}
+		}
+		Check(Bad.IsEmpty() && Read > 20000, FString::Printf(TEXT("%d lines the frame's painted parts write, read through the functions they draw with, keep to the text rule%s"), Read, Bad.IsEmpty() ? TEXT("") : *(TEXT(": NOT ") + Bad)));
 	}
 	return bOk;
 }

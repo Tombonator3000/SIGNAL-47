@@ -116,6 +116,11 @@ public:
 	// The reticle's mark on the bull's-eye (x to the right, y up, a share of its radius): the way from the crossing to the reticle
 	// on the chart's picture, as far out as EyeShare of the rule's distance.
 	static FVector2D EyeAt(const S47SkySphere::FView& View, const FVector2D& Reticle, const FVector2D& Cross);
+	// RX-LOOK gjennomgang 14 Nov: the lines the panel writes for the rule's state, as it writes them (the self-test and the receiver
+	// test read the same): a name and its value, and whether it is a quiet one. bAllArms: every arm's delay, else the longest only.
+	struct FRow { FString Name, Value; bool bQuiet = false; FString Line() const { return Name.RightPad(8) + Value; } };
+	static TArray<FRow> Rows(const FS47SkyAcquire* Sky, double CardMhz, bool bAllArms);
+	static FString OffWords(const FS47SkyAcquire* Sky);
 private:
 	TSharedPtr<FS47RxFeed> Live;
 	TSharedPtr<FS47SkyAcquire> Sky;
@@ -124,5 +129,16 @@ private:
 
 namespace S47RxLookPaint
 {
+	// RX-LOOK gjennomgang 14 Nov: the words the painted parts write for a state, as they write them. Each painter takes its lines
+	// from here, so that the self-test and the receiver test read exactly what is drawn.
+	FString StationLine(const FS47RxLive& Now);                    // the header's "STN SARO  EL ..  AZ .." line
+	struct FBannerWords { FString State, Array, Rate, Mhz, Band, Length, Source; };
+	FBannerWords BannerWords(const FS47RxLive& Now);
+	FString FallSeconds(double Back);                               // the waterfall's "-4 s"
+	FString FftDecibels(int32 Level);                               // the spectrum's "-90"
+	FString FftMhz(const FS47RxLive& Now, int32 Tick);              // the spectrum's foot, ticks 0, 2 and 4
+	// Every line the header, the banner, the waterfall, the spectrum and the tracking panel can write for this state (with the
+	// tracking panel's rows for every arm and for the longest).
+	TArray<FString> FrameWords(const FS47RxLive& Now, const FS47SkyAcquire* Sky);
 	bool SelfTest(TArray<FString>& Lines);
 }

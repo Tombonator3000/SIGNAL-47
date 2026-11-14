@@ -114,6 +114,14 @@ public:
 	// The open picture as last painted (before the first frame: the picture at the chart's usual size), for the tracking panel's
 	// bull's-eye, which lies the way the chart does.
 	S47SkySphere::FView OpenView() const { return (ShownSize.X > 0 ? Shown : PlotFor(FVector2f(716, 440))).View; }
+	// RX-LOOK gjennomgang 14 Nov: the words the chart writes for the rule's state, as it writes them (the self-test and the
+	// receiver test read the same): the corner blocks, a declination round the rim, an hour under it, and every word it can
+	// write at all for this state (the corners, every hour and declination, the pole, the catalogue's names, the arms, the rose).
+	struct FCorners { FString TopLeft[3], TopRight[2], Foot[3]; };
+	static FCorners CornerWords(const FS47SkyAcquire& K, double Lst, const FString& Source);
+	static FString DecWords(int32 Circle);
+	static FString HourWords(int32 Hour);
+	static TArray<FString> AllWords(const FS47SkyAcquire& K, double Lst, const FString& Source);
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:

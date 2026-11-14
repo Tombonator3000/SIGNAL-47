@@ -106,6 +106,8 @@ namespace S47RxLook
 	{
 		return Num(FMath::FloorToDouble(FMath::Max(0., FMath::IsFinite(Elapsed) ? Elapsed : 0.))) + TEXT(" / ") + Num(FMath::RoundToDouble(Seconds)) + TEXT(" s");
 	}
+	// The banner while the array comes round: how far it has to go ("SLEWING 12.5° TO GO").
+	inline FString SlewWords(double DegreesToGo) { return TEXT("SLEWING ") + Num(DegreesToGo, 1) + TEXT("° TO GO"); }
 	// The header's date and clock ("28-APR-86 23:47") as the glass shows it: the clock by the project's rule for a clock in player
 	// text (S47Script::PlayerClock: never a minute or digits that read 47, nor 08:15 or 20:15; a minute on). The date is as given
 	// (a day or a year of the game's calendar cannot read 47). Anything that does not end in HH:MM is given back as it is.
