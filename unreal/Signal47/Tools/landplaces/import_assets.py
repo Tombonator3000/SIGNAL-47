@@ -7,8 +7,8 @@ Run through the queue with no editor open:  python3 Tools/landplaces/run.py impo
 Uses the project's measured FBX recipe (Tools/fieldintegration/import_recipe.py): Blender (x, y, z) m -> Unreal (x, -y, z) cm.
 
 Each atlas is three maps: T_LP_<Atlas>_BC (colour), _N (normal, DirectX) and _ORM (occlusion, roughness, metal in R, G, B). The
-meshes carry their own detail levels (LOD1..3, built from the same primitives on the same texels) at screen sizes worked out
-from each mesh's own size for 40, 120 and 350 m, so every part of a place changes level at the same distance. No Nanite (thin
+meshes carry their own detail levels (LOD1..4, built from the same primitives on the same texels) at screen sizes worked out
+from each mesh's own size for 30, 90, 220 and 550 m, so every part of a place changes level at the same distance. No Nanite (thin
 lattice does badly in it, and the project's props do not use it). Traces go against a low level's own triangles
 (lod_for_collision, complex as simple): what stops a look is exactly what is drawn, a little coarser.
 """
@@ -35,8 +35,8 @@ R.report = {'status': 'RUNNING', 'engine': unreal.SystemLibrary.get_engine_versi
 E, S, M, T = R.E, R.S, R.M, R.T
 ST = unreal.MaterialSamplerType
 MP = unreal.MaterialProperty
-DIST_M = (40.0, 120.0, 350.0)          # where LOD1, 2 and 3 begin
-SCREEN = 2.3168                        # screen size = SCREEN x radius / distance (a 75 degree view, 16:9)
+DIST_M = (30.0, 90.0, 220.0, 550.0)    # where LOD1, 2, 3 and 4 begin
+SCREEN = 1.428                         # screen size = SCREEN x radius / distance: 1 / tan(35), the walker's 70 degree vertical view
 
 
 def texture(name, path, kind, size=0):
@@ -158,12 +158,13 @@ def windmill():
                 mesh.set_material(index, mats[material])
         if lods > 1:
             # every level in LOD0's own frame: a lower level may leave small pieces out (its box inside LOD0's), never stand outside it
+            # (the last level of the tower is one slim pylon, well inside)
             base = R.lod_box(mesh, 0)
             for lod in range(1, mesh.get_num_lods()):
                 box = R.lod_box(mesh, lod)
                 out = max(max(base[0][k] - box[0][k], box[1][k] - base[1][k]) for k in range(3))
                 gone = max(max(box[0][k] - base[0][k], base[1][k] - box[1][k]) for k in range(3))
-                R.check('%s LOD%d in LOD0 frame' % (name, lod), out <= 3.0 and gone <= 60.0, {'lod0': base, 'lod': box, 'outside_cm': out, 'left_out_cm': gone})
+                R.check('%s LOD%d in LOD0 frame' % (name, lod), out <= 3.0 and (gone <= 60.0 or lod >= 4), {'lod0': base, 'lod': box, 'outside_cm': out, 'left_out_cm': gone})
             radius = mesh.get_bounds().sphere_radius / 100.0
             sizes = [1.0] + [SCREEN * radius / d for d in DIST_M[:lods - 1]]
             R.check(name + ' screen sizes', S.set_lod_screen_sizes(mesh, sizes), sizes)

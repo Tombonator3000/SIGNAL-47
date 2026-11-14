@@ -52,6 +52,9 @@ namespace S47LandWindmill
  // ---- pure parts (the self-test holds them) ----
  // The walk boxes round a mill, in its own metres (x east, y = z south): four piers, the housing, the tank as five boxes.
  SIGNAL47_API TArray<FBox2D> WalkBoxes(double TankAtX,double TankAtZ,double TankRadius);
+ // Whether a road-local point lies under either mill's tower or tank while the model is drawn (S47FarmWorld clears the scattered
+ // plants there: none grows up through the housing or out of the water).
+ SIGNAL47_API bool Covers(double RoadX,double RoadZ);
  // How fast a free wheel turns in this wind (degrees a second), and the rod's height over the bottom of its stroke at a wheel angle.
  SIGNAL47_API double FreeRate(double Mph);
  SIGNAL47_API double RodLift(double WheelDeg);
@@ -67,4 +70,7 @@ namespace S47LandWindmill
  SIGNAL47_API bool Audit(US47Main* M,TArray<FString>& Lines,bool bTrace);
  // The Baca lid held open or shut and the page shown whatever the trail says (bOn false: back to the game's own).
  SIGNAL47_API void DevPose(bool bOn,bool bLidOpen,bool bPage,bool bWire);
+ // How far the Baca lid stands open (0 shut to 1), and how fast its wheel turns now (degrees a second).
+ SIGNAL47_API double LidOpen();
+ SIGNAL47_API double WheelRateNow();
 }

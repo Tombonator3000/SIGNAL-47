@@ -41,7 +41,7 @@ TANK = (4.35, -0.35)
 TANK_R, TANK_H, WATER_Z = 1.50, 0.60, 0.47
 VALVE = (TANK[0] - TANK_R + 0.20, TANK[1], 0.74)
 OVER_AZ = math.radians(-55)                       # the overflow, south-east
-PAGE_AT = (0.02, -0.33, 0.034)
+PAGE_AT = (0.0, -0.078, 0.355)                   # the bag hangs on the pump's gland by a twist of wire, where the lifted lid shows it
 STROKE = 0.19
 CORNERS = [(1, 1), (-1, 1), (-1, -1), (1, -1)]    # NE, NW, SW, SE
 UP = (0, 0, 1)
@@ -87,7 +87,7 @@ for _name, _atlas, _pivot, _group in (
         ('Water', PLAIN_A, (TANK[0], TANK[1], 0), 9), ('Page', PAGE_A, PAGE_AT, 10), ('VaneLabel', LABEL_A, (0, 0, HUB_Z), 11),
         ('WireRun', PLAIN_A, (0, 0, 0), 12), ('WireKnot', PLAIN_A, (0, 0, 0), 13)):
     P[_name] = K.Part(_name, _atlas, _pivot, _group)
-LODS = {'Tower': 4, 'Rod': 4, 'Pier': 3, 'Head': 4, 'Wheel': 4, 'Housing': 4, 'Lid': 3, 'Tank': 4, 'Float': 2, 'Water': 2, 'Page': 1, 'VaneLabel': 1, 'WireRun': 1, 'WireKnot': 1}
+LODS = {'Tower': 5, 'Rod': 4, 'Pier': 3, 'Head': 4, 'Wheel': 5, 'Housing': 4, 'Lid': 3, 'Tank': 4, 'Float': 2, 'Water': 2, 'Page': 1, 'VaneLabel': 1, 'WireRun': 1, 'WireKnot': 1}
 
 
 def angle_between(a, b, z, inset, mat, key, size=0.045, t=0.005, dens=1.0, flip=False):
@@ -100,7 +100,7 @@ def angle_between(a, b, z, inset, mat, key, size=0.045, t=0.005, dens=1.0, flip=
         pa, pb = pb, pa
     e = unit(sub(pb, pa))
     pa, pb = add(pa, mul(e, 0.02)), sub(pb, mul(e, 0.02))
-    k = N(1, 1, 1.3, 2.2)
+    k = N(1, 1, 1.5, 3.0)
     K.bar(key, pa, pb, K.sec_L(size * k, size * k, t * k, 0.002), mat, ref=UP, dens=dens, cap0=LOD_CAPS(), cap1=LOD_CAPS())
 
 
@@ -113,7 +113,13 @@ def build_tower():
     K.target(P['Tower'])
     rnd = random.Random(11)
     levels = [PIER_TOP] + GIRTS + [LEG_TOP]
-    k = N(1, 1, 1.25, 2.0)                                     # far off the members are drawn thicker, so the tower still reads
+    if K.LOD >= 4:
+        # beyond half a kilometre a lattice is less than a pixel a member: one slim tapered pylon, about as dark as the lattice was
+        x, y = (1, 0, 0), (0, 1, 0)
+        K.sweep('leg0_1', K.sec_rect(0.95, 0.95), [ring((0, 0, PIER_TOP), x, y), ring((0, 0, LEG_TOP), x, y, 0.2), ring((0, 0, MAST_TOP), x, y, 0.12)], 'galv', cap0=False, cap1=False, vmax=40.0)
+        K.bar('plank0', (0, 0, GIRTS[-1] + 0.06), (0, 0, GIRTS[-1] + 0.14), K.sec_rect(1.06, 1.08), 'wood', ref=(0, 1, 0))
+        return
+    k = N(1, 1, 1.6, 3.4)                                      # far off the members are drawn thicker, so the tower still reads
     for c, (sx, sy) in enumerate(CORNERS):
         x, y = ((-sx, 0, 0), (0, -sy, 0)) if sx * sy > 0 else ((0, -sy, 0), (-sx, 0, 0))
         for i in range(len(levels) - 1):
@@ -299,6 +305,9 @@ def build_wheel():
     C = (0, -HUB_OFF, HUB_Z)
     e1, e2, ea = (1, 0, 0), UP, (0, -1, 0)
     ax = place(C, e1, e2, ea)
+    if K.LOD >= 4:
+        K.revolve('rim1', [(0.0, -0.04), (1.12, -0.04), (1.12, 0.02), (0.0, 0.02)], ax, 12, 'galv')
+        return
     K.revolve('hub', [(0.0, -0.10), (0.07, -0.10), (0.07, -0.012), (0.15, -0.012), (0.15, 0.012), (0.07, 0.012), (0.07, 0.08), (0.045, 0.105), (0.0, 0.105)], ax, N(16, 12, 8, 6), 'cast', dens=1.1, tone=.7)
     if K.LOD == 0:
         K.bolt('hubnut', add(C, mul(ea, 0.105)), ea, 0.028, 0.03, 'cast', tone=1.0)
@@ -492,11 +501,10 @@ def build_water():
 def build_page():
     K.target(P['Page'])
     o = PAGE_AT
-    t = math.radians(14)
 
     def pt(u, w):
-        sag = 0.004 * math.sin(u * math.pi) * math.sin(w * math.pi)
-        return (o[0] - 0.095 + 0.19 * u, o[1] - 0.085 + 0.17 * w * math.cos(t), o[2] + 0.17 * w * math.sin(t) + sag)
+        sag = 0.006 * math.sin(u * math.pi) * (1 - w)                     # it bellies a little toward the eye, low down
+        return (o[0] - 0.095 + 0.19 * u, o[1] - 0.02 * (1 - w) - sag, o[2] + 0.17 * w)
     K.sheet('page', pt, 3, 3, 0, 'page', (0.19, 0.17))
 
 
@@ -514,7 +522,7 @@ BUILDERS = {'Tower': build_tower, 'Rod': build_rod, 'Pier': build_pier, 'Head': 
 
 
 def build_all():
-    for lod in range(4):
+    for lod in range(5):
         K.LOD = lod
         for name, fn in BUILDERS.items():
             if lod < LODS[name]:
@@ -527,8 +535,8 @@ def build_all():
 
 
 def report():
-    rows = K.measure(P.values())
-    total = [sum(r['triangles'][l] if l < len(r['triangles']) else r['triangles'][-1] for n, r in rows.items() if n != 'Pier') + 4 * rows['Pier']['triangles'][min(l, 2)] for l in range(4)]
+    rows = K.measure(P.values(), (0, 1, 2, 3, 4))
+    total = [sum(r['triangles'][l] if l < len(r['triangles']) else r['triangles'][-1] for n, r in rows.items() if n != 'Pier') + 4 * rows['Pier']['triangles'][min(l, 2)] for l in range(5)]
     wheel = P['Wheel'].lods[0].V
     c = P['Wheel'].pivot
     wr = max(math.hypot(v[0] - c[0], v[2] - c[2]) for v in wheel)

@@ -204,7 +204,7 @@ def surface(name, kind, rust=0.5, tint=(1, 1, 1), ground=0.0, inner=None):
     up.operation = 'ADD'
     nt.links.new(geo.outputs['Normal'], up.inputs[0])
     up.inputs[1].default_value = (0, 0, 1.7)
-    crev = ramp(nt, occl(nt, 0.035), 0.96, 0.45)                       # crevices and contacts
+    crev = ramp(nt, occl(nt, 0.022), 0.90, 0.38)                       # crevices and contacts
     under = ramp(nt, occl(nt, 0.16, 8, up.outputs[0]), 0.92, 0.30)     # what stands under something: where the rain runs off it
     streak = noise(nt, co, 1.0, 4.0, 0.55, (55.0, 55.0, 1.6))           # running down
     patch = noise(nt, co, 3.2, 5.0, 0.62)
@@ -227,8 +227,8 @@ def surface(name, kind, rust=0.5, tint=(1, 1, 1), ground=0.0, inner=None):
             m0 = fmath(nt, 'SUBTRACT', 0.82, fmath(nt, 'MULTIPLY', bloom, 0.35))
         else:
             cpic = image(nt, co, TEX['rust2'], 0.5)
-            base = mixc(nt, 1.0, cpic, (0.50 * tint[0], 0.42 * tint[1], 0.38 * tint[2]), 'MULTIPLY')
-            base = mixc(nt, ramp(nt, patch, 0.35, 0.7), base, mixc(nt, 1.0, g, (0.42, 0.43, 0.44), 'MULTIPLY'))   # what is left of its grey paint
+            base = mixc(nt, 1.0, cpic, (0.30 * tint[0], 0.245 * tint[1], 0.215 * tint[2]), 'MULTIPLY')
+            base = mixc(nt, ramp(nt, patch, 0.35, 0.7), base, mixc(nt, 1.0, g, (0.30, 0.31, 0.32), 'MULTIPLY'))   # what is left of its grey paint
             r0, m0 = 0.72, 0.35
         sore = ramp(nt, patch, 0.60, 0.80)
         run = fmath(nt, 'MULTIPLY', under, ramp(nt, streak, 0.38, 0.62))
@@ -238,7 +238,7 @@ def surface(name, kind, rust=0.5, tint=(1, 1, 1), ground=0.0, inner=None):
         rm = fmath(nt, 'MULTIPLY', rm, 1.8 * rust, True)
         halo = fmath(nt, 'MULTIPLY', ramp(nt, fmath(nt, 'ADD', fmath(nt, 'ADD', crev, run), fmath(nt, 'MULTIPLY', sore, 0.6)), 0.05, 0.9), min(1.0, 0.55 * rust + 0.1), True)
         col = mixc(nt, halo, base, mixc(nt, 1.0, base, (0.86, 0.60, 0.40), 'MULTIPLY'))
-        col = mixc(nt, rm, col, mixc(nt, 1.0, mixc(nt, 0.25, rpic, rlum), (0.60, 0.41, 0.30), 'MULTIPLY'))
+        col = mixc(nt, rm, col, mixc(nt, 1.0, mixc(nt, 0.25, rpic, rlum), (0.38, 0.235, 0.16), 'MULTIPLY'))
         r = mixf(nt, rm, r0, 0.92)
         m = mixf(nt, rm, m0, 0.0)
         # what the model itself lays down: lime and rust under an overflow (0..1); the inside wall of a tank (2)

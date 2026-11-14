@@ -413,7 +413,7 @@ bool FS47Places::Build()
    B.TraceFrom=MillTraces(Shapes,B.HeadAz);
   }
   // LAND-PLACES-WINDMILL-20261114: the model (S47LandWindmill) stands in for the windmill's eight basic shapes and the first days'
-  // wire while its assets are in the build. The shapes are still built (the place's handle, its node and the order of its parts are
+  // wire and plate of bare ground (the model has its own wire, and trampled ground under it always) while its assets are in the build. The shapes are still built (the place's handle, its node and the order of its parts are
   // what the rest goes by) and are hidden, with nothing left to point at where nothing is drawn; without the assets they show as ever.
   const bool bMillModel=FString(D.Id)==TEXT("windmill")&&S47LandWindmill::Available();
   for(int32 Index=0;Index<Shapes.Num();++Index)
@@ -443,7 +443,7 @@ bool FS47Places::Build()
     C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
     const FS47Obj More=M->Web->ObjAt(M->Web->AdoptNode(C,bSaro?SaroRoot:RoadRoot,Name));if(More)M->Web->MarkUsable(More.I,UseId(D.Id));
    }
-   if(bMillModel&&(Index<8||(B.TraceFrom>=0&&Index>=B.TraceFrom&&Index<B.TraceFrom+4))){C->SetHiddenInGame(true);C->SetCastShadow(false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
+   if(bMillModel&&(Index<8||(B.TraceFrom>=0&&Index>=B.TraceFrom&&Index<B.TraceFrom+5))){C->SetHiddenInGame(true);C->SetCastShadow(false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
    B.Parts.Add(C);B.Local.Add(P.At);
   }
   if(bMillModel){UE_LOG(LogTemp,Display,TEXT("S47: place windmill: its basic shapes are hidden, the model stands there (S47LandWindmill)"));}

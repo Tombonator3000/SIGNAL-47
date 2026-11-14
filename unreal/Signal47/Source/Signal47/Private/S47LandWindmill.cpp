@@ -20,10 +20,13 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "CollisionQueryParams.h"
+#include "Components/DecalComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
 #include "Misc/PackageName.h"
 #include "Misc/Parse.h"
@@ -54,11 +57,12 @@ namespace S47LandWindmillLocal
   FVector Stand=FVector::ZeroVector;      // three metres, the area's frame: the place on its ground
   double PlaceX=0,PlaceZ=0;               // road-local
   double TowerUp=0,HouseUp=0,TankUp=0;    // each piece's own ground over the place's
-  double PierGround[4]={0,0,0,0},TankLow=0;
+  double PierGround[4]={0,0,0,0},TankGround[8]={0,0,0,0,0,0,0,0},TankLow=0;
   double HeadAz=0,WheelDeg=0,WheelRate=0,RodDeg=0,LidK=0,LidWant=0,Age=0;
   double Strain=99,KnockFor=0;bool bKnocking=false,bTraces=false,bReadBefore=false,bWiredBefore=false;
   FString Area;int32 AppliedOn=-1;
   TArray<FS47Obstacle> Drive;bool bDriveOn=false;
+  TWeakObjectPtr<UDecalComponent> Ground;TWeakObjectPtr<UMaterialInstanceDynamic> GroundMat;float GroundDay=-1.f;
  };
  FMill Baca,Farm;
  struct FDev{bool bOn=false,bLid=false,bPage=false,bWire=false;} Dev;
@@ -80,7 +84,7 @@ namespace S47LandWindmillLocal
   UStaticMesh* Asset=MeshOf(Mesh);if(!Asset||!Parent)return nullptr;
   auto* C=NewObject<UStaticMeshComponent>(W,*Name);
   C->SetupAttachment(Parent);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Asset);C->SetCastShadow(bShadow);C->bCastContactShadow=false;
-  C->SetGenerateOverlapEvents(false);C->SetCanEverAffectNavigation(false);
+  C->SetGenerateOverlapEvents(false);C->SetCanEverAffectNavigation(false);C->SetReceivesDecals(false);
   if(bSolid){C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);}
   else C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
   C->RegisterComponent();
@@ -121,7 +125,7 @@ namespace S47LandWindmillLocal
   if(auto* C=Mill.Wheel.Get())C->SetRelativeLocation(FVector(0,HubOff*100,0));
   if(auto* C=Mill.Lid.Get())C->SetRelativeLocation(FVector(0,HingeZ*100,HingeY*100));
   if(auto* C=Mill.Float.Get())C->SetRelativeLocation(FVector((ValveX-TankX)*100,0,ValveY*100));
-  if(auto* C=Mill.Page.Get())C->SetRelativeLocation(FVector(2,33,3.4));
+  if(auto* C=Mill.Page.Get())C->SetRelativeLocation(FVector(0,7.8,35.5));   // (the bag hangs on the pump's gland, where the lifted lid shows it)
   if(auto* C=Mill.LidWire.Get()){C->SetRelativeLocation(FVector(0,(HouseZ1+.028)*100,(HouseTop-.045)*100));C->SetRelativeRotation(FRotator(90,0,0));C->SetRelativeScale3D(FVector(.42));}
   if(auto* C=Mill.KnotA.Get()){C->SetRelativeLocation(FVector(0,-105,0));C->SetRelativeRotation(FRotator(0,0,90));C->SetRelativeScale3D(FVector(1.25));}
   Mill.bBuilt=true;
@@ -137,7 +141,7 @@ namespace S47LandWindmillLocal
   Mill.HouseUp=FMath::Max(Ground(0,(HouseZ0+HouseZ1)*.5),Mill.TowerUp-.15);
   // the tank level on the highest ground under its rim; its wall goes TankDeep on down
   double Hi=-1e9,Lo=1e9;
-  for(int32 K=0;K<8;++K){const double A=K*UE_DOUBLE_PI/4,Y=Ground(TankAt.X+FMath::Cos(A)*TankR*TankScale,TankAt.Y+FMath::Sin(A)*TankR*TankScale);Hi=FMath::Max(Hi,Y);Lo=FMath::Min(Lo,Y);}
+  for(int32 K=0;K<8;++K){const double A=K*UE_DOUBLE_PI/4,Y=Ground(TankAt.X+FMath::Cos(A)*TankR*TankScale,TankAt.Y+FMath::Sin(A)*TankR*TankScale);Hi=FMath::Max(Hi,Y);Lo=FMath::Min(Lo,Y);Mill.TankGround[K]=Y;}
   Mill.TankUp=Hi-.02;Mill.TankLow=Lo;
   if(auto* C=Mill.Tower.Get())C->SetRelativeLocation(FVector(0,0,Mill.TowerUp*100));
   for(int32 K=0;K<4;++K)if(auto* C=Mill.Pier[K].Get()){C->SetRelativeLocation(FVector(CornerX[K]*Foot*100,CornerZ[K]*Foot*100,Mill.TowerUp*100));C->SetRelativeRotation(FRotator(0,90.*K,0));}
@@ -247,6 +251,21 @@ namespace S47LandWindmillLocal
    I.Use=[]{US47Main* Run=Baca.Web.IsValid()?US47Main::Get(Baca.Web.Get()):nullptr;if(!Baca.bShown||!Run||Baca.LidK<.8||!PageThere(Run))return;if(FS47Predecessor* P=Trail(Run))P->ReadDoc(PageDoc);};
    I.Examine=I.Label;M->Inter->Add(I);
   }
+  // Trampled bare ground round the tower and the tank, where stock stood for years: the farm yard's worn-ground map (Tools/farmworld's
+  // decals) laid on the land. Without that material the land is as it was.
+  {
+   const TCHAR* const Worn=TEXT("/Game/FarmBuildings/Materials/M_Farm_WornField");
+   UMaterialInterface* Asset=FPackageName::DoesPackageExist(Worn)?LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/FarmBuildings/Materials/M_Farm_WornField.M_Farm_WornField")):nullptr;
+   if(Asset)
+   {
+    auto* Mid=UMaterialInstanceDynamic::Create(Asset,W);Mid->SetScalarParameterValue(TEXT("Opacity"),.55f);Mid->SetForceMipLevelsToBeResident(true,true,-1.f,0,true);
+    auto* D=NewObject<UDecalComponent>(W,TEXT("S47LandMill_Baca_Ground"));
+    D->SetDecalMaterial(Mid);D->DecalSize=FVector(150,760,700);D->SetFadeScreenSize(0.f);D->SortOrder=-1;
+    D->SetupAttachment(Baca.Root.Get());D->RegisterComponent();
+    D->SetRelativeLocationAndRotation(FVector(170,30,0),FRotator(-90,0,90));
+    Baca.Ground=D;Baca.GroundMat=Mid;
+   }
+  }
   Baca.bReadBefore=PageRead(M);
   UE_LOG(LogS47LandWindmill,Display,TEXT("S47: land windmill: the Baca mill drawn from /Game/LandPlaces/Windmill (%d of %d meshes)"),Present(),int32(UE_ARRAY_COUNT(Names)));
   return true;
@@ -284,7 +303,7 @@ namespace S47LandWindmillLocal
   if(Baca.bKnocking&&(Baca.KnockFor+=Dt)>KnockEvery*1.7)Baca.bKnocking=false;
   const double Want=Baca.bKnocking?180./KnockEvery:0.;
   Baca.WheelRate+=(Want-Baca.WheelRate)*FMath::Min(1.,Dt/.6);
-  if(FMath::Abs(Baca.WheelRate)<.05&&!Baca.bKnocking)Baca.WheelRate=0;
+  if(FMath::Abs(Baca.WheelRate)<1.&&!Baca.bKnocking)Baca.WheelRate=0;
   Baca.WheelDeg=FMath::Fmod(Baca.WheelDeg+Baca.WheelRate*Dt,360.);Baca.RodDeg=FMath::Fmod(Baca.RodDeg+Baca.WheelRate*Dt,360.);
   // the lid: the game's, or the pictures'
   const bool bRead=PageRead(M),bWired=Wired(M);
@@ -297,6 +316,20 @@ namespace S47LandWindmillLocal
   if(auto* C=Baca.LidWire.Get())C->SetHiddenInGame(!bWired);
   Pose(Baca,S47Weather::Live().bOn?S47Weather::Live().Wind:0.);
   Wire(Baca,bTraces);
+  if(auto* D=Baca.Ground.Get())
+  {
+   // there with the tower, and toned by the hour as the farm's worn ground is (S47FarmWorld ToneFarmDecals: the land's own day and night)
+   const bool bSeen=Baca.Tower.IsValid()&&Baca.Tower->IsVisible();
+   if(D->IsVisible()!=bSeen)D->SetVisibility(bSeen);
+   const double Hour=FMath::Fmod(F.Clock(),86400.)/3600.;
+   const float Day=float(FMath::Clamp(FMath::Min((Hour-4.72)/1.25,(19.25-Hour)/1.25),0.,1.));
+   if(FMath::Abs(Day-Baca.GroundDay)>.01f)
+   {
+    Baca.GroundDay=Day;
+    const FLinearColor Field(.8f,.74f,.68f,1.f),ByDay(.781f,.785f,.765f,1.f),Night(4.17f,3.28f,2.96f,1.f);
+    if(auto* Mid=Baca.GroundMat.Get())Mid->SetVectorParameterValue(TEXT("Tint"),Field*ByDay*FMath::Lerp(Night,FLinearColor::White,Day));
+   }
+  }
  }
  void StepFarm(US47Main* M,double Dt)
  {
@@ -328,6 +361,16 @@ TArray<FBox2D> WalkBoxes(double TankAtX,double TankAtZ,double TankRadius)
  for(const double A:{15.,30.,45.,60.,75.}){const double Rad=FMath::DegreesToRadians(A),X=R*FMath::Cos(Rad),Z=R*FMath::Sin(Rad);B.Add(FBox2D(FVector2D(TankAtX-X,TankAtZ-Z),FVector2D(TankAtX+X,TankAtZ+Z)));}
  return B;
 }
+bool Covers(double RoadX,double RoadZ)
+{
+ if(!Available())return false;
+ const auto Under=[RoadX,RoadZ](const FVector2D& Mill,const FVector2D& Tank,double Radius)
+ {
+  return (FMath::Abs(RoadX-Mill.X)<Foot+.55&&FMath::Abs(RoadZ-Mill.Y)<Foot+.55)||FVector2D::Distance(FVector2D(RoadX,RoadZ),Tank)<Radius+.45;
+ };
+ const FS47Places::FDef* D=FS47Places::Def(PlaceId);
+ return Under(FarmMill,FarmTank,FarmTankR)||(D&&Under(FVector2D(D->X,D->Z),FVector2D(D->X+TankX,D->Z+TankZ),TankR));
+}
 double FreeRate(double Mph){return FMath::Clamp((Mph-4.5)*14.,0.,250.);}
 double RodLift(double WheelDeg){return Stroke*(1.-FMath::Cos(FMath::DegreesToRadians(WheelDeg)))*.5;}
 
@@ -342,7 +385,13 @@ void Creak(const FVector2D& RoadSpot)
  FMill& Mill=FVector2D::Distance(RoadSpot,FarmMill)<FVector2D::Distance(RoadSpot,FVector2D(Baca.PlaceX,Baca.PlaceZ))?Farm:Baca;
  Mill.Strain=0;
 }
-void DevPose(bool bOn,bool bLidOpen,bool bPage,bool bWire){Dev.bOn=bOn;Dev.bLid=bLidOpen;Dev.bPage=bPage;Dev.bWire=bWire;}
+void DevPose(bool bOn,bool bLidOpen,bool bPage,bool bWire)
+{
+ if(Dev.bOn&&!bOn)Baca.LidWant=0;   // back to the game's own: shut, as it was found
+ Dev.bOn=bOn;Dev.bLid=bLidOpen;Dev.bPage=bPage;Dev.bWire=bWire;
+}
+double LidOpen(){return Baca.LidK;}
+double WheelRateNow(){return Baca.WheelRate;}
 
 void ReconcileFarm(AS47Web* W,bool bOn)
 {
@@ -400,7 +449,7 @@ bool Audit(US47Main* M,TArray<FString>& Lines,bool bTrace)
   static const TCHAR* const PierNames[4]={TEXT("pier NE"),TEXT("pier NW"),TEXT("pier SW"),TEXT("pier SE")};
   for(int32 K=0;K<4;++K)Probes.Add({PierNames[K],CornerX[K]*(Foot+.45),CornerZ[K]*(Foot+.45),Baca.PierGround[K]});
   Probes.Add({TEXT("housing"),0,HouseZ1+.35,Baca.HouseUp});
-  Probes.Add({TEXT("tank"),TankX,TankZ+TankR+.4,Baca.TankUp+.02});
+  for(int32 K=0;K<8;++K){const double A=K*UE_DOUBLE_PI/4;Probes.Add({TEXT("tank rim"),TankX+FMath::Cos(A)*TankR,TankZ+FMath::Sin(A)*TankR,Baca.TankGround[K]});}
   double Worst=0;FString Where;int32 Hits=0;
   for(const FProbe& P:Probes)
   {
@@ -411,16 +460,16 @@ bool Audit(US47Main* M,TArray<FString>& Lines,bool bTrace)
    {
     if(!M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Top,Bottom,ECC_Visibility,Each))break;
     UPrimitiveComponent* C=Hit.GetComponent();if(!C)break;
-    if(C->IsVisible()&&!C->bHiddenInGame)bFound=true;else Each.AddIgnoredComponent(C);
+    if(C->IsVisible()&&!C->bHiddenInGame&&!C->GetName().StartsWith(TEXT("S47Place_")))bFound=true;else Each.AddIgnoredComponent(C);   // (nor the place's own first-day traces)
    }
    if(!bFound)continue;
    ++Hits;
    const double Drawn=Hit.ImpactPoint.Z/100.-Baca.Stand.Y,Diff=Drawn-P.Seated;
-   const double Walked=M->Player&&M->Player->LandFloor?M->Player->LandFloor(Baca.Stand.X+P.X,Baca.Stand.Z+P.Z)-Baca.Stand.Y:0.;
+   const double Walked=M->Player&&M->Player->Floor?M->Player->Floor(Baca.Stand.X+P.X,Baca.Stand.Z+P.Z)-Baca.Stand.Y:0.;
    Lines.Add(FString::Printf(TEXT("     land windmill: %s: drawn ground %.3f (%s), walked ground %.3f, seated on %.3f (%+.3f m)"),P.What,Drawn,*Hit.GetComponent()->GetName(),Walked,P.Seated,Diff));
    if(FMath::Abs(Diff)>Worst){Worst=FMath::Abs(Diff);Where=P.What;}
   }
-  Say(Hits==Probes.Num()&&Worst<=.05,FString::Printf(TEXT("the pieces are seated within 5 cm of the drawn ground: the most %.3f m (%s), %d of %d probes found ground"),Worst,*Where,Hits,Probes.Num()));
+  Say(Hits==Probes.Num()&&Worst<=.05,FString::Printf(TEXT("the ground each piece was seated on is the drawn ground within 5 cm: the most %.3f m (%s), %d of %d probes found ground"),Worst,*Where,Hits,Probes.Num()));
  }
  return bOk;
 }
